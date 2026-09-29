@@ -27,6 +27,7 @@ from ..serializers.transits import (
 )
 from ..services.transits import (
     compute_ingresses,
+    compute_lunar_phase_longitudes,
     compute_lunar_phases,
     compute_natal_aspect_transits,
     compute_next_ingress,
@@ -107,7 +108,15 @@ def lunar_phase_route(
     request: LunarPhaseSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> LunarPhaseSearchResponse:
-    return LunarPhaseSearchResponse(
-        events=[serialize_lunar_phase_event(event) for event in compute_lunar_phases(engine, request)]
-    )
+    events = []
+    for event in compute_lunar_phases(engine, request):
+        moon_longitude, sun_longitude = compute_lunar_phase_longitudes(engine, event)
+        events.append(
+            serialize_lunar_phase_event(
+                event,
+                moon_longitude=moon_longitude,
+                sun_longitude=sun_longitude,
+            )
+        )
+    return LunarPhaseSearchResponse(events=events)
 

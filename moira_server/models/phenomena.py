@@ -1147,7 +1147,17 @@ class OccultationPathTopologySearchResponse(_StrictModel):
 
 class HeliacalPlanetEventRequest(_StrictModel):
     body: str
-    kind: str
+    kind: str = Field(
+        description=(
+            "Standard heliacal phenomenon (Ptolemy / Schoch nomenclature, as in Swiss Ephemeris): "
+            "heliacal_rising (morning first), heliacal_setting (evening last), evening_first, "
+            "morning_last, acronychal_rising (evening rising near opposition), cosmical_setting "
+            "(morning setting near opposition). acronychal_setting is a deprecated synonym of "
+            "heliacal_setting. Since 6.9.9 heliacal_setting means evening last (it formerly meant "
+            "morning last) and acronychal_rising means the evening rising near opposition (it "
+            "formerly meant evening first)."
+        ),
+    )
     jd_start: float
     lat: float
     lon: float
@@ -1161,6 +1171,23 @@ class GeneralVisibilityEventRequest(_StrictModel):
     lat: float
     lon: float
     search_window_days: int = 400
+
+
+class HeliacalPhasisRequest(_StrictModel):
+    body: str
+    jd_ut: float
+    lat: float
+    lon: float
+    window_days: float = Field(
+        default=7.0,
+        gt=0.0,
+        le=30.0,
+        description=(
+            "Half-width of the search window in days: events within jd_ut +/- window_days are "
+            "reported. The default of 7 days follows the Hellenistic phasis convention (a phase "
+            "within seven days of the nativity)."
+        ),
+    )
 
 
 class VisibilityAssessmentCompactResponse(_StrictModel):
@@ -1197,6 +1224,25 @@ class GeneralVisibilityEventResponse(_StrictModel):
     sun_altitude_deg: float
     apparent_magnitude: float
     assessment: VisibilityAssessmentCompactResponse
+
+
+class HeliacalPhasisKindResponse(_StrictModel):
+    kind: str
+    applicable: bool
+    found: bool
+    offset_days: float | None
+    event: GeneralVisibilityEventResponse | None
+
+
+class HeliacalPhasisResponse(_StrictModel):
+    body: str
+    jd_ut: float
+    datetime_utc: str
+    lat: float
+    lon: float
+    window_days: float
+    lookahead_days: int
+    events: list[HeliacalPhasisKindResponse]
 
 
 class ParanSearchRequest(_StrictModel):
@@ -1498,6 +1544,9 @@ __all__ = [
     "EventInstantResponse",
     "GeneralVisibilityEventRequest",
     "GeneralVisibilityEventResponse",
+    "HeliacalPhasisKindResponse",
+    "HeliacalPhasisRequest",
+    "HeliacalPhasisResponse",
     "HeliacalPlanetEventRequest",
     "LastAspectResponse",
     "LocalContactCircumstancesResponse",

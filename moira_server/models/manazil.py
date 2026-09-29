@@ -32,9 +32,11 @@ class _StrictModel(BaseModel):
 class MansionInfoResponse(_StrictModel):
     index: int
     arabic_name: str | None = None
+    arabic_aliases: list[str] | None = None
     latin_name: str | None = None
-    ruling_star: str | None = None
+    latin_aliases: list[str] | None = None
     marker_stars: list[str] | None = None
+    marker_note: str | None = None
     nature: str | None = None
     signification: str | None = None
 

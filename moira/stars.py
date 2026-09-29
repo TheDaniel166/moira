@@ -79,6 +79,8 @@ __all__ = [
     "heliacal_setting",
     "heliacal_rising_event",
     "heliacal_setting_event",
+    "last_morning_visibility",
+    "last_morning_visibility_event",
     "heliacal_catalog_batch",
     "star_chart_condition_profile",
     "star_condition_network_profile",
@@ -1139,7 +1141,10 @@ def _native_heliacal_event(
     }
     threshold = 0.0
     native_search = mn.search_heliacal_rising
-    if event_kind == "heliacal_setting":
+    if event_kind == _LAST_MORNING_VISIBILITY:
+        # The compiled ``search_heliacal_setting`` kernel implements the
+        # pre-6.9.9 last-morning-visibility scan, not the standard (evening
+        # last) heliacal setting.  It is admitted only for that event.
         native_search = mn.search_heliacal_setting
         threshold = policy.heliacal.setting_elongation_threshold
         search_kwargs.update(
@@ -1207,6 +1212,13 @@ def heliacal_setting(
     policy: FixedStarComputationPolicy | None = None,
 ) -> float | None:
     """Compatibility wrapper returning JD only for fixed-star heliacal setting.
+
+    The heliacal setting is the standard evening last visibility (see
+    :func:`heliacal_setting_event`).
+
+    .. versionchanged:: 6.9.9
+       Previously returned the last *morning* sighting, now
+       :func:`last_morning_visibility`.
 
     Side effects: None.
     """
@@ -1329,6 +1341,10 @@ def heliacal_rising_event(
     )
 
 
+#: ``HeliacalEvent.event_kind`` of :func:`last_morning_visibility_event`.
+_LAST_MORNING_VISIBILITY = "last_morning_visibility"
+
+
 def heliacal_setting_event(
     name: str,
     jd_ut: float,
@@ -1339,11 +1355,169 @@ def heliacal_setting_event(
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
 ) -> HeliacalEvent:
-    """Search forward for last observable morning fixed-star appearance.
+    """Search forward for the heliacal setting (evening last visibility).
 
-    Tracks last qualifying visibility while elongation remains above the
-    policy threshold and returns the last visible day once disappearance
-    threshold is crossed.
+    Governing object: the standard heliacal setting of a fixed star, the
+    last evening on which it is seen in the west after sunset before it is
+    lost in the Sun's light ahead of conjunction (Ptolemy, *Phaseis*;
+    Schoch 1924; the same event as ``HeliacalEventKind.HELIACAL_SETTING``).
+
+    Construction (the evening mirror of :func:`heliacal_rising_event`, under
+    the same arcus-visionis doctrine): on each evening with the star east
+    of the Sun (signed elongation > 0) and at least
+    ``policy.heliacal.setting_elongation_threshold`` from it, the star counts
+    as seen when its geometric altitude exceeds the apparent horizon
+    (-0.5667 deg) at the dusk instant the Sun reaches ``-arcus_visionis``.
+    The last such evening is returned once the star comes within
+    ``setting_elongation_threshold * setting_visibility_factor`` of the Sun,
+    that is, once it has entered the Sun's glare.  Evenings before ``jd_ut``
+    are never remembered, and an evening apparition still open at the end of
+    the window is not reported.  The returned ``jd_ut`` is that dusk instant;
+    ``qualifying_elongation`` is the (positive) signed elongation that day.
+
+    This search is Python-governed.  The compiled
+    ``moira_native.search_heliacal_setting`` kernel scans *mornings* and
+    therefore serves only :func:`last_morning_visibility_event`; the
+    policy's ``use_native_heliacal`` flag has no effect here.
+
+    .. versionchanged:: 6.9.9
+       Previously this searched the last *morning* sighting.  That event is
+       preserved unchanged as :func:`last_morning_visibility_event`.
+
+    Raises:
+        ValueError: For invalid policy type or invalid numeric arguments.
+        KeyError: If star name cannot be resolved.
+
+    Side effects: None.
+    """
+    from .heliacal import _find_sun_at_alt, _local_mean_solar_midnight
+
+    resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
+    if not isinstance(resolved_policy, FixedStarComputationPolicy):
+        raise ValueError("policy must be a FixedStarComputationPolicy")
+    if not math.isfinite(jd_ut):
+        raise ValueError("jd_ut must be finite")
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError("latitude must be in [-90, 90]")
+    if not -180.0 <= longitude <= 180.0:
+        raise ValueError("longitude must be in [-180, 180]")
+    if not isinstance(search_days, int) or search_days <= 0:
+        raise ValueError("search_days must be a positive integer")
+
+    _resolve_star_record(name, resolved_policy.lookup)
+    resolved_arcus = _default_arcus_for_star(name) if arcus_visionis is None else arcus_visionis
+    if not math.isfinite(resolved_arcus) or resolved_arcus <= 0.0:
+        raise ValueError("arcus_visionis must be a positive finite value")
+
+    jd_mid0 = _local_mean_solar_midnight(jd_ut, longitude)
+    setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
+    disappearance_threshold = setting_elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
+    last_visible: tuple[int, float, float] | None = None
+
+    for day_offset in range(search_days):
+        jd_midnight = jd_mid0 + day_offset
+        se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
+        abs_se = abs(se)
+
+        if se > 0.0 and abs_se >= setting_elongation_threshold:
+            twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, False)
+            if twilight_jd is None or twilight_jd < jd_ut:
+                continue
+            star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
+            # Same apparent-horizon correction as heliacal rising.
+            if star_alt > -0.5667:
+                last_visible = (day_offset, se, twilight_jd)
+        elif last_visible is not None and abs_se < disappearance_threshold:
+            last_day_offset, last_elongation, last_jd = last_visible
+            return _build_heliacal_event(
+                "heliacal_setting",
+                name,
+                jd_ut,
+                search_days,
+                resolved_arcus,
+                setting_elongation_threshold,
+                last_day_offset,
+                last_elongation,
+                -resolved_arcus,
+                last_jd,
+            )
+
+    return _build_heliacal_event(
+        "heliacal_setting",
+        name,
+        jd_ut,
+        search_days,
+        resolved_arcus,
+        setting_elongation_threshold,
+        None,
+        None,
+        None,
+        None,
+    )
+
+
+def last_morning_visibility(
+    name: str,
+    jd_ut: float,
+    latitude: float,
+    longitude: float,
+    *,
+    arcus_visionis: float | None = None,
+    search_days: int = 400,
+    policy: FixedStarComputationPolicy | None = None,
+) -> float | None:
+    """JD-only wrapper for :func:`last_morning_visibility_event`.
+
+    Returns what ``heliacal_setting`` returned before 6.9.9.  Not a standard
+    heliacal phenomenon; see :func:`last_morning_visibility_event`.
+
+    Side effects: None.
+    """
+    return last_morning_visibility_event(
+        name,
+        jd_ut,
+        latitude,
+        longitude,
+        arcus_visionis=arcus_visionis,
+        search_days=search_days,
+        policy=policy,
+    ).jd_ut
+
+
+def last_morning_visibility_event(
+    name: str,
+    jd_ut: float,
+    latitude: float,
+    longitude: float,
+    *,
+    arcus_visionis: float | None = None,
+    search_days: int = 400,
+    policy: FixedStarComputationPolicy | None = None,
+) -> HeliacalEvent:
+    """Search forward for the last dawn on which the star is seen (pre-6.9.9).
+
+    This is the event that ``heliacal_setting_event`` returned before 6.9.9,
+    preserved unchanged under an explicit name.  It is **not** a standard
+    heliacal phenomenon: the standard set (Ptolemy, *Phaseis*; Schoch 1924)
+    has no "morning last" phase for a fixed star, because a star leaves the
+    morning sky through opposition, not through conjunction (see
+    :func:`moira.heliacal.heliacal_event_kind_applies`).
+
+    Construction: on each morning with the star west of the Sun
+    (signed elongation < 0) and at least
+    ``policy.heliacal.setting_elongation_threshold`` from it, the star counts
+    as seen when its geometric altitude exceeds the apparent horizon
+    (-0.5667 deg) at the dawn instant the Sun reaches ``-arcus_visionis``.
+    The last such morning is returned once the star comes within
+    ``setting_elongation_threshold * setting_visibility_factor`` of the Sun.
+    Because only west-of-Sun mornings are tracked, the recorded run ends at
+    opposition at the latest: the result is the last dawn sighting before
+    opposition, which lies at or before the cosmical setting
+    (``HeliacalEventKind.COSMICAL_SETTING``), and it is reported only after
+    the star approaches its next conjunction.  Prefer the standard kinds.
+
+    The compiled ``moira_native.search_heliacal_setting`` kernel implements
+    exactly this scan and is used when the policy admits native search.
 
     Raises:
         ValueError: For invalid policy type or invalid numeric arguments.
@@ -1371,7 +1545,7 @@ def heliacal_setting_event(
         raise ValueError("arcus_visionis must be a positive finite value")
 
     native_event = _native_heliacal_event(
-        "heliacal_setting",
+        _LAST_MORNING_VISIBILITY,
         record,
         name,
         jd_ut,
@@ -1407,7 +1581,7 @@ def heliacal_setting_event(
         elif last_visible is not None and abs_se < disappearance_threshold:
             last_day_offset, last_elongation, last_jd = last_visible
             return _build_heliacal_event(
-                "heliacal_setting",
+                _LAST_MORNING_VISIBILITY,
                 name,
                 jd_ut,
                 search_days,
@@ -1420,7 +1594,7 @@ def heliacal_setting_event(
             )
 
     return _build_heliacal_event(
-        "heliacal_setting",
+        _LAST_MORNING_VISIBILITY,
         name,
         jd_ut,
         search_days,
@@ -1437,7 +1611,19 @@ def heliacal_setting_event(
 # Catalog-wide heliacal batch search
 # ---------------------------------------------------------------------------
 
-_HELIACAL_BATCH_EVENT_KINDS: frozenset[str] = frozenset({"heliacal_rising", "heliacal_setting"})
+_HELIACAL_BATCH_EVENT_KINDS: frozenset[str] = frozenset(
+    {"heliacal_rising", "heliacal_setting", _LAST_MORNING_VISIBILITY}
+)
+# Kinds with an admitted compiled search kernel.  The standard heliacal
+# setting (evening last) has none and always runs the Python search.
+_HELIACAL_NATIVE_BATCH_EVENT_KINDS: frozenset[str] = frozenset(
+    {"heliacal_rising", _LAST_MORNING_VISIBILITY}
+)
+_HELIACAL_BATCH_SEARCHES = {
+    "heliacal_rising": heliacal_rising_event,
+    "heliacal_setting": heliacal_setting_event,
+    _LAST_MORNING_VISIBILITY: last_morning_visibility_event,
+}
 
 
 def heliacal_catalog_batch(
@@ -1452,7 +1638,7 @@ def heliacal_catalog_batch(
     policy: FixedStarComputationPolicy | None = None,
 ) -> HeliacalBatchResult:
     """
-    Run a heliacal rising or setting search across the sovereign star catalog.
+    Run a fixed-star heliacal event search across the sovereign star catalog.
 
     Two pre-filters are applied before any ephemeris computation, using
     data already stored in the registry:
@@ -1479,7 +1665,10 @@ def heliacal_catalog_batch(
 
     Parameters
     ----------
-    event_kind : ``"heliacal_rising"`` or ``"heliacal_setting"``.
+    event_kind : ``"heliacal_rising"`` (morning first), ``"heliacal_setting"``
+        (evening last; standard meaning since 6.9.9, Python search only) or
+        ``"last_morning_visibility"`` (the pre-6.9.9 ``"heliacal_setting"``
+        event; see :func:`last_morning_visibility_event`).
     jd_start : Julian Day (UT1) to begin the forward search.
     latitude, longitude : Observer geodetic coordinates (degrees).
     max_magnitude : Faintest V magnitude to include. Default 6.5.
@@ -1492,7 +1681,8 @@ def heliacal_catalog_batch(
     """
     if event_kind not in _HELIACAL_BATCH_EVENT_KINDS:
         raise ValueError(
-            f"event_kind must be 'heliacal_rising' or 'heliacal_setting', got {event_kind!r}"
+            "event_kind must be one of "
+            f"{sorted(_HELIACAL_BATCH_EVENT_KINDS)}, got {event_kind!r}"
         )
     if not math.isfinite(jd_start):
         raise ValueError("jd_start must be finite")
@@ -1525,6 +1715,7 @@ def heliacal_catalog_batch(
     if (
         mn is not None 
         and hasattr(mn, "search_heliacal_rising") 
+        and event_kind in _HELIACAL_NATIVE_BATCH_EVENT_KINDS
         and getattr(resolved_policy, "allow_native", True)
         and getattr(resolved_policy, "use_native_heliacal", True)
     ):
@@ -1587,7 +1778,7 @@ def heliacal_catalog_batch(
                     "delta_t_rate_seconds_per_day": dt_rate,
                     "nutation_cache": nutation_cache,
                 }
-                if event_kind == "heliacal_setting":
+                if event_kind == _LAST_MORNING_VISIBILITY:
                     search_kwargs.update(
                         setting_elongation_threshold=(
                             resolved_policy.heliacal.setting_elongation_threshold
@@ -1656,7 +1847,7 @@ def heliacal_catalog_batch(
     # -----------------------------------------------------------------------
     # LEGACY PYTHON ORACLE (Fallback)
     # -----------------------------------------------------------------------
-    search_fn = heliacal_rising_event if event_kind == "heliacal_rising" else heliacal_setting_event
+    search_fn = _HELIACAL_BATCH_SEARCHES[event_kind]
 
     found: list[HeliacalEvent] = []
     not_found: list[str] = []

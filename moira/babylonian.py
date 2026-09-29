@@ -484,7 +484,7 @@ BABYLONIAN_MERCURY_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     BabylonianPlanetaryReference(
         id="mercury_artaxerxes_ii_y16_ml",
         body=Body.MERCURY,
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         latitude_deg=BABYLON_LATITUDE_DEG,
         longitude_deg=BABYLON_LONGITUDE_DEG,
         observation_class=BabylonianObservationClass.EXPECTED,
@@ -539,7 +539,7 @@ BABYLONIAN_MERCURY_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     BabylonianPlanetaryReference(
         id="mercury_se79_viii_14_el",
         body=Body.MERCURY,
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         latitude_deg=BABYLON_LATITUDE_DEG,
         longitude_deg=BABYLON_LONGITUDE_DEG,
         observation_class=BabylonianObservationClass.OMITTED,
@@ -567,7 +567,7 @@ BABYLONIAN_MERCURY_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     BabylonianPlanetaryReference(
         id="mercury_text_m_el_403_bce",
         body=Body.MERCURY,
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         latitude_deg=BABYLON_LATITUDE_DEG,
         longitude_deg=BABYLON_LONGITUDE_DEG,
         observation_class=BabylonianObservationClass.TERMINUS_SUPPORT,
@@ -599,7 +599,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y1_el",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -629,7 +629,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y2_ml",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -644,7 +644,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y2_ef",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -659,7 +659,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y3_el",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -689,7 +689,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y4_ml",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -704,7 +704,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y4_ef",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -719,7 +719,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y10_ml",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -734,7 +734,7 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
     BabylonianHistoricalPhenomenon(
         id="venus_ammisaduqa_y10_ef",
         body=Body.VENUS,
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_family="ammisaduqa_2021",
         epoch_label="ancient_babylonian",
         chronology_confidence=ChronologyConfidence.SOURCE_TABLE_AVAILABLE,
@@ -822,7 +822,7 @@ def _de_jong_foertmeyer_venus_reference(
 BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y1_el_long",
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         source_day=BabylonianCivilDay(-1700, 3, 23),
         row_label="Year 1 EL, Julian date 23-Mar -1700",
         extinction_coefficient=0.25,
@@ -842,7 +842,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y2_ml_long",
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_day=BabylonianCivilDay(-1700, 12, 12),
         row_label="Year 2 ML, Julian date 12-Dec -1700",
         extinction_coefficient=0.31,
@@ -852,7 +852,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y2_ef_long",
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_day=BabylonianCivilDay(-1699, 2, 17),
         row_label="Year 2 EF, Julian date 17-Feb -1699",
         extinction_coefficient=0.29,
@@ -862,7 +862,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y3_el_long",
-        event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+        event_kind=HeliacalEventKind.HELIACAL_SETTING,
         source_day=BabylonianCivilDay(-1699, 10, 13),
         row_label="Year 3 EL, Julian date 13-Oct -1699",
         extinction_coefficient=0.52,
@@ -883,7 +883,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y4_ml_long",
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_day=BabylonianCivilDay(-1698, 7, 15),
         row_label="Year 4 ML, Julian date 15-Jul -1698",
         extinction_coefficient=0.29,
@@ -893,7 +893,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y4_ef_long",
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_day=BabylonianCivilDay(-1698, 9, 13),
         row_label="Year 4 EF, Julian date 13-Sep -1698",
         extinction_coefficient=0.18,
@@ -903,7 +903,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y10_ml_long",
-        event_kind=HeliacalEventKind.HELIACAL_SETTING,
+        event_kind=HeliacalEventKind.MORNING_LAST,
         source_day=BabylonianCivilDay(-1692, 12, 12),
         row_label="Year 10 ML, Julian date 12-Dec -1692",
         extinction_coefficient=0.28,
@@ -913,7 +913,7 @@ BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
     ),
     _de_jong_foertmeyer_venus_reference(
         reference_id="venus_ammisaduqa_y10_ef_long",
-        event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
+        event_kind=HeliacalEventKind.EVENING_FIRST,
         source_day=BabylonianCivilDay(-1691, 2, 15),
         row_label="Year 10 EF, Julian date 15-Feb -1691",
         extinction_coefficient=0.29,

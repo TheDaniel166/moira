@@ -67,10 +67,13 @@ class TestOutputStructure:
         failures = validate_lord_of_orb_output(result)
         assert failures == [], f"Validation failures: {failures}"
 
-    def test_house_significations_populated(self):
+    def test_unsourced_house_significations_not_emitted(self):
+        """The former house glosses were unsourced; results carry None (6.9.9)."""
         result = lord_of_orb("Sun", 12)
         for p in result.sequence.periods:
-            assert p.house_signification, f"Year {p.year}: empty signification"
+            assert p.house_signification is None
+        for profile in result.condition_profiles:
+            assert profile.house_signification is None
 
 
 # ---------------------------------------------------------------------------
@@ -450,5 +453,5 @@ class TestEdgeCases:
         failures = validate_lord_of_orb_output(result)
         assert failures == []
 
-    def test_house_significations_all_present(self):
+    def test_editorial_house_significations_constant_kept_for_compatibility(self):
         assert set(HOUSE_SIGNIFICATIONS.keys()) == set(range(1, 13))

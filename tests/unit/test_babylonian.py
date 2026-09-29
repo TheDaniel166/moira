@@ -159,8 +159,8 @@ def test_venus_ammisaduqa_source_corpus_covers_all_four_visibility_event_familie
     assert event_kinds == {
         HeliacalEventKind.HELIACAL_RISING,
         HeliacalEventKind.HELIACAL_SETTING,
-        HeliacalEventKind.ACRONYCHAL_RISING,
-        HeliacalEventKind.ACRONYCHAL_SETTING,
+        HeliacalEventKind.EVENING_FIRST,
+        HeliacalEventKind.MORNING_LAST,
     }
 
 

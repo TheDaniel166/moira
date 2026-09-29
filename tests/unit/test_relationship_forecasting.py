@@ -271,6 +271,18 @@ def test_corrected_davison_identity_preserves_raw_and_used_epoch_policy() -> Non
     assert identity.correction_mode == "corrected"
 
 
+def _patch_single_target_solver(monkeypatch: pytest.MonkeyPatch, fake_find_transits) -> None:
+    """Drive the shared-scan solver through a per-target fake (6.9.9)."""
+
+    def fake_multi(body, target_lons, jd_start, jd_end, **kwargs):
+        return [
+            fake_find_transits(body, target_lon, jd_start, jd_end, **kwargs)
+            for target_lon in target_lons
+        ]
+
+    monkeypatch.setattr(forecasting, "_find_transits_to_targets", fake_multi)
+
+
 def test_exact_relationship_transits_search_both_symmetric_aspect_branches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -297,7 +309,7 @@ def test_exact_relationship_transits_search_both_symmetric_aspect_branches(
             )
         ]
 
-    monkeypatch.setattr(forecasting, "find_transits", fake_find_transits)
+    _patch_single_target_solver(monkeypatch, fake_find_transits)
     result = forecasting.find_composite_transits(
         _composite(),
         ["Mars"],
@@ -374,7 +386,7 @@ def test_relationship_transit_direction_filter_and_backward_order(
             )
         ]
 
-    monkeypatch.setattr(forecasting, "find_transits", fake_find_transits)
+    _patch_single_target_solver(monkeypatch, fake_find_transits)
     result = forecasting.find_davison_transits(
         _davison(),
         ["Jupiter"],
@@ -415,7 +427,7 @@ def test_relationship_transits_accept_an_explicit_aspect_subset(
         calls.append(target_lon)
         return []
 
-    monkeypatch.setattr(forecasting, "find_transits", fake_find_transits)
+    _patch_single_target_solver(monkeypatch, fake_find_transits)
     result = forecasting.find_composite_transits(
         _composite(),
         ["Mars"],
@@ -468,3 +480,98 @@ def test_relationship_targets_fail_closed_for_missing_provenance_and_names() -> 
             2_460_000.0,
             2_460_100.0,
         )
+
+
+def _per_branch_reference_search(chart, moving_bodies, jd_start, jd_end, *, reader, **kwargs):
+    """The pre-6.9.9 algorithm: one find_transits call per perfection branch."""
+
+    tier = kwargs.get("tier", 0)
+    search_motion = kwargs.get("search_motion", "forward")
+    target_set = forecasting.relationship_chart_targets(
+        chart,
+        include_nodes=kwargs.get("include_nodes", True),
+        target_names=kwargs.get("target_names"),
+    )
+    events = []
+    for moving_body in moving_bodies:
+        for target in target_set.targets:
+            for aspect in forecasting._selected_aspects(tier):
+                for offset in forecasting._directional_offsets(aspect.angle):
+                    for canonical in transit_module.find_transits(
+                        moving_body,
+                        (target.longitude + offset) % 360.0,
+                        jd_start,
+                        jd_end,
+                        reader=reader,
+                        search_motion=search_motion,
+                    ):
+                        events.append(
+                            forecasting.RelationshipTransitEvent(
+                                chart_id=target_set.identity.chart_id,
+                                target=target,
+                                moving_body=moving_body,
+                                aspect_name=aspect.name,
+                                aspect_symbol=aspect.symbol,
+                                aspect_angle_deg=aspect.angle,
+                                directional_offset_deg=offset,
+                                transit=canonical,
+                            )
+                        )
+    events.sort(key=forecasting._event_sort_key, reverse=search_motion == "backward")
+    return tuple(events)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("search_motion", ["forward", "backward"])
+def test_shared_scan_matches_per_branch_find_transits_exactly(
+    moira_engine,
+    search_motion: str,
+) -> None:
+    """6.9.9: one scan per moving body returns exactly the old per-branch events."""
+
+    reader = getattr(moira_engine, "_reader", None)
+    chart = _composite()
+    jd_start, jd_end = 2_451_545.0, 2_451_545.0 + 120.0
+    bodies = ["Mars", "Jupiter"]
+
+    shared = forecasting.find_composite_transits(
+        chart,
+        bodies,
+        jd_start,
+        jd_end,
+        tier=0,
+        reader=reader,
+        search_motion=search_motion,
+    )
+    reference = _per_branch_reference_search(
+        chart,
+        bodies,
+        jd_start,
+        jd_end,
+        reader=reader,
+        tier=0,
+        search_motion=search_motion,
+    )
+
+    assert shared.events == reference
+    assert shared.event_count > 0
+    branch_count = shared.target_set.target_count * 8  # tier-0 directional branches
+    assert shared.computation_truth.search_call_count == len(bodies) * branch_count
+
+
+@pytest.mark.requires_ephemeris
+def test_multi_target_solver_equals_single_target_find_transits(moira_engine) -> None:
+    reader = getattr(moira_engine, "_reader", None)
+    targets = (10.0, 100.0, 190.0, 280.0, "Venus")
+    jd_start, jd_end = 2_451_545.0, 2_451_545.0 + 200.0
+
+    shared = transit_module._find_transits_to_targets(
+        "Mars", targets, jd_start, jd_end, reader=reader
+    )
+
+    assert len(shared) == len(targets)
+    for target, events in zip(targets, shared):
+        assert events == transit_module.find_transits(
+            "Mars", target, jd_start, jd_end, reader=reader
+        )
+    assert any(shared)

@@ -192,6 +192,15 @@ def test_composite_service_forwards_exact_policy_and_reader(
     assert policy.transit.solver_tolerance_days == pytest.approx(2e-7)
 
 
+def test_relationship_transit_request_admits_all_ten_planets_as_movers() -> None:
+    # 6.9.9: one scan per moving body; the mover cap rose from 4 to 10.
+    request = _composite_request(moving_bodies=list(Body.ALL_PLANETS))
+    assert len(request.moving_bodies) == 10
+
+    with pytest.raises(ValueError):
+        _composite_request(moving_bodies=[*Body.ALL_PLANETS, "Chiron"])
+
+
 def test_relationship_server_budget_rejects_expansive_search_before_solver(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -295,7 +304,8 @@ def test_fixed_star_request_rejects_duplicate_alias_inputs_before_resolution() -
 @pytest.mark.parametrize(
     ("path", "method"),
     [
-        ("/v1/composite/transits", "midpoint"),
+        # "midpoint" is rejected as deprecated by the composite chart service.
+        ("/v1/composite/transits", "reference_place"),
         ("/v1/davison/transits", "midpoint_location"),
     ],
 )

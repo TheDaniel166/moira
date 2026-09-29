@@ -6,10 +6,11 @@ Archetype: Engine (table-first, doctrine-explicit)
 
 Purpose
 -------
-Owns the triplicity ruler table and triplicity scoring for the Classic 7
-planets under the Dorothean tradition. Provides an explicit
-participating-ruler policy so that callers may declare their doctrinal
-stance without relying on hidden conventions.
+Owns the triplicity ruler tables and triplicity scoring for the Classic 7
+planets under two named doctrines: the Dorothean table (with participating
+rulers) and William Lilly's 1647 table (day and night rulers only). Provides
+an explicit participating-ruler policy so that callers may declare their
+doctrinal stance without relying on hidden conventions.
 
 Boundary declaration
 --------------------
@@ -41,6 +42,20 @@ David Pingree (Teubner, Leipzig, 1976). In Book I.1 the water triplicity
 (Cancer / Scorpio / Pisces) is assigned to Venus by day, Mars by night,
 with the Moon participating. This module preserves that source order for
 the DOROTHEAN_PINGREE_1976 doctrine value.
+
+Provenance note — WILLIAM_LILLY_1647
+-------------------------------------
+The table _TRIPLICITY_RULERS_WILLIAM_LILLY_1647 is transcribed from William
+Lilly, *Christian Astrology* (London, 1647), Book I, ch. XVIII, "A Table of
+the Essential Dignities of the Planets according to Ptolomy" and its
+explanation (pp. 102–105 of the 1647 edition): fire Sun by day, Jupiter by
+night; earth Venus by day, Moon by night; air Saturn by day, Mercury by
+night; and for Cancer, Scorpio, Pisces "Mars, who, according to Ptolomy and
+Naibod, ruleth onely that Triplicity both day and night" (explanation
+of the table; also p. 102, "Mars excepted, who night and day ruleth the
+watry Triplicity"). Lilly's table names no participating ruler, so this
+doctrine has none. The Dorothean table remains the default for this module
+and for every dignity scoring mode except ``william_lilly_1647``.
 """
 
 from __future__ import annotations
@@ -63,6 +78,7 @@ __all__ = [
 class TriplicityDoctrine(StrEnum):
     """Vessel: Registry of supported triplicity doctrines."""
     DOROTHEAN_PINGREE_1976 = "dorothean_pingree_1976"
+    WILLIAM_LILLY_1647 = "william_lilly_1647"
 
 
 class TriplicityElement(StrEnum):
@@ -91,7 +107,8 @@ class TriplicityAssignment:
     is_day_chart       : sect context supplied at lookup time
     day_ruler          : planet ruling this triplicity in a day chart
     night_ruler        : planet ruling this triplicity in a night chart
-    participating_ruler: planet holding the participating (mixed-sect) role
+    participating_ruler: planet holding the participating (mixed-sect) role,
+                         or None when the doctrine names none (Lilly 1647)
     active_ruler       : day_ruler when is_day_chart, night_ruler otherwise
     signs              : all signs sharing this triplicity group (3-element tuple)
     """
@@ -101,7 +118,7 @@ class TriplicityAssignment:
     is_day_chart: bool
     day_ruler: str
     night_ruler: str
-    participating_ruler: str
+    participating_ruler: str | None
     active_ruler: str
     signs: tuple[str, ...]
 
@@ -129,10 +146,12 @@ class TriplicityAssignment:
     def has_participating_overlap(self) -> bool:
         """True when the participating ruler is identical to the active primary ruler.
 
-        This is False for all assignments in DOROTHEAN_PINGREE_1976 but the
-        property makes the invariant testable and guards against future doctrine
-        additions that could introduce overlap."""
-        return self.participating_ruler == self.active_ruler
+        This is False for all assignments in DOROTHEAN_PINGREE_1976, and False
+        for WILLIAM_LILLY_1647 (no participating ruler)."""
+        return (
+            self.participating_ruler is not None
+            and self.participating_ruler == self.active_ruler
+        )
 
     def __post_init__(self) -> None:
         if self.sign not in SIGNS:
@@ -202,9 +221,9 @@ _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976: dict[str, tuple[str, str, str]] = {
 # Precomputed: (day_ruler, night_ruler, participating_ruler) → tuple of signs
 # sharing that triple.  Used to populate TriplicityAssignment.signs efficiently.
 def _build_sign_groups(
-    table: dict[str, tuple[str, str, str]],
-) -> dict[tuple[str, str, str], tuple[str, ...]]:
-    groups: dict[tuple[str, str, str], list[str]] = {}
+    table: dict[str, tuple[str, str, str | None]],
+) -> dict[tuple[str, str, str | None], tuple[str, ...]]:
+    groups: dict[tuple[str, str, str | None], list[str]] = {}
     for sign, triple in table.items():
         groups.setdefault(triple, []).append(sign)
     return {k: tuple(v) for k, v in groups.items()}
@@ -214,12 +233,34 @@ _DOROTHEAN_PINGREE_SIGN_GROUPS: dict[tuple[str, str, str], tuple[str, ...]] = (
     _build_sign_groups(_TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976)
 )
 
-_TABLES: dict[TriplicityDoctrine, dict[str, tuple[str, str, str]]] = {
-    TriplicityDoctrine.DOROTHEAN_PINGREE_1976: _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976,
+# Lilly 1647 (Christian Astrology I, ch. XVIII): (day_ruler, night_ruler, None).
+# Fire: Sun/Jupiter   Earth: Venus/Moon   Air: Saturn/Mercury   Water: Mars/Mars
+# No participating ruler. See module docstring provenance note.
+_TRIPLICITY_RULERS_WILLIAM_LILLY_1647: dict[str, tuple[str, str, None]] = {
+    "Aries":       ("Sun",    "Jupiter", None),
+    "Leo":         ("Sun",    "Jupiter", None),
+    "Sagittarius": ("Sun",    "Jupiter", None),
+    "Taurus":      ("Venus",  "Moon",    None),
+    "Virgo":       ("Venus",  "Moon",    None),
+    "Capricorn":   ("Venus",  "Moon",    None),
+    "Gemini":      ("Saturn", "Mercury", None),
+    "Libra":       ("Saturn", "Mercury", None),
+    "Aquarius":    ("Saturn", "Mercury", None),
+    "Cancer":      ("Mars",   "Mars",    None),
+    "Scorpio":     ("Mars",   "Mars",    None),
+    "Pisces":      ("Mars",   "Mars",    None),
 }
 
-_SIGN_GROUPS: dict[TriplicityDoctrine, dict[tuple[str, str, str], tuple[str, ...]]] = {
+_WILLIAM_LILLY_1647_SIGN_GROUPS = _build_sign_groups(_TRIPLICITY_RULERS_WILLIAM_LILLY_1647)
+
+_TABLES: dict[TriplicityDoctrine, dict[str, tuple[str, str, str | None]]] = {
+    TriplicityDoctrine.DOROTHEAN_PINGREE_1976: _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976,
+    TriplicityDoctrine.WILLIAM_LILLY_1647: _TRIPLICITY_RULERS_WILLIAM_LILLY_1647,
+}
+
+_SIGN_GROUPS: dict[TriplicityDoctrine, dict[tuple[str, str, str | None], tuple[str, ...]]] = {
     TriplicityDoctrine.DOROTHEAN_PINGREE_1976: _DOROTHEAN_PINGREE_SIGN_GROUPS,
+    TriplicityDoctrine.WILLIAM_LILLY_1647: _WILLIAM_LILLY_1647_SIGN_GROUPS,
 }
 
 
@@ -327,6 +368,7 @@ def triplicity_score(
         return primary_score
     if (
         participating_policy is ParticipatingRulerPolicy.AWARD_REDUCED
+        and participating_ruler is not None
         and planet == participating_ruler
     ):
         return participating_score

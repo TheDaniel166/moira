@@ -121,8 +121,9 @@ def test_mirror_midpoint_and_mansion_seams_are_reversible_and_half_open() -> Non
 
     assert _midpoint(350.0, 10.0) == pytest.approx(0.0, abs=EPS)
     assert _midpoint(10.0, 350.0) == pytest.approx(0.0, abs=EPS)
-    assert to_dial_90(22.5) == pytest.approx(0.0, abs=EPS)
-    assert to_dial_90(89.999999999) == pytest.approx(89.999999996, abs=EPS)
+    # The 90° dial folds longitude by 90 (Ebertin); 22.5° is 22.5° on the dial.
+    assert to_dial_90(22.5) == pytest.approx(22.5, abs=EPS)
+    assert to_dial_90(89.999999999) == pytest.approx(89.999999999, abs=EPS)
     assert to_dial_90(90.0) == pytest.approx(0.0, abs=EPS)
 
     before = mansion_of(MANSION_SPAN - EPS)

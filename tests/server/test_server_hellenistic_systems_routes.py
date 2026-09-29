@@ -62,7 +62,7 @@ def test_transmissions_route_has_no_effect_fields(client: TestClient) -> None:
     assert all("effect" not in edge for edge in body["edges"])
 
 
-def test_offices_route_fails_closed_without_hyleg(client: TestClient) -> None:
+def test_offices_route_names_the_missing_ptolemy_input(client: TestClient) -> None:
     response = client.post(
         "/v1/hellenistic/offices",
         json={
@@ -84,8 +84,39 @@ def test_offices_route_fails_closed_without_hyleg(client: TestClient) -> None:
     assert body["status"] == "not_evaluable"
     assert body["predominator"] is None
     assert body["house_master"] is None
-    assert body["reason"] == OFFICE_NOT_ADMITTED_REASON
+    assert body["house_master_reason"] == OFFICE_NOT_ADMITTED_REASON
+    assert body["reason"] == "prenatal_new_moon_longitude_required_for_ruler_over_luminary_check"
+    assert body["predominator_determination"]["doctrine"] == "ptolemy_tetrabiblos_iii_10"
     assert body["candidates"]
+
+
+def test_offices_route_selects_ptolemy_predominator(client: TestClient) -> None:
+    response = client.post(
+        "/v1/hellenistic/offices",
+        json={
+            "positions": {
+                "Sun": 10.0,
+                "Moon": 100.0,
+                "Mercury": 20.0,
+                "Venus": 40.0,
+                "Mars": 80.0,
+                "Jupiter": 200.0,
+                "Saturn": 300.0,
+            },
+            "is_day_chart": True,
+            "asc_longitude": 200.0,
+            "prenatal_new_moon_longitude": 355.0,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "selected"
+    assert body["predominator"] == "Venus"
+    assert body["reason"] is None
+    determination = body["predominator_determination"]
+    assert determination["selection_step"] == "ruler_preferred_over_luminary"
+    assert determination["ruler_candidates"] == ["Venus"]
+    assert "Tetrabiblos III.10" in body["provenance"]["source_refs"][0]
 
 
 def test_hellenistic_system_routes_are_registered(client: TestClient) -> None:

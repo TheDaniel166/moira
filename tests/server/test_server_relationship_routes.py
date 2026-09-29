@@ -196,7 +196,11 @@ def test_composite_variants_embed_aspects(
 
     assert response.status_code == 200
     aspects = response.json()["aspects"]
-    assert aspects["computation_truth"]["tier"] == 1
+    # 6.9.9: default tier 0 (major Ptolemaic aspects), as in synastry.
+    assert aspects["computation_truth"]["tier"] == 0
+    assert {event["aspect"] for event in aspects["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert aspects["computation_truth"]["orb_factor"] == 1.0
     assert aspects["computation_truth"]["include_nodes"] is True
     assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
@@ -228,7 +232,11 @@ def test_davison_variants_embed_aspects(
 
     assert response.status_code == 200
     aspects = response.json()["aspects"]
-    assert aspects["computation_truth"]["tier"] == 1
+    # 6.9.9: default tier 0 (major Ptolemaic aspects), as in synastry.
+    assert aspects["computation_truth"]["tier"] == 0
+    assert {event["aspect"] for event in aspects["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert aspects["computation_truth"]["orb_factor"] == 1.0
     assert aspects["computation_truth"]["include_nodes"] is True
     assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
@@ -349,6 +357,10 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
 
     assert aspects_response.status_code == 200
     assert len(aspects_response.json()["events"]) == len(direct_aspects)
+    # 6.9.9: synastry default tier 0 = major Ptolemaic aspects only.
+    assert {event["aspect"] for event in aspects_response.json()["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert contacts_response.status_code == 200
     assert len(contacts_response.json()["events"]) == len(direct_contacts)
 

@@ -90,7 +90,10 @@ def test_dignities_chart_route_matches_service(
     assert sun["total_score"] == sun["essential_score"] + sun["accidental_score"]
     assert sun["essential_truth"]["label"] == direct_sun.essential_truth.label
     assert sun["essential_truth"]["scoring_mode"] == "william_lilly_1647"
-    assert sun["essential_truth"]["bounds_doctrine"] == "ptolemaic"
+    # Lilly scoring uses Lilly's own terms (Christian Astrology 1647, p. 104).
+    assert sun["essential_truth"]["bounds_doctrine"] == "william_lilly_1647"
+    # Lilly scoring uses Lilly's own 1647 triplicity table (Mars rules water).
+    assert sun["essential_truth"]["triplicity_doctrine"] == "william_lilly_1647"
     assert all(
         {"weight", "score"} <= set(component)
         for component in sun["essential_truth"]["components"]

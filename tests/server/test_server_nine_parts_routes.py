@@ -1,11 +1,20 @@
-"""P12-05 Abu Ma'shar Nine Parts route admission tests."""
+"""P12-05 Nine Parts route admission tests.
+
+Default: the seven Hermetic lots of Paulus Alexandrinus ch. 23. Sword and Node
+are unsourced extensions returned only on explicit policy opt-in.
+"""
 
 from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
 
-from moira.nine_parts import NinePartName, nine_parts_abu_mashar
+from moira.nine_parts import (
+    NinePartName,
+    NinePartsHistoricalScope,
+    NinePartsPolicy,
+    nine_parts_abu_mashar,
+)
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -21,19 +30,24 @@ DIURNAL_ASC = 15.0
 DIURNAL_PLANETS = {
     "Sun": 20.0,
     "Moon": 55.0,
+    "Mercury": 40.0,
+    "Venus": 70.0,
     "Mars": 130.0,
     "Jupiter": 210.0,
     "Saturn": 285.0,
-    "North Node": 100.0,
 }
 NOCTURNAL_PLANETS = {
     "Sun": 195.0,
     "Moon": 55.0,
+    "Mercury": 180.0,
+    "Venus": 230.0,
     "Mars": 130.0,
     "Jupiter": 210.0,
     "Saturn": 285.0,
-    "North Node": 100.0,
 }
+EXTENDED_PLANETS = {**DIURNAL_PLANETS, "North Node": 100.0}
+EXTENSION_SCOPE = "evidenced_core_plus_admitted_extension"
+HERMETIC_SEVEN = ["Fortune", "Spirit", "Love", "Necessity", "Courage", "Victory", "Nemesis"]
 
 
 @pytest.fixture
@@ -79,18 +93,17 @@ def test_abu_mashar_route_preserves_day_chart_engine_truth(client: TestClient) -
 
     assert response.status_code == 200
     body = response.json()
-    assert [part["name"] for part in body["parts"]] == [name.value for name in NinePartName]
-    assert len(body["parts"]) == 9
+    assert [part["name"] for part in body["parts"]] == HERMETIC_SEVEN
     assert body["aggregate"]["is_night_chart"] is False
-    assert body["aggregate"]["part_count"] == 9
-    assert body["aggregate"]["direct_part_count"] == 6
-    assert body["aggregate"]["derived_part_count"] == 3
+    assert body["aggregate"]["part_count"] == 7
+    assert body["aggregate"]["direct_part_count"] == 2
+    assert body["aggregate"]["derived_part_count"] == 5
     assert body["aggregate"]["planetary_part_count"] == 7
-    assert body["aggregate"]["admitted_extension_part_count"] == 2
+    assert body["aggregate"]["admitted_extension_part_count"] == 0
     assert body["aggregate"]["nocturnal_formula_count"] == 0
     assert body["policy"] == {
         "reversal_rule": "full_reversal",
-        "historical_scope": "evidenced_core_plus_admitted_extension",
+        "historical_scope": "hermetic_seven",
     }
     assert body["validation"] == {
         "passed": True,
@@ -102,7 +115,7 @@ def test_abu_mashar_route_preserves_day_chart_engine_truth(client: TestClient) -
         assert response_part["name"] == direct_part.name.value
         assert response_part["planet_association"] == direct_part.planet_association
         assert response_part["historical_status"] == direct_part.historical_status.value
-        assert response_part["meaning"] == direct_part.meaning
+        assert response_part["meaning"] is None
         assert response_part["longitude"] == pytest.approx(direct_part.longitude)
         assert response_part["sign"] == direct_part.sign
         assert response_part["sign_degree"] == pytest.approx(direct_part.sign_degree)
@@ -116,7 +129,9 @@ def test_abu_mashar_route_preserves_day_chart_engine_truth(client: TestClient) -
     assert provenance["source_module"] == "moira.nine_parts"
     assert provenance["engine_entrypoint"] == "nine_parts_abu_mashar"
     assert provenance["validation_entrypoint"] == "validate_nine_parts_output"
-    assert provenance["doctrine"] == "Abu_Mashar_Nine_Parts"
+    assert provenance["doctrine"] == "paulus_alexandrinus_ch23_hermetic_lots"
+    assert "Paulus Alexandrinus" in provenance["source"]
+    assert provenance["unsourced_parts"] == []
     assert provenance["night_determination_owner"] == "caller_supplied"
     assert provenance["ascendant_derivation_owner"] == "caller_supplied"
     assert provenance["chart_construction"] == "not_computed"
@@ -136,7 +151,7 @@ def test_abu_mashar_route_preserves_night_full_reversal(client: TestClient) -> N
     assert response.status_code == 200
     body = response.json()
     assert body["aggregate"]["is_night_chart"] is True
-    assert body["aggregate"]["nocturnal_formula_count"] == 9
+    assert body["aggregate"]["nocturnal_formula_count"] == 7
     assert all(part["computation"]["formula_reversed"] for part in body["parts"])
     assert {part["computation"]["formula_variant"] for part in body["parts"]} == {"night"}
     assert [part["longitude"] for part in body["parts"]] == pytest.approx(
@@ -152,11 +167,40 @@ def test_abu_mashar_route_preserves_derived_dependencies_and_extensions(
     assert response.status_code == 200
     body = response.json()
     dependencies = {relation["part"]: relation for relation in body["dependency_relations"]}
-    assert dependencies["Love"]["lot_dependencies"] == ["Spirit", "Fortune"]
+    assert dependencies["Love"]["lot_dependencies"] == ["Spirit"]
     assert dependencies["Love"]["is_direct"] is False
-    assert dependencies["Love"]["dependency_count"] == 2
-    assert dependencies["Necessity"]["lot_dependencies"] == ["Fortune", "Spirit"]
+    assert dependencies["Love"]["dependency_count"] == 1
+    assert dependencies["Necessity"]["lot_dependencies"] == ["Fortune"]
     assert dependencies["Victory"]["lot_dependencies"] == ["Spirit"]
+    assert "Sword" not in {part["name"] for part in body["parts"]}
+
+    extended = client.post(
+        "/v1/nine-parts/abu-mashar",
+        json={
+            "asc": DIURNAL_ASC,
+            "planets": EXTENDED_PLANETS,
+            "is_night_chart": False,
+            "policy": {"historical_scope": EXTENSION_SCOPE},
+        },
+    )
+    assert extended.status_code == 200
+    body = extended.json()
+    assert [part["name"] for part in body["parts"]] == [name.value for name in NinePartName]
+    assert body["provenance"]["unsourced_parts"] == ["Sword", "Node"]
+    assert body["provenance"]["doctrine"] == (
+        "paulus_alexandrinus_ch23_hermetic_lots_plus_unsourced_extension"
+    )
+    direct = nine_parts_abu_mashar(
+        DIURNAL_ASC,
+        EXTENDED_PLANETS,
+        False,
+        policy=NinePartsPolicy(
+            historical_scope=NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION,
+        ),
+    )
+    assert [part["longitude"] for part in body["parts"]] == pytest.approx(
+        [part.longitude for part in direct.parts_set.parts]
+    )
 
     by_name = {part["name"]: part for part in body["parts"]}
     assert by_name["Sword"]["historical_status"] == "admitted_extension"
@@ -172,10 +216,7 @@ def test_abu_mashar_route_preserves_condition_profiles(client: TestClient) -> No
 
     assert response.status_code == 200
     body = response.json()
-    assert [profile["part"] for profile in body["condition_profiles"]] == [
-        name.value for name in NinePartName
-    ]
-    assert len(body["condition_profiles"]) == 9
+    assert [profile["part"] for profile in body["condition_profiles"]] == HERMETIC_SEVEN
     for profile, part in zip(body["condition_profiles"], body["parts"], strict=True):
         assert profile["part"] == part["name"]
         assert profile["dependency_kind"] == part["dependency_kind"]
@@ -197,7 +238,7 @@ def test_abu_mashar_route_accepts_explicit_admitted_policy(client: TestClient) -
         "/v1/nine-parts/abu-mashar",
         json={
             "asc": DIURNAL_ASC,
-            "planets": DIURNAL_PLANETS,
+            "planets": EXTENDED_PLANETS,
             "is_night_chart": False,
             "policy": {
                 "reversal_rule": "full_reversal",
@@ -213,7 +254,7 @@ def test_abu_mashar_route_accepts_explicit_admitted_policy(client: TestClient) -
     }
 
 
-@pytest.mark.parametrize("missing_key", ["Sun", "Moon", "North Node"])
+@pytest.mark.parametrize("missing_key", ["Sun", "Moon", "Mercury", "Venus"])
 def test_abu_mashar_route_rejects_missing_required_planets(
     client: TestClient,
     missing_key: str,
@@ -224,6 +265,20 @@ def test_abu_mashar_route_rejects_missing_required_planets(
     response = _post_abu_mashar(client, planets=planets)
 
     _assert_validation_envelope(response, message_fragment=f"planets missing required keys: {missing_key}")
+
+
+def test_abu_mashar_route_requires_north_node_only_for_extension(client: TestClient) -> None:
+    assert _post_abu_mashar(client).status_code == 200
+    response = client.post(
+        "/v1/nine-parts/abu-mashar",
+        json={
+            "asc": DIURNAL_ASC,
+            "planets": DIURNAL_PLANETS,
+            "is_night_chart": False,
+            "policy": {"historical_scope": EXTENSION_SCOPE},
+        },
+    )
+    _assert_validation_envelope(response, message_fragment="planets missing required keys: North Node")
 
 
 def test_abu_mashar_route_rejects_non_finite_inputs(client: TestClient) -> None:

@@ -69,6 +69,8 @@ from .routers import (
     jaimini_extended_router,
     nodes_router,
     nine_parts_router,
+    almuten_router,
+    hyleg_router,
     orbits_router,
     panchanga_router,
     pancha_pakshi_router,
@@ -235,7 +237,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(harmograms_router)    # P-GAP-06 bounded harmogram vector/intensity/trace surface
     app.include_router(antiscia_router)      # Phase-12 ordinary antiscia reflection/contact surface
     app.include_router(draconic_router)      # Node-anchored draconic longitude-frame surface
-    app.include_router(nine_parts_router)    # Phase-12 Abu Ma'shar Nine Parts aggregate surface
+    app.include_router(nine_parts_router)    # Phase-12 Nine Parts (Paulus ch. 23 Hermetic lots) surface
+    app.include_router(almuten_router)       # Almuten of a degree / almuten figuris (caller-supplied)
+    app.include_router(hyleg_router)         # Hyleg per Lilly 1647 luminary step (caller-supplied)
     app.include_router(planetary_hours_router)  # Phase-12 sunrise-based planetary-hours surface
     app.include_router(huber_router)  # Phase-12 direct Huber house-frame surface
     app.include_router(lord_of_the_orb_router)  # Phase-12 caller-seeded Lord of the Orb surface

@@ -117,6 +117,15 @@ _CURATED_PUBLIC_NAMES = [
     "is_day_chart",
     "almuten_figuris",
     "almuten_of_degree",
+    "AlmutenTally",
+    "AlmutenScoredPoint",
+    "AlmutenDetermination",
+    "almuten_figuris_determination",
+    "almuten_of_degree_determination",
+    "AlmutenDoctrine",
+    "LILLY_1647_TERMS",
+    "lilly_1647_term_ruler",
+    "lilly_1647_essential_dignities_at",
     "find_phasis",
     "mutual_receptions",
     "is_in_sect",
@@ -189,8 +198,8 @@ class TestModuleAgreement:
                 f"DignitiesService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_120(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 120
+    def test_curated_count_is_129(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 129
 
     def test_unadmitted_valens_score_hook_is_absent(self):
         assert "valens_distribution_scores" not in signature(

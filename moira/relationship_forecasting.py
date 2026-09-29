@@ -4,8 +4,11 @@ This module is a composition layer.  It does not own relationship-chart
 construction, aspect geometry, or transit solving.  Composite and Davison
 identity comes from :mod:`moira.synastry`, aspect definitions come from
 :mod:`moira.constants`, and every exact perfection is delegated to
-:func:`moira.transits.find_transits` as a crossing of a static, derived-chart
-longitude offset.
+the canonical :func:`moira.transits.find_transits` solver as a crossing of a
+static, derived-chart longitude offset.  Since 6.9.9 all perfection
+longitudes for one moving body are solved over a single shared scan of that
+body (``moira.transits._find_transits_to_targets``), which returns exactly the
+events that one ``find_transits`` call per perfection longitude would.
 
 Progressing or directing a relationship chart is deliberately outside this
 contract.  Those techniques require a source-owned policy for how a synthetic
@@ -35,7 +38,7 @@ from .transits import (
     TransitComputationPolicy,
     TransitEvent,
     TransitTargetKind,
-    find_transits,
+    _find_transits_to_targets,
 )
 
 __all__ = [
@@ -703,39 +706,52 @@ def find_relationship_transits(
         include_cusps=include_cusps,
         target_names=target_names,
     )
+    # Every (target, aspect, directional branch) is one perfection longitude;
+    # search_call_count keeps counting these canonical searches.  They are
+    # solved together over one scan per moving body.
+    branches = tuple(
+        (target, aspect, offset)
+        for target in target_set.targets
+        for aspect in aspects
+        for offset in _directional_offsets(aspect.angle)
+    )
+    perfection_longitudes = tuple(
+        (target.longitude + offset) % 360.0 for target, _aspect, offset in branches
+    )
     events: list[RelationshipTransitEvent] = []
     search_call_count = 0
     for moving_body in bodies:
-        for target in target_set.targets:
-            for aspect in aspects:
-                for offset in _directional_offsets(aspect.angle):
-                    search_call_count += 1
-                    perfection_longitude = (target.longitude + offset) % 360.0
-                    canonical_events = find_transits(
-                        moving_body,
-                        perfection_longitude,
-                        jd_start,
-                        jd_end,
-                        step_days=step_days,
-                        reader=reader,
-                        policy=policy,
-                        search_motion=search_motion,
+        search_call_count += len(branches)
+        if not branches:
+            continue
+        canonical_events_by_branch = _find_transits_to_targets(
+            moving_body,
+            perfection_longitudes,
+            jd_start,
+            jd_end,
+            step_days=step_days,
+            reader=reader,
+            policy=policy,
+            search_motion=search_motion,
+        )
+        for (target, aspect, offset), canonical_events in zip(
+            branches, canonical_events_by_branch, strict=True
+        ):
+            for canonical_event in canonical_events:
+                if direction != "either" and canonical_event.direction != direction:
+                    continue
+                events.append(
+                    RelationshipTransitEvent(
+                        chart_id=target_set.identity.chart_id,
+                        target=target,
+                        moving_body=moving_body,
+                        aspect_name=aspect.name,
+                        aspect_symbol=aspect.symbol,
+                        aspect_angle_deg=aspect.angle,
+                        directional_offset_deg=offset,
+                        transit=canonical_event,
                     )
-                    for canonical_event in canonical_events:
-                        if direction != "either" and canonical_event.direction != direction:
-                            continue
-                        events.append(
-                            RelationshipTransitEvent(
-                                chart_id=target_set.identity.chart_id,
-                                target=target,
-                                moving_body=moving_body,
-                                aspect_name=aspect.name,
-                                aspect_symbol=aspect.symbol,
-                                aspect_angle_deg=aspect.angle,
-                                directional_offset_deg=offset,
-                                transit=canonical_event,
-                            )
-                        )
+                )
 
     events.sort(key=_event_sort_key, reverse=search_motion == "backward")
     truth = RelationshipTransitSearchTruth(

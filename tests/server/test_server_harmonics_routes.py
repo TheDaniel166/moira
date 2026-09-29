@@ -91,6 +91,7 @@ def test_harmonic_presets_route_preserves_catalog_truth(client: TestClient) -> N
         "preset_catalog_read",
         "harmonic_preset_serialization",
     ]
+    assert "unsourced Moira editorial" in body["provenance"]["note"]
 
 
 def test_harmonic_chart_route_preserves_h1_identity_and_engine_sorting(
@@ -145,7 +146,8 @@ def test_harmonic_chart_route_preserves_h5_formula_and_preset_provenance(
     assert body["provenance"]["engine_entrypoint"] == "calculate_harmonic"
     assert body["provenance"]["harmonic_kind"] == "integer"
     assert body["provenance"]["preset_name"] == HARMONIC_PRESETS[5][0]
-    assert body["provenance"]["preset_description"] == HARMONIC_PRESETS[5][1]
+    # 6.9.9: unsourced editorial glosses are not carried in computed payloads.
+    assert body["provenance"]["preset_description"] is None
     assert body["provenance"]["stage_sequence"] == [
         "caller_longitude_validation",
         "integer_harmonic_validation",
@@ -211,6 +213,7 @@ def test_harmonic_routes_are_registered(client: TestClient) -> None:
         "/v1/harmonics/sweep",
         "/v1/harmonics/fingerprint",
         "/v1/harmonics/composite",
+        "/v1/harmonics/cross-chart-conjunctions",
         "/v1/harmonics/transit-forecast",
     }
 
@@ -494,6 +497,66 @@ def test_harmonic_composite_route_preserves_labels_and_cross_chart_pairs(
         assert prefix_a != prefix_b
         assert {prefix_a, prefix_b} == {"Alice", "Bob"}
     assert body["provenance"]["engine_entrypoint"] == "composite_harmonic"
+    assert body["provenance"]["harmonic_kind"] == "cross_chart"
+    assert body["provenance"]["preset_description"] is None
+    assert "No composite chart is constructed" in body["provenance"]["note"]
+
+
+def test_harmonic_cross_chart_route_is_identical_to_deprecated_composite_alias(
+    client: TestClient,
+) -> None:
+    payload = {
+        "longitudes_a": _LONS_PAIR,
+        "longitudes_b": _LONS_B,
+        "harmonic": 5,
+        "orb": 2.0,
+    }
+    new = client.post("/v1/harmonics/cross-chart-conjunctions", json=payload)
+    old = client.post("/v1/harmonics/composite", json=payload)
+
+    assert new.status_code == 200
+    assert new.json() == old.json()
+    operation = client.app.openapi()["paths"]["/v1/harmonics/composite"]["post"]
+    assert operation.get("deprecated") is True
+
+
+def test_harmonic_default_orb_is_hamblin_twelve_degrees_on_the_harmonic_wheel(
+    client: TestClient,
+) -> None:
+    # A 1.05 degree natal conjunction: invisible at the pre-6.9.9 1 degree
+    # default, admitted by the 12 degree conjunction orb (Hamblin).
+    conjunction = client.post(
+        "/v1/harmonics/conjunctions",
+        json={"longitudes": {"Sun": 10.0, "Moon": 11.05}, "harmonic": 1},
+    )
+    fingerprint = client.post(
+        "/v1/harmonics/fingerprint",
+        json={"longitudes": {"Sun": 10.0, "Moon": 11.05}, "max_harmonic": 4},
+    )
+    cross_chart = client.post(
+        "/v1/harmonics/cross-chart-conjunctions",
+        json={
+            "longitudes_a": {"Sun": 10.0},
+            "longitudes_b": {"Moon": 82.5},
+            "harmonic": 5,
+        },
+    )
+
+    assert conjunction.status_code == 200
+    assert conjunction.json()["orb"] == pytest.approx(12.0)
+    assert len(conjunction.json()["conjunctions"]) == 1
+    policy = conjunction.json()["provenance"]["orb_policy"]
+    assert policy["projected_orb_limit_deg"] == pytest.approx(12.0)
+    assert policy["source_orb_limit_deg"] == pytest.approx(12.0)
+
+    assert fingerprint.status_code == 200
+    assert fingerprint.json()["peak_harmonic"] == 1
+    assert fingerprint.json()["total_score"] > 0
+
+    # 72.5 deg separation projects to 2.5 deg on H5: within 12 deg.
+    assert cross_chart.status_code == 200
+    assert len(cross_chart.json()["conjunctions"]) == 1
+    assert cross_chart.json()["orb"] == pytest.approx(12.0)
 
 
 def test_harmonic_analysis_routes_reject_invalid_or_oversized_bounds(

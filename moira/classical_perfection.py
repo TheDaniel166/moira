@@ -13,13 +13,12 @@ from ._strenum import StrEnum
 from itertools import combinations
 
 from .constants import Body, SIGNS, TRADITIONAL_MOIETY_ORBS, sign_of
-from .dignities import DOMICILE, EXALTATION
-from .egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy, egyptian_bound_of
+from .dignities import DOMICILE, EXALTATION, lilly_1647_term_ruler
 from .longevity import FACE_RULERS
 from .planets import planet_at
 from .spk_reader import SpkReader, get_reader
 from .stations import find_stations
-from .triplicity import triplicity_assignment_for
+from .triplicity import TriplicityDoctrine, triplicity_assignment_for
 
 __all__ = [
     "ClassicalPerfectionEventKind",
@@ -141,8 +140,11 @@ class LillyPerfectionPolicy:
     tie_policy: str = "events_within_one_second_are_indeterminate"
     translation_reception: str = "house_triplicity_or_term"
     collection_reception: str = "any_lilly_essential_dignity"
-    bounds_doctrine: str = "egyptian"
-    triplicity_doctrine: str = "dorothean_sect_active"
+    # Lilly's own table, Christian Astrology (1647) Book I ch. XVIII, p. 104:
+    # his terms (moira.dignities.LILLY_1647_TERMS) and his triplicity rulers
+    # by sect (water: Mars by day and night; no participating ruler).
+    bounds_doctrine: str = "william_lilly_1647"
+    triplicity_doctrine: str = "william_lilly_1647_sect_active"
     planetary_moiety_table: str = "lilly_1647_traditional_moieties"
     longitude_product: str = "apparent_geocentric_true_ecliptic_of_date"
     motion_product: str = "astrometric_geocentric_longitude_rate"
@@ -159,8 +161,8 @@ class LillyPerfectionPolicy:
             "tie_policy": "events_within_one_second_are_indeterminate",
             "translation_reception": "house_triplicity_or_term",
             "collection_reception": "any_lilly_essential_dignity",
-            "bounds_doctrine": "egyptian",
-            "triplicity_doctrine": "dorothean_sect_active",
+            "bounds_doctrine": "william_lilly_1647",
+            "triplicity_doctrine": "william_lilly_1647_sect_active",
             "planetary_moiety_table": "lilly_1647_traditional_moieties",
             "longitude_product": "apparent_geocentric_true_ecliptic_of_date",
             "motion_product": "astrometric_geocentric_longitude_rate",
@@ -269,9 +271,13 @@ def _reception_bases(receiver: str, guest: ClassicalBodyState, is_day: bool) -> 
         bases.append("house")
     if guest.sign in EXALTATION[receiver]:
         bases.append("exaltation")
-    if triplicity_assignment_for(guest.sign, is_day_chart=is_day).active_ruler == receiver:
+    if triplicity_assignment_for(
+        guest.sign,
+        is_day_chart=is_day,
+        doctrine=TriplicityDoctrine.WILLIAM_LILLY_1647,
+    ).active_ruler == receiver:
         bases.append("triplicity")
-    if egyptian_bound_of(guest.longitude, policy=EgyptianBoundsPolicy(EgyptianBoundsDoctrine.EGYPTIAN)).ruler == receiver:
+    if lilly_1647_term_ruler(guest.longitude) == receiver:
         bases.append("term")
     if FACE_RULERS[int(guest.longitude // 10.0)] == receiver:
         bases.append("face")

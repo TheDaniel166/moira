@@ -262,7 +262,7 @@ def test_mars_hayz_requires_a_masculine_sign_and_remains_unscored() -> None:
     assert mars.accidental_truth.hayz_condition.scored is False
 
 
-def test_lilly_mode_rejects_modern_rulers_or_non_ptolemaic_bounds() -> None:
+def test_lilly_mode_rejects_modern_rulers() -> None:
     with pytest.raises(ValueError, match="traditional_classic_7"):
         _result_for(
             "Uranus",
@@ -273,16 +273,31 @@ def test_lilly_mode_rejects_modern_rulers_or_non_ptolemaic_bounds() -> None:
                 )
             ),
         )
-    with pytest.raises(ValueError, match="ptolemaic bounds"):
-        _result_for(
-            "Mercury",
-            70.0,
-            policy=DignityComputationPolicy(
-                essential=EssentialDignityPolicy(
-                    bounds_doctrine=EgyptianBoundsDoctrine.EGYPTIAN
-                )
-            ),
-        )
+
+
+def test_lilly_mode_uses_lillys_own_terms_and_echoes_an_explicit_table() -> None:
+    # 24 Taurus: Lilly's table (Christian Astrology 1647, Book I ch. XVIII,
+    # p. 104) gives Saturn 22-26; Robbins' Ptolemaic terms give Mars 24-30.
+    lilly = _result_for("Saturn", 54.0, policy=DignityComputationPolicy())
+    assert lilly.essential_truth.bounds_doctrine is EgyptianBoundsDoctrine.WILLIAM_LILLY_1647
+    assert EssentialDignityKind.BOUND in lilly.essential_kinds
+
+    robbins = _result_for(
+        "Saturn",
+        54.0,
+        policy=DignityComputationPolicy(
+            essential=EssentialDignityPolicy(
+                bounds_doctrine=EgyptianBoundsDoctrine.PTOLEMAIC
+            )
+        ),
+    )
+    assert robbins.essential_truth.bounds_doctrine is EgyptianBoundsDoctrine.PTOLEMAIC
+    assert EssentialDignityKind.BOUND not in robbins.essential_kinds
+
+    essential_only = DignityComputationPolicy(
+        scoring=DignityScoringPolicy(mode=DignityScoringMode.ESSENTIAL_ONLY)
+    )
+    assert essential_only.resolved_bounds_doctrine is EgyptianBoundsDoctrine.PTOLEMAIC
 
 
 @pytest.mark.parametrize(
@@ -449,3 +464,78 @@ def test_lilly_speed_lunar_aspect_node_star_and_besieging_weights() -> None:
     }["Mercury"]
     assert besieged.accidental_score == -5
     assert besieged.accidental_truth.besieged_condition.weight == -5
+
+
+def _water_day_results(policy: DignityComputationPolicy) -> dict:
+    # Sun at 345° with houses from 0° sits in the 12th: a diurnal chart.
+    planets = [
+        {"name": "Sun", "degree": 345.0},
+        {"name": "Mars", "degree": 350.0},
+        {"name": "Venus", "degree": 352.0},
+    ]
+    return {
+        item.planet: item
+        for item in calculate_dignities(planets, _houses(), policy=policy)
+    }
+
+
+def test_lilly_mode_uses_lillys_own_triplicity_table() -> None:
+    """Christian Astrology (1647) I ch. XVIII: Mars rules water by day and night."""
+    from moira.triplicity import TriplicityDoctrine
+
+    policy = DignityComputationPolicy(accidental=_quiet_accidental())
+    assert policy.resolved_triplicity_doctrine is TriplicityDoctrine.WILLIAM_LILLY_1647
+    results = _water_day_results(policy)
+
+    mars = results["Mars"].essential_truth
+    venus = results["Venus"].essential_truth
+    sun = results["Sun"].essential_truth
+    assert mars.triplicity_doctrine is TriplicityDoctrine.WILLIAM_LILLY_1647
+    assert mars.component(EssentialDignityKind.TRIPLICITY).matched is True
+    assert mars.component(EssentialDignityKind.TRIPLICITY).score == 3
+    assert mars.component(EssentialDignityKind.TRIPLICITY).ruler == "Mars"
+    assert venus.component(EssentialDignityKind.TRIPLICITY).matched is False
+    assert sun.component(EssentialDignityKind.TRIPLICITY).matched is False
+
+
+def test_other_modes_keep_the_dorothean_triplicity_table() -> None:
+    from moira.triplicity import TriplicityDoctrine
+
+    for mode in (DignityScoringMode.ESSENTIAL_ONLY, DignityScoringMode.UNSCORED):
+        policy = DignityComputationPolicy(
+            accidental=_quiet_accidental(),
+            scoring=DignityScoringPolicy(mode=mode),
+        )
+        assert policy.resolved_triplicity_doctrine is TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+        results = _water_day_results(policy)
+        venus = results["Venus"].essential_truth
+        assert venus.triplicity_doctrine is TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+        assert venus.component(EssentialDignityKind.TRIPLICITY).matched is True
+        assert results["Mars"].essential_truth.component(
+            EssentialDignityKind.TRIPLICITY
+        ).matched is False
+
+
+def test_explicit_triplicity_doctrine_is_honoured_and_recorded() -> None:
+    from moira.triplicity import TriplicityDoctrine
+
+    policy = DignityComputationPolicy(
+        accidental=_quiet_accidental(),
+        essential=EssentialDignityPolicy(
+            triplicity_doctrine=TriplicityDoctrine.DOROTHEAN_PINGREE_1976,
+        ),
+    )
+    venus = _water_day_results(policy)["Venus"].essential_truth
+    assert venus.triplicity_doctrine is TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    assert venus.component(EssentialDignityKind.TRIPLICITY).matched is True
+
+    essential_only_lilly = DignityComputationPolicy(
+        accidental=_quiet_accidental(),
+        essential=EssentialDignityPolicy(
+            triplicity_doctrine=TriplicityDoctrine.WILLIAM_LILLY_1647,
+        ),
+        scoring=DignityScoringPolicy(mode=DignityScoringMode.ESSENTIAL_ONLY),
+    )
+    mars = _water_day_results(essential_only_lilly)["Mars"].essential_truth
+    assert mars.triplicity_doctrine is TriplicityDoctrine.WILLIAM_LILLY_1647
+    assert mars.component(EssentialDignityKind.TRIPLICITY).matched is True

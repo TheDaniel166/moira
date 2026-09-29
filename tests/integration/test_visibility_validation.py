@@ -133,7 +133,7 @@ def _yallop_details_for_reference_row(
         ),
         (
             Body.VENUS,
-            HeliacalEventKind.ACRONYCHAL_RISING,
+            HeliacalEventKind.EVENING_FIRST,
             2459299.5,
             120,
             2459310.0,
@@ -141,7 +141,7 @@ def _yallop_details_for_reference_row(
         ),
         (
             Body.VENUS,
-            HeliacalEventKind.HELIACAL_SETTING,
+            HeliacalEventKind.MORNING_LAST,
             2459050.5,
             300,
             2459220.0,
@@ -225,7 +225,7 @@ def test_generalized_mercury_visibility_event_matches_admitted_babylonian_window
         ),
         (
             Body.VENUS,
-            HeliacalEventKind.ACRONYCHAL_RISING,
+            HeliacalEventKind.EVENING_FIRST,
             2459299.5,
             120,
             2459310.0,
@@ -233,7 +233,7 @@ def test_generalized_mercury_visibility_event_matches_admitted_babylonian_window
         ),
         (
             Body.VENUS,
-            HeliacalEventKind.HELIACAL_SETTING,
+            HeliacalEventKind.MORNING_LAST,
             2459050.5,
             300,
             2459220.0,
@@ -468,7 +468,7 @@ def test_planetary_heliacal_event_with_moonlight_policy() -> None:
     
     event_no_moon = visibility_event(
         "Venus",
-        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.MORNING_LAST,
         jd_start,
         lat,
         lon,
@@ -477,7 +477,7 @@ def test_planetary_heliacal_event_with_moonlight_policy() -> None:
     
     event_moon = visibility_event(
         "Venus",
-        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.MORNING_LAST,
         jd_start,
         lat,
         lon,

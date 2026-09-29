@@ -128,6 +128,11 @@ class LunarPhaseEventResponse(_StrictModel):
     jd_ut: float
     datetime_utc: str
     phase_angle: float
+    # Apparent geocentric tropical ecliptic longitudes (degrees, of date) at
+    # jd_ut, from the same planet_at evaluation that defines phase_angle
+    # (phase_angle == (moon_longitude - sun_longitude) mod 360).
+    moon_longitude: float
+    sun_longitude: float
 
 
 class TransitSearchRequest(_StrictModel):

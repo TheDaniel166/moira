@@ -42,7 +42,7 @@ class TriplicityAssignmentResponse(_StrictModel):
     is_day_chart: bool
     day_ruler: str
     night_ruler: str
-    participating_ruler: str
+    participating_ruler: str | None  # None under william_lilly_1647 (no participating ruler)
     active_ruler: str
     signs: tuple[str, ...]
     element: str

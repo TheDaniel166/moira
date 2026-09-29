@@ -1,18 +1,29 @@
-"""Transport models for P12-05 Abu Ma'shar Nine Parts routes."""
+"""Transport models for P12-05 Nine Parts routes.
+
+The route path keeps its historical ``abu-mashar`` name. The default lot set
+is the seven Hermetic lots of Paulus Alexandrinus ch. 23; the unsourced Sword
+and Node lots are returned only when ``policy.historical_scope`` is
+``evidenced_core_plus_admitted_extension``.
+"""
 
 from __future__ import annotations
 
 import math
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+
+from moira.nine_parts import NinePartsHistoricalScope, NinePartsPolicy, required_bodies_for
 
 
-NINE_PARTS_REQUIRED_PLANETS = frozenset(
-    {"Sun", "Moon", "Mars", "Jupiter", "Saturn", "North Node"}
-)
+# Required bodies under the default (Hermetic seven) scope. "North Node" is
+# additionally required when the extension lots are requested.
+NINE_PARTS_REQUIRED_PLANETS = required_bodies_for()
 NinePartsReversalRuleValue = Literal["full_reversal"]
-NinePartsHistoricalScopeValue = Literal["evidenced_core_plus_admitted_extension"]
+NinePartsHistoricalScopeValue = Literal[
+    "hermetic_seven",
+    "evidenced_core_plus_admitted_extension",
+]
 
 
 class _StrictModel(BaseModel):
@@ -34,15 +45,19 @@ def _clean_planets(value: dict[str, float]) -> dict[str, float]:
             raise ValueError("planet longitudes must be finite")
         cleaned[name] = longitude
 
-    missing = sorted(NINE_PARTS_REQUIRED_PLANETS - cleaned.keys())
+    return cleaned
+
+
+def _require_bodies(planets: dict[str, float], historical_scope: str) -> None:
+    policy = NinePartsPolicy(historical_scope=NinePartsHistoricalScope(historical_scope))
+    missing = sorted(required_bodies_for(policy) - planets.keys())
     if missing:
         raise ValueError(f"planets missing required keys: {', '.join(missing)}")
-    return cleaned
 
 
 class NinePartsPolicyRequest(_StrictModel):
     reversal_rule: NinePartsReversalRuleValue = "full_reversal"
-    historical_scope: NinePartsHistoricalScopeValue = "evidenced_core_plus_admitted_extension"
+    historical_scope: NinePartsHistoricalScopeValue = "hermetic_seven"
 
 
 class NinePartsAbuMasharRequest(_StrictModel):
@@ -71,6 +86,16 @@ class NinePartsAbuMasharRequest(_StrictModel):
             raise ValueError(f"{info.field_name} must be a boolean")
         return value
 
+    @model_validator(mode="after")
+    def _required_bodies_for_scope(self) -> "NinePartsAbuMasharRequest":
+        scope = (
+            self.policy.historical_scope
+            if self.policy is not None
+            else NinePartsHistoricalScope.HERMETIC_SEVEN.value
+        )
+        _require_bodies(self.planets, scope)
+        return self
+
 
 class NinePartsPolicyResponse(_StrictModel):
     reversal_rule: str
@@ -93,7 +118,8 @@ class NinePartResponse(_StrictModel):
     name: str
     planet_association: str | None
     historical_status: str
-    meaning: str
+    # Always null since 6.9.9: the former one-word glosses had no cited source.
+    meaning: str | None
     longitude: float
     sign: str
     sign_degree: float
@@ -142,7 +168,12 @@ class NinePartsProvenanceResponse(_StrictModel):
     source_module: str = "moira.nine_parts"
     engine_entrypoint: str = "nine_parts_abu_mashar"
     validation_entrypoint: str = "validate_nine_parts_output"
-    doctrine: str = "Abu_Mashar_Nine_Parts"
+    doctrine: str
+    source: str = (
+        "Paulus Alexandrinus, Introductory Matters ch. 23, trans. R. Schmidt "
+        "(Project Hindsight, 1993), pp. 42-44"
+    )
+    unsourced_parts: list[str]
     reversal_rule: str
     historical_scope: str
     night_determination_owner: str = "caller_supplied"

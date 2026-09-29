@@ -15,6 +15,9 @@ from ..models.hellenistic_systems import (
     HellenisticOfficeCandidateResponse,
     OfficesRequest,
     OfficesResponse,
+    PtolemyDominationCountResponse,
+    PtolemyPlaceTruthResponse,
+    PtolemyPredominatorResponse,
     TransmissionEdgeResponse,
     TransmissionsRequest,
     TransmissionsResponse,
@@ -124,10 +127,14 @@ def compute_offices(request: OfficesRequest) -> OfficesResponse:
         is_day_chart=request.is_day_chart,
         asc_longitude=request.asc_longitude,
         lots=request.lots,
+        prenatal_new_moon_longitude=request.prenatal_new_moon_longitude,
+        prenatal_full_moon_longitude=request.prenatal_full_moon_longitude,
+        latest_prenatal_syzygy=request.latest_prenatal_syzygy,
     )
+    determination = hunt.predominator_determination
     return OfficesResponse(
         status=hunt.status,
-        predominator=None,
+        predominator=hunt.predominator,
         house_master=None,
         candidates=tuple(
             HellenisticOfficeCandidateResponse(
@@ -142,16 +149,56 @@ def compute_offices(request: OfficesRequest) -> OfficesResponse:
             for item in hunt.candidates
         ),
         reason=hunt.reason,
+        house_master_reason=hunt.house_master_reason,
+        predominator_determination=(
+            None
+            if determination is None
+            else PtolemyPredominatorResponse(
+                doctrine=determination.doctrine,
+                status=determination.status,
+                predominator=determination.predominator,
+                predominator_longitude=determination.predominator_longitude,
+                selection_step=determination.selection_step,
+                is_day_chart=determination.is_day_chart,
+                lot_of_fortune_longitude=determination.lot_of_fortune_longitude,
+                places=[
+                    PtolemyPlaceTruthResponse(
+                        name=place.name,
+                        longitude=place.longitude,
+                        offset_from_ascendant_deg=place.offset_from_ascendant_deg,
+                        place=place.place,
+                    )
+                    for place in determination.places
+                ],
+                ruler_counts=[
+                    PtolemyDominationCountResponse(
+                        planet=count.planet,
+                        reference=count.reference,
+                        reference_longitude=count.reference_longitude,
+                        forms=list(count.forms),
+                        count=count.count,
+                    )
+                    for count in determination.ruler_counts
+                ],
+                ruler_candidates=list(determination.ruler_candidates),
+                reason=determination.reason,
+            )
+        ),
         provenance=HellenisticAspectProvenanceResponse(
             source_module="moira.hellenistic_offices",
             engine_entrypoint="hunt_hellenistic_offices",
-            doctrine="fail_closed_office_candidates",
+            doctrine="ptolemy_tetrabiblos_iii_10_predominator_house_master_not_admitted",
             source_refs=[
-                "Hellenistic predominator/oikodespotes as unselected candidates"
+                "Ptolemy, Tetrabiblos III.10, trans. F. E. Robbins (Loeb 435, 1940), pp. 271-279",
+                "Ptolemy, Tetrabiblos III.2 (five forms of domination), p. 233; I.18 (triangles); I.13 (aspects)",
+                "Oikodespotes (house-master): not admitted",
             ],
             stage_sequence=[
                 "candidate_collection",
-                "refuse_scored_hybrid",
+                "prorogative_places_from_ascendant",
+                "luminaries_by_sect_and_authority",
+                "ruler_by_five_forms_of_domination",
+                "final_resort_horoscope_or_lot_of_fortune",
                 "lossless_response_serialization",
             ],
         ),

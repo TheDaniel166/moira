@@ -174,6 +174,17 @@ __all__ = [
     "planet_heliacal_setting",
     "planet_acronychal_rising",
     "planet_acronychal_setting",
+    "STANDARD_HELIACAL_EVENT_KINDS",
+    "heliacal_event_kind_applies",
+    "planet_evening_first",
+    "planet_morning_last",
+    "planet_cosmical_setting",
+    "PHASIS_DEFAULT_WINDOW_DAYS",
+    "PHASIS_MAX_WINDOW_DAYS",
+    "PHASIS_LOOKAHEAD_DAYS",
+    "PhasisKindResult",
+    "PhasisSearchResult",
+    "phasis_events_near",
 ]
 
 
@@ -183,45 +194,59 @@ __all__ = [
 
 class HeliacalEventKind(str, Enum):
     """
-    RITE: The Six Gates — the canonical astronomical visibility threshold crossings.
+    RITE: The Gates of Phasis — the canonical visibility threshold crossings.
 
-    THEOREM: Exhaustive str-enum of the six classical heliacal phenomena that
-    govern event-kind dispatch throughout the visibility doctrine.
+    THEOREM: Str-enum of the standard heliacal phenomena (Ptolemy / Schoch
+    nomenclature) plus two Moira-specific astronomical-twilight kinds and one
+    deprecated synonym, governing event-kind dispatch throughout the
+    visibility doctrine.
 
     RITE OF PURPOSE:
-        Encodes the six canonical visibility boundary crossings as a typed enum
-        so callers cannot accidentally pass an out-of-range integer or an
-        ambiguous string.  Without this gate, event-kind dispatch collapses into
-        brittle integer comparisons carried wholesale from legacy integer
-        flag constants.  This enum is the doctrinal identity layer for heliacal
-        event taxonomy.
+        Encodes the visibility boundary crossings as a typed enum so callers
+        cannot accidentally pass an out-of-range integer or an ambiguous
+        string.  This enum is the doctrinal identity layer for heliacal event
+        taxonomy.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Provide exhaustive named coverage of the six classical phenomena.
+            - Name each standard phenomenon with its standard meaning.
             - Serve as the dispatch key for visibility_event() routing.
             - Enforce that event-kind values are valid at the type level.
         Non-responsibilities:
             - Does not compute any event.
             - Does not express a runtime dependency on legacy integer flags.
-            - Does not distinguish planetary vs. stellar applicability.
+            - Does not itself decide applicability; see
+              :func:`heliacal_event_kind_applies`.
         Dependencies:
             - None.  Pure enum; no runtime imports required.
         Structural invariants:
-            - Six members exactly.  New kinds require explicit doctrinal
-              justification and a change to the event-search dispatch table.
+            - The six standard kinds are listed in
+              ``STANDARD_HELIACAL_EVENT_KINDS``.  New kinds require explicit
+              doctrinal justification and a change to the event-search
+              dispatch table.
 
-    Canon: Ptolemy via Schoch nomenclature; modern heliacal event nomenclature
-           family (mapping provenance only, not runtime dependency).
+    Canon: (nomenclature, 6.9.9)
+        Ptolemy, *Phaseis* (the four apparent star phases); C. Schoch (1924),
+        "The arcus visionis of the planets in the Babylonian observations",
+        MNRAS 84, 731, and Schoch's tables in Langdon & Fotheringham, *The
+        Venus Tablets of Ammizaduga* (1928); J. Evans (1998), *The History and
+        Practice of Ancient Astronomy* (morning first / evening last rising
+        and setting terminology for the stellar phases).  Swiss Ephemeris ``swe_heliacal_ut``
+        uses the same names and numbering (1 morning first = heliacal rising,
+        2 evening last = heliacal setting, 3 evening first, 4 morning last,
+        5 acronychal rising, 6 cosmical setting); it is cited for naming
+        parity only, not as a computational authority.
 
     [MACHINE_CONTRACT v1]
     {
         "scope": "class",
         "id": "moira.heliacal.HeliacalEventKind",
-        "risk": "low",
+        "risk": "medium",
         "api": {
             "members": ["HELIACAL_RISING", "HELIACAL_SETTING",
-                        "ACRONYCHAL_RISING", "ACRONYCHAL_SETTING",
+                        "EVENING_FIRST", "MORNING_LAST",
+                        "ACRONYCHAL_RISING", "COSMICAL_SETTING",
+                        "ACRONYCHAL_SETTING",
                         "COSMIC_RISING", "COSMIC_SETTING"]
         },
         "state": {
@@ -248,28 +273,68 @@ class HeliacalEventKind(str, Enum):
     }
     [/MACHINE_CONTRACT]
 
-    Heliacal phenomena (eastern sky near sunrise):
-        HELIACAL_RISING      — body first visible in the east before sunrise
-                                after a period of solar invisibility (the
-                                classical *first appearance*).
-        HELIACAL_SETTING     — body last visible in the east before sunrise
-                                before solar invisibility begins (*last
-                                appearance*, eastern sky).
+    Standard phenomena (default convention since 6.9.9):
+        HELIACAL_RISING    — morning first visibility: first dawn on which the
+                             body is seen in the east after its period of
+                             invisibility near conjunction with the Sun.
+        HELIACAL_SETTING   — evening last visibility: last dusk on which the
+                             body is seen in the west before it is lost in the
+                             Sun's glare.  **Meaning changed in 6.9.9**: it
+                             previously denoted the last *morning* sighting,
+                             which is now ``MORNING_LAST``.
+        EVENING_FIRST      — evening first visibility (Mercury, Venus, Moon):
+                             first dusk on which the body is seen in the west
+                             after superior conjunction (new crescent for the
+                             Moon).  Previously exposed as ``ACRONYCHAL_RISING``.
+        MORNING_LAST       — morning last visibility (Mercury, Venus, Moon):
+                             last dawn on which the body is seen in the east
+                             before superior conjunction.
+        ACRONYCHAL_RISING  — evening rising near opposition (superior planets
+                             and stars): the last evening on which the body is
+                             seen to rise in the east after dusk.  **Meaning
+                             changed in 6.9.9**: it previously denoted evening
+                             first visibility, now ``EVENING_FIRST``.
+        COSMICAL_SETTING   — morning setting near opposition (superior planets
+                             and stars): the first morning on which the body is
+                             seen to set in the west before dawn.
 
-    Acronychal phenomena (western sky near sunset):
-        ACRONYCHAL_RISING    — body first visible in the west after sunset.
-        ACRONYCHAL_SETTING   — body last visible in the west after sunset.
+    Deprecated synonym:
+        ACRONYCHAL_SETTING — evening last visibility, identical to
+                             ``HELIACAL_SETTING`` and kept so that existing
+                             callers keep their pre-6.9.9 result.  Swiss
+                             Ephemeris instead aliases "acronychal setting" to
+                             cosmical (morning) setting; because the term is
+                             ambiguous across sources, prefer the explicit
+                             standard names.
 
-    Cosmic phenomena (astronomical twilight boundary):
-        COSMIC_RISING        — body rises exactly at true astronomical dawn.
-        COSMIC_SETTING       — body sets exactly at true astronomical dusk.
+    Moira astronomical-twilight kinds (not part of the classical set):
+        COSMIC_RISING      — body above the horizon when the Sun reaches −18°
+                             at dawn (first such dawn).
+        COSMIC_SETTING     — body above the horizon when the Sun reaches −18°
+                             at dusk (last such dusk).
     """
-    HELIACAL_RISING   = "heliacal_rising"
-    HELIACAL_SETTING  = "heliacal_setting"
-    ACRONYCHAL_RISING = "acronychal_rising"
+    HELIACAL_RISING    = "heliacal_rising"
+    HELIACAL_SETTING   = "heliacal_setting"
+    EVENING_FIRST      = "evening_first"
+    MORNING_LAST       = "morning_last"
+    ACRONYCHAL_RISING  = "acronychal_rising"
+    COSMICAL_SETTING   = "cosmical_setting"
     ACRONYCHAL_SETTING = "acronychal_setting"
-    COSMIC_RISING     = "cosmic_rising"
-    COSMIC_SETTING    = "cosmic_setting"
+    COSMIC_RISING      = "cosmic_rising"
+    COSMIC_SETTING     = "cosmic_setting"
+
+
+#: The six standard phenomena in Swiss Ephemeris / Schoch order
+#: (morning first, evening last, evening first, morning last, acronychal
+#: rising, cosmical setting).
+STANDARD_HELIACAL_EVENT_KINDS: tuple[HeliacalEventKind, ...] = (
+    HeliacalEventKind.HELIACAL_RISING,
+    HeliacalEventKind.HELIACAL_SETTING,
+    HeliacalEventKind.EVENING_FIRST,
+    HeliacalEventKind.MORNING_LAST,
+    HeliacalEventKind.ACRONYCHAL_RISING,
+    HeliacalEventKind.COSMICAL_SETTING,
+)
 
 
 class VisibilityTargetKind(str, Enum):
@@ -793,6 +858,15 @@ class LunarCrescentDetails:
               computing functions, not by __post_init__).
             - visibility_class matches the q-value per the Yallop boundary table.
 
+    Observing window: ``observation_window`` is ``"evening"`` (young
+    crescent; ``sunset_jd_ut`` / ``moonset_jd_ut`` are sunset and moonset) or
+    ``"morning"`` (old crescent).  For a morning assessment the two horizon
+    fields keep their names for vessel compatibility but hold **sunrise**
+    (``sunset_jd_ut``) and **moonrise** (``moonset_jd_ut``), and
+    ``lag_minutes`` is the positive interval moonrise-to-sunrise (Yallop's
+    Table 4 prints the same interval with a negative sign for morning rows).
+    Instant-only assessments (no horizon events) report ``"instant"``.
+
     Canon: Yallop, B.D. (1997), "A Method for Predicting the First Sighting of
            the New Crescent Moon," NAO Technical Note No. 69.
 
@@ -807,7 +881,7 @@ class LunarCrescentDetails:
                 "lag_minutes", "arcl_deg", "arcv_deg", "daz_deg",
                 "moon_altitude_deg", "sun_altitude_deg",
                 "lunar_parallax_arcmin", "topocentric_crescent_width_arcmin",
-                "q", "visibility_class"
+                "q", "visibility_class", "observation_window"
             ]
         },
         "state": {
@@ -849,6 +923,7 @@ class LunarCrescentDetails:
     topocentric_crescent_width_arcmin: float
     q: float
     visibility_class: LunarCrescentVisibilityClass
+    observation_window: str = "evening"
 
 
 class VisibilityExtinctionModel(str, Enum):
@@ -4054,6 +4129,7 @@ def _lunar_crescent_details_at(
         topocentric_crescent_width_arcmin=topocentric_crescent_width_arcmin,
         q=q,
         visibility_class=_yallop_visibility_class(q),
+        observation_window="instant",
     )
 
 
@@ -4096,6 +4172,7 @@ def _lunar_crescent_details_for_evening(
         topocentric_crescent_width_arcmin=details.topocentric_crescent_width_arcmin,
         q=details.q,
         visibility_class=details.visibility_class,
+        observation_window="evening",
     )
 
 
@@ -4105,7 +4182,21 @@ def _lunar_crescent_details_for_morning(
     lon: float,
 ) -> LunarCrescentDetails | None:
     """
-    Compute morning crescent details using moonrise-to-sunrise best-time rule.
+    Compute morning (old) crescent details using the moonrise-to-sunrise
+    best-time rule.
+
+    Best time: ``Tb = T_sunrise - (4/9) * (T_sunrise - T_moonrise)``, the
+    morning form of Yallop (1997) eq. (4.1) ``Tb = Ts + (4/9) Lag``.  Yallop
+    states eq. (4.1) for sunset and moonset, but his Table 4 calibration set
+    includes morning (M) observations whose Lag is printed negative
+    (moonrise before sunrise) and whose q values are evaluated at this best
+    time; Odeh (2006, Experimental Astronomy 18, p. 41) defines the lag as
+    "sunset and moonset or moonrise and sunrise" for the same reason.  The
+    24 morning rows of ``tests/fixtures/yallop_table4_reference.json``
+    exercise this function against Yallop's published q.
+
+    ``sunset_jd_ut`` holds the sunrise and ``moonset_jd_ut`` the moonrise
+    (see ``LunarCrescentDetails.observation_window``).
 
     Returns None if sunrise is absent, moonrise is absent, or moonrise occurs
     after sunrise in the morning window.
@@ -4138,6 +4229,7 @@ def _lunar_crescent_details_for_morning(
         topocentric_crescent_width_arcmin=details.topocentric_crescent_width_arcmin,
         q=details.q,
         visibility_class=details.visibility_class,
+        observation_window="morning",
     )
 
 
@@ -4457,12 +4549,17 @@ def _search_visibility_event(
     """
     Execute the core forward visibility-event search state machine.
 
-    Heliacal and acronychal risings are opening transitions, not arbitrary
-    visible samples.  Their search therefore requires a non-qualifying guard
-    day followed by a qualifying day.  If the target is already visible at
-    ``jd_start``, that existing apparition is skipped.  Cosmic rising retains
-    its legacy first-qualifying-sample semantics.  Setting kinds return the
-    last qualifying visible tuple prior to their legacy loss condition.
+    Heliacal rising (morning first) and evening first are opening
+    transitions, not arbitrary visible samples.  Their search therefore
+    requires a non-qualifying guard day followed by a qualifying day.  If the
+    target is already visible at ``jd_start``, that existing apparition is
+    skipped.  An evening-first transition must emerge from the Sun's glare:
+    a side change through opposition (the signed elongation jumping from
+    about -180 to +180 degrees, as for a superior planet or star) is not an
+    evening first visibility and is rejected.  Cosmic rising retains its
+    legacy first-qualifying-sample semantics.  Setting kinds (heliacal
+    setting = evening last, morning last, cosmic setting) return the last
+    qualifying visible tuple prior to their loss condition.
 
     The return payload is ``(jd_ut, target_alt_deg, sun_alt_deg,
     apparent_mag, signed_elongation_deg)``.
@@ -4475,7 +4572,7 @@ def _search_visibility_event(
     jd_mid0 = _local_mean_solar_midnight(jd_start, lon)
     morning = kind in (
         HeliacalEventKind.HELIACAL_RISING,
-        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.MORNING_LAST,
         HeliacalEventKind.COSMIC_RISING,
     )
     require_min_elongation = kind not in (
@@ -4511,7 +4608,7 @@ def _search_visibility_event(
 
     if kind in (
         HeliacalEventKind.HELIACAL_RISING,
-        HeliacalEventKind.ACRONYCHAL_RISING,
+        HeliacalEventKind.EVENING_FIRST,
         HeliacalEventKind.COSMIC_RISING,
     ):
         def qualifying_sample(
@@ -4532,15 +4629,31 @@ def _search_visibility_event(
 
         if kind in (
             HeliacalEventKind.HELIACAL_RISING,
-            HeliacalEventKind.ACRONYCHAL_RISING,
+            HeliacalEventKind.EVENING_FIRST,
         ):
             previous = qualifying_sample(jd_mid0 - 1.0)
+            previous_se = (
+                _target_signed_elongation(body, jd_mid0 - 0.5)
+                if kind is HeliacalEventKind.EVENING_FIRST
+                else None
+            )
             for d in range(search_days):
                 current = qualifying_sample(jd_mid0 + d)
-                if previous is None and current is not None:
+                crossed_opposition = (
+                    previous_se is not None
+                    and current is not None
+                    and previous_se < -90.0
+                )
+                if previous is None and current is not None and not crossed_opposition:
                     if current[0] >= jd_start:
                         return current
                 previous = current
+                if kind is HeliacalEventKind.EVENING_FIRST:
+                    previous_se = (
+                        current[4]
+                        if current is not None
+                        else _target_signed_elongation(body, jd_mid0 + d + 0.5)
+                    )
             return None
 
         for d in range(search_days):
@@ -4566,6 +4679,169 @@ def _search_visibility_event(
         elif last is not None:
             if not require_min_elongation or abs_se < _ELONG_MIN:
                 return last
+    return None
+
+
+_INNER_HELIACAL_PLANETS: frozenset[str] = frozenset({Body.MERCURY, Body.VENUS})
+
+# Kinds that exist only for bodies that reach opposition (superior planets and
+# fixed stars): the phases near opposition.
+_OPPOSITION_PHASE_KINDS: frozenset[HeliacalEventKind] = frozenset({
+    HeliacalEventKind.ACRONYCHAL_RISING,
+    HeliacalEventKind.COSMICAL_SETTING,
+})
+# Kinds that exist only for bodies that pass superior conjunction from the
+# morning to the evening sky (Mercury, Venus, Moon).
+_INNER_PHASE_KINDS: frozenset[HeliacalEventKind] = frozenset({
+    HeliacalEventKind.EVENING_FIRST,
+    HeliacalEventKind.MORNING_LAST,
+})
+
+
+def heliacal_event_kind_applies(body: str, kind: HeliacalEventKind) -> bool:
+    """
+    Return whether ``kind`` occurs in the synodic cycle of ``body``.
+
+    Standard applicability (Schoch 1924; Swiss Ephemeris ``swe_heliacal_ut``
+    documents the same split):
+
+    - Mercury and Venus: heliacal rising, heliacal setting, evening first,
+      morning last.  They never reach opposition, so acronychal rising and
+      cosmical setting do not occur.
+    - Superior planets (Mars through Neptune) and fixed stars: heliacal
+      rising, heliacal setting, acronychal rising, cosmical setting.  They
+      leave the morning sky through opposition, not through conjunction, so
+      evening first and morning last do not occur.
+    - Moon: evening first (new crescent) and morning last (old crescent).
+
+    The deprecated ``ACRONYCHAL_SETTING`` follows ``HELIACAL_SETTING``; the
+    Moira ``COSMIC_RISING`` / ``COSMIC_SETTING`` twilight kinds are reported
+    as applicable to every non-Moon target, as before.
+
+    Side effects: None.
+    """
+    kind = HeliacalEventKind(kind)
+    if body == Body.MOON:
+        return kind in _INNER_PHASE_KINDS
+    if body in (Body.SUN, Body.EARTH):
+        return False
+    if body in _INNER_HELIACAL_PLANETS:
+        return kind not in _OPPOSITION_PHASE_KINDS
+    return kind not in _INNER_PHASE_KINDS
+
+
+def _search_opposition_phase_event(
+    body: str,
+    kind: HeliacalEventKind,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    *,
+    model: VisibilityModel,
+    search_days: int,
+    use_refraction: bool = True,
+) -> tuple[float, float, float, float, float] | None:
+    """
+    Search the acronychal rising or cosmical setting near opposition.
+
+    Definitions (Ptolemy, *Phaseis*; Schoch 1924; Evans 1998):
+
+    - Acronychal rising (evening last rising): the last evening on which the
+      body is seen to rise in the east after dusk.  Before it, the body rises
+      in a sky dark enough to be seen; after it, the body is already above the
+      horizon when the evening sky becomes dark enough, so its rising is lost
+      in twilight.
+    - Cosmical setting (morning first setting): the first morning on which the
+      body is seen to set in the west before dawn.
+
+    The visibility test is the same arcus-visionis construction used by the
+    heliacal rising search: at the instant the Sun stands at ``-arcus
+    visionis`` (evening for acronychal rising, morning for cosmical setting)
+    the body must be below the horizon on the rising side (evening) or the
+    setting side (morning), so that its horizon crossing happens while the
+    solar depression exceeds the arcus visionis.  The companion state is the
+    body already standing above the horizon at that instant.  Acronychal
+    rising is the last qualifying evening followed by an "already up"
+    evening; cosmical setting is the first qualifying morning preceded by a
+    "still up" morning.  Only days with ``|elongation| >= 90`` are
+    considered, since these phases belong to the opposition half of the
+    synodic cycle.
+
+    The returned instant is the body's own horizon crossing (its visible
+    rising or setting), located by bisection, with the Sun's altitude at that
+    instant.  Return payload: ``(jd_ut, target_alt_deg, sun_alt_deg,
+    apparent_mag, signed_elongation_deg)``.
+
+    Side effects: None.
+    """
+    evening = kind is HeliacalEventKind.ACRONYCHAL_RISING
+    horizon = model.horizon_altitude_deg
+
+    def altitude(jd: float) -> float:
+        if use_refraction:
+            return _target_altitude(
+                body,
+                jd,
+                lat,
+                lon,
+                pressure_mbar=model.pressure_mbar,
+                temperature_c=model.temperature_c,
+                relative_humidity=model.relative_humidity,
+            )
+        return _true_altitude(body, jd, lat, lon)
+
+    def horizon_crossing(t_av: float) -> float | None:
+        # Evening: first upward crossing after t_av.  Morning: last downward
+        # crossing before t_av.  Bracket on a 30-minute grid, then bisect.
+        step = (1.0 / 48.0) if evening else -(1.0 / 48.0)
+        t_prev, a_prev = t_av, altitude(t_av) - horizon
+        for _ in range(24):
+            t_next = t_prev + step
+            a_next = altitude(t_next) - horizon
+            if a_prev <= 0.0 < a_next:
+                lo, hi = t_prev, t_next
+                for _ in range(20):
+                    mid = 0.5 * (lo + hi)
+                    if altitude(mid) - horizon > 0.0:
+                        hi = mid
+                    else:
+                        lo = mid
+                return 0.5 * (lo + hi)
+            t_prev, a_prev = t_next, a_next
+        return None
+
+    def classify(jd_midnight: float):
+        se = _target_signed_elongation(body, jd_midnight + 0.5)
+        if abs(se) < 90.0:
+            return None
+        mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
+        av = _arcus_visionis(mag, model)
+        t_av = _find_sun_at_alt(jd_midnight, lat, lon, -av, not evening)
+        if t_av is None:
+            return None
+        alt = altitude(t_av)
+        if alt > horizon:
+            return "up"
+        drift = altitude(t_av + 1.0 / 144.0) - alt
+        if evening and drift <= 0.0:
+            return None
+        if not evening and drift >= 0.0:
+            return None
+        jd_cross = horizon_crossing(t_av)
+        if jd_cross is None:
+            return None
+        return (jd_cross, altitude(jd_cross), _sun_alt(jd_cross, lat, lon), mag, se)
+
+    jd_mid0 = _local_mean_solar_midnight(jd_start, lon)
+    previous = classify(jd_mid0 - 1.0)
+    for d in range(search_days):
+        current = classify(jd_mid0 + d)
+        if evening:
+            if isinstance(previous, tuple) and current == "up" and previous[0] >= jd_start:
+                return previous
+        elif previous == "up" and isinstance(current, tuple) and current[0] >= jd_start:
+            return current
+        previous = current
     return None
 
 
@@ -7831,10 +8107,18 @@ def visibility_event(
         - Fixed stars (named star strings routed to moira.stars)
         - Moon (with YALLOP_LUNAR_CRESCENT criterion for crescent events)
 
-    Admitted event kinds:
-        - HELIACAL_RISING, HELIACAL_SETTING
-        - ACRONYCHAL_RISING, ACRONYCHAL_SETTING
-        - COSMIC_RISING, COSMIC_SETTING (planets only)
+    Admitted event kinds (standard meanings; see :class:`HeliacalEventKind`):
+        - HELIACAL_RISING (morning first), HELIACAL_SETTING (evening last)
+        - EVENING_FIRST, MORNING_LAST (Mercury, Venus, Moon)
+        - ACRONYCHAL_RISING (evening rising near opposition),
+          COSMICAL_SETTING (morning setting near opposition) -- superior
+          planets and fixed stars
+        - ACRONYCHAL_SETTING (deprecated synonym of HELIACAL_SETTING)
+        - COSMIC_RISING, COSMIC_SETTING (Moira astronomical-twilight kinds)
+
+    A kind that does not occur in the body's synodic cycle (see
+    :func:`heliacal_event_kind_applies`) returns ``None`` without searching,
+    for planets and fixed stars.
 
     Parameters
     ----------
@@ -7861,7 +8145,8 @@ def visibility_event(
 
     Returns
     -------
-    :class:`GeneralVisibilityEvent` or ``None`` if no event is found.
+    :class:`GeneralVisibilityEvent` or ``None`` if no event is found, or if
+    the kind does not apply to the body.
 
     Raises
     ------
@@ -7929,27 +8214,57 @@ def visibility_event(
     search_days = resolved_search_policy.search_window_days
 
     if (
+        target_kind is not VisibilityTargetKind.MOON
+        and not heliacal_event_kind_applies(body, event_kind)
+    ):
+        # The requested phenomenon does not occur in this body's synodic
+        # cycle (e.g. evening first for Saturn, acronychal rising for Venus).
+        return None
+
+    if (
         target_kind is VisibilityTargetKind.MOON
         and resolved_visibility_policy is not None
         and resolved_visibility_policy.criterion_family
         is VisibilityCriterionFamily.YALLOP_LUNAR_CRESCENT
     ):
         if event_kind not in (
-            HeliacalEventKind.ACRONYCHAL_RISING,
+            HeliacalEventKind.EVENING_FIRST,
+            HeliacalEventKind.MORNING_LAST,
+            HeliacalEventKind.HELIACAL_SETTING,
             HeliacalEventKind.ACRONYCHAL_SETTING,
         ):
             raise NotImplementedError(
-                "YALLOP_LUNAR_CRESCENT currently governs evening first-sighting "
-                "and last-evening lunar crescent events only"
+                "YALLOP_LUNAR_CRESCENT currently governs the evening-first "
+                "crescent (EVENING_FIRST), the morning-last crescent "
+                "(MORNING_LAST) and last-evening (HELIACAL_SETTING) lunar "
+                "events only"
             )
         environment = resolved_visibility_policy.environment
         assert environment is not None
-        if event_kind is HeliacalEventKind.ACRONYCHAL_RISING:
+        if event_kind is HeliacalEventKind.EVENING_FIRST:
+            # First visibility is a transition: an observable young crescent
+            # whose previous evening was not observable.  The evening before
+            # the search window is evaluated too, so a search that starts
+            # mid-crescent waits for the next new crescent instead of
+            # reporting a day inside the current run.
+            def _young_crescent_observable(details: LunarCrescentDetails | None) -> bool:
+                if details is None:
+                    return False
+                if _target_signed_elongation(Body.MOON, details.best_time_jd_ut) <= 0.0:
+                    # A waning Moon is not a young (evening-first) crescent.
+                    return False
+                return _yallop_class_observable(
+                    details.visibility_class, environment.observing_aid
+                )
+
+            previous_observable = _young_crescent_observable(
+                _lunar_crescent_details_for_evening(jd_mid0 - 1, lat, lon)
+            )
             for d in range(search_days):
                 details = _lunar_crescent_details_for_evening(jd_mid0 + d, lat, lon)
-                if details is None:
-                    continue
-                if _yallop_class_observable(details.visibility_class, environment.observing_aid):
+                observable = _young_crescent_observable(details)
+                if observable and not previous_observable:
+                    assert details is not None
                     return _general_event_from_lunar_crescent_details(
                         event_kind,
                         details,
@@ -7957,11 +8272,34 @@ def visibility_event(
                         lon,
                         visibility_policy=resolved_visibility_policy,
                     )
+                previous_observable = observable
             return None
 
+        # Last-visibility kinds: the last observable crescent of a run of
+        # observable days, returned on the first following day that is not
+        # observable.  MORNING_LAST (old crescent) applies the q-test at the
+        # morning best time (see _lunar_crescent_details_for_morning); the
+        # evening-last kinds use the evening best time.
+        crescent_details = (
+            _lunar_crescent_details_for_morning
+            if event_kind is HeliacalEventKind.MORNING_LAST
+            else _lunar_crescent_details_for_evening
+        )
         last_visible: LunarCrescentDetails | None = None
         for d in range(search_days):
-            details = _lunar_crescent_details_for_evening(jd_mid0 + d, lat, lon)
+            details = crescent_details(jd_mid0 + d, lat, lon)
+            if details is not None and details.best_time_jd_ut < jd_start:
+                # Never remember a sighting before the forward search start.
+                continue
+            if (
+                details is not None
+                and event_kind is HeliacalEventKind.MORNING_LAST
+                and _target_signed_elongation(Body.MOON, details.best_time_jd_ut) >= 0.0
+            ):
+                # A waxing Moon is not an old (morning-last) crescent.  Before
+                # the run starts such a morning is skipped; after it, the Moon
+                # has passed conjunction and the run is over.
+                details = None
             if details is None:
                 if last_visible is not None:
                     return _general_event_from_lunar_crescent_details(
@@ -7985,7 +8323,7 @@ def visibility_event(
         return None
 
     if target_kind is VisibilityTargetKind.STAR:
-        from .stars import heliacal_rising_event, heliacal_setting_event
+        from .stars import heliacal_rising_event
 
         if event_kind is HeliacalEventKind.HELIACAL_RISING:
             event = heliacal_rising_event(
@@ -8009,28 +8347,35 @@ def visibility_event(
                 visibility_policy=resolved_visibility_policy,
             )
 
-        if event_kind is HeliacalEventKind.HELIACAL_SETTING:
-            event = heliacal_setting_event(
+        if event_kind in _OPPOSITION_PHASE_KINDS:
+            result = _search_opposition_phase_event(
                 body,
+                event_kind,
                 jd_start,
                 lat,
                 lon,
+                model=model,
                 search_days=search_days,
+                use_refraction=search_uses_refraction,
             )
-            if not event.is_found or event.jd_ut is None:
+            if result is None:
                 return None
-            sun_altitude_deg = event.computation_truth.qualifying_sun_altitude
-            assert sun_altitude_deg is not None
-            return _general_event_from_jd(
+            return _general_event_from_tuple(
                 body,
                 event_kind,
-                event.jd_ut,
+                result,
                 lat,
                 lon,
-                sun_altitude_deg=sun_altitude_deg,
                 visibility_policy=resolved_visibility_policy,
             )
 
+        # HELIACAL_SETTING / ACRONYCHAL_SETTING (evening last) and the Moira
+        # cosmic kinds use the generic daily scan under this function's
+        # VisibilityModel.  ``stars.heliacal_setting_event`` (evening last
+        # since 6.9.9) is the magnitude-arcus counterpart and is not
+        # delegated to here.  Spot check (2026 start, 30N and 52N; Sirius,
+        # Spica, Regulus, Aldebaran): same evening in 6 of 8 cases, one
+        # evening apart in 2.  Cross-path agreement, not authority validation.
         result = _search_visibility_event(
             body,
             event_kind,
@@ -8059,7 +8404,7 @@ def visibility_event(
 
     if event_kind in (
         HeliacalEventKind.HELIACAL_RISING,
-        HeliacalEventKind.ACRONYCHAL_RISING,
+        HeliacalEventKind.EVENING_FIRST,
     ):
         result = _search_visibility_event(
             body,
@@ -8082,7 +8427,30 @@ def visibility_event(
             visibility_policy=resolved_visibility_policy,
         )
 
-    if event_kind is HeliacalEventKind.HELIACAL_SETTING:
+    if event_kind in _OPPOSITION_PHASE_KINDS:
+        result = _search_opposition_phase_event(
+            body,
+            event_kind,
+            jd_start,
+            lat,
+            lon,
+            model=model,
+            search_days=search_days,
+            use_refraction=search_uses_refraction,
+        )
+        if result is None:
+            return None
+        return _general_event_from_tuple(
+            body,
+            event_kind,
+            result,
+            lat,
+            lon,
+            visibility_policy=resolved_visibility_policy,
+        )
+
+    if event_kind is HeliacalEventKind.MORNING_LAST:
+        # Morning last visibility (pre-6.9.9 HELIACAL_SETTING code path).
         last: tuple[float, float, float, float, float] | None = None
         for d in range(search_days):
             jd_midnight = jd_mid0 + d
@@ -8117,7 +8485,11 @@ def visibility_event(
                 )
         return None
 
-    if event_kind is HeliacalEventKind.ACRONYCHAL_SETTING:
+    if event_kind in (
+        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.ACRONYCHAL_SETTING,
+    ):
+        # Evening last visibility (pre-6.9.9 ACRONYCHAL_SETTING code path).
         last = None
         for d in range(search_days):
             jd_midnight = jd_mid0 + d
@@ -8277,25 +8649,25 @@ def planet_heliacal_setting(
     search_days: int = 400,
 ) -> PlanetHeliacalEvent | None:
     """
-    Find the next heliacal setting of a planet from ``jd_start``.
+    Find the next heliacal setting (evening last visibility) of a planet.
 
-    The heliacal setting is the last morning when the planet is visible
-    before it disappears into the Sun's light ahead of solar conjunction.
+    The heliacal setting is the last evening on which the planet is seen in
+    the western sky after sunset before it disappears into the Sun's light
+    ahead of solar conjunction (Ptolemy / Schoch nomenclature; Swiss
+    Ephemeris event 2, "evening last").
 
-    The search scans forward, tracking the last visible morning.  When the
+    .. versionchanged:: 6.9.9
+       Previously this returned the last *morning* sighting.  That event is
+       now :func:`planet_morning_last`.
+
+    The search scans forward, tracking the last visible evening.  When the
     planet's elongation drops below the minimum threshold (planet re-enters
-    the Sun's glare), the last recorded visible morning is returned.
+    the Sun's glare), the last recorded visible evening is returned.
 
     Parameters
     ----------
     body, jd_start, lat, lon, policy, search_days : see
         :func:`planet_heliacal_rising`.
-
-    Notes
-    -----
-    Start ``jd_start`` when the planet is already in the morning sky for
-    best results.  If no visible morning is found before the search ends,
-    returns ``None``.
     """
     _validate_args(body, jd_start, lat, lon, search_days)
     return _planet_event_from_general_event(
@@ -8320,13 +8692,16 @@ def planet_acronychal_rising(
     search_days: int = 400,
 ) -> PlanetHeliacalEvent | None:
     """
-    Find the next acronychal rising of a planet from ``jd_start``.
+    Find the next acronychal rising of a superior planet from ``jd_start``.
 
-    The acronychal rising is the first evening when the planet is visible
-    in the western sky after sunset — the first appearance as an evening
-    star.  For Venus this is the Hesperus / evening-star phase; for outer
-    planets it corresponds to the first evening visibility after the planet
-    has passed through the morning sky and now re-enters evening apparition.
+    The acronychal rising is the evening rising near opposition: the last
+    evening on which the planet is seen to rise in the east after dusk
+    (Ptolemy / Schoch; Swiss Ephemeris event 5).  Mercury and Venus never
+    reach opposition and return ``None``.
+
+    .. versionchanged:: 6.9.9
+       Previously this returned the first *evening* visibility (evening
+       star).  That event is now :func:`planet_evening_first`.
 
     Parameters
     ----------
@@ -8358,6 +8733,11 @@ def planet_acronychal_setting(
     """
     Find the next acronychal setting of a planet from ``jd_start``.
 
+    .. deprecated:: 6.9.9
+       ``ACRONYCHAL_SETTING`` is kept as a synonym of the standard heliacal
+       setting (evening last visibility) and returns the same event it
+       returned before 6.9.9.  Prefer :func:`planet_heliacal_setting`.
+
     The acronychal setting is the last evening when the planet is visible
     after sunset before it disappears into the Sun's light ahead of solar
     conjunction.
@@ -8378,4 +8758,260 @@ def planet_acronychal_setting(
             heliacal_policy=policy,
             search_policy=VisibilitySearchPolicy(search_window_days=search_days),
         )
+    )
+
+
+def planet_evening_first(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next evening first visibility of Mercury or Venus.
+
+    The first evening on which the planet is seen in the west after sunset,
+    emerging from the Sun's glare after superior conjunction (Ptolemy /
+    Schoch; Swiss Ephemeris event 3).  Superior planets have no such event
+    and return ``None``.  This is the event returned by
+    ``planet_acronychal_rising`` before 6.9.9.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    return _planet_event_from_general_event(
+        visibility_event(
+            body,
+            HeliacalEventKind.EVENING_FIRST,
+            jd_start,
+            lat,
+            lon,
+            heliacal_policy=policy,
+            search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+        )
+    )
+
+
+def planet_morning_last(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next morning last visibility of Mercury or Venus.
+
+    The last morning on which the planet is seen in the east before sunrise
+    ahead of superior conjunction (Ptolemy / Schoch; Swiss Ephemeris event
+    4).  Superior planets have no such event and return ``None``.  This is
+    the event returned by ``planet_heliacal_setting`` before 6.9.9.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    return _planet_event_from_general_event(
+        visibility_event(
+            body,
+            HeliacalEventKind.MORNING_LAST,
+            jd_start,
+            lat,
+            lon,
+            heliacal_policy=policy,
+            search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+        )
+    )
+
+
+def planet_cosmical_setting(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next cosmical setting of a superior planet from ``jd_start``.
+
+    The morning setting near opposition: the first morning on which the
+    planet is seen to set in the west before dawn (Ptolemy / Schoch; Swiss
+    Ephemeris event 6).  Mercury and Venus never reach opposition and return
+    ``None``.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    return _planet_event_from_general_event(
+        visibility_event(
+            body,
+            HeliacalEventKind.COSMICAL_SETTING,
+            jd_start,
+            lat,
+            lon,
+            heliacal_policy=policy,
+            search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phasis search: nearest standard phenomena around one instant
+# ---------------------------------------------------------------------------
+
+#: Default half-width (days) of the phasis window.  Primary source for the
+#: seven days: Paulus Alexandrinus, *Introductory Matters*, ch. 26 ("Concerning
+#: What One Does"), trans. R. Schmidt, ed. R. Hand (Project Hindsight, 3rd ed.
+#: rev. 1995), p. 59: Saturn, Jupiter or Mars making a morning appearance
+#: (Venus or Mercury: an evening rising) "seven days before, or seven days
+#: after birth".  Paulus
+#: states the window for the occupation significator; its use as a general
+#: phasis window follows the modern reconstruction in C. Brennan, *Hellenistic
+#: Astrology* (2017) (page locator unverified).  The window is an explicit
+#: caller parameter, not a physical constant.
+PHASIS_DEFAULT_WINDOW_DAYS: float = 7.0
+#: Largest admitted phasis half-width.  Every standard phenomenon recurs no
+#: sooner than one synodic month (the Moon), so at most one event of a kind
+#: can fall in a window up to 30 days wide on each side in practice; the
+#: search still keeps the nearest when more than one is found.
+PHASIS_MAX_WINDOW_DAYS: float = 30.0
+#: Extra days scanned past the window end.  Setting searches (heliacal
+#: setting, morning last) only report the last visible day once the body has
+#: entered the Sun's glare, which can lag the last sighting by a few weeks for
+#: the slow planets and faint targets; 60 days bounds that lag with margin.
+PHASIS_LOOKAHEAD_DAYS: int = 60
+
+
+@dataclass(frozen=True, slots=True)
+class PhasisKindResult:
+    """
+    One standard phenomenon evaluated for a phasis window.
+
+    ``applicable`` is False when the kind does not occur in the body's
+    synodic cycle (see :func:`heliacal_event_kind_applies`); ``event`` is the
+    occurrence nearest the reference instant within the window, or ``None``
+    when none falls inside it.  ``offset_days`` is ``event.jd_ut - jd_ut``.
+    """
+
+    kind: HeliacalEventKind
+    applicable: bool
+    event: GeneralVisibilityEvent | None
+    offset_days: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhasisSearchResult:
+    """Nearest standard heliacal phenomena of one body around one instant."""
+
+    body: str
+    jd_ut: float
+    lat: float
+    lon: float
+    window_days: float
+    lookahead_days: int
+    results: tuple[PhasisKindResult, ...]
+
+
+def phasis_events_near(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    window_days: float = PHASIS_DEFAULT_WINDOW_DAYS,
+    heliacal_policy: HeliacalPolicy | None = None,
+    visibility_policy: VisibilityPolicy | None = None,
+) -> PhasisSearchResult:
+    """
+    Return, for each standard phenomenon, the occurrence nearest ``jd_ut``
+    within ``jd_ut +/- window_days``.
+
+    The six kinds of :data:`STANDARD_HELIACAL_EVENT_KINDS` are evaluated in
+    order.  Each applicable kind is searched forward with
+    :func:`visibility_event` from ``jd_ut - window_days`` over
+    ``2 * window_days + PHASIS_LOOKAHEAD_DAYS`` days, repeating from just
+    after each hit so that the nearest in-window occurrence is kept.  The
+    visibility doctrine is exactly that of :func:`visibility_event` (the
+    same policies apply); this function adds no criterion of its own.
+
+    Stations, which the Hellenistic phasis also counts, are not heliacal
+    phenomena and are not included here.
+
+    Raises:
+        ValueError: For non-finite ``jd_ut`` or a ``window_days`` outside
+            ``(0, PHASIS_MAX_WINDOW_DAYS]``, plus every error raised by
+            :func:`visibility_event`.
+
+    Side effects: None.
+    """
+    if not math.isfinite(jd_ut):
+        raise ValueError(f"jd_ut must be finite, got {jd_ut}")
+    if not (
+        isinstance(window_days, (int, float))
+        and math.isfinite(window_days)
+        and 0.0 < window_days <= PHASIS_MAX_WINDOW_DAYS
+    ):
+        raise ValueError(
+            f"window_days must be in (0, {PHASIS_MAX_WINDOW_DAYS:g}], got {window_days!r}"
+        )
+    window = float(window_days)
+    span_days = int(math.ceil(2.0 * window)) + PHASIS_LOOKAHEAD_DAYS
+    lower = jd_ut - window
+    upper = jd_ut + window
+
+    results: list[PhasisKindResult] = []
+    for kind in STANDARD_HELIACAL_EVENT_KINDS:
+        if body not in (Body.SUN, Body.EARTH) and not heliacal_event_kind_applies(body, kind):
+            results.append(PhasisKindResult(kind, False, None, None))
+            continue
+        nearest: GeneralVisibilityEvent | None = None
+        jd_from = lower
+        for _ in range(4):
+            event = visibility_event(
+                body,
+                kind,
+                jd_from,
+                lat,
+                lon,
+                heliacal_policy=heliacal_policy,
+                visibility_policy=visibility_policy,
+                search_policy=VisibilitySearchPolicy(search_window_days=span_days),
+            )
+            if event is None or event.jd_ut > upper:
+                break
+            if event.jd_ut >= lower and (
+                nearest is None or abs(event.jd_ut - jd_ut) < abs(nearest.jd_ut - jd_ut)
+            ):
+                nearest = event
+            jd_from = event.jd_ut + 1.0
+            if jd_from > upper:
+                break
+        results.append(
+            PhasisKindResult(
+                kind,
+                True,
+                nearest,
+                None if nearest is None else nearest.jd_ut - jd_ut,
+            )
+        )
+    return PhasisSearchResult(
+        body=body,
+        jd_ut=jd_ut,
+        lat=lat,
+        lon=lon,
+        window_days=window,
+        lookahead_days=PHASIS_LOOKAHEAD_DAYS,
+        results=tuple(results),
     )

@@ -19,6 +19,7 @@ EXPECTED_SYMBOLS = [
     "star_at", "all_stars_at", "list_stars", "find_stars", "star_magnitude",
     "load_catalog", "heliacal_rising", "heliacal_setting",
     "heliacal_rising_event", "heliacal_setting_event",
+    "last_morning_visibility", "last_morning_visibility_event",
     "star_chart_condition_profile", "star_condition_network_profile",
 
     # Tier 2 (Unified)

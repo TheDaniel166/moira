@@ -1,8 +1,43 @@
 """
-Moira — Nine Parts Engine
-Governs computation of Abu Ma'shar's Nine Hermetic Lots using the formula Lot = ASC + Add − Subtract (mod 360°) with full day/night reversal.
+Moira — Nine Parts Engine (Hermetic seven lots, with an opt-in extension)
 
-Boundary: owns the Nine Parts catalogue, formula resolution, day/night reversal logic, dependency ordering, result vessels, condition profiling, and aggregate intelligence. Delegates sign name lookup to moira.constants.
+Governs computation of the seven Hermetic lots of Paulus Alexandrinus
+(Fortune, Spirit, Eros/Love, Necessity, Courage, Victory, Nemesis) using the
+formula Lot = Asc + Add − Subtract (mod 360°) with full day/night reversal.
+Two further lots, "Sword" and "Node", are Moira extensions with no located
+source; they are computed only when the caller opts in through
+``NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION``.
+
+Source
+------
+Paulus Alexandrinus, *Introductory Matters* ch. 23, "Concerning the Seven Lots
+in the Panaretus", trans. Robert Schmidt (Project Hindsight, Golden Hind
+Press, 1993), pp. 42–44. Day formulas, counted from the first term to the
+second and projected from the Horoskopos; "for those born at night, the
+reverse":
+
+    Fortune    from Sun to Moon            Asc + Moon − Sun
+    Spirit     from Moon to Sun            Asc + Sun − Moon
+    Eros       from Spirit to Venus        Asc + Venus − Spirit
+    Necessity  from Mercury to Fortune     Asc + Fortune − Mercury
+    Courage    from Mars to Fortune        Asc + Fortune − Mars
+    Victory    from Spirit to Jupiter      Asc + Jupiter − Spirit
+    Nemesis    from Saturn to Fortune      Asc + Fortune − Saturn
+
+Paulus pairs each lot with a planet: Moon–Fortune, Sun–Spirit, Venus–Eros,
+Mercury–Necessity, Mars–Courage, Jupiter–Victory, Saturn–Nemesis.
+
+Naming note: the module and the entry point ``nine_parts_abu_mashar`` keep
+their historical names for compatibility. No source was located in which Abu
+Ma'shar groups these lots as "nine parts"; the computed set is the Paulus
+seven. Moira releases before 6.9.9 computed Love as Asc + Spirit − Fortune and
+Necessity as Asc + Fortune − Spirit (the variants ``moira.lots`` labels
+"Eros (Valens)" and "Necessity (Valens)"); those remain available through
+``moira.lots``.
+
+Boundary: owns the lot catalogue, formula resolution, day/night reversal
+logic, dependency ordering, result vessels, condition profiling, and aggregate
+intelligence. Delegates sign name lookup to moira.constants.
 
 Import-time side effects: None
 
@@ -56,6 +91,7 @@ __all__ = [
     "NinePartsAggregate",
     # Computation functions
     "nine_parts_abu_mashar",
+    "required_bodies_for",
     # Validation
     "validate_nine_parts_output",
 ]
@@ -65,7 +101,7 @@ __all__ = [
 # Internal constants
 # ---------------------------------------------------------------------------
 
-# Traditional domicile rulers (Abu Ma'shar tradition — no outer planets)
+# Traditional domicile rulers of the seven classical planets.
 _SIGN_RULER: dict[str, str] = {
     "Aries":       "Mars",
     "Taurus":      "Venus",
@@ -81,40 +117,50 @@ _SIGN_RULER: dict[str, str] = {
     "Pisces":      "Jupiter",
 }
 
-# Canonical Abu Ma'shar Nine Parts catalogue.
-# Each entry: (name, planet_association, meaning, day_add_key, day_sub_key)
-# All nine parts use full reversal at night (swap day_add and day_sub).
-# Dependency order: Fortune and Spirit must be resolved before
-# Love, Necessity, and Victory.
-_NINE_PARTS_CATALOGUE: list[tuple[str, str | None, str, str, str]] = [
-    ("Fortune",   "Moon",    "Body/Success",   "Moon",        "Sun"),
-    ("Spirit",    "Sun",     "Soul/Intellect",  "Sun",         "Moon"),
-    ("Love",      "Venus",   "Desire",          "Spirit",      "Fortune"),
-    ("Necessity", "Mercury", "Constraint",      "Fortune",     "Spirit"),
-    ("Courage",   "Mars",    "Boldness",        "Fortune",     "Mars"),
-    ("Victory",   "Jupiter", "Ease",            "Jupiter",     "Spirit"),
-    ("Nemesis",   "Saturn",  "Weight",          "Fortune",     "Saturn"),
-    ("Sword",     None,      "Conflict",        "Mars",        "Saturn"),
-    ("Node",      None,      "Fate/Hidden",     "North Node",  "Moon"),
-]
+# The seven Hermetic lots — Paulus Alexandrinus ch. 23 (Schmidt 1993,
+# pp. 42–43). Each entry: (name, planet_association, day_add_key, day_sub_key).
+# All lots use full reversal at night ("for night births, the reverse").
+_HERMETIC_SEVEN_CATALOGUE: tuple[tuple[str, str | None, str, str], ...] = (
+    ("Fortune",   "Moon",    "Moon",    "Sun"),      # Sun -> Moon
+    ("Spirit",    "Sun",     "Sun",     "Moon"),     # Moon -> Sun
+    ("Love",      "Venus",   "Venus",   "Spirit"),   # Spirit -> Venus (Eros)
+    ("Necessity", "Mercury", "Fortune", "Mercury"),  # Mercury -> Fortune
+    ("Courage",   "Mars",    "Fortune", "Mars"),     # Mars -> Fortune
+    ("Victory",   "Jupiter", "Jupiter", "Spirit"),   # Spirit -> Jupiter
+    ("Nemesis",   "Saturn",  "Fortune", "Saturn"),   # Saturn -> Fortune
+)
+
+# Moira extension lots. No classical or medieval source has been located for
+# either formula; they are computed only on explicit opt-in.
+_UNSOURCED_EXTENSION_CATALOGUE: tuple[tuple[str, str | None, str, str], ...] = (
+    ("Sword",     None,      "Mars",       "Saturn"),
+    ("Node",      None,      "North Node", "Moon"),
+)
+
+_LOT_NAMES: frozenset[str] = frozenset(
+    entry[0] for entry in _HERMETIC_SEVEN_CATALOGUE + _UNSOURCED_EXTENSION_CATALOGUE
+)
+
+# Strictly lot-to-lot (non-planet) dependencies, derived from the catalogue.
+_LOT_DEPENDENCIES: dict[str, list[str]] = {
+    name: [key for key in (add_key, sub_key) if key in _LOT_NAMES]
+    for name, _assoc, add_key, sub_key in (
+        _HERMETIC_SEVEN_CATALOGUE + _UNSOURCED_EXTENSION_CATALOGUE
+    )
+    if add_key in _LOT_NAMES or sub_key in _LOT_NAMES
+}
 
 # Parts whose formulas use other computed lots as ingredients.
-_DERIVED_PARTS: frozenset[str] = frozenset({"Love", "Necessity", "Victory"})
+_DERIVED_PARTS: frozenset[str] = frozenset(_LOT_DEPENDENCIES)
 
-# Inter-lot dependencies: which lots each derived part depends on.
-_DEPENDENCIES: dict[str, list[str]] = {
-    "Love":      ["Spirit", "Fortune"],
-    "Necessity": ["Fortune", "Spirit"],
-    "Victory":   ["Jupiter", "Spirit"],   # Jupiter is a planet, Spirit is a lot
-}
-# Strictly lot-to-lot (non-planet) dependencies:
-_LOT_DEPENDENCIES: dict[str, list[str]] = {
-    "Love":      ["Spirit", "Fortune"],
-    "Necessity": ["Fortune", "Spirit"],
-    "Victory":   ["Spirit"],
-}
+_ADMITTED_EXTENSION_PARTS: frozenset[str] = frozenset(
+    entry[0] for entry in _UNSOURCED_EXTENSION_CATALOGUE
+)
 
-_ADMITTED_EXTENSION_PARTS: frozenset[str] = frozenset({"Sword", "Node"})
+_HERMETIC_SEVEN_REQUIRED_BODIES: frozenset[str] = frozenset(
+    {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"}
+)
+_EXTENSION_REQUIRED_BODIES: frozenset[str] = frozenset({"North Node"})
 
 
 # ---------------------------------------------------------------------------
@@ -123,14 +169,14 @@ _ADMITTED_EXTENSION_PARTS: frozenset[str] = frozenset({"Sword", "Node"})
 
 class NinePartName(StrEnum):
     """
-    Canonical Abu Ma'shar names for the Nine Parts, in doctrinal order.
+    Canonical part names, in computation order.
 
-    Order follows Dykes, Introductions to Traditional Astrology:
-    Fortune → Spirit → Love → Necessity → Courage → Victory → Nemesis →
-    Sword → Node.
+    The first seven follow Paulus Alexandrinus ch. 23 (Fortune, Spirit, Eros
+    — named "Love" here — Necessity, Courage, Victory, Nemesis). SWORD and
+    NODE are unsourced Moira extension lots, computed only on opt-in.
 
-    Fortune and Spirit are always computed first; Love, Necessity, and Victory
-    depend on them.
+    Fortune and Spirit are always computed first; every other Hermetic lot
+    depends on one of them.
     """
     FORTUNE   = "Fortune"
     SPIRIT    = "Spirit"
@@ -150,7 +196,8 @@ class NinePartFormulaVariant(StrEnum):
     DAY   — day formula: Asc + day_add − day_sub
     NIGHT — night formula: Asc + day_sub − day_add (operands swapped)
 
-    Abu Ma'shar: full reversal applies to all nine parts for night charts.
+    Paulus ch. 23: "for those born at night, the reverse" — full reversal
+    applies to every lot.
     """
     DAY   = "day"
     NIGHT = "night"
@@ -161,10 +208,10 @@ class NinePartDependencyKind(StrEnum):
     Whether a part's formula ingredients are raw planet longitudes or include
     other computed lots.
 
-    DIRECT  — both add and sub keys are raw planet positions (Fortune, Spirit,
-              Courage, Nemesis, Sword, Node).
+    DIRECT  — both add and sub keys are raw body positions (Fortune, Spirit,
+              Sword, Node).
     DERIVED — at least one key is a previously computed lot (Love, Necessity,
-              Victory).
+              Courage, Victory, Nemesis — each uses Fortune or Spirit).
     """
     DIRECT  = "direct"
     DERIVED = "derived"
@@ -175,11 +222,11 @@ class NinePartHistoricalStatus(StrEnum):
     Historical confidence status for one part within the current subsystem.
 
     CORE_SEVEN
-        One of the seven externally evidenced planetary lots in the Abu Ma'shar
-        transmission path presently secured by Moira's doctrine.
+        One of the seven Hermetic lots sourced to Paulus Alexandrinus ch. 23.
     ADMITTED_EXTENSION
-        A Moira-admitted extension preserved in the same computational family,
-        but not claimed at the same evidentiary level as the seven-part core.
+        An unsourced Moira extension lot (Sword, Node). No classical or
+        medieval source has been located; computed only on explicit opt-in.
+        The value string is kept for compatibility.
     """
     CORE_SEVEN = "core_seven"
     ADMITTED_EXTENSION = "admitted_extension"
@@ -191,28 +238,29 @@ class NinePartHistoricalStatus(StrEnum):
 
 class NinePartsReversalRule(StrEnum):
     """
-    Governs which reversal logic applies to the nine parts at night.
+    Governs which reversal logic applies to the lots at night.
 
-    FULL_REVERSAL — all nine parts reverse their add/sub operands for night
-                    charts; no per-lot exceptions. This is the Abu Ma'shar
-                    standard confirmed by Dykes.
+    FULL_REVERSAL — every lot reverses its add/sub operands for night charts;
+                    no per-lot exceptions. Paulus ch. 23 states "for night
+                    births, the reverse" for each of the seven lots.
 
-    This is the only admitted reversal rule. A per-lot rule table is not
-    supported because no historical source authorises a partial exception
-    within the Abu Ma'shar Nine Parts system.
+    This is the only admitted reversal rule.
     """
     FULL_REVERSAL = "full_reversal"
 
 
 class NinePartsHistoricalScope(StrEnum):
     """
-    Governs the provenance stance of the subsystem's admitted lot set.
+    Governs which lots are computed.
 
+    HERMETIC_SEVEN (default)
+        The seven Hermetic lots of Paulus Alexandrinus ch. 23 only.
     EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
-        Preserve the seven externally evidenced planetary lots plus the admitted
-        extension of Sword and Node, while exposing the difference in status
-        explicitly.
+        Explicit opt-in: the seven Hermetic lots plus the unsourced Moira
+        extension lots Sword and Node (requires a "North Node" longitude).
+        This was the default before Moira 6.9.9.
     """
+    HERMETIC_SEVEN = "hermetic_seven"
     EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION = "evidenced_core_plus_admitted_extension"
 
 
@@ -225,20 +273,35 @@ class NinePartsPolicy:
     nine_parts_abu_mashar() to override defaults.
 
     reversal_rule
-        Which reversal rule to apply. Default: FULL_REVERSAL (the only
-        historically supported option in the Abu Ma'shar tradition).
+        Which reversal rule to apply. Default: FULL_REVERSAL (Paulus ch. 23).
     historical_scope
-        Provenance stance for the subsystem. Default preserves Moira's current
-        runtime surface: seven evidenced planetary lots plus two admitted
-        extension lots (Sword and Node).
+        Which lots are computed. Default: HERMETIC_SEVEN (the seven sourced
+        lots). EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION adds the unsourced
+        Sword and Node lots on explicit opt-in.
     """
     reversal_rule: NinePartsReversalRule = NinePartsReversalRule.FULL_REVERSAL
-    historical_scope: NinePartsHistoricalScope = (
-        NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
-    )
+    historical_scope: NinePartsHistoricalScope = NinePartsHistoricalScope.HERMETIC_SEVEN
+
+    @property
+    def includes_extension_lots(self) -> bool:
+        """True when the unsourced Sword and Node lots are requested."""
+        return (
+            self.historical_scope
+            is NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
+        )
 
 
 DEFAULT_NINE_PARTS_POLICY: NinePartsPolicy = NinePartsPolicy()
+
+
+def _catalogue_for(policy: NinePartsPolicy) -> tuple[tuple[str, str | None, str, str], ...]:
+    if policy.includes_extension_lots:
+        return _HERMETIC_SEVEN_CATALOGUE + _UNSOURCED_EXTENSION_CATALOGUE
+    return _HERMETIC_SEVEN_CATALOGUE
+
+
+def _expected_part_names(policy: NinePartsPolicy) -> list["NinePartName"]:
+    return [NinePartName(entry[0]) for entry in _catalogue_for(policy)]
 
 
 # ---------------------------------------------------------------------------
@@ -312,9 +375,9 @@ class NinePartComputationTruth:
 @dataclass(slots=True, frozen=True)
 class NinePart:
     """
-    RITE: The Sacred Arc — the computed longitude where Abu Ma'shar's formula
-    for a single Hermetic Lot lands in the zodiac, carrying its name, planet
-    association, meaning, sign position, and full computational truth.
+    RITE: The Sacred Arc — the computed longitude where the formula for a
+    single lot lands in the zodiac, carrying its name, planet association,
+    sign position, and full computational truth.
 
     THEOREM: Primary result vessel for the Nine Parts engine. Preserves all
     computational truth (Phase 1), provides typed classification (Phase 2),
@@ -331,6 +394,9 @@ class NinePart:
         Responsibilities:
             - Store name, planet_association, meaning, longitude, sign,
               sign_degree, sign_symbol, dependency_kind, and computation.
+            - ``meaning`` is always None in engine output since 6.9.9: the
+              former one-word glosses had no cited source and were removed.
+              The field is kept for compatibility.
         Non-responsibilities:
             - Does not compute the longitude (delegated to the engine).
             - Does not determine the lord of the part (delegated to
@@ -343,8 +409,9 @@ class NinePart:
             - sign_degree is in [0, 30).
             - sign is the sign name corresponding to longitude.
 
-    Canon: Abu Ma'shar, Kitāb taḥāwil sinī al-mawālīd; Dykes (trans.),
-           Introductions to Traditional Astrology (Cazimi Press, 2010).
+    Canon: Paulus Alexandrinus, Introductory Matters ch. 23, trans. R.
+           Schmidt (Project Hindsight, 1993), pp. 42–44 (the seven lots).
+           Sword and Node: unsourced Moira extensions.
 
     [MACHINE_CONTRACT v1]
     {
@@ -370,7 +437,7 @@ class NinePart:
     """
     name:             NinePartName
     planet_association: str | None  # None for Sword and Node (nodal/gap calculations)
-    meaning:          str
+    meaning:          str | None    # None: no sourced gloss is emitted (6.9.9)
     longitude:        float
     sign:             str
     sign_degree:      float
@@ -459,8 +526,8 @@ class NinePartsDependencyRelation:
         The derived part whose formula depends on other lots.
     lot_dependencies
         Names of the lots (not raw planets) this part's formula depends on.
-        For Love: [SPIRIT, FORTUNE]. For Necessity: [FORTUNE, SPIRIT].
-        For Victory: [SPIRIT]. Empty for direct parts.
+        Love and Victory: [SPIRIT]. Necessity, Courage and Nemesis: [FORTUNE].
+        Empty for direct parts.
     """
     part:             NinePartName
     lot_dependencies: tuple[NinePartName, ...]
@@ -485,15 +552,15 @@ class NinePartsDependencyRelation:
         return len(self.lot_dependencies)
 
 
-# Precomputed dependency relations for all nine parts
+# Precomputed dependency relations for every catalogued part
 _ALL_DEPENDENCY_RELATIONS: tuple[NinePartsDependencyRelation, ...] = (
     NinePartsDependencyRelation(NinePartName.FORTUNE,   ()),
     NinePartsDependencyRelation(NinePartName.SPIRIT,    ()),
-    NinePartsDependencyRelation(NinePartName.LOVE,      (NinePartName.SPIRIT, NinePartName.FORTUNE)),
-    NinePartsDependencyRelation(NinePartName.NECESSITY, (NinePartName.FORTUNE, NinePartName.SPIRIT)),
-    NinePartsDependencyRelation(NinePartName.COURAGE,   ()),
+    NinePartsDependencyRelation(NinePartName.LOVE,      (NinePartName.SPIRIT,)),
+    NinePartsDependencyRelation(NinePartName.NECESSITY, (NinePartName.FORTUNE,)),
+    NinePartsDependencyRelation(NinePartName.COURAGE,   (NinePartName.FORTUNE,)),
     NinePartsDependencyRelation(NinePartName.VICTORY,   (NinePartName.SPIRIT,)),
-    NinePartsDependencyRelation(NinePartName.NEMESIS,   ()),
+    NinePartsDependencyRelation(NinePartName.NEMESIS,   (NinePartName.FORTUNE,)),
     NinePartsDependencyRelation(NinePartName.SWORD,     ()),
     NinePartsDependencyRelation(NinePartName.NODE,      ()),
 )
@@ -506,19 +573,20 @@ _DEPENDENCY_RELATION_BY_NAME: dict[NinePartName, NinePartsDependencyRelation] = 
 @dataclass(slots=True)
 class NinePartsSet:
     """
-    RITE: The Sacred Ninefold — the complete set of Abu Ma'shar's Nine Parts
-    computed from a single natal chart, carrying the ordered parts, the
-    night-chart flag, the policy used, and the full dependency graph.
+    RITE: The Lot Set — the complete set of lots computed from a single
+    natal chart, carrying the ordered parts, the night-chart flag, the policy
+    used, and the full dependency graph.
 
-    THEOREM: Relational vessel that groups nine NinePart results with their
-    inter-lot dependency relations. Provides inspectability over the set as
-    a whole.
+    THEOREM: Relational vessel that groups the computed NinePart results with
+    their inter-lot dependency relations. Provides inspectability over the
+    set as a whole.
 
     Structural invariants:
-        - parts contains exactly 9 NinePart instances.
-        - parts are in canonical Abu Ma'shar order (Fortune → Node).
+        - parts are exactly the lots selected by ``policy.historical_scope``:
+          the seven Hermetic lots (default), or those seven plus Sword and
+          Node (explicit opt-in), in canonical order.
         - all parts share the same is_night_chart value.
-        - dependency_relations contains exactly 9 entries.
+        - dependency_relations align one-to-one with parts.
     """
     parts:                list[NinePart]
     is_night_chart:       bool
@@ -526,27 +594,31 @@ class NinePartsSet:
     dependency_relations: list[NinePartsDependencyRelation]
 
     def __post_init__(self) -> None:
-        if len(self.parts) != 9:
+        if not isinstance(self.policy, NinePartsPolicy):
+            raise ValueError("NinePartsSet invariant: policy must be a NinePartsPolicy")
+        expected_order = _expected_part_names(self.policy)
+        if len(self.parts) != len(expected_order):
             raise ValueError(
-                f"NinePartsSet invariant: must contain exactly 9 parts, "
-                f"got {len(self.parts)}"
+                f"NinePartsSet invariant: must contain exactly "
+                f"{len(expected_order)} parts for historical_scope "
+                f"{self.policy.historical_scope.value!r}, got {len(self.parts)}"
             )
-        if len(self.dependency_relations) != 9:
+        if len(self.dependency_relations) != len(expected_order):
             raise ValueError(
-                f"NinePartsSet invariant: must contain exactly 9 dependency "
-                f"relations, got {len(self.dependency_relations)}"
+                f"NinePartsSet invariant: must contain exactly "
+                f"{len(expected_order)} dependency relations, got "
+                f"{len(self.dependency_relations)}"
             )
-        expected_order = list(NinePartName)
         actual_order = [part.name for part in self.parts]
         if actual_order != expected_order:
             raise ValueError(
-                "NinePartsSet invariant: parts must be in canonical Abu Ma'shar order"
+                "NinePartsSet invariant: parts must be in canonical order"
             )
-        expected_relation_order = list(NinePartName)
+        expected_relation_order = expected_order
         actual_relation_order = [relation.part for relation in self.dependency_relations]
         if actual_relation_order != expected_relation_order:
             raise ValueError(
-                "NinePartsSet invariant: dependency_relations must be in canonical Abu Ma'shar order"
+                "NinePartsSet invariant: dependency_relations must be in canonical order"
             )
         for part in self.parts:
             if part.computation.is_night_chart != self.is_night_chart:
@@ -590,22 +662,22 @@ class NinePartsSet:
 
     @property
     def planetary_parts(self) -> list[NinePart]:
-        """The seven parts that have a planet association (excludes Sword and Node)."""
+        """Parts that have a planet association (excludes Sword and Node)."""
         return [p for p in self.parts if p.has_planet_association]
 
     @property
     def nodal_parts(self) -> list[NinePart]:
-        """The two parts without a planet association: Sword and Node."""
+        """Parts without a planet association (Sword and Node, when opted in)."""
         return [p for p in self.parts if not p.has_planet_association]
 
     @property
     def historical_core_parts(self) -> list[NinePart]:
-        """The seven historically evidenced planetary lots."""
+        """The seven Hermetic lots sourced to Paulus ch. 23."""
         return [p for p in self.parts if p.is_historically_evidenced_core]
 
     @property
     def admitted_extension_parts(self) -> list[NinePart]:
-        """The admitted extension lots preserved beyond the evidenced core."""
+        """The unsourced extension lots (empty unless opted in)."""
         return [p for p in self.parts if not p.is_historically_evidenced_core]
 
     def __repr__(self) -> str:
@@ -690,19 +762,19 @@ class NinePartConditionProfile:
 @dataclass(slots=True)
 class NinePartsAggregate:
     """
-    Chart-wide aggregate intelligence built from the Nine Parts set and its
+    Chart-wide aggregate intelligence built from the computed lot set and its
     per-part condition profiles.
 
     parts_set
         The complete NinePartsSet for the chart.
     condition_profiles
-        Per-part condition profiles in canonical order (Fortune → Node).
+        Per-part condition profiles in canonical order, aligned with parts.
     policy
         The doctrinal policy used for this computation.
     parts_in_own_sign
         Parts where the lord of the part is the part's own planet association.
     unique_lords
-        Distinct lords across all nine parts (how many planets govern the set).
+        Distinct lords across all computed parts (how many planets govern the set).
     dominant_lord
         The planet that lords over the most parts. None if there is a tie.
     """
@@ -711,16 +783,17 @@ class NinePartsAggregate:
     policy:             NinePartsPolicy
 
     def __post_init__(self) -> None:
-        if len(self.condition_profiles) != 9:
+        expected_profile_order = [part.name for part in self.parts_set.parts]
+        if len(self.condition_profiles) != len(expected_profile_order):
             raise ValueError(
-                f"NinePartsAggregate invariant: must have exactly 9 condition "
-                f"profiles, got {len(self.condition_profiles)}"
+                f"NinePartsAggregate invariant: must have exactly "
+                f"{len(expected_profile_order)} condition profiles, got "
+                f"{len(self.condition_profiles)}"
             )
-        expected_profile_order = list(NinePartName)
         actual_profile_order = [profile.part.name for profile in self.condition_profiles]
         if actual_profile_order != expected_profile_order:
             raise ValueError(
-                "NinePartsAggregate invariant: condition_profiles must be in canonical Abu Ma'shar order"
+                "NinePartsAggregate invariant: condition_profiles must be in canonical order"
             )
         if any(profile.part is not part for profile, part in zip(self.condition_profiles, self.parts_set.parts)):
             raise ValueError(
@@ -738,7 +811,7 @@ class NinePartsAggregate:
 
     @property
     def unique_lords(self) -> list[str]:
-        """Distinct lord planets across all nine parts, in Chaldean order."""
+        """Distinct lord planets across all computed parts, in Chaldean order."""
         chaldean = ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon"]
         seen = {cp.lord for cp in self.condition_profiles}
         return [p for p in chaldean if p in seen]
@@ -785,7 +858,10 @@ def nine_parts_abu_mashar(
     policy: NinePartsPolicy = DEFAULT_NINE_PARTS_POLICY,
 ) -> NinePartsAggregate:
     """
-    Compute Abu Ma'shar's Nine Hermetic Lots for a chart.
+    Compute the seven Hermetic lots of Paulus Alexandrinus ch. 23 for a chart,
+    plus the unsourced Sword and Node lots when the policy opts in.
+
+    The name is kept for compatibility; see the module docstring.
 
     Parameters
     ----------
@@ -793,21 +869,22 @@ def nine_parts_abu_mashar(
         Ascendant longitude in degrees [0, 360).
     planets : dict[str, float]
         Mapping of planet names to ecliptic longitudes. Must include at
-        minimum: 'Sun', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'North Node'.
-        All longitudes must be finite. Values are normalized modulo 360
-        before formula evaluation.
+        minimum: 'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter',
+        'Saturn'; 'North Node' is required only when the policy opts in to
+        the extension lots. All longitudes must be finite. Values are
+        normalized modulo 360 before formula evaluation.
     is_night_chart : bool
         True when the chart is nocturnal (Sun in houses 1–6, i.e. below
         the horizon). The caller is responsible for this determination.
         Moira's house calculation functions can be used to derive it.
     policy : NinePartsPolicy
         Doctrinal configuration. Defaults to DEFAULT_NINE_PARTS_POLICY
-        (FULL_REVERSAL).
+        (FULL_REVERSAL, HERMETIC_SEVEN).
 
     Returns
     -------
     NinePartsAggregate
-        Complete nine-parts result including all parts, dependency relations,
+        Complete result including the selected parts, dependency relations,
         per-part condition profiles, and aggregate intelligence.
 
     Raises
@@ -820,15 +897,16 @@ def nine_parts_abu_mashar(
 
     Notes
     -----
-    Dependency order: Fortune and Spirit are resolved first. Love, Necessity,
-    and Victory depend on them. The engine enforces this internally.
+    Dependency order: Fortune and Spirit are resolved first. Love and Victory
+    use Spirit; Necessity, Courage and Nemesis use Fortune. The engine
+    enforces this internally.
 
     Night reversal (FULL_REVERSAL): for night charts, the add and sub
-    operands are swapped for all nine parts. There are no per-lot exceptions
-    in the Abu Ma'shar system.
+    operands are swapped for every lot (Paulus ch. 23: "for night births,
+    the reverse").
     """
-    _validate_inputs(asc, planets)
     _validate_runtime_inputs(is_night_chart, policy)
+    _validate_inputs(asc, planets, policy)
 
     full_reversal = (
         is_night_chart
@@ -845,7 +923,7 @@ def nine_parts_abu_mashar(
 
     parts: list[NinePart] = []
 
-    for name_str, planet_assoc, meaning, day_add_key, day_sub_key in _NINE_PARTS_CATALOGUE:
+    for name_str, planet_assoc, day_add_key, day_sub_key in _catalogue_for(policy):
         part_name = NinePartName(name_str)
 
         # Determine effective operands after reversal
@@ -890,7 +968,7 @@ def nine_parts_abu_mashar(
         parts.append(NinePart(
             name               = part_name,
             planet_association = planet_assoc,
-            meaning            = meaning,
+            meaning            = None,
             longitude          = lon,
             sign               = sign_name,
             sign_degree        = sign_deg,
@@ -939,11 +1017,12 @@ def validate_nine_parts_output(aggregate: NinePartsAggregate) -> list[str]:
     fully consistent.
 
     Checks:
-    1. Exactly 9 parts present in canonical order.
+    1. Exactly the parts selected by the policy, in canonical order.
     2. All parts share the same is_night_chart value.
     3. All nocturnal-formula flags match the aggregate night flag.
     4. Fortune and Spirit are always computed before derived parts.
-    5. Derived parts (Love, Necessity, Victory) report DERIVED dependency kind.
+    5. Derived parts (Love, Necessity, Courage, Victory, Nemesis) report
+       DERIVED dependency kind.
     6. Direct parts report DIRECT dependency kind.
     7. All longitudes are finite and in [0, 360).
     8. All sign_degree values are in [0, 30).
@@ -956,9 +1035,11 @@ def validate_nine_parts_output(aggregate: NinePartsAggregate) -> list[str]:
     parts = aggregate.parts_set.parts
 
     # Check 1 — count and order
-    canonical_order = list(NinePartName)
-    if len(parts) != 9:
-        failures.append(f"Expected 9 parts, found {len(parts)}")
+    canonical_order = _expected_part_names(aggregate.parts_set.policy)
+    if len(parts) != len(canonical_order):
+        failures.append(
+            f"Expected {len(canonical_order)} parts, found {len(parts)}"
+        )
     else:
         for i, (part, expected_name) in enumerate(zip(parts, canonical_order)):
             if part.name is not expected_name:
@@ -983,7 +1064,7 @@ def validate_nine_parts_output(aggregate: NinePartsAggregate) -> list[str]:
     # Check 4 — Fortune and Spirit appear before derived parts
     names_so_far: list[str] = []
     for part in parts:
-        if part.name in (NinePartName.LOVE, NinePartName.NECESSITY, NinePartName.VICTORY):
+        if part.name.value in _LOT_DEPENDENCIES:
             required = _LOT_DEPENDENCIES[part.name.value]
             for req in required:
                 if req not in names_so_far:
@@ -1032,15 +1113,16 @@ def validate_nine_parts_output(aggregate: NinePartsAggregate) -> list[str]:
             )
 
     # Check 11 — profile count
-    if len(aggregate.condition_profiles) != 9:
+    if len(aggregate.condition_profiles) != len(parts):
         failures.append(
-            f"Expected 9 condition profiles, found {len(aggregate.condition_profiles)}"
+            f"Expected {len(parts)} condition profiles, found "
+            f"{len(aggregate.condition_profiles)}"
         )
 
     # Check 12 — dependency relation count
-    if len(aggregate.parts_set.dependency_relations) != 9:
+    if len(aggregate.parts_set.dependency_relations) != len(parts):
         failures.append(
-            f"Expected 9 dependency relations, found "
+            f"Expected {len(parts)} dependency relations, found "
             f"{len(aggregate.parts_set.dependency_relations)}"
         )
 
@@ -1051,12 +1133,23 @@ def validate_nine_parts_output(aggregate: NinePartsAggregate) -> list[str]:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _validate_inputs(asc: float, planets: dict[str, float]) -> None:
+def required_bodies_for(policy: NinePartsPolicy = DEFAULT_NINE_PARTS_POLICY) -> frozenset[str]:
+    """Body keys that ``nine_parts_abu_mashar`` requires under *policy*."""
+    if policy.includes_extension_lots:
+        return _HERMETIC_SEVEN_REQUIRED_BODIES | _EXTENSION_REQUIRED_BODIES
+    return _HERMETIC_SEVEN_REQUIRED_BODIES
+
+
+def _validate_inputs(
+    asc: float,
+    planets: dict[str, float],
+    policy: NinePartsPolicy = DEFAULT_NINE_PARTS_POLICY,
+) -> None:
     """Raise ValueError for malformed inputs at the system boundary."""
     if not isfinite(asc):
         raise ValueError(f"asc must be finite, got {asc}")
-    required = {"Sun", "Moon", "Mars", "Jupiter", "Saturn", "North Node"}
-    missing = required - planets.keys()
+    required = required_bodies_for(policy)
+    missing = set(required) - planets.keys()
     if missing:
         raise KeyError(f"planets dict missing required keys: {missing!r}")
     for key, lon in planets.items():
@@ -1084,10 +1177,14 @@ def _resolve_key(
     Resolve a formula key to a longitude.
 
     Checks computed lots first (Fortune, Spirit) then raw planet refs.
+    Lot names ("Fortune", "Spirit") are never read from caller-supplied
+    planet keys: a lot operand must have been computed earlier in the order.
     Raises KeyError if the key cannot be resolved.
     """
     if key in computed_lons:
         return computed_lons[key]
+    if key in _LOT_NAMES:
+        raise KeyError(f"Lot {key!r} used before it was computed")
     if key in refs:
         return refs[key]
     raise KeyError(

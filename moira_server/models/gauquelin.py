@@ -62,7 +62,14 @@ class GauquelinDirectSectorRequest(_StrictModel):
     latitude: float = Field(ge=-90.0, le=90.0)
     local_sidereal_time: float
     horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
-    sectors: Literal[36] = 36
+    sectors: Literal[36] = Field(
+        default=36,
+        description=(
+            "Only 36, the resolution the Gauquelins tabulated. Coarser "
+            "12- or 18-sector groupings are not admitted because Moira has "
+            "no verified Gauquelin source defining them."
+        ),
+    )
 
     @field_validator("body")
     @classmethod
@@ -99,7 +106,14 @@ class GauquelinDirectSectorsRequest(_StrictModel):
     latitude: float = Field(ge=-90.0, le=90.0)
     local_sidereal_time: float
     horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
-    sectors: Literal[36] = 36
+    sectors: Literal[36] = Field(
+        default=36,
+        description=(
+            "Only 36, the resolution the Gauquelins tabulated. Coarser "
+            "12- or 18-sector groupings are not admitted because Moira has "
+            "no verified Gauquelin source defining them."
+        ),
+    )
 
     @field_validator("bodies")
     @classmethod
@@ -131,7 +145,14 @@ class GauquelinChartSectorsRequest(_StrictModel):
     longitude: float = Field(ge=-180.0, le=180.0)
     bodies: list[str] | None = None
     horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
-    sectors: Literal[36] = 36
+    sectors: Literal[36] = Field(
+        default=36,
+        description=(
+            "Only 36, the resolution the Gauquelins tabulated. Coarser "
+            "12- or 18-sector groupings are not admitted because Moira has "
+            "no verified Gauquelin source defining them."
+        ),
+    )
 
     @field_validator("dt")
     @classmethod
@@ -172,6 +193,7 @@ class GauquelinPositionResponse(_StrictModel):
     sectors: int
     degree_in_sector: float | None
     is_plus_zone: bool
+    effect_status: Literal["effect_body", "no_published_effect", "unspecified_body"]
     horizon_status: HorizonStatus
     right_ascension: float | None = None
     declination: float | None = None

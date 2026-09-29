@@ -50,6 +50,8 @@ from .vedic_extended import (
 )
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
+from .almuten import router as almuten_router
+from .hyleg import router as hyleg_router
 from .panchanga import router as panchanga_router
 from .pancha_pakshi import router as pancha_pakshi_router
 from .orbits import router as orbits_router
@@ -135,6 +137,8 @@ __all__ = [
     "jaimini_extended_router",
     "nodes_router",
     "nine_parts_router",
+    "almuten_router",
+    "hyleg_router",
     "orbits_router",
     "panchanga_router",
     "pancha_pakshi_router",

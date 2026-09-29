@@ -27,7 +27,12 @@ from moira.eclipse import (
     SolarBodyCircumstances,
     SolarEclipseLocalCircumstances,
 )
-from moira.heliacal import GeneralVisibilityEvent, PlanetHeliacalEvent, VisibilityAssessment
+from moira.heliacal import (
+    GeneralVisibilityEvent,
+    PhasisSearchResult,
+    PlanetHeliacalEvent,
+    VisibilityAssessment,
+)
 from moira.occultations import (
     CloseApproach,
     LunarOccultation,
@@ -67,6 +72,8 @@ from moira.stations import StationEvent
 from moira.void_of_course import LastAspect, VoidOfCourseWindow
 
 from ..models.phenomena import (
+    HeliacalPhasisKindResponse,
+    HeliacalPhasisResponse,
     CloseApproachResponse,
     EclipseDataResponse,
     EclipseEventResponse,
@@ -927,6 +934,32 @@ def serialize_general_visibility_event(
     )
 
 
+def serialize_heliacal_phasis(result: PhasisSearchResult) -> HeliacalPhasisResponse:
+    return HeliacalPhasisResponse(
+        body=result.body,
+        jd_ut=result.jd_ut,
+        datetime_utc=datetime_from_jd(result.jd_ut).isoformat(),
+        lat=result.lat,
+        lon=result.lon,
+        window_days=result.window_days,
+        lookahead_days=result.lookahead_days,
+        events=[
+            HeliacalPhasisKindResponse(
+                kind=entry.kind.value,
+                applicable=entry.applicable,
+                found=entry.event is not None,
+                offset_days=entry.offset_days,
+                event=(
+                    serialize_general_visibility_event(entry.event)
+                    if entry.event is not None
+                    else None
+                ),
+            )
+            for entry in result.results
+        ],
+    )
+
+
 def serialize_paran_crossing(crossing: ParanCrossing) -> ParanCrossingResponse:
     return ParanCrossingResponse(
         body=crossing.body,
@@ -1194,6 +1227,7 @@ __all__ = [
     "serialize_eclipse_event",
     "serialize_event_instant",
     "serialize_general_visibility_event",
+    "serialize_heliacal_phasis",
     "serialize_last_aspect",
     "serialize_local_contact",
     "serialize_lunar_eclipse_local",

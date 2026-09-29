@@ -57,7 +57,8 @@ def test_heliacal_rising_event_returns_found_event(monkeypatch: pytest.MonkeyPat
     assert event.classification.visibility_state == "found"
 
 
-def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_last_morning_visibility_event_returns_last_visible_morning(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The pre-6.9.9 ``heliacal_setting_event`` scan, preserved under its own name."""
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
 
     def _fake_star_at(name: str, jd_tt: float, **_: object) -> _FakeBody:
@@ -73,13 +74,74 @@ def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 6.0)
 
-    event = stars.heliacal_setting_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30)
+    event = stars.last_morning_visibility_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30)
 
     assert event.is_found is True
     assert event.jd_ut == pytest.approx(2451545.75)
-    assert event.event_kind == "heliacal_setting"
+    assert event.event_kind == "last_morning_visibility"
     assert event.computation_truth is not None
     assert event.computation_truth.qualifying_day_offset == 1
+    assert stars.last_morning_visibility(
+        "Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30
+    ) == pytest.approx(2451545.75)
+
+
+def test_heliacal_setting_event_returns_last_visible_evening(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Standard heliacal setting (6.9.9): last evening sighting east of the Sun."""
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
+        # Star at 100 deg; the Sun 14.5 deg west of it, then 4 deg (in the glare).
+        if jd_ut <= 2451546.0:
+            return _FakeBody(85.5)
+        return _FakeBody(96.0)
+
+    evening_flags: list[bool] = []
+
+    def _fake_sun_at_alt(jd_midnight, lat, lon, target_alt, morning):
+        evening_flags.append(morning)
+        return jd_midnight + 0.75
+
+    monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
+    monkeypatch.setattr("moira.planets.planet_at", _fake_planet_at)
+    monkeypatch.setattr("moira.heliacal._find_sun_at_alt", _fake_sun_at_alt)
+    monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 6.0)
+
+    event = stars.heliacal_setting_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30)
+
+    from moira.heliacal import _local_mean_solar_midnight
+
+    assert event.is_found is True
+    assert event.event_kind == "heliacal_setting"
+    assert event.computation_truth is not None
+    assert event.computation_truth.qualifying_elongation == pytest.approx(14.5)
+    last_day = event.computation_truth.qualifying_day_offset
+    assert event.jd_ut == pytest.approx(
+        _local_mean_solar_midnight(2451545.0, 29.9) + last_day + 0.75
+    )
+    # Only dusk twilight is ever solved for.
+    assert evening_flags and not any(evening_flags)
+
+
+def test_heliacal_setting_event_ignores_morning_apparition(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A star west of the Sun (morning sky) never yields a heliacal setting."""
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
+        if jd_ut <= 2451546.0:
+            return _FakeBody(114.5)
+        return _FakeBody(104.0)
+
+    monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
+    monkeypatch.setattr("moira.planets.planet_at", _fake_planet_at)
+    monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda jd_midnight, *args, **kwargs: jd_midnight + 0.75)
+    monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 6.0)
+
+    event = stars.heliacal_setting_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30)
+
+    assert event.is_found is False
+    assert event.jd_ut is None
+    assert stars.heliacal_setting("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30) is None
 
 
 def test_heliacal_rising_returns_none_when_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -124,13 +186,22 @@ def test_python_heliacal_rising_does_not_relabel_open_apparition_after_start(
     assert event.jd_ut is None
 
 
-def test_python_heliacal_setting_never_remembers_visibility_before_forward_start(
+@pytest.mark.parametrize(
+    ("search", "side"),
+    [
+        (stars.heliacal_setting_event, 1.0),
+        (stars.last_morning_visibility_event, -1.0),
+    ],
+)
+def test_python_setting_searches_never_remember_visibility_before_forward_start(
     monkeypatch: pytest.MonkeyPatch,
+    search,
+    side: float,
 ) -> None:
     jd_start = 2451545.3
 
     def _signed_elongation(_name: str, jd_ut: float) -> float:
-        return -15.0 if jd_ut < 2451546.0 else -4.0
+        return side * (15.0 if jd_ut < 2451546.0 else 4.0)
 
     monkeypatch.setattr(stars, "_heliacal_signed_elongation", _signed_elongation)
     monkeypatch.setattr(
@@ -139,7 +210,7 @@ def test_python_heliacal_setting_never_remembers_visibility_before_forward_start
     )
     monkeypatch.setattr(stars, "_star_altitude", lambda *args, **kwargs: 6.0)
 
-    event = stars.heliacal_setting_event(
+    event = search(
         "Sirius",
         jd_start,
         31.2,
@@ -353,6 +424,45 @@ def test_batch_found_sorted_by_jd_ut(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_batch_rejects_invalid_event_kind() -> None:
     with pytest.raises(ValueError, match="event_kind must be"):
         stars.heliacal_catalog_batch("cosmic_rising", 2451545.0, 31.2, 29.9)
+
+
+def test_batch_heliacal_setting_never_enters_morning_native_kernel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The compiled setting kernel scans mornings; it must not serve the
+    standard (evening last) heliacal setting even when native is admitted."""
+    monkeypatch.setattr(
+        stars.mn,
+        "search_heliacal_setting",
+        lambda *args, **kwargs: pytest.fail("evening-last search must not use the morning kernel"),
+    )
+    monkeypatch.setattr(
+        stars.mn,
+        "search_heliacal_rising",
+        lambda *args, **kwargs: pytest.fail("evening-last search must not use the rising kernel"),
+    )
+    called: list[str] = []
+    monkeypatch.setitem(
+        stars._HELIACAL_BATCH_SEARCHES,
+        "heliacal_setting",
+        lambda name, *args, **kwargs: called.append(name) or stars._build_heliacal_event(
+            "heliacal_setting", name, 2451545.0, 5, 10.0, 12.0, None, None, None, None
+        ),
+    )
+
+    result = stars.heliacal_catalog_batch(
+        "heliacal_setting",
+        2451545.0,
+        31.2,
+        29.9,
+        names=["Sirius"],
+        max_magnitude=2.0,
+        search_days=5,
+        policy=FixedStarComputationPolicy(use_native_heliacal=True),
+    )
+    assert called == ["Sirius"]
+    assert result.event_kind == "heliacal_setting"
+    assert result.not_found == ("Sirius",)
 
 
 def test_batch_rejects_unknown_names() -> None:

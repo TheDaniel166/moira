@@ -374,7 +374,10 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Eros (Hermetic)",                   "Venus",         "Spirit",         True,  "hellenistic,medieval"),
     PartDefinition("Eros (Olympiodorus) A",             "Jupiter",       "Saturn",         True,  "hellenistic"),
     PartDefinition("Eros (Olympiodorus) B",             "Mars",          "Saturn",         True,  "hellenistic"),
-    PartDefinition("Eros (Paulus)",                     "Venus",         "Spirit",         False, "hellenistic"),
+    # Paulus Alexandrinus, Introduction ch. 23 ("from the Lot of Spirit to the
+    # degree of Aphrodite for those born in the day ... for those born at
+    # night, the reverse"); before 6.9.9 the night reversal was missing.
+    PartDefinition("Eros (Paulus)",                     "Venus",         "Spirit",         True,  "hellenistic"),
     PartDefinition("Eros (Valens)",                     "Spirit",        "Fortune",        True,  "hellenistic,medieval"),
     PartDefinition("Estates",                           "Mercury",       "Saturn",         True,  "hellenistic"),
     PartDefinition("Exaltation (Day)",                  "18 Aries",      "Sun",            False, "hellenistic,medieval"),
@@ -571,7 +574,11 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Navigation (Medieval)",             "29 Cancer",     "Saturn",         True,  "medieval"),
     PartDefinition("Necessity (Firmicus)",              "Spirit",        "Fortune",        True,  "hellenistic"),
     PartDefinition("Necessity (Hermetic)",              "Fortune",       "Mercury",        True,  "hellenistic,medieval"),
-    PartDefinition("Necessity (Paulus)",                "Mercury",       "Fortune",        False, "hellenistic"),
+    # Paulus Alexandrinus, Introduction ch. 23 ("from the degree of Hermes to
+    # Lot of the Fortune for those born in the day ... at night, the
+    # reverse"): Asc + Fortune - Mercury by day. Before 6.9.9 this entry was
+    # Asc + Mercury - Fortune by day and night (reversed by day).
+    PartDefinition("Necessity (Paulus)",                "Fortune",       "Mercury",        True,  "hellenistic"),
     PartDefinition("Necessity (Persian)",               "Mercury",       "Eros (Valens)",  True,  "medieval"),
     PartDefinition("Necessity (Valens)",                "Fortune",       "Spirit",         True,  "hellenistic,medieval"),
     PartDefinition("Necessity & Hindering of Needs",    "H3",            "Mars",           False, "medieval"),

@@ -83,7 +83,7 @@ def test_transmission_graph_has_no_effect_fields() -> None:
         assert not hasattr(edge, "prose")
 
 
-def test_offices_preserve_candidates_and_never_select() -> None:
+def test_offices_preserve_candidates_and_never_select_a_house_master() -> None:
     hunt = hunt_hellenistic_offices(
         positions={
             "Sun": 10.0,
@@ -98,10 +98,14 @@ def test_offices_preserve_candidates_and_never_select() -> None:
         asc_longitude=15.0,
         lots={"Fortune": 50.0},
     )
+    # Sun in the orient (Ptolemy III.10) but Saturn stands in the mid-heaven,
+    # a place of greater authority: the ruler-over-luminary check needs the
+    # preceding new moon, which was not supplied.
     assert hunt.status is HellenisticOfficeStatus.NOT_EVALUABLE
     assert hunt.predominator is None
+    assert hunt.reason == "prenatal_new_moon_longitude_required_for_ruler_over_luminary_check"
     assert hunt.house_master is None
-    assert hunt.reason == OFFICE_NOT_ADMITTED_REASON
+    assert hunt.house_master_reason == OFFICE_NOT_ADMITTED_REASON
     names = {item.name for item in hunt.candidates}
     assert {"Sun", "Moon", "Fortune", "Ascendant"} <= names
     sun = next(item for item in hunt.candidates if item.name == "Sun")

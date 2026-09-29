@@ -261,6 +261,9 @@ from .heliacal import (
     PlanetHeliacalEvent,
     planet_heliacal_rising, planet_heliacal_setting,
     planet_acronychal_rising, planet_acronychal_setting,
+    planet_evening_first, planet_morning_last, planet_cosmical_setting,
+    heliacal_event_kind_applies, STANDARD_HELIACAL_EVENT_KINDS,
+    PhasisKindResult, PhasisSearchResult, phasis_events_near,
     # V5 generalized visibility surface
     VisibilityTargetKind,
     LightPollutionClass,
@@ -798,6 +801,7 @@ from .stars import (
     list_stars, find_stars, star_magnitude, load_catalog,
     heliacal_rising, heliacal_setting,
     heliacal_rising_event, heliacal_setting_event,
+    last_morning_visibility, last_morning_visibility_event,
     heliacal_catalog_batch,
     star_chart_condition_profile, star_condition_network_profile,
 )
@@ -2278,6 +2282,9 @@ __all__ = [
     "PlanetHeliacalEvent",
     "planet_heliacal_rising", "planet_heliacal_setting",
     "planet_acronychal_rising", "planet_acronychal_setting",
+    "planet_evening_first", "planet_morning_last", "planet_cosmical_setting",
+    "heliacal_event_kind_applies", "STANDARD_HELIACAL_EVENT_KINDS",
+    "PhasisKindResult", "PhasisSearchResult", "phasis_events_near",
     # V5 generalized visibility surface
     "VisibilityTargetKind",
     "LightPollutionClass", "LightPollutionDerivationMode",
@@ -2606,6 +2613,7 @@ __all__ = [
     "heliacal_rising_event", "heliacal_setting_event",
     "heliacal_catalog_batch",
     "heliacal_rising", "heliacal_setting",
+    "last_morning_visibility", "last_morning_visibility_event",
     "star_chart_condition_profile", "star_condition_network_profile",
     # Unified star API
     "StellarQuality",

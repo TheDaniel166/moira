@@ -68,8 +68,8 @@ def test_classical_perfection_route_round_trips_trace(monkeypatch) -> None:
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["evaluation"]["profile_id"] == "lilly_1647_perfection_v1"
-    assert body["evaluation"]["policy"]["bounds_doctrine"] == "egyptian"
-    assert body["evaluation"]["policy"]["triplicity_doctrine"] == "dorothean_sect_active"
+    assert body["evaluation"]["policy"]["bounds_doctrine"] == "william_lilly_1647"
+    assert body["evaluation"]["policy"]["triplicity_doctrine"] == "william_lilly_1647_sect_active"
     assert body["evaluation"]["policy"]["input_timescale"] == "ut1_with_internal_tt_ephemeris_conversion"
     assert body["evaluation"]["events"][0]["event_id"] == "fixture-exact"
     assert len(body["evaluation"]["witnesses"]) == 6

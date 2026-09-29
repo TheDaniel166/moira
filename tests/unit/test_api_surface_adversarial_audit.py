@@ -1062,6 +1062,19 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "transiting_astrocartography",
 })
 
+# 6.9.9 standard heliacal phenomena (Ptolemy / Schoch names) and the
+# phasis search, admitted alongside the existing planet_* heliacal wrappers.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "PhasisKindResult",
+    "PhasisSearchResult",
+    "STANDARD_HELIACAL_EVENT_KINDS",
+    "heliacal_event_kind_applies",
+    "phasis_events_near",
+    "planet_cosmical_setting",
+    "planet_evening_first",
+    "planet_morning_last",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",

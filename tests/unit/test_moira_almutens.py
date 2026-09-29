@@ -154,8 +154,11 @@ def test_facade_almuten_figuris_auto_resolve(moira_engine) -> None:
     chart = moira_engine.chart(dt)
     houses = moira_engine.houses(dt, latitude=51.5, longitude=-0.1)
 
-    # Call facade method
-    result = moira_engine.almuten_figuris(chart, houses)
+    # Moira's chart and house vessels carry no birthplace: since 6.9.9 the
+    # rulers are not silently skipped, so the birthplace must be given.
+    with pytest.raises(ValueError, match="no geographic latitude and longitude"):
+        moira_engine.almuten_figuris(chart, houses)
+    result = moira_engine.almuten_figuris(chart, houses, geo_latitude=51.5, geo_longitude=-0.1)
     assert result in CLASSIC_7
 
 
@@ -249,18 +252,87 @@ def test_almuten_figuris_validation() -> None:
 
 @pytest.mark.requires_ephemeris
 def test_facade_almuten_figuris_strict_mode(moira_engine) -> None:
-    """Verifies that strict=True bubbles up resolution failures in the facade."""
-    from datetime import datetime, timezone
+    """Since 6.9.9 a failed auto-resolution always raises (no silent fallback),
+    whatever ``strict`` says."""
     from types import SimpleNamespace
 
-    # Create a mock chart with missing fields that would crash the planetary hour/syzygy resolution
+    # A mock chart whose epoch cannot be resolved.
     chart = SimpleNamespace(jd_ut="invalid_jd", longitudes=lambda include_nodes=False: {"Sun": 0.0, "Moon": 0.0})
     houses = SimpleNamespace(asc=0.0, cusps=[0.0] * 12)
 
-    # Calling with strict=False (default) should pass, silently ignoring the failure and using fallbacks
-    res = moira_engine.almuten_figuris(chart, houses, strict=False)
-    assert res in CLASSIC_7
+    for strict in (False, True):
+        with pytest.raises(Exception):
+            moira_engine.almuten_figuris(chart, houses, strict=strict)
 
-    # Calling with strict=True should bubble up the AttributeError or other resolution error
-    with pytest.raises(Exception):
-        moira_engine.almuten_figuris(chart, houses, strict=True)
+    # Rulers cannot be resolved without geographic coordinates: named ValueError.
+    located = SimpleNamespace(
+        jd_ut=2451545.0,
+        _reader=None,
+        longitudes=lambda include_nodes=False: {"Sun": 0.0, "Moon": 0.0},
+    )
+    with pytest.raises(ValueError, match="no geographic latitude and longitude"):
+        moira_engine.almuten_figuris(located, houses, prenatal_syzygy_lon=10.0)
+    # Supplying every input needs no resolution at all.
+    assert moira_engine.almuten_figuris(
+        located, houses, prenatal_syzygy_lon=10.0, day_ruler="Sun", hour_ruler="Mars",
+    ) in CLASSIC_7
+
+
+# ---------------------------------------------------------------------------
+# Determinations (typed tallies behind the string-returning functions)
+# ---------------------------------------------------------------------------
+
+_LEGACY = "moira_legacy_v1"
+
+
+def test_almuten_of_degree_determination_matches_string_api() -> None:
+    from moira.dignities import almuten_of_degree_determination
+
+    for longitude in (0.0, 30.0, 95.0, 200.0, 345.5):
+        for is_day in (True, False):
+            det = almuten_of_degree_determination(longitude, is_day, doctrine=_LEGACY)
+            assert det.almuten == almuten_of_degree(longitude, is_day)
+            assert det.doctrine == "moira_almuten_of_degree_v1"
+            assert [t.planet for t in det.tallies] == [
+                "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"
+            ]
+            assert det.almuten in det.tied_planets
+
+
+def test_almuten_of_degree_aries_zero_day_tallies() -> None:
+    """Legacy count, 0 deg Aries by day: Sun exaltation 4 + triplicity 3; Mars
+    domicile 5 + face 1; Jupiter Egyptian bound 2; Saturn Dorothean
+    participating triplicity 1."""
+    from moira.dignities import almuten_of_degree_determination
+
+    det = almuten_of_degree_determination(0.0, True, doctrine=_LEGACY)
+    totals = {t.planet: t.total for t in det.tallies}
+    assert totals == {
+        "Sun": 7, "Moon": 0, "Mercury": 0, "Venus": 0, "Mars": 6, "Jupiter": 2, "Saturn": 1,
+    }
+    assert det.tied_planets == ("Sun",)
+
+
+def test_almuten_figuris_determination_components_add_up() -> None:
+    from moira.dignities import almuten_figuris_determination
+
+    positions = {
+        "Sun": 10.0, "Moon": 100.0, "Mercury": 20.0, "Venus": 40.0,
+        "Mars": 200.0, "Jupiter": 250.0, "Saturn": 300.0,
+    }
+    cusps = [30.0 * i for i in range(12)]
+    det = almuten_figuris_determination(
+        positions, cusps, True, day_ruler="Sun", hour_ruler="Mars", doctrine=_LEGACY,
+    )
+    assert det.almuten == almuten_figuris(
+        positions, cusps, True, day_ruler="Sun", hour_ruler="Mars",
+    )
+    assert det.doctrine == "moira_almuten_figuris_v1"
+    assert [p.name for p in det.scored_points] == ["Sun", "Moon", "Ascendant", "Lot of Fortune"]
+    assert det.tally("Sun").ruler_points == 7
+    assert det.tally("Mars").ruler_points == 6
+    assert det.tally("Sun").house_points == ALMUTEN_HOUSE_SCORES[1]
+
+    three = almuten_figuris_determination(positions, 0.0, True, doctrine=_LEGACY)
+    assert three.doctrine == "moira_almuten_figuris_three_point_v1"
+    assert all(t.house_points == 0 and t.ruler_points == 0 for t in three.tallies)

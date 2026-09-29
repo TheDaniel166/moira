@@ -1,4 +1,4 @@
-"""Service layer for P12-05 Abu Ma'shar Nine Parts routes."""
+"""Service layer for P12-05 Nine Parts routes (Paulus ch. 23 Hermetic lots)."""
 
 from __future__ import annotations
 
@@ -147,6 +147,14 @@ def compute_abu_mashar_nine_parts(
         policy=_serialize_policy(policy),
         validation=validation,
         provenance=NinePartsProvenanceResponse(
+            doctrine=(
+                "paulus_alexandrinus_ch23_hermetic_lots_plus_unsourced_extension"
+                if policy.includes_extension_lots
+                else "paulus_alexandrinus_ch23_hermetic_lots"
+            ),
+            unsourced_parts=[
+                part.name.value for part in aggregate.parts_set.admitted_extension_parts
+            ],
             reversal_rule=policy.reversal_rule.value,
             historical_scope=policy.historical_scope.value,
             stage_sequence=[

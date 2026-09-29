@@ -233,7 +233,9 @@ def _compute_derived_chart_aspects(
         engine,
         AspectsFromLongitudesRequest(
             longitudes=longitudes,
-            tier=1 if request.tier is None else request.tier,
+            # Same default as synastry (moira.synastry.SynastryAspectPolicy):
+            # tier 0, the five major Ptolemaic aspects (6.9.9; was 1).
+            tier=0 if request.tier is None else request.tier,
             orb_factor=1.0 if request.orb_factor is None else request.orb_factor,
             include_nodes=True if request.include_nodes is None else request.include_nodes,
         ),

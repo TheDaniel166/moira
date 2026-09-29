@@ -177,20 +177,23 @@ def test_manazil_position_accepts_a_bare_longitude(client: TestClient) -> None:
     assert body["provenance"]["default_authority"] == "agrippa_de_occulta_philosophia_ii_33"
 
 
-@pytest.mark.requires_ephemeris
-def test_manazil_star_based_position_reports_its_own_basis(client: TestClient) -> None:
+def test_manazil_al_biruni_position_is_equal_division_without_a_date(client: TestClient) -> None:
     response = client.post(
         "/v1/manazil/position",
-        json={"longitude": 254.526, "tradition": "al_biruni", "jd_ut": 2407422.951412},
+        json={"longitude": 254.526, "tradition": "al_biruni"},
     )
     assert response.status_code == 200
     body = response.json()
-    # The computation longitude is the longitude used, not an equal-division rebuild.
+    mansion = body["result"]["mansion"]
+    assert mansion["index"] == 20
+    assert mansion["arabic_name"] == "al-Naʿāʾim"
+    assert "sig Sgr" in mansion["marker_stars"]
+    assert "ruling_star" not in mansion
+    assert body["result"]["degrees_in"] == pytest.approx(254.526 - 19 * MANSION_SPAN)
     assert body["result"]["computation_longitude"] == pytest.approx(254.526)
-    assert body["provenance"]["computational_basis"] == "marker_star_boundaries"
+    assert body["provenance"]["computational_basis"] == "equal_division_360_by_28"
     assert body["provenance"]["default_authority"] == "al_biruni_book_of_instruction"
-    assert "marker_star_mansion_assignment" in body["provenance"]["stage_sequence"]
-    assert "equal_28_mansion_assignment" not in body["provenance"]["stage_sequence"]
+    assert "equal_28_mansion_assignment" in body["provenance"]["stage_sequence"]
 
 
 def test_manazil_catalog_applies_the_requested_tradition(client: TestClient) -> None:
@@ -198,6 +201,13 @@ def test_manazil_catalog_applies_the_requested_tradition(client: TestClient) -> 
     lookup = client.get("/v1/manazil/traditions/picatrix/mansions/2").json()
     assert picatrix["mansions"][1]["nature"] == lookup["nature"]
     assert picatrix["provenance"]["default_authority"] == "picatrix_i_4"
+    assert picatrix["mansions"][2]["latin_name"] == "Azoraya"
+    agrippa = client.get("/v1/manazil/catalog", params={"tradition": "agrippa"}).json()
+    assert agrippa["mansions"][2]["latin_name"] == "Achaomazon"
+    assert agrippa["mansions"][2]["latin_aliases"] == ["Athoray"]
     star = client.get("/v1/manazil/catalog", params={"tradition": "al_biruni"}).json()
-    assert star["span_degrees"] is None
-    assert star["provenance"]["computational_basis"] == "marker_star_boundaries"
+    assert star["span_degrees"] == MANSION_SPAN
+    assert star["provenance"]["computational_basis"] == "equal_division_360_by_28"
+    assert star["mansions"][27]["arabic_aliases"] == ["Al-Rishāʾ"]
+    assert "conventional marker" in star["mansions"][20]["marker_note"]
+    assert all("ruling_star" not in m for m in star["mansions"])

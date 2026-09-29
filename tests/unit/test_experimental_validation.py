@@ -47,7 +47,7 @@ from moira.galactic import (
 )
 from moira.gauquelin import gauquelin_sector, _PLUS_ZONE_SECTORS
 from moira.constants import J2000
-from moira.manazil import mansion_of, AL_BIRUNI_MANSIONS, MANSION_SPAN
+from moira.manazil import mansion_of, AL_BIRUNI_MANSIONS, MANSION_SPAN, MansionTradition
 from moira.longevity import (
     PTOLEMAIC_YEARS, EGYPTIAN_BOUNDS, FACE_RULERS,
     dignity_score_at, find_hyleg, calculate_longevity, HylegResult,
@@ -172,7 +172,8 @@ class TestGauquelin:
 
     Key invariants:
       - sector is always an integer in [1, 36]
-      - zone is either "Plus Zone" or "Neutral Zone"
+      - zone is either "Plus Zone" or "Neutral Zone" for the effect bodies
+        (Moon, Venus, Mars, Jupiter, Saturn); "Not Classified" otherwise
       - primary plus zones are exactly sectors 1-3 and 10-12 (6 of 36)
       - a sector is undefined when ordinary rise/set geometry does not exist
     """
@@ -196,7 +197,9 @@ class TestGauquelin:
 
     def test_zone_label_consistent_with_sector(self):
         for ra in range(0, 360, 30):
-            gp = gauquelin_sector(float(ra), 10.0, 48.0, 90.0, "X")
+            # 6.9.9: plus/neutral labels are given only to the Gauquelin
+            # effect bodies (Moon, Venus, Mars, Jupiter, Saturn).
+            gp = gauquelin_sector(float(ra), 10.0, 48.0, 90.0, "Mars")
             expected = "Plus Zone" if gp.sector in _PLUS_ZONE_SECTORS else "Neutral Zone"
             assert gp.zone == expected
 
@@ -245,7 +248,7 @@ class TestManazil:
             assert m.index == i + 1
 
     def test_mansion_of_zero_is_first(self):
-        mp = mansion_of(0.0)
+        mp = mansion_of(0.0, MansionTradition.AL_BIRUNI)
         assert mp.mansion.index == 1
         assert mp.mansion.arabic_name == "Al-Sharatain"
 
@@ -289,7 +292,8 @@ class TestManazil:
 
 class TestPtolemaicYears:
     """
-    Authority: Ptolemy "Tetrabiblos" IV.10.
+    Authority: Lilly, Christian Astrology (1647) Book I chs. VIII-XIV,
+    pp. 57-83 (Ptolemy does not give these tables).
     Seven planets only; minor < mean < major for all.
     """
 
@@ -301,13 +305,16 @@ class TestPtolemaicYears:
             assert minor < mean < major, planet
 
     def test_sun_years(self):
-        assert PTOLEMAIC_YEARS["Sun"] == (19.0, 69.5, 120.0)
+        # Lilly I ch. XI: greater 120, mean 69, least 19.
+        assert PTOLEMAIC_YEARS["Sun"] == (19.0, 69.0, 120.0)
 
     def test_moon_years(self):
-        assert PTOLEMAIC_YEARS["Moon"] == (25.0, 66.5, 108.0)
+        # Lilly I ch. XIV: greater 108, mean 66, least 25.
+        assert PTOLEMAIC_YEARS["Moon"] == (25.0, 66.0, 108.0)
 
     def test_saturn_years(self):
-        assert PTOLEMAIC_YEARS["Saturn"] == (30.0, 57.0, 90.0)
+        # Lilly, Christian Astrology (1647) I, p. 60: least 30, mean 43½, greater 57.
+        assert PTOLEMAIC_YEARS["Saturn"] == (30.0, 43.5, 57.0)
 
     def test_all_years_positive(self):
         for planet, (minor, mean, major) in PTOLEMAIC_YEARS.items():

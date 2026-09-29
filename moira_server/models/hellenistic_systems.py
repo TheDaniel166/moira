@@ -11,7 +11,11 @@ from moira.circumambulations import (
     CircumambulationTimeKey,
 )
 from moira.egyptian_bounds import EgyptianBoundsDoctrine
-from moira.hellenistic_offices import HellenisticOfficeStatus
+from moira.hellenistic_offices import (
+    HellenisticOfficeStatus,
+    PrenatalSyzygyKind,
+    ProrogativePlace,
+)
 from moira.valens_transmissions import (
     TransmissionEndpointKind,
     TransmissionKind,
@@ -149,10 +153,23 @@ class TransmissionsResponse(_StrictModel):
 
 
 class OfficesRequest(_StrictModel):
+    """Office candidates and the predominator by Ptolemy, Tetrabiblos III.10.
+
+    The predominator needs ``asc_longitude`` and all seven planets. The
+    syzygy inputs are needed only when the procedure reaches the step that
+    uses them: ``prenatal_new_moon_longitude`` for the day ruler step,
+    ``prenatal_full_moon_longitude`` (the degree of the luminary above the
+    earth at the full moon, per Ptolemy III.2) for the night ruler step, and
+    ``latest_prenatal_syzygy`` for the night final resort.
+    """
+
     positions: dict[str, float]
     is_day_chart: bool
     asc_longitude: float | None = None
     lots: dict[str, float] | None = None
+    prenatal_new_moon_longitude: float | None = None
+    prenatal_full_moon_longitude: float | None = None
+    latest_prenatal_syzygy: PrenatalSyzygyKind | None = None
 
     @field_validator("positions")
     @classmethod
@@ -169,11 +186,11 @@ class OfficesRequest(_StrictModel):
             return None
         return _clean_named_floats(value, quantity="lots")
 
-    @field_validator("asc_longitude")
+    @field_validator("asc_longitude", "prenatal_new_moon_longitude", "prenatal_full_moon_longitude")
     @classmethod
-    def _finite_asc(cls, value: float | None) -> float | None:
+    def _finite_asc(cls, value: float | None, info) -> float | None:
         if value is not None and not math.isfinite(value):
-            raise ValueError("asc_longitude must be finite")
+            raise ValueError(f"{info.field_name} must be finite")
         return value
 
 
@@ -187,12 +204,43 @@ class HellenisticOfficeCandidateResponse(_StrictModel):
     reason: str | None = None
 
 
+class PtolemyPlaceTruthResponse(_StrictModel):
+    name: str
+    longitude: float
+    offset_from_ascendant_deg: float
+    place: ProrogativePlace | None
+
+
+class PtolemyDominationCountResponse(_StrictModel):
+    planet: str
+    reference: str
+    reference_longitude: float
+    forms: list[str]
+    count: int
+
+
+class PtolemyPredominatorResponse(_StrictModel):
+    doctrine: str
+    status: HellenisticOfficeStatus
+    predominator: str | None
+    predominator_longitude: float | None
+    selection_step: str | None
+    is_day_chart: bool
+    lot_of_fortune_longitude: float
+    places: list[PtolemyPlaceTruthResponse]
+    ruler_counts: list[PtolemyDominationCountResponse]
+    ruler_candidates: list[str]
+    reason: str | None
+
+
 class OfficesResponse(_StrictModel):
     status: HellenisticOfficeStatus
-    predominator: None = None
+    predominator: str | None = None
     house_master: None = None
     candidates: tuple[HellenisticOfficeCandidateResponse, ...]
-    reason: str
+    reason: str | None
+    house_master_reason: str
+    predominator_determination: PtolemyPredominatorResponse | None
     provenance: HellenisticAspectProvenanceResponse
 
 
@@ -203,6 +251,9 @@ __all__ = [
     "HellenisticOfficeCandidateResponse",
     "OfficesRequest",
     "OfficesResponse",
+    "PtolemyDominationCountResponse",
+    "PtolemyPlaceTruthResponse",
+    "PtolemyPredominatorResponse",
     "TransmissionEdgeResponse",
     "TransmissionsRequest",
     "TransmissionsResponse",

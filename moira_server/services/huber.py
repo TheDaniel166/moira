@@ -218,7 +218,14 @@ def compute_huber_house_zones(request: HuberHouseZonesRequest) -> HuberHouseZone
 def compute_huber_age_point(request: HuberAgePointRequest) -> HuberAgePointResponse:
     frame = _direct_frame(request.house_frame)
     cusps = _house_cusps_from_direct_frame(frame)
-    return _serialize_age_point(age_point(request.age_years, cusps), frame=frame)
+    return _serialize_age_point(
+        age_point(
+            request.age_years,
+            cusps,
+            include_intensity=request.include_intensity,
+        ),
+        frame=frame,
+    )
 
 
 def compute_huber_intensity_at(request: HuberIntensityAtRequest) -> HuberIntensityAtResponse:

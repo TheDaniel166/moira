@@ -617,7 +617,7 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=2, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-aspects between two natal charts |
+| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-aspects between two natal charts (default tier 0: the five major aspects; 6.9.9) |
 | `house_overlay(chart_source, target_houses, include_nodes=True, source_label="A", target_label="B")` | `SynastryHouseOverlay` | Place chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, include_nodes=True)` | `MutualHouseOverlay` | Both overlay directions in one call |
 | `composite_chart(chart_a, chart_b, houses_a=None, houses_b=None)` | `CompositeChart` | Midpoint composite |
@@ -3403,7 +3403,7 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=2, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-chart aspects |
+| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-chart aspects (default tier 0: major aspects) |
 | `synastry_contacts(chart_a, chart_b, ...)` | `list[SynastryAspectContact]` | Contacts with classification |
 | `house_overlay(chart_source, target_houses, ...)` | `SynastryHouseOverlay` | chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, ...)` | `MutualHouseOverlay` | Both overlay directions |

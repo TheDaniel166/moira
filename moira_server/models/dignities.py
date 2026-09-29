@@ -38,8 +38,14 @@ _MODERN_DIGNITY_PLANETS = _SEVEN_PLANETS | frozenset({"Uranus", "Neptune", "Plut
 
 class EssentialDignityPolicyRequest(_StrictModel):
     doctrine: EssentialDignityDoctrine = EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7
-    bounds_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.PTOLEMAIC
-    triplicity_doctrine: TriplicityDoctrine = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    # None: the scoring mode's own terms (william_lilly_1647 -> Lilly's p. 104
+    # terms, otherwise Ptolemaic/Robbins). Echoed on every
+    # essential_truth.bounds_doctrine.
+    bounds_doctrine: EgyptianBoundsDoctrine | None = None
+    # None: the scoring mode's own table (william_lilly_1647 -> Lilly 1647,
+    # otherwise Dorothean). The table actually used is echoed on every
+    # essential_truth.triplicity_doctrine.
+    triplicity_doctrine: TriplicityDoctrine | None = None
     participating_ruler_policy: ParticipatingRulerPolicy = ParticipatingRulerPolicy.IGNORE
 
 
@@ -95,10 +101,6 @@ class DignityComputationPolicyRequest(_StrictModel):
             if self.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
                 raise ValueError(
                     "william_lilly_1647 scoring requires traditional_classic_7 rulers"
-                )
-            if self.essential.bounds_doctrine is not EgyptianBoundsDoctrine.PTOLEMAIC:
-                raise ValueError(
-                    "william_lilly_1647 scoring requires ptolemaic bounds"
                 )
             if self.essential.participating_ruler_policy is not ParticipatingRulerPolicy.IGNORE:
                 raise ValueError(

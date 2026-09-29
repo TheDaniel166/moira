@@ -226,8 +226,8 @@ Canon: Moira Synastry Architecture; moira.aspects doctrine.
             raise ValueError("synastry aspect truth labels must be non-empty")
         if not self.source_body.strip() or not self.target_body.strip():
             raise ValueError("synastry aspect truth bodies must be non-empty")
-        if self.tier not in {1, 2}:
-            raise ValueError("synastry aspect truth tier must be 1 or 2")
+        if isinstance(self.tier, bool) or self.tier not in {0, 1, 2}:
+            raise ValueError("synastry aspect truth tier must be 0, 1, or 2")
         if not math.isfinite(self.orb_factor) or self.orb_factor <= 0.0:
             raise ValueError("synastry aspect truth orb_factor must be positive and finite")
         if not isinstance(self.include_nodes, bool) or not isinstance(self.custom_orbs, bool):
@@ -1510,7 +1510,13 @@ LAW OF OPERATION:
         - Does not compute aspects.
     Dependencies: None.
     Structural invariants:
-        - tier in {1, 2}; orb_factor > 0 and finite.
+        - tier in {0, 1, 2}; orb_factor > 0 and finite.
+        - Default tier is 0: the five major (Ptolemaic) aspects —
+          conjunction, sextile, square, trine, opposition (Ptolemy,
+          Tetrabiblos I.13, for the four configurations; the conjunction
+          by universal tradition).  Tiers 1 and 2 add the common-minor and
+          extended-minor sets and must be requested explicitly (6.9.9;
+          previously 2).
 
 Canon: Moira Synastry Architecture; aspect policy doctrine.
 
@@ -1530,14 +1536,14 @@ Canon: Moira Synastry Architecture; aspect policy doctrine.
 [/MACHINE_CONTRACT]
     """
 
-    tier: int = 2
+    tier: int = 0
     orbs: Mapping[float, float] | None = None
     orb_factor: float = 1.0
     include_nodes: bool = True
 
     def __post_init__(self) -> None:
-        if self.tier not in {1, 2}:
-            raise ValueError("synastry aspect policy tier must be 1 or 2")
+        if isinstance(self.tier, bool) or self.tier not in {0, 1, 2}:
+            raise ValueError("synastry aspect policy tier must be 0, 1, or 2")
         if not math.isfinite(self.orb_factor) or self.orb_factor <= 0.0:
             raise ValueError("synastry aspect policy orb_factor must be positive and finite")
         if self.orbs is not None:
@@ -1798,8 +1804,8 @@ def _validate_synastry_aspect_inputs(
     include_nodes: bool,
     orbs: dict[float, float] | None,
 ) -> None:
-    if tier not in {1, 2}:
-        raise ValueError("synastry tier must be 1 or 2")
+    if isinstance(tier, bool) or tier not in {0, 1, 2}:
+        raise ValueError("synastry tier must be 0, 1, or 2")
     if not math.isfinite(orb_factor) or orb_factor <= 0.0:
         raise ValueError("synastry orb_factor must be positive and finite")
     if not isinstance(include_nodes, bool):
@@ -2036,7 +2042,8 @@ def synastry_aspects(
     ----------
     chart_a       : first natal Chart
     chart_b       : second natal Chart
-    tier          : aspect set (0=major, 1=major+common minor, 2=all; default 2)
+    tier          : aspect set (0=major Ptolemaic, 1=major+common minor,
+                    2=all; default from policy = 0)
     orbs          : custom orb table {angle: max_orb}
     orb_factor    : multiplier for default orbs
     include_nodes : include True Node / Mean Node / Lilith
@@ -2119,19 +2126,25 @@ def synastry_contacts(
 
     lons_a = chart_a.longitudes(include_nodes=include_nodes)
     lons_b = chart_b.longitudes(include_nodes=include_nodes)
+    if include_nodes:
+        # One node and one Lilith, as in synastry_aspects.
+        _duplicates = {"Mean Node", "True Lilith", "Mean Lilith"}
+        lons_a = {k: v for k, v in lons_a.items() if k not in _duplicates}
+        lons_b = {k: v for k, v in lons_b.items() if k not in _duplicates}
     speeds_a = chart_a.speeds()
     speeds_b = chart_b.speeds()
     contacts: list[SynastryAspectContact] = []
     for name_a, lon_a in lons_a.items():
         for name_b, lon_b in lons_b.items():
+            # No speeds: two natal charts describe unrelated moments, so a
+            # cross-chart aspect is neither applying nor separating
+            # (as in synastry_aspects). The bodies' own speeds stay in the truth.
             found = aspects_between(
                 name_a, lon_a,
                 name_b, lon_b,
                 tier=tier,
                 orbs=orbs,
                 orb_factor=orb_factor,
-                speed_a=speeds_a.get(name_a),
-                speed_b=speeds_b.get(name_b),
             )
             for aspect in found:
                 truth = SynastryAspectTruth(
@@ -3366,7 +3379,10 @@ def davison_chart_corrected(
     jd_b = jd_from_datetime(dt_b)
     jd_mid = (jd_a + jd_b) / 2.0
     lat_mid = (lat_a + lat_b) / 2.0
-    lon_mid = _lon_midpoint_uncorrected(lon_a, lon_b)
+    # Same place doctrine as the default Davison chart: shorter-arc
+    # geographic longitude midpoint (6.9.9; previously the arithmetic mean,
+    # which puts a trans-antimeridian pair on the far side of the globe).
+    lon_mid = _lon_midpoint(lon_a, lon_b)
     houses_a = calculate_houses(utc_to_ut1(jd_a), lat_a, lon_a, house_system, policy=davison_policy.house_policy)
     houses_b = calculate_houses(utc_to_ut1(jd_b), lat_b, lon_b, house_system, policy=davison_policy.house_policy)
     target_mc = _midpoint(houses_a.mc, houses_b.mc)
@@ -3436,7 +3452,7 @@ def davison_chart_corrected(
             raw_midpoint_jd=jd_mid,
             used_jd=corrected_jd,
             latitude_mode="arithmetic_midpoint",
-            longitude_mode="arithmetic_midpoint",
+            longitude_mode="shorter_arc_midpoint",
             latitude_midpoint=lat_mid,
             longitude_midpoint=lon_mid,
             house_system=house_system,

@@ -9,6 +9,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.9.9] - 2026-09-29
 
+### Added
+- **Standard heliacal phases**: `HeliacalEventKind` now carries the standard
+  Ptolemy/Schoch set. New kinds `EVENING_FIRST`, `MORNING_LAST` and
+  `COSMICAL_SETTING`; new `planet_evening_first`, `planet_morning_last`,
+  `planet_cosmical_setting`, `heliacal_event_kind_applies`,
+  `STANDARD_HELIACAL_EVENT_KINDS` and `phasis_events_near`, exported from
+  `moira`, `moira.facade` and `moira.sky.visibility`. `POST /v1/heliacal/phasis`
+  returns the nearest event of each standard kind within `window_days`
+  (default 7; Paulus Alexandrinus ch. 26). `/v1/heliacal/planet` accepts every
+  standard kind.
+- **Moon morning last visibility** (the old crescent) under the Yallop
+  criterion, using the morning form of Yallop's best time (Yallop 1997, NAO
+  TN 69, Table 4 morning observations; Odeh 2006). `LunarCrescentDetails`
+  gains `observation_window`.
+- **Previous eclipses**: `POST /v1/eclipses/solar/previous` and
+  `POST /v1/eclipses/lunar/previous`. `/v1/lunar-phases` events include
+  `moon_longitude` and `sun_longitude`.
+- **Almuten and hyleg routes**: `POST /v1/almuten/degree`,
+  `POST /v1/almuten/figuris`, `POST /v1/hyleg/lilly-1647` and
+  `POST /v1/hyleg/lilly-1647/alcocoden`, each naming its doctrine.
+  - The Lilly almuten figuris defaults to Lilly's own rule: the most essential
+    and accidental dignities over the whole figure (Christian Astrology III
+    ch. CV, pp. 531-532; fortitudes table p. 115). The five-place count he
+    reports from others is available as `william_lilly_1647_others_five_places`.
+  - The Lilly hyleg follows III ch. CIV, including the dominion step and the
+    Ascendant / Part of Fortune final resort.
+  - The alcocoden must behold the hyleg within the planet's own orb
+    (III ch. CIV pp. 530-531).
+- **Ptolemy's predominator**: `/v1/hellenistic/offices` selects the
+  predominator by Tetrabiblos III.10 (aphetic places, sect, the five forms of
+  domination), failing closed only on a tie in the ruler step or a missing
+  syzygy.
+- **Lilly's terms**: bounds doctrine `william_lilly_1647` (Christian Astrology
+  I ch. XVIII, p. 104).
+- **Stars**: `last_morning_visibility_event` / `last_morning_visibility` keep
+  the pre-6.9.9 star "heliacal setting" (the last dawn sighting before
+  opposition) under an honest name.
+- **Harmonics**: `/v1/harmonics/cross-chart-conjunctions` names what
+  `/v1/harmonics/composite` computes; `/composite` remains as a deprecated
+  alias.
+- **Draconic houses**: the draconic route accepts `latitude`, `longitude` and
+  `house_system` and returns the natal cusps and angles rotated by the node.
+
+### Changed
+- **Standard defaults**: every named doctrine now follows its own source.
+  - `william_lilly_1647` dignity scoring uses Lilly's own triplicity table
+    (Mars rules the water triplicity by day and night) and his own terms
+    (p. 104). Other modes keep their tables. Every essential-dignity result
+    records the tables used.
+  - Lilly's perfection reception uses Lilly's triplicity and terms.
+  - Planetary years follow Lilly's printed table: Saturn 30 / 43.5 / 57,
+    Jupiter 45, Mars 40, Sun 69, Moon 66 (mean years).
+  - Nine parts computes the seven Hermetic lots of Paulus Alexandrinus ch. 23
+    by default; the unsourced Sword and Node lots are opt-in.
+  - Necessity (Paulus) and Eros (Paulus) follow Paulus ch. 23, reversed by
+    night.
+  - Synastry, composite and Davison aspects default to the five major
+    (Ptolemaic) aspects (tier 0).
+  - The harmonic conjunction orb defaults to 12 deg on the harmonic wheel
+    (12/H on the natal circle), per Hamblin; it was 1 deg.
+  - Lunar mansions use 28 equal divisions in every tradition, al-Biruni
+    included (Book of Instruction §164). Al-Biruni's marker stars are
+    descriptive data. Latin names follow each tradition's own list (Agrippa II.33,
+    Picatrix I.4), and Agrippa's significations are faithful to II.33.
+- **Heliacal names**: `HELIACAL_SETTING` means evening last visibility and
+  `ACRONYCHAL_RISING` the evening rising near opposition, for planets and for
+  fixed stars (`stars.heliacal_setting_event`). `ACRONYCHAL_SETTING` remains a
+  deprecated synonym of `HELIACAL_SETTING`. The paran packet accepts every
+  standard kind that applies to stars.
+- **Gauquelin**: plus zones are classified only for the Moon, Venus, Mars,
+  Jupiter and Saturn; other bodies report `effect_status:
+  "no_published_effect"`.
+- **Huber**: the Dynamic Intensity Curve value on the Age Point is opt-in
+  (`include_intensity=True`) and labelled unverified editorial.
+- **Unsourced text removed**: harmonic keyword glosses, one-word lot meanings
+  and lord-of-the-orb house glosses are no longer emitted.
+- **Corrected Davison** uses the shorter-arc longitude midpoint, as the
+  default Davison does.
+- **Relationship transits** scan each moving body once (same results, faster)
+  and accept up to 10 moving bodies.
+
 ### Fixed
 - **Pattern routes**: `/v1/patterns/coherence`, `/v1/patterns/chart-profile`
   and `/v1/patterns/network` raised `NameError` (HTTP 500) on every call in
@@ -20,10 +101,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without `reference_latitude` (the default since 6.9.8) returned HTTP 422.
   It now casts the houses at the mean latitude of the two birthplaces and
   reports that latitude in `computation_truth.reference_latitude`.
-- **Heliacal setting of superior planets**: the planet heliacal-setting search
-  carried a morning apparition across opposition and returned the opposition
-  date (Saturn 1878-09-22, elongation -179.8 deg). A morning apparition that
-  ends at opposition now has no heliacal setting.
+- **Morning last visibility of superior planets**: the search (the event
+  6.9.8 called heliacal setting) carried a morning apparition across
+  opposition and returned the opposition date (Saturn 1878-09-22, elongation
+  -179.8 deg). A morning apparition that ends at opposition now has no morning
+  last visibility.
 - **Visibility in daylight**: under the default limiting-magnitude criterion,
   which describes a dark sky, a body is no longer reported observable while
   the Sun is above the horizon (`criterion_applicable = false`,
@@ -61,6 +143,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Decanate single-body routes** reject a `bodies` list they never used.
 - **Midpoint planet sets**: an unknown `planet_set` is an error in the
   engine and a 422 on REST, instead of silently becoming `classic`.
+- **Yallop first crescent**: the evening-first search returned a waning
+  gibbous Moon, and a search started while a crescent was already visible
+  returned that day; it now returns the first evening a young crescent becomes
+  visible.
+- **Almuten**: the facade `almuten_figuris` no longer skips unresolved day and
+  hour rulers silently; it raises unless `geo_latitude`/`geo_longitude` or
+  explicit rulers are given, and a supplied day ruler is no longer
+  overwritten when the hour ruler is missing.
+- **Transit searches** validate their policy before loading an ephemeris.
+- **Spica heliacal fixture** (SHR-002) corrected; it had been generated by
+  the engine itself.
+- **Citations**: al-Biruni, Agrippa, Gauquelin and Addey references now carry
+  locators checked against the sources, or are marked unverified.
 - **Documentation**: the 6.9.8 compatibility notes wrongly said the retired
   `midpoint` composite method could still be requested; the `synastry_aspects`
   docstring now gives the real tier mapping.

@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 465
-- Registered OpenAPI operations: 465 (GET 36, POST 429)
+- Registered OpenAPI paths: 473
+- Registered OpenAPI operations: 473 (GET 36, POST 437)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 461
+- Versioned `/v1` paths: 469
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2619,7 +2619,8 @@ The admitted Harmonics REST surface is the bounded P12-02
 - `POST /v1/harmonics/aspects`
 - `POST /v1/harmonics/sweep`
 - `POST /v1/harmonics/fingerprint`
-- `POST /v1/harmonics/composite`
+- `POST /v1/harmonics/cross-chart-conjunctions`
+- `POST /v1/harmonics/composite` (deprecated alias of `cross-chart-conjunctions`)
 - `POST /v1/harmonics/transit-forecast`
 
 These routes accept caller-supplied named ecliptic longitude maps. Longitude
@@ -2632,8 +2633,10 @@ range `1..128`; `5.5` remains `5.5` and is not truncated to `5`. Integer values
 are ordinary cyclic harmonics. Non-integer values are explicit
 zero-Aries-anchored continuous multipliers computed from each input's canonical
 `[0, 360)` representative. Responses preserve the requested/effective value,
-input count, sorted positions, integer-preset metadata when known, and
-provenance identifying `moira.harmonics`, the engine entrypoint, caller-owned
+input count, sorted positions, the conventional aspect name for an integer
+preset when known (`preset_description` is `null` in computed payloads since
+6.9.9; the editorial keyword glosses appear only in `/presets`, labelled as
+unsourced), and provenance identifying `moira.harmonics`, the engine entrypoint, caller-owned
 longitudes, and `(normalized_longitude * harmonic) mod 360`.
 
 Age-harmonic responses preserve the derived decimal harmonic, `jd_birth`,
@@ -2642,7 +2645,11 @@ not the transport adapter for an arbitrary fractional harmonic request.
 
 Pattern-analysis routes expose one-harmonic conjunctions, one-harmonic pattern
 scores, harmonic aspect decoding, bounded sweeps, bounded vibrational
-fingerprints, and bounded composite harmonic comparison. Sweep and fingerprint
+fingerprints, and bounded cross-chart harmonic comparison. The cross-chart
+route projects each natal chart onto harmonic H separately and compares chart A
+bodies with chart B bodies; it does not build a composite chart (the older
+`/composite` path and the `composite_harmonic` entrypoint name are historical).
+Sweep and fingerprint
 provenance explicitly labels scores as pattern-density measures rather than
 interpretive judgments. Aspects, sweeps, and fingerprints retain integer
 harmonic ranges.
@@ -2653,7 +2660,10 @@ configurable H1-reference and projected-chart threshold. Optional
 policy selection explicit. Provenance reports the projected limit `O_1`, its
 locally equivalent source-circle allowance `O_1/H`, authority, formula,
 adapter mode, and the continuous-extension flag. Clients must not divide the
-projected threshold by H again.
+projected threshold by H again. Since 6.9.9 the default `orb` is 12 degrees on
+the harmonic wheel (12/H on the natal circle), the conjunction orb David Hamblin
+works his divide-by-H rule with ("The Importance of Harmonics", Astrodienst);
+it was previously 1 degree. `transit-forecast` keeps its 1 degree default.
 
 `POST /v1/harmonics/transit-forecast` evaluates only caller-supplied,
 strictly time-ordered samples at explicitly requested integer harmonics. It
@@ -3189,6 +3199,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/meta/kernel` | meta | `kernel_meta_meta_kernel_get` |
 | `GET` | `/meta/version` | meta | `version_meta_version_get` |
 | `GET` | `/ready` | meta | `ready_ready_get` |
+| `POST` | `/v1/almuten/degree` | almuten | `almuten_of_degree_route_v1_almuten_degree_post` |
+| `POST` | `/v1/almuten/figuris` | almuten | `almuten_figuris_route_v1_almuten_figuris_post` |
 | `POST` | `/v1/antiscia/contacts` | antiscia | `antiscia_contacts_route_v1_antiscia_contacts_post` |
 | `POST` | `/v1/antiscia/reflect` | antiscia | `antiscia_reflect_route_v1_antiscia_reflect_post` |
 | `POST` | `/v1/antiscia/to-point` | antiscia | `antiscia_to_point_route_v1_antiscia_to_point_post` |
@@ -3295,6 +3307,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/eclipses/lunar/global-circumstances` | phenomena | `lunar_eclipse_global_circumstances_route_v1_eclipses_lunar_global_circumstances_post` |
 | `POST` | `/v1/eclipses/lunar/local` | phenomena | `lunar_eclipse_local_route_v1_eclipses_lunar_local_post` |
 | `POST` | `/v1/eclipses/lunar/next` | phenomena | `next_lunar_eclipse_route_v1_eclipses_lunar_next_post` |
+| `POST` | `/v1/eclipses/lunar/previous` | phenomena | `previous_lunar_eclipse_route_v1_eclipses_lunar_previous_post` |
 | `POST` | `/v1/eclipses/lunar/visibility` | phenomena | `lunar_eclipse_visibility_route_v1_eclipses_lunar_visibility_post` |
 | `POST` | `/v1/eclipses/solar/cartography` | phenomena | `solar_eclipse_cartography_route_v1_eclipses_solar_cartography_post` |
 | `POST` | `/v1/eclipses/solar/footprint` | phenomena | `solar_eclipse_footprint_route_v1_eclipses_solar_footprint_post` |
@@ -3302,6 +3315,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/eclipses/solar/local-visible` | phenomena | `next_visible_solar_eclipse_route_v1_eclipses_solar_local_visible_post` |
 | `POST` | `/v1/eclipses/solar/next` | phenomena | `next_solar_eclipse_route_v1_eclipses_solar_next_post` |
 | `POST` | `/v1/eclipses/solar/path` | phenomena | `solar_eclipse_path_route_v1_eclipses_solar_path_post` |
+| `POST` | `/v1/eclipses/solar/previous` | phenomena | `previous_solar_eclipse_route_v1_eclipses_solar_previous_post` |
 | `POST` | `/v1/egyptian-bounds/aggregate` | egyptian-bounds | `egyptian_bounds_aggregate_route_v1_egyptian_bounds_aggregate_post` |
 | `POST` | `/v1/egyptian-bounds/bound` | egyptian-bounds | `egyptian_bound_route_v1_egyptian_bounds_bound_post` |
 | `POST` | `/v1/egyptian-bounds/classification` | egyptian-bounds | `egyptian_bound_classification_route_v1_egyptian_bounds_classification_post` |
@@ -3354,11 +3368,13 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/harmonics/chart` | harmonics | `harmonic_chart_route_v1_harmonics_chart_post` |
 | `POST` | `/v1/harmonics/composite` | harmonics | `harmonic_composite_route_v1_harmonics_composite_post` |
 | `POST` | `/v1/harmonics/conjunctions` | harmonics | `harmonic_conjunctions_route_v1_harmonics_conjunctions_post` |
+| `POST` | `/v1/harmonics/cross-chart-conjunctions` | harmonics | `harmonic_cross_chart_conjunctions_route_v1_harmonics_cross_chart_conjunctions_post` |
 | `POST` | `/v1/harmonics/fingerprint` | harmonics | `harmonic_fingerprint_route_v1_harmonics_fingerprint_post` |
 | `POST` | `/v1/harmonics/pattern-score` | harmonics | `harmonic_pattern_score_route_v1_harmonics_pattern_score_post` |
 | `GET` | `/v1/harmonics/presets` | harmonics | `harmonic_presets_route_v1_harmonics_presets_get` |
 | `POST` | `/v1/harmonics/sweep` | harmonics | `harmonic_sweep_route_v1_harmonics_sweep_post` |
 | `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
+| `POST` | `/v1/heliacal/phasis` | phenomena | `heliacal_phasis_route_v1_heliacal_phasis_post` |
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
 | `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
@@ -3380,6 +3396,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/huber/dynamic-intensity` | huber | `huber_dynamic_intensity_route_v1_huber_dynamic_intensity_post` |
 | `POST` | `/v1/huber/house-zones` | huber | `huber_house_zones_route_v1_huber_house_zones_post` |
 | `POST` | `/v1/huber/intensity-at` | huber | `huber_intensity_at_route_v1_huber_intensity_at_post` |
+| `POST` | `/v1/hyleg/lilly-1647` | hyleg | `hyleg_lilly_1647_route_v1_hyleg_lilly_1647_post` |
+| `POST` | `/v1/hyleg/lilly-1647/alcocoden` | hyleg | `alcocoden_lilly_1647_route_v1_hyleg_lilly_1647_alcocoden_post` |
 | `POST` | `/v1/jaimini/chart/condition` | jaimini | `jaimini_chart_condition_route_v1_jaimini_chart_condition_post` |
 | `POST` | `/v1/jaimini/chart/karakas` | jaimini | `jaimini_chart_karakas_route_v1_jaimini_chart_karakas_post` |
 | `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |

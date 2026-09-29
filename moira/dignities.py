@@ -47,7 +47,9 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
+from ._strenum import StrEnum
 from .constants import SIGNS
 from .decanates import chaldean_face
 from .dignities_types import (
@@ -58,7 +60,12 @@ from .dignities_types import (
     _normalize_dispositorship_subject_name,
 )
 from .dignities_types import *  # noqa: F401, F403 — re-export full public surface
-from .egyptian_bounds import EgyptianBoundsPolicy, bound_ruler
+from .egyptian_bounds import (
+    EgyptianBoundsDoctrine,
+    EgyptianBoundsPolicy,
+    WILLIAM_LILLY_1647_TERMS as _WILLIAM_LILLY_1647_TERMS,
+    bound_ruler,
+)
 from .triplicity import (
     ParticipatingRulerPolicy as _ParticipatingRulerPolicy,
     triplicity_assignment_for,
@@ -183,6 +190,15 @@ __all__ = [
     "is_day_chart",
     "almuten_figuris",
     "almuten_of_degree",
+    "AlmutenDoctrine",
+    "LILLY_1647_TERMS",
+    "lilly_1647_term_ruler",
+    "lilly_1647_essential_dignities_at",
+    "AlmutenTally",
+    "AlmutenScoredPoint",
+    "AlmutenDetermination",
+    "almuten_figuris_determination",
+    "almuten_of_degree_determination",
     "mutual_receptions",
     "find_phasis",
 ]
@@ -1535,16 +1551,17 @@ class DignitiesService:
         DignitiesService._validate_policy(policy)
         domicile = DignitiesService._domicile_table(policy)
         detriment = DignitiesService._detriment_table(policy)
+        triplicity_doctrine = policy.resolved_triplicity_doctrine
         assignment = triplicity_assignment_for(
             sign,
             is_day_chart=is_day_chart,
-            doctrine=policy.essential.triplicity_doctrine,
+            doctrine=triplicity_doctrine,
         )
         triplicity_weight = triplicity_score(
             planet,
             sign,
             is_day_chart=is_day_chart,
-            doctrine=policy.essential.triplicity_doctrine,
+            doctrine=triplicity_doctrine,
             participating_policy=policy.essential.participating_ruler_policy,
             primary_score=SCORE_TRIPLICITY,
             participating_score=SCORE_FACE,
@@ -1594,7 +1611,11 @@ class DignitiesService:
                 matching_signs=assignment.signs,
                 ruler=(
                     assignment.participating_ruler
-                    if planet == assignment.participating_ruler and triplicity_weight
+                    if (
+                        assignment.participating_ruler is not None
+                        and planet == assignment.participating_ruler
+                        and triplicity_weight
+                    )
                     else assignment.active_ruler
                 ),
             ),
@@ -1622,7 +1643,7 @@ class DignitiesService:
         else:
             bound_host = bound_ruler(
                 longitude,
-                policy=EgyptianBoundsPolicy(policy.essential.bounds_doctrine),
+                policy=EgyptianBoundsPolicy(policy.resolved_bounds_doctrine),
             )
             face_host = chaldean_face(longitude).ruling_planet
             components.extend(
@@ -1721,8 +1742,8 @@ class DignitiesService:
             components=tuple(components),
             receptions=scored_receptions,
             scoring_mode=policy.scoring.mode,
-            bounds_doctrine=policy.essential.bounds_doctrine,
-            triplicity_doctrine=policy.essential.triplicity_doctrine,
+            bounds_doctrine=policy.resolved_bounds_doctrine,
+            triplicity_doctrine=triplicity_doctrine,
         )
 
     @staticmethod
@@ -2396,11 +2417,17 @@ class DignitiesService:
             raise ValueError(
                 f"Unsupported Halb/Hayz doctrine: {policy.accidental.sect.doctrine}"
             )
-        if not isinstance(policy.essential.bounds_doctrine, EgyptianBoundsDoctrine):
+        if (
+            policy.essential.bounds_doctrine is not None
+            and not isinstance(policy.essential.bounds_doctrine, EgyptianBoundsDoctrine)
+        ):
             raise ValueError(
                 f"Unsupported bounds doctrine: {policy.essential.bounds_doctrine}"
             )
-        if policy.essential.triplicity_doctrine is not TriplicityDoctrine.DOROTHEAN_PINGREE_1976:
+        if (
+            policy.essential.triplicity_doctrine is not None
+            and not isinstance(policy.essential.triplicity_doctrine, TriplicityDoctrine)
+        ):
             raise ValueError(
                 f"Unsupported triplicity doctrine: {policy.essential.triplicity_doctrine}"
             )
@@ -2417,10 +2444,6 @@ class DignitiesService:
             if policy.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
                 raise ValueError(
                     "william_lilly_1647 scoring requires traditional_classic_7 rulers"
-                )
-            if policy.essential.bounds_doctrine is not EgyptianBoundsDoctrine.PTOLEMAIC:
-                raise ValueError(
-                    "william_lilly_1647 scoring requires ptolemaic bounds"
                 )
             if (
                 policy.essential.participating_ruler_policy
@@ -3567,6 +3590,135 @@ def is_day_chart(sun_longitude: float, asc_longitude: float) -> bool:
 # ---------------------------------------------------------------------------
 # Almuten Figuris & Compound Rulerships
 # ---------------------------------------------------------------------------
+#
+# Two named doctrines (``AlmutenDoctrine``).
+#
+# WILLIAM_LILLY_1647 — William Lilly, *Christian Astrology* (London, 1647).
+# Default of the ``*_determination`` functions and of the REST routes.
+#   * Table: Lilly's "Table of the Essential Dignities of the Planets
+#     according to Ptolomy", Book I ch. XVIII, p. 104: the usual domiciles,
+#     exaltations and Chaldean faces; his triplicity rulers (fire Sun by day,
+#     Jupiter by night; earth Venus / Moon; air Saturn / Mercury; water Mars
+#     by day and night; no participating ruler), awarded to the ruler of the
+#     chart's sect; and his terms, ``LILLY_1647_TERMS`` below.
+#   * Points: domicile 5, exaltation 4, triplicity 3, term 2, face 1 (the
+#     essential-dignity column of Lilly's table of fortitudes, Book I
+#     p. 115). Every dignity a planet holds at the degree is counted.
+#   * Almuten of a degree: Lilly's "Almuten, of any house is that Planet who
+#     hath most dignities in the sign ascending or descending upon the Cusp"
+#     (Book I ch. VI, p. 49), applied to one ecliptic degree.
+#   * Almuten figuris (default for WILLIAM_LILLY_1647): Lilly's own rule.
+#     "Almuten of a Figure, is that Planet who in Essentiall and Accidentall
+#     dignities, is most powerfull in the whole Scheam of Heaven" (Book I
+#     ch. VI, p. 49); for the Lord of the Geniture "I am cleerly of this
+#     opinion, viz. That Planet who hath most essentiall and accidentall
+#     dignities in the Figure, and is posited best, and elevated most in the
+#     Scheame" (III ch. CV, pp. 531-532). Computed as each planet's total in
+#     Lilly's "ready Table whereby to examine the Fortitudes and Debilities of
+#     the Planets" (Book I ch. XIX, p. 115), i.e. ``calculate_dignities`` under
+#     ``william_lilly_1647`` scoring (Lilly's p. 104 table for the essential
+#     part). The testimonies of that table need each planet's daily motion,
+#     the Dragon's Head and the three fixed stars Lilly names (Cor Leonis,
+#     Spica, Caput Algol); a testimony that still cannot be evaluated leaves
+#     the almuten undetermined with a named reason. "Posited best, and
+#     elevated most" are not mechanised.
+#   * WILLIAM_LILLY_1647_OTHERS_FIVE_PLACES (figuris only): the count Lilly
+#     reports and does not adopt (III ch. CV, p. 531): "Others will have that
+#     Planet Lord of the Geniture who hath most essential dignities in the
+#     ascendant, mid-heaven, place of the Sun, Moon and Part of Fortune" —
+#     essential points summed over those five places. Lilly's Part of Fortune
+#     is Asc + Moon − Sun by day and by night alike (Book I, "Of the Part of
+#     Fortune, and how to take it either by day or night", p. 143).
+#   * Ties: Lilly gives no tie-break (for the Lord of the Geniture he says a
+#     planet "very neer so strong ... shall much participate, and a kind of
+#     mixture must be framed", III ch. CV p. 532). A tie is reported with
+#     ``almuten`` None and every tied planet listed.
+#
+# MOIRA_LEGACY_V1 — the pre-6.9.9 Moira count, kept by name for
+# compatibility; default of the string-returning ``almuten_of_degree`` and
+# ``almuten_figuris``.
+#   * Lilly's point scale, but with the Egyptian bounds, the Dorothean
+#     triplicity (Carmen Astrologicum I.1) and 1 point for the participating
+#     triplicity ruler (a Moira convention with no located source).
+#   * Almuten figuris counts Sun, Moon, Ascendant, Lot of Fortune (reversed
+#     at night) and the prenatal syzygy, and adds per planet its own house
+#     (ALMUTEN_HOUSE_SCORES: 1st 12 … 12th 1), 7 for the lord of the day and
+#     6 for the lord of the hour. These accidental weights are commonly
+#     attributed to Ibn Ezra but are not traced to any source text located
+#     for this repository. A single Ascendant longitude selects the
+#     three-point variant (Sun, Moon, Ascendant).
+#   * Ties: almuten_of_degree breaks ties by the planet's single strongest
+#     dignity at the degree (domicile > … > face), then the list order Sun,
+#     Moon, Mercury, Venus, Mars, Jupiter, Saturn; almuten_figuris by list
+#     order only. Ties are reported on the determination.
+#
+# al-Biruni (Book of Instruction, 1029, § 494) gives a different scale
+# (house 5, exaltation 4, term 3, triplicity 2, face 1); neither doctrine uses
+# it.
+
+
+class AlmutenDoctrine(StrEnum):
+    """Named almuten doctrines (see the note above)."""
+
+    WILLIAM_LILLY_1647 = "william_lilly_1647"
+    WILLIAM_LILLY_1647_OTHERS_FIVE_PLACES = "william_lilly_1647_others_five_places"
+    MOIRA_LEGACY_V1 = "moira_legacy_v1"
+
+
+# Lilly's terms (Christian Astrology 1647, Book I ch. XVIII, table p. 104) are
+# owned by moira.egyptian_bounds as the ``william_lilly_1647`` bounds doctrine;
+# this is a read-only view of that table, (ruler, start_degree, end_degree).
+LILLY_1647_TERMS: dict[str, tuple[tuple[str, float, float], ...]] = {
+    sign: tuple(segments) for sign, segments in _WILLIAM_LILLY_1647_TERMS.items()
+}
+_LILLY_1647_BOUNDS_POLICY = EgyptianBoundsPolicy(EgyptianBoundsDoctrine.WILLIAM_LILLY_1647)
+
+
+def lilly_1647_term_ruler(longitude: float) -> str:
+    """Term ruler of an ecliptic longitude in Lilly's 1647 table (p. 104)."""
+    return bound_ruler(float(longitude) % 360.0, policy=_LILLY_1647_BOUNDS_POLICY)
+
+
+def lilly_1647_essential_dignities_at(
+    planet: str,
+    longitude: float,
+    is_day_chart: bool,
+) -> tuple[tuple[str, int], ...]:
+    """
+    Every essential dignity *planet* holds at *longitude*, with Lilly's points.
+
+    William Lilly, *Christian Astrology* (1647), Book I ch. XVIII table
+    (p. 104) and the essential column of the table of fortitudes (p. 115):
+    domicile 5, exaltation 4, triplicity 3 (Lilly's rulers, by the chart's
+    sect), term 2 (``LILLY_1647_TERMS``), face 1 (Chaldean faces). Returns
+    ``(kind, points)`` pairs in that order; empty when peregrine there.
+    """
+    from .triplicity import TriplicityDoctrine as _TriplicityDoctrine
+
+    lon = float(longitude) % 360.0
+    sign = SIGNS[int(lon // 30.0)]
+    held: list[tuple[str, int]] = []
+    if sign in DOMICILE.get(planet, []):
+        held.append(("domicile", SCORE_DOMICILE))
+    if sign in EXALTATION.get(planet, []):
+        held.append(("exaltation", SCORE_EXALTATION))
+    triplicity = triplicity_assignment_for(
+        sign,
+        is_day_chart=is_day_chart,
+        doctrine=_TriplicityDoctrine.WILLIAM_LILLY_1647,
+    )
+    if triplicity.active_ruler == planet:
+        held.append(("triplicity", SCORE_TRIPLICITY))
+    if lilly_1647_term_ruler(lon) == planet:
+        held.append(("term", SCORE_BOUND))
+    if chaldean_face(lon).ruling_planet == planet:
+        held.append(("face", SCORE_FACE))
+    return tuple(held)
+
+
+def _lilly_1647_points_at(planet: str, longitude: float, is_day_chart: bool) -> int:
+    return sum(points for _, points in lilly_1647_essential_dignities_at(planet, longitude, is_day_chart))
+
 
 ALMUTEN_HOUSE_SCORES: dict[int, int] = {
     1: 12,
@@ -3583,12 +3735,258 @@ ALMUTEN_HOUSE_SCORES: dict[int, int] = {
     12: 1,
 }
 
+ALMUTEN_DAY_RULER_POINTS: int = 7
+ALMUTEN_HOUR_RULER_POINTS: int = 6
 
-def almuten_of_degree(longitude: float, is_day: bool) -> str:
+ALMUTEN_OF_DEGREE_DOCTRINE: str = "moira_almuten_of_degree_v1"
+ALMUTEN_FIGURIS_DOCTRINE: str = "moira_almuten_figuris_v1"
+ALMUTEN_FIGURIS_THREE_POINT_DOCTRINE: str = "moira_almuten_figuris_three_point_v1"
+ALMUTEN_OF_DEGREE_LILLY_1647_DOCTRINE: str = "william_lilly_1647_almuten_of_degree"
+ALMUTEN_FIGURIS_LILLY_1647_DOCTRINE: str = "william_lilly_1647_whole_figure"
+ALMUTEN_FIGURIS_LILLY_1647_OTHERS_DOCTRINE: str = "william_lilly_1647_asc_mc_sun_moon_fortune"
+LILLY_1647_ALMUTEN_FIXED_STARS: tuple[str, ...] = ("Regulus", "Spica", "Algol")
+# Testimonies Lilly's table does not apply to a body ("the Sun and Moon are
+# always so, as to them this is void"; orientality is listed for Saturn,
+# Jupiter, Mars, Mercury and Venus only). Any other unevaluable testimony
+# leaves the whole-figure almuten undetermined.
+_LILLY_TESTIMONY_NOT_APPLICABLE: frozenset[str] = frozenset({
+    "not_applicable_to_luminary",
+    "planetary_solar_phase_not_admitted_for_body",
+})
+
+_ALMUTEN_LILLY_TIE_BREAK = "none_lilly_gives_no_tie_break"
+
+
+@dataclass(frozen=True, slots=True)
+class AlmutenTally:
+    """Points counted for one planet in an almuten determination."""
+
+    planet: str
+    essential_points: int
+    house_points: int
+    ruler_points: int
+    accidental_points: int = 0
+
+    @property
+    def total(self) -> int:
+        return (
+            self.essential_points + self.house_points + self.ruler_points
+            + self.accidental_points
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class AlmutenScoredPoint:
+    """One zodiacal point whose essential dignities were counted."""
+
+    name: str
+    longitude: float
+
+
+@dataclass(frozen=True, slots=True)
+class AlmutenDetermination:
+    """
+    Inspectable almuten result: the winner, every planet's tally, the points
+    that were scored, and any tie. ``almuten`` is None only when the doctrine
+    has no tie-break and two or more planets share the top total, or when
+    ``reason`` names a testimony that could not be evaluated.
+    """
+
+    doctrine: str
+    almuten: str | None
+    is_day_chart: bool
+    tallies: tuple[AlmutenTally, ...]
+    scored_points: tuple[AlmutenScoredPoint, ...]
+    tied_planets: tuple[str, ...]
+    tie_break: str
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        names = [tally.planet for tally in self.tallies]
+        if names != list(_PLANET_ORDER):
+            raise ValueError("AlmutenDetermination tallies must cover the Classic 7 in order")
+        top = max(tally.total for tally in self.tallies)
+        if any(
+            (tally.total == top) != (tally.planet in self.tied_planets)
+            for tally in self.tallies
+        ):
+            raise ValueError("AlmutenDetermination tied_planets must be exactly the top scorers")
+        if self.almuten is None:
+            if len(self.tied_planets) < 2 and not self.reason:
+                raise ValueError(
+                    "AlmutenDetermination almuten may be None only for a tie or with a reason"
+                )
+        elif self.reason is not None:
+            raise ValueError("AlmutenDetermination with an almuten carries no reason")
+        elif self.almuten not in self.tied_planets:
+            raise ValueError("AlmutenDetermination almuten must be among the top-scoring planets")
+
+    def tally(self, planet: str) -> AlmutenTally:
+        for item in self.tallies:
+            if item.planet == planet:
+                return item
+        raise KeyError(planet)
+
+
+def _resolve_almuten_doctrine(doctrine: AlmutenDoctrine | str) -> AlmutenDoctrine:
+    try:
+        return AlmutenDoctrine(doctrine)
+    except ValueError:
+        raise ValueError(
+            f"doctrine must be one of {[d.value for d in AlmutenDoctrine]}, got {doctrine!r}"
+        ) from None
+
+
+def _almuten_dignity_rank(planet: str, longitude: float, is_day: bool) -> int:
+    """Legacy tie-break: strongest single essential dignity (5..1, 0) under MOIRA_LEGACY_V1."""
+    from .longevity import EGYPTIAN_BOUNDS, FACE_RULERS, _sign_and_deg
+    from .triplicity import triplicity_score as _triplicity_score
+
+    sign, deg_in_sign = _sign_and_deg(longitude)
+    if sign in DOMICILE.get(planet, []):
+        return 5
+    if sign in EXALTATION.get(planet, []):
+        return 4
+    tri_score = _triplicity_score(
+        planet, sign,
+        is_day_chart=is_day,
+        participating_policy=_ParticipatingRulerPolicy.AWARD_REDUCED,
+    )
+    if tri_score > 0:
+        return 3
+    for ruler, start, end in EGYPTIAN_BOUNDS.get(sign, []):
+        if start <= deg_in_sign < end and ruler == planet:
+            return 2
+    decan_idx = int((longitude % 360.0) // 10) % 36
+    if FACE_RULERS[decan_idx] == planet:
+        return 1
+    return 0
+
+
+def _lilly_1647_determination(
+    doctrine_name: str,
+    is_day: bool,
+    scored_points: tuple[AlmutenScoredPoint, ...],
+) -> AlmutenDetermination:
+    tallies = tuple(
+        AlmutenTally(
+            planet=planet,
+            essential_points=sum(
+                _lilly_1647_points_at(planet, point.longitude, is_day)
+                for point in scored_points
+            ),
+            house_points=0,
+            ruler_points=0,
+        )
+        for planet in _PLANET_ORDER
+    )
+    top = max(tally.total for tally in tallies)
+    tied = tuple(tally.planet for tally in tallies if tally.total == top)
+    return AlmutenDetermination(
+        doctrine=doctrine_name,
+        almuten=tied[0] if len(tied) == 1 else None,
+        is_day_chart=is_day,
+        tallies=tallies,
+        scored_points=scored_points,
+        tied_planets=tied,
+        tie_break=_ALMUTEN_LILLY_TIE_BREAK,
+    )
+
+
+def almuten_of_degree_determination(
+    longitude: float,
+    is_day: bool,
+    *,
+    doctrine: AlmutenDoctrine | str = AlmutenDoctrine.WILLIAM_LILLY_1647,
+) -> AlmutenDetermination:
+    """
+    Almuten of one ecliptic degree, with every planet's essential points.
+
+    ``doctrine`` defaults to ``william_lilly_1647`` (Lilly's table p. 104 and
+    scale p. 115; ties reported with ``almuten`` None). ``moira_legacy_v1``
+    selects the pre-6.9.9 count. See the doctrine note above
+    ``AlmutenDoctrine``.
+    """
+    if not isinstance(longitude, (int, float)) or isinstance(longitude, bool):
+        raise TypeError(f"longitude must be float or int, got {type(longitude).__name__}")
+    if math.isnan(longitude) or math.isinf(longitude):
+        raise ValueError("longitude cannot be NaN or infinite")
+    if not isinstance(is_day, bool):
+        raise TypeError(f"is_day must be a boolean, got {type(is_day).__name__}")
+    resolved = _resolve_almuten_doctrine(doctrine)
+
+    if resolved is AlmutenDoctrine.WILLIAM_LILLY_1647_OTHERS_FIVE_PLACES:
+        raise ValueError(
+            "william_lilly_1647_others_five_places is an almuten figuris rule, "
+            "not an almuten of a degree"
+        )
+    degree_point = (AlmutenScoredPoint("Degree", float(longitude) % 360.0),)
+    if resolved is AlmutenDoctrine.WILLIAM_LILLY_1647:
+        return _lilly_1647_determination(
+            ALMUTEN_OF_DEGREE_LILLY_1647_DOCTRINE, is_day, degree_point,
+        )
+
+    from .longevity import dignity_score_at
+
+    tallies = tuple(
+        AlmutenTally(
+            planet=planet,
+            essential_points=dignity_score_at(planet, longitude, is_day),
+            house_points=0,
+            ruler_points=0,
+        )
+        for planet in _PLANET_ORDER
+    )
+    top = max(tally.total for tally in tallies)
+    tied = tuple(tally.planet for tally in tallies if tally.total == top)
+    best_planet = max(
+        _PLANET_ORDER,
+        key=lambda p: (
+            next(t.total for t in tallies if t.planet == p),
+            _almuten_dignity_rank(p, longitude, is_day),
+            -_PLANET_ORDER.index(p),
+        ),
+    )
+    return AlmutenDetermination(
+        doctrine=ALMUTEN_OF_DEGREE_DOCTRINE,
+        almuten=best_planet,
+        is_day_chart=is_day,
+        tallies=tallies,
+        scored_points=degree_point,
+        tied_planets=tied,
+        tie_break="strongest_single_dignity_then_list_order",
+    )
+
+
+def _almuten_winner_or_raise(determination: AlmutenDetermination) -> str:
+    if determination.almuten is None and determination.reason is not None:
+        raise ValueError(f"{determination.doctrine}: {determination.reason}")
+    if determination.almuten is None:
+        raise ValueError(
+            f"{determination.doctrine}: {', '.join(determination.tied_planets)} tie "
+            "and the doctrine gives no tie-break; use the *_determination function "
+            "to read the tie"
+        )
+    return determination.almuten
+
+
+def almuten_of_degree(
+    longitude: float,
+    is_day: bool,
+    *,
+    doctrine: AlmutenDoctrine | str = AlmutenDoctrine.MOIRA_LEGACY_V1,
+) -> str:
     """
     Find the Almuten of a specific ecliptic longitude (degree) based on
     essential dignity scores: domicile (5), exaltation (4), triplicity (3),
     bound/term (2), and face/decan (1).
+
+    ``doctrine`` defaults to ``moira_legacy_v1`` (the pre-6.9.9 count with
+    Egyptian bounds and the Dorothean triplicity) for compatibility; pass
+    ``william_lilly_1647`` for Lilly's own table. Under Lilly a tie raises
+    ValueError (Lilly gives no tie-break); use
+    ``almuten_of_degree_determination`` for the full tallies. Doctrine notes:
+    see ``AlmutenDoctrine``.
 
     Parameters
     ----------
@@ -3602,87 +4000,18 @@ def almuten_of_degree(longitude: float, is_day: bool) -> str:
     str
         The name of the planet (Classic 7) with the highest score.
     """
-    if not isinstance(longitude, (int, float)):
-        raise TypeError(f"longitude must be float or int, got {type(longitude).__name__}")
-    if math.isnan(longitude) or math.isinf(longitude):
-        raise ValueError("longitude cannot be NaN or infinite")
-    if not isinstance(is_day, bool):
-        raise TypeError(f"is_day must be a boolean, got {type(is_day).__name__}")
-
-    from .longevity import dignity_score_at, EGYPTIAN_BOUNDS, FACE_RULERS, _sign_and_deg
-    from .triplicity import triplicity_score as _triplicity_score
-
-    scores: dict[str, int] = {}
-    for planet in _PLANET_ORDER:
-        scores[planet] = dignity_score_at(planet, longitude, is_day)
-
-    sign, deg_in_sign = _sign_and_deg(longitude)
-
-    def get_highest_rank(planet: str) -> int:
-        if sign in DOMICILE.get(planet, []):
-            return 5
-        if sign in EXALTATION.get(planet, []):
-            return 4
-        tri_score = _triplicity_score(
-            planet, sign,
-            is_day_chart=is_day,
-            participating_policy=_ParticipatingRulerPolicy.AWARD_REDUCED,
-        )
-        if tri_score > 0:
-            return 3
-        bounds = EGYPTIAN_BOUNDS.get(sign, [])
-        for ruler, start, end in bounds:
-            if start <= deg_in_sign < end and ruler == planet:
-                return 2
-        lon_norm = longitude % 360.0
-        decan_idx = int(lon_norm // 10) % 36
-        face_ruler = FACE_RULERS[decan_idx]
-        if face_ruler == planet:
-            return 1
-        return 0
-
-    best_planet = max(
-        _PLANET_ORDER,
-        key=lambda p: (scores[p], get_highest_rank(p), -_PLANET_ORDER.index(p))
+    return _almuten_winner_or_raise(
+        almuten_of_degree_determination(longitude, is_day, doctrine=doctrine)
     )
-    return best_planet
 
 
-def almuten_figuris(
+def _validate_almuten_figuris_inputs(
     planet_positions: dict[str, float],
-    cusps: list[float] | dict[int, float] | float,
     is_day: bool,
-    *,
-    prenatal_syzygy_lon: float | None = None,
-    day_ruler: str | None = None,
-    hour_ruler: str | None = None,
-) -> str:
-    """
-    Find the Almuten Figuris — the planet with the most essential and accidental
-    dignities across the key aphetic points.
-
-    If `cusps` is a float/int (representing the Ascendant longitude), we fall
-    back to the old simplified calculation scoring only Sun, Moon, and Ascendant
-    for essential dignities.
-
-    Otherwise, we perform the full traditional calculation scoring:
-    - Essential dignities at Sun, Moon, Ascendant, Lot of Fortune, and prenatal Syzygy.
-    - Accidental dignities based on house placement of each planet.
-    - Planetary day (+7) and hour (+6) rulers.
-
-    Parameters
-    ----------
-    planet_positions : dict of body → longitude (must include "Sun", "Moon")
-    cusps            : list of 12 cusps, dict of 1..12 cusps, or float (ASC longitude for fallback)
-    is_day           : True for day chart (affects triplicity)
-    prenatal_syzygy_lon : optional prenatal syzygy longitude
-    day_ruler        : optional day ruler planet name
-    hour_ruler       : optional hour ruler planet name
-
-    Returns
-    -------
-    Planet name (string)
-    """
+    prenatal_syzygy_lon: float | None,
+    day_ruler: str | None,
+    hour_ruler: str | None,
+) -> None:
     if not isinstance(planet_positions, dict):
         raise TypeError(f"planet_positions must be a dictionary, got {type(planet_positions).__name__}")
     for k, v in planet_positions.items():
@@ -3719,25 +4048,13 @@ def almuten_figuris(
         if hour_ruler not in CLASSIC_7:
             raise ValueError(f"hour_ruler must be one of the Classic 7 planets {CLASSIC_7}, got '{hour_ruler}'")
 
-    from .longevity import dignity_score_at, _get_house
 
-    # 1. Fallback to old simplified calculation if cusps is a single float
-    if isinstance(cusps, (int, float)):
+def _almuten_house_cusps(cusps: list[float] | dict[int, float] | float) -> list[float] | None:
+    """Twelve cusps as a list, or None when a single Ascendant longitude is given."""
+    if isinstance(cusps, (int, float)) and not isinstance(cusps, bool):
         if math.isnan(cusps) or math.isinf(cusps):
             raise ValueError("cusps as a float/int cannot be NaN or infinite")
-        asc_longitude = float(cusps)
-        key_points = [
-            planet_positions.get("Sun", 0.0),
-            planet_positions.get("Moon", 0.0),
-            asc_longitude,
-        ]
-        scores: dict[str, int] = {}
-        for planet in _PLANET_ORDER:
-            total = sum(dignity_score_at(planet, lon, is_day) for lon in key_points)
-            scores[planet] = total
-        return max(_PLANET_ORDER, key=lambda p: scores[p])
-
-    # Validate cusps sequence or dictionary
+        return None
     if isinstance(cusps, dict):
         for i in range(1, 13):
             if i not in cusps:
@@ -3747,8 +4064,8 @@ def almuten_figuris(
                 raise TypeError(f"cusps value for house {i} must be float or int, got {type(val).__name__}")
             if math.isnan(val) or math.isinf(val):
                 raise ValueError(f"cusps value for house {i} cannot be NaN or infinite")
-        asc_longitude = cusps[1]
-    elif isinstance(cusps, (list, tuple)):
+        return [float(cusps[i]) for i in range(1, 13)]
+    if isinstance(cusps, (list, tuple)):
         if len(cusps) < 12:
             raise ValueError(f"cusps sequence must contain at least 12 elements, got {len(cusps)}")
         for i in range(12):
@@ -3757,51 +4074,408 @@ def almuten_figuris(
                 raise TypeError(f"cusps value at index {i} must be float or int, got {type(val).__name__}")
             if math.isnan(val) or math.isinf(val):
                 raise ValueError(f"cusps value at index {i} cannot be NaN or infinite")
-        asc_longitude = cusps[0]
-    else:
-        raise TypeError(f"cusps must be float, list, or dict, got {type(cusps).__name__}")
+        return [float(cusps[i]) for i in range(12)]
+    raise TypeError(f"cusps must be float, list, or dict, got {type(cusps).__name__}")
 
-    sun_longitude = planet_positions.get("Sun", 0.0)
-    moon_longitude = planet_positions.get("Moon", 0.0)
 
-    # Calculate Lot of Fortune
-    if is_day:
+def _lilly_1647_whole_figure_determination(
+    planet_positions: dict[str, float],
+    house_cusps: list[float],
+    is_day: bool,
+    *,
+    midheaven_longitude: float,
+    speeds: dict[str, float] | None,
+    north_node_longitude: float | None,
+    node_doctrine: DignityNodeDoctrine,
+    fixed_star_longitudes: dict[str, float] | None,
+) -> AlmutenDetermination:
+    missing: list[str] = [p for p in _PLANET_ORDER if p not in planet_positions]
+    if missing:
+        raise ValueError(
+            "the william_lilly_1647 almuten figuris weighs all seven planets; "
+            f"planet_positions missing {', '.join(missing)}"
+        )
+    speeds = {} if speeds is None else dict(speeds)
+    missing_speeds = [p for p in _PLANET_ORDER if p not in speeds]
+    if missing_speeds:
+        raise ValueError(
+            "the william_lilly_1647 almuten figuris needs each planet's daily motion "
+            "(direct/retrograde and swift/slow, Lilly p. 115); speeds missing "
+            f"{', '.join(missing_speeds)}"
+        )
+    for name, value in speeds.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"speeds[{name}] must be a finite number")
+    if north_node_longitude is None:
+        raise ValueError(
+            "the william_lilly_1647 almuten figuris needs north_node_longitude "
+            "(partile conjunction with the Dragon's Head or Tail, Lilly p. 115)"
+        )
+    stars = {} if fixed_star_longitudes is None else dict(fixed_star_longitudes)
+    missing_stars = [star for star in LILLY_1647_ALMUTEN_FIXED_STARS if star not in stars]
+    if missing_stars:
+        raise ValueError(
+            "the william_lilly_1647 almuten figuris needs fixed_star_longitudes for "
+            f"{', '.join(missing_stars)} (Cor Leonis, Spica, Caput Algol, Lilly p. 115)"
+        )
+    for name, value in (("north_node_longitude", north_node_longitude), *stars.items()):
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite number")
+
+    node_key = "Mean Node" if node_doctrine is DignityNodeDoctrine.MEAN_NODE else "True Node"
+    policy = DignityComputationPolicy(
+        scoring=DignityScoringPolicy(node_doctrine=node_doctrine),
+    )
+    results = calculate_dignities(
+        [
+            {
+                "name": planet,
+                "degree": float(planet_positions[planet]) % 360.0,
+                "is_retrograde": planet not in ("Sun", "Moon") and speeds[planet] < 0.0,
+                "speed": float(speeds[planet]),
+            }
+            for planet in _PLANET_ORDER
+        ],
+        [{"number": index + 1, "degree": cusp} for index, cusp in enumerate(house_cusps)],
+        policy=policy,
+        horizon_frame=DignityHorizonFrame(
+            asc_longitude=house_cusps[0],
+            mc_longitude=float(midheaven_longitude),
+        ),
+        node_positions={node_key: float(north_node_longitude)},
+        fixed_star_positions={star: float(stars[star]) for star in LILLY_1647_ALMUTEN_FIXED_STARS},
+    )
+    by_planet = {item.planet: item for item in results}
+    sun_sect = by_planet["Sun"].sect_truth
+    derived_day = None if sun_sect is None else sun_sect.is_day_chart
+    if derived_day is not None and derived_day is not is_day:
+        raise ValueError(
+            "is_day does not match the sect derived from the Sun and the Ascendant/"
+            "Midheaven frame"
+        )
+    unevaluated = [
+        f"{planet}:{evaluation.code}:{evaluation.reason}"
+        for planet in _PLANET_ORDER
+        for evaluation in by_planet[planet].accidental_truth.evaluations
+        if evaluation.status is TruthEvaluationStatus.NOT_EVALUABLE
+        and evaluation.reason not in _LILLY_TESTIMONY_NOT_APPLICABLE
+    ]
+    tallies = tuple(
+        AlmutenTally(
+            planet=planet,
+            essential_points=by_planet[planet].essential_score,
+            house_points=0,
+            ruler_points=0,
+            accidental_points=by_planet[planet].accidental_score,
+        )
+        for planet in _PLANET_ORDER
+    )
+    top = max(tally.total for tally in tallies)
+    tied = tuple(tally.planet for tally in tallies if tally.total == top)
+    reason = (
+        "lilly_testimony_not_evaluable:" + ";".join(unevaluated) if unevaluated else None
+    )
+    return AlmutenDetermination(
+        doctrine=ALMUTEN_FIGURIS_LILLY_1647_DOCTRINE,
+        almuten=tied[0] if len(tied) == 1 and reason is None else None,
+        is_day_chart=is_day,
+        tallies=tallies,
+        scored_points=tuple(
+            AlmutenScoredPoint(planet, float(planet_positions[planet]) % 360.0)
+            for planet in _PLANET_ORDER
+        ),
+        tied_planets=tied,
+        tie_break=_ALMUTEN_LILLY_TIE_BREAK,
+        reason=reason,
+    )
+
+
+def almuten_figuris_determination(
+    planet_positions: dict[str, float],
+    cusps: list[float] | dict[int, float] | float,
+    is_day: bool,
+    *,
+    prenatal_syzygy_lon: float | None = None,
+    day_ruler: str | None = None,
+    hour_ruler: str | None = None,
+    doctrine: AlmutenDoctrine | str = AlmutenDoctrine.WILLIAM_LILLY_1647,
+    midheaven_longitude: float | None = None,
+    speeds: dict[str, float] | None = None,
+    north_node_longitude: float | None = None,
+    node_doctrine: DignityNodeDoctrine = DignityNodeDoctrine.MEAN_NODE,
+    fixed_star_longitudes: dict[str, float] | None = None,
+) -> AlmutenDetermination:
+    """
+    Almuten figuris with every planet's tally and the points scored.
+
+    ``william_lilly_1647`` (default): Lilly's own rule — the planet with most
+    essential and accidental dignities in the whole figure (Book I ch. VI
+    p. 49; III ch. CV pp. 531-532), each planet's total in Lilly's table of
+    fortitudes and debilities (Book I ch. XIX, p. 115) as computed by
+    ``calculate_dignities`` under ``william_lilly_1647`` scoring. Needs 12
+    ``cusps``, all seven planets, ``speeds`` (degrees/day, negative for
+    retrograde), ``north_node_longitude`` and ``fixed_star_longitudes`` for
+    Regulus, Spica and Algol; the Midheaven is ``midheaven_longitude`` or the
+    tenth cusp. A testimony that still cannot be evaluated leaves ``almuten``
+    None with a named ``reason``; a tie leaves it None with the tied planets.
+
+    ``william_lilly_1647_others_five_places``: the count Lilly reports from
+    "others" (III ch. CV, p. 531) — essential points (table p. 104, scale
+    p. 115) summed at the Ascendant, the Midheaven, the Sun, the Moon and
+    Lilly's Part of Fortune (Asc + Moon − Sun, day and night). The Midheaven
+    is ``midheaven_longitude`` when given, else the tenth of 12 ``cusps`` (the
+    scored point is then named "Tenth cusp").
+
+    Neither Lilly rule uses ``prenatal_syzygy_lon``, ``day_ruler`` or
+    ``hour_ruler``; passing them raises ValueError.
+
+    ``moira_legacy_v1``: the pre-6.9.9 count. 12 cusps (list or 1..12 dict)
+    select essential points at Sun, Moon, Ascendant, Lot of Fortune (day
+    Asc + Moon − Sun, reversed at night) and the prenatal syzygy when
+    supplied (the ``prenatal_syzygy_lon`` argument, else a ``"Syzygy"`` key in
+    ``planet_positions``), plus house points for each planet's own house and
+    the day/hour ruler points (weights not traced to a source). A single
+    Ascendant longitude selects the three-point variant (Sun, Moon,
+    Ascendant). See the doctrine note above ``AlmutenDoctrine``.
+    """
+    _validate_almuten_figuris_inputs(
+        planet_positions, is_day, prenatal_syzygy_lon, day_ruler, hour_ruler,
+    )
+    resolved = _resolve_almuten_doctrine(doctrine)
+    if midheaven_longitude is not None:
+        if isinstance(midheaven_longitude, bool) or not isinstance(midheaven_longitude, (int, float)):
+            raise TypeError("midheaven_longitude must be float or int")
+        if not math.isfinite(midheaven_longitude):
+            raise ValueError("midheaven_longitude cannot be NaN or infinite")
+
+    sun_longitude = planet_positions["Sun"]
+    moon_longitude = planet_positions["Moon"]
+    house_cusps = _almuten_house_cusps(cusps)
+    whole_figure_inputs = [
+        name for name, value in (
+            ("speeds", speeds),
+            ("north_node_longitude", north_node_longitude),
+            ("fixed_star_longitudes", fixed_star_longitudes),
+        )
+        if value is not None
+    ]
+
+    if resolved in (
+        AlmutenDoctrine.WILLIAM_LILLY_1647,
+        AlmutenDoctrine.WILLIAM_LILLY_1647_OTHERS_FIVE_PLACES,
+    ):
+        unused = [
+            name for name, value in (
+                ("prenatal_syzygy_lon", prenatal_syzygy_lon),
+                ("day_ruler", day_ruler),
+                ("hour_ruler", hour_ruler),
+            )
+            if value is not None
+        ]
+        if unused:
+            raise ValueError(
+                f"{', '.join(unused)} not used by the {resolved.value} almuten "
+                "figuris; select doctrine='moira_legacy_v1' for that count"
+            )
+
+    if resolved is AlmutenDoctrine.WILLIAM_LILLY_1647:
+        if house_cusps is None:
+            raise ValueError(
+                "the william_lilly_1647 almuten figuris weighs house position: pass 12 cusps"
+            )
+        return _lilly_1647_whole_figure_determination(
+            planet_positions,
+            house_cusps,
+            is_day,
+            midheaven_longitude=(
+                house_cusps[9] if midheaven_longitude is None else float(midheaven_longitude)
+            ),
+            speeds=speeds,
+            north_node_longitude=north_node_longitude,
+            node_doctrine=node_doctrine,
+            fixed_star_longitudes=fixed_star_longitudes,
+        )
+
+    if whole_figure_inputs:
+        raise ValueError(
+            f"{', '.join(whole_figure_inputs)} used only by the william_lilly_1647 "
+            f"whole-figure almuten, not by {resolved.value}"
+        )
+
+    if resolved is AlmutenDoctrine.WILLIAM_LILLY_1647_OTHERS_FIVE_PLACES:
+        asc_longitude = float(cusps) if house_cusps is None else house_cusps[0]
+        if midheaven_longitude is not None:
+            midheaven = AlmutenScoredPoint("Midheaven", float(midheaven_longitude) % 360.0)
+        elif house_cusps is not None:
+            midheaven = AlmutenScoredPoint("Tenth cusp", house_cusps[9] % 360.0)
+        else:
+            raise ValueError(
+                "the william_lilly_1647_others_five_places almuten figuris scores the "
+                "Midheaven: pass 12 cusps or midheaven_longitude"
+            )
         fortune_longitude = (asc_longitude + moon_longitude - sun_longitude) % 360.0
+        return _lilly_1647_determination(
+            ALMUTEN_FIGURIS_LILLY_1647_OTHERS_DOCTRINE,
+            is_day,
+            (
+                AlmutenScoredPoint("Ascendant", asc_longitude % 360.0),
+                midheaven,
+                AlmutenScoredPoint("Sun", sun_longitude % 360.0),
+                AlmutenScoredPoint("Moon", moon_longitude % 360.0),
+                AlmutenScoredPoint("Part of Fortune", fortune_longitude),
+            ),
+        )
+
+    if midheaven_longitude is not None:
+        raise ValueError("midheaven_longitude is not used by the moira_legacy_v1 almuten figuris")
+
+    from .longevity import dignity_score_at, _get_house
+
+    if house_cusps is None:
+        asc_longitude = float(cusps)
+        scored_points = (
+            AlmutenScoredPoint("Sun", sun_longitude % 360.0),
+            AlmutenScoredPoint("Moon", moon_longitude % 360.0),
+            AlmutenScoredPoint("Ascendant", asc_longitude % 360.0),
+        )
+        tallies = tuple(
+            AlmutenTally(
+                planet=planet,
+                essential_points=sum(
+                    dignity_score_at(planet, point.longitude, is_day)
+                    for point in scored_points
+                ),
+                house_points=0,
+                ruler_points=0,
+            )
+            for planet in _PLANET_ORDER
+        )
+        doctrine_name = ALMUTEN_FIGURIS_THREE_POINT_DOCTRINE
     else:
-        fortune_longitude = (asc_longitude + sun_longitude - moon_longitude) % 360.0
+        asc_longitude = house_cusps[0]
 
-    # Resolve prenatal syzygy degree
-    syzygy_longitude = prenatal_syzygy_lon
-    if syzygy_longitude is None:
-        syzygy_longitude = planet_positions.get("Syzygy")
+        if is_day:
+            fortune_longitude = (asc_longitude + moon_longitude - sun_longitude) % 360.0
+        else:
+            fortune_longitude = (asc_longitude + sun_longitude - moon_longitude) % 360.0
 
-    # Determine key points to score essential dignities at
-    key_points = [sun_longitude, moon_longitude, asc_longitude, fortune_longitude]
-    if syzygy_longitude is not None:
-        key_points.append(syzygy_longitude)
+        syzygy_longitude = prenatal_syzygy_lon
+        if syzygy_longitude is None:
+            syzygy_longitude = planet_positions.get("Syzygy")
 
-    scores = {}
-    for planet in _PLANET_ORDER:
-        # Sum essential dignities across key points
-        essential_total = sum(dignity_score_at(planet, lon, is_day) for lon in key_points)
+        points = [
+            AlmutenScoredPoint("Sun", sun_longitude % 360.0),
+            AlmutenScoredPoint("Moon", moon_longitude % 360.0),
+            AlmutenScoredPoint("Ascendant", asc_longitude % 360.0),
+            AlmutenScoredPoint("Lot of Fortune", fortune_longitude),
+        ]
+        if syzygy_longitude is not None:
+            points.append(AlmutenScoredPoint("Prenatal Syzygy", float(syzygy_longitude) % 360.0))
+        scored_points = tuple(points)
 
-        # Accidental dignity: house placement of the planet itself
-        planet_lon = planet_positions.get(planet)
-        house_points = 0
-        if planet_lon is not None:
-            house_num = _get_house(planet_lon, cusps)
-            house_points = ALMUTEN_HOUSE_SCORES.get(house_num, 0)
+        built: list[AlmutenTally] = []
+        for planet in _PLANET_ORDER:
+            planet_lon = planet_positions.get(planet)
+            house_points = 0
+            if planet_lon is not None:
+                house_points = ALMUTEN_HOUSE_SCORES.get(_get_house(planet_lon, house_cusps), 0)
+            ruler_points = 0
+            if day_ruler == planet:
+                ruler_points += ALMUTEN_DAY_RULER_POINTS
+            if hour_ruler == planet:
+                ruler_points += ALMUTEN_HOUR_RULER_POINTS
+            built.append(
+                AlmutenTally(
+                    planet=planet,
+                    essential_points=sum(
+                        dignity_score_at(planet, point.longitude, is_day)
+                        for point in scored_points
+                    ),
+                    house_points=house_points,
+                    ruler_points=ruler_points,
+                )
+            )
+        tallies = tuple(built)
+        doctrine_name = ALMUTEN_FIGURIS_DOCTRINE
 
-        # Accidental dignity: day and hour rulers
-        ruler_points = 0
-        if day_ruler is not None and day_ruler == planet:
-            ruler_points += 7
-        if hour_ruler is not None and hour_ruler == planet:
-            ruler_points += 6
+    top = max(tally.total for tally in tallies)
+    tied = tuple(tally.planet for tally in tallies if tally.total == top)
+    return AlmutenDetermination(
+        doctrine=doctrine_name,
+        almuten=tied[0],
+        is_day_chart=is_day,
+        tallies=tallies,
+        scored_points=scored_points,
+        tied_planets=tied,
+        tie_break="list_order_sun_moon_mercury_venus_mars_jupiter_saturn",
+    )
 
-        scores[planet] = essential_total + house_points + ruler_points
 
-    return max(_PLANET_ORDER, key=lambda p: scores[p])
+def almuten_figuris(
+    planet_positions: dict[str, float],
+    cusps: list[float] | dict[int, float] | float,
+    is_day: bool,
+    *,
+    prenatal_syzygy_lon: float | None = None,
+    day_ruler: str | None = None,
+    hour_ruler: str | None = None,
+    doctrine: AlmutenDoctrine | str = AlmutenDoctrine.MOIRA_LEGACY_V1,
+    midheaven_longitude: float | None = None,
+    speeds: dict[str, float] | None = None,
+    north_node_longitude: float | None = None,
+    node_doctrine: DignityNodeDoctrine = DignityNodeDoctrine.MEAN_NODE,
+    fixed_star_longitudes: dict[str, float] | None = None,
+) -> str:
+    """
+    Find the Almuten Figuris and return the winning planet's name.
+
+    ``doctrine`` defaults to ``moira_legacy_v1`` for compatibility:
+    - 12 cusps: essential dignities at Sun, Moon, Ascendant, Lot of Fortune
+      and prenatal syzygy, plus house points and planetary day (+7) and hour
+      (+6) rulers (accidental weights not traced to a source).
+    - a float/int Ascendant: the three-point variant (Sun, Moon, Ascendant).
+    Pass ``doctrine='william_lilly_1647'`` for Lilly's own whole-figure rule
+    (essential and accidental dignities, Lilly p. 115; needs speeds, the
+    north node and Regulus/Spica/Algol) or
+    ``'william_lilly_1647_others_five_places'`` for the five-place count Lilly
+    reports; under either a tie or an unevaluable testimony raises
+    ValueError. Use ``almuten_figuris_determination`` for the full tallies;
+    doctrine notes: see ``AlmutenDoctrine``.
+
+    Parameters
+    ----------
+    planet_positions : dict of body → longitude (must include "Sun", "Moon")
+    cusps            : list of 12 cusps, dict of 1..12 cusps, or float (Ascendant)
+    is_day           : True for day chart (affects triplicity)
+    prenatal_syzygy_lon : optional prenatal syzygy longitude (legacy only)
+    day_ruler        : optional day ruler planet name (legacy only)
+    hour_ruler       : optional hour ruler planet name (legacy only)
+    doctrine         : ``moira_legacy_v1`` (default), ``william_lilly_1647`` or
+                       ``william_lilly_1647_others_five_places``
+    midheaven_longitude : optional Midheaven (Lilly only; else cusps[9])
+    speeds, north_node_longitude, node_doctrine, fixed_star_longitudes :
+                       whole-figure Lilly rule only
+
+    Returns
+    -------
+    Planet name (string)
+    """
+    return _almuten_winner_or_raise(
+        almuten_figuris_determination(
+            planet_positions,
+            cusps,
+            is_day,
+            prenatal_syzygy_lon=prenatal_syzygy_lon,
+            day_ruler=day_ruler,
+            hour_ruler=hour_ruler,
+            doctrine=doctrine,
+            midheaven_longitude=midheaven_longitude,
+            speeds=speeds,
+            north_node_longitude=north_node_longitude,
+            node_doctrine=node_doctrine,
+            fixed_star_longitudes=fixed_star_longitudes,
+        )
+    )
 
 
 # ---------------------------------------------------------------------------

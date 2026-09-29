@@ -367,11 +367,22 @@ class MercurySectModel(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class EssentialDignityPolicy:
-    """Policy surface for independently selectable essential tables."""
+    """
+    Policy surface for independently selectable essential tables.
+
+    ``triplicity_doctrine`` and ``bounds_doctrine`` left as None select the
+    tables that belong to the scoring mode (see
+    ``DignityComputationPolicy.resolved_triplicity_doctrine`` and
+    ``resolved_bounds_doctrine``): Lilly's own 1647 tables under
+    ``william_lilly_1647`` scoring (his triplicity and his p. 104 terms), the
+    Dorothean triplicity and the Ptolemaic (Robbins) terms otherwise. An
+    explicit doctrine is always honoured and recorded on every
+    essential-dignity truth.
+    """
 
     doctrine: EssentialDignityDoctrine = EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7
-    bounds_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.PTOLEMAIC
-    triplicity_doctrine: TriplicityDoctrine = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    bounds_doctrine: EgyptianBoundsDoctrine | None = None
+    triplicity_doctrine: TriplicityDoctrine | None = None
     participating_ruler_policy: ParticipatingRulerPolicy = ParticipatingRulerPolicy.IGNORE
 
 
@@ -436,14 +447,52 @@ class DignityComputationPolicy:
     Lean backend policy surface for dignity computation.
 
     The default is the source-bounded William Lilly 1647 score, using
-    Ptolemaic bounds. Other admitted tables can be combined with
-    essential-only or unscored tracking without inventing a hybrid Lilly score.
+    Lilly's own table (Christian Astrology 1647, Book I ch. XVIII, p. 104:
+    his triplicity rulers and his terms). Other admitted tables can be
+    combined with essential-only or unscored tracking; an explicit table under
+    Lilly scoring is honoured and echoed on every essential-dignity truth.
     """
 
     essential: EssentialDignityPolicy = field(default_factory=EssentialDignityPolicy)
     accidental: AccidentalDignityPolicy = field(default_factory=AccidentalDignityPolicy)
     reception: MutualReceptionPolicy = field(default_factory=MutualReceptionPolicy)
     scoring: DignityScoringPolicy = field(default_factory=DignityScoringPolicy)
+
+    @property
+    def resolved_triplicity_doctrine(self) -> TriplicityDoctrine:
+        """
+        Triplicity table actually used for essential dignity.
+
+        An explicit ``essential.triplicity_doctrine`` wins. When it is None the
+        table follows the scoring mode: ``william_lilly_1647`` uses Lilly's own
+        table (Christian Astrology, 1647, Book I ch. XVIII — Mars rules the
+        water triplicity by day and night); every other mode uses the
+        Dorothean table (Carmen Astrologicum I.1, Pingree 1976).
+        """
+        explicit = self.essential.triplicity_doctrine
+        if explicit is not None:
+            return explicit
+        if self.scoring.mode is DignityScoringMode.WILLIAM_LILLY_1647:
+            return TriplicityDoctrine.WILLIAM_LILLY_1647
+        return TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+
+    @property
+    def resolved_bounds_doctrine(self) -> EgyptianBoundsDoctrine:
+        """
+        Term (bound) table actually used for essential dignity.
+
+        An explicit ``essential.bounds_doctrine`` wins. When it is None the
+        table follows the scoring mode: ``william_lilly_1647`` uses Lilly's own
+        terms (Christian Astrology 1647, Book I ch. XVIII, table p. 104);
+        every other mode uses the Ptolemaic terms of Robbins' Tetrabiblos
+        (the pre-6.9.9 default).
+        """
+        explicit = self.essential.bounds_doctrine
+        if explicit is not None:
+            return explicit
+        if self.scoring.mode is DignityScoringMode.WILLIAM_LILLY_1647:
+            return EgyptianBoundsDoctrine.WILLIAM_LILLY_1647
+        return EgyptianBoundsDoctrine.PTOLEMAIC
 
     @property
     def includes_any_solar_condition(self) -> bool:

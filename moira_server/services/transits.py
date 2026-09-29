@@ -196,8 +196,24 @@ def compute_lunar_phases(engine: Moira, request: LunarPhaseSearchRequest) -> tup
     return find_lunar_phases(request.jd_start, request.jd_end, reader=reader)
 
 
+def compute_lunar_phase_longitudes(engine: Moira, event: LunarPhaseEvent) -> tuple[float, float]:
+    """Return ``(moon_longitude, sun_longitude)`` at a lunar phase event.
+
+    Uses the same apparent geocentric ``planet_at`` longitudes from which
+    ``moira.phenomena._sun_moon_phase_angle`` derives the phase angle, so
+    ``(moon - sun) % 360`` reproduces ``event.phase_angle``.
+    """
+    from moira.planets import planet_at
+
+    reader = _get_reader(engine)
+    moon = planet_at(Body.MOON, event.jd_ut, reader=reader).longitude
+    sun = planet_at(Body.SUN, event.jd_ut, reader=reader).longitude
+    return moon, sun
+
+
 __all__ = [
     "compute_ingresses",
+    "compute_lunar_phase_longitudes",
     "compute_lunar_phases",
     "compute_next_ingress",
     "compute_transits",

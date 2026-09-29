@@ -21,14 +21,20 @@ Authority
                             (*The Astrological Houses*).  Balance Point at
                             phi-complement (0.382) of house; Low Point at
                             phi (0.618) of house.
-    Dynamic Curve        -- Described in *The Astrological Houses* as a
-                            sinusoidal curve peaking at cusps and reaching
-                            minimum at the Low Point.  The piecewise
-                            half-cosine implemented here is a faithful
-                            mathematical reconstruction of the published
-                            shape; the explicit formula is not freely
-                            available and should be verified against the
-                            primary text if strict fidelity is required.
+    Dynamic Curve        -- UNVERIFIED MOIRA EDITORIAL RECONSTRUCTION.
+                            The Hubers describe and draw an intensity curve
+                            that peaks at the cusps and bottoms out at the
+                            Low Point (*The Astrological Houses*; *Life
+                            Clock*), but Moira has not found a published
+                            formula.  The piecewise half-cosine used here is
+                            Moira's own curve fitted to that verbal shape;
+                            its values are not Huber values.  Since 6.9.9 it
+                            is excluded from defaults: ``age_point`` returns
+                            ``intensity=None`` unless the caller opts in with
+                            ``include_intensity=True``.  The explicit curve
+                            functions (``dynamic_intensity``,
+                            ``intensity_at``, ``chart_intensity_profile``)
+                            remain available as labelled editorial tools.
     Koch house system    -- Huber doctrine prescribes Koch houses.  The
                             implementation accepts any HouseCusps but notes
                             the doctrinal preference.
@@ -178,8 +184,9 @@ class AgePointPosition:
         Cardinal, Fixed, or Mutable zone.
     years_into_house : float
         Years elapsed since entering this house (0--6).
-    intensity : float
-        Dynamic Intensity Curve value at this position (0.0--1.0).
+    intensity : float | None
+        Unverified editorial Dynamic Intensity Curve value (0.0--1.0), or
+        ``None`` unless ``age_point(..., include_intensity=True)`` was used.
     """
 
     age_years:              float
@@ -189,7 +196,7 @@ class AgePointPosition:
     longitude:              float
     zone:                   HouseZone
     years_into_house:       float
-    intensity:              float
+    intensity:              float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -393,6 +400,8 @@ def house_zones(house_cusps: HouseCusps) -> tuple[HouseZoneProfile, ...]:
 def age_point(
     age_years: float,
     house_cusps: HouseCusps,
+    *,
+    include_intensity: bool = False,
 ) -> AgePointPosition:
     """
     Compute the Age Point position for a given age.
@@ -407,10 +416,13 @@ def age_point(
     ----------
     age_years   : age from birth in years (may be fractional, may exceed 72)
     house_cusps : house frame (Koch recommended)
+    include_intensity : opt in to the unverified editorial Dynamic
+                  Intensity Curve value (default False -> intensity=None)
 
     Returns
     -------
-    AgePointPosition with longitude, house, zone, and intensity.
+    AgePointPosition with longitude, house, zone, and (when requested)
+    the editorial intensity.
 
     Raises
     ------
@@ -432,7 +444,9 @@ def age_point(
     cusp = house_cusps.cusps[house_index]
     longitude = (cusp + fraction * size) % 360.0
     zone = _zone_of(fraction)
-    intensity = _intensity_at_fraction(fraction)
+    if not isinstance(include_intensity, bool):
+        raise ValueError("include_intensity must be a boolean")
+    intensity = _intensity_at_fraction(fraction) if include_intensity else None
 
     return AgePointPosition(
         age_years=age_years,
