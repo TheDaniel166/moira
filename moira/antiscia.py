@@ -29,6 +29,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .aspects import aspect_motion_witness
 from .constants import sign_of
 
 __all__ = [
@@ -143,7 +144,7 @@ class AntisciaAspect:
         "scope": "class",
         "id": "moira.antiscia.AntisciaAspect",
         "risk": "low",
-        "api": {"frozen": ["body1", "body2", "aspect", "lon1", "lon2", "shadow", "orb"], "internal": []},
+        "api": {"frozen": ["body1", "body2", "aspect", "lon1", "lon2", "shadow", "orb", "motion_state", "applying"], "internal": []},
         "state": {"mutable": false, "owners": []},
         "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
         "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -160,15 +161,18 @@ class AntisciaAspect:
     lon2:   float  # original longitude of body2
     shadow: float  # the shadow longitude (antiscion/contra-antiscion of body1)
     orb:    float  # angular distance between shadow and lon2
+    motion_state: str | None = None
+    applying: bool | None = None
 
     def __repr__(self) -> str:
         sign1, _, deg1 = sign_of(self.lon1)
         sign2, _, deg2 = sign_of(self.lon2)
         shad_sign, _, shad_deg = sign_of(self.shadow)
+        motion = f", motion={self.motion_state}" if self.motion_state else ""
         return (
             f"AntisciaAspect({self.aspect}: {self.body1} {sign1} {deg1:.2f}° "
             f"→ shadow {shad_sign} {shad_deg:.2f}° "
-            f"≈ {self.body2} {sign2} {deg2:.2f}°, orb={self.orb:.3f}°)"
+            f"≈ {self.body2} {sign2} {deg2:.2f}°, orb={self.orb:.3f}°{motion})"
         )
 
 
@@ -179,6 +183,7 @@ class AntisciaAspect:
 def find_antiscia(
     positions: dict[str, float],
     orb: float = 1.0,
+    speeds: dict[str, float] | None = None,
 ) -> list[AntisciaAspect]:
     """
     Find all antiscion and contra-antiscion contacts among a set of positions.
@@ -196,6 +201,8 @@ def find_antiscia(
         Mapping of body name → ecliptic longitude (degrees).
     orb : float
         Maximum allowed orb in degrees (default 1.0°).
+    speeds : dict[str, float] | None
+        Optional dictionary of daily speeds to evaluate motion state.
 
     Returns
     -------
@@ -230,18 +237,56 @@ def find_antiscia(
                 if dist_a <= orb or dist_b <= orb:
                     seen.add(key)
                     if dist_a <= dist_b:
+                        motion_state = None
+                        applying = None
+                        if speeds is not None and name_a in speeds and name_b in speeds:
+                            witness = aspect_motion_witness(
+                                body1=name_a,
+                                longitude1_deg=shad_a,
+                                body2=name_b,
+                                longitude2_deg=lon_b,
+                                aspect="Conjunction",
+                                speed1_deg_per_day=-speeds[name_a],
+                                speed2_deg_per_day=speeds[name_b],
+                                reference_frame="caller_supplied_ecliptic_longitudes",
+                                timescale="caller_supplied_daily_speeds",
+                            )
+                            motion_state = witness.state.value
+                            applying = motion_state == "applying"
+
                         results.append(AntisciaAspect(
                             body1=name_a, body2=name_b,
                             aspect=aspect_label,
                             lon1=lon_a, lon2=lon_b,
                             shadow=shad_a, orb=dist_a,
+                            motion_state=motion_state,
+                            applying=applying,
                         ))
                     else:
+                        motion_state = None
+                        applying = None
+                        if speeds is not None and name_a in speeds and name_b in speeds:
+                            witness = aspect_motion_witness(
+                                body1=name_b,
+                                longitude1_deg=shad_b,
+                                body2=name_a,
+                                longitude2_deg=lon_a,
+                                aspect="Conjunction",
+                                speed1_deg_per_day=-speeds[name_b],
+                                speed2_deg_per_day=speeds[name_a],
+                                reference_frame="caller_supplied_ecliptic_longitudes",
+                                timescale="caller_supplied_daily_speeds",
+                            )
+                            motion_state = witness.state.value
+                            applying = motion_state == "applying"
+
                         results.append(AntisciaAspect(
                             body1=name_b, body2=name_a,
                             aspect=aspect_label,
                             lon1=lon_b, lon2=lon_a,
                             shadow=shad_b, orb=dist_b,
+                            motion_state=motion_state,
+                            applying=applying,
                         ))
 
     results.sort(key=lambda a: a.orb)
@@ -257,6 +302,8 @@ def antiscia_to_point(
     positions: dict[str, float],
     point_name: str = "Point",
     orb: float = 1.0,
+    point_speed: float | None = None,
+    speeds: dict[str, float] | None = None,
 ) -> list[AntisciaAspect]:
     """
     Find which planets cast an antiscion or contra-antiscion onto a given point.
@@ -275,6 +322,10 @@ def antiscia_to_point(
         Display name for the target point (default "Point").
     orb : float
         Maximum allowed orb in degrees (default 1.0°).
+    point_speed : float | None
+        Optional daily speed of the fixed point (e.g. Ascendant speed).
+    speeds : dict[str, float] | None
+        Optional mapping of body name → daily speed for evaluating motion state.
 
     Returns
     -------
@@ -291,11 +342,30 @@ def antiscia_to_point(
             shadow = shadow_func(lon)
             dist   = _angular_distance(shadow, point_longitude)
             if dist <= orb:
+                motion_state = None
+                applying = None
+                if speeds is not None and name in speeds and point_speed is not None:
+                    witness = aspect_motion_witness(
+                        body1=name,
+                        longitude1_deg=shadow,
+                        body2=point_name,
+                        longitude2_deg=point_longitude,
+                        aspect="Conjunction",
+                        speed1_deg_per_day=-speeds[name],
+                        speed2_deg_per_day=point_speed,
+                        reference_frame="caller_supplied_ecliptic_longitudes",
+                        timescale="caller_supplied_daily_speeds",
+                    )
+                    motion_state = witness.state.value
+                    applying = motion_state == "applying"
+
                 results.append(AntisciaAspect(
                     body1=name, body2=point_name,
                     aspect=aspect_label,
                     lon1=lon, lon2=point_longitude,
                     shadow=shadow, orb=dist,
+                    motion_state=motion_state,
+                    applying=applying,
                 ))
 
     results.sort(key=lambda a: a.orb)

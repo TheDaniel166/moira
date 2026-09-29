@@ -2065,8 +2065,10 @@ def synastry_aspects(
     lons_a = chart_a.longitudes(include_nodes=include_nodes)
     lons_b = chart_b.longitudes(include_nodes=include_nodes)
 
-    speeds_a = chart_a.speeds()
-    speeds_b = chart_b.speeds()
+    if include_nodes:
+        _duplicates = {"Mean Node", "True Lilith", "Mean Lilith"}
+        lons_a = {k: v for k, v in lons_a.items() if k not in _duplicates}
+        lons_b = {k: v for k, v in lons_b.items() if k not in _duplicates}
 
     results: list[AspectData] = []
     for name_a, lon_a in lons_a.items():
@@ -2077,8 +2079,6 @@ def synastry_aspects(
                 tier=tier,
                 orbs=orbs,
                 orb_factor=orb_factor,
-                speed_a=speeds_a.get(name_a),
-                speed_b=speeds_b.get(name_b),
             )
             results.extend(found)
 

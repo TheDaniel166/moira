@@ -76,6 +76,7 @@ def _build_party_chart(
         engine,
         ChartRequest(
             dt=request.dt,
+                time_unknown=getattr(request, "time_unknown", False),
             bodies=request.bodies,
             include_nodes=(
                 request.include_nodes if include_nodes is None else include_nodes
@@ -93,6 +94,7 @@ def _build_party_chart_and_houses(engine: Moira, request: RelationshipPartyReque
         engine,
         HousesRequest(
             dt=request.dt,
+                time_unknown=getattr(request, "time_unknown", False),
             latitude=request.latitude,
             longitude=request.longitude,
             system=request.house_system,
@@ -273,22 +275,10 @@ def compute_synastry_directional_overlay(engine: Moira, request: SynastryDirecti
     raise ValueError("direction must be 'first_in_second' or 'second_in_first'")
 
 
-def compute_synastry_contact_relations(engine: Moira, request: SynastryPairRequest):
-    return synastry_contact_relations(compute_synastry_contacts(engine, request))
-
-
-def compute_synastry_overlay_relations(engine: Moira, request: SynastryPairRequest):
-    return mutual_overlay_relations(compute_synastry_overlays(engine, request))
-
-
-def compute_synastry_condition_profiles(engine: Moira, request: SynastryPairRequest):
-    return synastry_condition_profiles(compute_synastry_contacts(engine, request))
-
-
 def compute_composite_chart(engine: Moira, request: CompositeChartRequest):
     chart_a, houses_a, chart_b, houses_b = _pair_artifacts(engine, request)
     if request.method == "midpoint":
-        return composite_chart(chart_a, chart_b, houses_a, houses_b)
+        raise ValueError("midpoint method deprecated")
     if request.method == "reference_place":
         if request.reference_latitude is None:
             raise ValueError("reference_latitude is required for reference_place composite")
@@ -364,32 +354,6 @@ def compute_davison_chart_analysis(engine: Moira, request: DavisonChartRequest):
         engine,
         chart.chart.longitudes(),
         request,
-    )
-
-
-def compute_synastry_chart_profile(engine: Moira, request: SynastryPairRequest):
-    contacts = compute_synastry_contacts(engine, request)
-    overlays = compute_synastry_overlays(engine, request)
-    composite = compute_composite_chart(engine, CompositeChartRequest(**request.model_dump(), method="midpoint"))
-    davison = compute_davison_chart(engine, DavisonChartRequest(**request.model_dump(), method="midpoint_location"))
-    return synastry_chart_condition_profile(
-        contacts=contacts,
-        overlays=overlays,
-        composite=composite,
-        davison=davison,
-    )
-
-
-def compute_synastry_network(engine: Moira, request: SynastryPairRequest):
-    contacts = compute_synastry_contacts(engine, request)
-    overlays = compute_synastry_overlays(engine, request)
-    composite = compute_composite_chart(engine, CompositeChartRequest(**request.model_dump(), method="midpoint"))
-    davison = compute_davison_chart(engine, DavisonChartRequest(**request.model_dump(), method="midpoint_location"))
-    return synastry_condition_network_profile(
-        contacts=contacts,
-        overlays=overlays,
-        composite=composite,
-        davison=davison,
     )
 
 

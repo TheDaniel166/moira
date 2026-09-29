@@ -53,11 +53,27 @@ class AntisciaReflectRequest(_StrictModel):
 class AntisciaContactsRequest(_StrictModel):
     positions: dict[str, float]
     orb: float = Field(default=1.0, ge=0.0, le=ANTISCIA_MAX_ORB)
+    speeds: dict[str, float] | None = None
 
     @field_validator("positions")
     @classmethod
     def _valid_positions(cls, value: dict[str, float]) -> dict[str, float]:
         return _clean_positions(value)
+
+    @field_validator("speeds")
+    @classmethod
+    def _finite_speeds(cls, value: dict[str, float] | None) -> dict[str, float] | None:
+        if value is None:
+            return None
+        cleaned: dict[str, float] = {}
+        for raw_name, speed in value.items():
+            name = str(raw_name).strip()
+            if not name:
+                raise ValueError("speed body names must be non-empty")
+            if not math.isfinite(speed):
+                raise ValueError("speeds must be finite")
+            cleaned[name] = speed
+        return cleaned
 
     @field_validator("orb", mode="before")
     @classmethod
@@ -71,12 +87,20 @@ class AntisciaContactsRequest(_StrictModel):
 class AntisciaToPointRequest(AntisciaContactsRequest):
     point_longitude: float
     point_name: str = Field(default="Point", min_length=1, max_length=ANTISCIA_MAX_POINT_NAME_LENGTH)
+    point_speed: float | None = None
 
     @field_validator("point_longitude")
     @classmethod
     def _finite_point_longitude(cls, value: float) -> float:
         if not math.isfinite(value):
             raise ValueError("point_longitude must be finite")
+        return value
+
+    @field_validator("point_speed")
+    @classmethod
+    def _finite_point_speed(cls, value: float | None) -> float | None:
+        if value is not None and not math.isfinite(value):
+            raise ValueError("point_speed must be finite")
         return value
 
     @field_validator("point_name")
@@ -124,6 +148,8 @@ class AntisciaContactResponse(_StrictModel):
     lon2: float
     shadow: float
     orb: float
+    motion_state: str | None = None
+    applying: bool | None = None
 
 
 class AntisciaContactsResponse(_StrictModel):

@@ -30,6 +30,8 @@ def _serialize_contact(contact: AntisciaAspect) -> AntisciaContactResponse:
         lon2=contact.lon2,
         shadow=contact.shadow,
         orb=contact.orb,
+        motion_state=contact.motion_state,
+        applying=contact.applying,
     )
 
 
@@ -64,7 +66,7 @@ def compute_antiscia_reflection(
 def compute_antiscia_contacts(
     request: AntisciaContactsRequest,
 ) -> AntisciaContactsResponse:
-    contacts = [_serialize_contact(contact) for contact in find_antiscia(request.positions, request.orb)]
+    contacts = [_serialize_contact(contact) for contact in find_antiscia(request.positions, request.orb, speeds=request.speeds)]
     return AntisciaContactsResponse(
         contacts=contacts,
         count=len(contacts),
@@ -93,6 +95,8 @@ def compute_antiscia_to_point(
             request.positions,
             point_name=request.point_name,
             orb=request.orb,
+            point_speed=request.point_speed,
+            speeds=request.speeds,
         )
     ]
     return AntisciaContactsResponse(

@@ -323,9 +323,7 @@ from .relationship import (
     compute_patterns_with_coherence,
     compute_planetary_pictures,
     compute_synastry_aspects,
-    compute_synastry_chart_profile,
     compute_synastry_contacts,
-    compute_synastry_network,
     compute_synastry_overlays,
 )
 from .returns import compute_lunar_return, compute_planet_return, compute_solar_return
@@ -648,9 +646,7 @@ __all__ = [
     "compute_twilight_times",
     "compute_transits",
     "compute_synastry_aspects",
-    "compute_synastry_chart_profile",
     "compute_synastry_contacts",
-    "compute_synastry_network",
     "compute_synastry_overlays",
     "compute_mudda_active",
     "compute_mudda_judgement",

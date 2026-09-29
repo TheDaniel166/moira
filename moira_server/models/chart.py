@@ -47,6 +47,7 @@ class NodePositionResponse(_StrictModel):
 
 class ChartRequest(_StrictModel):
     dt: datetime
+    time_unknown: bool = False
     bodies: list[str] | None = None
     include_nodes: bool = True
     observer_lat: float | None = None
@@ -135,6 +136,7 @@ class HousePolicyRequest(_StrictModel):
 
 class HousesRequest(_StrictModel):
     dt: datetime
+    time_unknown: bool = False
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)
     system: str | None = None

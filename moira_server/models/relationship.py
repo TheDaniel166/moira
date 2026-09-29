@@ -19,6 +19,7 @@ class _StrictModel(BaseModel):
 
 class RelationshipPartyRequest(_StrictModel):
     dt: datetime
+    time_unknown: bool = False
     latitude: float
     longitude: float
     bodies: list[str] | None = None
@@ -808,7 +809,7 @@ class _DerivedChartRequest(SynastryPairRequest):
 
 
 class CompositeChartRequest(_DerivedChartRequest):
-    method: str = "midpoint"
+    method: str = "reference_place"
     reference_latitude: float | None = None
     house_system: str | None = None
 
