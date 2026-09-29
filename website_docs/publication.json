@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "source_repository": "https://github.com/TheDaniel166/moira",
-  "last_verified": "2026-09-27",
+  "last_verified": "2026-09-29",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.9.0",
-    "tag": "v6.9.0",
-    "commit": "324cc5a602e0e403071baa98365d6070fc46878b",
-    "release_date": "2026-09-26",
+    "version": "6.9.8",
+    "tag": "v6.9.8",
+    "commit": "138659c93077cea66f2abbf911371c55c3b54474",
+    "release_date": "2026-09-29",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,27 +31,27 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "9e38448bac09a90ab3e9eeac769555ead257ea09de9a3c74ec909b20071e9120"
+      "source_sha256": "fade1b560487158f1ac28881a2371965c3b14526c42848675459c6787d25a830"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "aa8b254d884958c3e80ffa55f2fc50e06f64fb2802d44b11f659a0ccc9384260"
+      "source_sha256": "2a0b47ad703bd65f04c8924ad1529b9933495dd11261f6f553b6848f1d6144bc"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "6a1797dc3e9bf619b3cdca6b7a91bbbe408d827ef6fe72350abe852baefe5b89"
+      "source_sha256": "856b32b8c4af14cfae95db03140666f4c287bf676e1a1216aaf51a94772ddb3f"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "bbd81d44dd91f32d383f0dd962c112262227b6489b17fc077bcb7d2f75a18e12"
+      "source_sha256": "a18be8403807066bdf59d22059af49266b9c5e840edff0f86ea2e086666e5b0c"
     },
     {
       "id": "rest_router_registration",
       "source": "moira_server/app.py",
-      "source_sha256": "b4b1b46a695dbd66eada44ee253e3d4fd9b42ea9044a27f0622239f42f0465e3"
+      "source_sha256": "7c71a40c9b0a7fcf6595a23f2c3c2e47b3ba80d30aa76f8ce20e8c053f5434f4"
     },
     {
       "id": "planetary_reduction",
@@ -107,12 +107,12 @@
     "house_system_registry": {
       "entry_count": 22,
       "source": "moira/constants.py",
-      "source_sha256": "17797fa82f0d4a507625f4aad3ce0ff4793d00331970281e561cd3df07546a35"
+      "source_sha256": "d52675d9bf08f6caffcd88f4f050ca7890b0493a7b507ef60f79edfdcf3d7630"
     },
     "ecliptic_aspect_registry": {
       "entry_count": 22,
       "source": "moira/constants.py",
-      "source_sha256": "17797fa82f0d4a507625f4aad3ce0ff4793d00331970281e561cd3df07546a35"
+      "source_sha256": "d52675d9bf08f6caffcd88f4f050ca7890b0493a7b507ef60f79edfdcf3d7630"
     },
     "declination_aspect_registry": {
       "entry_count": 2,
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "aa8b254d884958c3e80ffa55f2fc50e06f64fb2802d44b11f659a0ccc9384260",
+      "source_sha256": "2a0b47ad703bd65f04c8924ad1529b9933495dd11261f6f553b6848f1d6144bc",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -143,6 +143,7 @@
         "AccidentalConditionKind",
         "AccidentalDignityClassification",
         "AccidentalDignityCondition",
+        "AccidentalDignityEvaluationTruth",
         "AccidentalDignityPolicy",
         "AccidentalDignityTruth",
         "AlternateDashaPeriod",
@@ -285,6 +286,9 @@
         "DignityComputationPolicy",
         "DignityConditionProfile",
         "DignityHorizonFrame",
+        "DignityNodeDoctrine",
+        "DignityScoringMode",
+        "DignityScoringPolicy",
         "DignityTier",
         "DispositorLink",
         "DispositorshipChain",
@@ -363,6 +367,7 @@
         "EclipseContourLevel",
         "EclipseEpoch",
         "EclipseGeocentricBodyState",
+        "EgyptianBoundsDoctrine",
         "ElectionalRankingPolicy",
         "EssentialDignityClassification",
         "EssentialDignityComponentTruth",
@@ -403,6 +408,7 @@
         "HellenisticChartProfile",
         "HellenisticDecennialSnapshot",
         "HellenisticDirectionTruth",
+        "HellenisticEssentialDignityComponentTruth",
         "HellenisticLotProfile",
         "HellenisticNamedTwelfthPart",
         "HellenisticObserverContext",
@@ -1295,8 +1301,10 @@
     },
     "classical": {
       "source": "moira/classical.py",
-      "source_sha256": "4b3470eac2be4780f15a257c4157c2f7b7b4fb5284c05b9260cc3a565e7ec652",
+      "source_sha256": "dee1b525ea348f0db112fa8f30e7166bed3e0066b0edd2cea73863e372dff149",
       "symbols": [
+        "AGRIPPA_MANSIONS",
+        "AL_BIRUNI_MANSIONS",
         "ASPECT_TIERS",
         "AccidentalConditionClassification",
         "AccidentalConditionKind",
@@ -1387,6 +1395,7 @@
         "DiurnalQuadrant",
         "DynamicIntensity",
         "EXTENDED",
+        "ElectionalMansion",
         "EssentialDignityClassification",
         "EssentialDignityComponentTruth",
         "EssentialDignityDoctrine",
@@ -1423,6 +1432,7 @@
         "HellenisticChartProfile",
         "HellenisticDecennialSnapshot",
         "HellenisticDirectionTruth",
+        "HellenisticEssentialDignityComponentTruth",
         "HellenisticLotProfile",
         "HellenisticNamedTwelfthPart",
         "HellenisticObserverContext",
@@ -1494,12 +1504,10 @@
         "LotsEvaluation",
         "LotsExternalReferencePolicy",
         "LotsReferenceFailureMode",
-        "MANSIONS",
         "MANSION_SPAN",
         "MINOR_YEARS",
         "MODERN_10",
         "MODERN_3",
-        "MansionInfo",
         "MansionPosition",
         "MansionTradition",
         "MercuryPhaseTruth",
@@ -1792,6 +1800,8 @@
       "source": "moira/predictive.py",
       "source_sha256": "30c12974a2a11610b432c03aaa15cb2779178a6ac40dbf89480703d1742530c4",
       "symbols": [
+        "AGRIPPA_MANSIONS",
+        "AL_BIRUNI_MANSIONS",
         "ASPECT_TIERS",
         "AccidentalConditionClassification",
         "AccidentalConditionKind",
@@ -1914,6 +1924,7 @@
         "EclipseData",
         "EclipseEvent",
         "EclipseType",
+        "ElectionalMansion",
         "ElectionalPolicy",
         "ElectionalWindow",
         "EssentialDignityClassification",
@@ -1955,6 +1966,7 @@
         "HellenisticChartProfile",
         "HellenisticDecennialSnapshot",
         "HellenisticDirectionTruth",
+        "HellenisticEssentialDignityComponentTruth",
         "HellenisticLotProfile",
         "HellenisticNamedTwelfthPart",
         "HellenisticObserverContext",
@@ -2037,12 +2049,10 @@
         "LunarEclipseAnalysis",
         "LunarEclipseLocalCircumstances",
         "LunarPhaseEvent",
-        "MANSIONS",
         "MANSION_SPAN",
         "MINOR_YEARS",
         "MODERN_10",
         "MODERN_3",
-        "MansionInfo",
         "MansionPosition",
         "MansionTradition",
         "MercuryPhaseTruth",
@@ -2590,9 +2600,11 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "6a1797dc3e9bf619b3cdca6b7a91bbbe408d827ef6fe72350abe852baefe5b89",
+      "source_sha256": "856b32b8c4af14cfae95db03140666f4c287bf676e1a1216aaf51a94772ddb3f",
       "symbols": [
         "ACGLine",
+        "AGRIPPA_MANSIONS",
+        "AL_BIRUNI_MANSIONS",
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
         "ASHTOTTARI_TOTAL",
@@ -2603,6 +2615,7 @@
         "AccidentalConditionKind",
         "AccidentalDignityClassification",
         "AccidentalDignityCondition",
+        "AccidentalDignityEvaluationTruth",
         "AccidentalDignityPolicy",
         "AccidentalDignityTruth",
         "AgePointPosition",
@@ -2669,6 +2682,7 @@
         "AstrodyneSummaryEntry",
         "AstrodyneSummaryFamily",
         "AstrodyneSummaryProfile",
+        "AstronomicalMansion",
         "AtmosphericExtinctionAssessment",
         "AvasthaChartResult",
         "AvasthaPolicy",
@@ -2687,6 +2701,7 @@
         "BodyVoidWindow",
         "BodyVoidWindows",
         "CANONICAL_ASPECTS",
+        "CENSORINUS_139_ANCHOR",
         "CHALDEAN_ORDER",
         "CIRCLE_TYPES",
         "CLASSIC_7",
@@ -2812,6 +2827,9 @@
         "DignityComputationPolicy",
         "DignityConditionProfile",
         "DignityHorizonFrame",
+        "DignityNodeDoctrine",
+        "DignityScoringMode",
+        "DignityScoringPolicy",
         "DignityTier",
         "DispositorLink",
         "DispositorshipChain",
@@ -2907,9 +2925,11 @@
         "EclipseGeocentricBodyState",
         "EclipseHit",
         "EclipseType",
+        "EgyptianBoundsDoctrine",
         "EgyptianCalendarClassification",
         "EgyptianCalendarTruth",
         "EgyptianDate",
+        "ElectionalMansion",
         "ElectionalPolicy",
         "ElectionalRankingPolicy",
         "ElectionalWindow",
@@ -3002,6 +3022,7 @@
         "HellenisticChartProfile",
         "HellenisticDecennialSnapshot",
         "HellenisticDirectionTruth",
+        "HellenisticEssentialDignityComponentTruth",
         "HellenisticLotProfile",
         "HellenisticNamedTwelfthPart",
         "HellenisticObserverContext",
@@ -3151,7 +3172,6 @@
         "LunarOrientationResourceMissingError",
         "LunarOrientationSource",
         "LunarPhaseEvent",
-        "MANSIONS",
         "MANSION_SPAN",
         "MEAN_DAILY_MOTION",
         "MINOR_YEARS",
@@ -3162,7 +3182,6 @@
         "MULATRIKONA_END",
         "MULATRIKONA_SIGN",
         "MULATRIKONA_START",
-        "MansionInfo",
         "MansionPosition",
         "MansionTradition",
         "MercuryPhaseTruth",
@@ -3558,6 +3577,7 @@
         "SAHL_SOWING_V1",
         "SAHL_WELLS_AND_RIVERS_V1",
         "SECT",
+        "SOTHIC_EPOCH_REFERENCES",
         "SSBPosition",
         "SSB_BODIES",
         "STELLIUM_CORE",
@@ -3623,6 +3643,7 @@
         "SolarEclipseVisibilityFootprint",
         "SolarProximityBand",
         "SolarProximityTruth",
+        "SothicAnchor",
         "SothicCalendarPolicy",
         "SothicChartConditionProfile",
         "SothicComputationClassification",
@@ -3633,12 +3654,18 @@
         "SothicConditionNetworkProfile",
         "SothicConditionProfile",
         "SothicConditionState",
+        "SothicCycleModel",
         "SothicEntry",
         "SothicEpoch",
         "SothicEpochPolicy",
+        "SothicEpochPrediction",
+        "SothicEpochReference",
         "SothicHeliacalPolicy",
         "SothicPredictionPolicy",
         "SothicRelation",
+        "SothicRisingSeries",
+        "SothicYearOutcome",
+        "SothicYearStatus",
         "SpeculumEntry",
         "StarChartConditionProfile",
         "StarComponent",
@@ -4404,6 +4431,7 @@
         "point_source_visibility_threshold",
         "position_angle_at",
         "practical_progressed_horoscope",
+        "predict_sothic_epoch",
         "predicted_sothic_epoch_year",
         "prenatal_syzygy",
         "previous_nasa_lunar_eclipse",
@@ -4472,6 +4500,7 @@
         "sothic_drift_rate",
         "sothic_epochs",
         "sothic_rising",
+        "sothic_rising_series",
         "speculum",
         "ssb_position_at",
         "star_at",
@@ -4922,7 +4951,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "70ccab61ff41147adf28c098bf3e4ecf67d6782fe9a791516181aea7e1e64435",
       "source_bytes": 14504,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4935,12 +4964,12 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.8.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "9e38448bac09a90ab3e9eeac769555ead257ea09de9a3c74ec909b20071e9120",
-      "source_bytes": 324580,
-      "last_verified": "2026-09-27",
+      "source_sha256": "fade1b560487158f1ac28881a2371965c3b14526c42848675459c6787d25a830",
+      "source_bytes": 327361,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4958,7 +4987,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "c7c0a57c98e20263276594f6b363cc8149f564138ba1e197d5f5adb1a1a55099",
       "source_bytes": 32455,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4976,7 +5005,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "7685dd2ac162b80ecea5f8db9fe3f11ce6a350937d46eab5f7356f50c7667ad1",
       "source_bytes": 8442,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4994,7 +5023,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "11a4ed6948235e6d974c9f1caf5e7e0ed4819c75d30dfcde5804f2f87ac16fd9",
       "source_bytes": 33871,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5010,9 +5039,9 @@
       "description": "House-system policy, cusp calculation, high-latitude behavior, effective fallback, and admitted spatial boundary geometry.",
       "content_class": "evergreen_doctrine",
       "schema_type": "TechArticle",
-      "source_sha256": "fd28e8d7c39c9bfac0d9ca37fd043bb22e1acf009ab3da3504fbe62f4ebe2269",
-      "source_bytes": 31220,
-      "last_verified": "2026-09-27",
+      "source_sha256": "f5add05e2625d7c8541793445b7a4ce023c0ba71813aeec4ee672de43ba9e2d2",
+      "source_bytes": 31986,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5028,9 +5057,9 @@
       "description": "Essential dignity doctrine, sect and phase geometry, explicit policy controls, scoring, and provenance boundaries.",
       "content_class": "evergreen_doctrine",
       "schema_type": "TechArticle",
-      "source_sha256": "26237b26a6e6e5ac1dffec0e5001a07474640ca03808f1c1ba5f21f428057188",
-      "source_bytes": 29604,
-      "last_verified": "2026-09-27",
+      "source_sha256": "56869342c08ecea7221ba9efc8d741e2aa8f0c9dbf6d8b72f20c349e45f6dfc4",
+      "source_bytes": 10764,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5048,7 +5077,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ddefd92cf26aa6c521ec4b5bb348a9826128639fe6fbf7fb7ddbd085f8669796",
       "source_bytes": 46781,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5066,7 +5095,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3e1719778cf0c98b861990e311707ca6912e0555ce4344008e20996332797909",
       "source_bytes": 20555,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5084,7 +5113,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4ba8e96bac8203127331af7cb964fcb35522b816a83e0fcf250936625fe0f458",
       "source_bytes": 13241,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5102,7 +5131,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "783a4927b35a1d00a6e28e9d043c94ddce450c8f2d1d9ec9d36ea00d86207a58",
       "source_bytes": 49971,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5118,9 +5147,9 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "bbd81d44dd91f32d383f0dd962c112262227b6489b17fc077bcb7d2f75a18e12",
-      "source_bytes": 229211,
-      "last_verified": "2026-09-27",
+      "source_sha256": "a18be8403807066bdf59d22059af49266b9c5e840edff0f86ea2e086666e5b0c",
+      "source_bytes": 232090,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5138,7 +5167,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "62037430ad839764d52cb1e855a6819d4da16466fbd5532d2b296636e7b6868c",
       "source_bytes": 21005,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5156,7 +5185,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "c5e5672d0dfe3d887212c5a2d170dbe480b9e2608dbd4112f9f726477f03f9fa",
       "source_bytes": 14623,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5174,7 +5203,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ab191318c94c6b69a9a6e7d4640a0eacd2b261cdd39d4aa7b6c5991f37e63742",
       "source_bytes": 25609,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5190,9 +5219,9 @@
       "description": "Product-specific astronomy validation against ERFA, JPL Horizons, NASA/GSFC, IOTA, USNO, and named visibility sources, with exact methods, results, evidence classes, and non-claims.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "253002af57a776c8bfbc2b30d8a2361555e337323c3563f82c43d630fab666f7",
-      "source_bytes": 40848,
-      "last_verified": "2026-09-27",
+      "source_sha256": "fc7d05fcc5be4319b1b97b9e3e4673db0529251e8c70fa9613d63249b90d2f92",
+      "source_bytes": 44899,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5224,9 +5253,9 @@
       "description": "Bounded external comparisons, doctrine checks, invariants, and explicit non-oracle cases for astrological convention layers.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "ee5e96f520fbcbb1f0a7fbe630eafb55d12b68717dc56d5ec5b98569bab41fbc",
-      "source_bytes": 39054,
-      "last_verified": "2026-09-27",
+      "source_sha256": "8fef2b75a7bc011ccf65b03339afe8cc86c67bdac0c0be25e01ecffc7cc35ffe",
+      "source_bytes": 39444,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5257,9 +5286,9 @@
       "description": "Validation and partial-closure records for experimental, modernized, or mixed-oracle computation surfaces.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "38291c87ea81e9fc2fe23d63fdea37ae48d8ad2cdc4ea9046e40da8f3a64cdc4",
-      "source_bytes": 22083,
-      "last_verified": "2026-09-27",
+      "source_sha256": "41a340e2fa22a4aa82d428ceb5f8ffd39b6c0c551f41a99b2cb6c636d9e62fec",
+      "source_bytes": 22481,
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5293,7 +5322,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f77bc0837be29b481c2fd9f8fcf84f13564105d5c007db2095e0a91b2c65dcf6",
       "source_bytes": 3584,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5321,7 +5350,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fc6e7ac8b5393acfecc7289ac2f69caad9d9bc4be6d53835a473406f14fe0b9f",
       "source_bytes": 15117,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5350,7 +5379,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3d7d8fdcb3c6dba9d2576e44f24809416b39dbcf2f1bd5a703cdbff7ee7142db",
       "source_bytes": 8684,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5380,7 +5409,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9ab274475f75e6f3d22ab3fb746ec6c91cf15c5725bfe234aeb0baaae3f69315",
       "source_bytes": 2028,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5408,7 +5437,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "29f406d74fbeca960fd77af90d95a61139403926e496adb5c548a3e0e9635353",
       "source_bytes": 3329,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5436,7 +5465,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "60ae0879fffb9c318e622e9348ce0786fcd724b4f392804e66c0d5dae7c68e8d",
       "source_bytes": 15256,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5468,7 +5497,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "af6763ffe85b4a1900c83471a681674151e00a47fee9dee3220229cd90b0ad41",
       "source_bytes": 7470,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5497,7 +5526,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
       "source_bytes": 5697,
-      "last_verified": "2026-09-27",
+      "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5515,6 +5544,30 @@
     }
   ],
   "releases": [
+    {
+      "version": "6.9.8",
+      "date": "2026-09-29",
+      "title": "Relationship Charts, Draconic Frames and Classical Sources",
+      "added": [
+        "Draconic charts keep each body's motion and carry the source chart's house cusps and angles rotated into the draconic frame, with an explicit geocentric or topocentric origin.",
+        "An explicit unknown-birth-time contract on chart, houses and relationship requests, plus al-Biruni star-based mansions, evaluated Hellenistic rays, named D60 deities, Sayanadi avasthas and a Sabian Symbols degree lookup."
+      ],
+      "changed": [
+        "Synastry no longer compares two natal speeds as applying or separating, counts one node, and drops five internal bookkeeping routes; the composite route defaults to the reference-place method.",
+        "Ashtottari Dasha start and balance follow BPHS 46.17-22, and midpoint dials fold longitude by the dial modulus."
+      ],
+      "fixed": [
+        "Gravitational light deflection follows the IAU SOFA Ld / ERFA eraLd formulation, heliacal risings require a real invisible-to-visible transition, and evaluated Hellenistic rays reach REST clients instead of failing validation."
+      ],
+      "validation": [
+        "Release Hardening and Release Acceptance gates pass for the release commit, including Hellenistic source goldens, public-surface drift, docstring governance and small-body catalog gates."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.9.8.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.9.8.md",
+      "tag": "v6.9.8",
+      "release_notes_sha256": "faaa0bb7ac550cc2c3b646efbe82e4d75ea837f09ffd18ad90b0d545d2af7aab",
+      "compatibility_notes_sha256": "ade82de519cfb6f487437de51f7ada433d6af87170852d1c92ad6199f886edcf"
+    },
     {
       "version": "6.9.0",
       "date": "2026-09-26",
@@ -6019,5 +6072,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "af702fc927ac36a6002955565cec86066809e10dbf2a9c2f1d253274b694650b"
+  "manifest_sha256": "e610792faf5cc841086981a8d23368665fb64104793e3e900aa13e3a1397ea27"
 }
