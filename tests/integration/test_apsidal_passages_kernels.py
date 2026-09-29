@@ -26,7 +26,7 @@ from moira.orbits import (
 _FIXTURE_PATH = (
     Path(__file__).resolve().parents[1]
     / "fixtures"
-    / "horizons_apsidal_passages_reference.json"
+    / "horizons_apsidal_passages_reference_2026_09_28.json"
 )
 _FIXTURE_BYTES = _FIXTURE_PATH.read_bytes()
 _FIXTURE_SHA256 = hashlib.sha256(_FIXTURE_BYTES).hexdigest()

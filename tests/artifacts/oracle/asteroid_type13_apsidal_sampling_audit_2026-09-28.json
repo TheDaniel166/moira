@@ -1,0 +1,4408 @@
+{
+  "schema": "moira.asteroid-type13-apsidal-audit/v1",
+  "generated_utc": "2026-09-28T21:40:48.796217Z",
+  "status": "complete_catalog_partition",
+  "governing_object": "Sun-centered geometric radial extrema represented by a 10-day, seven-node Type-13 Hermite series",
+  "admitted_universe": {
+    "identity_path": "moira/data/asteroid_catalog_naif.json",
+    "identity_sha256": "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec",
+    "body_count": 11223,
+    "manifest_path": "moira/kernels/asteroids/manifest.json",
+    "manifest_sha256": "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e",
+    "missing_perihelion_count": 0,
+    "unbound_orbit_count": 0
+  },
+  "authority": {
+    "source": "NASA/JPL Horizons VECTORS and JPL SBDB Query API",
+    "sbdb_query_url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api",
+    "horizons_url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "queries": {
+      "direct_candidates": {
+        "params": {
+          "sb-kind": "a",
+          "sb-ns": "n",
+          "sb-cdata": "{\"AND\":[\"q|LT|1.3\"]}",
+          "fields": "pdes,full_name,e,q,a,per,class,orbit_id",
+          "full-prec": "true",
+          "sort": "q"
+        },
+        "response_sha256": "d506000b090876cb32cc083c73ff460336fd8ccba09c86287f856873bc8717b0",
+        "global_result_count": 3874,
+        "signature": {
+          "version": "1.0",
+          "source": "NASA/JPL SBDB (Small-Body DataBase) Query API"
+        }
+      },
+      "missing_perihelion": {
+        "params": {
+          "sb-kind": "a",
+          "sb-ns": "n",
+          "sb-cdata": "{\"AND\":[\"q|ND\"]}",
+          "fields": "pdes,full_name,e,q,a,per,class,orbit_id",
+          "full-prec": "true",
+          "sort": "q"
+        },
+        "response_sha256": "1727f9775b1c346fc547a064336abe45c8c4770f198470d64b35df00c04c51b3",
+        "global_result_count": 0,
+        "signature": {
+          "version": "1.0",
+          "source": "NASA/JPL SBDB (Small-Body DataBase) Query API"
+        }
+      },
+      "unbound_orbits": {
+        "params": {
+          "sb-kind": "a",
+          "sb-ns": "n",
+          "sb-cdata": "{\"AND\":[\"e|GE|1\"]}",
+          "fields": "pdes,full_name,e,q,a,per,class,orbit_id",
+          "full-prec": "true",
+          "sort": "q"
+        },
+        "response_sha256": "1727f9775b1c346fc547a064336abe45c8c4770f198470d64b35df00c04c51b3",
+        "global_result_count": 0,
+        "signature": {
+          "version": "1.0",
+          "source": "NASA/JPL SBDB (Small-Body DataBase) Query API"
+        }
+      }
+    }
+  },
+  "sampling": {
+    "base_step_days": 10,
+    "authority_step_days": 5,
+    "window_size": 7,
+    "same_start_stop_interval": true,
+    "direct_cutoff_au": 1.3,
+    "shared_node_consistency_gate_km": 1e-06
+  },
+  "acceptance_gate": {
+    "distance_absolute_au": 1e-09,
+    "distance_absolute_km": 0.1495978707,
+    "origin": "pre-existing Stage 2 apsidal-passage distance gate"
+  },
+  "catalog_partition": {
+    "direct_authority_body_count": 126,
+    "outer_invariant_body_count": 11097,
+    "partition_total": 11223
+  },
+  "outer_domain_invariant": {
+    "governing_model": "elliptic two-body Sun-centered state",
+    "perihelion_distance_au": 1.3,
+    "eccentricity_domain": "0.0000 through 0.9990 by 0.001 plus 0.9999",
+    "grid_phase_domain_days": "0.0 through 10.0 by 0.1",
+    "worst_radial_error": {
+      "error_km": 0.00017315149307250977,
+      "eccentricity": 0.9999,
+      "grid_phase_days": 6.0,
+      "witness_day_from_perihelion": 1.0
+    },
+    "worst_cartesian_error": {
+      "error_km": 0.00018357182163012081,
+      "eccentricity": 0.9999,
+      "grid_phase_days": 6.0,
+      "witness_day_from_perihelion": 1.0
+    },
+    "distance_gate_km": 0.1495978707,
+    "radial_margin_factor": 863.9710120048094,
+    "passed": true
+  },
+  "direct_results": [
+    {
+      "number": 3200,
+      "naif_id": 2003200,
+      "name": "Phaethon",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1255,
+      "off_grid_witness_count": 2510,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2308762.5,
+        "error_km": 3569341.4275899865
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2309282.5,
+        "error_km": 4009254.231752966
+      },
+      "passed": false,
+      "sbdb_full_name": "3200 Phaethon (1983 TB)",
+      "sbdb_eccentricity": 0.8896722843692159,
+      "sbdb_perihelion_au": 0.1402777871315099,
+      "sbdb_semi_major_axis_au": 1.271464620920411,
+      "sbdb_period_days": 523.6665664767817,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 1003",
+      "shard_index": 127
+    },
+    {
+      "number": 1566,
+      "naif_id": 2001566,
+      "name": "Icarus",
+      "coverage_start": "1949-07-01",
+      "coverage_stop": "2026-09-07",
+      "radial_extrema_detected": 138,
+      "off_grid_witness_count": 276,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2455103.5,
+        "error_km": 1039070.445154585
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2460823.5,
+        "error_km": 1164102.7688688138
+      },
+      "passed": false,
+      "sbdb_full_name": "1566 Icarus (1949 MA)",
+      "sbdb_eccentricity": 0.8270188506942974,
+      "sbdb_perihelion_au": 0.1864726778363724,
+      "sbdb_semi_major_axis_au": 1.077994212576463,
+      "sbdb_period_days": 408.8114685792443,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 196",
+      "shard_index": 62
+    },
+    {
+      "number": 5786,
+      "naif_id": 2005786,
+      "name": "Talos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1600,
+      "off_grid_witness_count": 3200,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2620122.5,
+        "error_km": 1039777.0746955574
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2633272.5,
+        "error_km": 1163141.9576397722
+      },
+      "passed": false,
+      "sbdb_full_name": "5786 Talos (1991 RC)",
+      "sbdb_eccentricity": 0.8268450804771325,
+      "sbdb_perihelion_au": 0.1872774502458716,
+      "sbdb_semi_major_axis_au": 1.081560089438516,
+      "sbdb_period_days": 410.8415948214324,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 287",
+      "shard_index": 228
+    },
+    {
+      "number": 66391,
+      "naif_id": 2066391,
+      "name": "Moshup",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 3497,
+      "off_grid_witness_count": 6994,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634162.5,
+        "error_km": 19878469.96991567
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634162.5,
+        "error_km": 24252960.20018411
+      },
+      "passed": false,
+      "sbdb_full_name": "66391 Moshup (1999 KW4)",
+      "sbdb_eccentricity": 0.6883840168509753,
+      "sbdb_perihelion_au": 0.2001787815786712,
+      "sbdb_semi_major_axis_au": 0.6423893266185235,
+      "sbdb_period_days": 188.0597704133843,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "368",
+      "shard_index": 399
+    },
+    {
+      "number": 2212,
+      "naif_id": 2002212,
+      "name": "Hephaistos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 565,
+      "off_grid_witness_count": 1130,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2616002.5,
+        "error_km": 20402.941546306014
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2616002.5,
+        "error_km": 20943.20076455488
+      },
+      "passed": false,
+      "sbdb_full_name": "2212 Hephaistos (1978 SB)",
+      "sbdb_eccentricity": 0.8346014015250892,
+      "sbdb_perihelion_au": 0.358478941487373,
+      "sbdb_semi_major_axis_au": 2.167363839795478,
+      "sbdb_period_days": 1165.456750963545,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 862",
+      "shard_index": 88
+    },
+    {
+      "number": 5143,
+      "naif_id": 2005143,
+      "name": "Heracles",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 724,
+      "off_grid_witness_count": 1448,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2626622.5,
+        "error_km": 2330.5851624682546
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2628442.5,
+        "error_km": 2355.6457712116244
+      },
+      "passed": false,
+      "sbdb_full_name": "5143 Heracles (1991 VL)",
+      "sbdb_eccentricity": 0.7712670666743265,
+      "sbdb_perihelion_au": 0.4196444169127084,
+      "sbdb_semi_major_axis_au": 1.834647992360646,
+      "sbdb_period_days": 907.669101967207,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 867",
+      "shard_index": 205
+    },
+    {
+      "number": 524522,
+      "naif_id": 2524522,
+      "name": "Zoozve",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 2926,
+      "off_grid_witness_count": 5852,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2389102.5,
+        "error_km": 303.44804392009974
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2394042.5,
+        "error_km": 306.7856749344331
+      },
+      "passed": false,
+      "sbdb_full_name": "524522 Zoozve (2002 VE68)",
+      "sbdb_eccentricity": 0.4101013527116298,
+      "sbdb_perihelion_au": 0.4268289462915477,
+      "sbdb_semi_major_axis_au": 0.7235631887843501,
+      "sbdb_period_days": 224.8087045146352,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "86",
+      "shard_index": 399
+    },
+    {
+      "number": 2101,
+      "naif_id": 2002101,
+      "name": "Adonis",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 704,
+      "off_grid_witness_count": 1408,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2356232.5,
+        "error_km": 1086.426301598549
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2310622.5,
+        "error_km": 1101.3642834715517
+      },
+      "passed": false,
+      "sbdb_full_name": "2101 Adonis (1936 CA)",
+      "sbdb_eccentricity": 0.7641209908755124,
+      "sbdb_perihelion_au": 0.4419862378525967,
+      "sbdb_semi_major_axis_au": 1.873783680426323,
+      "sbdb_period_days": 936.8662739043245,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 53",
+      "shard_index": 84
+    },
+    {
+      "number": 3838,
+      "naif_id": 2003838,
+      "name": "Epona",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 976,
+      "off_grid_witness_count": 1952,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634042.5,
+        "error_km": 1118.257874622941
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2632022.5,
+        "error_km": 1154.1743171542093
+      },
+      "passed": false,
+      "sbdb_full_name": "3838 Epona (1986 WA)",
+      "sbdb_eccentricity": 0.7026134933546405,
+      "sbdb_perihelion_au": 0.4475783827265162,
+      "sbdb_semi_major_axis_au": 1.505039309871124,
+      "sbdb_period_days": 674.4040844610785,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 330",
+      "shard_index": 153
+    },
+    {
+      "number": 594913,
+      "naif_id": 2594913,
+      "name": "'Aylo'chaxnim",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 4349,
+      "off_grid_witness_count": 8697,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634142.5,
+        "error_km": 22.36992460489273
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 39.87322623421996
+      },
+      "passed": false,
+      "sbdb_full_name": "594913 'Aylo'chaxnim (2020 AV2)",
+      "sbdb_eccentricity": 0.1773461889677603,
+      "sbdb_perihelion_au": 0.4568125357368398,
+      "sbdb_semi_major_axis_au": 0.5552913383621794,
+      "sbdb_period_days": 151.1401245365967,
+      "sbdb_class": "IEO",
+      "sbdb_orbit_id": "46",
+      "shard_index": 399
+    },
+    {
+      "number": 2340,
+      "naif_id": 2002340,
+      "name": "Hathor",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 2333,
+      "off_grid_witness_count": 4666,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2630172.5,
+        "error_km": 152.52083979547024
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2631562.5,
+        "error_km": 154.11017551554886
+      },
+      "passed": false,
+      "sbdb_full_name": "2340 Hathor (1976 UA)",
+      "sbdb_eccentricity": 0.4499561430699934,
+      "sbdb_perihelion_au": 0.4640994340749517,
+      "sbdb_semi_major_axis_au": 0.8437498723561032,
+      "sbdb_period_days": 283.0864009980471,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "62",
+      "shard_index": 93
+    },
+    {
+      "number": 2100,
+      "naif_id": 2002100,
+      "name": "Ra-Shalom",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 2371,
+      "off_grid_witness_count": 4742,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2604402.5,
+        "error_km": 91.41238297522068
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2622422.5,
+        "error_km": 92.32855280351174
+      },
+      "passed": false,
+      "sbdb_full_name": "2100 Ra-Shalom (1978 RA)",
+      "sbdb_eccentricity": 0.436499569805015,
+      "sbdb_perihelion_au": 0.4688538248443376,
+      "sbdb_semi_major_axis_au": 0.8320380956623273,
+      "sbdb_period_days": 277.2127772732746,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "JPL 508",
+      "shard_index": 83
+    },
+    {
+      "number": 3753,
+      "naif_id": 2003753,
+      "name": "Cruithne",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1800,
+      "off_grid_witness_count": 3600,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2543392.5,
+        "error_km": 98.90648867189884
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2547762.5,
+        "error_km": 99.97405804134031
+      },
+      "passed": false,
+      "sbdb_full_name": "3753 Cruithne (1986 TO)",
+      "sbdb_eccentricity": 0.5149036013028605,
+      "sbdb_perihelion_au": 0.4840278155072256,
+      "sbdb_semi_major_axis_au": 0.9977971735251305,
+      "sbdb_period_days": 364.0506668686161,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "JPL 312",
+      "shard_index": 150
+    },
+    {
+      "number": 343158,
+      "naif_id": 2343158,
+      "name": "Marsyas",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 448,
+      "off_grid_witness_count": 896,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2338792.5,
+        "error_km": 657.3472422212362
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2332922.5,
+        "error_km": 675.1010737751261
+      },
+      "passed": false,
+      "sbdb_full_name": "343158 Marsyas (2009 HC82)",
+      "sbdb_eccentricity": 0.8068361206558032,
+      "sbdb_perihelion_au": 0.4880762695794603,
+      "sbdb_semi_major_axis_au": 2.526747087687974,
+      "sbdb_period_days": 1467.037068580275,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "98",
+      "shard_index": 399
+    },
+    {
+      "number": 163693,
+      "naif_id": 2163693,
+      "name": "Atira",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 2821,
+      "off_grid_witness_count": 5642,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2631542.5,
+        "error_km": 12.274468809366226
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2632242.5,
+        "error_km": 12.324142721500493
+      },
+      "passed": false,
+      "sbdb_full_name": "163693 Atira (2003 CP20)",
+      "sbdb_eccentricity": 0.3221621429651009,
+      "sbdb_perihelion_au": 0.5022496068180801,
+      "sbdb_semi_major_axis_au": 0.7409583303816879,
+      "sbdb_period_days": 232.9641555029559,
+      "sbdb_class": "IEO",
+      "sbdb_orbit_id": "225",
+      "shard_index": 399
+    },
+    {
+      "number": 4197,
+      "naif_id": 2004197,
+      "name": "Morpheus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 516,
+      "off_grid_witness_count": 1032,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2320542.5,
+        "error_km": 195.38049998879433
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2320542.5,
+        "error_km": 195.75661559308742
+      },
+      "passed": false,
+      "sbdb_full_name": "4197 Morpheus (1982 TA)",
+      "sbdb_eccentricity": 0.7725116534115526,
+      "sbdb_perihelion_au": 0.522209481390069,
+      "sbdb_semi_major_axis_au": 2.295543878275251,
+      "sbdb_period_days": 1270.36004108762,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 210",
+      "shard_index": 167
+    },
+    {
+      "number": 3362,
+      "naif_id": 2003362,
+      "name": "Khufu",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1830,
+      "off_grid_witness_count": 3659,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2349162.5,
+        "error_km": 21.538181841373444
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2340892.5,
+        "error_km": 21.74988410581504
+      },
+      "passed": false,
+      "sbdb_full_name": "3362 Khufu (1984 QA)",
+      "sbdb_eccentricity": 0.4684921922708827,
+      "sbdb_perihelion_au": 0.5259241977471707,
+      "sbdb_semi_major_axis_au": 0.9894947733584522,
+      "sbdb_period_days": 359.5163812770006,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "24",
+      "shard_index": 134
+    },
+    {
+      "number": 6063,
+      "naif_id": 2006063,
+      "name": "Jason",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 545,
+      "off_grid_witness_count": 1090,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2309172.5,
+        "error_km": 156.01135778427124
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2330942.5,
+        "error_km": 163.22081262566448
+      },
+      "passed": false,
+      "sbdb_full_name": "6063 Jason (1984 KB)",
+      "sbdb_eccentricity": 0.76254117469502,
+      "sbdb_perihelion_au": 0.5270722978291974,
+      "sbdb_semi_major_axis_au": 2.2196365923745,
+      "sbdb_period_days": 1207.872908876988,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "218",
+      "shard_index": 238
+    },
+    {
+      "number": 4769,
+      "naif_id": 2004769,
+      "name": "Castalia",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1640,
+      "off_grid_witness_count": 3280,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2619032.5,
+        "error_km": 11.936140790581703
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2467442.5,
+        "error_km": 12.020377707717586
+      },
+      "passed": false,
+      "sbdb_full_name": "4769 Castalia (1989 PB)",
+      "sbdb_eccentricity": 0.4831758015789954,
+      "sbdb_perihelion_au": 0.5494298574051537,
+      "sbdb_semi_major_axis_au": 1.06308849137437,
+      "sbdb_period_days": 400.3617250634425,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 187",
+      "shard_index": 190
+    },
+    {
+      "number": 1864,
+      "naif_id": 2001864,
+      "name": "Daedalus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1019,
+      "off_grid_witness_count": 2038,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2307672.5,
+        "error_km": 23.126413837075233
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2307672.5,
+        "error_km": 23.23215121058191
+      },
+      "passed": false,
+      "sbdb_full_name": "1864 Daedalus (1971 FA)",
+      "sbdb_eccentricity": 0.6144605486502296,
+      "sbdb_perihelion_au": 0.5632271356818037,
+      "sbdb_semi_major_axis_au": 1.4608806795516,
+      "sbdb_period_days": 644.9418293015603,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "850",
+      "shard_index": 74
+    },
+    {
+      "number": 1865,
+      "naif_id": 2001865,
+      "name": "Cerberus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1604,
+      "off_grid_witness_count": 3208,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2436032.5,
+        "error_km": 5.105600088834763
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2496712.5,
+        "error_km": 5.163840021114211
+      },
+      "passed": false,
+      "sbdb_full_name": "1865 Cerberus (1971 UA)",
+      "sbdb_eccentricity": 0.4668681387605371,
+      "sbdb_perihelion_au": 0.5757574623827059,
+      "sbdb_semi_major_axis_au": 1.07995320528048,
+      "sbdb_period_days": 409.9263480558762,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 406",
+      "shard_index": 74
+    },
+    {
+      "number": 4341,
+      "naif_id": 2004341,
+      "name": "Poseidon",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 724,
+      "off_grid_witness_count": 1448,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2628492.5,
+        "error_km": 15.067273810505867
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2613052.5,
+        "error_km": 15.144919868744743
+      },
+      "passed": false,
+      "sbdb_full_name": "4341 Poseidon (1987 KF)",
+      "sbdb_eccentricity": 0.6801492861225148,
+      "sbdb_perihelion_au": 0.5866334110908773,
+      "sbdb_semi_major_axis_au": 1.834085045423972,
+      "sbdb_period_days": 907.2513676030111,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 208",
+      "shard_index": 173
+    },
+    {
+      "number": 4034,
+      "naif_id": 2004034,
+      "name": "Vishnu",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1649,
+      "off_grid_witness_count": 3298,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2612622.5,
+        "error_km": 3.1145102232694626
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2612622.5,
+        "error_km": 13.070667128746303
+      },
+      "passed": false,
+      "sbdb_full_name": "4034 Vishnu (1986 PA)",
+      "sbdb_eccentricity": 0.4440100931741494,
+      "sbdb_perihelion_au": 0.5889987654051491,
+      "sbdb_semi_major_axis_au": 1.059369528428575,
+      "sbdb_period_days": 398.2627076653704,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 199",
+      "shard_index": 161
+    },
+    {
+      "number": 4450,
+      "naif_id": 2004450,
+      "name": "Pan",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1040,
+      "off_grid_witness_count": 2080,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2381272.5,
+        "error_km": 29.67894522845745
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2517892.5,
+        "error_km": 51.25872786894837
+      },
+      "passed": false,
+      "sbdb_full_name": "4450 Pan (1987 SY)",
+      "sbdb_eccentricity": 0.5865739819170429,
+      "sbdb_perihelion_au": 0.5962341032074933,
+      "sbdb_semi_major_axis_au": 1.442178472395645,
+      "sbdb_period_days": 632.5967255917312,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "281",
+      "shard_index": 177
+    },
+    {
+      "number": 9162,
+      "naif_id": 2009162,
+      "name": "Kwiila",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 983,
+      "off_grid_witness_count": 1966,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2546052.5,
+        "error_km": 5.828634649515152
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2380892.5,
+        "error_km": 7.030210755981215
+      },
+      "passed": false,
+      "sbdb_full_name": "9162 Kwiila (1987 OA)",
+      "sbdb_eccentricity": 0.5954965442623915,
+      "sbdb_perihelion_au": 0.6054370980320986,
+      "sbdb_semi_major_axis_au": 1.496741472648458,
+      "sbdb_period_days": 668.8344210895077,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "158",
+      "shard_index": 338
+    },
+    {
+      "number": 3360,
+      "naif_id": 2003360,
+      "name": "Syrinx",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 468,
+      "off_grid_witness_count": 936,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2582692.5,
+        "error_km": 30.184264093637466
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2586882.5,
+        "error_km": 31.348363000038162
+      },
+      "passed": false,
+      "sbdb_full_name": "3360 Syrinx (1981 VA)",
+      "sbdb_eccentricity": 0.7483300902564326,
+      "sbdb_perihelion_au": 0.6203712660756305,
+      "sbdb_semi_major_axis_au": 2.465019623155354,
+      "sbdb_period_days": 1413.608012731935,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "143",
+      "shard_index": 134
+    },
+    {
+      "number": 1981,
+      "naif_id": 2001981,
+      "name": "Midas",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 760,
+      "off_grid_witness_count": 1520,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2512702.5,
+        "error_km": 5.331200867891312
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2495412.5,
+        "error_km": 5.364924440405246
+      },
+      "passed": false,
+      "sbdb_full_name": "1981 Midas (1973 EA)",
+      "sbdb_eccentricity": 0.6504314469810176,
+      "sbdb_perihelion_au": 0.620914804114259,
+      "sbdb_semi_major_axis_au": 1.776231868547232,
+      "sbdb_period_days": 864.6650668867737,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "402",
+      "shard_index": 79
+    },
+    {
+      "number": 69230,
+      "naif_id": 2069230,
+      "name": "Hermes",
+      "coverage_start": "1937-10-25",
+      "coverage_stop": "2026-09-14",
+      "radial_extrema_detected": 84,
+      "off_grid_witness_count": 168,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2433546.5,
+        "error_km": 7.097186505794525
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2433546.5,
+        "error_km": 12.720327859965838
+      },
+      "passed": false,
+      "sbdb_full_name": "69230 Hermes (1937 UB)",
+      "sbdb_eccentricity": 0.6239316611845052,
+      "sbdb_perihelion_au": 0.6224279927934584,
+      "sbdb_semi_major_axis_au": 1.655092781152288,
+      "sbdb_period_days": 777.7355369637816,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 205",
+      "shard_index": 399
+    },
+    {
+      "number": 2201,
+      "naif_id": 2002201,
+      "name": "Oljato",
+      "coverage_start": "1931-12-03",
+      "coverage_stop": "2026-09-14",
+      "radial_extrema_detected": 60,
+      "off_grid_witness_count": 120,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2457173.5,
+        "error_km": 8.825489401817322
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2457173.5,
+        "error_km": 14.415663912362662
+      },
+      "passed": false,
+      "sbdb_full_name": "2201 Oljato (1947 XC)",
+      "sbdb_eccentricity": 0.7108613720406038,
+      "sbdb_perihelion_au": 0.6299089588154722,
+      "sbdb_semi_major_axis_au": 2.178570754316267,
+      "sbdb_period_days": 1174.507868823981,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 360",
+      "shard_index": 88
+    },
+    {
+      "number": 1862,
+      "naif_id": 2001862,
+      "name": "Apollo",
+      "coverage_start": "1930-12-13",
+      "coverage_stop": "2026-04-15",
+      "radial_extrema_detected": 107,
+      "off_grid_witness_count": 214,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2433448.5,
+        "error_km": 278.2030455619097
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2433448.5,
+        "error_km": 310.7665811899265
+      },
+      "passed": false,
+      "sbdb_full_name": "1862 Apollo (1932 HA)",
+      "sbdb_eccentricity": 0.5601800481295997,
+      "sbdb_perihelion_au": 0.6468498628096396,
+      "sbdb_semi_major_axis_au": 1.470715141636512,
+      "sbdb_period_days": 651.4652763535555,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 579",
+      "shard_index": 74
+    },
+    {
+      "number": 4581,
+      "naif_id": 2004581,
+      "name": "Asclepius",
+      "coverage_start": "1989-03-31",
+      "coverage_stop": "2021-04-18",
+      "radial_extrema_detected": 62,
+      "off_grid_witness_count": 124,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2452821.5,
+        "error_km": 0.33995774388313293
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2452821.5,
+        "error_km": 0.38066992382713594
+      },
+      "passed": false,
+      "sbdb_full_name": "4581 Asclepius (1989 FC)",
+      "sbdb_eccentricity": 0.3563837704716197,
+      "sbdb_perihelion_au": 0.6573108979793151,
+      "sbdb_semi_major_axis_au": 1.021277692858941,
+      "sbdb_period_days": 376.9764287280456,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 113",
+      "shard_index": 183
+    },
+    {
+      "number": 5381,
+      "naif_id": 2005381,
+      "name": "Sekhmet",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1950,
+      "off_grid_witness_count": 3900,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2631972.5,
+        "error_km": 0.0964246541261673
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2630962.5,
+        "error_km": 0.09665675827966264
+      },
+      "passed": true,
+      "sbdb_full_name": "5381 Sekhmet (1991 JY)",
+      "sbdb_eccentricity": 0.2964041668502215,
+      "sbdb_perihelion_au": 0.6666486504535115,
+      "sbdb_semi_major_axis_au": 0.947488059258586,
+      "sbdb_period_days": 336.867446900476,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "JPL 203",
+      "shard_index": 215
+    },
+    {
+      "number": 6239,
+      "naif_id": 2006239,
+      "name": "Minos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1465,
+      "off_grid_witness_count": 2930,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2360132.5,
+        "error_km": 3.657671481370926
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2360132.5,
+        "error_km": 6.183150453680942
+      },
+      "passed": false,
+      "sbdb_full_name": "6239 Minos (1989 QF)",
+      "sbdb_eccentricity": 0.4123646091939666,
+      "sbdb_perihelion_au": 0.6763315877293392,
+      "sbdb_semi_major_axis_au": 1.150937466175489,
+      "sbdb_period_days": 450.9994565197626,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 333",
+      "shard_index": 244
+    },
+    {
+      "number": 3554,
+      "naif_id": 2003554,
+      "name": "Amun",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1872,
+      "off_grid_witness_count": 3744,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2388052.5,
+        "error_km": 6.4780243486166
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2388052.5,
+        "error_km": 14.097675489475348
+      },
+      "passed": false,
+      "sbdb_full_name": "3554 Amun (1986 EB)",
+      "sbdb_eccentricity": 0.2805217507729986,
+      "sbdb_perihelion_au": 0.7006876901674337,
+      "sbdb_semi_major_axis_au": 0.973883075576286,
+      "sbdb_period_days": 351.0416561135376,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "265",
+      "shard_index": 142
+    },
+    {
+      "number": 2063,
+      "naif_id": 2002063,
+      "name": "Bacchus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1610,
+      "off_grid_witness_count": 3220,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2330812.5,
+        "error_km": 0.09072913229465485
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2490122.5,
+        "error_km": 0.10443909208169669
+      },
+      "passed": true,
+      "sbdb_full_name": "2063 Bacchus (1977 HB)",
+      "sbdb_eccentricity": 0.3492309859328742,
+      "sbdb_perihelion_au": 0.7012041148778181,
+      "sbdb_semi_major_axis_au": 1.07750077173387,
+      "sbdb_period_days": 408.5308067903,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 259",
+      "shard_index": 82
+    },
+    {
+      "number": 4183,
+      "naif_id": 2004183,
+      "name": "Cuno",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 645,
+      "off_grid_witness_count": 1290,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2412202.5,
+        "error_km": 0.46379074454307556
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2412202.5,
+        "error_km": 0.6941054261710913
+      },
+      "passed": false,
+      "sbdb_full_name": "4183 Cuno (1959 LM)",
+      "sbdb_eccentricity": 0.6361990547304577,
+      "sbdb_perihelion_au": 0.7207146754633157,
+      "sbdb_semi_major_axis_au": 1.981068726826242,
+      "sbdb_period_days": 1018.468825763722,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 863",
+      "shard_index": 167
+    },
+    {
+      "number": 99942,
+      "naif_id": 2099942,
+      "name": "Apophis",
+      "coverage_start": "2004-03-15",
+      "coverage_stop": "2022-04-09",
+      "radial_extrema_detected": 41,
+      "off_grid_witness_count": 82,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2457474.5,
+        "error_km": 0.002041250467300415
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2457484.5,
+        "error_km": 0.0032958509211799603
+      },
+      "passed": true,
+      "sbdb_full_name": "99942 Apophis (2004 MN4)",
+      "sbdb_eccentricity": 0.1911492279663492,
+      "sbdb_perihelion_au": 0.7460509677535309,
+      "sbdb_semi_major_axis_au": 0.9223592206975018,
+      "sbdb_period_days": 323.5553366891694,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "220",
+      "shard_index": 398
+    },
+    {
+      "number": 4486,
+      "naif_id": 2004486,
+      "name": "Mithra",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 550,
+      "off_grid_witness_count": 1100,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2567542.5,
+        "error_km": 506.6619760543108
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2567532.5,
+        "error_km": 674.6185969608887
+      },
+      "passed": false,
+      "sbdb_full_name": "4486 Mithra (1987 SB)",
+      "sbdb_eccentricity": 0.6598497281232912,
+      "sbdb_perihelion_au": 0.7501145932190711,
+      "sbdb_semi_major_axis_au": 2.205244726339535,
+      "sbdb_period_days": 1196.144410344207,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "409",
+      "shard_index": 179
+    },
+    {
+      "number": 1685,
+      "naif_id": 2001685,
+      "name": "Toro",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1125,
+      "off_grid_witness_count": 2250,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2570782.5,
+        "error_km": 0.16227948665618896
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2570782.5,
+        "error_km": 0.16683737195990442
+      },
+      "passed": false,
+      "sbdb_full_name": "1685 Toro (1948 OA)",
+      "sbdb_eccentricity": 0.4359922205677128,
+      "sbdb_perihelion_au": 0.7714833637237654,
+      "sbdb_semi_major_axis_au": 1.367859437152297,
+      "sbdb_period_days": 584.3332957853705,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 919",
+      "shard_index": 67
+    },
+    {
+      "number": 54509,
+      "naif_id": 2054509,
+      "name": "YORP",
+      "coverage_start": "2000-08-03",
+      "coverage_stop": "2005-08-03",
+      "radial_extrema_detected": 10,
+      "off_grid_witness_count": 20,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2453124.5,
+        "error_km": 0.0022628456354141235
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2452034.5,
+        "error_km": 0.002289485795425329
+      },
+      "passed": true,
+      "sbdb_full_name": "54509 YORP (2000 PH5)",
+      "sbdb_eccentricity": 0.2299839852065449,
+      "sbdb_perihelion_au": 0.7745530103544149,
+      "sbdb_semi_major_axis_au": 1.0058920794812,
+      "sbdb_period_days": 368.4898328610733,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "88",
+      "shard_index": 399
+    },
+    {
+      "number": 7092,
+      "naif_id": 2007092,
+      "name": "Cadmus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 445,
+      "off_grid_witness_count": 890,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2444332.5,
+        "error_km": 0.41965553164482117
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2444332.5,
+        "error_km": 0.42201770750833056
+      },
+      "passed": false,
+      "sbdb_full_name": "7092 Cadmus (1992 LC)",
+      "sbdb_eccentricity": 0.6937709573055253,
+      "sbdb_perihelion_au": 0.7794469784280664,
+      "sbdb_semi_major_axis_au": 2.545307171291791,
+      "sbdb_period_days": 1483.230777155175,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 241",
+      "shard_index": 273
+    },
+    {
+      "number": 4544,
+      "naif_id": 2004544,
+      "name": "Xanthus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1692,
+      "off_grid_witness_count": 3384,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2615232.5,
+        "error_km": 1.3080991357564926
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2615242.5,
+        "error_km": 1.6941493196074837
+      },
+      "passed": false,
+      "sbdb_full_name": "4544 Xanthus (1989 FB)",
+      "sbdb_eccentricity": 0.2501917581009011,
+      "sbdb_perihelion_au": 0.7813381256368336,
+      "sbdb_semi_major_axis_au": 1.042050596373649,
+      "sbdb_period_days": 388.5363326394062,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 473",
+      "shard_index": 181
+    },
+    {
+      "number": 5731,
+      "naif_id": 2005731,
+      "name": "Zeus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 527,
+      "off_grid_witness_count": 1054,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2557182.5,
+        "error_km": 0.16086408495903015
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2310172.5,
+        "error_km": 0.16931669336332855
+      },
+      "passed": false,
+      "sbdb_full_name": "5731 Zeus (1988 VP4)",
+      "sbdb_eccentricity": 0.6524582236064211,
+      "sbdb_perihelion_au": 0.7872778867745707,
+      "sbdb_semi_major_axis_au": 2.265275544552106,
+      "sbdb_period_days": 1245.317185825955,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 289",
+      "shard_index": 227
+    },
+    {
+      "number": 2062,
+      "naif_id": 2002062,
+      "name": "Aten",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1893,
+      "off_grid_witness_count": 3786,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2424182.5,
+        "error_km": 0.11957503855228424
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2424182.5,
+        "error_km": 0.13823692210586938
+      },
+      "passed": true,
+      "sbdb_full_name": "2062 Aten (1976 AA)",
+      "sbdb_eccentricity": 0.1828582815030813,
+      "sbdb_perihelion_au": 0.7901488700548153,
+      "sbdb_semi_major_axis_au": 0.9669667478344453,
+      "sbdb_period_days": 347.3087592635159,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "149",
+      "shard_index": 82
+    },
+    {
+      "number": 2135,
+      "naif_id": 2002135,
+      "name": "Aristaeus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 890,
+      "off_grid_witness_count": 1780,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2309402.5,
+        "error_km": 0.03283199667930603
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2309402.5,
+        "error_km": 0.03295601643993714
+      },
+      "passed": true,
+      "sbdb_full_name": "2135 Aristaeus (1977 HA)",
+      "sbdb_eccentricity": 0.5030586306182083,
+      "sbdb_perihelion_au": 0.7949767544657869,
+      "sbdb_semi_major_axis_au": 1.599739533568636,
+      "sbdb_period_days": 739.0474843492262,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "24",
+      "shard_index": 85
+    },
+    {
+      "number": 5011,
+      "naif_id": 2005011,
+      "name": "Ptah",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 862,
+      "off_grid_witness_count": 1724,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2513682.5,
+        "error_km": 0.04991498589515686
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2513682.5,
+        "error_km": 0.14196291528602742
+      },
+      "passed": true,
+      "sbdb_full_name": "5011 Ptah (6743 P-L)",
+      "sbdb_eccentricity": 0.5001928386152668,
+      "sbdb_perihelion_au": 0.8176587772932609,
+      "sbdb_semi_major_axis_au": 1.635948502674329,
+      "sbdb_period_days": 764.2806595931344,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 187",
+      "shard_index": 200
+    },
+    {
+      "number": 3361,
+      "naif_id": 2003361,
+      "name": "Orpheus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1351,
+      "off_grid_witness_count": 2702,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.016033172607421875
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.016286756610041055
+      },
+      "passed": true,
+      "sbdb_full_name": "3361 Orpheus (1982 HR)",
+      "sbdb_eccentricity": 0.3227822723951292,
+      "sbdb_perihelion_au": 0.819081021700381,
+      "sbdb_semi_major_axis_au": 1.20947959321331,
+      "sbdb_period_days": 485.8433298202351,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 238",
+      "shard_index": 134
+    },
+    {
+      "number": 1620,
+      "naif_id": 2001620,
+      "name": "Geographos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1298,
+      "off_grid_witness_count": 2596,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2329842.5,
+        "error_km": 0.0029720962047576904
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2329842.5,
+        "error_km": 0.0029810312103983635
+      },
+      "passed": true,
+      "sbdb_full_name": "1620 Geographos (1951 RA)",
+      "sbdb_eccentricity": 0.3355177775674471,
+      "sbdb_perihelion_au": 0.8278143599381313,
+      "sbdb_semi_major_axis_au": 1.245803622717923,
+      "sbdb_period_days": 507.8936827303214,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 939",
+      "shard_index": 64
+    },
+    {
+      "number": 367943,
+      "naif_id": 2367943,
+      "name": "Duende",
+      "coverage_start": "2012-02-23",
+      "coverage_stop": "2013-02-21",
+      "radial_extrema_detected": 2,
+      "off_grid_witness_count": 4,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2456255.5,
+        "error_km": 0.00025884807109832764
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2456075.5,
+        "error_km": 0.0005276911154235476
+      },
+      "passed": true,
+      "sbdb_full_name": "367943 Duende (2012 DA14)",
+      "sbdb_eccentricity": 0.08926741572682338,
+      "sbdb_perihelion_au": 0.82928943487879,
+      "sbdb_semi_major_axis_au": 0.9105740249105246,
+      "sbdb_period_days": 317.3739762819413,
+      "sbdb_class": "ATE",
+      "sbdb_orbit_id": "JPL 83",
+      "shard_index": 399
+    },
+    {
+      "number": 2329,
+      "naif_id": 2002329,
+      "name": "Orthos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 482,
+      "off_grid_witness_count": 964,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2616152.5,
+        "error_km": 1.1948928236961365
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2616152.5,
+        "error_km": 1.9699300967577262
+      },
+      "passed": false,
+      "sbdb_full_name": "2329 Orthos (1976 WA)",
+      "sbdb_eccentricity": 0.6532406969716966,
+      "sbdb_perihelion_au": 0.8365351223859566,
+      "sbdb_semi_major_axis_au": 2.412437431614276,
+      "sbdb_period_days": 1368.618841294837,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "382",
+      "shard_index": 93
+    },
+    {
+      "number": 1866,
+      "naif_id": 2001866,
+      "name": "Sisyphus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 691,
+      "off_grid_witness_count": 1382,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2307402.5,
+        "error_km": 0.01327948272228241
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2307402.5,
+        "error_km": 0.013316297452560645
+      },
+      "passed": true,
+      "sbdb_full_name": "1866 Sisyphus (1972 XA)",
+      "sbdb_eccentricity": 0.5381206218639839,
+      "sbdb_perihelion_au": 0.8745079681820592,
+      "sbdb_semi_major_axis_au": 1.893368722611666,
+      "sbdb_period_days": 951.592969348315,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 1269",
+      "shard_index": 74
+    },
+    {
+      "number": 4257,
+      "naif_id": 2004257,
+      "name": "Ubasti",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 852,
+      "off_grid_witness_count": 1703,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.00817030668258667
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.01629680960668953
+      },
+      "passed": true,
+      "sbdb_full_name": "4257 Ubasti (1987 QA)",
+      "sbdb_eccentricity": 0.4683069010184027,
+      "sbdb_perihelion_au": 0.8756961775546888,
+      "sbdb_semi_major_axis_au": 1.646995567992124,
+      "sbdb_period_days": 772.035147929048,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 557",
+      "shard_index": 170
+    },
+    {
+      "number": 1863,
+      "naif_id": 2001863,
+      "name": "Antinous",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 529,
+      "off_grid_witness_count": 1058,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.15969574451446533
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.1597104782062659
+      },
+      "passed": false,
+      "sbdb_full_name": "1863 Antinous (1948 EA)",
+      "sbdb_eccentricity": 0.6062316466594316,
+      "sbdb_perihelion_au": 0.8896737546534056,
+      "sbdb_semi_major_axis_au": 2.259383587090685,
+      "sbdb_period_days": 1240.461761458593,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 350",
+      "shard_index": 74
+    },
+    {
+      "number": 101955,
+      "naif_id": 2101955,
+      "name": "Bennu",
+      "coverage_start": "1901-01-01",
+      "coverage_stop": "2134-01-01",
+      "radial_extrema_detected": 390,
+      "off_grid_witness_count": 780,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2500320.5,
+        "error_km": 0.0009357035160064697
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2500320.5,
+        "error_km": 0.000936372483532844
+      },
+      "passed": true,
+      "sbdb_full_name": "101955 Bennu (1999 RQ36)",
+      "sbdb_eccentricity": 0.2037450762416414,
+      "sbdb_perihelion_au": 0.8968944004459729,
+      "sbdb_semi_major_axis_au": 1.126391025894812,
+      "sbdb_period_days": 436.6487281120201,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 118",
+      "shard_index": 399
+    },
+    {
+      "number": 469219,
+      "naif_id": 2469219,
+      "name": "Kamo`oalewa",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1803,
+      "off_grid_witness_count": 3606,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2426302.5,
+        "error_km": 0.0026289671659469604
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2427762.5,
+        "error_km": 0.0034048801938243584
+      },
+      "passed": true,
+      "sbdb_full_name": "469219 Kamo`oalewa (2016 HO3)",
+      "sbdb_eccentricity": 0.1022388434937281,
+      "sbdb_perihelion_au": 0.8984887574998687,
+      "sbdb_semi_major_axis_au": 1.000810461656002,
+      "sbdb_period_days": 365.7010283504758,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 37",
+      "shard_index": 399
+    },
+    {
+      "number": 2102,
+      "naif_id": 2002102,
+      "name": "Tantalus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1229,
+      "off_grid_witness_count": 2458,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.010468363761901855
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.015590100803765094
+      },
+      "passed": true,
+      "sbdb_full_name": "2102 Tantalus (1975 YA)",
+      "sbdb_eccentricity": 0.2993525411875109,
+      "sbdb_perihelion_au": 0.9038876758995675,
+      "sbdb_semi_major_axis_au": 1.290074865084854,
+      "sbdb_period_days": 535.2057832353406,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 303",
+      "shard_index": 84
+    },
+    {
+      "number": 3103,
+      "naif_id": 2003103,
+      "name": "Eger",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1080,
+      "off_grid_witness_count": 2160,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2552572.5,
+        "error_km": 0.0010815262794494629
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2618902.5,
+        "error_km": 0.0011581879448202758
+      },
+      "passed": true,
+      "sbdb_full_name": "3103 Eger (1982 BB)",
+      "sbdb_eccentricity": 0.3541203011082182,
+      "sbdb_perihelion_au": 0.9068382508182643,
+      "sbdb_semi_major_axis_au": 1.404035848121937,
+      "sbdb_period_days": 607.6670970313172,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 921",
+      "shard_index": 124
+    },
+    {
+      "number": 6489,
+      "naif_id": 2006489,
+      "name": "Golevka",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 455,
+      "off_grid_witness_count": 910,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2334102.5,
+        "error_km": 7.790929466485977
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2510892.5,
+        "error_km": 11.466044439575747
+      },
+      "passed": false,
+      "sbdb_full_name": "6489 Golevka (1991 JX)",
+      "sbdb_eccentricity": 0.6190939112625774,
+      "sbdb_perihelion_au": 0.9425058266735333,
+      "sbdb_semi_major_axis_au": 2.474378474226095,
+      "sbdb_period_days": 1421.666140969651,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "107",
+      "shard_index": 253
+    },
+    {
+      "number": 4660,
+      "naif_id": 2004660,
+      "name": "Nereus",
+      "coverage_start": "1981-09-30",
+      "coverage_stop": "2026-06-22",
+      "radial_extrema_detected": 49,
+      "off_grid_witness_count": 98,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2452292.5,
+        "error_km": 19.485662758350372
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2444992.5,
+        "error_km": 23.79846494023565
+      },
+      "passed": false,
+      "sbdb_full_name": "4660 Nereus (1982 DB)",
+      "sbdb_eccentricity": 0.3587435768252949,
+      "sbdb_perihelion_au": 0.9523380015635986,
+      "sbdb_semi_major_axis_au": 1.485112611970113,
+      "sbdb_period_days": 661.0548657564201,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 278",
+      "shard_index": 186
+    },
+    {
+      "number": 25143,
+      "naif_id": 2025143,
+      "name": "Itokawa",
+      "coverage_start": "1998-09-19",
+      "coverage_stop": "2024-12-19",
+      "radial_extrema_detected": 35,
+      "off_grid_witness_count": 70,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2453150.5,
+        "error_km": 0.3421280086040497
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2453150.5,
+        "error_km": 1.1427812545165223
+      },
+      "passed": false,
+      "sbdb_full_name": "25143 Itokawa (1998 SF36)",
+      "sbdb_eccentricity": 0.2801776414987972,
+      "sbdb_perihelion_au": 0.9530824380945183,
+      "sbdb_semi_major_axis_au": 1.324052284342771,
+      "sbdb_period_days": 556.4884171058932,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "237",
+      "shard_index": 399
+    },
+    {
+      "number": 4179,
+      "naif_id": 2004179,
+      "name": "Toutatis",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 452,
+      "off_grid_witness_count": 904,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2477052.5,
+        "error_km": 295.2031127810478
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2477052.5,
+        "error_km": 324.45442688810846
+      },
+      "passed": false,
+      "sbdb_full_name": "4179 Toutatis (1989 AC)",
+      "sbdb_eccentricity": 0.6246302247178447,
+      "sbdb_perihelion_au": 0.9545830393451017,
+      "sbdb_semi_major_axis_au": 2.543047155641573,
+      "sbdb_period_days": 1481.255742120098,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 726",
+      "shard_index": 167
+    },
+    {
+      "number": 162173,
+      "naif_id": 2162173,
+      "name": "Ryugu",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1376,
+      "off_grid_witness_count": 2752,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2312012.5,
+        "error_km": 7.185355335474014
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2312012.5,
+        "error_km": 12.219960079617323
+      },
+      "passed": false,
+      "sbdb_full_name": "162173 Ryugu (1999 JU3)",
+      "sbdb_eccentricity": 0.1910730046480051,
+      "sbdb_perihelion_au": 0.9633664739388087,
+      "sbdb_semi_major_axis_au": 1.190918932702464,
+      "sbdb_period_days": 474.7027265420688,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 270",
+      "shard_index": 399
+    },
+    {
+      "number": 4015,
+      "naif_id": 2004015,
+      "name": "Wilson-Harrington",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 420,
+      "off_grid_witness_count": 840,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2314462.5,
+        "error_km": 1.6303011178970337
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2394092.5,
+        "error_km": 5.979754965442273
+      },
+      "passed": false,
+      "sbdb_full_name": "4015 Wilson-Harrington (1979 VA)",
+      "sbdb_eccentricity": 0.6307928317562872,
+      "sbdb_perihelion_au": 0.9697909209721096,
+      "sbdb_semi_major_axis_au": 2.626684973602551,
+      "sbdb_period_days": 1554.928455573931,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "334",
+      "shard_index": 160
+    },
+    {
+      "number": 3752,
+      "naif_id": 2003752,
+      "name": "Camillo",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1071,
+      "off_grid_witness_count": 2142,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2442792.5,
+        "error_km": 0.01889529824256897
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2413942.5,
+        "error_km": 0.021752891211479615
+      },
+      "passed": true,
+      "sbdb_full_name": "3752 Camillo (1985 PA)",
+      "sbdb_eccentricity": 0.3015634157435217,
+      "sbdb_perihelion_au": 0.9873072944974646,
+      "sbdb_semi_major_axis_au": 1.41359619005139,
+      "sbdb_period_days": 613.8842283899573,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "566",
+      "shard_index": 150
+    },
+    {
+      "number": 3671,
+      "naif_id": 2003671,
+      "name": "Dionysus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 553,
+      "off_grid_witness_count": 1106,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2345432.5,
+        "error_km": 215.38408422470093
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2345432.5,
+        "error_km": 234.3622776836029
+      },
+      "passed": false,
+      "sbdb_full_name": "3671 Dionysus (1984 KD)",
+      "sbdb_eccentricity": 0.5440374412790023,
+      "sbdb_perihelion_au": 1.001550641740675,
+      "sbdb_semi_major_axis_au": 2.196563341845621,
+      "sbdb_period_days": 1189.088075842883,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "JPL 231",
+      "shard_index": 146
+    },
+    {
+      "number": 65803,
+      "naif_id": 2065803,
+      "name": "Didymos",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 856,
+      "off_grid_witness_count": 1712,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2496772.5,
+        "error_km": 1.2402920722961426
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2496772.5,
+        "error_km": 2.241897666500387
+      },
+      "passed": false,
+      "sbdb_full_name": "65803 Didymos (1996 GT)",
+      "sbdb_eccentricity": 0.3831233242624545,
+      "sbdb_perihelion_au": 1.013349242511927,
+      "sbdb_semi_major_axis_au": 1.642709608529702,
+      "sbdb_period_days": 769.0235207660371,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "240",
+      "shard_index": 399
+    },
+    {
+      "number": 3757,
+      "naif_id": 2003757,
+      "name": "Anagolay",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 724,
+      "off_grid_witness_count": 1448,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2312732.5,
+        "error_km": 9.253197491168976
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2312732.5,
+        "error_km": 9.874865884585953
+      },
+      "passed": false,
+      "sbdb_full_name": "3757 Anagolay (1982 XB)",
+      "sbdb_eccentricity": 0.4457663618105244,
+      "sbdb_perihelion_au": 1.016868224923371,
+      "sbdb_semi_major_axis_au": 1.834728451786492,
+      "sbdb_period_days": 907.7288120607491,
+      "sbdb_class": "APO",
+      "sbdb_orbit_id": "58",
+      "shard_index": 150
+    },
+    {
+      "number": 3122,
+      "naif_id": 2003122,
+      "name": "Florence",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 765,
+      "off_grid_witness_count": 1530,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2379842.5,
+        "error_km": 0.385043740272522
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2458012.5,
+        "error_km": 1.3426131325851773
+      },
+      "passed": false,
+      "sbdb_full_name": "3122 Florence (1981 ET3)",
+      "sbdb_eccentricity": 0.4232224394609472,
+      "sbdb_perihelion_au": 1.020292258845872,
+      "sbdb_semi_major_axis_au": 1.768952762122564,
+      "sbdb_period_days": 859.3553408964168,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1063",
+      "shard_index": 124
+    },
+    {
+      "number": 3908,
+      "naif_id": 2003908,
+      "name": "Nyx",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 674,
+      "off_grid_witness_count": 1348,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2610362.5,
+        "error_km": 0.1725660264492035
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2610362.5,
+        "error_km": 0.19422700888624228
+      },
+      "passed": false,
+      "sbdb_full_name": "3908 Nyx (1980 PA)",
+      "sbdb_eccentricity": 0.4590009472127612,
+      "sbdb_perihelion_au": 1.04298133821056,
+      "sbdb_semi_major_axis_au": 1.927880155865519,
+      "sbdb_period_days": 977.7289542172368,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "258",
+      "shard_index": 156
+    },
+    {
+      "number": 2061,
+      "naif_id": 2002061,
+      "name": "Anza",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 528,
+      "off_grid_witness_count": 1056,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2540582.5,
+        "error_km": 0.7816683053970337
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2574172.5,
+        "error_km": 1.2153937308283578
+      },
+      "passed": false,
+      "sbdb_full_name": "2061 Anza (1960 UA)",
+      "sbdb_eccentricity": 0.535915382136695,
+      "sbdb_perihelion_au": 1.051171558032383,
+      "sbdb_semi_major_axis_au": 2.265042877034124,
+      "sbdb_period_days": 1245.125330080632,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "229",
+      "shard_index": 82
+    },
+    {
+      "number": 5797,
+      "naif_id": 2005797,
+      "name": "Bivoj",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 692,
+      "off_grid_witness_count": 1384,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2489902.5,
+        "error_km": 0.02781236171722412
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2485152.5,
+        "error_km": 0.03236185252395978
+      },
+      "passed": true,
+      "sbdb_full_name": "5797 Bivoj (1980 AA)",
+      "sbdb_eccentricity": 0.4443584504377997,
+      "sbdb_perihelion_au": 1.052179075832625,
+      "sbdb_semi_major_axis_au": 1.893629223123532,
+      "sbdb_period_days": 951.7893645187285,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "102",
+      "shard_index": 229
+    },
+    {
+      "number": 3988,
+      "naif_id": 2003988,
+      "name": "Huma",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 937,
+      "off_grid_witness_count": 1874,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2421062.5,
+        "error_km": 0.0005190372467041016
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2548352.5,
+        "error_km": 0.0005709736661145471
+      },
+      "passed": true,
+      "sbdb_full_name": "3988 Huma (1986 LA)",
+      "sbdb_eccentricity": 0.3168657498062116,
+      "sbdb_perihelion_au": 1.055038682457599,
+      "sbdb_semi_major_axis_au": 1.544408997438367,
+      "sbdb_period_days": 701.0385678838142,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "160",
+      "shard_index": 159
+    },
+    {
+      "number": 887,
+      "naif_id": 2000887,
+      "name": "Alinda",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 457,
+      "off_grid_witness_count": 914,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2460672.5,
+        "error_km": 0.08886644244194031
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2460682.5,
+        "error_km": 0.12912860663628997
+      },
+      "passed": true,
+      "sbdb_full_name": "887 Alinda (A918 AA)",
+      "sbdb_eccentricity": 0.5710841391815443,
+      "sbdb_perihelion_au": 1.061137390760757,
+      "sbdb_semi_major_axis_au": 2.473998953398223,
+      "sbdb_period_days": 1421.339070216299,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 732",
+      "shard_index": 35
+    },
+    {
+      "number": 1917,
+      "naif_id": 2001917,
+      "name": "Cuyo",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 571,
+      "off_grid_witness_count": 1142,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2357952.5,
+        "error_km": 2.8154872953891754
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2357952.5,
+        "error_km": 2.873966003862447
+      },
+      "passed": false,
+      "sbdb_full_name": "1917 Cuyo (1968 AA)",
+      "sbdb_eccentricity": 0.5054274556087749,
+      "sbdb_perihelion_au": 1.062950905016421,
+      "sbdb_semi_major_axis_au": 2.149231527449262,
+      "sbdb_period_days": 1150.86194819042,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 677",
+      "shard_index": 76
+    },
+    {
+      "number": 1943,
+      "naif_id": 2001943,
+      "name": "Anteros",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1052,
+      "off_grid_witness_count": 2104,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2563082.5,
+        "error_km": 0.114840567111969
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2563082.5,
+        "error_km": 0.14433868228967853
+      },
+      "passed": true,
+      "sbdb_full_name": "1943 Anteros (1973 EC)",
+      "sbdb_eccentricity": 0.2561964014462244,
+      "sbdb_perihelion_au": 1.06439820796664,
+      "sbdb_semi_major_axis_au": 1.431020514066101,
+      "sbdb_period_days": 625.2694588372605,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1013",
+      "shard_index": 77
+    },
+    {
+      "number": 7480,
+      "naif_id": 2007480,
+      "name": "Norwan",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 917,
+      "off_grid_witness_count": 1834,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2598052.5,
+        "error_km": 0.0005371570587158203
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2520642.5,
+        "error_km": 0.0005972755505389047
+      },
+      "passed": true,
+      "sbdb_full_name": "7480 Norwan (1994 PC)",
+      "sbdb_eccentricity": 0.3168659706894799,
+      "sbdb_perihelion_au": 1.07102777601878,
+      "sbdb_semi_major_axis_au": 1.567814996860509,
+      "sbdb_period_days": 717.0354843836232,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 253",
+      "shard_index": 286
+    },
+    {
+      "number": 3551,
+      "naif_id": 2003551,
+      "name": "Verenia",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 595,
+      "off_grid_witness_count": 1190,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2315202.5,
+        "error_km": 0.3627778887748718
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2315202.5,
+        "error_km": 0.412087492672444
+      },
+      "passed": false,
+      "sbdb_full_name": "3551 Verenia (1983 RD)",
+      "sbdb_eccentricity": 0.4867838764551089,
+      "sbdb_perihelion_au": 1.074101754524708,
+      "sbdb_semi_major_axis_au": 2.092883885069048,
+      "sbdb_period_days": 1105.900687011865,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "145",
+      "shard_index": 142
+    },
+    {
+      "number": 8034,
+      "naif_id": 2008034,
+      "name": "Akka",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 727,
+      "off_grid_witness_count": 1454,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2511282.5,
+        "error_km": 0.005336284637451172
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2511282.5,
+        "error_km": 0.007053774332953152
+      },
+      "passed": true,
+      "sbdb_full_name": "8034 Akka (1992 LR)",
+      "sbdb_eccentricity": 0.4093917654679179,
+      "sbdb_perihelion_au": 1.080868003064308,
+      "sbdb_semi_major_axis_au": 1.830093012368243,
+      "sbdb_period_days": 904.2909220359032,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "135",
+      "shard_index": 302
+    },
+    {
+      "number": 1221,
+      "naif_id": 2001221,
+      "name": "Amor",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 675,
+      "off_grid_witness_count": 1350,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2349722.5,
+        "error_km": 0.015970170497894287
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2349722.5,
+        "error_km": 0.016792164250173543
+      },
+      "passed": true,
+      "sbdb_full_name": "1221 Amor (1932 EA1)",
+      "sbdb_eccentricity": 0.4347308668840073,
+      "sbdb_perihelion_au": 1.085156427755403,
+      "sbdb_semi_major_axis_au": 1.919716404420636,
+      "sbdb_period_days": 971.5251348510825,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 150",
+      "shard_index": 48
+    },
+    {
+      "number": 1980,
+      "naif_id": 2001980,
+      "name": "Tezcatlipoca",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 805,
+      "off_grid_witness_count": 1610,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2464602.5,
+        "error_km": 0.00046688318252563477
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2391942.5,
+        "error_km": 0.00058256337328091
+      },
+      "passed": true,
+      "sbdb_full_name": "1980 Tezcatlipoca (1950 LA)",
+      "sbdb_eccentricity": 0.3646568494010787,
+      "sbdb_perihelion_au": 1.086152866583331,
+      "sbdb_semi_major_axis_au": 1.709553121898683,
+      "sbdb_period_days": 816.4363406627346,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1073",
+      "shard_index": 79
+    },
+    {
+      "number": 7358,
+      "naif_id": 2007358,
+      "name": "Oze",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 552,
+      "off_grid_witness_count": 1104,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2521342.5,
+        "error_km": 0.0005833804607391357
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2501112.5,
+        "error_km": 0.0006243238028705799
+      },
+      "passed": true,
+      "sbdb_full_name": "7358 Oze (1995 YA3)",
+      "sbdb_eccentricity": 0.5026227075552254,
+      "sbdb_perihelion_au": 1.093104022274948,
+      "sbdb_semi_major_axis_au": 2.197736082606382,
+      "sbdb_period_days": 1190.040480542994,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 637",
+      "shard_index": 282
+    },
+    {
+      "number": 1915,
+      "naif_id": 2001915,
+      "name": "Quetzalcoatl",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 454,
+      "off_grid_witness_count": 908,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2614502.5,
+        "error_km": 186.86999920010567
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2614502.5,
+        "error_km": 313.0583348496914
+      },
+      "passed": false,
+      "sbdb_full_name": "1915 Quetzalcoatl (1953 EA)",
+      "sbdb_eccentricity": 0.5702559710993432,
+      "sbdb_perihelion_au": 1.093824293431736,
+      "sbdb_semi_major_axis_au": 2.545292592499507,
+      "sbdb_period_days": 1483.218033890223,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "13",
+      "shard_index": 76
+    },
+    {
+      "number": 5863,
+      "naif_id": 2005863,
+      "name": "Tara",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 543,
+      "off_grid_witness_count": 1086,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2314882.5,
+        "error_km": 0.000535428524017334
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2310042.5,
+        "error_km": 0.0006194641715559055
+      },
+      "passed": true,
+      "sbdb_full_name": "5863 Tara (1983 RB)",
+      "sbdb_eccentricity": 0.5073761473428207,
+      "sbdb_perihelion_au": 1.093913283574261,
+      "sbdb_semi_major_axis_au": 2.220585295806866,
+      "sbdb_period_days": 1208.647384041878,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 457",
+      "shard_index": 231
+    },
+    {
+      "number": 2608,
+      "naif_id": 2002608,
+      "name": "Seneca",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 455,
+      "off_grid_witness_count": 910,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2306992.5,
+        "error_km": 16.170837461948395
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2306992.5,
+        "error_km": 28.480578945262483
+      },
+      "passed": false,
+      "sbdb_full_name": "2608 Seneca (1978 DA)",
+      "sbdb_eccentricity": 0.5647258381437779,
+      "sbdb_perihelion_au": 1.101475341307007,
+      "sbdb_semi_major_axis_au": 2.530532335321208,
+      "sbdb_period_days": 1470.334892391608,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "24",
+      "shard_index": 104
+    },
+    {
+      "number": 4954,
+      "naif_id": 2004954,
+      "name": "Eric",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 635,
+      "off_grid_witness_count": 1270,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2602452.5,
+        "error_km": 0.0005801916122436523
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2631392.5,
+        "error_km": 0.000618724973817507
+      },
+      "passed": true,
+      "sbdb_full_name": "4954 Eric (1990 SQ)",
+      "sbdb_eccentricity": 0.4492204960552438,
+      "sbdb_perihelion_au": 1.102425678259528,
+      "sbdb_semi_major_axis_au": 2.001573534170768,
+      "sbdb_period_days": 1034.321975094196,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1083",
+      "shard_index": 198
+    },
+    {
+      "number": 3288,
+      "naif_id": 2003288,
+      "name": "Seleucus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 620,
+      "off_grid_witness_count": 1240,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.005588889122009277
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.016302131540274826
+      },
+      "passed": true,
+      "sbdb_full_name": "3288 Seleucus (1982 DV)",
+      "sbdb_eccentricity": 0.4545391298524242,
+      "sbdb_perihelion_au": 1.109698371914687,
+      "sbdb_semi_major_axis_au": 2.034423425486882,
+      "sbdb_period_days": 1059.889155831991,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 520",
+      "shard_index": 131
+    },
+    {
+      "number": 2202,
+      "naif_id": 2002202,
+      "name": "Pele",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 518,
+      "off_grid_witness_count": 1036,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2455542.5,
+        "error_km": 0.0005575716495513916
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2534102.5,
+        "error_km": 0.0006279193336906372
+      },
+      "passed": true,
+      "sbdb_full_name": "2202 Pele (1972 RA)",
+      "sbdb_eccentricity": 0.5127886077176332,
+      "sbdb_perihelion_au": 1.11598990237168,
+      "sbdb_semi_major_axis_au": 2.290566107544751,
+      "sbdb_period_days": 1266.230214751645,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 254",
+      "shard_index": 88
+    },
+    {
+      "number": 3553,
+      "naif_id": 2003553,
+      "name": "Mera",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 854,
+      "off_grid_witness_count": 1708,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2632542.5,
+        "error_km": 0.00041356682777404785
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2508502.5,
+        "error_km": 0.0005602753173652016
+      },
+      "passed": true,
+      "sbdb_full_name": "3553 Mera (1985 JA)",
+      "sbdb_eccentricity": 0.3200395912091968,
+      "sbdb_perihelion_au": 1.118227394273401,
+      "sbdb_semi_major_axis_au": 1.644547799866735,
+      "sbdb_period_days": 770.3146872789956,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "411",
+      "shard_index": 142
+    },
+    {
+      "number": 1627,
+      "naif_id": 2001627,
+      "name": "Ivar",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 707,
+      "off_grid_witness_count": 1414,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2425812.5,
+        "error_km": 0.0005428493022918701
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2494602.5,
+        "error_km": 0.0005655796191316111
+      },
+      "passed": true,
+      "sbdb_full_name": "1627 Ivar (1929 SH)",
+      "sbdb_eccentricity": 0.3973348248658718,
+      "sbdb_perihelion_au": 1.122831708772247,
+      "sbdb_semi_major_axis_au": 1.863110322447868,
+      "sbdb_period_days": 928.8728838507866,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1522",
+      "shard_index": 65
+    },
+    {
+      "number": 1580,
+      "naif_id": 2001580,
+      "name": "Betulia",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 553,
+      "off_grid_witness_count": 1106,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2321642.5,
+        "error_km": 1.8393355011940002
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2321642.5,
+        "error_km": 2.4651375370137174
+      },
+      "passed": false,
+      "sbdb_full_name": "1580 Betulia (1950 KA)",
+      "sbdb_eccentricity": 0.4876366719217214,
+      "sbdb_perihelion_au": 1.124513590468122,
+      "sbdb_semi_major_axis_au": 2.194758150794741,
+      "sbdb_period_days": 1187.622543276459,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 404",
+      "shard_index": 63
+    },
+    {
+      "number": 3199,
+      "naif_id": 2003199,
+      "name": "Nefertiti",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 911,
+      "off_grid_witness_count": 1822,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2536562.5,
+        "error_km": 0.00047701597213745117
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2497242.5,
+        "error_km": 0.0005692913204525653
+      },
+      "passed": true,
+      "sbdb_full_name": "3199 Nefertiti (1982 RA)",
+      "sbdb_eccentricity": 0.2840602814848024,
+      "sbdb_perihelion_au": 1.127261242215881,
+      "sbdb_semi_major_axis_au": 1.574519771795496,
+      "sbdb_period_days": 721.6400115028317,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "500",
+      "shard_index": 127
+    },
+    {
+      "number": 4401,
+      "naif_id": 2004401,
+      "name": "Aditi",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 435,
+      "off_grid_witness_count": 870,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2606852.5,
+        "error_km": 0.0006873607635498047
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2606852.5,
+        "error_km": 0.0007442502636922776
+      },
+      "passed": true,
+      "sbdb_full_name": "4401 Aditi (1985 TB)",
+      "sbdb_eccentricity": 0.5633499354323268,
+      "sbdb_perihelion_au": 1.128208283896482,
+      "sbdb_semi_major_axis_au": 2.583781328450095,
+      "sbdb_period_days": 1516.987702314169,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 225",
+      "shard_index": 176
+    },
+    {
+      "number": 433,
+      "naif_id": 2000433,
+      "name": "Eros",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1022,
+      "off_grid_witness_count": 2044,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2396782.5,
+        "error_km": 0.0005894303321838379
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2442442.5,
+        "error_km": 0.0006098655302369564
+      },
+      "passed": true,
+      "sbdb_full_name": "433 Eros (A898 PA)",
+      "sbdb_eccentricity": 0.2228779627700761,
+      "sbdb_perihelion_au": 1.133233327946397,
+      "sbdb_semi_major_axis_au": 1.458243716760167,
+      "sbdb_period_days": 643.1963890927677,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "659",
+      "shard_index": 17
+    },
+    {
+      "number": 9950,
+      "naif_id": 2009950,
+      "name": "ESA",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 473,
+      "off_grid_witness_count": 946,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2342412.5,
+        "error_km": 0.0005201399326324463
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2567882.5,
+        "error_km": 0.0005786790083215195
+      },
+      "passed": true,
+      "sbdb_full_name": "9950 ESA (1990 VB)",
+      "sbdb_eccentricity": 0.5333600040139738,
+      "sbdb_perihelion_au": 1.137469527309293,
+      "sbdb_semi_major_axis_au": 2.437574012287096,
+      "sbdb_period_days": 1390.065112022485,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "196",
+      "shard_index": 361
+    },
+    {
+      "number": 4947,
+      "naif_id": 2004947,
+      "name": "Ninkasi",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 1122,
+      "off_grid_witness_count": 2244,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2371622.5,
+        "error_km": 2.3898126780986786
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2371622.5,
+        "error_km": 2.7564380105424
+      },
+      "passed": false,
+      "sbdb_full_name": "4947 Ninkasi (1988 TJ1)",
+      "sbdb_eccentricity": 0.168426221270548,
+      "sbdb_perihelion_au": 1.139276584702175,
+      "sbdb_semi_major_axis_au": 1.370024661483262,
+      "sbdb_period_days": 585.7212818479187,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "240",
+      "shard_index": 197
+    },
+    {
+      "number": 5879,
+      "naif_id": 2005879,
+      "name": "Almeria",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 869,
+      "off_grid_witness_count": 1738,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2534132.5,
+        "error_km": 0.0035698413848876953
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2320822.5,
+        "error_km": 0.0037108550073679633
+      },
+      "passed": true,
+      "sbdb_full_name": "5879 Almeria (1992 CH1)",
+      "sbdb_eccentricity": 0.2891859648793941,
+      "sbdb_perihelion_au": 1.154829741373624,
+      "sbdb_semi_major_axis_au": 1.624658046007323,
+      "sbdb_period_days": 756.382331364743,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "339",
+      "shard_index": 232
+    },
+    {
+      "number": 5324,
+      "naif_id": 2005324,
+      "name": "Lyapunov",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 354,
+      "off_grid_witness_count": 708,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2625292.5,
+        "error_km": 0.0033026039600372314
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2625292.5,
+        "error_km": 0.0036379856570184117
+      },
+      "passed": true,
+      "sbdb_full_name": "5324 Lyapunov (1987 SL)",
+      "sbdb_eccentricity": 0.607297136881764,
+      "sbdb_perihelion_au": 1.1692483654935,
+      "sbdb_semi_major_axis_au": 2.97743784246732,
+      "sbdb_period_days": 1876.560120070553,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "87",
+      "shard_index": 212
+    },
+    {
+      "number": 5332,
+      "naif_id": 2005332,
+      "name": "Davidaguilar",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 566,
+      "off_grid_witness_count": 1132,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.010268628597259521
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2305452.5,
+        "error_km": 0.016295596482642113
+      },
+      "passed": true,
+      "sbdb_full_name": "5332 Davidaguilar (1990 DA)",
+      "sbdb_eccentricity": 0.4554771492842746,
+      "sbdb_perihelion_au": 1.17815247184176,
+      "sbdb_semi_major_axis_au": 2.163641930349088,
+      "sbdb_period_days": 1162.455966113859,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 615",
+      "shard_index": 213
+    },
+    {
+      "number": 3102,
+      "naif_id": 2003102,
+      "name": "Krok",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 570,
+      "off_grid_witness_count": 1140,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2480002.5,
+        "error_km": 0.0005320310592651367
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2462142.5,
+        "error_km": 0.0005634606615207631
+      },
+      "passed": true,
+      "sbdb_full_name": "3102 Krok (1981 QA)",
+      "sbdb_eccentricity": 0.4491524842840965,
+      "sbdb_perihelion_au": 1.185116613886866,
+      "sbdb_semi_major_axis_au": 2.15144224140984,
+      "sbdb_period_days": 1152.638081205689,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "460",
+      "shard_index": 124
+    },
+    {
+      "number": 3352,
+      "naif_id": 2003352,
+      "name": "McAuliffe",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 698,
+      "off_grid_witness_count": 1396,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2431002.5,
+        "error_km": 0.0005467534065246582
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2561282.5,
+        "error_km": 0.0005655662515029192
+      },
+      "passed": true,
+      "sbdb_full_name": "3352 McAuliffe (1981 CW)",
+      "sbdb_eccentricity": 0.3691300172966322,
+      "sbdb_perihelion_au": 1.185407468747417,
+      "sbdb_semi_major_axis_au": 1.87900439273997,
+      "sbdb_period_days": 940.7844273041668,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 541",
+      "shard_index": 134
+    },
+    {
+      "number": 7336,
+      "naif_id": 2007336,
+      "name": "Saunders",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 514,
+      "off_grid_witness_count": 1028,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2452902.5,
+        "error_km": 0.0005394518375396729
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2586002.5,
+        "error_km": 0.0005670402186006729
+      },
+      "passed": true,
+      "sbdb_full_name": "7336 Saunders (1989 RS1)",
+      "sbdb_eccentricity": 0.4822253613486044,
+      "sbdb_perihelion_au": 1.193461413911709,
+      "sbdb_semi_major_axis_au": 2.304982370361397,
+      "sbdb_period_days": 1278.203018864155,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "239",
+      "shard_index": 281
+    },
+    {
+      "number": 719,
+      "naif_id": 2000719,
+      "name": "Albert",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 420,
+      "off_grid_witness_count": 840,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2590492.5,
+        "error_km": 0.0005259513854980469
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2439622.5,
+        "error_km": 0.0005723706289147974
+      },
+      "passed": true,
+      "sbdb_full_name": "719 Albert (A911 TB)",
+      "sbdb_eccentricity": 0.54659281141853,
+      "sbdb_perihelion_au": 1.19561188934913,
+      "sbdb_semi_major_axis_au": 2.636949566436567,
+      "sbdb_period_days": 1564.051907966961,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "283",
+      "shard_index": 28
+    },
+    {
+      "number": 5626,
+      "naif_id": 2005626,
+      "name": "Melissabrucker",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 554,
+      "off_grid_witness_count": 1108,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2560842.5,
+        "error_km": 0.0005630552768707275
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2560842.5,
+        "error_km": 0.0005722303541572204
+      },
+      "passed": true,
+      "sbdb_full_name": "5626 Melissabrucker (1991 FE)",
+      "sbdb_eccentricity": 0.4545193795402496,
+      "sbdb_perihelion_au": 1.197271762651228,
+      "sbdb_semi_major_axis_au": 2.194893306460869,
+      "sbdb_period_days": 1187.732247655744,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 797",
+      "shard_index": 223
+    },
+    {
+      "number": 5370,
+      "naif_id": 2005370,
+      "name": "Taranis",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 303,
+      "off_grid_witness_count": 606,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2487952.5,
+        "error_km": 0.025524765253067017
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2487952.5,
+        "error_km": 0.03956769153190421
+      },
+      "passed": true,
+      "sbdb_full_name": "5370 Taranis (1986 RA)",
+      "sbdb_eccentricity": 0.6372354413711798,
+      "sbdb_perihelion_au": 1.203540397195485,
+      "sbdb_semi_major_axis_au": 3.317690134186854,
+      "sbdb_period_days": 2207.25321898929,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "72",
+      "shard_index": 214
+    },
+    {
+      "number": 5751,
+      "naif_id": 2005751,
+      "name": "Zao",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 591,
+      "off_grid_witness_count": 1182,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634142.5,
+        "error_km": 0.0013989806175231934
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634142.5,
+        "error_km": 0.001463654931824578
+      },
+      "passed": true,
+      "sbdb_full_name": "5751 Zao (1992 AC)",
+      "sbdb_eccentricity": 0.42534540468572,
+      "sbdb_perihelion_au": 1.207796443759897,
+      "sbdb_semi_major_axis_au": 2.101778100459373,
+      "sbdb_period_days": 1112.957859532061,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 396",
+      "shard_index": 227
+    },
+    {
+      "number": 7088,
+      "naif_id": 2007088,
+      "name": "Ishtar",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 646,
+      "off_grid_witness_count": 1292,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2330452.5,
+        "error_km": 0.0005681216716766357
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2432322.5,
+        "error_km": 0.0005935957425420428
+      },
+      "passed": true,
+      "sbdb_full_name": "7088 Ishtar (1992 AA)",
+      "sbdb_eccentricity": 0.3902407804048437,
+      "sbdb_perihelion_au": 1.207951897008359,
+      "sbdb_semi_major_axis_au": 1.981030967945621,
+      "sbdb_period_days": 1018.439708101842,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 278",
+      "shard_index": 273
+    },
+    {
+      "number": 9172,
+      "naif_id": 2009172,
+      "name": "Abhramu",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 405,
+      "off_grid_witness_count": 810,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2436452.5,
+        "error_km": 0.0005295276641845703
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2572982.5,
+        "error_km": 0.0005764093819605273
+      },
+      "passed": true,
+      "sbdb_full_name": "9172 Abhramu (1989 OB)",
+      "sbdb_eccentricity": 0.5533621269458356,
+      "sbdb_perihelion_au": 1.210075259198575,
+      "sbdb_semi_major_axis_au": 2.709298364968318,
+      "sbdb_period_days": 1628.859702914062,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 110",
+      "shard_index": 338
+    },
+    {
+      "number": 4487,
+      "naif_id": 2004487,
+      "name": "Pocahontas",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 791,
+      "off_grid_witness_count": 1582,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.010616481304168701
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.015546232544654285
+      },
+      "passed": true,
+      "sbdb_full_name": "4487 Pocahontas (1987 UA)",
+      "sbdb_eccentricity": 0.2964137571780194,
+      "sbdb_perihelion_au": 1.217493902297098,
+      "sbdb_semi_major_axis_au": 1.730411750823765,
+      "sbdb_period_days": 831.4241025483836,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "196",
+      "shard_index": 179
+    },
+    {
+      "number": 4957,
+      "naif_id": 2004957,
+      "name": "Brucemurray",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 919,
+      "off_grid_witness_count": 1838,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.009901493787765503
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.015590947525293865
+      },
+      "passed": true,
+      "sbdb_full_name": "4957 Brucemurray (1990 XJ)",
+      "sbdb_eccentricity": 0.2187889581929699,
+      "sbdb_perihelion_au": 1.223014581059146,
+      "sbdb_semi_major_axis_au": 1.565536731572782,
+      "sbdb_period_days": 715.4731156256394,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "308",
+      "shard_index": 198
+    },
+    {
+      "number": 4055,
+      "naif_id": 2004055,
+      "name": "Magellan",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 733,
+      "off_grid_witness_count": 1466,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2628582.5,
+        "error_km": 0.0005258619785308838
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2523632.5,
+        "error_km": 0.0006691104551144157
+      },
+      "passed": true,
+      "sbdb_full_name": "4055 Magellan (1985 DO2)",
+      "sbdb_eccentricity": 0.3259345106487777,
+      "sbdb_perihelion_au": 1.227231396990522,
+      "sbdb_semi_major_axis_au": 1.820641193442069,
+      "sbdb_period_days": 897.2944344592394,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 975",
+      "shard_index": 162
+    },
+    {
+      "number": 5869,
+      "naif_id": 2005869,
+      "name": "Tanith",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 737,
+      "off_grid_witness_count": 1474,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2536652.5,
+        "error_km": 0.0005441009998321533
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2584772.5,
+        "error_km": 0.0005832431495772847
+      },
+      "passed": true,
+      "sbdb_full_name": "5869 Tanith (1988 VN4)",
+      "sbdb_eccentricity": 0.3213240358639131,
+      "sbdb_perihelion_au": 1.229863437779471,
+      "sbdb_semi_major_axis_au": 1.812151163103312,
+      "sbdb_period_days": 891.0253500265154,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 197",
+      "shard_index": 231
+    },
+    {
+      "number": 2368,
+      "naif_id": 2002368,
+      "name": "Beltrovata",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 589,
+      "off_grid_witness_count": 1178,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2370832.5,
+        "error_km": 0.0005316436290740967
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2463462.5,
+        "error_km": 0.0005606321860721331
+      },
+      "passed": true,
+      "sbdb_full_name": "2368 Beltrovata (1977 RA)",
+      "sbdb_eccentricity": 0.4134502338253695,
+      "sbdb_perihelion_au": 1.234703006544755,
+      "sbdb_semi_major_axis_au": 2.105026849805533,
+      "sbdb_period_days": 1115.539329461925,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 489",
+      "shard_index": 94
+    },
+    {
+      "number": 2059,
+      "naif_id": 2002059,
+      "name": "Baboquivari",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 417,
+      "off_grid_witness_count": 834,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2473752.5,
+        "error_km": 0.0005400180816650391
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2356492.5,
+        "error_km": 0.0005738824457926856
+      },
+      "passed": true,
+      "sbdb_full_name": "2059 Baboquivari (1963 UA)",
+      "sbdb_eccentricity": 0.5314016016636036,
+      "sbdb_perihelion_au": 1.238095566174187,
+      "sbdb_semi_major_axis_au": 2.642125049017742,
+      "sbdb_period_days": 1568.658761683946,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 284",
+      "shard_index": 82
+    },
+    {
+      "number": 6050,
+      "naif_id": 2006050,
+      "name": "Miwablock",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 550,
+      "off_grid_witness_count": 1100,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2592422.5,
+        "error_km": 0.0005298852920532227
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2603772.5,
+        "error_km": 0.0005687001506579229
+      },
+      "passed": true,
+      "sbdb_full_name": "6050 Miwablock (1992 AE)",
+      "sbdb_eccentricity": 0.4371455028173548,
+      "sbdb_perihelion_au": 1.23924887391726,
+      "sbdb_semi_major_axis_au": 2.201721546368184,
+      "sbdb_period_days": 1193.279049193384,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 599",
+      "shard_index": 237
+    },
+    {
+      "number": 1036,
+      "naif_id": 2001036,
+      "name": "Ganymed",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 414,
+      "off_grid_witness_count": 828,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2308192.5,
+        "error_km": 0.00048488378524780273
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2306612.5,
+        "error_km": 0.0005853847497168385
+      },
+      "passed": true,
+      "sbdb_full_name": "1036 Ganymed (A924 UB)",
+      "sbdb_eccentricity": 0.5335006672216854,
+      "sbdb_perihelion_au": 1.242786325128894,
+      "sbdb_semi_major_axis_au": 2.664068815977234,
+      "sbdb_period_days": 1588.241666709427,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 1541",
+      "shard_index": 41
+    },
+    {
+      "number": 5620,
+      "naif_id": 2005620,
+      "name": "Jasonwheeler",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 568,
+      "off_grid_witness_count": 1136,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.011730194091796875
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2634152.5,
+        "error_km": 0.01560119637246749
+      },
+      "passed": true,
+      "sbdb_full_name": "5620 Jasonwheeler (1990 OA)",
+      "sbdb_eccentricity": 0.4225939602732378,
+      "sbdb_perihelion_au": 1.246492161532368,
+      "sbdb_semi_major_axis_au": 2.158779222541953,
+      "sbdb_period_days": 1158.539301544136,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 183",
+      "shard_index": 223
+    },
+    {
+      "number": 5653,
+      "naif_id": 2005653,
+      "name": "Camarillo",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 749,
+      "off_grid_witness_count": 1498,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2633772.5,
+        "error_km": 0.0005468130111694336
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2557852.5,
+        "error_km": 0.0005641003634858366
+      },
+      "passed": true,
+      "sbdb_full_name": "5653 Camarillo (1992 WD5)",
+      "sbdb_eccentricity": 0.3044657686535792,
+      "sbdb_perihelion_au": 1.247750890711977,
+      "sbdb_semi_major_axis_au": 1.793946055389065,
+      "sbdb_period_days": 877.6320932508123,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 478",
+      "shard_index": 224
+    },
+    {
+      "number": 8013,
+      "naif_id": 2008013,
+      "name": "Gordonmoore",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 552,
+      "off_grid_witness_count": 1104,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2529702.5,
+        "error_km": 0.0005512833595275879
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2553542.5,
+        "error_km": 0.0005567476186695507
+      },
+      "passed": true,
+      "sbdb_full_name": "8013 Gordonmoore (1990 KA)",
+      "sbdb_eccentricity": 0.4321458608663402,
+      "sbdb_perihelion_au": 1.249047248561609,
+      "sbdb_semi_major_axis_au": 2.199591695267386,
+      "sbdb_period_days": 1191.547977456336,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 261",
+      "shard_index": 302
+    },
+    {
+      "number": 3552,
+      "naif_id": 2003552,
+      "name": "Don Quixote",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 203,
+      "off_grid_witness_count": 406,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2316032.5,
+        "error_km": 0.0008071660995483398
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2322532.5,
+        "error_km": 0.0009815077919893109
+      },
+      "passed": true,
+      "sbdb_full_name": "3552 Don Quixote (1983 SA)",
+      "sbdb_eccentricity": 0.7074018380419645,
+      "sbdb_perihelion_au": 1.249598807274887,
+      "sbdb_semi_major_axis_au": 4.270699442924407,
+      "sbdb_period_days": 3223.642994333793,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 349",
+      "shard_index": 142
+    },
+    {
+      "number": 1916,
+      "naif_id": 2001916,
+      "name": "Boreas",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 525,
+      "off_grid_witness_count": 1050,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2425812.5,
+        "error_km": 0.0005401968955993652
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2621182.5,
+        "error_km": 0.0005861045262481685
+      },
+      "passed": true,
+      "sbdb_full_name": "1916 Boreas (1953 RA)",
+      "sbdb_eccentricity": 0.4490840861315141,
+      "sbdb_perihelion_au": 1.252401469355961,
+      "sbdb_semi_major_axis_au": 2.273307845768517,
+      "sbdb_period_days": 1251.946594276505,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 532",
+      "shard_index": 76
+    },
+    {
+      "number": 6569,
+      "naif_id": 2006569,
+      "name": "Ondaatje",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 868,
+      "off_grid_witness_count": 1736,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2584772.5,
+        "error_km": 0.0005502402782440186
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2623392.5,
+        "error_km": 0.0006042559773117558
+      },
+      "passed": true,
+      "sbdb_full_name": "6569 Ondaatje (1993 MO)",
+      "sbdb_eccentricity": 0.2208232290279808,
+      "sbdb_perihelion_au": 1.267055630475052,
+      "sbdb_semi_major_axis_au": 1.626146566066653,
+      "sbdb_period_days": 757.4220715021603,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 543",
+      "shard_index": 255
+    },
+    {
+      "number": 3691,
+      "naif_id": 2003691,
+      "name": "Bede",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 762,
+      "off_grid_witness_count": 1524,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2423522.5,
+        "error_km": 0.0005217492580413818
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2623742.5,
+        "error_km": 0.0005565929037079782
+      },
+      "passed": true,
+      "sbdb_full_name": "3691 Bede (1982 FT)",
+      "sbdb_eccentricity": 0.284388855255744,
+      "sbdb_perihelion_au": 1.269713743571863,
+      "sbdb_semi_major_axis_au": 1.774306832554475,
+      "sbdb_period_days": 863.2597940158294,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 807",
+      "shard_index": 147
+    },
+    {
+      "number": 3271,
+      "naif_id": 2003271,
+      "name": "Ul",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 591,
+      "off_grid_witness_count": 1182,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2553172.5,
+        "error_km": 0.01162421703338623
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2553172.5,
+        "error_km": 0.038766713497264516
+      },
+      "passed": true,
+      "sbdb_full_name": "3271 Ul (1982 RB)",
+      "sbdb_eccentricity": 0.3954280471617143,
+      "sbdb_perihelion_au": 1.271127099684582,
+      "sbdb_semi_major_axis_au": 2.102524097780285,
+      "sbdb_period_days": 1113.550455807777,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "92",
+      "shard_index": 130
+    },
+    {
+      "number": 8709,
+      "naif_id": 2008709,
+      "name": "Kadlu",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 455,
+      "off_grid_witness_count": 910,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2623742.5,
+        "error_km": 0.0005537271499633789
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2405402.5,
+        "error_km": 0.0005619344312417159
+      },
+      "passed": true,
+      "sbdb_full_name": "8709 Kadlu (1994 JF1)",
+      "sbdb_eccentricity": 0.4945951790362951,
+      "sbdb_perihelion_au": 1.273916193954372,
+      "sbdb_semi_major_axis_au": 2.520585758412972,
+      "sbdb_period_days": 1461.674411175459,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "92",
+      "shard_index": 323
+    },
+    {
+      "number": 4503,
+      "naif_id": 2004503,
+      "name": "Cleobulus",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 405,
+      "off_grid_witness_count": 810,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2356052.5,
+        "error_km": 0.00054931640625
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2480262.5,
+        "error_km": 0.0005603544599169937
+      },
+      "passed": true,
+      "sbdb_full_name": "4503 Cleobulus (1989 WM)",
+      "sbdb_eccentricity": 0.5247451445179323,
+      "sbdb_perihelion_au": 1.28501074053449,
+      "sbdb_semi_major_axis_au": 2.703835059677735,
+      "sbdb_period_days": 1623.935289504667,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "JPL 243",
+      "shard_index": 180
+    },
+    {
+      "number": 6456,
+      "naif_id": 2006456,
+      "name": "Golombek",
+      "coverage_start": "1600-01-01",
+      "coverage_stop": "2500-01-01",
+      "radial_extrema_detected": 554,
+      "off_grid_witness_count": 1108,
+      "shared_node_max_radial_error_km": 0.0,
+      "shared_node_max_cartesian_error_km": 0.0,
+      "authority_series_consistent": true,
+      "worst_radial_error": {
+        "epoch_jd_tdb": 2344292.5,
+        "error_km": 0.001008838415145874
+      },
+      "worst_cartesian_error": {
+        "epoch_jd_tdb": 2344292.5,
+        "error_km": 0.0016043462643119157
+      },
+      "passed": true,
+      "sbdb_full_name": "6456 Golombek (1992 OM)",
+      "sbdb_eccentricity": 0.4083978841997365,
+      "sbdb_perihelion_au": 1.298390178385449,
+      "sbdb_semi_major_axis_au": 2.194701715407338,
+      "sbdb_period_days": 1187.576736288044,
+      "sbdb_class": "AMO",
+      "sbdb_orbit_id": "341",
+      "shard_index": 251
+    }
+  ],
+  "repair_scope": {
+    "body_count": 59,
+    "shard_count": 40,
+    "shard_indices": [
+      62,
+      63,
+      67,
+      74,
+      76,
+      79,
+      82,
+      83,
+      84,
+      88,
+      93,
+      104,
+      124,
+      127,
+      134,
+      142,
+      146,
+      150,
+      153,
+      156,
+      160,
+      161,
+      167,
+      173,
+      177,
+      179,
+      181,
+      183,
+      186,
+      190,
+      197,
+      205,
+      227,
+      228,
+      238,
+      244,
+      253,
+      273,
+      338,
+      399
+    ],
+    "bodies": [
+      {
+        "number": 3200,
+        "naif_id": 2003200,
+        "name": "3200 Phaethon (1983 TB)",
+        "shard_index": 127,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2308762.5,
+          "error_km": 3569341.4275899865
+        }
+      },
+      {
+        "number": 1566,
+        "naif_id": 2001566,
+        "name": "1566 Icarus (1949 MA)",
+        "shard_index": 62,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2455103.5,
+          "error_km": 1039070.445154585
+        }
+      },
+      {
+        "number": 5786,
+        "naif_id": 2005786,
+        "name": "5786 Talos (1991 RC)",
+        "shard_index": 228,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2620122.5,
+          "error_km": 1039777.0746955574
+        }
+      },
+      {
+        "number": 66391,
+        "naif_id": 2066391,
+        "name": "66391 Moshup (1999 KW4)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2634162.5,
+          "error_km": 19878469.96991567
+        }
+      },
+      {
+        "number": 2212,
+        "naif_id": 2002212,
+        "name": "2212 Hephaistos (1978 SB)",
+        "shard_index": 88,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2616002.5,
+          "error_km": 20402.941546306014
+        }
+      },
+      {
+        "number": 5143,
+        "naif_id": 2005143,
+        "name": "5143 Heracles (1991 VL)",
+        "shard_index": 205,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2626622.5,
+          "error_km": 2330.5851624682546
+        }
+      },
+      {
+        "number": 524522,
+        "naif_id": 2524522,
+        "name": "524522 Zoozve (2002 VE68)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2389102.5,
+          "error_km": 303.44804392009974
+        }
+      },
+      {
+        "number": 2101,
+        "naif_id": 2002101,
+        "name": "2101 Adonis (1936 CA)",
+        "shard_index": 84,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2356232.5,
+          "error_km": 1086.426301598549
+        }
+      },
+      {
+        "number": 3838,
+        "naif_id": 2003838,
+        "name": "3838 Epona (1986 WA)",
+        "shard_index": 153,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2634042.5,
+          "error_km": 1118.257874622941
+        }
+      },
+      {
+        "number": 594913,
+        "naif_id": 2594913,
+        "name": "594913 'Aylo'chaxnim (2020 AV2)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2634142.5,
+          "error_km": 22.36992460489273
+        }
+      },
+      {
+        "number": 2340,
+        "naif_id": 2002340,
+        "name": "2340 Hathor (1976 UA)",
+        "shard_index": 93,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2630172.5,
+          "error_km": 152.52083979547024
+        }
+      },
+      {
+        "number": 2100,
+        "naif_id": 2002100,
+        "name": "2100 Ra-Shalom (1978 RA)",
+        "shard_index": 83,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2604402.5,
+          "error_km": 91.41238297522068
+        }
+      },
+      {
+        "number": 3753,
+        "naif_id": 2003753,
+        "name": "3753 Cruithne (1986 TO)",
+        "shard_index": 150,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2543392.5,
+          "error_km": 98.90648867189884
+        }
+      },
+      {
+        "number": 343158,
+        "naif_id": 2343158,
+        "name": "343158 Marsyas (2009 HC82)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2338792.5,
+          "error_km": 657.3472422212362
+        }
+      },
+      {
+        "number": 163693,
+        "naif_id": 2163693,
+        "name": "163693 Atira (2003 CP20)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2631542.5,
+          "error_km": 12.274468809366226
+        }
+      },
+      {
+        "number": 4197,
+        "naif_id": 2004197,
+        "name": "4197 Morpheus (1982 TA)",
+        "shard_index": 167,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2320542.5,
+          "error_km": 195.38049998879433
+        }
+      },
+      {
+        "number": 3362,
+        "naif_id": 2003362,
+        "name": "3362 Khufu (1984 QA)",
+        "shard_index": 134,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2349162.5,
+          "error_km": 21.538181841373444
+        }
+      },
+      {
+        "number": 6063,
+        "naif_id": 2006063,
+        "name": "6063 Jason (1984 KB)",
+        "shard_index": 238,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2309172.5,
+          "error_km": 156.01135778427124
+        }
+      },
+      {
+        "number": 4769,
+        "naif_id": 2004769,
+        "name": "4769 Castalia (1989 PB)",
+        "shard_index": 190,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2619032.5,
+          "error_km": 11.936140790581703
+        }
+      },
+      {
+        "number": 1864,
+        "naif_id": 2001864,
+        "name": "1864 Daedalus (1971 FA)",
+        "shard_index": 74,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2307672.5,
+          "error_km": 23.126413837075233
+        }
+      },
+      {
+        "number": 1865,
+        "naif_id": 2001865,
+        "name": "1865 Cerberus (1971 UA)",
+        "shard_index": 74,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2436032.5,
+          "error_km": 5.105600088834763
+        }
+      },
+      {
+        "number": 4341,
+        "naif_id": 2004341,
+        "name": "4341 Poseidon (1987 KF)",
+        "shard_index": 173,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2628492.5,
+          "error_km": 15.067273810505867
+        }
+      },
+      {
+        "number": 4034,
+        "naif_id": 2004034,
+        "name": "4034 Vishnu (1986 PA)",
+        "shard_index": 161,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2612622.5,
+          "error_km": 3.1145102232694626
+        }
+      },
+      {
+        "number": 4450,
+        "naif_id": 2004450,
+        "name": "4450 Pan (1987 SY)",
+        "shard_index": 177,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2381272.5,
+          "error_km": 29.67894522845745
+        }
+      },
+      {
+        "number": 9162,
+        "naif_id": 2009162,
+        "name": "9162 Kwiila (1987 OA)",
+        "shard_index": 338,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2546052.5,
+          "error_km": 5.828634649515152
+        }
+      },
+      {
+        "number": 3360,
+        "naif_id": 2003360,
+        "name": "3360 Syrinx (1981 VA)",
+        "shard_index": 134,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2582692.5,
+          "error_km": 30.184264093637466
+        }
+      },
+      {
+        "number": 1981,
+        "naif_id": 2001981,
+        "name": "1981 Midas (1973 EA)",
+        "shard_index": 79,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2512702.5,
+          "error_km": 5.331200867891312
+        }
+      },
+      {
+        "number": 69230,
+        "naif_id": 2069230,
+        "name": "69230 Hermes (1937 UB)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2433546.5,
+          "error_km": 7.097186505794525
+        }
+      },
+      {
+        "number": 2201,
+        "naif_id": 2002201,
+        "name": "2201 Oljato (1947 XC)",
+        "shard_index": 88,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2457173.5,
+          "error_km": 8.825489401817322
+        }
+      },
+      {
+        "number": 1862,
+        "naif_id": 2001862,
+        "name": "1862 Apollo (1932 HA)",
+        "shard_index": 74,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2433448.5,
+          "error_km": 278.2030455619097
+        }
+      },
+      {
+        "number": 4581,
+        "naif_id": 2004581,
+        "name": "4581 Asclepius (1989 FC)",
+        "shard_index": 183,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2452821.5,
+          "error_km": 0.33995774388313293
+        }
+      },
+      {
+        "number": 6239,
+        "naif_id": 2006239,
+        "name": "6239 Minos (1989 QF)",
+        "shard_index": 244,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2360132.5,
+          "error_km": 3.657671481370926
+        }
+      },
+      {
+        "number": 3554,
+        "naif_id": 2003554,
+        "name": "3554 Amun (1986 EB)",
+        "shard_index": 142,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2388052.5,
+          "error_km": 6.4780243486166
+        }
+      },
+      {
+        "number": 4183,
+        "naif_id": 2004183,
+        "name": "4183 Cuno (1959 LM)",
+        "shard_index": 167,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2412202.5,
+          "error_km": 0.46379074454307556
+        }
+      },
+      {
+        "number": 4486,
+        "naif_id": 2004486,
+        "name": "4486 Mithra (1987 SB)",
+        "shard_index": 179,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2567542.5,
+          "error_km": 506.6619760543108
+        }
+      },
+      {
+        "number": 1685,
+        "naif_id": 2001685,
+        "name": "1685 Toro (1948 OA)",
+        "shard_index": 67,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2570782.5,
+          "error_km": 0.16227948665618896
+        }
+      },
+      {
+        "number": 7092,
+        "naif_id": 2007092,
+        "name": "7092 Cadmus (1992 LC)",
+        "shard_index": 273,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2444332.5,
+          "error_km": 0.41965553164482117
+        }
+      },
+      {
+        "number": 4544,
+        "naif_id": 2004544,
+        "name": "4544 Xanthus (1989 FB)",
+        "shard_index": 181,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2615232.5,
+          "error_km": 1.3080991357564926
+        }
+      },
+      {
+        "number": 5731,
+        "naif_id": 2005731,
+        "name": "5731 Zeus (1988 VP4)",
+        "shard_index": 227,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2557182.5,
+          "error_km": 0.16086408495903015
+        }
+      },
+      {
+        "number": 2329,
+        "naif_id": 2002329,
+        "name": "2329 Orthos (1976 WA)",
+        "shard_index": 93,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2616152.5,
+          "error_km": 1.1948928236961365
+        }
+      },
+      {
+        "number": 1863,
+        "naif_id": 2001863,
+        "name": "1863 Antinous (1948 EA)",
+        "shard_index": 74,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2634152.5,
+          "error_km": 0.15969574451446533
+        }
+      },
+      {
+        "number": 6489,
+        "naif_id": 2006489,
+        "name": "6489 Golevka (1991 JX)",
+        "shard_index": 253,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2334102.5,
+          "error_km": 7.790929466485977
+        }
+      },
+      {
+        "number": 4660,
+        "naif_id": 2004660,
+        "name": "4660 Nereus (1982 DB)",
+        "shard_index": 186,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2452292.5,
+          "error_km": 19.485662758350372
+        }
+      },
+      {
+        "number": 25143,
+        "naif_id": 2025143,
+        "name": "25143 Itokawa (1998 SF36)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2453150.5,
+          "error_km": 0.3421280086040497
+        }
+      },
+      {
+        "number": 4179,
+        "naif_id": 2004179,
+        "name": "4179 Toutatis (1989 AC)",
+        "shard_index": 167,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2477052.5,
+          "error_km": 295.2031127810478
+        }
+      },
+      {
+        "number": 162173,
+        "naif_id": 2162173,
+        "name": "162173 Ryugu (1999 JU3)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2312012.5,
+          "error_km": 7.185355335474014
+        }
+      },
+      {
+        "number": 4015,
+        "naif_id": 2004015,
+        "name": "4015 Wilson-Harrington (1979 VA)",
+        "shard_index": 160,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2314462.5,
+          "error_km": 1.6303011178970337
+        }
+      },
+      {
+        "number": 3671,
+        "naif_id": 2003671,
+        "name": "3671 Dionysus (1984 KD)",
+        "shard_index": 146,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2345432.5,
+          "error_km": 215.38408422470093
+        }
+      },
+      {
+        "number": 65803,
+        "naif_id": 2065803,
+        "name": "65803 Didymos (1996 GT)",
+        "shard_index": 399,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2496772.5,
+          "error_km": 1.2402920722961426
+        }
+      },
+      {
+        "number": 3757,
+        "naif_id": 2003757,
+        "name": "3757 Anagolay (1982 XB)",
+        "shard_index": 150,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2312732.5,
+          "error_km": 9.253197491168976
+        }
+      },
+      {
+        "number": 3122,
+        "naif_id": 2003122,
+        "name": "3122 Florence (1981 ET3)",
+        "shard_index": 124,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2379842.5,
+          "error_km": 0.385043740272522
+        }
+      },
+      {
+        "number": 3908,
+        "naif_id": 2003908,
+        "name": "3908 Nyx (1980 PA)",
+        "shard_index": 156,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2610362.5,
+          "error_km": 0.1725660264492035
+        }
+      },
+      {
+        "number": 2061,
+        "naif_id": 2002061,
+        "name": "2061 Anza (1960 UA)",
+        "shard_index": 82,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2540582.5,
+          "error_km": 0.7816683053970337
+        }
+      },
+      {
+        "number": 1917,
+        "naif_id": 2001917,
+        "name": "1917 Cuyo (1968 AA)",
+        "shard_index": 76,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2357952.5,
+          "error_km": 2.8154872953891754
+        }
+      },
+      {
+        "number": 3551,
+        "naif_id": 2003551,
+        "name": "3551 Verenia (1983 RD)",
+        "shard_index": 142,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2315202.5,
+          "error_km": 0.3627778887748718
+        }
+      },
+      {
+        "number": 1915,
+        "naif_id": 2001915,
+        "name": "1915 Quetzalcoatl (1953 EA)",
+        "shard_index": 76,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2614502.5,
+          "error_km": 186.86999920010567
+        }
+      },
+      {
+        "number": 2608,
+        "naif_id": 2002608,
+        "name": "2608 Seneca (1978 DA)",
+        "shard_index": 104,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2306992.5,
+          "error_km": 16.170837461948395
+        }
+      },
+      {
+        "number": 1580,
+        "naif_id": 2001580,
+        "name": "1580 Betulia (1950 KA)",
+        "shard_index": 63,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2321642.5,
+          "error_km": 1.8393355011940002
+        }
+      },
+      {
+        "number": 4947,
+        "naif_id": 2004947,
+        "name": "4947 Ninkasi (1988 TJ1)",
+        "shard_index": 197,
+        "worst_radial_error": {
+          "epoch_jd_tdb": 2371622.5,
+          "error_km": 2.3898126780986786
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "The direct branch validates every 5-day off-grid witness neighboring a radial-velocity sign crossing returned by Horizons over the catalog build interval.",
+    "The outer branch is an invariant bound for bound Sun-dominated elliptic motion, not a direct Horizons replay of all 11,097 outer-domain bodies.",
+    "This audit governs apsidal sampling; it is not a general all-epoch close-encounter position audit."
+  ]
+}

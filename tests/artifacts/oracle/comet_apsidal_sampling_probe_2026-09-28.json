@@ -1,0 +1,105 @@
+{
+  "schema": "moira.comet-apsidal-sampling-probe/v1",
+  "measurement_date": "2026-09-28",
+  "status": "candidate_policy_validated_not_release_admitted",
+  "governing_object": "isolated two-sided local extrema of Sun-centered geometric distance in TDB",
+  "authority": {
+    "event_fixture": "tests/fixtures/horizons_apsidal_passages_reference_2026_09_28.json",
+    "event_fixture_sha256": "0825926b3f44a157cd3ae37c8cb3fce2d73bedc1e74391dc4647a6136264dee8",
+    "event_source": "official NASA/JPL Horizons geometric VECTORS",
+    "event_source_url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "type13_source": "NAIF SPK Required Reading, Type 13 Hermite Interpolation - Unequal Time Steps",
+    "type13_source_url": "https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html",
+    "target_solutions": {
+      "1P/Halley": "JPL#75",
+      "2P/Encke": "JPL#K273/17"
+    }
+  },
+  "acceptance_gates": {
+    "event_time_absolute_seconds": 8.64,
+    "distance_absolute_au": 1e-09,
+    "origin": "pre-existing Stage 2 gates; unchanged by this probe"
+  },
+  "installed_release_baseline": {
+    "catalog_id": "moira-comets",
+    "catalog_version": "2026.07.28.1",
+    "manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+    "sampling": {
+      "step_days": 30,
+      "window_size": 5
+    },
+    "measurements": [
+      {
+        "body": "1P/Halley",
+        "kind": "PERICENTER",
+        "event_time_delta_seconds": -8985.65305173397,
+        "distance_delta_au": -0.0008264917737881294,
+        "passed": false
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "PERICENTER",
+        "event_time_delta_seconds": 16862.33855187893,
+        "distance_delta_au": 0.00016633317533726322,
+        "passed": false
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "APOCENTER",
+        "event_time_delta_seconds": -43.56435835361481,
+        "distance_delta_au": -2.2382125317577106e-06,
+        "passed": false
+      }
+    ]
+  },
+  "candidate_policy": {
+    "policy_version": "moira-comet-type13-apsidal-adaptive-v2",
+    "mode": "adaptive_radial_extrema",
+    "base_step_days": 10,
+    "refinement_step_days": 1,
+    "refinement_padding_days": 4,
+    "refinement_request_max_span_days": 11688.0,
+    "refined_extrema": [
+      "PERICENTER",
+      "APOCENTER"
+    ],
+    "time_tags": "nonuniform",
+    "window_size": 7,
+    "measurements": [
+      {
+        "body": "1P/Halley",
+        "kind": "PERICENTER",
+        "event_time_delta_seconds": 0.0003218650817871094,
+        "distance_delta_au": 0.0,
+        "passed": true
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "PERICENTER",
+        "event_time_delta_seconds": 0.008569657802581787,
+        "distance_delta_au": 1.985228648138104e-11,
+        "passed": true
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "APOCENTER",
+        "event_time_delta_seconds": 0.005713105201721191,
+        "distance_delta_au": 6.847677980204026e-11,
+        "passed": true
+      }
+    ]
+  },
+  "diagnosis": {
+    "apsidal_solver_changed": false,
+    "fixture_gate_widened": false,
+    "root_cause": "30-day Type-13 comet sampling under-resolves high-curvature perihelion motion; century-scale refinement queries also accumulate measurable Horizons long-span propagation drift",
+    "repair": "align the comet base with the asteroid catalog at 10 days and a 7-node Hermite window, then add exact daily nonuniform nodes around every detected radial extremum, with each Horizons refinement request bounded to 32 Julian years"
+  },
+  "limitations": [
+    "This probe validates the candidate sampling policy on the two frozen comet authority cases, not all 497 numbered periodic comets.",
+    "No immutable comet release was built, installed, admitted, published, or deployed by this probe.",
+    "The existing comet release remains the active runtime resource until a separately sealed full-catalog rebuild passes the release-bound gates."
+  ],
+  "external_network_used": true,
+  "release_or_deployment_performed": false
+}

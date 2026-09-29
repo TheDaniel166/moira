@@ -1,0 +1,23 @@
+{
+  "schema": "moira.asteroid-type13-adaptive-roster/v1",
+  "policy_version": "moira-small-body-type13-apsidal-adaptive-v4",
+  "source_audit": "tests/artifacts/oracle/asteroid_type13_apsidal_sampling_audit_2026-09-28.json",
+  "source_audit_sha256": "6cee053cb69f68b60a8343079691a1eb319845201a4bf547ff288dc375118008",
+  "body_count": 59,
+  "shard_count": 40,
+  "shard_indices": [
+    62, 63, 67, 74, 76, 79, 82, 83, 84, 88,
+    93, 104, 124, 127, 134, 142, 146, 150, 153, 156,
+    160, 161, 167, 173, 177, 179, 181, 183, 186, 190,
+    197, 205, 227, 228, 238, 244, 253, 273, 338, 399
+  ],
+  "body_numbers": [
+    3200, 1566, 5786, 66391, 2212, 5143, 524522, 2101, 3838, 594913,
+    2340, 2100, 3753, 343158, 163693, 4197, 3362, 6063, 4769, 1864,
+    1865, 4341, 4034, 4450, 9162, 3360, 1981, 69230, 2201, 1862,
+    4581, 6239, 3554, 4183, 4486, 1685, 7092, 4544, 5731, 2329,
+    1863, 6489, 4660, 25143, 4179, 162173, 4015, 3671, 65803, 3757,
+    3122, 3908, 2061, 1917, 3551, 1915, 2608, 1580, 4947
+  ],
+  "admission_rule": "Only bodies that failed the exhaustive 10-day, seven-node apsidal audit receive certified adaptive local nodes. Other admitted asteroid segments retain the proven 10-day base series."
+}

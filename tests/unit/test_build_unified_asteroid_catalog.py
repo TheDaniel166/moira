@@ -1,4 +1,7 @@
 import io
+import hashlib
+import json
+from pathlib import Path
 import sys
 import urllib.error
 
@@ -58,6 +61,149 @@ def test_regular_body_keeps_uniform_catalog_window(monkeypatch) -> None:
     assert "coverage_policy" not in body
 
 
+def test_adaptive_roster_body_uses_shared_certifier(monkeypatch) -> None:
+    number = next(iter(catalog_builder.ADAPTIVE_BODY_NUMBERS))
+    called = False
+
+    monkeypatch.setattr(catalog_builder, "_fetch_raw", lambda *args: "raw")
+    monkeypatch.setattr(catalog_builder, "_parse_vectors", _stub_parsed_vectors)
+    monkeypatch.setattr(catalog_builder, "_parse_name", lambda raw, value: "adaptive")
+
+    def fake_certifier(base_epochs, base_states, fetch_exact, **kwargs):
+        nonlocal called
+        called = True
+        assert kwargs["window_size"] == catalog_builder.WINDOW_SIZE
+        return base_epochs, base_states, {"passed": True}, []
+
+    monkeypatch.setattr(
+        catalog_builder.adaptive,
+        "build_certified_adaptive_series",
+        fake_certifier,
+    )
+
+    body = catalog_builder._fetch_body(number)
+
+    assert called is True
+    assert body["apsidal_sampling_certificate"] == {"passed": True}
+
+
+def test_exact_vectors_reserve_full_coverage_integration_anchors(monkeypatch) -> None:
+    requested = [10.0, 11.0]
+    seen: list[float] = []
+
+    def fake_fetch(command: str, epochs: list[float]) -> str:
+        assert command == "2340;"
+        seen.extend(epochs)
+        return "raw"
+
+    def fake_parse(raw: str) -> tuple[list[float], list[list[float]]]:
+        assert raw == "raw"
+        return seen, [[axis * 100.0 + epoch for epoch in seen] for axis in range(6)]
+
+    monkeypatch.setattr(catalog_builder, "_fetch_tlist_raw", fake_fetch)
+    monkeypatch.setattr(catalog_builder, "_parse_vectors", fake_parse)
+
+    epochs, states, receipts = catalog_builder._fetch_exact_vectors(
+        "2340;",
+        requested,
+        query_kind="test",
+        coverage_anchor_epochs=(0.0, 100.0),
+    )
+
+    assert seen == [0.0, 10.0, 11.0, 100.0]
+    assert epochs == requested
+    assert states[0] == requested
+    assert states[5] == [510.0, 511.0]
+    assert receipts[0]["integration_anchor_epochs_jd_tdb"] == [0.0, 100.0]
+
+
+def test_adaptive_roster_exactly_matches_bound_audit_repair_scope() -> None:
+    roster_path = catalog_builder.ADAPTIVE_ROSTER_PATH
+    roster = json.loads(roster_path.read_text(encoding="utf-8"))
+    audit_path = catalog_builder.ROOT / roster["source_audit"]
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    repair_scope = audit["repair_scope"]
+
+    assert hashlib.sha256(audit_path.read_bytes()).hexdigest() == (
+        roster["source_audit_sha256"]
+    )
+    assert set(roster["body_numbers"]) == {
+        body["number"] for body in repair_scope["bodies"]
+    }
+    assert set(roster["shard_indices"]) == set(repair_scope["shard_indices"])
+    assert roster["body_count"] == repair_scope["body_count"] == 59
+    assert roster["shard_count"] == repair_scope["shard_count"] == 40
+
+
+def test_unaffected_seed_is_audited_migrated_and_resumable(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    candidate = tmp_path / "candidate"
+    source.mkdir()
+    candidate.mkdir()
+    targets = [
+        {"number": number, "family": None, "families": []}
+        for number in range(1, 26)
+    ]
+    kernel = source / "asteroid_shard_000.bsp"
+    metadata = source / "asteroid_shard_000.metadata.json"
+    kernel.write_bytes(b"kernel")
+    metadata_payload = {
+        "shard": 0,
+        "kernel": kernel.name,
+        "kernel_bytes": kernel.stat().st_size,
+        "window": list(catalog_builder.WINDOW),
+        "step_days": catalog_builder.STEP_DAYS,
+        "window_size": catalog_builder.WINDOW_SIZE,
+        "records": [
+            {
+                "number": number,
+                "naif_id": 2_000_000 + number,
+                "name": f"Body {number}",
+                "nodes": 100,
+            }
+            for number in range(1, 26)
+        ],
+        "failures": [],
+        "naif_map": {
+            f"Body {number}": 2_000_000 + number for number in range(1, 26)
+        },
+    }
+    metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+    manifest = {
+        "body_count": 25,
+        "shards": [
+            {
+                "index": 0,
+                "path": kernel.name,
+                "body_count": 25,
+                "bodies": [2_000_000 + number for number in range(1, 26)],
+                "sha256": hashlib.sha256(kernel.read_bytes()).hexdigest(),
+                "metadata": {
+                    "path": metadata.name,
+                    "sha256": hashlib.sha256(metadata.read_bytes()).hexdigest(),
+                },
+            }
+        ],
+    }
+    (source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    first = catalog_builder._seed_unaffected_catalog(source, candidate, targets)
+    second = catalog_builder._seed_unaffected_catalog(source, candidate, targets)
+
+    migrated = json.loads(
+        (candidate / metadata.name).read_text(encoding="utf-8")
+    )
+    assert first["unaffected_shards_seeded"] == 1
+    assert second["unaffected_shards_resumed"] == 1
+    assert (candidate / kernel.name).read_bytes() == b"kernel"
+    assert migrated["sampling_policy"] == catalog_builder._sampling_policy()
+    assert all(record["adaptive_nodes"] == 0 for record in migrated["records"])
+    assert all(
+        record["apsidal_sampling_certificate"]["passed"] is True
+        for record in migrated["records"]
+    )
+
+
 def test_regular_body_accumulates_sequential_horizons_range_limits(monkeypatch) -> None:
     fetched: list[tuple[str, str, str]] = []
     responses = {
@@ -107,6 +253,7 @@ def test_cached_metadata_requires_exact_build_policy_and_membership() -> None:
         "window": list(catalog_builder.WINDOW),
         "step_days": 10,
         "window_size": 7,
+        "sampling_policy": catalog_builder._sampling_policy(),
         "records": [{"number": 1}, {"number": 33}],
         "failures": [],
     }
