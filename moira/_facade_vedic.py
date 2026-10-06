@@ -11,12 +11,14 @@ from __future__ import annotations
 import importlib
 import sys
 from datetime import datetime
+from datetime import date
 from fractions import Fraction
 from typing import Any
 
 _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
+_daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
@@ -65,7 +67,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     "risk": "medium",
     "api": {
         "frozen": [
-            "panchanga", "panchanga_profile",
+            "panchanga", "panchanga_profile", "daily_panchanga",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
             "pancha_pakshi_uromarisi_constitution_status",
             "pancha_pakshi_astronomical_paksha",
@@ -215,6 +217,14 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def panchanga_profile(self, result):
         """Build the Panchanga profile for an existing Panchanga result."""
         return _facade_module().panchanga_profile(result)
+
+    def daily_panchanga(self, local_date: date, latitude: float, longitude: float,
+                        *, timezone: str, policy=None):
+        """Compute a sunrise-owned daily Panchanga with this facade's reader."""
+        return _daily_panchanga.daily_panchanga(
+            local_date, latitude, longitude, timezone=timezone,
+            policy=policy, reader=self._reader,
+        )
 
     def pancha_pakshi_profiles(
         self,

@@ -67,6 +67,11 @@ from .sidereal import (
 )
 
 # ── Panchanga ────────────────────────────────────────────────────────────
+from .daily_panchanga import (
+    PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
+    PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
+    DailyPanchangaProvenance, DailyPanchangaResult, daily_panchanga,
+)
 from .panchanga import (
     TithiPaksha,
     YogaClass,
@@ -540,6 +545,9 @@ _VEDIC_OWN: list[str] = [
     "SankrantiResult",
     "TithiConditionProfile",
     "PanchangaProfile",
+    "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
+    "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
+    "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "panchanga_at",
     "sankranti_at",
     "tithi_condition_profile",

@@ -8,6 +8,12 @@
 
 **Baseline**: current `main`; this is not a release-version manifest
 
+> **Vedic completion entries are OUTDATED as a backlog (6 October 2026).**
+> Frontiers 10, 15 and 16 mix engine completion with incomplete transport or
+> chart admission. Their corrections below point to the
+> [Vedic remaining work register](VEDIC_REMAINING_WORK_REGISTER.md).
+> This notice does not re-audit or supersede the non-Vedic entries.
+
 ---
 
 ## 1. Overview & Purpose
@@ -135,7 +141,8 @@ are retained only as completion receipts. They are not current work items.
   - This receipt does not admit small-body apsidal-passage event timing; that remains separately visible below.
 
 ### Frontier 10: Jaimini Chara Dasha Second-Cycle Mahadashas
-- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Historical status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Current boundary (6 October)**: cycle computation exists; the engine's cycle bounds and REST cycle selection remain open in [VED-001](VEDIC_REMAINING_WORK_REGISTER.md#2-existing-engine-and-rest-closure). The historical label is not an end-to-end completion claim.
 - **Anchors**: [`moira/jaimini_extended.py`](../../moira/jaimini_extended.py), [`tests/unit/test_jaimini_extended.py`](../../tests/unit/test_jaimini_extended.py)
 - **Scope & Delivery**:
   - Researched K.N. Rao's specific second-cycle rule using his book *Predicting Through Jaimini's Chara Dasa* (pages 13-14).
@@ -180,7 +187,8 @@ eference_place as the required, geometrically rigorous default.
   - Added internal `_umbral_envelope_points` and helpers for rigorous intersection solving along the path.
 
 ### Frontier 15: Named D60 Shashtiamsha Lords
-- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Historical status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Current boundary (6 October)**: engine deity enrichment exists; REST omits the field. [VED-003](VEDIC_REMAINING_WORK_REGISTER.md#2-existing-engine-and-rest-closure) owns the remaining transport work.
 - **Anchors**: [`moira/varga.py`](../../moira/varga.py), [`tests/unit/test_d60_deities.py`](../../tests/unit/test_d60_deities.py)
 - **Scope & Delivery**:
   - Established BPHS Chapter 6 as the primary doctrinal authority for the 60 Shashtiamsha deity names.
@@ -188,13 +196,14 @@ eference_place as the required, geometrically rigorous default.
   - Enriched `VargaPoint` with the `deity` attribute exposing the traditionally designated lord.
 
 ### Frontier 16: Sayanadi Avasthas Computation
-- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Historical status**: **COMPLETED & VERIFIED** (September 29, 2026) — **OUTDATED completion claim**
+- **Current boundary (6 October)**: standalone calculation and one example test exist; source/input hardening and chart/public/REST admission remain open in [VED-002](VEDIC_REMAINING_WORK_REGISTER.md#2-existing-engine-and-rest-closure).
 - **Anchors**: [`moira/avasthas.py`](../../moira/avasthas.py), [`tests/unit/test_sayanadi.py`](../../tests/unit/test_sayanadi.py)
 - **Scope & Delivery**:
   - Resolved the BPHS (Santhanam) Chapter 45 arithmetic inconsistency for the sub-state formula through direct translation of the core algorithms.
   - Implemented the 12 primary Sayanadi postures (Shayana to Nidra) using the exact multiplicative planetary index and navamsa algorithm.
   - Established correct arithmetic for the 3 sub-states (Drishti, Cheshta, Vicheshta).
-  - Wired `evaluate_avasthas` to conditionally admit `birth_ghati` and `first_syllable_value` inputs.
+  - The prior record claimed that `evaluate_avasthas` admitted `birth_ghati` and `first_syllable_value`. Current code accepts neither input and does not populate `PlanetAvasthas.sayanadi`; that integration claim is superseded.
 
 
 ## 4. Category C — Active Validation Frontiers

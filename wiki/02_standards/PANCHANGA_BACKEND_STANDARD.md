@@ -5,6 +5,12 @@
 **Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
+**Scope clarification (6 October 2026):** This standard governs the existing
+instant product. `panchanga_at` does not select a local sunrise day. The
+[daily Panchanga standard](DAILY_PANCHANGA_STANDARD.md) governs the separate
+`daily_panchanga` engine/facade and `/v1/panchanga/day` contract, including
+sunrise-owned Vara and solved limb endings.
+
 ---
 
 ## Part I — Architecture Standard

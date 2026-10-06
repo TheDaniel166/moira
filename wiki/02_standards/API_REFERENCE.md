@@ -305,7 +305,10 @@ snapshot and doctrine catalogue. Imports share the owning engine objects.
 Varga products already exposed through the facade are also available at the
 package root. This curation does not admit standalone Sayanadi, the unfinished
 daily almanac, special Lagnas, or Kalachakra. See the
-[Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md).
+[Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
+for the completed package and the
+[Vedic remaining work register](../06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md)
+for current integration and enrichment gaps.
 
 | Added domain | Key symbols |
 |---|---|
@@ -5995,6 +5998,7 @@ from moira.vedic import (
 | Function | Signature | Description |
 |---|---|---|
 | `panchanga_at(sun_tropical_lon, moon_tropical_lon, jd, ayanamsa_system='Lahiri', policy=None)` | `→ PanchangaResult` | Five Panchanga elements at a given JD |
+| `daily_panchanga(local_date, latitude, longitude, *, timezone, policy=None, reader=None)` | `→ DailyPanchangaResult` | Local sunrise-to-next-sunrise day, exact computed limb endings, selected policy and unavailable states |
 | `sankranti_at(jd_start, jd_end, reader=None)` | `→ SankrantiResult` | Solar ingress into each rashi in a date range |
 | `tithi_condition_profile(result)` | `→ TithiConditionProfile` | Tithi quality assessment |
 | `panchanga_profile(result)` | `→ PanchangaProfile` | Aggregate Panchanga quality profile |
@@ -6005,6 +6009,14 @@ these boundaries by subtracting two separately rounded sidereal longitudes.
 This preserves exact conjunction, opposition, tithi, and half-tithi ownership;
 the Panchanga result still publishes the selected sidereal longitudes for the
 products that use them.
+
+`Moira.daily_panchanga(local_date, latitude, longitude, *, timezone, policy=None)`
+binds the facade's reader. `DailyPanchangaPolicy` selects a named ayanamsa,
+sunrise convention and bounded solver tolerance. Numerical event moments are
+explicit UT1 JDs with converted UTC/local timestamps. Daily coverage and an
+actual limb ending after next sunrise remain separate fields. See the
+[daily standard and worked request](DAILY_PANCHANGA_STANDARD.md) for all nine
+curated exports, source choices, strict REST contract and verification.
 
 #### `PanchangaResult` fields
 

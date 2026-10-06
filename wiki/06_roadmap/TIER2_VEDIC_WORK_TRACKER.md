@@ -1,5 +1,12 @@
 # Tier 2 Vedic Competitive Edge Work – Paused State
 
+> **OUTDATED — historical record only (6 October 2026).** This May checkpoint
+> is not the current Vedic backlog. Several absence and implementation claims
+> differ from current code. Use the
+> [Vedic remaining work register](VEDIC_REMAINING_WORK_REGISTER.md).
+> Earlier source leads and pauses below are preserved for provenance; these
+> historical resumption instructions do not authorize new implementation.
+
 **Last active:** 2026-05-29 (second resumption push)  
 **Status:** **Paused by user request** (new focus declared). Rich state captured for clean future resumption.
 

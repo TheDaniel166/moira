@@ -446,6 +446,11 @@ from .sade_sati import (
     sade_sati_status,
     sade_sati_windows,
 )
+from .daily_panchanga import (  # noqa: E402 - imports intentionally follow the kernel warning
+    PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
+    PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
+    DailyPanchangaProvenance, DailyPanchangaResult, daily_panchanga,
+)
 from .panchanga import (
     TithiPaksha,
     YogaClass,
@@ -1682,6 +1687,9 @@ __all__ = [
     "PanchangaResult",
     "TithiConditionProfile",
     "PanchangaProfile",
+    "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
+    "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
+    "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "panchanga_at",
     "tithi_condition_profile",
     "panchanga_profile",

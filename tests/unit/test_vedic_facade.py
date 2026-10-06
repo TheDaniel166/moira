@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 import moira.facade as facade
+from moira.spk_reader import use_reader_override
 from moira import varga as varga_module
 
 shadbala_module = importlib.import_module("moira.shadbala")
@@ -199,17 +200,20 @@ def test_vedic_facade_shadbala_chart_wrapper_delegates_to_engine() -> None:
     is_day = facade.is_day_chart(chart.planets["Sun"].longitude, houses.asc)
 
     via_facade = engine.shadbala_for_chart(chart, houses)
-    direct = facade.shadbala(
-        sidereal,
-        speeds,
-        houses,
-        jd_ut1,
-        panchanga.tithi.number,
-        panchanga.vara_lord,
-        is_day,
-        ayanamsa_system=facade.Ayanamsa.LAHIRI,
-        planet_latitudes=latitudes,
-    )
+    # The module path is kernel-bound too: compare through the same reader
+    # owned by the facade, rather than depending on an unrelated global reader.
+    with use_reader_override(engine._reader):
+        direct = facade.shadbala(
+            sidereal,
+            speeds,
+            houses,
+            jd_ut1,
+            panchanga.tithi.number,
+            panchanga.vara_lord,
+            is_day,
+            ayanamsa_system=facade.Ayanamsa.LAHIRI,
+            planet_latitudes=latitudes,
+        )
 
     assert via_facade == direct
     assert engine.shadbala_profile(via_facade) == facade.shadbala_chart_profile(direct)

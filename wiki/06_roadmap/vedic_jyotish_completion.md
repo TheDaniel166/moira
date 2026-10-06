@@ -1,5 +1,10 @@
 # Vedic Jyotish Systems — Pre-Phase 1 Implementation Roadmap
 
+> **OUTDATED — historical implementation blueprint (6 October 2026).**
+> Preserve these source leads and design notes for provenance. Current remaining
+> work is tracked in the [Vedic remaining work register](VEDIC_REMAINING_WORK_REGISTER.md);
+> the original absence claims below are not the current codebase state.
+
 > **STATUS (2026-07-08): PHASE 1 COMPLETE.** All seven systems below are
 > implemented, constitutionalized, and served: varga (17 divisions),
 > vedic_dignities, jaimini (karakas), panchanga, dasha_systems
@@ -8,7 +13,7 @@
 > explicitly scoped out and which were closed on 2026-07-08.
 > The "Codebase State" section below is the historical pre-Phase-1 snapshot,
 > preserved for provenance.  For remaining gaps, see
-> [vedic_jyotish_phase2_gaps.md](vedic_jyotish_phase2_gaps.md).
+> [Vedic remaining work register](VEDIC_REMAINING_WORK_REGISTER.md).
 
 ## Codebase State (Verified)
 

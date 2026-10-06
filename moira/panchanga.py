@@ -32,9 +32,9 @@ Limitation — Vara boundary
 The Vedic day (Vara) begins at local sunrise, not at midnight.  This
 implementation uses the astronomical Julian date directly, so the Vara
 may disagree with strict Vedic reckoning near midnight if local sunrise
-has not yet occurred.  A sunrise-corrected Vara is a future policy
-extension.  The ``vara_lord`` returned here is the astronomically correct
-weekday lord at the JD instant supplied by the caller.
+has not yet occurred. The separate ``moira.daily_panchanga`` product owns
+local sunrise-to-sunrise Vara and solves actual limb endings. This instant
+product retains its JD-based weekday convention.
 
 Limitation — Yoga precision
 ----------------------------

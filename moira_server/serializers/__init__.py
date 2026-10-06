@@ -197,6 +197,7 @@ from .local_space import (
     serialize_local_space_positions,
     serialize_local_space_provenance,
 )
+from .daily_panchanga import serialize_daily_panchanga
 from .panchanga import (
     serialize_nakshatra_position,
     serialize_panchanga_element,
@@ -549,6 +550,7 @@ __all__ = [
     "serialize_local_space_provenance",
     "serialize_part_definition",
     "serialize_nakshatra_position",
+    "serialize_daily_panchanga",
     "serialize_panchanga_element",
     "serialize_panchanga_profile",
     "serialize_panchanga_result",

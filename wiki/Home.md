@@ -25,6 +25,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Church of Light Astrodynes](02_standards/ASTRODYNES_BACKEND_STANDARD.md)**
 - **[Timing & Timelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
 - **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
+- **[Daily Panchanga](02_standards/DAILY_PANCHANGA_STANDARD.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
 - **[Migrating from Swiss Ephemeris](02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md)**
@@ -53,6 +54,7 @@ invariant tests where no external software can be authoritative.
 
 ### 🗺️ Future & Prophecies
 - **[Moira Roadmap](06_roadmap/MOIRA_ROADMAP.md)**: The strategic path toward substrate transcendency.
+- **[Vedic Remaining Work Register](06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md)**: Current engine, REST, evidence and enrichment gaps; supersedes the older Vedic work notes.
 
 ---
 

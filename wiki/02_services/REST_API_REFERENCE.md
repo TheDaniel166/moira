@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 476
-- Registered OpenAPI operations: 476 (GET 37, POST 439)
+- Registered OpenAPI paths: 477
+- Registered OpenAPI operations: 477 (GET 37, POST 440)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 472
+- Versioned `/v1` paths: 473
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -253,7 +253,7 @@ Not yet broadly exposed as REST families:
 | occultations | 12 |
 | orbits | 4 |
 | pancha-pakshi | 19 |
-| panchanga | 4 |
+| panchanga | 5 |
 | parans | 8 |
 | patterns | 3 |
 | phase | 6 |
@@ -1101,12 +1101,19 @@ those relationship-chart routes.
 
 ## Panchanga Routes
 
+The daily product is a separate local-date contract with sunrise-owned Vara,
+solved angular limb endings and explicit solar unavailability. Its
+[standard](../02_standards/DAILY_PANCHANGA_STANDARD.md) documents policy,
+timestamps and a complete request. Existing instant/profile routes retain
+their current conventions.
+
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/panchanga/instant` | `panchanga_instant_route` |
 | POST | `/v1/panchanga/instant/profile` | `panchanga_instant_profile_route` |
 | POST | `/v1/panchanga/chart` | `panchanga_chart_route` |
 | POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
+| POST | `/v1/panchanga/day` | `panchanga_day_route` |
 | GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
 | POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
 | POST | `/v1/sidereal/convert` | `sidereal_convert_route` |
@@ -3502,6 +3509,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/pancha-pakshi/sookshma/select` | pancha-pakshi | `pancha_pakshi_sookshma_temporal_selection_route_v1_pancha_pakshi_sookshma_select_post` |
 | `POST` | `/v1/panchanga/chart` | panchanga | `panchanga_chart_route_v1_panchanga_chart_post` |
 | `POST` | `/v1/panchanga/chart/profile` | panchanga | `panchanga_chart_profile_route_v1_panchanga_chart_profile_post` |
+| `POST` | `/v1/panchanga/day` | panchanga | `panchanga_day_route_v1_panchanga_day_post` |
 | `POST` | `/v1/panchanga/instant` | panchanga | `panchanga_instant_route_v1_panchanga_instant_post` |
 | `POST` | `/v1/panchanga/instant/profile` | panchanga | `panchanga_instant_profile_route_v1_panchanga_instant_profile_post` |
 | `POST` | `/v1/parans/field/analysis` | phenomena | `paran_field_analysis_route_v1_parans_field_analysis_post` |

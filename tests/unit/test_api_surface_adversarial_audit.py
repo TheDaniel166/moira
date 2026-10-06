@@ -23,6 +23,9 @@ import pytest
 
 
 _EXPECTED_ROOT_PUBLIC_NAMES = {
+    "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
+    "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
+    "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
     "ASHTOTTARI_TOTAL",
@@ -1252,6 +1255,7 @@ _EXPECTED_ROOT_ONLY_NAMES = {
 }
 
 _EXPECTED_MOIRA_METHODS = {
+    "daily_panchanga",
     "almuten_figuris",
     "almuten_of_degree",
     "antiscia",
