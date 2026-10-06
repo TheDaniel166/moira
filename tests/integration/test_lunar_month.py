@@ -5,13 +5,14 @@ https://packolkata.imd.gov.in/download/EnglishRP2627.zip
 PDF RP 1948 SE Final.pdf SHA256:
 a8816abe4fae7fc0f0e4349a3d91eef00cfc0044a5f050b1b3bfe826847f9eaa
 Printed xii-xiii: month identities; printed 15,23,30 (PDF 35,43,50):
-conjunction endings and the 15 June solar ingress.  Conjunction timing
-comparisons have a 60-second bound; labels are exact. The solar-ingress
-residual is a disclosed diagnostic regression, not passed minute parity.
-This is not an admission
+conjunction endings; printed 158 (PDF 178): all 13 solar ingresses.
+Conjunction and solar-ingress timing comparisons retain the original
+60-second bound; labels are exact. This is not an admission
 of exceptional Purnimanta remapping or a complete historical calendar.
 """
 from datetime import datetime, timedelta, timezone
+import json
+from pathlib import Path
 
 import pytest
 
@@ -19,9 +20,13 @@ from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.lunar_month import lunar_month_at, LunarMonthPolicy, LunarMonthSystem
 from moira.planets import planet_at
 from moira.sidereal import tropical_to_sidereal
+from moira.panchanga import sankranti_at
+from moira.spk_reader import use_reader_override
 
 pytestmark = [pytest.mark.integration, pytest.mark.requires_ephemeris]
 IST = timezone(timedelta(hours=5, minutes=30))
+PAC_INGRESSES = json.loads((Path(__file__).resolve().parents[1] /
+    "fixtures/pac_1948_solar_ingresses.json").read_text(encoding="utf-8"))
 
 
 def instant(text):
@@ -74,16 +79,34 @@ def test_published_following_conjunction(adhika):
     assert abs(following.end.jd_ut1 - instant("2026-07-14T15:14:00"))*86400 <= 60
 
 
-def test_known_pac_solar_ingress_residual_is_visible(adhika):
-    # A proposed 60-second bound failed. Keep the measured discrepancy visible
-    # rather than changing doctrine or loosening an authority acceptance gate.
-    # This frozen residual is regression evidence only; reconciliation remains
-    # open in VED-023. Mean-mode conversion moves the residual to the opposite
-    # side and does not justify replacing the existing true-mode convention.
+def test_published_mithuna_ingress_in_adjacent_lunation(adhika):
+    # The original 60-second gate failed by 64.4768 seconds before the shared
+    # general-precession scalar was corrected from FW psib to IAU 2006 p_A.
+    # This is restored authority validation, not a frozen residual or a fit.
     event, = adhika.next_lunation.ingresses
     assert event.target_degrees == 60
     residual = (event.jd_ut1 - instant("2026-06-15T12:53:00"))*86400
-    assert residual == pytest.approx(64.4767776, abs=0.1)
+    assert abs(residual) <= 60
+
+
+@pytest.mark.parametrize("case", PAC_INGRESSES["cases"],
+    ids=[f'{case["ist"][:10]}-{case["name"]}' for case in PAC_INGRESSES["cases"]])
+def test_all_published_solar_ingresses(moira_engine, case):
+    jd = instant(case["ist"])
+    result = moira_engine.lunar_month_at(jd)
+    events = [event for context in (result.previous_lunation,
+        result.amanta_lunation, result.next_lunation) for event in context.ingresses
+        if event.target_degrees == case["target_degrees"] and abs(event.jd_ut1-jd) < 0.5]
+    event, = events
+    assert abs(event.jd_ut1-jd)*86400 <= PAC_INGRESSES["source"]["acceptance_seconds"]
+    # Independently assembled existing public Sankranti path must inherit the
+    # same corrected scalar. Its angular solver and the lunar time bracket
+    # together allow 0.2 seconds here; this is an internal consistency check.
+    with use_reader_override(moira_engine._reader):
+        sankranti, = sankranti_at(jd-0.5, jd+0.5)
+    assert sankranti.rashi_index == int(case["target_degrees"]//30)
+    assert abs(sankranti.jd-jd)*86400 <= PAC_INGRESSES["source"]["acceptance_seconds"]
+    assert abs(sankranti.jd-event.jd_ut1)*86400 <= 0.2
 
 
 def test_real_phase_and_solar_roots_have_entered_side_witnesses(adhika, moira_engine):

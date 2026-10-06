@@ -533,7 +533,6 @@ def test_pbt_sky_position_agrees_with_planet_at(body, jd, lat, lon):
 from moira.nodes import true_node
 from moira._ephemeris_time import _ut1_to_ephemeris_tt
 from moira.coordinates import mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
-from moira.corrections import apply_frame_bias
 from moira.constants import DEG2RAD
 
 
@@ -560,7 +559,9 @@ def test_pbt_true_node_common_frame_intersection(planetary_reader, jd):
         nutation_matrix_equatorial(jd_tt),
         mat_vec_mul(
             precession_matrix_equatorial(jd_tt),
-            apply_frame_bias(h_icrf),
+            # The IAU 2006 matrix is bias-inclusive (ERFA pmat06). Apply
+            # ICRF frame bias once, through that matrix, not twice.
+            h_icrf,
         ),
     )
 

@@ -1,11 +1,13 @@
 """Strict input, complete typed evidence and reader-bound HTTP parity."""
 from types import SimpleNamespace
+from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 import pytest
 
 from moira.lunar_month import LunarMonthPolicy, LunarMonthSystem
 from moira import MissingEphemerisKernelError
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 from moira_server.models.lunar_month import LunarMonthRequest
@@ -105,3 +107,21 @@ def test_http_preserves_all_canonical_available_and_unavailable_evidence(real_cl
         assert "uncertain_ingresses" in value[key]
     if direct.status != "available":
         assert value["label"] is None and value["unavailable_reasons"]
+
+
+@pytest.mark.requires_ephemeris
+def test_http_mithuna_ingress_passes_original_pac_minute_gate(real_client):
+    # PAC 1948 SE printed 158 / PDF 178: 15 June 2026, 12:53 IST.
+    # This failed by 64.4768 seconds before the shared precession correction.
+    ist = timezone(timedelta(hours=5, minutes=30))
+    jd = utc_to_ut1(jd_from_datetime(datetime(2026, 6, 15, 12, 53, tzinfo=ist)))
+    response = real_client.post(PATH, json={"jd_ut1": jd})
+    assert response.status_code == 200, response.text
+    value = response.json()
+    assert value["policy"]["ayanamsa_system"] == "Lahiri"
+    assert value["provenance"]["sidereal_mode"] == "true"
+    event, = [event for key in ("previous_lunation", "amanta_lunation", "next_lunation")
+        for event in value[key]["ingresses"]
+        if event["target_degrees"] == 60 and abs(event["upper_jd_ut1"]-jd) < 0.5]
+    assert abs(event["upper_jd_ut1"]-jd)*86400 <= 60
+    assert (event["upper_jd_ut1"]-event["lower_jd_ut1"])*86400 <= 0.1

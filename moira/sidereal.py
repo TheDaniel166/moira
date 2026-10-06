@@ -390,8 +390,10 @@ def ayanamsa(
     path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
     for all other systems and as a fallback when the star catalog is absent.
 
-    Ayanamsa.LAHIRI is epoch-anchored (23°15′00.658″ at 21 Mar 1956), not
-    star-anchored.
+    Ayanamsa.LAHIRI uses the stored J2000 mean reference value propagated by
+    IAU 2006 general precession p_A, with Δψ added in true mode. Its historical
+    origin is the March 1956 Lahiri convention; this implementation does not
+    impose an exact 1956 apparent-star longitude at every evaluation.
     """
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Sidereal general precession**: polynomial ayanamsas now use IAU 2006
+  general precession in longitude `p_A`, replacing the distinct
+  Fukushima-Williams rotation angle previously used by the scalar helper.
+  Stored J2000 references and named mean/true policies are preserved. This
+  corrects a roughly 64-second June 2026 solar-ingress delay; all 13 PAC
+  Rashtriya Panchang 1948 SE solar ingresses pass the original one-minute
+  comparison. Polynomial ayanamsas and their derived engine/REST results
+  receive the correction, including larger changes at historical epochs.
+
 ## [6.9.9] - 2026-09-29
 
 ### Added

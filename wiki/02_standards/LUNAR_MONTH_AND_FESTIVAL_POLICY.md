@@ -195,17 +195,20 @@ Validation files:
 - [strict request/OpenAPI and HTTP parity](../../tests/server/test_server_lunar_month.py);
 - existing public export audit, Vedic surface/facade and Panchanga neighbours.
 
-The first focused run passed 82 cases and found one failed proposed
-one-minute solar-ingress comparison. The 15 June 2026 ingress is about
-64.5 seconds later than PAC's printed 12:53 IST. That residual remains unresolved and must not be described as passing
-one-minute authority validation. At the printed instant, true-mode solar
-longitude is 2.56435 arcseconds short of the boundary; mean mode is 4.75016
-arcseconds beyond it. A simple mode substitution does not reconcile the
-source. Independent root-side witnesses pass. The residual is now retained
-as a separately classified diagnostic regression (64.4768 seconds, 0.1-second
-regression bound), not a loosened institutional acceptance threshold. Three published conjunction timings and the selected month
-labels are separate comparisons. A root bracket of 0.1 seconds does not
-establish PAC reduction agreement.
+The first focused run passed 82 cases and found a failed proposed
+one-minute solar-ingress comparison: the 15 June 2026 ingress was 64.4768
+seconds later than PAC's printed 12:53 IST. Follow-up reconciliation proved
+that the shared ayanamsa scalar incorrectly used the FW rotation angle
+instead of IAU 2006 general precession `p_A`. Correcting that astronomical
+quantity closes the discrepancy. All 13 PAC 1948 SE solar ingresses now pass
+the **original 60-second gate**, with a maximum measured residual of 25.296
+seconds and about 0.33 seconds at the June instant. No constant was fitted
+and no authority threshold was loosened. Independent ERFA scalar validation
+and the complete source/measurement/compatibility receipt are in
+[Sidereal general-precession reconciliation](../03_validation/SIDEREAL_GENERAL_PRECESSION_RECONCILIATION.md).
+Three published conjunction timings and the selected month labels remain
+separate comparisons. Printed minute precision and an internal 0.1-second
+root bracket do not establish subsecond external reduction agreement.
 
 Era years, regional solar civil dates, exceptional Purnimanta labeling,
 Kshaya-year regional relabeling and a named festival catalogue remain open.

@@ -273,38 +273,38 @@ def _vondrak_bias_precession_matrix(
 
 def general_precession_in_longitude(jd_tt: float) -> float:
     """
-    Return the general precession in ecliptic longitude psi_A in degrees.
+    Return IAU 2006 general precession in longitude p_A, in degrees.
 
-    Uses the full IAU 2006 / Fukushima-Williams luni-solar precession polynomial
-    (psib, Capitaine et al. 2003, A&A 412, 567-586), which is the authoritative
-    expression for the scalar general precession in longitude.  This scalar is
-    used exclusively for sidereal ayanamsa computation; planetary coordinate
-    transforms use precession_matrix(), which employs the Vondrak 2011 model.
+    This scalar carries a J2000 ayanamsa reference along the moving ecliptic.
+    It is distinct from the Fukushima-Williams rotation angle psib, which
+    includes frame bias and belongs to the coordinate precession matrix.
+    Accumulated general precession is exactly zero at J2000.0.
 
-    The psib polynomial is nominally valid for ±50 centuries from J2000.0.  For
-    extreme ancient epochs where ayanamsa would be queried, the accumulated
-    polynomial extrapolation error grows, but remains self-consistent with
-    historical ayanamsa convention (which has always used the P03 polynomial).
+    Authority: Capitaine, Wallace & Chapront (2003), A&A 412, 567-586,
+    P03 general-precession polynomial; SOFA iauP06e / ERFA eraP06e, p_A.
+    https://github.com/liberfa/erfa/blob/v2.0.1/src/p06e.c
+    The fifth-order coefficient is negative (the Hilton 2006 table has a
+    sign misprint, explicitly identified by SOFA/ERFA).
 
-    The constant term −0.041775 arcsec is the J2000.0 frame-bias component of
-    psib (SOFA iauPfw06); it does not affect the accumulated precession from
-    J2000.0 since it is the same at both ends of the interval.
+    The polynomial is nominally valid for ±50 centuries from J2000.0.
+    Existing extrapolation beyond that interval remains a model limitation;
+    this scalar does not inherit the long-term matrix model's wider validity.
+    Planetary coordinate transforms independently use precession_matrix().
 
     Args:
         jd_tt: Julian Date in Terrestrial Time (TT).
 
     Returns:
-        psi_A in decimal degrees, accumulated from J2000.0.
+        p_A in decimal degrees, accumulated from J2000.0.
         Positive for T > 0 (future), ~5029 arcsec/century rate at J2000.
     """
     T = centuries_from_j2000(jd_tt)
-    psib_arcsec = (  -0.041775
-                   + 5038.481484 * T
-                   +    1.5584175 * T**2
-                   -    0.00018522 * T**3
-                   -    0.000026452 * T**4
-                   -    0.0000000148 * T**5)
-    return psib_arcsec / 3600.0
+    p_a_arcsec = ( 5028.796195 * T
+                 +    1.1054348 * T**2
+                 +    0.00007964 * T**3
+                 -    0.000023857 * T**4
+                 -    0.0000000383 * T**5)
+    return p_a_arcsec / 3600.0
 
 def mean_obliquity_p03(jd_tt: float) -> float:
     """
