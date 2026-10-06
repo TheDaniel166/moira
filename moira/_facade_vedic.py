@@ -14,6 +14,7 @@ from datetime import datetime
 from datetime import date
 from fractions import Fraction
 from typing import Any
+from .spk_reader import MissingEphemerisKernelError
 
 _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
@@ -21,6 +22,7 @@ _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
+_muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
@@ -223,6 +225,32 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def lunar_month_at(self, jd_ut1: float, *, policy=None):
         """Source-declared lunation context with this engine's reader."""
         return _lunar_month.lunar_month_at(jd_ut1, policy=policy, reader=self._reader)
+
+    def find_muhurta_windows(self, start_jd_ut1: float, end_jd_ut1: float, *,
+                             janma_moon_sidereal_lon=None, policy=None):
+        """Complete bounded sampled Muhurta search using this engine's reader."""
+        _muhurta_search._search_arguments(start_jd_ut1, end_jd_ut1,
+                                           janma_moon_sidereal_lon, policy)
+        return _muhurta_search.find_muhurta_windows(
+            start_jd_ut1, end_jd_ut1, janma_moon_sidereal_lon=janma_moon_sidereal_lon,
+            policy=policy, reader=self._muhurta_reader(),
+        )
+
+    def muhurta_score_for_chart(self, chart, *, janma_moon_sidereal_lon=None,
+                                ayanamsa_system="Lahiri", policy=None):
+        """Score supplied tropical chart inputs with this reader for live anchors."""
+        return _muhurta_search.muhurta_score_for_chart(
+            chart, janma_moon_sidereal_lon=janma_moon_sidereal_lon,
+            ayanamsa_system=ayanamsa_system, policy=policy, reader=self._muhurta_reader(),
+        )
+
+    def _muhurta_reader(self):
+        try:
+            return self._reader
+        except MissingEphemerisKernelError as exc:
+            raise _muhurta_search.MuhurtaResourceError(
+                "this Moira instance has no Muhurta planetary reader",
+            ) from exc
 
     def gochara_at(self, natal_jd_ut1: float, transit_jd_ut1: float, *,
                    birth_location=None, policy=None):

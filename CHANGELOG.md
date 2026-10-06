@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Personalized Muhurta repair (VED-004/006)**: seven validated policy weights
+  and complete policy receipts; reader-bound sampled search through
+  `find_muhurta_windows`, matching Moira methods and `/v1/muhurta/search`.
+  Results preserve peak inputs, threshold brackets, ranking and truncation
+  evidence under explicit cadence/span/sample caps. Existing generic and
+  Tara/Chandra rules remain; exact transitions and sunrise-owned search are
+  outside this bounded JD-weekday admission.
 - **Date-derived Gochar (VED-017)**: complete reader-bound natal/transit
   snapshots through `gochara_at`, `gochara_for_datetimes` and matching Moira
   methods. Results preserve separate UT1/TT/TDB clocks, serving integration,
@@ -18,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Live star anchors fail explicitly when unavailable; dated windows remain open.
 
 ### Fixed
+- **Muhurta composition and transport**: personalized overlays now follow the
+  effective Panchanga ayanamsa, including nested policy precedence. Repaired
+  legacy adapters use actual natal Moon input and explicit chart clocks,
+  replacing ignored natal parameters, missing-input sentinels and default
+  dates/longitudes. Panchanga/Muhurta REST rejects numeric strings, booleans
+  and numeric datetime timestamps; unsupported classical-rule flag values
+  now fail explicitly instead of being ignored. OpenAPI family ordering and
+  the previously unreconciled dated-Gochar export guard are aligned.
 - **Sidereal general precession**: polynomial ayanamsas now use IAU 2006
   general precession in longitude `p_A`, replacing the distinct
   Fukushima-Williams rotation angle previously used by the scalar helper.

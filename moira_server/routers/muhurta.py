@@ -24,7 +24,21 @@ from ..services.muhurta import (
 )
 
 
+from ..models.muhurta_search import MuhurtaSearchRequest, MuhurtaSearchResponse
+from ..services.muhurta_search import compute_muhurta_search
+
+
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.post("/search", response_model=MuhurtaSearchResponse)
+def muhurta_search_route(request: MuhurtaSearchRequest, engine: Moira = Depends(get_engine)) -> MuhurtaSearchResponse:
+    """Search and rank bounded sampled Muhurta scores, optionally using natal Moon.
+
+    JD-weekday Vara and consecutive qualifying samples are explicit. No
+    continuous auspicious interval, sunrise, Lagna or activity rule is inferred.
+    """
+    return compute_muhurta_search(engine, request)
 
 
 @router.post("/direct/classification", response_model=MuhurtaClassificationEnvelopeResponse)

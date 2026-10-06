@@ -304,7 +304,11 @@ Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara
 snapshot and doctrine catalogue, plus reader-bound epoch/aware-datetime Gochar
 composition. See the [dated Gochar standard](GOCHARA_DATE_DERIVED_STANDARD.md)
 for `gochara_at`, `gochara_for_datetimes`, astronomical policies, BAV provenance
-and typed errors. Imports share the owning engine objects.
+and typed errors. Imports share the owning engine objects. Bounded Muhurta search and chart scoring
+also share the owning `muhurta_search` objects: `find_muhurta_windows`,
+`muhurta_score_for_chart` and their typed policies, receipts and errors. See the
+[personalized Muhurta/search standard](MUHURTA_PERSONAL_SEARCH_STANDARD.md) for
+reader binding, sampling limits, JD-weekday Vara and explicit exclusions.
 Varga products already exposed through the facade are also available at the
 package root. This curation does not admit standalone Sayanadi,
 special Lagnas or Kalachakra. Daily sunrise-owned Panchanga has its separately

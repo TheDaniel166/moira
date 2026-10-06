@@ -14,17 +14,17 @@ It is intentionally separated from the general `electional.py` scanner:
 - `electional.py` = flexible search engine (any predicate, tropical or sidereal)
 - `muhurta.py`     = traditional Vedic rules and scoring for auspiciousness
 
-Current Scope (initial implementation)
+Current Scope
 -------------------------------------
 - Basic Muhurta classification using Panchanga elements (Tithi, Vara, Nakshatra, Yoga, Karana)
 - Traditional auspicious/inauspicious categorizations for the five Panchanga limbs
 - Simple scoring surface that practitioners can extend
 - Policy for weighting different factors
+- Natal Tara/Chandra overlays and repaired bounded sampled-search adapters
 
 Future increments (per competitive analysis):
-- Full Muhurta scoring workflows
-- Specific named Muhurtas (Abhijit, Brahma, etc.)
-- Integration with the general electional scanner for "best windows" search
+- Sunrise-owned and exact-transition search, separate from sampled JD weekday
+- Typed named Muhurta intervals and purpose-specific profiles
 - Support for additional classical rules (e.g., from BPHS Muhurta chapters, Brihat Samhita)
 
 References (researched source material only)
@@ -33,13 +33,17 @@ References (researched source material only)
 - Varahamihira, Brihat Samhita, Chapters 98–104 (Muhurta context).
 - Muhurta Chintamani by Ramachandra (Kedar Datt Joshi / Venkateshwar Press editions) — for Abhijit Muhurta rules.
 - Aṣṭāṅga Hṛdayaṃ and Dharmashastra/Puranic sources for Brahma Muhurta definition (14th Muhurta of night).
-- Cross-verified against behavior in Jhora and Kala software as referenced in project planning docs (vedic_jyotish_completion.md, PANCHANGA_BACKEND_STANDARD.md).
+- These historical source leads are not an edition-collated proof of every
+  scoring rule. VED-004/006 retain the existing profile and repair composition;
+  source-specific additions and variants require their own admission evidence.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Literal
+from .electional import ElectionalPolicy, ElectionalWindow
 
 from .panchanga import (
     PanchangaResult,
@@ -71,8 +75,8 @@ class MuhurtaPolicy:
     """
     Policy controlling how Muhurta classification and scoring is performed.
 
-    This allows different schools/traditions to weight factors differently
-    without changing the core doctrine surfaces.
+    Weights apply to the existing Moira classification/Tara/Chandra profile.
+    They do not select another school's rules, cancellations or activity doctrine.
     """
     weight_tithi: float = 1.0
     weight_vara: float = 1.0
@@ -86,6 +90,48 @@ class MuhurtaPolicy:
 
     # Future: allow disabling certain classical rules
     use_classical_ashubha_yoga: bool = True
+
+    def __post_init__(self) -> None:
+        # This reserved field never selected an alternate rule set. Fail closed
+        # rather than acknowledging a choice the evaluator does not implement.
+        if self.use_classical_ashubha_yoga is not True:
+            raise ValueError("use_classical_ashubha_yoga is reserved and must remain True")
+        weights = (
+            "weight_tithi", "weight_vara", "weight_nakshatra", "weight_yoga",
+            "weight_karana", "weight_tara", "weight_chandra",
+        )
+        for name in weights:
+            value = _finite_number(name, getattr(self, name))
+            if value < 0:
+                raise ValueError(f"{name} must be non-negative")
+            object.__setattr__(self, name, value)
+        # Bound the worst possible component magnitudes, including the 1.5x
+        # Yoga and 2x Chandrashtama penalties, so aggregation cannot overflow.
+        try:
+            bound = math.fsum(getattr(self, name) * (
+                1.5 if name == "weight_yoga" else 2 if name == "weight_chandra" else 1
+            ) for name in weights)
+        except OverflowError as exc:
+            raise ValueError("Muhurta weights would overflow score aggregation") from exc
+        if not math.isfinite(bound):
+            raise ValueError("Muhurta weights would overflow score aggregation")
+
+    @property
+    def rule_profile(self) -> str:
+        """Identity of the existing rule set, separate from configurable weights."""
+        return "moira.muhurta.existing_weighted_profile.v1"
+
+
+def _finite_number(name: str, value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite number, without coercion")
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{name} must be finite") from exc
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
 
 
 @dataclass(frozen=True, slots=True)
@@ -278,6 +324,10 @@ def tara_bala(
     Source: Navatara Chakra doctrine (Muhurta Chintamani; standard
     Panchanga Shuddhi practice).
     """
+    for name, value in (("janma_nakshatra_index", janma_nakshatra_index),
+                        ("target_nakshatra_index", target_nakshatra_index)):
+        if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 26:
+            raise ValueError(f"{name} must be an integer in [0, 26]")
     count = (target_nakshatra_index - janma_nakshatra_index) % 27 + 1
     tara_number = (count - 1) % 9 + 1
     polarity = _TARA_POLARITY[tara_number - 1]
@@ -355,6 +405,8 @@ def chandra_bala(
     Chandra Shuddhi doctrine (favorable 1/3/6/7/10/11, neutral 2/5,
     unfavorable 4/8/9/12 with the 8th as Chandrashtama).
     """
+    janma_moon_sidereal_lon = _finite_number("janma_moon_sidereal_lon", janma_moon_sidereal_lon)
+    transit_moon_sidereal_lon = _finite_number("transit_moon_sidereal_lon", transit_moon_sidereal_lon)
     janma_rashi = int(janma_moon_sidereal_lon % 360.0 // 30)
     transit_rashi = int(transit_moon_sidereal_lon % 360.0 // 30)
     house = (transit_rashi - janma_rashi) % 12 + 1
@@ -417,7 +469,11 @@ def personal_muhurta_score(
     subtract it; Janma tara (caution) and neutral chandra add nothing.
     Chandrashtama doubles the chandra penalty (strongest affliction).
     """
-    policy = policy or MuhurtaPolicy()
+    policy = MuhurtaPolicy() if policy is None else policy
+    if not isinstance(policy, MuhurtaPolicy):
+        raise ValueError("policy must be MuhurtaPolicy")
+    janma_moon_sidereal_lon = _finite_number("janma_moon_sidereal_lon", janma_moon_sidereal_lon)
+    transit_moon_sidereal_lon = _finite_number("transit_moon_sidereal_lon", transit_moon_sidereal_lon)
     base = score_muhurta(panchanga, policy)
 
     from .sidereal import _nakshatra_sector
@@ -527,7 +583,9 @@ def classify_muhurta(
     - BPHS Ch. 85 (Santhanam translation): Dagdha Yogas, Vishti Karana, Gandanta, etc.
     - Classical Muhurta tradition for Panchanga limb evaluation.
     """
-    policy = policy or MuhurtaPolicy()
+    policy = MuhurtaPolicy() if policy is None else policy
+    if not isinstance(policy, MuhurtaPolicy):
+        raise ValueError("policy must be MuhurtaPolicy")
 
     is_ashubha_yoga = panchanga.yoga.index in _ASHUBHA_YOGA_INDICES
 
@@ -577,7 +635,9 @@ def score_muhurta(
     Produce a numeric Muhurta score for the given moment.
     Higher is better. Uses researched classical factors from BPHS etc.
     """
-    policy = policy or MuhurtaPolicy()
+    policy = MuhurtaPolicy() if policy is None else policy
+    if not isinstance(policy, MuhurtaPolicy):
+        raise ValueError("policy must be MuhurtaPolicy")
     classification = classify_muhurta(panchanga, policy)
 
     breakdown: dict[str, float] = {}
@@ -738,52 +798,23 @@ def muhurta_scorer(
     chart: object,
     janma_nakshatra: str | None = None,
     policy: MuhurtaPolicy | None = None,
+    *,
+    janma_moon_sidereal_lon: float | None = None,
+    ayanamsa_system: str = "Lahiri",
+    reader=None,
 ) -> float:
+    """Scalar adapter over the inspectable chart scorer.
+
+    Natal Moon longitude is required for personalization. A legacy Nakshatra
+    name may corroborate it, but cannot supply a natal sign or Chandra Bala.
+    Missing chart inputs raise instead of returning a fabricated score.
     """
-    Convenience scorer compatible with the electional scanner.
-
-    Takes a chart (as produced by create_chart) and returns the Muhurta score.
-    This allows direct use as the `scorer` argument in find_electional_* functions.
-    """
-    # We need sun and moon tropical longitudes from the chart to compute Panchanga
-    planets = getattr(chart, "planets", {})
-    sun = planets.get("Sun")
-    moon = planets.get("Moon")
-
-    if sun is None or moon is None:
-        return -999.0  # invalid
-
-    sun_lon = float(getattr(sun, "longitude", 0.0))
-    moon_lon = float(getattr(moon, "longitude", 0.0))
-    jd = float(getattr(chart, "jd_ut", 0.0))
-
-    # Use default Lahiri for scoring unless policy specifies otherwise
-    ayanamsa = "Lahiri"
-    if policy and hasattr(policy, "ayanamsa_system"):
-        ayanamsa = policy.ayanamsa_system
-
-    from .panchanga import panchanga_at
-
-    panch = panchanga_at(
-        sun_tropical_lon=sun_lon,
-        moon_tropical_lon=moon_lon,
-        jd=jd,
-        ayanamsa_system=ayanamsa,
-    )
-
-    score = score_muhurta(panch, policy=policy)
-    return score.total
-
-
-# ------------------------------------------------------------------
-# Integration Helpers (using the existing general electional scanner)
-# ------------------------------------------------------------------
-
-from .electional import (
-    ElectionalPolicy,
-    ElectionalWindow,
-)
-from .chart import create_chart
+    from .muhurta_search import _natal_moon, muhurta_score_for_chart
+    natal = _natal_moon(janma_moon_sidereal_lon, janma_nakshatra)
+    return muhurta_score_for_chart(
+        chart, janma_moon_sidereal_lon=natal, ayanamsa_system=ayanamsa_system,
+        policy=policy, reader=reader,
+    ).score.total
 
 
 def find_best_muhurta_windows(
@@ -797,93 +828,49 @@ def find_best_muhurta_windows(
     min_score: float = 0.0,
     *,
     reader=None,
+    janma_moon_sidereal_lon: float | None = None,
+    ayanamsa_system: str = "Lahiri",
 ) -> list[tuple[ElectionalWindow, float]]:
+    """Compatibility tuple view of ``find_muhurta_windows``.
+
+    Coordinates remain validated for signature compatibility, but this admitted
+    geocentric/JD-weekday product evaluates no location, houses or Lagna factor.
+    ElectionalPolicy supplies cadence and an optional result cap only. Reject
+    incompatible frame, body, refinement and gap choices explicitly. The typed
+    search retains threshold brackets, peak receipts and truncation evidence.
     """
-    Finds the best Muhurta windows in a date range using full scoring.
-
-    This version actually computes Muhurta scores for candidate windows
-    (using the existing high-performance electional scanner + our scorer)
-    and returns only those meeting the min_score threshold, sorted best first.
-
-    Parameters
-    ----------
-    start_jd, end_jd : float
-        Julian Day search range.
-    latitude, longitude : float
-        Observer location (required for chart construction during scan).
-    janma_nakshatra : str | None
-        Optional birth Nakshatra name for Tara Bala.
-    muhurta_policy : MuhurtaPolicy | None
-        Scoring weights.
-    electional_policy : ElectionalPolicy | None
-        Scan parameters (step size, merge gap, etc.). Defaults to hourly steps.
-    min_score : float
-        Minimum acceptable Muhurta score. Windows below this are discarded.
-    reader
-        Optional SpkReader.
-
-    Returns
-    -------
-    list of (ElectionalWindow, best_score_in_window) tuples, sorted by score descending.
-    """
-    muhurta_policy = muhurta_policy or MuhurtaPolicy()
-    electional_policy = electional_policy or ElectionalPolicy(step_days=1.0/24.0)
-
-    # Create a scorer closure that works with the electional scanner's payload
-    def scorer(payload: object) -> float:
-        # payload can be a Chart (tropical) or ElectionalEvaluation (sidereal)
-        chart = getattr(payload, "chart", payload)
-        return muhurta_scorer(
-            chart=chart,
-            janma_nakshatra=janma_nakshatra,
-            policy=muhurta_policy,
-        )
-
-    # Use the general scanner with our Muhurta scorer
-    from .electional import find_electional_windows
-
-    # We use a very permissive predicate (accept everything) and let the scorer + post-filter do the work
-    def always_true(_: object) -> bool:
-        return True
-
-    raw_windows = find_electional_windows(
-        start_jd=start_jd,
-        end_jd=end_jd,
-        latitude=latitude,
-        longitude=longitude,
-        predicate=always_true,
-        policy=electional_policy,
-        reader=reader,
-        scorer=scorer,   # This makes the scanner attach scores to qualifying points
+    from .muhurta_search import _natal_moon, MuhurtaSearchPolicy, find_muhurta_windows
+    lat = _finite_number("latitude", latitude)
+    lon = _finite_number("longitude", longitude)
+    if not -90 <= lat <= 90 or not -180 <= lon <= 180:
+        raise ValueError("latitude/longitude are outside geographic bounds")
+    natal = _natal_moon(janma_moon_sidereal_lon, janma_nakshatra)
+    scan = ElectionalPolicy() if electional_policy is None else electional_policy
+    if not isinstance(scan, ElectionalPolicy):
+        raise ValueError("electional_policy must be ElectionalPolicy")
+    step = _finite_number("step_days", scan.step_days)
+    gap = _finite_number("merge_gap_days", scan.effective_merge_gap)
+    if not step <= gap < 2 * step:
+        raise ValueError("Muhurta requires consecutive samples; merge gap must be >= step and < 2 steps")
+    if scan.boundary_refine_steps != 0:
+        raise ValueError("Muhurta sampled search does not admit boundary refinement")
+    if scan.bodies is not None and (len(scan.bodies) != 2 or set(scan.bodies) != {"Sun", "Moon"}):
+        raise ValueError("Muhurta sampled search requires exactly Sun and Moon")
+    if scan.zodiac_frame == "sidereal" and (
+        scan.ayanamsa_system != ayanamsa_system or scan.ayanamsa_mode != "true"
+    ):
+        raise ValueError("ElectionalPolicy sidereal frame conflicts with Muhurta ayanamsa")
+    search = find_muhurta_windows(start_jd, end_jd,
+        janma_moon_sidereal_lon=natal, reader=reader,
+        policy=MuhurtaSearchPolicy(
+            ayanamsa_system=ayanamsa_system,
+            muhurta_policy=MuhurtaPolicy() if muhurta_policy is None else muhurta_policy,
+            step_days=step, min_score=min_score,
+            max_results=128 if scan.max_windows is None else scan.max_windows,
+        ),
     )
-
-    # Post-process: for each window, take the best score inside it and filter
-    scored_windows: list[tuple[ElectionalWindow, float]] = []
-
-    for win in raw_windows:
-        if not win.qualifying_jds:
-            continue
-
-        # The scanner with scorer returns windows, but scores are not directly on the window object.
-        # We re-score the best point inside the window as a reliable max.
-        best_score = -999.0
-        for jd in win.qualifying_jds:
-            # Reconstruct a minimal chart at this jd to score (lightweight)
-            chart = create_chart(
-                jd_ut=jd,
-                latitude=latitude,
-                longitude=longitude,
-                house_system=electional_policy.house_system,
-                bodies=electional_policy.bodies,
-                reader=reader,
-            )
-            sc = muhurta_scorer(chart, janma_nakshatra=janma_nakshatra, policy=muhurta_policy)
-            if sc > best_score:
-                best_score = sc
-
-        if best_score >= min_score:
-            scored_windows.append((win, best_score))
-
-    # Sort best first
-    scored_windows.sort(key=lambda x: x[1], reverse=True)
-    return scored_windows
+    return [(ElectionalWindow(
+        jd_start=w.jd_start, jd_end=w.jd_end,
+        duration_hours=(w.jd_end - w.jd_start) * 24,
+        qualifying_jds=w.qualifying_jds,
+    ), w.peak.score.total) for w in search.windows]

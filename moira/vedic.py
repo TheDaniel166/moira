@@ -510,6 +510,10 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .muhurta_search import (
+    MuhurtaSearchPolicy, MuhurtaMomentScore, MuhurtaSearchWindow, MuhurtaSearchResult,
+    MuhurtaResourceError, MuhurtaCoverageError, muhurta_score_for_chart, find_muhurta_windows,
+)
 
 # Existing curated upagrahas products.
 from .upagrahas import (
@@ -922,6 +926,7 @@ _VEDIC_OWN: list[str] = [
     "chandra_bala",
     "PersonalMuhurtaScore",
     "personal_muhurta_score",
+    "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
     # upagrahas completion
     "UpagrahaPolicy",
     "SunBasedUpagrahas",

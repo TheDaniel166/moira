@@ -28,6 +28,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Daily Panchanga](02_standards/DAILY_PANCHANGA_STANDARD.md)**
 - **[Lunar Months & Festival Policy](02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md)**
 - **[Date-derived Gochar](02_standards/GOCHARA_DATE_DERIVED_STANDARD.md)**
+- [Personalized Muhurta policy and sampled search](02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md)
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
 - **[Migrating from Swiss Ephemeris](02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md)**

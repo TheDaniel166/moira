@@ -2,10 +2,14 @@
 
 Version: 0.1
 Date: 2026-06-14
-Status: implemented and admitted
+Status: historical initial admission; current contract superseded
 Scope: bounded REST admission plan for Vedic Muhurta moment classification and score
 
-This design follows `wiki/02_standards/MUHURTA_BACKEND_STANDARD.md`.
+This design records the initial June four-route admission. Its five-weight,
+no-personal/no-search restrictions are historical. The current VED-004/006
+contract is `wiki/02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md`; the backend
+standard points to that owning contract. Do not reuse this design as the current
+route inventory or policy admission boundary.
 
 P-GAP-02 evaluates the root-exported Muhurta surfaces:
 

@@ -38,12 +38,7 @@ FAMILY_LABELS: dict[str, str] = {
 }
 
 _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
-    {
-        "name": "gochara",
-        "x-displayName": "Gochara Phala",
-        "description": "Source-bound supplied and date-derived sidereal snapshots, epoch/frame and raw natal BAV evidence, Vedha profiles and doctrine admission catalogue.",
-        "x-family": "classical-vedic",
-    },
+
     {
         "name": "meta",
         "x-displayName": "Meta",
@@ -324,9 +319,15 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "gochara",
+        "x-displayName": "Gochara Phala",
+        "description": "Source-bound supplied and date-derived sidereal snapshots, epoch/frame and raw natal BAV evidence, Vedha profiles and doctrine admission catalogue.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "muhurta",
         "x-displayName": "Muhurta",
-        "description": "Vedic Muhurta direct, chart-backed, and natal-personalized (Tara/Chandra Bala) classification and score surfaces.",
+        "description": "Vedic Muhurta direct, chart-backed and natal-personalized scores, plus bounded sampled search with explicit JD-weekday Vara and threshold evidence.",
         "x-family": "classical-vedic",
     },
     {

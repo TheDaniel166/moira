@@ -23,6 +23,15 @@ import pytest
 
 
 _EXPECTED_ROOT_PUBLIC_NAMES = {
+    # VED-004/006 bounded composition admission.
+    "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow",
+    "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError",
+    "muhurta_score_for_chart", "find_muhurta_windows",
+    # Published dated-Gochar package cbb4abc; its static guard was not reconciled.
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch",
+    "GocharaDateResult", "GocharaResourceError", "GocharaCoverageError",
+    "gochara_at", "gochara_for_datetimes",
     "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
     "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
 
@@ -1751,6 +1760,12 @@ _EXPECTED_SKY_GALACTIC_PUBLIC_NAMES = set(sky_galactic.__all__)
 _EXPECTED_SKY_EVENTS_PUBLIC_NAMES = set(sky_events.__all__)
 _EXPECTED_SKY_ECLIPSE_PUBLIC_NAMES = set(sky_eclipse.__all__)
 _EXPECTED_SKY_OCCULTATION_PUBLIC_NAMES = set(sky_occultation.__all__)
+
+
+_EXPECTED_MOIRA_METHODS.update({
+    "find_muhurta_windows", "muhurta_score_for_chart",
+    "gochara_at", "gochara_for_datetimes",
+})
 
 
 def test_root_public_surface_snapshot_is_exact() -> None:

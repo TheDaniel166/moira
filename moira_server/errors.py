@@ -38,6 +38,7 @@ from moira import (
 
 from .config import ServerConfigurationError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
+from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -375,6 +376,20 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def handle_gochara_coverage(request: Request, exc: GocharaCoverageError) -> JSONResponse:
         return JSONResponse(status_code=422, content=_error_body(
             error_code="gochara_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(MuhurtaResourceError)
+    async def handle_muhurta_resource(request: Request, exc: MuhurtaResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="muhurta_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(MuhurtaCoverageError)
+    async def handle_muhurta_coverage(request: Request, exc: MuhurtaCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="muhurta_date_outside_coverage", message=str(exc),
             category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
         ))
 

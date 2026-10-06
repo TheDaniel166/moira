@@ -719,6 +719,22 @@ def panchanga_at(
 
     sun_sid  = tropical_to_sidereal(sun_tropical_lon,  jd, system=ayanamsa_system)
     moon_sid = tropical_to_sidereal(moon_tropical_lon, jd, system=ayanamsa_system)
+    naks = nakshatra_of(moon_tropical_lon, jd, ayanamsa_system=ayanamsa_system)
+    return _panchanga_from_resolved_longitudes(
+        sun_tropical_lon, moon_tropical_lon, sun_sid, moon_sid, jd,
+        ayanamsa_system, naks,
+    )
+
+
+def _panchanga_from_resolved_longitudes(
+    sun_tropical_lon, moon_tropical_lon, sun_sid, moon_sid, jd,
+    ayanamsa_system, naks,
+) -> PanchangaResult:
+    """Shared limb arithmetic after a composition owns its clock and frame.
+
+    JD still owns the instant weekday. This does not admit sunrise-owned Vara.
+    The supplied Nakshatra must describe the same resolved sidereal Moon.
+    """
 
     # ------------------------------------------------------------------
     # Tithi  (Moon–Sun elongation / 12°)
@@ -749,7 +765,6 @@ def panchanga_at(
     # ------------------------------------------------------------------
     # Nakshatra  (delegates entirely to moira.sidereal)
     # ------------------------------------------------------------------
-    naks = nakshatra_of(moon_tropical_lon, jd, ayanamsa_system=ayanamsa_system)
 
     # ------------------------------------------------------------------
     # Yoga  ((Sun + Moon sidereal sum) / (360/27))

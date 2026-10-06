@@ -150,7 +150,7 @@ def test_panchanga_direct_route_rejects_non_finite_inputs(client_with_engine: Te
         },
     )
 
-    _assert_validation_envelope(response, message_fragment="numeric Panchanga inputs")
+    _assert_validation_envelope(response, message_fragment="valid number")
 
 
 def test_panchanga_chart_route_rejects_incomplete_observer_pair(

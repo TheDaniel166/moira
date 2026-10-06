@@ -1494,6 +1494,10 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .muhurta_search import (
+    MuhurtaSearchPolicy, MuhurtaMomentScore, MuhurtaSearchWindow, MuhurtaSearchResult,
+    MuhurtaResourceError, MuhurtaCoverageError, muhurta_score_for_chart, find_muhurta_windows,
+)
 from .harmograms import (
     HarmogramChartDomain,
     HarmogramIntensityFamily,
@@ -2803,6 +2807,7 @@ __all__ = [
     "TARA_NAMES", "TaraBala", "tara_bala",
     "ChandraBala", "chandra_bala",
     "PersonalMuhurtaScore", "personal_muhurta_score",
+    "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
     # Comets
     "CometData", "COMET_NAIF",
     "comet_at", "all_comets_at", "list_comets",

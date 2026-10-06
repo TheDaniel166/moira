@@ -30,11 +30,11 @@ _EXPOSED_POLICY_FIELDS = [
     "weight_nakshatra",
     "weight_yoga",
     "weight_karana",
+    "weight_tara",
+    "weight_chandra",
 ]
 _OMITTED_POLICY_FIELDS = [
     "use_classical_ashubha_yoga",
-    "janma_nakshatra",
-    "activity",
 ]
 
 
@@ -47,18 +47,26 @@ def _muhurta_policy_from_request(request: MuhurtaPolicyRequest | None) -> Muhurt
         weight_nakshatra=request.weight_nakshatra,
         weight_yoga=request.weight_yoga,
         weight_karana=request.weight_karana,
+        weight_tara=request.weight_tara,
+        weight_chandra=request.weight_chandra,
     )
 
 
-def _policy_response(policy: MuhurtaPolicy) -> MuhurtaPolicyResponse:
+def _policy_response(policy: MuhurtaPolicy, *, personal=False, classification=False) -> MuhurtaPolicyResponse:
     return MuhurtaPolicyResponse(
+        rule_profile=policy.rule_profile,
         weight_tithi=policy.weight_tithi,
         weight_vara=policy.weight_vara,
         weight_nakshatra=policy.weight_nakshatra,
         weight_yoga=policy.weight_yoga,
         weight_karana=policy.weight_karana,
+        weight_tara=policy.weight_tara,
+        weight_chandra=policy.weight_chandra,
         exposed_policy_fields=list(_EXPOSED_POLICY_FIELDS),
         omitted_policy_fields=list(_OMITTED_POLICY_FIELDS),
+        applied_policy_fields=([] if classification else
+                              list(_EXPOSED_POLICY_FIELDS if personal else _EXPOSED_POLICY_FIELDS[:5])),
+        reserved_policy_fields=["use_classical_ashubha_yoga"],
     )
 
 
@@ -143,12 +151,14 @@ def _provenance(
         search_semantics="not_admitted",
         activity_guidance="not_admitted",
         score_scale="engine_raw_unbounded" if score else "not_applicable",
+        vara_basis="jd_weekday" if panchanga_source == "direct_inputs" else "civil_utc_weekday",
         stage_sequence=[
             "input_validation",
             "panchanga_derivation",
             "muhurta_policy_binding",
             "muhurta_classification",
             *(["muhurta_scoring"] if score else []),
+            *(["tara_bala_evaluation", "chandra_bala_evaluation"] if entrypoint == "personal_muhurta_score" else []),
             "response_serialization",
         ],
     )
@@ -165,7 +175,7 @@ def _classification_envelope(
     return MuhurtaClassificationEnvelopeResponse(
         request=request,
         panchanga=serialize_panchanga_result(panchanga),
-        policy=_policy_response(policy),
+        policy=_policy_response(policy, classification=True),
         classification=_classification_response(classification),
         provenance=_provenance(entrypoint="classify_muhurta", panchanga_source=panchanga_source, score=False),
     )
@@ -257,8 +267,11 @@ def compute_muhurta_personal_score(request) -> MuhurtaPersonalScoreResponse:
 
     panchanga = compute_panchanga_direct(_direct_panchanga_request(request))
     policy = _muhurta_policy_from_request(request.muhurta_policy)
+    # The nested Panchanga policy has precedence over the top-level choice.
+    # Keep the canonical longitude (before Nakshatra's one-ulp sector recovery)
+    # so Chandra's whole-sign boundary semantics stay unchanged.
     transit_moon_sidereal = tropical_to_sidereal(
-        request.moon_tropical_lon, request.jd, system=request.ayanamsa_system,
+        request.moon_tropical_lon, request.jd, system=panchanga.ayanamsa_system,
     )
     result = personal_muhurta_score(
         panchanga,
@@ -267,6 +280,11 @@ def compute_muhurta_personal_score(request) -> MuhurtaPersonalScoreResponse:
         policy,
     )
     return MuhurtaPersonalScoreResponse(
+        policy=_policy_response(policy, personal=True),
+        panchanga=serialize_panchanga_result(panchanga),
+        janma_moon_sidereal_lon=request.janma_moon_sidereal_lon,
+        transit_moon_sidereal_lon=transit_moon_sidereal,
+        provenance=_provenance(entrypoint="personal_muhurta_score", panchanga_source="direct_inputs", score=True),
         total=result.total,
         breakdown=dict(result.breakdown),
         classification=_classification_response(result.classification),
