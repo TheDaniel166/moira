@@ -1693,6 +1693,20 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 _EXPECTED_MOIRA_METHODS.add("orbit_class")
 _EXPECTED_MOIRA_METHODS.add("orbit_classes_at")
 
+# Additive Gochara snapshot constitutional public contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "GOCHARA_PROFILE", "GOCHARA_PLANETS", "GocharaVedhaStatus",
+    "GocharaPosition", "GocharaVedhaWitness", "GocharaPlanetResult",
+    "GocharaResult", "gochara_from_positions",
+    "DEFAULT_GOCHARA_POLICY", "GocharaSourceProfile", "GocharaVedhaMode",
+    "GocharaCompleteness", "GocharaBavMode", "GocharaAdmissionStatus",
+    "GocharaDoctrineOption", "GocharaPolicy", "gochara_doctrine_options",
+    "GocharaBaselineClass", "GocharaBavAvailability", "GocharaVedhaRelationClass",
+    "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
+    "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
+    "gochara_local_profiles", "gochara_subsystem_profile",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)
