@@ -10,6 +10,11 @@ The engine does not decide which tradition is universally correct. `GocharaPolic
 
 This standard freezes the bounded snapshot domain. Nodes, counter-Vedha, sign-part timing, dasha or dignity overrides, nakshatra/chakra techniques, Murthi, dated forecasts and remedies remain independent admissions. Completion of the constitutional process for this core does not imply implementation of those extensions.
 
+VED-017 adds a separately owned [date-derived compositor](GOCHARA_DATE_DERIVED_STANDARD.md).
+It derives complete natal/transit inputs with explicit clock/frame evidence
+and optional same-birth raw BAV, then calls this unchanged judgment core.
+Ingress searches and dated forecast windows remain open.
+
 ## Authority and corpus
 
 The executable profile is `phaladeepika_26_sastri_1950_seven_classical`: Mantreswara, *Phaladeepika*, V. Subrahmanya Sastri, second edition 1950. [Primary scan](https://www.wisdomlib.org/uploads/ocr/essays/phaladeepika/phaladeepika-2nd-ed-1950-by-v-subrahmanya-sastri-text.pdf), SHA-256 `f4b0b71735c788457a4fb4bf98524c058af89b095a72617bcf50546578018fd1`.

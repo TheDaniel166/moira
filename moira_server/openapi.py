@@ -41,7 +41,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "gochara",
         "x-displayName": "Gochara Phala",
-        "description": "Source-bound sidereal snapshots, Vedha evidence, profiles and doctrine admission catalogue.",
+        "description": "Source-bound supplied and date-derived sidereal snapshots, epoch/frame and raw natal BAV evidence, Vedha profiles and doctrine admission catalogue.",
         "x-family": "classical-vedic",
     },
     {

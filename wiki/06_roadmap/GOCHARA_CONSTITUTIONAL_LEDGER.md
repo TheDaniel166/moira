@@ -70,6 +70,17 @@ The user authorized committing and pushing this completed work to engine `main` 
 
 ## Boundaries and future admission
 
-The 30 catalogue entries cover sixteen topics. Executable scope controls do not pretend to implement alternative textual schools. The source profile, natal-Moon reference and conservative classical participant universe remain inseparable. Attestation, disagreement, unknown provenance and product scope are visible status categories.
+The original 30 catalogue entries covered sixteen topics. Executable scope controls do not pretend to implement alternative textual schools. The source profile, natal-Moon reference and conservative classical participant universe remain inseparable. Attestation, disagreement, unknown provenance and product scope are visible status categories.
 
 Future source profiles must carry a complete favorable/indication/relation corpus. Nodal baseline, blocker participation, Ketu narrative, exemptions and mean/true astronomy must be considered separately. Counter-Vedha needs explicit relief examples and overlap handling. Strength, dasha and dignity context must retain distinct testimony. Forecasts require a real sidereal ingress solver partitioned on subject and blocker events, including retrograde re-entry. No invented score closes any of these admissions.
+
+## VED-017 bounded date composition
+
+The subsequent [date-derived standard](../02_standards/GOCHARA_DATE_DERIVED_STANDARD.md)
+admits complete reader-bound natal/transit inputs and optional raw natal BAV
+composition. It adds eleven curated names and two engine-scope catalogue
+records (32 total, still sixteen topics), with two dated REST routes. The
+original 28-name core and eleven-name policy owner remain unchanged. The
+[new validation receipt](../03_validation/GOCHARA_DATE_DERIVED_VALIDATION_2026-10-06.md)
+records its separate verification. No new textual school, BAV threshold,
+ingress solver or forecast window follows from this composition admission.

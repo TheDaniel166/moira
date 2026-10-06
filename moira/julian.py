@@ -2584,11 +2584,22 @@ def greenwich_mean_sidereal_time(jd_ut: float) -> float:
     Side effects:
         None.
     """
-    D = jd_ut - J2000           # days from J2000.0
+    # Preserve the historical public one-epoch contract. Reader-bound
+    # composition uses the private two-scale entry point below.
+    return _greenwich_mean_sidereal_time_at_tt(jd_ut, jd_ut)
+
+
+def _greenwich_mean_sidereal_time_at_tt(jd_ut1: float, jd_tt: float) -> float:
+    """IAU 2006 GMST: ERA at UT1, equinox precession polynomial at TT.
+
+    Source: SOFA/ERFA gmst06 (Capitaine et al. 2003). No clock conversion is
+    performed here; a reader-bound caller owns both coordinates.
+    """
+    D = jd_tt - J2000           # TT days from J2000.0
     T = D / JULIAN_CENTURY       # Julian centuries
 
     # Earth Rotation Angle (ERA) — IAU 2000 definition of UT1
-    era_deg = earth_rotation_angle(jd_ut)
+    era_deg = earth_rotation_angle(jd_ut1)
 
     # Polynomial correction (arcseconds → degrees)
     poly_arcsec = (  0.014506
@@ -2639,6 +2650,20 @@ def _gast_complementary_terms(jd_ut: float) -> float:
            - 0.00000087 * T * math.sin(Om))
 
     return ct / 3600.0   # arcseconds → degrees
+
+
+def _local_sidereal_time_at_tt(jd_ut1: float, jd_tt: float, longitude: float,
+                               nutation_longitude: float, mean_obliquity: float) -> float:
+    """Reader-bound LAST with TT equinox terms and UT1 Earth rotation.
+
+    Equation of the equinoxes uses mean obliquity (SOFA/ERFA ee00), while
+    horizon/ecliptic geometry separately uses true obliquity. Reuses Moira's
+    existing complementary-term approximation, evaluated here at TT.
+    """
+    gmst = _greenwich_mean_sidereal_time_at_tt(jd_ut1, jd_tt)
+    ee = (nutation_longitude * math.cos(math.radians(mean_obliquity))
+          + _gast_complementary_terms(jd_tt))
+    return (gmst + ee + longitude) % 360.0
 
 
 @accelerate("apparent_sidereal_time")

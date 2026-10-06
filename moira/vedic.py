@@ -325,6 +325,11 @@ from .gochara import (
     GocharaNetworkNode, GocharaVedhaNetwork, GocharaSubsystemProfile,
     gochara_local_profiles, gochara_subsystem_profile,
 )
+from .gochara_dated import (
+    GocharaNatalBavMode, GocharaDatePolicy, DEFAULT_GOCHARA_DATE_POLICY,
+    GocharaBirthLocation, GocharaDatedPosition, GocharaEpoch, GocharaDateResult,
+    GocharaResourceError, GocharaCoverageError, gochara_at, gochara_for_datetimes,
+)
 
 # ── Shadbala ─────────────────────────────────────────────────────────────
 from .shadbala import (
@@ -762,6 +767,9 @@ _VEDIC_OWN: list[str] = [
     "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
     "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
     "gochara_local_profiles", "gochara_subsystem_profile",
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch", "GocharaDateResult",
+    "GocharaResourceError", "GocharaCoverageError", "gochara_at", "gochara_for_datetimes",
     # Shadbala
     "NAISARGIKA_BALA",
     "REQUIRED_RUPAS",

@@ -150,7 +150,7 @@ def test_catalogue_and_openapi_discovery_are_complete(client):
     assert all(schema["components"]["schemas"][n]["additionalProperties"] is False for n in ["GocharaSnapshotRequest", "GocharaPolicyRequest"])
     assert schema["components"]["schemas"]["GocharaDoctrineOptionResponse"]["properties"]["status"]
     discovery = client.get("/v1/meta/routes?tag=gochara").json()
-    assert discovery["count"] == 3
+    assert discovery["count"] == 5
     assert all(r["family"] == "classical-vedic" for r in discovery["routes"])
 
 

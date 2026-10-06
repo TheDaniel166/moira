@@ -37,6 +37,7 @@ from moira import (
 )
 
 from .config import ServerConfigurationError
+from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -362,6 +363,20 @@ _LUNAR_ORIENTATION_ERROR_POLICIES = (
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
+
+    @app.exception_handler(GocharaResourceError)
+    async def handle_gochara_resource(request: Request, exc: GocharaResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="gochara_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(GocharaCoverageError)
+    async def handle_gochara_coverage(request: Request, exc: GocharaCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="gochara_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
 
     @app.exception_handler(RequestValidationError)
     async def handle_request_validation_error(

@@ -224,7 +224,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(deep_sky_router)    # Offline non-Solar-System coordinate anchors
     app.include_router(manazil_router)      # Phase-11 Arabic lunar mansion catalog/doctrine surface
     app.include_router(muhurta_router)      # P-GAP-02 Vedic Muhurta instant classification/score surface
-    app.include_router(gochara_router)     # Source-bound supplied-position Gochara snapshots
+    app.include_router(gochara_router)     # Supplied and reader-bound dated Gochara snapshots
     app.include_router(sade_sati_router)   # Vedic Phase-2: Sade Sati status + kernel-timed windows
     app.include_router(yogas_router)        # Vedic Phase-2 flagship: yoga engine (proof-object evaluation)
     app.include_router(upagrahas_router)    # Vedic Phase-2: Gulika/Mandi kalavelas + Sun-derived upagrahas

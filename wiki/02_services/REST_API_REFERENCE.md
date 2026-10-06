@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 478
-- Registered OpenAPI operations: 478 (GET 37, POST 441)
+- Registered OpenAPI paths: 480
+- Registered OpenAPI operations: 480 (GET 37, POST 443)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 474
+- Versioned `/v1` paths: 476
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -32,10 +32,12 @@ have no registered route.
 
 ## Present Expansion State
 
-Gochara supplied-position evaluation, integrated profiles and the cited doctrine
-catalogue are registered under `/v1/gochara`. See the
+Gochara supplied-position evaluation, integrated profiles, reader-bound epoch
+and aware-datetime composition, and the cited doctrine catalogue are registered
+under `/v1/gochara`. See the
 [Gochara REST standard](../02_standards/GOCHARA_REST_STANDARD.md) for policies,
-strict numeric/BAV input rules, partial observation truth and source limitations.
+strict numeric/BAV input rules, clock/frame receipts, resource outcomes,
+partial observation truth and source limitations. Dated forecast windows remain open.
 
 The 6 October 2026 Vedic surface closure also strengthens the existing direct
 yoga, avastha, extended Jaimini, Vimshopaka, Kakshya and Shodhya requests. Their
@@ -3389,6 +3391,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
 | `GET` | `/v1/gochara/doctrine-options` | gochara | `doctrine_route_v1_gochara_doctrine_options_get` |
 | `POST` | `/v1/gochara/evaluate` | gochara | `evaluate_route_v1_gochara_evaluate_post` |
+| `POST` | `/v1/gochara/from-datetimes` | gochara | `datetimes_route_v1_gochara_from_datetimes_post` |
+| `POST` | `/v1/gochara/from-epochs` | gochara | `epochs_route_v1_gochara_from_epochs_post` |
 | `POST` | `/v1/gochara/profile` | gochara | `profile_route_v1_gochara_profile_post` |
 | `POST` | `/v1/harmograms/intensity-spectrum` | harmograms | `harmogram_intensity_spectrum_route_v1_harmograms_intensity_spectrum_post` |
 | `POST` | `/v1/harmograms/projection` | harmograms | `harmogram_projection_route_v1_harmograms_projection_post` |

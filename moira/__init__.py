@@ -44,6 +44,11 @@ from .gochara import (
     GocharaNetworkNode, GocharaVedhaNetwork, GocharaSubsystemProfile,
     gochara_local_profiles, gochara_subsystem_profile,
 )
+from .gochara_dated import (
+    GocharaNatalBavMode, GocharaDatePolicy, DEFAULT_GOCHARA_DATE_POLICY,
+    GocharaBirthLocation, GocharaDatedPosition, GocharaEpoch, GocharaDateResult,
+    GocharaResourceError, GocharaCoverageError, gochara_at, gochara_for_datetimes,
+)
 
 if _find_planetary_kernel() is None:
     print(
@@ -1810,6 +1815,9 @@ __all__ = [
     "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
     "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
     "gochara_local_profiles", "gochara_subsystem_profile",
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch", "GocharaDateResult",
+    "GocharaResourceError", "GocharaCoverageError", "gochara_at", "gochara_for_datetimes",
     # Upagrahas
     "UpagrahaPolicy",
     "SunBasedUpagrahas",

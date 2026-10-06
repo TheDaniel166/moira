@@ -301,10 +301,14 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 The unified surface also includes the already-curated yoga, avastha, extended
 Jaimini, Muhurta, upagraha and Sade Sati families; Vimshopaka/Vargottama,
 Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara
-snapshot and doctrine catalogue. Imports share the owning engine objects.
+snapshot and doctrine catalogue, plus reader-bound epoch/aware-datetime Gochar
+composition. See the [dated Gochar standard](GOCHARA_DATE_DERIVED_STANDARD.md)
+for `gochara_at`, `gochara_for_datetimes`, astronomical policies, BAV provenance
+and typed errors. Imports share the owning engine objects.
 Varga products already exposed through the facade are also available at the
-package root. This curation does not admit standalone Sayanadi, the unfinished
-daily almanac, special Lagnas, or Kalachakra. See the
+package root. This curation does not admit standalone Sayanadi,
+special Lagnas or Kalachakra. Daily sunrise-owned Panchanga has its separately
+admitted policy and [standard](DAILY_PANCHANGA_STANDARD.md). See the
 [Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
 for the completed package and the
 [Vedic remaining work register](../06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md)

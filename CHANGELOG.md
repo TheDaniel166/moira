@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Date-derived Gochar (VED-017)**: complete reader-bound natal/transit
+  snapshots through `gochara_at`, `gochara_for_datetimes` and matching Moira
+  methods. Results preserve separate UT1/TT/TDB clocks, serving integration,
+  true ayanamsas and all tropical/sidereal inputs. Optional raw natal BAV
+  derives from the seven natal signs and birth Lagna using the existing Raman
+  table encoding. New `/v1/gochara/from-epochs` and `/from-datetimes` routes
+  enforce strict inputs and distinguish coverage from unavailable resources.
+  Live star anchors fail explicitly when unavailable; dated windows remain open.
+
 ### Fixed
 - **Sidereal general precession**: polynomial ayanamsas now use IAU 2006
   general precession in longitude `p_A`, replacing the distinct

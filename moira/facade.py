@@ -993,6 +993,11 @@ from .gochara import (
     GocharaNetworkNode, GocharaVedhaNetwork, GocharaSubsystemProfile,
     gochara_local_profiles, gochara_subsystem_profile,
 )
+from .gochara_dated import (
+    GocharaNatalBavMode, GocharaDatePolicy, DEFAULT_GOCHARA_DATE_POLICY,
+    GocharaBirthLocation, GocharaDatedPosition, GocharaEpoch, GocharaDateResult,
+    GocharaResourceError, GocharaCoverageError, gochara_at, gochara_for_datetimes,
+)
 from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_drekkana
 from .astrocartography import (
     ACGLine,
@@ -2454,6 +2459,9 @@ __all__ = [
     "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
     "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
     "gochara_local_profiles", "gochara_subsystem_profile",
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch", "GocharaDateResult",
+    "GocharaResourceError", "GocharaCoverageError", "gochara_at", "gochara_for_datetimes",
     # Upagrahas
     "UpagrahaPolicy", "SunBasedUpagrahas", "KalavelaUpagraha",
     "KalavelaResult", "sun_based_upagrahas", "kalavela_upagrahas",

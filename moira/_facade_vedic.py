@@ -20,6 +20,7 @@ _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _lunar_month = importlib.import_module("moira.lunar_month")
+_gochara_dated = importlib.import_module("moira.gochara_dated")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
@@ -222,6 +223,22 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def lunar_month_at(self, jd_ut1: float, *, policy=None):
         """Source-declared lunation context with this engine's reader."""
         return _lunar_month.lunar_month_at(jd_ut1, policy=policy, reader=self._reader)
+
+    def gochara_at(self, natal_jd_ut1: float, transit_jd_ut1: float, *,
+                   birth_location=None, policy=None):
+        """Complete date-derived Gochar with this engine's reader at both epochs."""
+        return _gochara_dated.gochara_at(
+            natal_jd_ut1, transit_jd_ut1, birth_location=birth_location,
+            policy=policy, reader=self._reader,
+        )
+
+    def gochara_for_datetimes(self, natal_dt: datetime, transit_dt: datetime, *,
+                             birth_location=None, policy=None):
+        """Gochar from two aware civil instants, converted once to UT1."""
+        return _gochara_dated.gochara_for_datetimes(
+            natal_dt, transit_dt, birth_location=birth_location,
+            policy=policy, reader=self._reader,
+        )
 
     def daily_panchanga(self, local_date: date, latitude: float, longitude: float,
                         *, timezone: str, policy=None):

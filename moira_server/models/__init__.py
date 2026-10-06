@@ -1043,6 +1043,11 @@ from .visibility import (
     VisibilityPolicyRequest,
 )
 
+from .gochara_dated import (
+    GocharaBirthLocationRequest, GocharaDatePolicyRequest, GocharaEpochRequest,
+    GocharaDatetimeRequest, GocharaDatePolicyResponse, GocharaDatedPositionResponse,
+    GocharaEpochResponse, GocharaBirthLocationResponse, GocharaDateResponse,
+)
 from .gochara import (
     GocharaPolicyRequest, GocharaSnapshotRequest, GocharaDoctrineOptionResponse,
     GocharaDoctrineOptionsResponse, GocharaPolicyResponse, GocharaPositionResponse,
@@ -1052,6 +1057,9 @@ from .gochara import (
 )
 
 __all__ = [
+    "GocharaBirthLocationRequest", "GocharaDatePolicyRequest", "GocharaEpochRequest",
+    "GocharaDatetimeRequest", "GocharaDatePolicyResponse", "GocharaDatedPositionResponse",
+    "GocharaEpochResponse", "GocharaBirthLocationResponse", "GocharaDateResponse",
     "LunarMonthPolicyRequest", "LunarMonthRequest", "CalendarBoundaryResponse", "LunarMonthLabelResponse", "LunarLunationResponse", "LunarMonthProvenanceResponse", "LunarMonthResponse",
     "GocharaPolicyRequest", "GocharaSnapshotRequest", "GocharaDoctrineOptionResponse",
     "GocharaDoctrineOptionsResponse", "GocharaPolicyResponse", "GocharaPositionResponse",
