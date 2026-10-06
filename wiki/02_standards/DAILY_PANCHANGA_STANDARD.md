@@ -268,3 +268,14 @@ roadmap/audit edits were not expanded in this package. Index, commits, remotes,
 version, dependencies, generated wiki, other repositories/worktrees and website
 remain unchanged. No release, predictive-validity claim, all-tradition Panchanga
 certification or broad numerical/native parity claim is made.
+
+## Source publication, 6 October 2026
+
+The user authorized publication after local completion. The generated wiki
+was committed/pushed first at `4c12d88b9825d562be38f7d3b67c37a703449735`,
+then engine/canonical documentation/gitlink at
+`0b34f22841eb6b5f7dace9128b4d01cc11c480d3`; exact remote refs were verified.
+The earlier local-only receipts above describe their verification stage.
+Subsequent lunar-month and festival work is governed separately by
+[LUNAR_MONTH_AND_FESTIVAL_POLICY](LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
+Source publication does not imply runtime release or website deployment.

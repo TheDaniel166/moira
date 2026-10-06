@@ -26,6 +26,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Timing & Timelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
 - **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
 - **[Daily Panchanga](02_standards/DAILY_PANCHANGA_STANDARD.md)**
+- **[Lunar Months & Festival Policy](02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
 - **[Migrating from Swiss Ephemeris](02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md)**

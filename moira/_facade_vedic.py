@@ -19,6 +19,7 @@ _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
+_lunar_month = importlib.import_module("moira.lunar_month")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
@@ -67,7 +68,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     "risk": "medium",
     "api": {
         "frozen": [
-            "panchanga", "panchanga_profile", "daily_panchanga",
+            "panchanga", "panchanga_profile", "daily_panchanga", "lunar_month_at",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
             "pancha_pakshi_uromarisi_constitution_status",
             "pancha_pakshi_astronomical_paksha",
@@ -217,6 +218,10 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def panchanga_profile(self, result):
         """Build the Panchanga profile for an existing Panchanga result."""
         return _facade_module().panchanga_profile(result)
+
+    def lunar_month_at(self, jd_ut1: float, *, policy=None):
+        """Source-declared lunation context with this engine's reader."""
+        return _lunar_month.lunar_month_at(jd_ut1, policy=policy, reader=self._reader)
 
     def daily_panchanga(self, local_date: date, latitude: float, longitude: float,
                         *, timezone: str, policy=None):

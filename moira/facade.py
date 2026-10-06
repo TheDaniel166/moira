@@ -1547,6 +1547,10 @@ from .jaimini import (
     karaka_pair,
     validate_jaimini_output,
 )
+from .lunar_month import (
+    LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
+    LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
+)
 from .daily_panchanga import (
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -2832,6 +2836,8 @@ __all__ += [
     "TithiPaksha", "YogaClass", "KaranaType", "VaraLordType",
     "PanchangaPolicy", "TITHI_NAMES", "YOGA_NAMES", "KARANA_NAMES",
     "VARA_LORDS", "VARA_NAMES", "PanchangaElement", "PanchangaResult",
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",

@@ -9,10 +9,13 @@ This is the current index of remaining Vedic work. It supersedes the Vedic backl
 
 The [6 October surface receipt](VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md) records the completed export/Gochar REST package. It is a completion receipt, not the remaining-work list. Source presence, public export, REST exposure, source validation, release and deployment are distinct states.
 
-**Current local extension:** VED-015 is implemented and validated in the working
-tree under the user's authorization. Its
+**Current extensions:** VED-015 is committed and pushed in engine
+`0b34f22841eb6b5f7dace9128b4d01cc11c480d3` and wiki
+`4c12d88b9825d562be38f7d3b67c37a703449735`. Its
 [source, policy, engine/REST and verification receipt](../02_standards/DAILY_PANCHANGA_STANDARD.md)
-records the admitted daily contract. It is not yet committed, published or deployed.
+records the admitted daily contract. Source publication is not deployment.
+The user subsequently selected lunar-month and festival rules; VED-023/024
+below preserve their distinct admission and remaining-work boundaries.
 
 ## 1. Status and priority
 
@@ -23,12 +26,13 @@ records the admitted daily contract. It is not yet committed, published or deplo
 | `SOURCE_RESEARCH` | A recorded extension needs edition collation, named lineage, typed results and fixtures before implementation. An old source citation does not admit a rule. |
 | `EVIDENCE_REVIEW` | Existing code/evidence must be reconciled before a broader completion claim is justified. |
 | `CANDIDATE` | Optional expansion recorded for a scope decision; not a committed delivery obligation. |
+| `BOUNDED_ADMISSION` | A finite contract is implemented, while named exceptional rules or authority reconciliation remain open. |
 | `LOCAL_COMPLETE` | Authorized engine/public/REST package implemented and validated locally; publication, release and adoption remain distinct. |
 
 `P1` closes gaps in existing products; `P2` deepens existing families or provides the next foundational composition; `P3` is a larger separately scoped programme. These are sequencing suggestions, not effort estimates, dates or an instruction to resume paused work. No item must mechanically pass twelve identical phases: use the constitutional gates that apply to its actual object.
 
-There are **22 stable numbered work packages** below: **21 remain open and one
-(VED-015) is locally complete**. Several contain source-separated subquestions
+There are **24 stable numbered work packages** below: **23 remain open,
+including the bounded VED-023 admission, and VED-015 is complete and source-published**. Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
 counted as additional techniques.
@@ -65,7 +69,7 @@ The May tracker is retained as a research trail. Its claims that dosha detection
 | VED-012 | Source and implement selected extended yoga rules: BPHS 41.2–15 per-Lagna wealth cases, further royal-birth associations, and JP 7.14 Navamsha-based Neecha Bhanga. Resolve the exact Raman Part II citation, edition and accessibility before relying on it. Preserve per-rule evidence, lineage alternatives and cancellation conditions; add chart/Varga joins and REST inputs only when the selected rule needs them. | The [historical Phase 2 enrichment list](vedic_jyotish_phase2_gaps.md) records these leads. The existing [yoga engine](../../moira/yogas.py) is present and proof-bearing; its JP 7.14 source note explicitly says that Navamsha rule is not implemented. Do not equate all Raja/Dhana yogas or all BPHS chapter-39 references with these specific missing cases. | `SOURCE_RESEARCH`, P2 |
 | VED-013 | Evaluate additional Chara Dasha lineages and source-owned Argala strength grading. Keep alternative period/direction/co-lord rules and count-based intervention separate; define how any Shadbala context affects a named grading product before calculating it. | [Jaimini extended](../../moira/jaimini_extended.py) already has sign aspects, Arudha, Argala, both Karakamsa readings and Rao cycles. Its Argala is count-based; additional Rath/RB-NS leads in the [old register](vedic_jyotish_phase2_gaps.md) need independent admission. Rao's second-cycle transport belongs only to VED-001. | `SOURCE_RESEARCH`, P2 |
 | VED-014 | Research and admit one explicitly named Kalachakra Dasha profile before expanding variants: Savya/Apasavya traversal, Nakshatra/pada-to-sign mapping, cycle length, birth balance, year basis and nested periods. Create independent source fixtures and typed lineage-bearing vessels before bounded REST design. | [dasha_systems](../../moira/dasha_systems.py) provides Ashtottari and Yogini; [alternate-dasha standard](../02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md) excludes Kalachakra. The [original roadmap](vedic_jyotish_completion.md) is a source lead, not an executable definition. | `SOURCE_RESEARCH`, P3 |
-| VED-015 | Completed local daily contract: local date/zone/location, sunrise-owned Vara, retained sunrise/sunset crossings, solved angular limb endings, repeated/skipped sunrise evidence, half-open coverage, and unavailable solar states. | [Daily engine](../../moira/daily_panchanga.py), curated root/facade/Vedic exports and `POST /v1/panchanga/day`; [source/policy/validation standard](../02_standards/DAILY_PANCHANGA_STANDARD.md). Three named sunrise conventions and existing ayanamsa choices are explicit. Lunar months/festivals remain separate scope. | `LOCAL_COMPLETE`; publication pending |
+| VED-015 | Completed local daily contract: local date/zone/location, sunrise-owned Vara, retained sunrise/sunset crossings, solved angular limb endings, repeated/skipped sunrise evidence, half-open coverage, and unavailable solar states. | [Daily engine](../../moira/daily_panchanga.py), curated root/facade/Vedic exports and `POST /v1/panchanga/day`; [source/policy/validation standard](../02_standards/DAILY_PANCHANGA_STANDARD.md). Three named sunrise conventions and existing ayanamsa choices are explicit. Lunar months/festivals remain separate scope. | `LOCAL_COMPLETE`; engine/wiki source published, release/deployment separate |
 | VED-016 | Source and admit special Lagnas as distinct products, beginning with selected Bhava/Hora/Ghati Lagna traditions. Define sunrise/elapsed-time ownership, units, sidereal frame and lineage differences; provide typed results and transport provenance. | No first-class Bhava/Hora/Ghati Lagna implementation was found in the inspected engine/server tree. Ordinary chart Lagna, vargas and Pancha Pakshi clock inputs do not supply these definitions. | `SOURCE_RESEARCH`, P3 |
 
 ## 5. Gochar enrichment beyond the admitted snapshot
@@ -86,6 +90,13 @@ VED-018 and VED-019 are evidence programmes. Source-attested, disputed, research
 | VED-021 | Strengthen independently traceable worked-case coverage for the specific extensions being admitted. Record source editions/pages, inputs, expected component results, boundary/missing-data cases and explicit tolerances. Use JHora/Kala differences to locate lineage disagreements rather than treating software agreement as classical authority or predictive accuracy. Audit the single Sayanadi example before relying on it for full-family admission. | Existing Vedic unit/server tests and standards already exist; the paused tracker saying validation is "None" is stale. The [surface receipt](VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md) records 397 focused passes and separate 193/72 regression runs for their actual scope. These are not a validation study of every future rule. | `EVIDENCE_REVIEW`, P1 per selected package |
 | VED-022 | Reconcile remaining source headers and technical contract prose, then publish generated documentation when source publication is authorized. In particular remove the first-cycle-only claim in the Jaimini module header, distinguish standalone Sayanadi from chart admission, and align Muhurta policy/helper/personal-score documentation with code. Require engine/public/REST closure receipts for future completion notices. | Documentation supersession is completed by this pass, but [Jaimini](../../moira/jaimini_extended.py) still has a contradictory first-cycle-only header. The [Muhurta standard](../02_standards/MUHURTA_BACKEND_STANDARD.md) retains an earlier admission scope. Generated `moira.wiki` must only be updated through `scripts/sync_git_wiki.py`; source push and runtime release remain separate. | `OPEN_INTEGRATION`, P1 documentation work in each affected package |
 
+### Authorized lunar-month and festival extensions, 6 October 2026
+
+| ID | Work still required | Current evidence and admission gate | Status / priority |
+| --- | --- | --- | --- |
+| VED-023 | Source and implement exceptional Purnimanta month/fortnight mapping and Kshaya-year regional relabeling; reconcile the measured PAC solar-ingress residual before stronger authority timing claims. Regional solar dates and era years require their own explicit profiles. | [Lunar-month engine](../../moira/lunar_month.py), `Moira.lunar_month_at`, curated exports and `POST /v1/panchanga/lunar-month` implement bounded Amanta/ordinary-Purnimanta context with solved conjunctions/ingresses, Adhika/Kshaya evidence, uncertainty brackets and explicit unsupported states. [Source/policy/validation record](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md). | `BOUNDED_ADMISSION`, P2; exceptional source rules and authority reconciliation remain open |
+| VED-024 | Admit finite festival/fasting rule catalogues by identified lineage: exact ritual windows, viddha, repeated/skipped tithi selection, intercalation eligibility, precedence and parana. Expose catalogue admission states and bounded typed evaluation through REST together. | [Research and policy surface](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md) records institutional calendars, local corpus limits, explicit policy axes and test requirements. PAC dates do not constitute a complete executable rule specification; no universal festival catalogue is admitted. | `SOURCE_RESEARCH`, P2; research packet decision `defer_for_source_completion` |
+
 ## 7. Optional expansion candidates
 
 These are not promoted to required engine work by this reconciliation. Select a finite scope and evaluate sources before adding them to sections 2–6.
@@ -98,7 +109,7 @@ These are not promoted to required engine work by this reconciliation. Select a 
 | C-04: Tajika/Varshaphal long-tail review | Inventory the finite source-owned cases missing from the already substantial [Varshaphal engine](../../moira/varshaphal.py) before claiming any whole family absent. The May notes are a review lead, not a verified current defect list. |
 | C-05: Research/corpus/filtering tools | Define licensed/provenance-bearing datasets, repeatable chart queries and component comparisons. This is infrastructure; it is not an additional Vedic calculation technique or evidence of predictive validity. |
 
-A full festival/lunar-month/regional-calendar programme would be a further scope decision after VED-015, not an implicit promise contained in "daily Panchanga."
+The user authorized lunar-month and festival investigation after VED-015. VED-023/024 now own that work; unadmitted regional calendars and ritual branches remain visible, rather than being folded into a claim of daily Panchanga completeness.
 
 ## 8. Work already present: do not reopen as missing
 

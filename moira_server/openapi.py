@@ -236,7 +236,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "panchanga",
         "x-displayName": "Panchanga",
-        "description": "Panchanga direct, chart-backed, sunrise-owned daily almanac, Nakshatra, and profile surfaces.",
+        "description": "Panchanga direct, chart-backed, sunrise-owned daily almanac, lunar-month context, Nakshatra, and profile surfaces.",
         "x-family": "classical-vedic",
     },
     {

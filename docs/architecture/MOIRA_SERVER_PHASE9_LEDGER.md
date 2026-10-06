@@ -70,7 +70,7 @@ them.
 
 | Unit | Engine family | Status | Reason |
 |---|---|---|---|
-| P9-01 | Panchanga | `admitted` | Five registered REST routes: four existing instant/profile routes plus VED-015 sunrise-owned daily product; local verification is not a deployment receipt. |
+| P9-01 | Panchanga | `admitted` | Six registered REST routes: four existing instant/profile routes, VED-015 daily product and bounded VED-023 lunar-month context; local verification is not a deployment receipt. |
 | P9-02 | Shadbala | `admitted` | Four chart-backed REST routes live and tested: result, profile, network, and condition. |
 | P9-03 | Jaimini | `admitted` | Eight direct/chart-backed REST routes live and tested: karakas, profile, condition, and pair. |
 | P9-04 | Classical dignities | `admitted` | Six chart-backed REST routes are live and tested against the Phase 11 backend standard, public result/truth/profile surfaces, validation doctrine, and facade/root exports. |
@@ -90,6 +90,12 @@ them.
 ## 4. Family Evaluation Records
 
 ### P9-01 Panchanga
+
+The later bounded lunar-month extension adds `POST /v1/panchanga/lunar-month`
+through public reader-bound `Moira.lunar_month_at`. It preserves surrounding
+lunations and explicit exceptional-policy unavailability. The source/policy
+record is `wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md`; VED-024
+festival selection is still unadmitted.
 
 VED-015 daily extension, 6 October 2026: the engine family was instant-only,
 so daily admission required engine composition first (`defer_for_engine_completion`).

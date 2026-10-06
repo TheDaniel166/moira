@@ -197,6 +197,7 @@ from .local_space import (
     serialize_local_space_positions,
     serialize_local_space_provenance,
 )
+from .lunar_month import (serialize_lunar_month)
 from .daily_panchanga import serialize_daily_panchanga
 from .panchanga import (
     serialize_nakshatra_position,
@@ -363,6 +364,7 @@ from .visibility import (
 )
 
 __all__ = [
+    "serialize_lunar_month",
     "serialize_stellium_analysis",
     "serialize_analytical_house_dynamics",
     "serialize_astrocartography_line",

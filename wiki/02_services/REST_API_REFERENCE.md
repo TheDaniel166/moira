@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 477
-- Registered OpenAPI operations: 477 (GET 37, POST 440)
+- Registered OpenAPI paths: 478
+- Registered OpenAPI operations: 478 (GET 37, POST 441)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 473
+- Versioned `/v1` paths: 474
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -253,7 +253,7 @@ Not yet broadly exposed as REST families:
 | occultations | 12 |
 | orbits | 4 |
 | pancha-pakshi | 19 |
-| panchanga | 5 |
+| panchanga | 6 |
 | parans | 8 |
 | patterns | 3 |
 | phase | 6 |
@@ -1101,6 +1101,13 @@ those relationship-chart routes.
 
 ## Panchanga Routes
 
+`POST /v1/panchanga/lunar-month` accepts strict finite `jd_ut1` and named
+`system`/`ayanamsa_system`/`solver_tolerance_seconds` policy. It preserves three
+surrounding lunations, solved phase/ingress brackets, month labels and
+Adhika/Kshaya evidence. Exceptional Purnimanta mappings return typed domain
+unavailability. [Source and policy standard](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
+This is an astronomical month context; festival selection is not yet admitted.
+
 The daily product is a separate local-date contract with sunrise-owned Vara,
 solved angular limb endings and explicit solar unavailability. Its
 [standard](../02_standards/DAILY_PANCHANGA_STANDARD.md) documents policy,
@@ -1114,6 +1121,7 @@ their current conventions.
 | POST | `/v1/panchanga/chart` | `panchanga_chart_route` |
 | POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
 | POST | `/v1/panchanga/day` | `panchanga_day_route` |
+| POST | `/v1/panchanga/lunar-month` | `panchanga_lunar_month_route` |
 | GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
 | POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
 | POST | `/v1/sidereal/convert` | `sidereal_convert_route` |
@@ -3512,6 +3520,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/panchanga/day` | panchanga | `panchanga_day_route_v1_panchanga_day_post` |
 | `POST` | `/v1/panchanga/instant` | panchanga | `panchanga_instant_route_v1_panchanga_instant_post` |
 | `POST` | `/v1/panchanga/instant/profile` | panchanga | `panchanga_instant_profile_route_v1_panchanga_instant_profile_post` |
+| `POST` | `/v1/panchanga/lunar-month` | panchanga | `panchanga_lunar_month_route_v1_panchanga_lunar_month_post` |
 | `POST` | `/v1/parans/field/analysis` | phenomena | `paran_field_analysis_route_v1_parans_field_analysis_post` |
 | `POST` | `/v1/parans/field/contours` | phenomena | `paran_field_contours_route_v1_parans_field_contours_post` |
 | `POST` | `/v1/parans/field/paths` | phenomena | `paran_field_paths_route_v1_parans_field_paths_post` |

@@ -446,6 +446,10 @@ from .sade_sati import (
     sade_sati_status,
     sade_sati_windows,
 )
+from .lunar_month import (  # noqa: E402 - imports intentionally follow the kernel warning
+    LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
+    LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
+)
 from .daily_panchanga import (  # noqa: E402 - imports intentionally follow the kernel warning
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -1687,6 +1691,8 @@ __all__ = [
     "PanchangaResult",
     "TithiConditionProfile",
     "PanchangaProfile",
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",

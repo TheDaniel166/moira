@@ -34,6 +34,10 @@ The authoritative engine function is `moira.panchanga.panchanga_at(...)`.
 
 ---
 
+The subsequent lunar-month extension is `POST /v1/panchanga/lunar-month`.
+Its separate source-owned contract and festival admission boundary are in
+`wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md`.
+
 ## 1. Route Family
 
 Router prefix:

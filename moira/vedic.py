@@ -67,6 +67,10 @@ from .sidereal import (
 )
 
 # ── Panchanga ────────────────────────────────────────────────────────────
+from .lunar_month import (
+    LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
+    LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
+)
 from .daily_panchanga import (
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -545,6 +549,8 @@ _VEDIC_OWN: list[str] = [
     "SankrantiResult",
     "TithiConditionProfile",
     "PanchangaProfile",
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",

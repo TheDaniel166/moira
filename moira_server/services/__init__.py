@@ -213,6 +213,7 @@ from .local_space import (
     compute_local_space_chart_positions,
     compute_local_space_direct_positions,
 )
+from .lunar_month import (compute_lunar_month)
 from .daily_panchanga import compute_daily_panchanga
 from .panchanga import (
     compute_panchanga_chart,
@@ -376,6 +377,7 @@ from .visibility import (
 )
 
 __all__ = [
+    "compute_lunar_month",
     "compute_stellium_analysis",
     "AnalyticalHouseDynamicsServiceResult",
     "HouseDynamicsComputationContext",

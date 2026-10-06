@@ -23,6 +23,9 @@ import pytest
 
 
 _EXPECTED_ROOT_PUBLIC_NAMES = {
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
+
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
@@ -1256,6 +1259,7 @@ _EXPECTED_ROOT_ONLY_NAMES = {
 
 _EXPECTED_MOIRA_METHODS = {
     "daily_panchanga",
+    "lunar_month_at",
     "almuten_figuris",
     "almuten_of_degree",
     "antiscia",
