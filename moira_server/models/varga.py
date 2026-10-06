@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import Field, field_validator
 
 from .common import REST_BATCH_MAX_ITEMS, _StrictModel
+from ._vedic_inputs import ClassicalPlanet, FiniteNumber
 from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
@@ -195,7 +196,7 @@ _SEVEN_PLANETS = frozenset(
 class VimshopakaRequest(_StrictModel):
     """Vimshopaka Bala over a varga group from sidereal longitudes."""
 
-    sidereal_longitudes: dict[str, float]
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
     group: VimshopakaGroup = "shodashavarga"
 
     @field_validator("sidereal_longitudes")

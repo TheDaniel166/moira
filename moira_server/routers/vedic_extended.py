@@ -124,11 +124,14 @@ def avasthas_route(request: AvasthaRequest) -> AvasthaChartResponse:
         AvasthaPolicy(
             deeptadi_source=request.deeptadi_source,
             relationship_scheme=request.relationship_scheme,
+            vriddha_fraction=request.vriddha_fraction,
         ),
         node_longitudes=request.node_longitudes,
     )
     return AvasthaChartResponse(
         deeptadi_source=request.deeptadi_source,
+        relationship_scheme=result.policy.relationship_scheme,
+        vriddha_fraction=result.policy.vriddha_fraction,
         planets={
             name: PlanetAvasthasResponse(
                 planet=pa.planet,

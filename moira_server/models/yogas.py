@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import field_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import ClassicalPlanet, FiniteNumber
 
 
 _SEVEN_PLANETS = frozenset(
@@ -31,9 +32,9 @@ class YogaPolicyRequest(_StrictModel):
 class YogaEvaluateRequest(_StrictModel):
     """Direct yoga evaluation from sidereal longitudes."""
 
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float
-    planet_speeds: dict[str, float] | None = None
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber
+    planet_speeds: dict[ClassicalPlanet, FiniteNumber] | None = None
     policy: YogaPolicyRequest | None = None
     include_absent: bool = False
 

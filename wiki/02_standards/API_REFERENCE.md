@@ -298,6 +298,15 @@ from moira.vedic import *   # includes everything from essentials, plus the full
 
 A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 
+The unified surface also includes the already-curated yoga, avastha, extended
+Jaimini, Muhurta, upagraha and Sade Sati families; Vimshopaka/Vargottama,
+Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara
+snapshot and doctrine catalogue. Imports share the owning engine objects.
+Varga products already exposed through the facade are also available at the
+package root. This curation does not admit standalone Sayanadi, the unfinished
+daily almanac, special Lagnas, or Kalachakra. See the
+[Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md).
+
 | Added domain | Key symbols |
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |

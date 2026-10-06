@@ -1,7 +1,7 @@
 # Moira Server Implementation Plan
 
-Version: 1.8
-Date: 2026-06-12
+Version: 1.9
+Date: 2026-10-06
 Status: Phases 1-10 admitted; post-Phase-10 rendering adapter workflow begins
 Scope: REST access surface over the existing Moira engine
 
@@ -38,6 +38,14 @@ Current implementation state:
   generic/named/Shodashvarga/batch routes, and Decans/Decanates
   decanate-placement routes; all Hermetic catalog/longitude/rising/night-hour
   transport has been removed
+- the 6 October Vedic surface closure additionally admits bounded supplied-
+  position Gochara evaluation, subsystem profile and doctrine-option discovery;
+  it hardens existing direct yoga, avastha, extended Jaimini, Vimshopaka,
+  Kakshya, Shodhya Pinda and upagraha requests without changing engine doctrine
+  or closing new daily-almanac, special-Lagna or dasha admissions. The complete
+  scope and validation receipt are in
+  `wiki/06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md`; the transport
+  contract is `wiki/02_standards/GOCHARA_REST_STANDARD.md`
 - phase 10 is implemented as a bounded first admission: Astrocartography line
   and subplanetary routes, Local Space direct/chart-backed horizon routes,
   Geodetic direct/chart-backed location-chart and equivalent routes, Galactic

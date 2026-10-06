@@ -9,6 +9,24 @@ from __future__ import annotations
 
 import sys as _sys
 from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+from .varga import (
+    VargaPoint,
+    calculate_varga,
+    navamsa,
+    saptamsa,
+    dashamansa,
+    dwadashamsa,
+    trimshamsa,
+    VIMSHOPAKA_GROUPS,
+    VARGA_VISHVA,
+    VimshopakaVargaEntry,
+    VimshopakaBala,
+    varga_sign_index,
+    vimshopaka_bala,
+    vimshopaka_all,
+    is_vargottama,
+    vargottama_planets,
+)
 from .gochara import (
     GOCHARA_PROFILE,
     GOCHARA_PLANETS,
@@ -1260,6 +1278,23 @@ from .mundane import (
 )
 
 __all__ = [
+    # Existing facade-curated Varga products.
+    "VargaPoint",
+    "calculate_varga",
+    "navamsa",
+    "saptamsa",
+    "dashamansa",
+    "dwadashamsa",
+    "trimshamsa",
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
     "STELLIUM_SCHEMA_VERSION", "STELLIUM_CORE", "StelliumAnalysisPolicy",
     "StelliumContext", "StelliumSelection", "StelliumHouseContext", "StelliumArc",
     "StelliumAssociation", "StelliumMatch", "StelliumGroup", "StelliumEvaluation",

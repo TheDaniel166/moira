@@ -1693,6 +1693,26 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 _EXPECTED_MOIRA_METHODS.add("orbit_class")
 _EXPECTED_MOIRA_METHODS.add("orbit_classes_at")
 
+# Existing facade-curated Varga products, now available at package root.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "VargaPoint",
+    "calculate_varga",
+    "navamsa",
+    "saptamsa",
+    "dashamansa",
+    "dwadashamsa",
+    "trimshamsa",
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
+})
+
 # Additive Gochara snapshot constitutional public contract.
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "GOCHARA_PROFILE", "GOCHARA_PLANETS", "GocharaVedhaStatus",

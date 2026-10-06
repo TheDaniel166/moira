@@ -21,16 +21,30 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 473
-- Registered OpenAPI operations: 473 (GET 36, POST 437)
+- Registered OpenAPI paths: 476
+- Registered OpenAPI operations: 476 (GET 37, POST 439)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 469
+- Versioned `/v1` paths: 472
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+Gochara supplied-position evaluation, integrated profiles and the cited doctrine
+catalogue are registered under `/v1/gochara`. See the
+[Gochara REST standard](../02_standards/GOCHARA_REST_STANDARD.md) for policies,
+strict numeric/BAV input rules, partial observation truth and source limitations.
+
+The 6 October 2026 Vedic surface closure also strengthens the existing direct
+yoga, avastha, extended Jaimini, Vimshopaka, Kakshya and Shodhya requests. Their
+affected numeric fields require finite JSON numbers, and named participant/sign
+domains reject unknown keys. Avastha exposes its optional `vriddha_fraction`
+and returns the selected relationship scheme/fraction. Co-lord Arudha requests
+require both named nodes; eight-karaka Karakamsa requests require Rahu. The
+[closure ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
+records the exact validated scope and remaining admissions.
 
 The REST implementation is past bootstrap.
 
@@ -3358,6 +3372,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
 | `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
 | `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
+| `GET` | `/v1/gochara/doctrine-options` | gochara | `doctrine_route_v1_gochara_doctrine_options_get` |
+| `POST` | `/v1/gochara/evaluate` | gochara | `evaluate_route_v1_gochara_evaluate_post` |
+| `POST` | `/v1/gochara/profile` | gochara | `profile_route_v1_gochara_profile_post` |
 | `POST` | `/v1/harmograms/intensity-spectrum` | harmograms | `harmogram_intensity_spectrum_route_v1_harmograms_intensity_spectrum_post` |
 | `POST` | `/v1/harmograms/projection` | harmograms | `harmogram_projection_route_v1_harmograms_projection_post` |
 | `POST` | `/v1/harmograms/trace` | harmograms | `harmogram_trace_route_v1_harmograms_trace_post` |

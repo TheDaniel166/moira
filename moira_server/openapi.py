@@ -39,6 +39,12 @@ FAMILY_LABELS: dict[str, str] = {
 
 _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
+        "name": "gochara",
+        "x-displayName": "Gochara Phala",
+        "description": "Source-bound sidereal snapshots, Vedha evidence, profiles and doctrine admission catalogue.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "meta",
         "x-displayName": "Meta",
         "description": "Operational readiness, version, kernel status, and REST route discovery.",

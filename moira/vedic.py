@@ -4,7 +4,8 @@ moira.vedic — Vedic astrology surface.
 Builds on ``moira.essentials`` and collects every Vedic-domain subsystem
 into a single, coherent import surface: panchanga, sidereal/ayanamsa,
 nakshatra, varga (divisional charts), Vedic dignities, Vimshottari and
-alternate dasha systems, Jaimini karakas, Ashtakavarga, and Shadbala.
+alternate dasha systems, Jaimini karakas and extended techniques, yogas,
+avasthas, Muhurta, upagrahas, Sade Sati, Gochara, Ashtakavarga, and Shadbala.
 
 This module does not include the full Western classical surface
 (Arabic lots, Firdaria, Zodiacal Releasing, Huber, etc.). For that,
@@ -396,6 +397,126 @@ from .varshaphal import (
 
 # ── Build __all__ ────────────────────────────────────────────────────────
 
+# Existing curated varga products.
+from .varga import (
+    VIMSHOPAKA_GROUPS,
+    VARGA_VISHVA,
+    VimshopakaVargaEntry,
+    VimshopakaBala,
+    varga_sign_index,
+    vimshopaka_bala,
+    vimshopaka_all,
+    is_vargottama,
+    vargottama_planets,
+)
+
+# Existing curated ashtakavarga products.
+from .ashtakavarga import (
+    KAKSHYA_LORDS,
+    RASIMANA,
+    GRAHAMANA,
+    KakshyaTransit,
+    ShodhyaPinda,
+    kakshya_transit,
+    shodhya_pinda,
+)
+
+# Existing curated shadbala products.
+from .shadbala import (
+    BhavaBala,
+    BhavaBalaResult,
+    bhava_bala,
+    bhava_dig_bala,
+    bhava_drishti_bala,
+)
+
+# Existing curated yogas products.
+from .yogas import (
+    YogaPolicy,
+    YogaCondition,
+    YogaResult,
+    YogaChartResult,
+    benefic_malefic_classification,
+    pancha_mahapurusha_yogas,
+    chandra_yogas,
+    surya_yogas,
+    nabhasa_yogas,
+    raja_yogas,
+    dhana_yogas,
+    evaluate_yogas,
+)
+
+# Existing curated avasthas products.
+from .avasthas import (
+    AvasthaPolicy,
+    BaladiAvastha,
+    JagradadiAvastha,
+    DeeptadiAvastha,
+    LajjitadiState,
+    LajjitadiAvasthas,
+    PlanetAvasthas,
+    AvasthaChartResult,
+    baladi_avastha,
+    jagradadi_avastha,
+    deeptadi_avastha,
+    lajjitadi_avasthas,
+    evaluate_avasthas,
+)
+
+# Existing curated jaimini_extended products.
+from .jaimini_extended import (
+    JaiminiExtendedPolicy,
+    rasi_aspects,
+    rasi_drishti_of,
+    ArudhaPada,
+    ArudhaResult,
+    arudha_padas,
+    ArgalaHouse,
+    ArgalaResult,
+    argala,
+    Karakamsa,
+    karakamsa,
+    CharaDashaPeriod,
+    CharaDashaResult,
+    chara_dasha,
+)
+
+# Existing curated muhurta products.
+from .muhurta import (
+    MuhurtaPolicy,
+    MuhurtaClassification,
+    MuhurtaScore,
+    classify_muhurta,
+    score_muhurta,
+    TARA_NAMES,
+    TaraBala,
+    tara_bala,
+    ChandraBala,
+    chandra_bala,
+    PersonalMuhurtaScore,
+    personal_muhurta_score,
+)
+
+# Existing curated upagrahas products.
+from .upagrahas import (
+    UpagrahaPolicy,
+    SunBasedUpagrahas,
+    KalavelaUpagraha,
+    KalavelaResult,
+    sun_based_upagrahas,
+    kalavela_upagrahas,
+)
+
+# Existing curated sade_sati products.
+from .sade_sati import (
+    SADE_SATI_PHASES,
+    SadeSatiStatus,
+    SadeSatiWindow,
+    SadeSatiResult,
+    sade_sati_status,
+    sade_sati_windows,
+)
+
 _VEDIC_OWN: list[str] = [
     # Sidereal (extended)
     "UserDefinedAyanamsa",
@@ -700,6 +821,99 @@ _VEDIC_OWN: list[str] = [
     "muntha_condition_profile",
     "varshaphal_sahams",
     "build_varshaphal_chart",
+    # Varga strength and flags.
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
+    # ashtakavarga completion
+    "KAKSHYA_LORDS",
+    "RASIMANA",
+    "GRAHAMANA",
+    "KakshyaTransit",
+    "ShodhyaPinda",
+    "kakshya_transit",
+    "shodhya_pinda",
+    # shadbala completion
+    "BhavaBala",
+    "BhavaBalaResult",
+    "bhava_bala",
+    "bhava_dig_bala",
+    "bhava_drishti_bala",
+    # yogas completion
+    "YogaPolicy",
+    "YogaCondition",
+    "YogaResult",
+    "YogaChartResult",
+    "benefic_malefic_classification",
+    "pancha_mahapurusha_yogas",
+    "chandra_yogas",
+    "surya_yogas",
+    "nabhasa_yogas",
+    "raja_yogas",
+    "dhana_yogas",
+    "evaluate_yogas",
+    # avasthas completion
+    "AvasthaPolicy",
+    "BaladiAvastha",
+    "JagradadiAvastha",
+    "DeeptadiAvastha",
+    "LajjitadiState",
+    "LajjitadiAvasthas",
+    "PlanetAvasthas",
+    "AvasthaChartResult",
+    "baladi_avastha",
+    "jagradadi_avastha",
+    "deeptadi_avastha",
+    "lajjitadi_avasthas",
+    "evaluate_avasthas",
+    # jaimini_extended completion
+    "JaiminiExtendedPolicy",
+    "rasi_aspects",
+    "rasi_drishti_of",
+    "ArudhaPada",
+    "ArudhaResult",
+    "arudha_padas",
+    "ArgalaHouse",
+    "ArgalaResult",
+    "argala",
+    "Karakamsa",
+    "karakamsa",
+    "CharaDashaPeriod",
+    "CharaDashaResult",
+    "chara_dasha",
+    # muhurta completion
+    "MuhurtaPolicy",
+    "MuhurtaClassification",
+    "MuhurtaScore",
+    "classify_muhurta",
+    "score_muhurta",
+    "TARA_NAMES",
+    "TaraBala",
+    "tara_bala",
+    "ChandraBala",
+    "chandra_bala",
+    "PersonalMuhurtaScore",
+    "personal_muhurta_score",
+    # upagrahas completion
+    "UpagrahaPolicy",
+    "SunBasedUpagrahas",
+    "KalavelaUpagraha",
+    "KalavelaResult",
+    "sun_based_upagrahas",
+    "kalavela_upagrahas",
+    # sade_sati completion
+    "SADE_SATI_PHASES",
+    "SadeSatiStatus",
+    "SadeSatiWindow",
+    "SadeSatiResult",
+    "sade_sati_status",
+    "sade_sati_windows",
 ]
 
 __all__ = list(_essentials_all) + _VEDIC_OWN

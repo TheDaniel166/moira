@@ -7,6 +7,10 @@ import math
 from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import (
+    ClassicalPlanet, FiniteNumber, VedicReference, SignIndex, RekhaTable,
+    require_sign_references,
+)
 from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
@@ -214,9 +218,14 @@ def _validate_required_keys(value: dict[str, object], field_name: str) -> None:
 class KakshyaTransitRequest(_StrictModel):
     """Kakshya-level transit evaluation from natal sign indices."""
 
-    planet: str
-    transit_sidereal_lon: float
-    sign_indices: dict[str, int]
+    planet: ClassicalPlanet
+    transit_sidereal_lon: FiniteNumber
+    sign_indices: dict[VedicReference, SignIndex]
+
+    @field_validator("sign_indices")
+    @classmethod
+    def _references(cls, value: dict[str, int]) -> dict[str, int]:
+        return require_sign_references(value)
 
 
 class KakshyaTransitResponse(_StrictModel):
@@ -234,9 +243,14 @@ class KakshyaTransitResponse(_StrictModel):
 class ShodhyaPindaRequest(_StrictModel):
     """Shodhya Pinda from fully reduced Bhinnashtakavarga figures."""
 
-    planet: str
-    reduced_rekhas: tuple[int, ...]
-    sign_indices: dict[str, int]
+    planet: ClassicalPlanet
+    reduced_rekhas: RekhaTable
+    sign_indices: dict[VedicReference, SignIndex]
+
+    @field_validator("sign_indices")
+    @classmethod
+    def _references(cls, value: dict[str, int]) -> dict[str, int]:
+        return require_sign_references(value)
 
 
 class ShodhyaPindaResponse(_StrictModel):
