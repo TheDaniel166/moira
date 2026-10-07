@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 481
-- Registered OpenAPI operations: 481 (GET 37, POST 444)
+- Registered OpenAPI paths: 482
+- Registered OpenAPI operations: 482 (GET 37, POST 445)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 477
+- Versioned `/v1` paths: 478
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -1787,6 +1787,8 @@ include the primary-source citation for the selected variant.
 
 | Method | Path | Handler |
 |---|---|---|
+| POST | `/v1/varga/d60/sign` | `d60_sign_route` |
+| POST | `/v1/varga/vimshopaka` | `vimshopaka_route` |
 | POST | `/v1/varga/generic` | `varga_generic_route` |
 | POST | `/v1/varga/named` | `varga_named_route` |
 | POST | `/v1/varga/shodashvarga` | `varga_shodashvarga_route` |
@@ -1795,6 +1797,62 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/varga/chart/named` | `varga_chart_named_route` |
 | POST | `/v1/varga/chart/shodashvarga` | `varga_chart_shodashvarga_route` |
 | POST | `/v1/varga/chart/shodashvarga/batch` | `varga_chart_shodashvarga_batch_route` |
+
+Every `VargaPointResponse` includes canonical nullable `deity`, applied
+`d60_method`, `d60_source_references` and `d60_degree_attribution`. Named D60 supplies its corrected deity string; generic divisor
+60 and other divisions retain `deity=null`. Full D60 numeric output uses
+`harmonic` by default, with `pvr_textbook_linear` and `classical_derived_linear`
+explicitly available on named products; non-D60 points report `d60_method=null`,
+an empty source array and null degree attribution.
+
+Seven named/full Shodashvarga request shapes accept the optional enumeration
+`d60_method=harmonic|pvr_textbook_linear|classical_derived_linear`. `bphs_santhanam_sign`, unknown methods and null selections
+fail with HTTP 422 before chart derivation. Generic inputs retain their
+original contract.
+
+Both source full-position selections apply only to D60. Another named selector receives 422;
+Shodashvarga applies the selected convention only to its D60 entry. Direct source-profile scalar/batch inputs
+reject booleans, strings and nonfinite numbers without coercion. The result
+names the dated textbook/linear composition and both positional authorities;
+the corrected deity table remains Santhanam-owned. Its computed degrees are
+abstract divisional positions, with `d60_degree_attribution=modern_composed`.
+
+`classical_derived_linear` supplies full degrees with BPHS Santhanam sign
+assignment and Moira's explicit proportional-degree extension. Its receipt
+reports `d60_degree_attribution=classical_derived`, the reviewed classical and
+commentarial source chain, and a Moira derivation locator. It does not label
+a direct classical D60 degree prescription. Harmonic degrees report
+`generic_harmonic`. Source-profile composition normalizes a shared circular
+input before other divisions and strength relationships, preserving tiny
+negative left limits without another division rounding the input to 360.
+
+`POST /v1/varga/d60/sign` accepts strict finite `sidereal_longitude` and
+`method=harmonic|bphs_santhanam_sign|pvr_textbook_linear|classical_derived_linear` (default harmonic). Its typed response
+contains normalized input longitude, sign index/name/symbol, applied method,
+`position_scope=sign_only` and `source_reference`. It contains no continuous
+D60 degree or mapped longitude. The source commentary example, Capricorn
+13 degrees 25 minutes, yields Pisces; the harmonic method yields Gemini.
+
+Vimshopaka accepts `d60_method` and returns each planet's actual applied
+method and positional source array. A nondefault selection requires `dashavarga` or `shodashavarga`;
+other groups report null/empty receipts and reject any nondefault selection. See the
+[D60 source standard](../02_standards/D60_SOURCE_ADMISSION_STANDARD.md) for
+edition limits, exact name migration values and weighted effects.
+
+## Bounded Chara Dasha contract
+
+`POST /v1/jaimini/extended/chara-dasha` accepts `cycles` as a strict integer
+1 or 2, default 1. The seven-body map and finite longitude/epoch inputs are
+required. `node_longitudes` may be omitted/null; a supplied map must contain
+exactly Rahu and Ketu. Empty/partial maps and bool/string/float/out-of-bound
+cycles fail with the standard HTTP 422 validation envelope.
+
+The response adds actual `period_count` and canonical `computation` containing
+`cycle_count`, `lord_mode`, `formulation_id`, `cycle_policy`, `year_basis`,
+`year_days` and `epoch_basis`. One cycle has 12 periods; two have 24 with
+retained first-cycle repetition and continuous endpoints. The server copies
+the engine receipt. The [Chara cycle standard](../02_standards/CHARA_DASHA_CYCLE_STANDARD.md)
+limits the source claim to the inspected published witness.
 
 ## Decans And Decanates Routes
 
@@ -3667,6 +3725,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/varga/chart/named` | varga | `varga_chart_named_route_v1_varga_chart_named_post` |
 | `POST` | `/v1/varga/chart/shodashvarga` | varga | `varga_chart_shodashvarga_route_v1_varga_chart_shodashvarga_post` |
 | `POST` | `/v1/varga/chart/shodashvarga/batch` | varga | `varga_chart_shodashvarga_batch_route_v1_varga_chart_shodashvarga_batch_post` |
+| `POST` | `/v1/varga/d60/sign` | varga | `d60_sign_route_v1_varga_d60_sign_post` |
 | `POST` | `/v1/varga/generic` | varga | `varga_generic_route_v1_varga_generic_post` |
 | `POST` | `/v1/varga/named` | varga | `varga_named_route_v1_varga_named_post` |
 | `POST` | `/v1/varga/named/batch` | varga | `varga_named_batch_route_v1_varga_named_batch_post` |

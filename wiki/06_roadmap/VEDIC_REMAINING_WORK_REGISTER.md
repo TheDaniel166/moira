@@ -1,8 +1,8 @@
 # Vedic remaining work register
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
-**Last reconciled:** 6 October 2026.
-**Baseline:** engine `main`, `cbb4abcbd74e1ae5bf09c87ff3ee7006e620e471`, version 6.9.9; the VED-004/006 source-publication package below follows that baseline.
+**Last reconciled:** 7 October 2026.
+**Baseline:** engine `main`, `67b66de14cde0447730b0c9b57e5e14c1edd9935`, version 6.9.9; includes the VED-004/006 source-publication package below. VED-001/003 are now `LOCAL_COMPLETE` and included in the current engine/wiki publication package; see section 19 for final closure.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -31,9 +31,11 @@ below preserve their distinct admission and remaining-work boundaries.
 
 `P1` closes gaps in existing products; `P2` deepens existing families or provides the next foundational composition; `P3` is a larger separately scoped programme. These are sequencing suggestions, not effort estimates, dates or an instruction to resume paused work. No item must mechanically pass twelve identical phases: use the constitutional gates that apply to its actual object.
 
-There are **24 stable numbered work packages** below: **21 remain open,
-including the bounded VED-023 admission. VED-004/006 are complete and source-published for
-the bounded contract below; VED-015 is complete and source-published**. Several contain source-separated subquestions
+There are **24 stable numbered work packages** below: **19 remain open,
+including bounded VED-023 and the VED-017 window frontier. VED-001/003 are
+locally complete and included in this source-publication package;
+VED-004/006/015 are complete and source-published for their bounded contracts**.
+Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
 counted as additional techniques.
@@ -42,13 +44,13 @@ counted as additional techniques.
 
 | ID | Work still required | Current evidence | Status / priority |
 | --- | --- | --- | --- |
-| VED-001 | Admit bounded Chara Dasha cycle selection through REST; validate cycle type/range in the engine; return enough metadata to identify the requested/computed cycles. Decide the admitted maximum rather than treating arbitrary repetition as a source-owned third or later cycle. Preserve the existing first-cycle default. | [chara_dasha](../../moira/jaimini_extended.py) has `cycles=1` and generates 24 periods for `cycles=2`; the two twelve-sign spans repeat. [CharaDashaRequest and response](../../moira_server/models/vedic_extended.py) omit cycle selection, and the [route](../../moira_server/routers/vedic_extended.py) uses the default. The current function does not explicitly validate the cycle argument. Second-cycle arithmetic is present; absence claims are stale. | `OPEN_INTEGRATION`, P1 |
+| VED-001 | Locally complete for strict one/two-cycle selection, exact seven-body/optional node-pair inputs and canonical execution receipts. Complete-cycle/co-lord source collation, alternative formulations and later cycles remain separate VED-013/021 research. | [Chara cycle standard](../02_standards/CHARA_DASHA_CYCLE_STANDARD.md), [approved plan](VEDIC_CHARA_D60_IMPLEMENTATION_PLAN_2026-10-07.md) and [validation receipt](../03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md). Default period arithmetic retained; published second-cycle evidence is explicitly partial. | `LOCAL_COMPLETE`; included in this engine/wiki publication package; release/deployment separate |
 | VED-002 | Complete Sayanadi admission: recheck the printed example and arithmetic against identified editions; define birth-ghati units/rounding and name-syllable inputs; validate bodies, required Moon, numeric ranges and missing inputs; then decide chart composition, root/facade/`vedic` curation and typed REST exposure. Preserve omitted/not-evaluable states and the source provenance of any historical effect text. | [sayanadi_avastha](../../moira/avasthas.py) and [one worked-example test](../../tests/unit/test_sayanadi.py) exist. `PlanetAvasthas` has an optional `sayanadi` field, but `evaluate_avasthas` does not accept the required inputs or populate it; root curation and [REST](../../moira_server/models/vedic_extended.py) omit it. The standalone helper falls back when Moon/body metadata is missing. The September claim of full chart wiring is incorrect. | `EVIDENCE_REVIEW` followed by `OPEN_INTEGRATION`, P1 |
-| VED-003 | Preserve the engine's D60 deity field through Varga REST serialization, including named, batch and chart-backed products that return the same vessel. Distinguish an absent deity from an omitted transport field; do not reconstruct deity assignment in the server. | [VargaPoint and shashtiamsha](../../moira/varga.py) contain `deity` and the named table. [VargaPointResponse](../../moira_server/models/varga.py) omits `deity`; [serializer](../../moira_server/serializers/varga.py) also omits it. The engine enrichment already exists. | `OPEN_INTEGRATION`, P1 |
+| VED-003 | Locally complete for transport, four edition-owned names, Santhanam signs, modern composed full positions and the explicit `classical_derived_linear` full-degree policy through engine/facade/REST/strength. The wider library establishes classical/commentarial support at the reviewed scopes. Direct classical D60 degree prescription and exact primary-published planetary pairs are optional future research outside this closed implementation scope. | [D60 standard](../02_standards/D60_SOURCE_ADMISSION_STANDARD.md), [classical-derived admission](D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md) and [execution receipt](../03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md). Modern and derived-classical provenance stay distinct; frozen witnesses and rational boundary checks validate both selected mappings. Harmonic defaults retained. | `LOCAL_COMPLETE`; included in this engine/wiki publication package; release/deployment separate |
 | VED-004 | Locally complete: seven weights validated/exposed, actual selected/applied/reserved policy receipts, and personal-score frame precedence reconciled. | [Personalized Muhurta standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_PERSONAL_SEARCH_VALIDATION_2026-10-06.md). Reserved classical-rule flag is fixed True; no alternate school is silently selected. | `LOCAL_COMPLETE`; engine/wiki source published, release/deployment separate |
 | VED-005 | Continue family-by-family REST input/policy audit for remaining dasha, Shadbala, dignity, Sade Sati and profile boundaries. Record actual failures before changing compatibility. | The VED-004/006 package closes directly affected Panchanga/Muhurta numeric coercion and numeric-timestamp acceptance, with strict finite inputs and hostile-input tests. Earlier selected direct-family hardening and this slice are not a whole-Vedic audit. Other listed families remain audit targets, not asserted defects. | `OPEN_INTEGRATION`, P1 |
 
-VED-001 and VED-003 are relatively contained transport packages. VED-002 requires evidence and engine hardening before exposing the existing helper. Passing a direct numerical example does not settle its birth/name input doctrine.
+VED-001 is locally complete. VED-003 admits transport, selected-edition names, source-owned signs, modern composed full positions and a usable classical-derived full-degree profile. Both full source profiles have completed computational validation, including independent software witnesses and sixteen real-reader date/frame chart batches. Classical support is established at the separately documented scopes; direct classical D60 degree prescription and exact published planetary pairs remain unclaimed source-evidence frontiers, not implementation gates. A single rounded arudha-point witness is conditional. VED-002 requires evidence and engine hardening before exposing the existing helper. Passing a direct numerical example does not settle its birth/name input doctrine.
 
 ## 3. Muhurta work recovered from the paused notes
 
@@ -119,8 +121,8 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 | Seventeen Varga divisions, Vedic dignities, Shadbala including Bhava Bala, BAV/SAV and reductions, Vimshottari/Ashtottari/Yogini | Existing families; do not reconstruct the pre-Phase-1 backlog. Deepening must name a specific rule or defect. |
 | Yoga core, extended Jaimini, upagrahas, four chart-evaluated avastha systems | Existing engine and REST families. Selected yoga/Jaimini enrichment and Sayanadi admission remain above. |
 | Tara/Chandra Bala, personal Muhurta, Vimshopaka/Vargottama, Kakshya/Shodhya Pinda, Sade Sati | Existing calculations and REST. Their old "missing" notices are superseded. |
-| Rao Chara second cycle | Engine computation exists; VED-001 owns bounds and REST selection. |
-| D60 named deities | Engine enrichment exists; VED-003 owns transport preservation. |
+| Rao Chara second cycle | VED-001 locally closes strict cycle selection and canonical engine/REST receipts; complete-cycle and co-lord authority remains bounded in the owning standard. |
+| D60 named deities | VED-003 locally closes eight-route transport, four selected-edition names, source-only signs and modern/classical-derived full-degree profiles. Each profile has explicit provenance and completed engine/facade/REST/strength validation. Direct classical D60 degree prescription and exact printed planetary pairs remain separately unclaimed; the absence of a direct prescription does not block the derived policy. |
 | Sayanadi | Standalone code exists; VED-002 owns evidence, hardening and chart/public/REST admission. |
 | Gochar snapshot and doctrine catalogue | Original engine/public/REST package committed at the baseline. VED-017 epoch/date composition is now locally complete; dated windows and VED-018/019 remain independent admissions. |
 | Daily sunrise-owned Panchanga | VED-015 engine/public/REST is locally complete; its named policy, source and bounded verification are in the linked receipt. No website adoption or deployment is implied. |
@@ -129,7 +131,7 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 
 ## 9. Suggested package order and definition of done
 
-1. **Close existing product omissions:** VED-001, VED-003 and the remaining established failures in VED-005; carry VED-021/022 with each package. Evaluate VED-002 before exposing it.
+1. **Close existing product omissions:** VED-001/003 are locally complete. Address the remaining established failures in VED-005; carry VED-021/022 with each package. Evaluate VED-002 before exposing it.
 2. **Muhurta composition:** VED-004/006 are locally complete for the bounded sampled/JD-weekday profile. VED-007–011 remain individually source-owned admissions; exact transitions and sunrise-owned search require their own scope decision.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
 4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
@@ -192,3 +194,151 @@ After validation the user authorized commit and push of this package. The
 containing engine/wiki source commits publish VED-004 and the bounded VED-006
 repair, with the generated wiki published first. Release, deployment and
 website/Urania adoption remain separate operations.
+
+## 13. VED-001/003 research checkpoint, 7 October 2026
+
+The user selected bounded Chara cycles and D60 deity transport, requesting deep
+research first. The [owning source packet](VEDIC_CHARA_D60_SOURCE_RESEARCH_2026-10-07.md)
+records online primary-author research, the local book/article corpus, visually
+checked edition pages, fingerprints, source disagreements, current engine/HTTP
+witnesses and a finite implementation proposal. It identifies an article/book
+attribution error, partial second-cycle evidence, four D60 name discrepancies
+and a separate D60 placement convention. No alternative Chara school or new
+Varga arithmetic is admitted by a transport omission.
+
+The baseline is 140 passing existing engine tests plus 10 selected Chara HTTP
+tests, with separate kernel-free probes. These are scoped regression receipts,
+not authority validation of every proposed rule. VED-001/003 remain open; the
+21-open count is unchanged. Only this register and the new research packet are
+edited in this checkpoint. Runtime, validation policy/evidence baselines,
+generated wiki, source publication, release, deployment and website adoption
+are unchanged.
+
+## 14. VED-001/003 implementation, 7 October 2026
+
+The user approved the [four-slice plan](VEDIC_CHARA_D60_IMPLEMENTATION_PLAN_2026-10-07.md).
+Chara now validates bounded cycles and complete inputs and returns actual
+execution metadata through REST. All eight Varga placement routes preserve
+canonical nullable enrichment. Four deity names are corrected against the
+identified Santhanam printed list with explicit migration values.
+
+Further source adjudication admits `bphs_santhanam_sign` as a typed sign-only
+product and selected Vimshopaka method. It does not supply continuous degrees;
+full-position consumers reject that selection and preserve harmonic defaults.
+The [D60 standard](../02_standards/D60_SOURCE_ADMISSION_STANDARD.md) records
+the missing passage/fixtures needed to close that subitem. The
+[Chara standard](../02_standards/CHARA_DASHA_CYCLE_STANDARD.md) distinguishes
+partial published repetition evidence from the retained co-lord convention.
+
+The [completion receipt](../03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md)
+records source boundaries, exact compatibility changes, focused tests, installed
+DE441 chart integration and documentation checks. VED-001 is locally complete;
+VED-003 remains bounded with full source placement open. Twenty numbered
+packages remain open; historical checkpoint counts above retain their dates.
+Commit/push, generated-wiki publication, release, deployment and website/Urania
+adoption were not authorized by this implementation request.
+
+## 15. D60 full-position extension, 7 October 2026
+
+The user authorized widening source review and exceeding the full-position
+acceptance checks. The [new source packet](D60_FULL_POSITION_SOURCE_RESEARCH_2026-10-07.md)
+adjudicates the dated PVR textbook/linear composition, author revision notices,
+the article's incorrect D9 arithmetic and unpaired published D60 coordinates.
+The named modern full profile is implemented through engine, facade, all seven
+named/chart request shapes and strength, with canonical positional source
+receipts, strict new-profile inputs and exhaustive half-degree boundary checks.
+The [execution receipt](../03_validation/D60_FULL_POSITION_VALIDATION_2026-10-07.md)
+records this extension separately from the earlier checkpoint above.
+
+VED-003 remains `BOUNDED_ADMISSION`: named modern computation is locally
+complete; the classical passage and paired published full-D60 oracle are not
+established. This does not reset other package states or change the 24 stable
+IDs/20 open count. Source publication, release and product adoption remain
+separate states.
+
+## 16. D60 bounded evidence decision, 7 October 2026
+
+The [completed adjudication](D60_EVIDENCE_ADJUDICATION_2026-10-07.md) reviews
+two identified BPHS editions/commentaries, named local treatments and further
+primary author publications. Retain the explicit dated Moira composition;
+admit no classical full-degree method or current JHora equivalence. Sharma's
+published sign example/table rows provide independent regression evidence.
+The single published arudha D1/full-D60 pair is compatible under nearest-minute
+rounding and incompatible under truncation; its rounding rule is unknown.
+
+The finite research task is complete. The remaining classical/planetary-oracle
+claims are not established in the reviewed sources, with concrete evidence
+required to reopen them. This preserves VED-003's bounded admission and the
+24 stable IDs/20 open count. No new runtime/API selection or source authority
+is introduced by the validation witnesses.
+
+## 17. D60 broader computational validation, 7 October 2026
+
+The [completed broader receipt](../03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md)
+records 24,432 conditioned inputs compared with checksum-pinned PyJHora
+full-point outputs and compiled Maitreya returned signs/instrumented
+longitudes: all 720 segments, exact/adjacent boundaries, 20,000 seeded
+samples and 112 planetary inputs across sixteen date/frame charts. No
+disagreement exceeds the predeclared arithmetic budget; signs agree exactly.
+Independent rational evaluation agrees throughout. The 4,552-case offline
+fixture reproduces exactly; permanent engine/facade/REST/strength tests use
+external expected values. The source fragments are private validation inputs,
+not runtime dependencies or copied engine implementation.
+
+**Modern implementation and broader computational validation are complete
+locally.** VED-003's remaining bounded state concerns historical authority
+claims, including an identified classical full-degree law and exact published
+planetary pairs. Neither is concealed as an unfinished engineering gate.
+Current PVR Jagannatha Hora equivalence and predictive effectiveness are not
+claimed. The 24 stable IDs/20 open count, other package states and existing
+source locators are preserved. Commit/push, release and website adoption are
+separate from this local outcome.
+
+## 18. Classical-derived D60 reconciliation, 7 October 2026
+
+The [wider-library adjudication](D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md)
+supersedes sections 14-17 wherever they imply that no classical-derived
+full-degree policy can be admitted. It establishes separately scoped BPHS
+D60 sign authority, Saravali general subdivision arithmetic, Jataka Parijata
+D12 fractional correspondence and Raman's explicit Navamsa degree notes.
+The D60 degree extension is Moira's disclosed derivation.
+
+`classical_derived_linear` is implemented through the full engine/facade,
+all seven named/chart REST shapes, sign projection and D60-containing
+Vimshopaka groups. Canonical source locators and `d60_degree_attribution`
+make its derivation inspectable. Existing modern positional locators retain
+their exact identity. The [completed validation receipt](../03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md)
+covers exact rational boundaries, primary commentarial D9 examples, unchanged
+frozen external witnesses, real DE441 charts and strict REST preflight.
+Source-profile groups also normalize tiny negative wrap inputs before
+composing the other divisions and D1 relationships.
+
+The admitted classical-derived product and its engineering validation are
+complete locally. A directly prescribed classical D60 degree algorithm and
+exact source-published planetary pairs remain unclaimed historical frontiers.
+At this checkpoint the register retained 24 stable IDs and 20 open-or-bounded
+packages. The final closure below supersedes that count and VED-003's earlier
+bounded status. Publication, release and product adoption remain separate.
+
+## 19. VED-003 final closure and source-publication package, 7 October 2026
+
+The user approved closing the admitted D60 scope and publishing the completed
+engine/wiki package. **VED-003 is `LOCAL_COMPLETE`.** Its source sign policy,
+modern composed full positions, classical-derived full degrees, edition-owned
+deities, public/facade/REST transport and D60-containing strength consumers
+are implemented and validated. The [execution receipt](../03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md)
+records 1,552 distinct passing tests and 24,432 conditioned corpus checks
+within the unchanged numerical budget. No engineering work remains for the
+admitted profiles.
+
+The register now contains **24 stable IDs, five closed scoped packages
+(VED-001/003/004/006/015), and 19 open-or-bounded packages**, including VED-017's
+independent window frontier. A directly prescribed classical D60 degree law
+and exact source-published planetary pairs are optional future research;
+neither is a closure gate or an additional promised work package. Historical
+checkpoint counts and decisions above remain dated evidence.
+
+VED-001's already completed bounded Chara cycle work is included in the same
+coherent engine/wiki publication package. Generated wiki source is published
+first; the parent engine package then records that wiki gitlink. Package
+release, deployment and website/Urania adoption remain separate actions.

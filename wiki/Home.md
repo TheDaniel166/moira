@@ -29,6 +29,8 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Lunar Months & Festival Policy](02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md)**
 - **[Date-derived Gochar](02_standards/GOCHARA_DATE_DERIVED_STANDARD.md)**
 - [Personalized Muhurta policy and sampled search](02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md)
+- [Bounded Chara Dasha cycles](02_standards/CHARA_DASHA_CYCLE_STANDARD.md)
+- [D60 source and positional admission](02_standards/D60_SOURCE_ADMISSION_STANDARD.md)
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
 - **[Migrating from Swiss Ephemeris](02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md)**
@@ -43,6 +45,13 @@ available, named source editions for doctrine tables, and explicit policy or
 invariant tests where no external software can be authoritative.
 - **[Astronomical Validation](03_validation/VALIDATION_ASTRONOMY.md)**
 - **[Astrological Invariants](03_validation/VALIDATION_ASTROLOGY.md)**
+- [Chara/D60 implementation evidence](03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md)
+- [D60 full-profile research](06_roadmap/D60_FULL_POSITION_SOURCE_RESEARCH_2026-10-07.md)
+- [D60 bounded evidence adjudication](06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md)
+- [D60 full-profile validation](03_validation/D60_FULL_POSITION_VALIDATION_2026-10-07.md)
+- [D60 broader computational validation](03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md)
+- [D60 classical-derived source admission](06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md)
+- [D60 classical-derived validation](03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md)
 - **[Hellenistic Source Validation](03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md)**
 - **[Generated Hellenistic Capability Matrix](03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md)**
 - **[Generated Hellenistic API Inventory](03_validation/HELLENISTIC_API_INVENTORY.generated.md)**

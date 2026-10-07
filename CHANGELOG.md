@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Bounded Chara cycles (VED-001)**: strict one/two-cycle engine and REST
+  selection with canonical cycle, lord-mode, fixed-year and epoch receipts.
+  Default arithmetic is retained; published repetition evidence is partial.
+- **D60 source sign method (VED-003)**: `D60Method`, `D60SignResult`, `d60_sign`,
+  `Moira.d60_sign` and `/v1/varga/d60/sign`; explicit Santhanam sign selection
+  also feeds Vimshopaka. Source-only selection rejects full-position products.
+  Harmonic defaults remain.
+- **Bounded D60 full profile (VED-003)**: `pvr_textbook_linear` composes Rao's
+  identified textbook sign rule and divisional-degree prescription, with two
+  canonical positional source locators through facade, scalar/batch/chart REST
+  and Vimshopaka. Strict opt-in numeric preflight and exhaustive half-degree
+  boundary checks; the source's D9 arithmetic discrepancy is recorded.
+  The completed bounded review adds independent Sharma sign witnesses and
+  one conditional rounded arudha D1/full-D60 pair. Direct classical continuous-degree
+  attribution and a qualified published planetary oracle remain unestablished
+  in the reviewed sources. Broader computational validation adds 24,432
+  comparisons with pinned PyJHora full points and compiled Maitreya
+  signs/instrumented longitudes, with reproducible offline fixtures and direct
+  engine/facade/REST/strength checks. No current PVR JHora equivalence is claimed.
+- **Classical-derived full D60 policy (VED-003)**: `classical_derived_linear`
+  combines BPHS Santhanam signs with Moira's explicit proportional-degree
+  extension, supported by reviewed Saravali, Jataka Parijata and Raman's
+  Prasna Marga notes. Full results include `d60_degree_attribution` alongside
+  source/derivation locators through facade and REST. All 720 subdivisions,
+  frozen external witnesses and real-reader chart routes are covered.
+  Source-profile composition preserves tiny negative circular left limits
+  across Shodashvarga and strength. Modern provenance and harmonic defaults
+  are retained; no direct classical D60 degree verse is claimed.
 - **Personalized Muhurta repair (VED-004/006)**: seven validated policy weights
   and complete policy receipts; reader-bound sampled search through
   `find_muhurta_windows`, matching Moira methods and `/v1/muhurta/search`.
@@ -25,6 +53,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Live star anchors fail explicitly when unavailable; dated windows remain open.
 
 ### Fixed
+- **D60 transport and source names**: all eight placement routes preserve
+  nullable canonical deity and applied-method fields; generic D60 stays null.
+  Selected Santhanam ordinal corrections: Kindar to Kinnara, Suddh to Sudha,
+  Dhannayudh to Dandayudha, Brahman to Bhramana. Chara rejects invalid cycles,
+  incomplete body/node maps and nonfinite numbers; article/book attribution
+  and complete-source claims are narrowed to the inspected evidence.
 - **Muhurta composition and transport**: personalized overlays now follow the
   effective Panchanga ayanamsa, including nested policy precedence. Repaired
   legacy adapters use actual natal Moon input and explicit chart clocks,

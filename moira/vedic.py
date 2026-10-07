@@ -205,6 +205,7 @@ from .vedic_dignities import (
 
 # ── Varga (divisional charts) ────────────────────────────────────────────
 from .varga import (
+    D60Method, D60SignResult, d60_sign,
     VargaPoint,
     calculate_varga,
     navamsa,
@@ -492,6 +493,7 @@ from .jaimini_extended import (
     karakamsa,
     CharaDashaPeriod,
     CharaDashaResult,
+    CharaDashaComputation,
     chara_dasha,
 )
 
@@ -536,6 +538,7 @@ from .sade_sati import (
 )
 
 _VEDIC_OWN: list[str] = [
+    "D60Method", "D60SignResult", "d60_sign",
     # Sidereal (extended)
     "UserDefinedAyanamsa",
     "NakshatraPosition",
@@ -911,7 +914,7 @@ _VEDIC_OWN: list[str] = [
     "Karakamsa",
     "karakamsa",
     "CharaDashaPeriod",
-    "CharaDashaResult",
+    "CharaDashaResult", "CharaDashaComputation",
     "chara_dasha",
     # muhurta completion
     "MuhurtaPolicy",

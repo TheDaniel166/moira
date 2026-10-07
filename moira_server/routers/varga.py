@@ -9,6 +9,8 @@ from moira import Moira
 from ..dependencies import get_engine
 
 from ..models.varga import (
+    D60SignRequest,
+    D60SignResponse,
     VimshopakaChartResponse,
     VimshopakaRequest,
     VargaChartNamedRequest,
@@ -50,6 +52,14 @@ from ..services.varga import (
 
 
 router = APIRouter(prefix="/v1/varga", tags=["varga"])
+
+
+@router.post("/d60/sign", response_model=D60SignResponse)
+def d60_sign_route(request: D60SignRequest) -> D60SignResponse:
+    """D60 sign by admitted explicit method; no continuous position is inferred."""
+    from moira.varga import d60_sign
+    result = d60_sign(request.sidereal_longitude, method=request.method)
+    return D60SignResponse(**{name: getattr(result, name) for name in D60SignResponse.model_fields})
 
 
 @router.post("/generic", response_model=VargaPointResponse)

@@ -216,6 +216,14 @@ class CharaDashaRequest(_StrictModel):
     lagna_sidereal_lon: FiniteNumber
     birth_jd: FiniteNumber
     node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
+    cycles: Annotated[int, Field(strict=True, ge=1, le=2)] = 1
+
+    @field_validator("node_longitudes")
+    @classmethod
+    def _pair(cls, value: dict[str, float] | None) -> dict[str, float] | None:
+        if value is not None and set(value) != {"Rahu", "Ketu"}:
+            raise ValueError("node_longitudes must contain exactly Rahu and Ketu; omit for classical lords")
+        return value
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -234,12 +242,24 @@ class CharaDashaPeriodResponse(_StrictModel):
     antardasha_starts: tuple[float, ...]
 
 
+class CharaDashaComputationResponse(_StrictModel):
+    cycle_count: Literal[1, 2]
+    lord_mode: Literal["classical_seven", "moira_existing_co_lords"]
+    formulation_id: Literal["moira_kn_rao_existing_v1"]
+    cycle_policy: Literal["repeat_first_cycle"]
+    year_basis: Literal["julian_365.25"]
+    year_days: Literal[365.25]
+    epoch_basis: Literal["caller_supplied_julian_day"]
+
+
 class CharaDashaResponse(_StrictModel):
     lagna_sign: int
     direction: int
     birth_jd: float
     periods: tuple[CharaDashaPeriodResponse, ...]
     lineage: str
+    period_count: int
+    computation: CharaDashaComputationResponse
 
 
 __all__ = [
@@ -247,6 +267,7 @@ __all__ = [
     "ArudhaPadaResponse", "ArudhaRequest", "ArudhaResponse",
     "AvasthaChartResponse", "AvasthaRequest",
     "CharaDashaPeriodResponse", "CharaDashaRequest", "CharaDashaResponse",
+    "CharaDashaComputationResponse",
     "KalavelaRequest", "KalavelaResponse", "KalavelaUpagrahaResponse",
     "KarakamsaRequest", "KarakamsaResponse",
     "LajjitadiStateResponse", "PlanetAvasthasResponse",

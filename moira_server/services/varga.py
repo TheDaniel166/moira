@@ -7,10 +7,12 @@ from dataclasses import dataclass
 
 from moira import Moira
 from moira.varga import (
+    D60Method,
     VargaPoint,
     akshavedamsha,
     ashtamsha,
     calculate_varga,
+    d60_sign,
     chaturthamsha,
     chaturvimshamsha,
     dashamansa,
@@ -94,24 +96,34 @@ def compute_varga_generic(request: VargaGenericRequest) -> VargaPoint:
 
 
 def compute_varga_named(request: VargaNamedRequest) -> VargaPoint:
-    return VARGA_FUNCTIONS[request.varga](request.sidereal_longitude)
+    return _named_point(request.varga, request.sidereal_longitude, request.d60_method)
+
+
+def _named_point(selector: str, longitude: float, method: D60Method) -> VargaPoint:
+    function = VARGA_FUNCTIONS[selector]
+    if method is not D60Method.HARMONIC:
+        # Compose source-profile groups from one normalization convention;
+        # otherwise another division can round a tiny negative input to 360.
+        longitude = d60_sign(longitude, method=method).longitude
+    if selector == "shashtiamsha":
+        return function(longitude, d60_method=method)
+    return function(longitude)
 
 
 def compute_varga_shodashvarga(
     request: VargaShodashvargaRequest,
 ) -> dict[str, VargaPoint]:
     return {
-        selector: function(request.sidereal_longitude)
-        for selector, function in VARGA_FUNCTIONS.items()
+        selector: _named_point(selector, request.sidereal_longitude, request.d60_method)
+        for selector in VARGA_FUNCTIONS
     }
 
 
 def compute_varga_named_batch(
     request: VargaNamedBatchRequest,
 ) -> dict[str, VargaPoint]:
-    function = VARGA_FUNCTIONS[request.varga]
     return {
-        key: function(longitude)
+        key: _named_point(request.varga, longitude, request.d60_method)
         for key, longitude in request.longitudes.items()
     }
 
@@ -121,8 +133,8 @@ def compute_varga_shodashvarga_batch(
 ) -> dict[str, dict[str, VargaPoint]]:
     return {
         key: {
-            selector: function(longitude)
-            for selector, function in VARGA_FUNCTIONS.items()
+            selector: _named_point(selector, longitude, request.d60_method)
+            for selector in VARGA_FUNCTIONS
         }
         for key, longitude in request.longitudes.items()
     }
@@ -137,7 +149,7 @@ def compute_varga_chart_named(
         context=context,
         body=request.body,
         varga=request.varga,
-        result=VARGA_FUNCTIONS[request.varga](context.sidereal_longitudes[request.body]),
+        result=_named_point(request.varga, context.sidereal_longitudes[request.body], request.d60_method),
     )
 
 
@@ -150,8 +162,8 @@ def compute_varga_chart_shodashvarga(
         context=context,
         body=request.body,
         results={
-            selector: function(context.sidereal_longitudes[request.body])
-            for selector, function in VARGA_FUNCTIONS.items()
+            selector: _named_point(selector, context.sidereal_longitudes[request.body], request.d60_method)
+            for selector in VARGA_FUNCTIONS
         },
     )
 
@@ -166,8 +178,8 @@ def compute_varga_chart_shodashvarga_batch(
         context=context,
         results={
             body: {
-                selector: function(context.sidereal_longitudes[body])
-                for selector, function in VARGA_FUNCTIONS.items()
+                selector: _named_point(selector, context.sidereal_longitudes[body], request.d60_method)
+                for selector in VARGA_FUNCTIONS
             }
             for body in bodies
         },
@@ -196,7 +208,11 @@ def compute_vimshopaka(request):
         VimshopakaVargaEntryResponse,
     )
 
-    results = vimshopaka_all(request.sidereal_longitudes, request.group)
+    longitudes = request.sidereal_longitudes
+    if request.d60_method is not D60Method.HARMONIC:
+        longitudes = {body: d60_sign(lon, method=request.d60_method).longitude
+                      for body, lon in longitudes.items()}
+    results = vimshopaka_all(longitudes, request.group, d60_method=request.d60_method)
     return VimshopakaChartResponse(
         group=request.group,
         planets={
@@ -216,10 +232,12 @@ def compute_vimshopaka(request):
                     for e in vb.entries
                 ),
                 total=vb.total,
+                d60_method=vb.d60_method,
+                d60_source_references=vb.d60_source_references,
             )
             for planet, vb in results.items()
         },
-        vargottama=tuple(sorted(vargottama_planets(request.sidereal_longitudes))),
+        vargottama=tuple(sorted(vargottama_planets(longitudes))),
     )
 
 

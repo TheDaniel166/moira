@@ -97,7 +97,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "jaimini_pair", "ashtakavarga", "ashtakavarga_for_chart",
             "ashtakavarga_profile", "ashtakavarga_sign_profile",
             "ashtakavarga_transit_strength", "varga", "varga_named",
-            "varga_for_chart", "shodashvarga", "shodashvarga_for_chart",
+            "varga_for_chart", "shodashvarga", "shodashvarga_for_chart", "d60_sign",
             "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical",
             "list_ayanamsa_systems"
         ],
@@ -830,18 +830,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the Ashtakavarga rekha count for a planet transiting a sign."""
         return _facade_module().transit_strength(planet, transit_sign_index, bhinna)
 
-    def _varga_function(self, varga: str):
+    def _varga_function(self, varga: str, *, d60_method=_varga.D60Method.HARMONIC):
+        _varga._require_d60_full_point(d60_method)
         if varga not in self._SHODASHVARGA_SELECTORS:
             raise ValueError(f"unknown varga selector: {varga!r}")
+        if d60_method is not _varga.D60Method.HARMONIC:
+            if varga != "shashtiamsha":
+                raise ValueError("nondefault d60_method applies only to shashtiamsha")
+            return lambda longitude: _varga.shashtiamsha(longitude, d60_method=d60_method)
         return getattr(_varga, varga)
 
     def varga(self, sidereal_longitude: float, divisor: int, name: str = ""):
         """Compute a generic Varga division from a sidereal longitude."""
         return _facade_module().calculate_varga(sidereal_longitude, divisor, name)
 
-    def varga_named(self, sidereal_longitude: float, varga: str):
+    def varga_named(self, sidereal_longitude: float, varga: str, *, d60_method=_varga.D60Method.HARMONIC):
         """Compute one named Varga from a sidereal longitude."""
-        return self._varga_function(varga)(sidereal_longitude)
+        return self._varga_function(varga, d60_method=d60_method)(sidereal_longitude)
+
+    def d60_sign(self, sidereal_longitude: float, *, method=_varga.D60Method.HARMONIC):
+        """Return an explicitly selected sign-only D60 result."""
+        return _varga.d60_sign(sidereal_longitude, method=method)
 
     def varga_for_chart(
         self,
@@ -850,8 +859,10 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         varga: str,
         *,
         ayanamsa_system: str | None = None,
+        d60_method=_varga.D60Method.HARMONIC,
     ):
         """Compute one named Varga for one body in an existing chart."""
+        function = self._varga_function(varga, d60_method=d60_method)
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         sidereal = self._sidereal_longitudes_from_chart(
@@ -859,12 +870,19 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             (body,),
             ayanamsa_system=system,
         )[body]
-        return self._varga_function(varga)(sidereal)
+        return function(sidereal)
 
-    def shodashvarga(self, sidereal_longitude: float):
+    def shodashvarga(self, sidereal_longitude: float, *, d60_method=_varga.D60Method.HARMONIC):
         """Compute Moira's admitted Shodashvarga set for one sidereal longitude."""
+        _varga._require_d60_full_point(d60_method)
+        if d60_method is not _varga.D60Method.HARMONIC:
+            # Source profiles own strict circular normalization. Give every
+            # division the same canonical input, including the left wrap limit.
+            sidereal_longitude = _varga.d60_sign(sidereal_longitude, method=d60_method).longitude
         return {
-            selector: self._varga_function(selector)(sidereal_longitude)
+            selector: self._varga_function(
+                selector, d60_method=d60_method if selector == "shashtiamsha" else _varga.D60Method.HARMONIC,
+            )(sidereal_longitude)
             for selector in self._SHODASHVARGA_SELECTORS
         }
 
@@ -874,8 +892,10 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         body: str,
         *,
         ayanamsa_system: str | None = None,
+        d60_method=_varga.D60Method.HARMONIC,
     ):
         """Compute Moira's admitted Shodashvarga set for one chart body."""
+        _varga._require_d60_full_point(d60_method)
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         sidereal = self._sidereal_longitudes_from_chart(
@@ -883,4 +903,4 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             (body,),
             ayanamsa_system=system,
         )[body]
-        return self.shodashvarga(sidereal)
+        return self.shodashvarga(sidereal, d60_method=d60_method)

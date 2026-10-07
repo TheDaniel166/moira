@@ -6108,6 +6108,87 @@ Named functions follow the pattern `navamsa(longitude) → VargaPoint`:
 | `akshavedamsha` | D-45 | All matters |
 | `shashtiamsha` | D-60 | Past life karma |
 
+
+`VargaPoint` now preserves nullable `deity` and actual `d60_method`. Named
+`shashtiamsha` enriches the point; generic divisor 60 retains `deity=None`.
+Full D60 numeric defaults remain harmonic. Four source-owned strings changed:
+`Kindar` to `Kinnara`, `Suddh` to `Sudha`, `Dhannayudh` to `Dandayudha`, and
+`Brahman` to `Bhramana`; these are corrections, not source aliases.
+
+```python
+from moira.vedic import D60Method, D60SignResult, d60_sign, vimshopaka_bala
+
+source_sign = d60_sign(283 + 25 / 60, method=D60Method.SANTHANAM_SIGN)
+assert source_sign.sign == "Pisces"
+assert source_sign.position_scope == "sign_only"
+```
+
+`d60_sign(longitude, *, method=D60Method.HARMONIC)` returns a frozen sign-only
+result with method and source receipt, without `sign_degree` or
+`varga_longitude`. `Moira.d60_sign` delegates to the same helper.
+`varga_sign_index(..., 60, d60_method=...)`, `vimshopaka_bala` and
+`vimshopaka_all` accept the source method; a nondefault selection requires
+D60. Full `shashtiamsha`, named/Shodashvarga and chart facade methods reject
+this sign-only selection. See [D60 source admission](D60_SOURCE_ADMISSION_STANDARD.md).
+
+`D60Method.PVR_TEXTBOOK_LINEAR` separately admits a full-position profile
+composed from Rao's 2000 textbook sign sequence and 2013 proportional degree
+rule. Exact partitions are half-open; both natal parities count forward while
+the selected Santhanam deity list reverses on even signs. This profile accepts
+strict finite numeric inputs and carries both positional source locators in
+`VargaPoint.d60_source_references`, also copied through REST. It is available
+in `shashtiamsha(..., d60_method=...)` and named, chart and Shodashvarga Moira
+methods; another named division rejects it. Strength helpers accept the same
+selection in groups containing D60 and preserve their applied source receipt.
+Generic Varga keeps its harmonic contract. The composed modern admission does
+not establish a classical degree verse or current JHora equivalence.
+
+```python
+from moira.vedic import D60Method, shashtiamsha
+
+position = shashtiamsha(31.125, d60_method=D60Method.PVR_TEXTBOOK_LINEAR)
+assert (position.sign, position.sign_degree) == ("Cancer", 7.5)
+assert len(position.d60_source_references) == 2
+```
+
+`D60Method.CLASSICAL_DERIVED_LINEAR` separately selects a complete full-degree
+policy with classical and commentarial support and an explicit Moira
+proportional-coordinate derivation. It shares the selected forward sign and
+degree arithmetic with the modern profile while preserving different
+provenance. `VargaPoint.d60_degree_attribution`, copied to REST, distinguishes
+`classical_derived`, `modern_composed`, `generic_harmonic` and unknown/null
+metadata. A directly prescribed classical continuous D60 degree law is not
+claimed. See the [source adjudication](../06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md).
+
+```python
+position = shashtiamsha(31.125, d60_method=D60Method.CLASSICAL_DERIVED_LINEAR)
+assert (position.sign, position.sign_degree) == ("Cancer", 7.5)
+assert position.d60_degree_attribution == "classical_derived"
+assert position.d60_source_references[-1] == "Moira:D60:classical-derived-proportional:v1"
+```
+
+The choice is supported by the named/Shodashvarga facade and chart methods,
+all seven corresponding REST request shapes, sign projection and
+D60-containing Vimshopaka groups. Source-profile groups apply their circular
+normalization before evaluating other divisions and D1 relationships. The
+strength calculation uses D60 signs; it does not require or prescribe degrees.
+
+### Bounded Chara Dasha
+
+`chara_dasha(sidereal_longitudes, lagna_sidereal_lon, birth_jd,
+node_longitudes=None, cycles=1)` admits strict integer cycles 1 or 2, exactly
+seven classical bodies and either omitted nodes or an exact Rahu/Ketu pair.
+All numbers must be finite without coercion. The original default arithmetic
+and five-field `CharaDashaResult` constructor are preserved; a legacy/manual
+result has unknown `computation=None`.
+
+Engine results always carry the frozen `CharaDashaComputation` receipt and
+actual `period_count`, including repeated-cycle policy, applied lord mode,
+365.25-day year and caller-owned Julian-day epoch. Root, facade and Vedic
+exports share canonical identities. The published repetition witness and
+unresolved complete-cycle/co-lord authority are described in the
+[Chara cycle standard](CHARA_DASHA_CYCLE_STANDARD.md).
+
 ---
 
 ### Vimshottari Dasha

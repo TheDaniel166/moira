@@ -1,8 +1,8 @@
 # Moira Varga Backend Standard
 
-Version: 1.0
-Date: 2026-06-11
-Status: Current implementation truth; P9-11 REST admission prerequisite
+Version: 1.2
+Date: 2026-10-07
+Status: Current engine/REST truth; bounded D60 source profiles
 
 ## Governing Principle
 
@@ -37,9 +37,14 @@ A **VargaPoint** in Moira is:
 | `sign` | Varga sign name |
 | `sign_symbol` | Varga sign symbol |
 | `sign_degree` | Degree within the varga sign |
+| `deity` | Nullable named D60 enrichment; generic D60 remains null |
+| `d60_method` | Actual full-position D60 convention (`harmonic`, `pvr_textbook_linear` or `classical_derived_linear`); null for non-D60 or unknown legacy/manual metadata |
+| `d60_source_references` (property) | Applied source/derivation chain, copied to REST; empty for non-D60 or unknown manual metadata |
+| `d60_degree_attribution` (property) | `generic_harmonic`, `modern_composed`, `classical_derived`, or null for non-D60/unknown metadata; a derived policy is not a direct classical D60 degree prescription |
 
 `VargaPoint` is frozen and slotted. This matches its machine contract: the
 result vessel is read-only once constructed.
+Its D60 receipt rejects a sign-only method or an inapplicable division.
 
 #### 1.2 Generic varga formula
 
@@ -114,6 +119,8 @@ All public names are declared in `moira/varga.py`.
 | Name | Meaning |
 |---|---|
 | `VargaPoint` | Frozen result vessel for one divisional placement |
+| `D60Method` | Harmonic, Santhanam sign-only, composed PVR textbook/linear or classical-derived proportional selection |
+| `D60SignResult` | Frozen sign-only placement; no mapped longitude/degree |
 
 #### Computation functions
 
@@ -135,7 +142,28 @@ All public names are declared in `moira/varga.py`.
 | `saptavimshamsha` | D27 | Parashari triplicity-start rule |
 | `khavedamsha` | D40 | Parashari odd/even Aries/Libra rule |
 | `akshavedamsha` | D45 | Parashari odd/even Aries/Capricorn rule |
-| `shashtiamsha` | D60 | generic |
+| `shashtiamsha` | D60 | harmonic default, `pvr_textbook_linear` or `classical_derived_linear` |
+| `d60_sign` | D60 sign only | harmonic default, `bphs_santhanam_sign`, `pvr_textbook_linear` or `classical_derived_linear` |
+
+The [D60 source standard](D60_SOURCE_ADMISSION_STANDARD.md) owns the selected
+edition, sign formula, four corrected deity names, strict method applicability,
+strength effects and limits of continuous-degree evidence. The Santhanam source
+method is accepted by `d60_sign`, `varga_sign_index` at divisor 60 and Vimshopaka
+groups containing D60. It is rejected by full-position wrappers and facade
+methods before chart work. Harmonic numeric defaults are retained.
+The separately named PVR profile admits full positions through scalar, chart
+and Shodashvarga consumers with two source locators. It combines dated modern
+primary prescriptions; direct classical continuous-D60-degree prescription is unestablished.
+Its direct inputs are strict finite numbers and it cannot select another named
+division. Deity naming still uses the identified Santhanam table.
+
+The classical-derived profile is also complete through the same consumers.
+It shares the proportional coordinates with a different reviewed source
+chain and an explicit Moira derivation receipt. [Its adjudication](../06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md)
+separates D60 sign authority, general subdivision arithmetic, D12 fractional
+correspondence, Raman's D9 degree notes and the D60 extension. Source-profile
+groups normalize the shared input before evaluating other divisions, including
+tiny negative wrap limits. This retains each division's own sign doctrine.
 
 ---
 
@@ -153,7 +181,9 @@ All public names are declared in `moira/varga.py`.
 
 Current implementation truth:
 
-- Public functions do not currently reject non-finite longitudes explicitly.
+- Existing full-position helpers retain their numeric input behavior; this
+  package is not a general Varga input audit. The new `d60_sign` helper rejects
+  bool/string/nonfinite inputs explicitly and requires an actual `D60Method`.
 - REST transport must reject non-finite longitude inputs before calling the
   engine.
 - `VargaPoint` is immutable after construction.
@@ -172,6 +202,11 @@ The Varga backend is currently validated through:
 
 - `tests/unit/test_varga.py`
 - `tests/unit/test_shodashvarga.py`
+- `tests/unit/test_d60_deities.py`
+- `tests/unit/test_vedic_chara_d60_admission.py`
+- `tests/server/test_vedic_chara_d60_admission.py`
+- `tests/unit/test_d60_full_position.py`
+- `tests/server/test_d60_full_position.py`
 - public API surface checks in `tests/unit/test_api_surface_adversarial_audit.py`
 
 ### 6. Validation Claims
@@ -203,18 +238,18 @@ The minimum verification slice for this standard is:
 
 ---
 
-## Part III - REST Admission Frontier
+## Part III - Admitted REST Surface
 
-P9-11 may proceed to REST transport design after this standard.
+Eight placement routes cover generic, named, Shodashvarga, direct batches and
+three chart-derived shapes. The chart adapter owns tropical-to-sidereal
+reduction and returns its ayanamsa/context provenance. Every point preserves
+canonical nullable `deity`, applied `d60_method` and positional source locators
+through the shared serializer.
 
-First admitted REST shape should be direct-sync:
-
-- caller-supplied sidereal longitude
-- explicit varga selector
-- direct single-varga route
-- named Shodashvarga route
-- optional batch route for multiple bodies or multiple vargas
-
-Chart-backed convenience routes should be deferred until the server adapter
-explicitly owns tropical-to-sidereal reduction and records ayanamsa policy
-truth.
+`POST /v1/varga/d60/sign` exposes the typed sign-only result. Seven named/full
+Shodashvarga request schemas admit `harmonic` and `pvr_textbook_linear`; source-only or unknown
+selections receive HTTP 422 before chart derivation. Vimshopaka exposes the
+selected D60 method for groups containing D60 and copies its actual receipt.
+See [REST reference](../02_services/REST_API_REFERENCE.md) and the
+[implementation receipt](../03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md)
+and [full-profile receipt](../03_validation/D60_FULL_POSITION_VALIDATION_2026-10-07.md).

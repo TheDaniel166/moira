@@ -947,6 +947,7 @@ from .dasha import (
     validate_vimshottari_output,
 )
 from .varga import (
+    D60Method, D60SignResult, d60_sign,
     VargaPoint, calculate_varga,
     navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
     VIMSHOPAKA_GROUPS, VARGA_VISHVA,
@@ -972,7 +973,7 @@ from .avasthas import (
 )
 from .jaimini_extended import (
     JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse,
-    ArgalaResult, Karakamsa, CharaDashaPeriod, CharaDashaResult,
+    ArgalaResult, Karakamsa, CharaDashaPeriod, CharaDashaResult, CharaDashaComputation,
     rasi_aspects, rasi_drishti_of, arudha_padas, argala, karakamsa,
     chara_dasha,
 )
@@ -1914,6 +1915,7 @@ from .chart import ChartContext
 from collections.abc import Callable
 
 __all__ = [
+    "D60Method", "D60SignResult", "d60_sign",
     "STELLIUM_SCHEMA_VERSION", "STELLIUM_CORE", "StelliumAnalysisPolicy",
     "StelliumContext", "StelliumSelection", "StelliumHouseContext", "StelliumArc",
     "StelliumAssociation", "StelliumMatch", "StelliumGroup", "StelliumEvaluation",
@@ -2476,7 +2478,7 @@ __all__ = [
     "deeptadi_avastha", "lajjitadi_avasthas", "evaluate_avasthas",
     # Jaimini extended
     "JaiminiExtendedPolicy", "ArudhaPada", "ArudhaResult", "ArgalaHouse",
-    "ArgalaResult", "Karakamsa", "CharaDashaPeriod", "CharaDashaResult",
+    "ArgalaResult", "Karakamsa", "CharaDashaPeriod", "CharaDashaResult", "CharaDashaComputation",
     "rasi_aspects", "rasi_drishti_of", "arudha_padas", "argala",
     "karakamsa", "chara_dasha",
     # Yoga engine

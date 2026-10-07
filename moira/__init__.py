@@ -10,6 +10,7 @@ from __future__ import annotations
 import sys as _sys
 from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
 from .varga import (
+    D60Method, D60SignResult, d60_sign,
     VargaPoint,
     calculate_varga,
     navamsa,
@@ -440,6 +441,7 @@ from .jaimini_extended import (
     Karakamsa,
     CharaDashaPeriod,
     CharaDashaResult,
+    CharaDashaComputation,
     rasi_aspects,
     rasi_drishti_of,
     arudha_padas,
@@ -1296,6 +1298,7 @@ from .mundane import (
 )
 
 __all__ = [
+    "D60Method", "D60SignResult", "d60_sign",
     # Existing facade-curated Varga products.
     "VargaPoint",
     "calculate_varga",
@@ -1852,7 +1855,7 @@ __all__ = [
     "ArgalaResult",
     "Karakamsa",
     "CharaDashaPeriod",
-    "CharaDashaResult",
+    "CharaDashaResult", "CharaDashaComputation",
     "rasi_aspects",
     "rasi_drishti_of",
     "arudha_padas",

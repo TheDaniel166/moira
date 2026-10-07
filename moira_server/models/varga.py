@@ -3,13 +3,41 @@
 from __future__ import annotations
 
 import math
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field, field_validator
+from pydantic import AfterValidator, Field, field_validator, model_validator
+from moira.varga import D60Method, _require_d60_full_point
 
 from .common import REST_BATCH_MAX_ITEMS, _StrictModel
 from ._vedic_inputs import ClassicalPlanet, FiniteNumber
 from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
+
+
+def _full_d60_method(value: D60Method) -> D60Method:
+    _require_d60_full_point(value)
+    return value
+
+
+D60FullPointMethod = Annotated[
+    Literal[D60Method.HARMONIC, D60Method.PVR_TEXTBOOK_LINEAR, D60Method.CLASSICAL_DERIVED_LINEAR],
+    Field(description="Full positions admit harmonic, pvr_textbook_linear (modern composed), or classical_derived_linear (BPHS signs plus Moira's proportional-degree derivation). The derived profile does not claim a direct classical D60 degree prescription. bphs_santhanam_sign is sign-only; use /v1/varga/d60/sign."),
+    AfterValidator(_full_d60_method),
+]
+
+
+class D60SignRequest(_StrictModel):
+    sidereal_longitude: FiniteNumber
+    method: D60Method = D60Method.HARMONIC
+
+
+class D60SignResponse(_StrictModel):
+    longitude: float
+    sign_index: int
+    sign: str
+    sign_symbol: str
+    method: D60Method
+    position_scope: Literal["sign_only"]
+    source_reference: str
 
 
 VargaSelector = Literal[
@@ -52,7 +80,41 @@ class VargaGenericRequest(_StrictModel):
         return value
 
 
-class VargaNamedRequest(_StrictModel):
+class _D60PlacementRequest(_StrictModel):
+    d60_method: D60FullPointMethod = D60Method.HARMONIC
+
+    @model_validator(mode="before")
+    @classmethod
+    def _strict_profile_longitudes(cls, value):
+        # Preserve the legacy harmonic transport's coercion contract. The
+        # explicitly admitted source profile has strict numeric inputs.
+        if isinstance(value, dict) and value.get("d60_method") in (
+            D60Method.PVR_TEXTBOOK_LINEAR, D60Method.CLASSICAL_DERIVED_LINEAR,
+        ):
+            inputs = []
+            if "sidereal_longitude" in value:
+                inputs.append(value["sidereal_longitude"])
+            if isinstance(value.get("longitudes"), dict):
+                inputs.extend(value["longitudes"].values())
+            for longitude in inputs:
+                if isinstance(longitude, bool) or not isinstance(longitude, (int, float)):
+                    raise ValueError("source profile longitudes must be finite numbers without coercion")
+                try:
+                    finite = math.isfinite(longitude)
+                except OverflowError:
+                    finite = False
+                if not finite:
+                    raise ValueError("source profile longitudes must be finite")
+        return value
+
+    @model_validator(mode="after")
+    def _applicable_d60_method(self):
+        if self.d60_method is not D60Method.HARMONIC and getattr(self, "varga", "shashtiamsha") != "shashtiamsha":
+            raise ValueError("nondefault d60_method applies only to shashtiamsha")
+        return self
+
+
+class VargaNamedRequest(_D60PlacementRequest):
     sidereal_longitude: float
     varga: VargaSelector
 
@@ -64,7 +126,7 @@ class VargaNamedRequest(_StrictModel):
         return value
 
 
-class VargaShodashvargaRequest(_StrictModel):
+class VargaShodashvargaRequest(_D60PlacementRequest):
     sidereal_longitude: float
 
     @field_validator("sidereal_longitude")
@@ -75,7 +137,7 @@ class VargaShodashvargaRequest(_StrictModel):
         return value
 
 
-class VargaNamedBatchRequest(_StrictModel):
+class VargaNamedBatchRequest(_D60PlacementRequest):
     varga: VargaSelector
     longitudes: dict[str, float] = Field(
         min_length=1,
@@ -89,7 +151,7 @@ class VargaNamedBatchRequest(_StrictModel):
         return value
 
 
-class VargaShodashvargaBatchRequest(_StrictModel):
+class VargaShodashvargaBatchRequest(_D60PlacementRequest):
     longitudes: dict[str, float] = Field(
         min_length=1,
         max_length=REST_BATCH_MAX_ITEMS,
@@ -102,7 +164,7 @@ class VargaShodashvargaBatchRequest(_StrictModel):
         return value
 
 
-class VargaChartNamedRequest(SiderealChartBaseRequest):
+class VargaChartNamedRequest(SiderealChartBaseRequest, _D60PlacementRequest):
     body: str
     varga: VargaSelector
 
@@ -114,7 +176,7 @@ class VargaChartNamedRequest(SiderealChartBaseRequest):
         return value
 
 
-class VargaChartShodashvargaRequest(SiderealChartBaseRequest):
+class VargaChartShodashvargaRequest(SiderealChartBaseRequest, _D60PlacementRequest):
     body: str
 
     @field_validator("body")
@@ -125,7 +187,7 @@ class VargaChartShodashvargaRequest(SiderealChartBaseRequest):
         return value
 
 
-class VargaChartShodashvargaBatchRequest(SiderealChartBaseRequest):
+class VargaChartShodashvargaBatchRequest(SiderealChartBaseRequest, _D60PlacementRequest):
     bodies: list[str] = Field(
         min_length=1,
         max_length=REST_BATCH_MAX_ITEMS,
@@ -140,6 +202,13 @@ class VargaPointResponse(_StrictModel):
     sign: str
     sign_symbol: str
     sign_degree: float
+    deity: str | None = None
+    d60_method: D60FullPointMethod | None = None
+    d60_source_references: tuple[str, ...] = ()
+    d60_degree_attribution: Literal["generic_harmonic", "modern_composed", "classical_derived"] | None = Field(
+        default=None,
+        description="Authority category for D60 degrees; classical_derived records Moira's explicit generalisation, not a direct classical D60 degree law. Null for non-D60 or unknown legacy/manual metadata.",
+    )
 
 
 class VargaShodashvargaResponse(_StrictModel):
@@ -198,6 +267,13 @@ class VimshopakaRequest(_StrictModel):
 
     sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
     group: VimshopakaGroup = "shodashavarga"
+    d60_method: D60Method = D60Method.HARMONIC
+
+    @model_validator(mode="after")
+    def _method_applies(self) -> "VimshopakaRequest":
+        if self.d60_method is not D60Method.HARMONIC and self.group not in ("dashavarga", "shodashavarga"):
+            raise ValueError("nondefault d60_method requires a group containing D60")
+        return self
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -227,6 +303,8 @@ class VimshopakaBalaResponse(_StrictModel):
     group: str
     entries: tuple[VimshopakaVargaEntryResponse, ...]
     total: float
+    d60_method: D60Method | None = None
+    d60_source_references: tuple[str, ...] = ()
 
 
 class VimshopakaChartResponse(_StrictModel):
@@ -238,6 +316,7 @@ class VimshopakaChartResponse(_StrictModel):
 
 
 __all__ = [
+    "D60SignRequest", "D60SignResponse",
     "VargaGenericRequest",
     "VargaChartNamedRequest",
     "VargaChartNamedResponse",

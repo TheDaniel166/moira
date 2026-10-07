@@ -20,6 +20,7 @@ from ..models.vedic_extended import (
     CharaDashaPeriodResponse,
     CharaDashaRequest,
     CharaDashaResponse,
+    CharaDashaComputationResponse,
     KalavelaRequest,
     KalavelaResponse,
     KalavelaUpagrahaResponse,
@@ -242,8 +243,8 @@ def karakamsa_route(request: KarakamsaRequest) -> KarakamsaResponse:
 
 @jaimini_extended_router.post("/chara-dasha", response_model=CharaDashaResponse)
 def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
-    """First-cycle Chara Dasha per K.N. Rao (Neelakantha karika lineage,
-    named): 9th-from-lagna direction rule, count-to-lord years with no
+    """Bounded one/two-cycle Chara Dasha in the existing Moira formulation,
+    with ninth-from-lagna direction, count-to-lord years with no
     exaltation adjustment, antardashas with the dasha sign last."""
     from moira.jaimini_extended import chara_dasha
 
@@ -252,6 +253,7 @@ def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
         request.lagna_sidereal_lon,
         request.birth_jd,
         node_longitudes=request.node_longitudes,
+        cycles=request.cycles,
     )
     return CharaDashaResponse(
         lagna_sign=result.lagna_sign,
@@ -268,6 +270,11 @@ def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
             for p in result.periods
         ),
         lineage=result.lineage,
+        period_count=result.period_count,
+        computation=CharaDashaComputationResponse(
+            **{name: getattr(result.computation, name)
+               for name in CharaDashaComputationResponse.model_fields}
+        ),
     )
 
 

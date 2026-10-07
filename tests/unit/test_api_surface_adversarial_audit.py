@@ -452,6 +452,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES = {
 # Explicit admissions added since the original frozen root-surface baseline.
 # Keeping these names literal preserves drift detection for future changes.
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
+    'D60Method', 'D60SignResult', 'd60_sign',
     'LUNAR_ECLIPTIC_DIRECTION_V1',
     'LunarEclipticDirectionPolicy',
     'LunarEclipticDirectionWitness',
@@ -489,6 +490,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'ChandraBala',
     'CharaDashaPeriod',
     'CharaDashaResult',
+    'CharaDashaComputation',
     'ChurchOfLightProgressedAstrodynesChart',
     'ChurchOfLightProgressionGeometry',
     'ChurchOfLightProgressionPolicy',
@@ -1526,6 +1528,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'varga',
     'varga_for_chart',
     'varga_named',
+    'd60_sign',
 })
 
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
