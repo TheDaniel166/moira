@@ -25,6 +25,7 @@ _gochara_dated = importlib.import_module("moira.gochara_dated")
 _avasthas = importlib.import_module("moira.avasthas")
 _sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
 _named_muhurta = importlib.import_module("moira.named_muhurta")
+_special_muhurta = importlib.import_module("moira.special_muhurta")
 _muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
@@ -204,6 +205,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def list_ayanamsa_systems(self) -> dict[str, float]:
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
+
+    def special_muhurta_from_solar_times(self, *, weekday: int, sunrise_jd_ut1=None,
+            sunset_jd_ut1=None, half_set_jd_ut1=None, upper_limb_sunset_jd_ut1=None,
+            policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Source-selected Vijaya/Godhuli from caller-owned solar anchors."""
+        return _special_muhurta.special_muhurta_from_solar_times(weekday=weekday,
+            sunrise_jd_ut1=sunrise_jd_ut1, sunset_jd_ut1=sunset_jd_ut1,
+            half_set_jd_ut1=half_set_jd_ut1, upper_limb_sunset_jd_ut1=upper_limb_sunset_jd_ut1, policy=policy)
+
+    def muhurta_yogas_from_longitudes(self, sun_sidereal_longitude: float,
+            moon_sidereal_longitude: float, *, weekday: int,
+            policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Selected Muhurta yoga presence, with no reader or ayanamsa conversion."""
+        return _special_muhurta.muhurta_yogas_from_longitudes(sun_sidereal_longitude,
+            moon_sidereal_longitude, weekday=weekday, policy=policy)
+
+    def special_muhurta_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Seven-name source-selected product using this facade's reader."""
+        return _special_muhurta.special_muhurta_for_date(local_date, latitude, longitude,
+            timezone=timezone, policy=policy, reader=self._reader)
 
     def named_muhurta_from_solar_times(
         self, sunrise_jd_ut1: float, sunset_jd_ut1: float | None = None,

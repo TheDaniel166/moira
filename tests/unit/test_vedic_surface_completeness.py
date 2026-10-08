@@ -8,7 +8,7 @@ import moira.vedic as vedic
 _FAMILIES = (
     "varga", "ashtakavarga", "shadbala", "yogas", "avasthas",
     "jaimini_extended", "muhurta", "muhurta_search", "upagrahas", "sade_sati", "gochara", "gochara_dated",
-    "sayanadi_dated", "named_muhurta",
+    "sayanadi_dated", "named_muhurta", "special_muhurta",
 )
 
 

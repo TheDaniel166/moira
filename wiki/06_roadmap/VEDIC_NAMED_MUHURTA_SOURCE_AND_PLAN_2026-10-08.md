@@ -5,6 +5,10 @@
 **Scope:** Abhijit and Brahma intervals, explicit source/compatibility policies, engine/facade/public and REST. Other named windows require separate source admission.
 **Execution:** all four finite steps below are complete; see the [owning standard](../02_standards/NAMED_MUHURTA_STANDARD.md) and [224-test execution receipt](../03_validation/NAMED_MUHURTA_VALIDATION_2026-10-08.md). This implementation is included in the containing authorized engine/wiki source-publication package; release and deployment are separate.
 
+**Subsequent completion:** the five names left open by this historical two-window
+checkpoint are implemented in the [five-name source package](VEDIC_NAMED_MUHURTA_FIVE_SOURCE_AND_PLAN_2026-10-08.md).
+Their current status is in register section 27 and the [extension receipt](../03_validation/SPECIAL_MUHURTA_VALIDATION_2026-10-08.md).
+
 ## Source collation
 
 | Witness | Identity and inspected scope | Admission consequence |

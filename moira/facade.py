@@ -49,6 +49,12 @@ from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
 
+from .special_muhurta import (
+    SpecialMuhurtaPolicy, SpecialMuhurtaBoundary, SpecialMuhurtaWindow,
+    SpecialMuhurtaResult, SpecialMuhurtaSolarResult, MuhurtaYogaMatch,
+    MuhurtaYogaSnapshot, SpecialMuhurtaDay, special_muhurta_from_solar_times,
+    muhurta_yogas_from_longitudes, special_muhurta_for_date,
+)
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
 from ._facade_annual_lords import AnnualLordFacadeMixin
 from ._facade_astronomy import AstronomyFacadeMixin
@@ -1939,6 +1945,7 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    'SpecialMuhurtaPolicy', 'SpecialMuhurtaBoundary', 'SpecialMuhurtaWindow', 'SpecialMuhurtaResult', 'SpecialMuhurtaSolarResult', 'MuhurtaYogaMatch', 'MuhurtaYogaSnapshot', 'SpecialMuhurtaDay', 'special_muhurta_from_solar_times', 'muhurta_yogas_from_longitudes', 'special_muhurta_for_date',
     "SayanadiAvastha",
     "SayanadiPolicy",
     "SayanadiName",

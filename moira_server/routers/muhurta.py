@@ -31,9 +31,37 @@ from ..models.named_muhurta import (
 )
 from ..serializers.named_muhurta import serialize_named_muhurta
 from ..services.named_muhurta import compute_named_muhurta_day
+from ..models.special_muhurta import (
+    SpecialMuhurtaSolarRequest, MuhurtaYogaRequest, SpecialMuhurtaDayRequest,
+    SpecialMuhurtaSolarResponse, MuhurtaYogaResponse, SpecialMuhurtaDayResponse,
+)
+from ..serializers.special_muhurta import serialize_special_muhurta_solar, serialize_muhurta_yogas
+from ..services.special_muhurta import compute_special_muhurta_day
 
 
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.post("/special/solar", response_model=SpecialMuhurtaSolarResponse)
+def special_muhurta_solar_route(request: SpecialMuhurtaSolarRequest) -> SpecialMuhurtaSolarResponse:
+    """Vijaya/Godhuli from supplied solar anchors, with separate weekday eligibility."""
+    from moira import special_muhurta_from_solar_times
+    return serialize_special_muhurta_solar(special_muhurta_from_solar_times(
+        **request.model_dump(exclude={"policy"}), policy=request.policy.to_engine()))
+
+
+@router.post("/special/yogas", response_model=MuhurtaYogaResponse)
+def special_muhurta_yogas_route(request: MuhurtaYogaRequest) -> MuhurtaYogaResponse:
+    """Source-selected Amrita, Ravi and Sarvarthasiddhi presence at supplied sidereal longitudes."""
+    from moira import muhurta_yogas_from_longitudes
+    return serialize_muhurta_yogas(muhurta_yogas_from_longitudes(
+        **request.model_dump(exclude={"policy"}), policy=request.policy.to_engine()))
+
+
+@router.post("/special/day", response_model=SpecialMuhurtaDayResponse)
+def special_muhurta_day_route(request: SpecialMuhurtaDayRequest, engine: Moira = Depends(get_engine)) -> SpecialMuhurtaDayResponse:
+    """All seven named families for a sunrise date; transition uncertainty and missing data are explicit."""
+    return compute_special_muhurta_day(engine, request)
 
 
 @router.post("/named/direct", response_model=NamedMuhurtaResponse)

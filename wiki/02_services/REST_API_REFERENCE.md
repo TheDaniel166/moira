@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 486
-- Registered OpenAPI operations: 486 (GET 37, POST 449)
+- Registered OpenAPI paths: 489
+- Registered OpenAPI operations: 489 (GET 37, POST 452)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 482
+- Versioned `/v1` paths: 485
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3581,6 +3581,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
 | `POST` | `/v1/muhurta/search` | muhurta | `muhurta_search_route_v1_muhurta_search_post` |
+| `POST` | `/v1/muhurta/special/day` | muhurta | `special_muhurta_day_route_v1_muhurta_special_day_post` |
+| `POST` | `/v1/muhurta/special/solar` | muhurta | `special_muhurta_solar_route_v1_muhurta_special_solar_post` |
+| `POST` | `/v1/muhurta/special/yogas` | muhurta | `special_muhurta_yogas_route_v1_muhurta_special_yogas_post` |
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |

@@ -8,6 +8,12 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 from __future__ import annotations
 
 import sys as _sys
+from .special_muhurta import (
+    SpecialMuhurtaPolicy, SpecialMuhurtaBoundary, SpecialMuhurtaWindow,
+    SpecialMuhurtaResult, SpecialMuhurtaSolarResult, MuhurtaYogaMatch,
+    MuhurtaYogaSnapshot, SpecialMuhurtaDay, special_muhurta_from_solar_times,
+    muhurta_yogas_from_longitudes, special_muhurta_for_date,
+)
 from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
 from .varga import (
     D60Method, D60SignResult, d60_sign,
@@ -1312,6 +1318,7 @@ from .mundane import (
 )
 
 __all__ = [
+    'SpecialMuhurtaPolicy', 'SpecialMuhurtaBoundary', 'SpecialMuhurtaWindow', 'SpecialMuhurtaResult', 'SpecialMuhurtaSolarResult', 'MuhurtaYogaMatch', 'MuhurtaYogaSnapshot', 'SpecialMuhurtaDay', 'special_muhurta_from_solar_times', 'muhurta_yogas_from_longitudes', 'special_muhurta_for_date',
     "D60Method", "D60SignResult", "d60_sign",
     # Existing facade-curated Varga products.
     "VargaPoint",

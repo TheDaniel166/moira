@@ -529,6 +529,12 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .special_muhurta import (
+    SpecialMuhurtaPolicy, SpecialMuhurtaBoundary, SpecialMuhurtaWindow,
+    SpecialMuhurtaResult, SpecialMuhurtaSolarResult, MuhurtaYogaMatch,
+    MuhurtaYogaSnapshot, SpecialMuhurtaDay, special_muhurta_from_solar_times,
+    muhurta_yogas_from_longitudes, special_muhurta_for_date,
+)
 from .named_muhurta import (
     NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval,
     NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
@@ -965,6 +971,7 @@ _VEDIC_OWN: list[str] = [
     "chandra_bala",
     "PersonalMuhurtaScore",
     "personal_muhurta_score",
+    "SpecialMuhurtaPolicy", "SpecialMuhurtaBoundary", "SpecialMuhurtaWindow", "SpecialMuhurtaResult", "SpecialMuhurtaSolarResult", "MuhurtaYogaMatch", "MuhurtaYogaSnapshot", "SpecialMuhurtaDay", "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes", "special_muhurta_for_date",
     "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval", "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times", "named_muhurta_for_date",
     "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
     # upagrahas completion

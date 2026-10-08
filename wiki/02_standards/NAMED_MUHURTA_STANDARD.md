@@ -1,8 +1,9 @@
 # Named Muhurta interval admission
 
-**Date:** 8 October 2026. **Scope:** VED-007 Abhijit and Brahma, with scoped
-VED-021/022 evidence and documentation. The existing-helper integration is
-complete locally. Additional named windows retain individual source gates.
+**Date:** 8 October 2026. **Scope:** VED-007's seven named families, with
+source-selected alternatives and scoped VED-021/022 evidence/documentation.
+Abhijit/Brahma's published interfaces remain stable. The five additions are
+owned by `moira.special_muhurta`; their contract follows below.
 
 ## Governing object and sources
 
@@ -140,8 +141,99 @@ its rational single-round endpoints are the canonical new-product boundary,
 not a promise of bitwise equality with the legacy chained-float predicate.
 
 This admission does not integrate named windows into generic scoring,
-sampled search, natal overlays or activity guidance. Godhuli, Vijaya, Amrita,
-Ravi Yoga and Sarvarthasiddhi remain separately sourced additions in VED-007;
-VED-008–011 own their other families. See the
+sampled search, natal overlays or activity guidance. VED-008–011 own their
+other families. The original two-window
 [execution receipt](../03_validation/NAMED_MUHURTA_VALIDATION_2026-10-08.md)
-for exact test evidence, limits and publication state.
+retains its exact evidence and publication state; the five-name extension has
+its own [source packet](../06_roadmap/VEDIC_NAMED_MUHURTA_FIVE_SOURCE_AND_PLAN_2026-10-08.md)
+and [execution receipt](../03_validation/SPECIAL_MUHURTA_VALIDATION_2026-10-08.md).
+
+## Five-name extension
+
+`SpecialMuhurtaPolicy` explicitly selects:
+
+| Field | Admitted values and meaning |
+| --- | --- |
+| `amrita_basis` | Default `sadhana_amrita_siddhi`: seven weekday/nakshatra pairs from Muhurta Sadhana Samjna 78–79. Alternative `kalaprakasika_amirtha`: the larger Kalaprakasika XXXV weekday table. Outputs are distinctly named **Amrita Siddhi** and **Amirtha**. |
+| `godhuli_weekday_rule` | Default `vrindavana_visibility`: Thursday requires the fully set Sun, Saturday requires it still visible. Other weekdays are not excluded by this selected rule. `geometry_only` declines this rule. |
+| `godhuli_horizon` | Default `standard_refraction_34_arcmin`: centre crossing at −34/60 degrees, upper-limb sunset at −50/60 degrees. `geometric_disc`: centre at 0, upper-limb sunset at −16/60 degrees. Both use fixed 16 arcminute semidiameter, level horizon, zero elevation and no terrain. These are disclosed modern realizations of the textual event, not classical constants or observed atmospheric accuracy. |
+| `ayanamsa_system` | Registered engine system, default Lahiri, true mode. Applied to dated geocentric apparent Sun/Moon positions; **not** applied again to supplied sidereal longitudes. |
+| `solar_policy` | The full typed `NamedMuhurtaPolicy` above; governs included Abhijit/Brahma, daylight anchors and root tolerance. Its sunrise/sunset definition is independent of Godhuli's disc-event definition. |
+
+The fixed source identities are inspectable in the policy and each result:
+
+* **Vijaya:** eleventh of fifteen daylight parts, from sunrise +10/15 of
+  daylight to sunrise +11/15. It is not a fixed 14:00 clock interval or a
+  Vijaya Dashami festival calculation.
+* **Godhuli:** Vivaha Vrindavana 9.6 with Vasantalakshmi commentary, half a
+  ghati either side of the **half-set disc**, hence ±12 elapsed minutes.
+  Godhuli's entire geometry remains present. On Thursday/Saturday, verse
+  9.5's eligibility partitions it at the separate **upper-limb sunset**.
+  A portion is `excluded`, `not_excluded_by_selected_rule`, or
+  `not_evaluated`; lack of the visibility anchor yields partial status.
+* **Amrita Siddhi / Amirtha:** presence while the Moon occupies a star in the
+  selected source table for the sunrise-owned weekday. Kalaprakasika's
+  reviewed Sunday table has no Amirtha entry; its Siddha rows are not renamed.
+* **Ravi Yoga:** Chintamani Shubhashubha 27, inclusive Moon-star count from
+  Sun-star in {4,6,9,10,13,20}. **Both** bodies' transitions can change it.
+* **Sarvarthasiddhi:** Chintamani Shubhashubha 28–29's seven weekday tables.
+
+The two Amrita tables, Anandadi Amrita, Choghadiya, Amrita Kalam and Nitya
+Yoga are distinct objects. This package implements the first two, under
+separate profile names. Source disagreement, especially Chintamani's
+season-dependent Godhuli and Moon/Lagna restrictions versus Vrindavana's
+reading, is documented rather than silently combined. No output claims
+universal auspiciousness or complete marriage/travel/construction suitability;
+`activity_suitability` is explicitly `not_evaluated`.
+
+## New engine and REST surfaces
+
+| Engine function / facade method | REST route | Contract |
+| --- | --- | --- |
+| `special_muhurta_from_solar_times` | `POST /v1/muhurta/special/solar` | Optional sunrise, sunset, half-set and upper-limb-set UT1 anchors; required Monday-first weekday; canonical Vijaya/Godhuli results. Supplied anchors retain caller ownership. Missing anchors yield per-result status. |
+| `muhurta_yogas_from_longitudes` | `POST /v1/muhurta/special/yogas` | Required Sun and Moon **sidereal** longitudes in [0,360), plus sunrise weekday; returns all three named presence booleans, star indices/names, inclusive count and source evidence. No reader or coordinate conversion. |
+| `special_muhurta_for_date` | `POST /v1/muhurta/special/day` | Civil date/location/timezone with the same admission as the existing named-day route. Returns all five new results plus `named`, the canonical Abhijit/Brahma day, without rebuilding it in transport. |
+
+Eleven owning exports are shared by root, facade and `moira.vedic`. The three
+facade methods delegate to the owner. Strict inputs reject booleans as numbers,
+strings as numbers, non-finite/out-of-range coordinates, unsupported profiles,
+unknown fields, malformed/skipped civil dates and contradictory supplied
+anchors before astronomy. Partial/unavailable calculations remain HTTP 200;
+resource/coverage errors use the existing named-Muhurta 503/422 envelopes.
+
+### Date ownership, transition cells and uncertainty
+
+The requested local sunrise date owns Vijaya, Godhuli, and the three yoga
+families. The yoga interval runs from that sunrise to the following local
+date's sunrise. Local midnight does not change its weekday. Discovery stays
+within the existing previous/current/following civil dates, with no distant
+seasonal substitute. Absence of the next sunrise makes yoga coverage
+unavailable but preserves independently computable current-day solar windows.
+
+For yogas, hourly forward-phase bracketing and root bisection find every Sun
+and Moon nakshatra crossing in the sunrise day. Each phase step must be
+positive and less than half a nakshatra; violations fail visibly. The
+stopping tolerance is the policy's 0.01–1 second numerical bracket width,
+not a claim about observational or ephemeris accuracy. The bounded day is at
+most two elapsed days. No mean-speed interpolation or sampled-score interval
+is substituted for a root.
+
+Results contain constant-star **cells**, not merged maximal intervals. Each
+cell has start/end nominal UT1, lower/upper brackets, civil displays and the
+source evidence establishing presence. `status="available"` with no windows
+means no match outside the separately reported numerical uncertainty bands.
+It is distinct from unavailable astronomy.
+
+`transition_bands` includes uncertain sunrise ownership and star crossings.
+Overlapping Sun/Moon brackets are combined; possible very short occurrences
+wholly inside such a band remain unresolved and are not falsely asserted
+absent. `SpecialMuhurtaDay.contains_yoga(name, jd_ut1)` returns `None` inside
+these bands or when required anchors are missing. Elsewhere it returns
+membership in this day's selected yoga. Individual solar/yoga window
+`contains` methods likewise retain half-open geometry and endpoint uncertainty;
+they do not override a separate eligibility exclusion.
+
+Every dated position and horizon evaluation borrows the same engine reader.
+The embedded `named` result preserves the kernel and civil-midpoint clock
+receipt; it is not presented as an independent clock measurement for every
+transition. Exceptions restore the caller's active-reader context.
