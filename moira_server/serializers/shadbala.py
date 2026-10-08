@@ -16,6 +16,7 @@ from moira.shadbala import (
 )
 
 from ..models.shadbala import (
+    ShadbalaAppliedPolicyResponse,
     BhavaBalaResponse,
     BhavaBalaResultResponse,
     GrahaYuddhaResponse,
@@ -92,8 +93,9 @@ def _ayanamsa_degrees(jd: float, ayanamsa_system: str) -> float:
     return ayanamsa(jd, ayanamsa_system, "true")
 
 
-def serialize_shadbala_result(result: ShadbalaResult) -> ShadbalaResultResponse:
+def serialize_shadbala_result(result: ShadbalaResult, *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None) -> ShadbalaResultResponse:
     return ShadbalaResultResponse(
+        policy_receipt=policy_receipt,
         jd=result.jd,
         ayanamsa_system=result.ayanamsa_system,
         ayanamsa_degrees=_ayanamsa_degrees(result.jd, result.ayanamsa_system),
@@ -106,8 +108,10 @@ def serialize_shadbala_result(result: ShadbalaResult) -> ShadbalaResultResponse:
 
 def serialize_shadbala_condition_profile(
     profile: ShadbalaConditionProfile,
+    *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None,
 ) -> ShadbalaConditionProfileResponse:
     return ShadbalaConditionProfileResponse(
+        policy_receipt=policy_receipt,
         planet=profile.planet,
         tier=profile.tier,
         total_rupas=profile.total_rupas,
@@ -119,8 +123,10 @@ def serialize_shadbala_condition_profile(
 
 def serialize_shadbala_chart_profile(
     profile: ShadbalaChartProfile,
+    *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None,
 ) -> ShadbalaChartProfileResponse:
     return ShadbalaChartProfileResponse(
+        policy_receipt=policy_receipt,
         sufficient_count=profile.sufficient_count,
         insufficient_count=profile.insufficient_count,
         strongest_planet=profile.strongest_planet,
@@ -133,8 +139,10 @@ def serialize_shadbala_chart_profile(
 
 def serialize_shadbala_network_profile(
     profile: ShadbalaNetworkProfile,
+    *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None,
 ) -> ShadbalaNetworkProfileResponse:
     return ShadbalaNetworkProfileResponse(
+        policy_receipt=policy_receipt,
         ayanamsa_system=profile.ayanamsa_system,
         strength_ranking=profile.strength_ranking,
         dominant_planet=profile.dominant_planet,
@@ -161,8 +169,9 @@ def serialize_bhava_bala(bhava: BhavaBala) -> BhavaBalaResponse:
     )
 
 
-def serialize_bhava_bala_result(result: BhavaBalaResult) -> BhavaBalaResultResponse:
+def serialize_bhava_bala_result(result: BhavaBalaResult, *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None) -> BhavaBalaResultResponse:
     return BhavaBalaResultResponse(
+        policy_receipt=policy_receipt,
         jd=result.jd,
         ayanamsa_system=result.ayanamsa_system,
         ayanamsa_degrees=_ayanamsa_degrees(result.jd, result.ayanamsa_system),
@@ -180,12 +189,14 @@ def serialize_shadbala_full(
     profile: ShadbalaChartProfile,
     network: ShadbalaNetworkProfile,
     bhava: BhavaBalaResult,
+    *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None,
 ) -> ShadbalaFullResponse:
     return ShadbalaFullResponse(
-        chart=serialize_shadbala_result(result),
-        profile=serialize_shadbala_chart_profile(profile),
-        network=serialize_shadbala_network_profile(network),
-        bhava=serialize_bhava_bala_result(bhava),
+        policy_receipt=policy_receipt,
+        chart=serialize_shadbala_result(result, policy_receipt=policy_receipt),
+        profile=serialize_shadbala_chart_profile(profile, policy_receipt=policy_receipt),
+        network=serialize_shadbala_network_profile(network, policy_receipt=policy_receipt),
+        bhava=serialize_bhava_bala_result(bhava, policy_receipt=policy_receipt),
     )
 
 

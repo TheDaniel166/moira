@@ -5,16 +5,17 @@ from __future__ import annotations
 import math
 from datetime import datetime
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import CivilDateTime, FiniteNumber, KnownAyanamsa
 
 
 class SadeSatiStatusRequest(_StrictModel):
     """Instantaneous Sade Sati classification from two sidereal longitudes."""
 
-    natal_moon_sidereal_lon: float
-    saturn_sidereal_lon: float
+    natal_moon_sidereal_lon: FiniteNumber
+    saturn_sidereal_lon: FiniteNumber
 
     @field_validator("natal_moon_sidereal_lon", "saturn_sidereal_lon")
     @classmethod
@@ -37,10 +38,10 @@ class SadeSatiStatusResponse(_StrictModel):
 class SadeSatiWindowsRequest(_StrictModel):
     """Kernel-backed Sade Sati phase windows over a datetime range."""
 
-    natal_moon_sidereal_lon: float
-    start_dt: datetime
-    end_dt: datetime
-    ayanamsa_system: str = "Lahiri"
+    natal_moon_sidereal_lon: FiniteNumber
+    start_dt: CivilDateTime
+    end_dt: CivilDateTime
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
 
     @field_validator("natal_moon_sidereal_lon")
     @classmethod
@@ -62,6 +63,12 @@ class SadeSatiWindowsRequest(_StrictModel):
         if not value:
             raise ValueError("ayanamsa_system must be non-empty")
         return value
+
+    @model_validator(mode="after")
+    def _ordered_range(self) -> "SadeSatiWindowsRequest":
+        if self.start_dt >= self.end_dt:
+            raise ValueError("start_dt must be < end_dt")
+        return self
 
 
 class SadeSatiWindowResponse(_StrictModel):

@@ -155,15 +155,17 @@ def test_vedic_dignity_relationships_route_preserves_directional_truth() -> None
     assert first["is_hostile"] == direct[0].is_hostile
 
 
-def test_vedic_dignity_relationships_route_preserves_engine_unknown_key_behavior() -> None:
+def test_vedic_dignity_relationships_route_rejects_unknown_keys() -> None:
     with _client() as client:
         response = client.post(
             "/v1/vedic-dignities/relationships",
             json={"sidereal_longitudes": {"Sun": 10.0, "Pluto": 50.0}},
         )
 
-    assert response.status_code == 200
-    assert response.json()["relationships"] == []
+    # VED-005 intentionally replaces the old REST skip behavior; the engine's
+    # caller-supplied map behavior is not changed.
+    _assert_validation_envelope(response, message_fragment="Input should be")
+    assert any("sidereal_longitudes.Pluto" in field for field in response.json()["details"])
 
 
 def test_vedic_dignity_condition_route_matches_engine_profile() -> None:
@@ -214,7 +216,7 @@ def test_vedic_dignity_route_rejects_invalid_planet() -> None:
             json={"planet": "Rahu", "sidereal_longitude": 100.0},
         )
 
-    _assert_validation_envelope(response, message_fragment="planet must be one of")
+    _assert_validation_envelope(response, message_fragment="Input should be")
 
 
 def test_vedic_dignity_route_rejects_malformed_longitude() -> None:
@@ -244,7 +246,8 @@ def test_vedic_chart_profile_route_rejects_invalid_planet() -> None:
             json={"sidereal_longitudes": {"Sun": 10.0, "Pluto": 50.0}},
         )
 
-    _assert_validation_envelope(response, message_fragment="planet must be one of")
+    _assert_validation_envelope(response, message_fragment="Input should be")
+    assert any("sidereal_longitudes.Pluto" in field for field in response.json()["details"])
 
 
 def test_vedic_dignity_route_rejects_empty_ayanamsa_label() -> None:
@@ -378,4 +381,4 @@ def test_vedic_dignity_chart_backed_route_rejects_invalid_planet() -> None:
             },
         )
 
-    _assert_validation_envelope(response, message_fragment="unsupported chart bodies")
+    _assert_validation_envelope(response, message_fragment="Input should be")

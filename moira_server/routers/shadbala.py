@@ -17,21 +17,13 @@ from ..models.shadbala import (
     ShadbalaNetworkProfileResponse,
     ShadbalaResultResponse,
 )
-from ..serializers.shadbala import (
-    serialize_bhava_bala_result,
-    serialize_shadbala_chart_profile,
-    serialize_shadbala_condition_profile,
-    serialize_shadbala_full,
-    serialize_shadbala_network_profile,
-    serialize_shadbala_result,
-)
 from ..services.shadbala import (
-    compute_bhava_bala_chart,
-    compute_shadbala_chart,
-    compute_shadbala_chart_condition,
-    compute_shadbala_chart_network,
-    compute_shadbala_chart_profile,
-    compute_shadbala_full,
+    build_shadbala_bhava_response,
+    build_shadbala_chart_response,
+    build_shadbala_condition_response,
+    build_shadbala_network_response,
+    build_shadbala_profile_response,
+    build_shadbala_full_response,
 )
 
 
@@ -43,7 +35,7 @@ def shadbala_chart_route(
     request: ShadbalaChartRequest,
     engine: Moira = Depends(get_engine),
 ) -> ShadbalaResultResponse:
-    return serialize_shadbala_result(compute_shadbala_chart(engine, request))
+    return build_shadbala_chart_response(engine, request)
 
 
 @router.post("/chart/profile", response_model=ShadbalaChartProfileResponse)
@@ -51,7 +43,7 @@ def shadbala_chart_profile_route(
     request: ShadbalaChartRequest,
     engine: Moira = Depends(get_engine),
 ) -> ShadbalaChartProfileResponse:
-    return serialize_shadbala_chart_profile(compute_shadbala_chart_profile(engine, request))
+    return build_shadbala_profile_response(engine, request)
 
 
 @router.post("/chart/network", response_model=ShadbalaNetworkProfileResponse)
@@ -59,7 +51,7 @@ def shadbala_chart_network_route(
     request: ShadbalaChartRequest,
     engine: Moira = Depends(get_engine),
 ) -> ShadbalaNetworkProfileResponse:
-    return serialize_shadbala_network_profile(compute_shadbala_chart_network(engine, request))
+    return build_shadbala_network_response(engine, request)
 
 
 @router.post("/chart/condition", response_model=ShadbalaConditionProfileResponse)
@@ -67,9 +59,7 @@ def shadbala_chart_condition_route(
     request: ShadbalaConditionChartRequest,
     engine: Moira = Depends(get_engine),
 ) -> ShadbalaConditionProfileResponse:
-    return serialize_shadbala_condition_profile(
-        compute_shadbala_chart_condition(engine, request)
-    )
+    return build_shadbala_condition_response(engine, request)
 
 
 @router.post("/chart/bhava", response_model=BhavaBalaResultResponse)
@@ -78,7 +68,7 @@ def bhava_bala_chart_route(
     engine: Moira = Depends(get_engine),
 ) -> BhavaBalaResultResponse:
     """Bhava Bala (house strength, Raman Part II) for all twelve houses."""
-    return serialize_bhava_bala_result(compute_bhava_bala_chart(engine, request))
+    return build_shadbala_bhava_response(engine, request)
 
 
 @router.post("/chart/full", response_model=ShadbalaFullResponse)
@@ -88,5 +78,4 @@ def shadbala_full_route(
 ) -> ShadbalaFullResponse:
     """Chart + profile + network + bhava in one response, from one
     support-truth derivation, so all four surfaces agree exactly."""
-    full = compute_shadbala_full(engine, request)
-    return serialize_shadbala_full(full.result, full.profile, full.network, full.bhava)
+    return build_shadbala_full_response(engine, request)

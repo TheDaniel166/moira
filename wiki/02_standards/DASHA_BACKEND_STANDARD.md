@@ -478,3 +478,12 @@ The following are explicitly outside the scope of this subsystem as constitution
 Any future extension that crosses these boundaries requires a new constitutional phase or a
 separate subsystem constitutionalization, not an in-place amendment to this standard.
 
+## REST admission — 8 October 2026
+
+The existing five Vimshottari routes now use strict civil datetime, depth and
+registered policy admission before computation. A current snapshot cannot
+precede birth. Default arithmetic, year choices, levels and engine cycle
+coverage are retained. The [VED-005 standard](VEDIC_REST_ADMISSION_STANDARD.md)
+and [validation receipt](../03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md)
+own transport and reader checks; they are not new historical authority claims.
+

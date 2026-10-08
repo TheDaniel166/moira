@@ -8,12 +8,13 @@ from datetime import datetime
 from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import CivilDateTime, KnownAyanamsa
 
 
 class PanchangaPolicyRequest(_StrictModel):
     """Explicit Panchanga computation policy."""
 
-    ayanamsa_system: str = "Lahiri"
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
 
     @field_validator("ayanamsa_system")
     @classmethod
@@ -29,7 +30,7 @@ class PanchangaDirectRequest(_StrictModel):
     sun_tropical_lon: float = Field(strict=True)
     moon_tropical_lon: float = Field(strict=True)
     jd: float = Field(strict=True)
-    ayanamsa_system: str = "Lahiri"
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
     policy: PanchangaPolicyRequest | None = None
 
     @field_validator("sun_tropical_lon", "moon_tropical_lon", "jd")
@@ -50,11 +51,11 @@ class PanchangaDirectRequest(_StrictModel):
 class PanchangaChartRequest(_StrictModel):
     """Chart-backed Panchanga request deriving Sun/Moon through Moira."""
 
-    dt: datetime
+    dt: CivilDateTime
     observer_lat: float | None = Field(default=None, strict=True, ge=-90.0, le=90.0)
     observer_lon: float | None = Field(default=None, strict=True, ge=-180.0, le=180.0)
     observer_elev_m: float = Field(default=0.0, strict=True)
-    ayanamsa_system: str = "Lahiri"
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
     policy: PanchangaPolicyRequest | None = None
 
     @field_validator("dt", mode="before")

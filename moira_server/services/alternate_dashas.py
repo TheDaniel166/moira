@@ -22,8 +22,10 @@ from ..models.alternate_dashas import (
     AlternateDashaPeriodRequest,
     AshtottariChartSequenceRequest,
     AshtottariSequenceRequest,
+    AshtottariPolicyRequest,
     YoginiChartSequenceRequest,
     YoginiSequenceRequest,
+    YoginiPolicyRequest,
 )
 from .sidereal_context import (
     SiderealChartContext,
@@ -125,7 +127,7 @@ def compute_ashtottari_chart_sequence(
                 moon_tropical_lon=context.tropical_longitudes["Moon"],
                 natal_jd=context.jd_ut,
                 levels=request.levels,
-                policy=request.policy,
+                policy=request.policy or AshtottariPolicyRequest(ayanamsa_system=request.ayanamsa_system),
             )
         ),
     )
@@ -186,7 +188,7 @@ def compute_yogini_chart_sequence(
                 moon_tropical_lon=context.tropical_longitudes["Moon"],
                 natal_jd=context.jd_ut,
                 levels=request.levels,
-                policy=request.policy,
+                policy=request.policy or YoginiPolicyRequest(ayanamsa_system=request.ayanamsa_system),
             )
         ),
     )

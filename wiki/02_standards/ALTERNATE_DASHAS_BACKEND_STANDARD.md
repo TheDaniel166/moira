@@ -369,3 +369,10 @@ Ashtottari REST admission must preserve the current eligibility truth: the
 complete BPHS 46.17 and 46.23 applicability context is not represented, so the
 transport should either require `bypass_eligibility=True` or expose the current
 engine rejection for `lagna_sign_index` without bypass.
+
+The [VED-005 admission standard](VEDIC_REST_ADMISSION_STANDARD.md) now owns
+strict finite inputs, typed switches/depth/sign indices and supplied period
+tree admission. Chart-backed requests with no nested policy use their selected
+chart ayanamsa for the actual period calculation. Supplied policy/chart frame
+mismatches still reject. Periods retain the existing numerical year-basis and
+historical applicability semantics.

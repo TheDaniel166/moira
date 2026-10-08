@@ -279,3 +279,13 @@ yet included in the test baseline.
 ---
 
 *Document produced at constitutional freeze (P11), April 2026.*
+
+## REST admission and reader ownership — 8 October 2026
+
+All six chart/result/profile/network/condition/Bhava/full routes use the
+owning engine's reader-bound Shadbala call. They expose requested/applied
+ayanamsa and requested/resolved/effective house systems in `policy_receipt`,
+including actual polar fallback. Unknown house systems reject; registered
+names and codes are admitted. Numerical Bala rules are unchanged. See the
+[VED-005 admission standard](VEDIC_REST_ADMISSION_STANDARD.md) and its
+[verification receipt](../03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md).

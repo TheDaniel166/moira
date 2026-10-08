@@ -7,7 +7,8 @@ import math
 from pydantic import Field, field_validator
 
 from .common import _StrictModel
-from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
+from ._vedic_inputs import ClassicalPlanet, FiniteNumber
+from .sidereal_context import VedicSiderealChartRequest, SiderealChartProvenanceResponse
 
 
 class VedicDignityPolicyRequest(_StrictModel):
@@ -22,8 +23,8 @@ class VedicDignityPolicyRequest(_StrictModel):
 
 
 class VedicDignityRequest(_StrictModel):
-    planet: str
-    sidereal_longitude: float
+    planet: ClassicalPlanet
+    sidereal_longitude: FiniteNumber
     policy: VedicDignityPolicyRequest | None = None
 
     @field_validator("planet")
@@ -42,7 +43,7 @@ class VedicDignityRequest(_StrictModel):
 
 
 class VedicDignityChartRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float] = Field(min_length=1)
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber] = Field(min_length=1)
     policy: VedicDignityPolicyRequest | None = None
 
     @field_validator("sidereal_longitudes")
@@ -58,8 +59,8 @@ class VedicDignityChartRequest(_StrictModel):
         return value
 
 
-class VedicDignityChartBackedRequest(SiderealChartBaseRequest):
-    planet: str
+class VedicDignityChartBackedRequest(VedicSiderealChartRequest):
+    planet: ClassicalPlanet
 
     @field_validator("planet")
     @classmethod
@@ -69,7 +70,7 @@ class VedicDignityChartBackedRequest(SiderealChartBaseRequest):
         return value
 
 
-class VedicDignityChartBackedProfileRequest(SiderealChartBaseRequest):
+class VedicDignityChartBackedProfileRequest(VedicSiderealChartRequest):
     pass
 
 

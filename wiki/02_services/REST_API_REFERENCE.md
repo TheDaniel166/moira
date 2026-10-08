@@ -1495,6 +1495,15 @@ not a Muhurta product or a search route.
 | POST | `/v1/shadbala/chart/profile` | `shadbala_chart_profile_route` |
 | POST | `/v1/shadbala/chart/network` | `shadbala_chart_network_route` |
 | POST | `/v1/shadbala/chart/condition` | `shadbala_chart_condition_route` |
+| POST | `/v1/shadbala/chart/bhava` | `bhava_bala_chart_route` |
+| POST | `/v1/shadbala/chart/full` | `shadbala_full_route` |
+
+All six routes include `policy_receipt`: requested/applied ayanamsa,
+requested/resolved/effective house system, actual polar fallback and optional
+Hora lord. Unknown house systems reject before computation; supported names
+and codes resolve through the engine registry. The calculation uses its owning
+engine's reader, including when the kernel is automatically discovered.
+See [Vedic REST admission](../02_standards/VEDIC_REST_ADMISSION_STANDARD.md).
 
 ## Jaimini Routes
 
@@ -1769,6 +1778,17 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/vedic-dignities/chart/dignity` | `vedic_dignity_chart_backed_route` |
 | POST | `/v1/vedic-dignities/chart/relationships` | `vedic_dignity_chart_backed_relationships_route` |
 | POST | `/v1/vedic-dignities/chart/profile` | `vedic_dignity_chart_backed_profile_route` |
+
+VED-005 rejects coerced numeric inputs and unknown classical identities,
+including relationship-map keys. Valid partial classical maps remain admitted;
+missing entries are not fabricated. Direct ayanamsa labels retain their upstream
+provenance meaning; chart-backed conversion requires a registered system.
+
+The 30-route [Vedic admission contract](../02_standards/VEDIC_REST_ADMISSION_STANDARD.md)
+also covers dasha, Sade Sati and `/v1/vedic/chart-profile`. Civil dates reject
+numeric epochs and numeric timestamp strings. The profile exposes evaluated
+component frames, mixed-frame status, applied dasha year basis and supplied
+inactive inputs in `policy_receipt`; omitted sections remain omitted.
 
 ## Ashtakavarga Routes
 

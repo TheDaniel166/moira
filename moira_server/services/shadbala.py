@@ -17,7 +17,6 @@ from moira.shadbala import (
     ShadbalaResult,
     bhava_bala,
     graha_yuddha_pairs,
-    shadbala,
     shadbala_chart_profile,
     shadbala_condition_profile,
     shadbala_network_profile,
@@ -25,7 +24,17 @@ from moira.shadbala import (
 )
 from moira.sidereal import tropical_to_sidereal
 
-from ..models.shadbala import ShadbalaChartRequest, ShadbalaConditionChartRequest
+from ..models.shadbala import (
+    ShadbalaAppliedPolicyResponse, ShadbalaChartRequest, ShadbalaConditionChartRequest,
+    ShadbalaResultResponse, ShadbalaChartProfileResponse, ShadbalaNetworkProfileResponse,
+    ShadbalaConditionProfileResponse, BhavaBalaResultResponse, ShadbalaFullResponse,
+)
+from ..models._vedic_inputs import resolve_vedic_house_system
+from ..serializers.shadbala import (
+    serialize_bhava_bala_result, serialize_shadbala_chart_profile,
+    serialize_shadbala_condition_profile, serialize_shadbala_full,
+    serialize_shadbala_network_profile, serialize_shadbala_result,
+)
 from ._shared import require_aware_datetime
 
 
@@ -46,6 +55,7 @@ class _ShadbalaSupportTruth:
     wars: tuple[GrahaYuddha, ...]
     sidereal_longitudes: dict[str, float]
     houses: object
+    policy_receipt: ShadbalaAppliedPolicyResponse
 
 
 def _ayanamsa_from_request(request: ShadbalaChartRequest) -> str:
@@ -61,6 +71,7 @@ def _derive_shadbala_support_truth(
     require_aware_datetime(request.dt)
 
     ayanamsa_system = _ayanamsa_from_request(request)
+    house_system = resolve_vedic_house_system(request.house_system)
 
     chart = engine.chart(
         request.dt,
@@ -74,7 +85,7 @@ def _derive_shadbala_support_truth(
         request.dt,
         latitude=request.observer_lat,
         longitude=request.observer_lon,
-        system=request.house_system,
+        system=house_system,
     )
     jd_utc = chart.jd_ut
     jd_ut = utc_to_ut1(jd_utc)
@@ -109,7 +120,7 @@ def _derive_shadbala_support_truth(
     day_chart = is_day_chart(tropical_longitudes["Sun"], houses.asc)
     hora_lord = request.hora_lord
 
-    result = shadbala(
+    result = engine.shadbala(
         sidereal_longitudes=sidereal_longitudes,
         planet_speeds=planet_speeds,
         houses=houses,
@@ -129,6 +140,17 @@ def _derive_shadbala_support_truth(
         wars=wars,
         sidereal_longitudes=sidereal_longitudes,
         houses=houses,
+        policy_receipt=ShadbalaAppliedPolicyResponse(
+            requested_ayanamsa_system=request.ayanamsa_system,
+            policy_ayanamsa_system=(request.policy.ayanamsa_system if request.policy else None),
+            applied_ayanamsa_system=ayanamsa_system,
+            ayanamsa_precedence="policy" if request.policy else "request",
+            requested_house_system=request.house_system,
+            resolved_house_system=house_system,
+            effective_house_system=houses.effective_system,
+            polar_fallback_applied=houses.effective_system != house_system,
+            hora_lord=request.hora_lord,
+        ),
     )
 
 
@@ -195,7 +217,53 @@ def compute_shadbala_full(
     )
 
 
+def build_shadbala_chart_response(engine: Moira, request: ShadbalaChartRequest) -> ShadbalaResultResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_shadbala_result(support.result, policy_receipt=support.policy_receipt)
+
+
+def build_shadbala_profile_response(engine: Moira, request: ShadbalaChartRequest) -> ShadbalaChartProfileResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_shadbala_chart_profile(
+        shadbala_chart_profile(support.result), policy_receipt=support.policy_receipt,
+    )
+
+
+def build_shadbala_network_response(engine: Moira, request: ShadbalaChartRequest) -> ShadbalaNetworkProfileResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_shadbala_network_profile(
+        shadbala_network_profile(support.result, support.wars), policy_receipt=support.policy_receipt,
+    )
+
+
+def build_shadbala_condition_response(engine: Moira, request: ShadbalaConditionChartRequest) -> ShadbalaConditionProfileResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_shadbala_condition_profile(
+        shadbala_condition_profile(support.result.planets[request.planet]), policy_receipt=support.policy_receipt,
+    )
+
+
+def build_shadbala_bhava_response(engine: Moira, request: ShadbalaChartRequest) -> BhavaBalaResultResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_bhava_bala_result(
+        bhava_bala(support.result, support.sidereal_longitudes, support.houses), policy_receipt=support.policy_receipt,
+    )
+
+
+def build_shadbala_full_response(engine: Moira, request: ShadbalaChartRequest) -> ShadbalaFullResponse:
+    support = _derive_shadbala_support_truth(engine, request)
+    return serialize_shadbala_full(
+        support.result, shadbala_chart_profile(support.result),
+        shadbala_network_profile(support.result, support.wars),
+        bhava_bala(support.result, support.sidereal_longitudes, support.houses),
+        policy_receipt=support.policy_receipt,
+    )
+
+
 __all__ = [
+    "build_shadbala_chart_response", "build_shadbala_profile_response",
+    "build_shadbala_network_response", "build_shadbala_condition_response",
+    "build_shadbala_bhava_response", "build_shadbala_full_response",
     "ShadbalaFullTruth",
     "compute_bhava_bala_chart",
     "compute_shadbala_chart",

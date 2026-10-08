@@ -219,7 +219,11 @@ def test_shadbala_full_route_matches_individual_services(
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"chart", "profile", "network", "bhava"}
+    assert set(body) == {"chart", "profile", "network", "bhava", "policy_receipt"}
+    assert body["policy_receipt"]["applied_ayanamsa_system"] == direct.result.ayanamsa_system
+    assert body["policy_receipt"]["effective_house_system"] == "P"
+    for name in ("chart", "profile", "network", "bhava"):
+        assert body[name]["policy_receipt"] == body["policy_receipt"]
     # Every surface agrees with its dedicated computation.
     assert body["chart"]["jd"] == pytest.approx(direct.result.jd)
     assert set(body["chart"]["planets"]) == set(direct.result.planets)
