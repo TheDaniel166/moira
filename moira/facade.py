@@ -1495,6 +1495,10 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .named_muhurta import (
+    NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval,
+    NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
+)
 from .muhurta_search import (
     MuhurtaSearchPolicy, MuhurtaMomentScore, MuhurtaSearchWindow, MuhurtaSearchResult,
     MuhurtaResourceError, MuhurtaCoverageError, muhurta_score_for_chart, find_muhurta_windows,
@@ -2845,6 +2849,7 @@ __all__ = [
     "TARA_NAMES", "TaraBala", "tara_bala",
     "ChandraBala", "chandra_bala",
     "PersonalMuhurtaScore", "personal_muhurta_score",
+    "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval", "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times", "named_muhurta_for_date",
     "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
     # Comets
     "CometData", "COMET_NAIF",

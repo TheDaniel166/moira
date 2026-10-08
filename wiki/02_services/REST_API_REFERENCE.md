@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 484
-- Registered OpenAPI operations: 484 (GET 37, POST 447)
+- Registered OpenAPI paths: 486
+- Registered OpenAPI operations: 486 (GET 37, POST 449)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 480
+- Versioned `/v1` paths: 482
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -1490,11 +1490,24 @@ policy weights, classification labels, reasons, and provenance. Score
 responses preserve the raw unbounded engine score, score breakdown, score
 scale, and score direction.
 
-This admission does not expose Muhurta search windows, activity-specific
-guidance, Abhijit/Brahma Muhurta routes, Tara Bala inputs, recommendation
-language, Western electional search/scoring, arbitrary predicates, arbitrary
-scorers, or async search jobs. The separate Ramesey v1 single-moment route is
-not a Muhurta product or a search route.
+Later admissions extend this family with personal Tara/Chandra scoring and
+bounded sampled search under `POST /v1/muhurta/personal/score` and
+`POST /v1/muhurta/search`; see the
+[personal/search standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md).
+
+VED-007 adds `POST /v1/muhurta/named/direct` and
+`POST /v1/muhurta/named/day`. The first accepts supplied UT1 solar anchors
+and an explicit Monday=0 weekday. The second derives reader-bound solar
+anchors for one civil sunrise date, location and timezone. Both return
+canonical Abhijit/Brahma intervals, source policies, endpoint bounds,
+separate weekday eligibility and per-window unavailable reasons. Default
+Brahma uses Arunadatta's fixed-ghati reading; proportional-night compatibility
+is explicitly selectable. See the
+[named interval standard](../02_standards/NAMED_MUHURTA_STANDARD.md).
+
+Activity-specific guidance, recommendation language, Western doctrine,
+arbitrary predicates/scorers and async jobs remain outside this Muhurta
+admission. The separate Ramesey v1 route is a different product.
 
 ## Shadbala Routes
 
@@ -3564,6 +3577,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
 | `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
+| `POST` | `/v1/muhurta/named/day` | muhurta | `named_muhurta_day_route_v1_muhurta_named_day_post` |
+| `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
 | `POST` | `/v1/muhurta/search` | muhurta | `muhurta_search_route_v1_muhurta_search_post` |
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |

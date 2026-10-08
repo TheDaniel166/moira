@@ -80,6 +80,7 @@ from .facade import (
     Chart, MissingEphemerisKernelError, Moira, __author__, __version__,
     SayanadiBirthPolicy, SayanadiSunriseBracket, AvasthaBirthResult,
     SayanadiResourceError, SayanadiCoverageError, avasthas_for_datetime,
+    NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval, NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
 )
 from .houses import (
     HouseBoundaryCurvePoint,
@@ -1812,6 +1813,7 @@ __all__ = [
     "chandra_bala",
     "PersonalMuhurtaScore",
     "personal_muhurta_score",
+    "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval", "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times", "named_muhurta_for_date",
     "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
     # Sade Sati
     "SADE_SATI_PHASES",

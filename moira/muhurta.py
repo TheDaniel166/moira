@@ -21,18 +21,22 @@ Current Scope
 - Simple scoring surface that practitioners can extend
 - Policy for weighting different factors
 - Natal Tara/Chandra overlays and repaired bounded sampled-search adapters
+- Abhijit/Brahma compatibility predicates; typed source-owned intervals live in named_muhurta
 
 Future increments (per competitive analysis):
 - Sunrise-owned and exact-transition search, separate from sampled JD weekday
-- Typed named Muhurta intervals and purpose-specific profiles
+- Additional named Muhurta intervals and purpose-specific profiles
 - Support for additional classical rules (e.g., from BPHS Muhurta chapters, Brihat Samhita)
 
 References (researched source material only)
 ---------------------------------------------
 - Parashara, Brihat Parashara Hora Shastra (BPHS), English translation by R. Santhanam, Chapter 85 "Inauspicious Births" (primary source for Dagdha Yogas, Vishti/Bhadra Karana, Gandanta, etc.).
 - Varahamihira, Brihat Samhita, Chapters 98–104 (Muhurta context).
-- Muhurta Chintamani by Ramachandra (Kedar Datt Joshi / Venkateshwar Press editions) — for Abhijit Muhurta rules.
-- Aṣṭāṅga Hṛdayaṃ and Dharmashastra/Puranic sources for Brahma Muhurta definition (14th Muhurta of night).
+- Daivajna Rama, Muhurta Chintamani, Avasthi commentary (2004), Vivaha 52/54:
+  eighth daylight division and Wednesday exclusion; named_muhurta owns the new policy.
+- Arunadatta on Ashtanga Hridaya Sutrasthana 2.1 supports the fixed-ghati
+  Brahma profile in named_muhurta. The proportional-night predicate here is
+  separately identified compatibility behavior.
 - These historical source leads are not an edition-collated proof of every
   scoring rule. VED-004/006 retain the existing profile and repair composition;
   source-specific additions and variants require their own admission evidence.
@@ -670,9 +674,11 @@ def is_abhijit_muhurta(
     """
     Returns True if the query time falls within Abhijit Muhurta.
 
-    Source: Muhurta Chintamani and standard classical Muhurta texts.
-    Abhijit is the 8th Muhurta of the daytime, centered on local solar noon.
-    Daytime is divided into 15 equal Muhurtas from sunrise to sunset.
+    Geometry from Muhurta Chintamani, Avasthi 2004, Vivaha v.52:
+    the eighth of fifteen equal daylight parts, centered on the sunrise/
+    sunset midpoint (not an independently solved meridian transit).
+    This legacy predicate does not evaluate the v.54 Wednesday exclusion.
+    See named_muhurta for attributed intervals and explicit rule application.
     """
     if sunset_jd <= sunrise_jd:
         return False
@@ -694,11 +700,12 @@ def is_brahma_muhurta(
     """
     Returns True if the query time falls within Brahma Muhurta.
 
-    Classical definition (Aṣṭāṅga Hṛdayaṃ, Dharmashastra, Puranas):
-    The 14th Muhurta of the night.
-    Night (sunset to sunrise) divided into 15 Muhurtas.
-    Typically the period from ~96 minutes before sunrise to 48 minutes before sunrise
-    (last Muhurta or last two Muhurtas attributed to Brahma).
+    Legacy proportional-night convention: the fourteenth of fifteen parts
+    of the preceding sunset-to-sunrise interval. Only a twelve-hour night
+    gives 96 to 48 minutes before sunrise. This is not Arunadatta's fixed
+    ghati reading of Ashtanga Hridaya 2.1. See named_muhurta for separately
+    attributed fixed-time and compatibility profiles. Valid arithmetic here
+    is retained for existing callers.
     """
     if sunrise_jd <= sunset_jd:
         return False

@@ -24,6 +24,7 @@ _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
 _avasthas = importlib.import_module("moira.avasthas")
 _sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
+_named_muhurta = importlib.import_module("moira.named_muhurta")
 _muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
@@ -203,6 +204,25 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def list_ayanamsa_systems(self) -> dict[str, float]:
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
+
+    def named_muhurta_from_solar_times(
+        self, sunrise_jd_ut1: float, sunset_jd_ut1: float | None = None,
+        previous_sunset_jd_ut1: float | None = None, *, weekday: int,
+        policy: _named_muhurta.NamedMuhurtaPolicy | None = None,
+    ) -> _named_muhurta.NamedMuhurtaResult:
+        """Named intervals from supplied UT1 solar anchors, Monday=0 weekday."""
+        return _named_muhurta.named_muhurta_from_solar_times(
+            sunrise_jd_ut1, sunset_jd_ut1, previous_sunset_jd_ut1, weekday=weekday, policy=policy,
+        )
+
+    def named_muhurta_for_date(
+        self, local_date: date, latitude: float, longitude: float, *, timezone: str,
+        policy: _named_muhurta.NamedMuhurtaPolicy | None = None,
+    ) -> _named_muhurta.NamedMuhurtaDay:
+        """Named intervals for a sunrise date, using this facade's reader."""
+        return _named_muhurta.named_muhurta_for_date(
+            local_date, latitude, longitude, timezone=timezone, policy=policy, reader=self._reader,
+        )
 
     def sayanadi_avastha(self, planet, sidereal_longitudes, lagna_sidereal_lon,
                          birth_ghati=None, first_syllable_value=None, *, context=None):
