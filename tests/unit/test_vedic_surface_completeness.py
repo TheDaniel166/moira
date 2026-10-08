@@ -8,6 +8,7 @@ import moira.vedic as vedic
 _FAMILIES = (
     "varga", "ashtakavarga", "shadbala", "yogas", "avasthas",
     "jaimini_extended", "muhurta", "muhurta_search", "upagrahas", "sade_sati", "gochara", "gochara_dated",
+    "sayanadi_dated",
 )
 
 
@@ -27,10 +28,11 @@ def test_varga_root_and_facade_share_all_existing_curated_names():
         assert getattr(moira, name) is getattr(facade, name)
 
 
-def test_vedic_star_import_is_unique_and_excludes_unadmitted_sayanadi():
+def test_vedic_star_import_is_unique_and_includes_admitted_sayanadi():
     assert len(vedic.__all__) == len(set(vedic.__all__))
     namespace = {}
     exec("from moira.vedic import *", {}, namespace)
     assert set(namespace) == set(vedic.__all__)
-    assert "sayanadi_avastha" not in namespace
+    assert namespace["sayanadi_avastha"] is moira.sayanadi_avastha
+    assert namespace["avasthas_for_datetime"] is moira.avasthas_for_datetime
     assert "FiniteNumber" not in namespace

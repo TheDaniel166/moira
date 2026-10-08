@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 482
-- Registered OpenAPI operations: 482 (GET 37, POST 445)
+- Registered OpenAPI paths: 484
+- Registered OpenAPI operations: 484 (GET 37, POST 447)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 478
+- Versioned `/v1` paths: 480
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -47,6 +47,15 @@ and returns the selected relationship scheme/fraction. Co-lord Arudha requests
 require both named nodes; eight-karaka Karakamsa requests require Rahu. The
 [closure ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
 records the exact validated scope and remaining admissions.
+
+The 8 October Sayanadi admission adds optional complete context to
+`POST /v1/avasthas/evaluate`, the nine-subject supplied-input route
+`POST /v1/avasthas/sayanadi`, and reader-bound birth composition at
+`POST /v1/avasthas/from-datetime`. Strict discriminated clocks, source-owned
+name mapping, full arithmetic trace, separate node subjects and explicit
+sunrise/ghati unavailability preserve canonical engine truth. See the
+[Sayanadi standard](../02_standards/SAYANADI_ADMISSION_STANDARD.md) and
+[execution receipt](../03_validation/SAYANADI_VALIDATION_2026-10-08.md).
 
 The REST implementation is past bootstrap.
 
@@ -3364,6 +3373,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/astrodynes/progressed/search` | astrodynes | `progressed_astrodynes_search_route_v1_astrodynes_progressed_search_post` |
 | `POST` | `/v1/astrodynes/progressed/total-influence` | astrodynes | `progressed_astrodynes_total_influence_route_v1_astrodynes_progressed_total_influence_post` |
 | `POST` | `/v1/avasthas/evaluate` | avasthas | `avasthas_route_v1_avasthas_evaluate_post` |
+| `POST` | `/v1/avasthas/from-datetime` | avasthas | `avastha_birth_route_v1_avasthas_from_datetime_post` |
+| `POST` | `/v1/avasthas/sayanadi` | avasthas | `sayanadi_route_v1_avasthas_sayanadi_post` |
 | `POST` | `/v1/batch/charts` | batch | `batch_charts_route_v1_batch_charts_post` |
 | `POST` | `/v1/batch/charts/reduction` | batch | `batch_charts_reduction_route_v1_batch_charts_reduction_post` |
 | `POST` | `/v1/batch/events` | batch | `batch_events_route_v1_batch_events_post` |

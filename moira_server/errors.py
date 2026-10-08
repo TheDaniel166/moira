@@ -38,6 +38,7 @@ from moira import (
 
 from .config import ServerConfigurationError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
+from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
 from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
 
 
@@ -364,6 +365,20 @@ _LUNAR_ORIENTATION_ERROR_POLICIES = (
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
+
+    @app.exception_handler(SayanadiResourceError)
+    async def handle_sayanadi_resource(request: Request, exc: SayanadiResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="sayanadi_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(SayanadiCoverageError)
+    async def handle_sayanadi_coverage(request: Request, exc: SayanadiCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="sayanadi_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
 
     @app.exception_handler(GocharaResourceError)
     async def handle_gochara_resource(request: Request, exc: GocharaResourceError) -> JSONResponse:

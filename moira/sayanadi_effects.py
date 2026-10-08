@@ -1,5 +1,9 @@
 """
-BPHS Chapter 45: Sayanadi Avasthas Effects (Phalas).
+Legacy summaries associated with BPHS Chapter 45 Sayanadi effects.
+
+Retained for compatibility; not a source-certified quotation catalogue.
+Conditional clauses are historical prose, not evaluated house/dignity/phase
+rules. Numeric Sayanadi returns this explicit provenance separately.
 """
 
 SAYANADI_EFFECTS = {
@@ -132,7 +136,7 @@ SAYANADI_EFFECTS = {
 }
 
 def get_sayanadi_effect(planet: str, avastha_index: int) -> str | None:
-    """Returns the BPHS Chapter 45 specific effect for a planet in a Sayanadi Avastha."""
+    """Return legacy conditional prose, without evaluating or certifying it."""
     planet_effects = SAYANADI_EFFECTS.get(planet)
     if not planet_effects:
         return None

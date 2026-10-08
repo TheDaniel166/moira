@@ -464,6 +464,15 @@ from .yogas import (
 # Existing curated avasthas products.
 from .avasthas import (
     AvasthaPolicy,
+    SayanadiAvastha,
+    SayanadiPolicy,
+    SayanadiName,
+    SayanadiGhati,
+    SayanadiContext,
+    SayanadiTrace,
+    SayanadiEffectProvenance,
+    sayanadi_avastha,
+    sayanadi_ghati_from_elapsed,
     BaladiAvastha,
     JagradadiAvastha,
     DeeptadiAvastha,
@@ -476,6 +485,14 @@ from .avasthas import (
     deeptadi_avastha,
     lajjitadi_avasthas,
     evaluate_avasthas,
+)
+from .sayanadi_dated import (
+    SayanadiBirthPolicy,
+    SayanadiSunriseBracket,
+    AvasthaBirthResult,
+    SayanadiResourceError,
+    SayanadiCoverageError,
+    avasthas_for_datetime,
 )
 
 # Existing curated jaimini_extended products.
@@ -889,6 +906,21 @@ _VEDIC_OWN: list[str] = [
     "evaluate_yogas",
     # avasthas completion
     "AvasthaPolicy",
+    "SayanadiAvastha",
+    "SayanadiPolicy",
+    "SayanadiName",
+    "SayanadiGhati",
+    "SayanadiContext",
+    "SayanadiTrace",
+    "SayanadiEffectProvenance",
+    "sayanadi_avastha",
+    "sayanadi_ghati_from_elapsed",
+    "SayanadiBirthPolicy",
+    "SayanadiSunriseBracket",
+    "AvasthaBirthResult",
+    "SayanadiResourceError",
+    "SayanadiCoverageError",
+    "avasthas_for_datetime",
     "BaladiAvastha",
     "JagradadiAvastha",
     "DeeptadiAvastha",

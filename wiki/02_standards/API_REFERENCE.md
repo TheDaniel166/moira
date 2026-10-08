@@ -310,8 +310,12 @@ also share the owning `muhurta_search` objects: `find_muhurta_windows`,
 [personalized Muhurta/search standard](MUHURTA_PERSONAL_SEARCH_STANDARD.md) for
 reader binding, sampling limits, JD-weekday Vara and explicit exclusions.
 Varga products already exposed through the facade are also available at the
-package root. This curation does not admit standalone Sayanadi,
-special Lagnas or Kalachakra. Daily sunrise-owned Panchanga has its separately
+package root. Sayanadi now admits the collated BPHS Navamsa-ordinal profile,
+strict name/ghati context, optional chart evaluation and reader-bound
+previous-sunrise birth composition through root/facade/`vedic`. See the
+[Sayanadi standard](SAYANADI_ADMISSION_STANDARD.md) for source variants,
+inspectable trace, unavailable clocks and conditional-prose provenance.
+Special Lagnas and Kalachakra remain separate admissions. Daily sunrise-owned Panchanga has its separately
 admitted policy and [standard](DAILY_PANCHANGA_STANDARD.md). See the
 [Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
 for the completed package and the
@@ -330,6 +334,7 @@ for current integration and enrichment gaps.
 | Jaimini karakas | `jaimini_karakas`, `atmakaraka`, `JaiminiKarakaResult`, `JaiminiPolicy` |
 | Ashtakavarga | `bhinnashtakavarga`, `ashtakavarga`, `transit_strength`, `AshtakavargaResult`, `AshtakavargaPolicy` |
 | Shadbala | `shadbala`, `sthana_bala`, `dig_bala`, `kala_bala`, `ShadbalaResult`, `ShadbalaPolicy` |
+| Sayanadi | `sayanadi_avastha`, `sayanadi_ghati_from_elapsed`, `SayanadiPolicy`, `SayanadiName`, `SayanadiGhati`, `SayanadiContext`, `SayanadiTrace`, `avasthas_for_datetime`, `SayanadiBirthPolicy`, `AvasthaBirthResult` |
 
 `moira.vedic` does not include the Western classical surface (Arabic lots, Firdaria, Zodiacal Releasing, Huber). For that, use `moira.classical`. See [Section 21](#21-moiravedic--vedic-astrology-surface) for the full export reference.
 

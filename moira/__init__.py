@@ -76,7 +76,11 @@ from .stelliums import (
     StelliumAssociation, StelliumMatch, StelliumGroup, StelliumEvaluation,
     StelliumCoverage, StelliumHouseReceipt, StelliumAnalysis, analyze_stelliums,
 )
-from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+from .facade import (
+    Chart, MissingEphemerisKernelError, Moira, __author__, __version__,
+    SayanadiBirthPolicy, SayanadiSunriseBracket, AvasthaBirthResult,
+    SayanadiResourceError, SayanadiCoverageError, avasthas_for_datetime,
+)
 from .houses import (
     HouseBoundaryCurvePoint,
     HouseBoundaryGeometry,
@@ -419,6 +423,15 @@ from .upagrahas import (
 )
 from .avasthas import (
     AvasthaPolicy,
+    SayanadiAvastha,
+    SayanadiPolicy,
+    SayanadiName,
+    SayanadiGhati,
+    SayanadiContext,
+    SayanadiTrace,
+    SayanadiEffectProvenance,
+    sayanadi_avastha,
+    sayanadi_ghati_from_elapsed,
     BaladiAvastha,
     JagradadiAvastha,
     DeeptadiAvastha,
@@ -1835,6 +1848,21 @@ __all__ = [
     "kalavela_upagrahas",
     # Avasthas
     "AvasthaPolicy",
+    "SayanadiAvastha",
+    "SayanadiPolicy",
+    "SayanadiName",
+    "SayanadiGhati",
+    "SayanadiContext",
+    "SayanadiTrace",
+    "SayanadiEffectProvenance",
+    "sayanadi_avastha",
+    "sayanadi_ghati_from_elapsed",
+    "SayanadiBirthPolicy",
+    "SayanadiSunriseBracket",
+    "AvasthaBirthResult",
+    "SayanadiResourceError",
+    "SayanadiCoverageError",
+    "avasthas_for_datetime",
     "BaladiAvastha",
     "JagradadiAvastha",
     "DeeptadiAvastha",

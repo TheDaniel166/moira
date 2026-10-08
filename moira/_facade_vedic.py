@@ -22,6 +22,8 @@ _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
+_avasthas = importlib.import_module("moira.avasthas")
+_sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
 _muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
@@ -201,6 +203,26 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def list_ayanamsa_systems(self) -> dict[str, float]:
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
+
+    def sayanadi_avastha(self, planet, sidereal_longitudes, lagna_sidereal_lon,
+                         birth_ghati=None, first_syllable_value=None, *, context=None):
+        """Source-owned standalone Sayanadi with canonical arithmetic trace."""
+        return _avasthas.sayanadi_avastha(planet, sidereal_longitudes, lagna_sidereal_lon,
+                                         birth_ghati, first_syllable_value, context=context)
+
+    def evaluate_avasthas(self, sidereal_longitudes, lagna_sidereal_lon, policy=None,
+                          node_longitudes=None, sayanadi_context=None):
+        """Four classical families, with optional complete Sayanadi context."""
+        return _avasthas.evaluate_avasthas(sidereal_longitudes, lagna_sidereal_lon,
+                                          policy, node_longitudes, sayanadi_context)
+
+    def avasthas_for_datetime(self, birth, latitude, longitude, *, name,
+                              timezone_name=None, policy=None, avastha_policy=None):
+        """Birth avasthas and previous-sunrise ghati using this reader."""
+        return _sayanadi_dated.avasthas_for_datetime(
+            birth, latitude, longitude, name=name, timezone_name=timezone_name,
+            policy=policy, avastha_policy=avastha_policy, reader=self._reader,
+        )
 
     def panchanga(self, chart, ayanamsa_system: str | None = None, policy=None):
         """Compute Panchanga truth from a chart's Sun and Moon positions."""

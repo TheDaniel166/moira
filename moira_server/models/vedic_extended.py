@@ -10,6 +10,10 @@ from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
 from ._vedic_inputs import ClassicalPlanet, NodePlanet, FiniteNumber, require_classical
+from .sayanadi import (
+    AvasthaBirthEvidenceResponse, SayanadiContextRequest, SayanadiContextResponse,
+    SayanadiResponse,
+)
 
 
 def _validate_seven(value: dict[str, float]) -> dict[str, float]:
@@ -81,11 +85,19 @@ class AvasthaRequest(_StrictModel):
     relationship_scheme: Literal["compound", "natural"] = "compound"
     node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
     vriddha_fraction: FiniteNumber | None = Field(default=None, ge=0, le=1)
+    sayanadi_context: SayanadiContextRequest | None = None
 
     @field_validator("sidereal_longitudes")
     @classmethod
     def _seven(cls, value: dict[str, float]) -> dict[str, float]:
         return _validate_seven(value)
+
+    @model_validator(mode="after")
+    def _sayanadi_nodes(self):
+        if (self.sayanadi_context is not None and self.sayanadi_context.evaluate_nodes
+                and (self.node_longitudes is None or set(self.node_longitudes) != {"Rahu", "Ketu"})):
+            raise ValueError("Sayanadi node evaluation requires exactly Rahu and Ketu")
+        return self
 
 
 class LajjitadiStateResponse(_StrictModel):
@@ -109,6 +121,7 @@ class PlanetAvasthasResponse(_StrictModel):
     lajjitadi: tuple[LajjitadiStateResponse, ...]
     lajjitadi_active: tuple[str, ...]
     lajjitadi_notes: str
+    sayanadi: SayanadiResponse | None = None
 
 
 class AvasthaChartResponse(_StrictModel):
@@ -116,6 +129,13 @@ class AvasthaChartResponse(_StrictModel):
     relationship_scheme: Literal["compound", "natural"] = "compound"
     vriddha_fraction: float | None = None
     planets: dict[str, PlanetAvasthasResponse]
+    sayanadi_status: Literal["omitted", "evaluated"] | None = None
+    sayanadi_context: SayanadiContextResponse | None = None
+    sayanadi_nodes: dict[NodePlanet, SayanadiResponse] = Field(default_factory=dict)
+
+
+class AvasthaBirthResponse(AvasthaBirthEvidenceResponse):
+    chart: AvasthaChartResponse | None
 
 
 # --- Jaimini extended -------------------------------------------------------

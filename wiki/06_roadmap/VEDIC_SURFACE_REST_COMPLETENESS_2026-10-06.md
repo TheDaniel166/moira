@@ -2,6 +2,14 @@
 
 Date: 6 October 2026. Owner: `C:/dev/moira`, engine `main`.
 
+Later admission: the Sayanadi deferral below describes this 6 October
+checkpoint. VED-002's selected BPHS calculation, chart/birth and Python/REST
+package is locally complete on 8 October; see the
+[owning standard](../02_standards/SAYANADI_ADMISSION_STANDARD.md) and
+[execution receipt](../03_validation/SAYANADI_VALIDATION_2026-10-08.md).
+The remaining-work register owns current status; this receipt retains its
+original validation scope.
+
 This first delivery closes identified exports of existing admitted Vedic products, adds Gochara REST and hardens existing direct Vedic requests. Daily Panchanga, special Lagnas and Kalachakra remain separate source-admission packages. The current repository is clean at the start; Python 3.14.3, engine 6.9.9 and the project native extension are verified. Baseline API-surface and Vedic Phase-2 route tests pass: 30 passed, no skips, DE441 exercised locally.
 
 ## Pre-admission evaluation
