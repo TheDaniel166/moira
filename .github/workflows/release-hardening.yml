@@ -111,12 +111,19 @@ jobs:
         run: python -m pip install -e ".[dev,server]"
 
       - name: Check release-facing doc consistency
-        run: |
-          python scripts/check_doc_consistency.py
-          python scripts/check_release_identity.py
-          python scripts/generate_hellenistic_inventory.py --check
-          python scripts/sync_rest_api_reference.py --check
-          python scripts/sync_git_wiki.py --check
+        run: python scripts/check_doc_consistency.py
+
+      - name: Check release identity
+        run: python scripts/check_release_identity.py
+
+      - name: Check generated Hellenistic inventories
+        run: python scripts/generate_hellenistic_inventory.py --check
+
+      - name: Check generated REST API reference
+        run: python scripts/sync_rest_api_reference.py --check
+
+      - name: Check generated Git wiki
+        run: python scripts/sync_git_wiki.py --check
 
       - name: Check tagged website publication bundle
         run: |
