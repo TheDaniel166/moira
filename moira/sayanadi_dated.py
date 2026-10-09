@@ -43,6 +43,8 @@ class SayanadiCoverageError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class SayanadiBirthPolicy:
+    """Birth-chart Sayanadi policies for sidereal positions, nodes, and sunrise."""
+
     ayanamsa_system: str = "Lahiri"
     sunrise_definition: PanchangaSunriseDefinition = PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB
     solver_tolerance_seconds: float = 0.1
@@ -71,6 +73,8 @@ class SayanadiBirthPolicy:
 
 @dataclass(frozen=True, slots=True)
 class SayanadiSunriseBracket:
+    """A sunrise moment with the UT1 bracket used to bound elapsed birth time."""
+
     moment: PanchangaMoment
     lower_jd_ut1: float
     upper_jd_ut1: float
@@ -88,6 +92,8 @@ class SayanadiSunriseBracket:
 
 @dataclass(frozen=True, slots=True)
 class AvasthaBirthResult:
+    """Dated birth Avasthas with sunrise evidence and explicit availability."""
+
     status: str
     unavailable_reasons: tuple[str, ...]
     birth: datetime

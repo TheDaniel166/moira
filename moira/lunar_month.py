@@ -38,12 +38,16 @@ _SOURCE = ("PAC Rashtriya Panchang 1948 SE, printed vi-vii and xii-xiii; "
 
 
 class LunarMonthSystem(str, Enum):
+    """Supported conjunction-ending and full-moon-ending lunar-month systems."""
+
     AMANTA = "amanta"
     PURNIMANTA = "purnimanta"
 
 
 @dataclass(frozen=True, slots=True)
 class LunarMonthPolicy:
+    """Lunar-month system, sidereal reference, and boundary solver tolerance."""
+
     system: LunarMonthSystem = LunarMonthSystem.AMANTA
     ayanamsa_system: str = "Lahiri"
     solver_tolerance_seconds: float = 0.1
@@ -88,6 +92,8 @@ class CalendarBoundary:
 
 @dataclass(frozen=True, slots=True)
 class LunarMonthLabel:
+    """A lunar-month name and its ordinary or intercalation-related qualifier."""
+
     index: int
     name: str
     qualifier: Literal["ordinary", "adhika", "ksaya_context"]
@@ -102,6 +108,8 @@ class LunarMonthLabel:
 
 @dataclass(frozen=True, slots=True)
 class LunarLunation:
+    """A conjunction-bounded lunation with solar-ingress and month-name evidence."""
+
     start: CalendarBoundary
     end: CalendarBoundary
     solar_rashi_at_start: int
@@ -151,6 +159,8 @@ class LunarLunation:
 
 @dataclass(frozen=True, slots=True)
 class LunarMonthProvenance:
+    """Source, coordinate, timing, naming, and supported intercalation conventions."""
+
     reader_binding: str
     source: str = _SOURCE
     longitude_origin: str = "geocentric"
@@ -168,6 +178,8 @@ class LunarMonthProvenance:
 
 @dataclass(frozen=True, slots=True)
 class LunarMonthResult:
+    """A dated lunar-month assessment with adjacent lunations and uncertainty."""
+
     jd_ut1: float
     policy: LunarMonthPolicy
     provenance: LunarMonthProvenance

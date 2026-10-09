@@ -273,6 +273,8 @@ def sayanadi_ghati_from_elapsed(*, elapsed_seconds: float | None = None,
 
 @dataclass(frozen=True, slots=True)
 class SayanadiContext:
+    """Explicit birth-time and name inputs with the selected Sayanadi policy."""
+
     ghati: SayanadiGhati
     name: SayanadiName
     policy: SayanadiPolicy = field(default_factory=SayanadiPolicy)
@@ -297,6 +299,8 @@ class SayanadiEffectProvenance:
 
 @dataclass(frozen=True, slots=True)
 class SayanadiTrace:
+    """Sayanadi input normalization, arithmetic terms, and intermediate remainders."""
+
     planet: str
     planet_longitude: float
     moon_longitude: float

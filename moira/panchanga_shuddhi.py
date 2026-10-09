@@ -89,6 +89,8 @@ def _sector(longitude, divisions):
 
 @dataclass(frozen=True, slots=True)
 class PanchangaShuddhiPolicy:
+    """Named Shuddhi profiles with sidereal, solar, and boundary conventions."""
+
     tara_profile: str = MC_TARA
     ayanamsa_system: str = "Lahiri"
     sunrise_definition: PanchangaSunriseDefinition = PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB
@@ -119,6 +121,8 @@ def _policy(value):
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiBoundary:
+    """A UT1 boundary estimate and the bracket that bounds its uncertainty."""
+
     kind: str
     jd_ut1: float
     lower_jd_ut1: float
@@ -138,6 +142,8 @@ def _point(kind, jd):
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiInterval:
+    """A half-open interval whose endpoints retain their uncertainty brackets."""
+
     start: ShuddhiBoundary
     end: ShuddhiBoundary
 
@@ -182,6 +188,8 @@ def _clip(interval, extent):
 
 @dataclass(frozen=True, slots=True)
 class PanchakaRahita:
+    """One-based Panchaka inputs, their total, and the classified remainder."""
+
     tithi_number: int
     weekday_number: int
     nakshatra_number: int
@@ -213,6 +221,8 @@ def panchaka_rahita(tithi_number, weekday_number, nakshatra_number, lagna_number
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiCatalogueEntry:
+    """A named profile or Karana entry with citations and descriptive tags."""
+
     kind: str
     name: str
     profile: str
@@ -232,6 +242,8 @@ class ShuddhiCatalogueEntry:
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiCatalogue:
+    """Admitted Shuddhi profiles and Karana entries with explicit exclusions."""
+
     profiles: tuple[ShuddhiCatalogueEntry, ...]
     karanas: tuple[ShuddhiCatalogueEntry, ...]
     excluded_profiles: tuple[str, ...]
@@ -262,6 +274,8 @@ def panchanga_shuddhi_catalogue():
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiInputs:
+    """Caller-supplied sidereal positions and optional context for Shuddhi rules."""
+
     sun_sidereal_longitude: float
     moon_sidereal_longitude: float
     jd_ut1: float | None = None
@@ -301,6 +315,8 @@ class ShuddhiInputs:
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiValues:
+    """Derived Panchanga, Tara, Panchaka, and Bhadra values for one assessment."""
+
     tithi_index: int
     nakshatra_index: int
     pada: int
@@ -340,6 +356,8 @@ class ShuddhiValues:
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiFinding:
+    """One source-profile rule's finding, evidence, and applicable time windows."""
+
     rule_id: str
     profile: str
     state: str
@@ -372,6 +390,8 @@ class ShuddhiFinding:
 
 @dataclass(frozen=True, slots=True)
 class PanchangaShuddhiAssessment:
+    """Independent Shuddhi findings with inputs, values, and applied profiles."""
+
     policy: PanchangaShuddhiPolicy
     inputs: ShuddhiInputs
     values: ShuddhiValues
@@ -497,6 +517,8 @@ def panchanga_shuddhi_from_longitudes(sun_sidereal_longitude, moon_sidereal_long
 
 @dataclass(frozen=True, slots=True)
 class ShuddhiCell:
+    """A bounded time interval paired with its Shuddhi assessment."""
+
     interval: ShuddhiInterval
     assessment: PanchangaShuddhiAssessment
 
@@ -510,6 +532,8 @@ class ShuddhiCell:
 
 @dataclass(frozen=True, slots=True)
 class PanchangaShuddhiDay:
+    """A local sunrise day partitioned into Shuddhi cells and transition bands."""
+
     local_date: date
     timezone: str
     latitude: float

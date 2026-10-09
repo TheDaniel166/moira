@@ -1747,6 +1747,34 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "gochara_local_profiles", "gochara_subsystem_profile",
 })
 
+# Published VED-002 Sayanadi, VED-007 named windows, and VED-008 Shuddhi APIs.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "SayanadiPolicy", "SayanadiGhati", "SayanadiName", "SayanadiContext",
+    "SayanadiTrace", "SayanadiAvastha", "SayanadiEffectProvenance",
+    "sayanadi_avastha", "sayanadi_ghati_from_elapsed", "SayanadiBirthPolicy",
+    "SayanadiSunriseBracket", "AvasthaBirthResult", "SayanadiCoverageError",
+    "SayanadiResourceError", "avasthas_for_datetime",
+    "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval",
+    "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times",
+    "named_muhurta_for_date", "SpecialMuhurtaPolicy", "SpecialMuhurtaBoundary",
+    "SpecialMuhurtaWindow", "SpecialMuhurtaResult", "SpecialMuhurtaSolarResult",
+    "MuhurtaYogaMatch", "MuhurtaYogaSnapshot", "SpecialMuhurtaDay",
+    "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes",
+    "special_muhurta_for_date", "PanchangaShuddhiPolicy", "ShuddhiBoundary",
+    "ShuddhiInterval", "PanchakaRahita", "ShuddhiCatalogueEntry",
+    "ShuddhiCatalogue", "ShuddhiInputs", "ShuddhiValues", "ShuddhiFinding",
+    "PanchangaShuddhiAssessment", "ShuddhiCell", "PanchangaShuddhiDay",
+    "panchaka_rahita", "panchanga_shuddhi_catalogue",
+    "panchanga_shuddhi_from_longitudes", "panchanga_shuddhi_for_date",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "evaluate_avasthas", "sayanadi_avastha", "avasthas_for_datetime",
+    "named_muhurta_from_solar_times", "named_muhurta_for_date",
+    "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes",
+    "special_muhurta_for_date", "panchanga_shuddhi_catalogue",
+    "panchanga_shuddhi_from_longitudes", "panchanga_shuddhi_for_date",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

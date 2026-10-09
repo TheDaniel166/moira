@@ -163,6 +163,8 @@ class PanchangaLimbDay:
 
 @dataclass(frozen=True, slots=True)
 class DailyPanchangaProvenance:
+    """Reader, coordinate, clock, and solar-event conventions for a daily Panchanga."""
+
     reader_binding: str
     longitude_origin: str = "geocentric"
     longitude_frame: str = "apparent_ecliptic_of_date"
@@ -179,6 +181,8 @@ class DailyPanchangaProvenance:
 
 @dataclass(frozen=True, slots=True)
 class DailyPanchangaResult:
+    """A local sunrise day with its Panchanga limbs and explicit availability."""
+
     local_date: date
     timezone: str
     latitude: float

@@ -95,6 +95,8 @@ class MuhurtaSearchPolicy:
 
 @dataclass(frozen=True, slots=True)
 class MuhurtaMomentScore:
+    """A Muhurta score with its chart positions, policy, and clock provenance."""
+
     jd_ut1: float
     jd_tt: float
     sun_tropical_longitude: float
@@ -197,6 +199,8 @@ class MuhurtaSearchWindow:
 
 @dataclass(frozen=True, slots=True)
 class MuhurtaSearchResult:
+    """Sampled Muhurta scores and the qualifying windows derived from them."""
+
     start_jd_ut1: float
     end_jd_ut1: float
     policy: MuhurtaSearchPolicy

@@ -100,6 +100,8 @@ def _weekday(value):
 
 @dataclass(frozen=True, slots=True)
 class SpecialMuhurtaBoundary:
+    """A UT1 boundary and uncertainty bracket with optional civil-time context."""
+
     kind: str
     jd_ut1: float
     lower_jd_ut1: float
@@ -119,6 +121,8 @@ class SpecialMuhurtaBoundary:
 
 @dataclass(frozen=True, slots=True)
 class SpecialMuhurtaWindow:
+    """A special Muhurta interval with its eligibility evidence."""
+
     start: SpecialMuhurtaBoundary
     end: SpecialMuhurtaBoundary
     eligibility: str = "not_evaluated"
@@ -144,6 +148,8 @@ class SpecialMuhurtaWindow:
 
 @dataclass(frozen=True, slots=True)
 class SpecialMuhurtaResult:
+    """A named Muhurta rule's windows, source citations, and availability."""
+
     name: str
     basis: str
     citations: tuple[str, ...]
@@ -172,6 +178,8 @@ def _status(results):
 
 @dataclass(frozen=True, slots=True)
 class SpecialMuhurtaSolarResult:
+    """Special Muhurta results derived from a shared set of solar anchors."""
+
     policy: SpecialMuhurtaPolicy
     weekday: int
     anchors: tuple[SpecialMuhurtaBoundary, ...]
@@ -195,6 +203,8 @@ class SpecialMuhurtaSolarResult:
 
 @dataclass(frozen=True, slots=True)
 class MuhurtaYogaMatch:
+    """A named Muhurta yoga's presence with source citations and matching evidence."""
+
     name: str
     basis: str
     citations: tuple[str, ...]
@@ -209,6 +219,8 @@ class MuhurtaYogaMatch:
 
 @dataclass(frozen=True, slots=True)
 class MuhurtaYogaSnapshot:
+    """Sidereal Sun and Moon context with the evaluated named Muhurta yogas."""
+
     policy: SpecialMuhurtaPolicy
     weekday: int
     sun_sidereal_longitude: float

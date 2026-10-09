@@ -46,6 +46,8 @@ class GocharaCoverageError(ValueError):
 
 
 class GocharaNatalBavMode(StrEnum):
+    """Whether dated Gochar omits or computes raw natal Bhinnashtakavarga."""
+
     OMIT = "omit"
     COMPUTE_RAW = "compute_raw"
 
@@ -124,6 +126,8 @@ DEFAULT_GOCHARA_DATE_POLICY = GocharaDatePolicy()
 
 @dataclass(frozen=True, slots=True)
 class GocharaDatedPosition:
+    """A tropical position and ayanamsa with the derived sidereal Gochar position."""
+
     planet: str
     tropical_longitude: float
     ayanamsa_degrees: float
