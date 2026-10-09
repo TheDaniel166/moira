@@ -49,6 +49,23 @@ from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
 
+from .muhurta_dosha import (
+    MuhurtaDoshaPolicy,
+    DoshaPhaseSpan,
+    MuhurtaDoshaInputs,
+    DoshaWitness,
+    DoshaPredicate,
+    PariharaEvidence,
+    MuhurtaDoshaFinding,
+    MuhurtaDoshaAssessment,
+    DoshaCatalogueEntry,
+    MuhurtaDoshaCatalogue,
+    MuhurtaDoshaCell,
+    MuhurtaDoshaDay,
+    muhurta_dosha_catalogue,
+    detect_muhurta_doshas,
+    muhurta_doshas_for_date,
+)
 from .panchanga_shuddhi import (
     PanchangaShuddhiPolicy,
     ShuddhiBoundary,
@@ -1963,6 +1980,21 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    "MuhurtaDoshaPolicy",
+    "DoshaPhaseSpan",
+    "MuhurtaDoshaInputs",
+    "DoshaWitness",
+    "DoshaPredicate",
+    "PariharaEvidence",
+    "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment",
+    "DoshaCatalogueEntry",
+    "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell",
+    "MuhurtaDoshaDay",
+    "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas",
+    "muhurta_doshas_for_date",
     'PanchangaShuddhiPolicy',
     'ShuddhiBoundary',
     'ShuddhiInterval',

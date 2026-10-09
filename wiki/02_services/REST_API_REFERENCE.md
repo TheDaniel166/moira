@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 492
-- Registered OpenAPI operations: 492 (GET 38, POST 454)
+- Registered OpenAPI paths: 495
+- Registered OpenAPI operations: 495 (GET 39, POST 456)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 488
+- Versioned `/v1` paths: 491
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3585,6 +3585,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
 | `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
+| `GET` | `/v1/muhurta/doshas/catalogue` | muhurta | `dosha_catalogue_route_v1_muhurta_doshas_catalogue_get` |
+| `POST` | `/v1/muhurta/doshas/day` | muhurta | `dosha_day_route_v1_muhurta_doshas_day_post` |
+| `POST` | `/v1/muhurta/doshas/direct` | muhurta | `dosha_direct_route_v1_muhurta_doshas_direct_post` |
 | `POST` | `/v1/muhurta/named/day` | muhurta | `named_muhurta_day_route_v1_muhurta_named_day_post` |
 | `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |

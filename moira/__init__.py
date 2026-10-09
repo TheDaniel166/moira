@@ -8,6 +8,23 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 from __future__ import annotations
 
 import sys as _sys
+from .muhurta_dosha import (
+    MuhurtaDoshaPolicy,
+    DoshaPhaseSpan,
+    MuhurtaDoshaInputs,
+    DoshaWitness,
+    DoshaPredicate,
+    PariharaEvidence,
+    MuhurtaDoshaFinding,
+    MuhurtaDoshaAssessment,
+    DoshaCatalogueEntry,
+    MuhurtaDoshaCatalogue,
+    MuhurtaDoshaCell,
+    MuhurtaDoshaDay,
+    muhurta_dosha_catalogue,
+    detect_muhurta_doshas,
+    muhurta_doshas_for_date,
+)
 from .panchanga_shuddhi import (
     PanchangaShuddhiPolicy,
     ShuddhiBoundary,
@@ -1336,6 +1353,21 @@ from .mundane import (
 )
 
 __all__ = [
+    "MuhurtaDoshaPolicy",
+    "DoshaPhaseSpan",
+    "MuhurtaDoshaInputs",
+    "DoshaWitness",
+    "DoshaPredicate",
+    "PariharaEvidence",
+    "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment",
+    "DoshaCatalogueEntry",
+    "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell",
+    "MuhurtaDoshaDay",
+    "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas",
+    "muhurta_doshas_for_date",
     'PanchangaShuddhiPolicy',
     'ShuddhiBoundary',
     'ShuddhiInterval',

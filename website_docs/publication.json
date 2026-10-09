@@ -31,22 +31,22 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "019335ddb04e1bd495e48c450089a1960af692b156b6742c384ecadc653531e5"
+      "source_sha256": "108b50a253f3d7bec198c5306d9d1466121fffc2767d0c1ad82a4bb4e52e3940"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "1473781cb9427eb576ff1520f03beb1138c51bb92827c756e9afe904f51d370a"
+      "source_sha256": "6829501519ec9160fe589d03fa182b3b92782af55a8655000f1332c739a8cc45"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "bcca247e682a28a5a184c0e8335a5d3fae4702e7d3b001add792f4fe1c0a207f"
+      "source_sha256": "770b195fd1f39d40a976cc507c407b5c641bb78460633194357ca5f67c9b5435"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "bfe9e2e5641ec4310debbb2a8cd021f7bf5b07f01291e570ab28a4a31f2c0771"
+      "source_sha256": "0a6d1e684d9b503ec8e2875c14101fdcd4fd7991d3e35ecb8310a26c6a78bafa"
     },
     {
       "id": "rest_router_registration",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "1473781cb9427eb576ff1520f03beb1138c51bb92827c756e9afe904f51d370a",
+      "source_sha256": "6829501519ec9160fe589d03fa182b3b92782af55a8655000f1332c739a8cc45",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -363,6 +363,10 @@
         "DorotheusStrengthState",
         "DorotheusSupplementaryIndicator",
         "DorotheusSupplementaryIndicatorState",
+        "DoshaCatalogueEntry",
+        "DoshaPhaseSpan",
+        "DoshaPredicate",
+        "DoshaWitness",
         "DynamicAstrocartographyLineTransition",
         "DynamicAstrocartographyMode",
         "DynamicAstrocartographyPosition",
@@ -579,6 +583,13 @@
         "MoonlightPolicy",
         "MuhurtaClassification",
         "MuhurtaCoverageError",
+        "MuhurtaDoshaAssessment",
+        "MuhurtaDoshaCatalogue",
+        "MuhurtaDoshaCell",
+        "MuhurtaDoshaDay",
+        "MuhurtaDoshaFinding",
+        "MuhurtaDoshaInputs",
+        "MuhurtaDoshaPolicy",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -724,6 +735,7 @@
         "PanchangaShuddhiPolicy",
         "PanchangaSolarDate",
         "PanchangaSunriseDefinition",
+        "PariharaEvidence",
         "PartDefinition",
         "ParticipatingRulerPolicy",
         "PersonalMuhurtaScore",
@@ -1153,6 +1165,7 @@
         "delta_t_from_jd",
         "derived_houses",
         "describe_galactic_boundary",
+        "detect_muhurta_doshas",
         "dhana_yogas",
         "dig_bala",
         "dignity_condition_profile",
@@ -1246,6 +1259,8 @@
         "lunar_month_at",
         "lunar_orientation_at",
         "moon_connection_flow_at",
+        "muhurta_dosha_catalogue",
+        "muhurta_doshas_for_date",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "mutual_receptions",
@@ -2741,7 +2756,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "bcca247e682a28a5a184c0e8335a5d3fae4702e7d3b001add792f4fe1c0a207f",
+      "source_sha256": "770b195fd1f39d40a976cc507c407b5c641bb78460633194357ca5f67c9b5435",
       "symbols": [
         "ACGLine",
         "AGRIPPA_MANSIONS",
@@ -3048,6 +3063,10 @@
         "DorotheusStrengthState",
         "DorotheusSupplementaryIndicator",
         "DorotheusSupplementaryIndicatorState",
+        "DoshaCatalogueEntry",
+        "DoshaPhaseSpan",
+        "DoshaPredicate",
+        "DoshaWitness",
         "DraconicAnchor",
         "DraconicChart",
         "DraconicNodeMode",
@@ -3399,6 +3418,13 @@
         "MuddaPeriodResultProfile",
         "MuhurtaClassification",
         "MuhurtaCoverageError",
+        "MuhurtaDoshaAssessment",
+        "MuhurtaDoshaCatalogue",
+        "MuhurtaDoshaCell",
+        "MuhurtaDoshaDay",
+        "MuhurtaDoshaFinding",
+        "MuhurtaDoshaInputs",
+        "MuhurtaDoshaPolicy",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -3588,6 +3614,7 @@
         "ParanStarTier",
         "ParanStrength",
         "ParanThresholdCrossing",
+        "PariharaEvidence",
         "PartDefinition",
         "ParticipatingRulerPolicy",
         "PatternAspectContribution",
@@ -4337,6 +4364,7 @@
         "describe_angularity",
         "describe_boundary",
         "describe_galactic_boundary",
+        "detect_muhurta_doshas",
         "dhana_yogas",
         "dial_22_5_midpoints",
         "dial_45_midpoints",
@@ -4583,6 +4611,8 @@
         "moon_phases_in_range",
         "mudda_dasha",
         "mudda_period_judgement",
+        "muhurta_dosha_catalogue",
+        "muhurta_doshas_for_date",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "multiple_star",
@@ -4880,7 +4910,7 @@
     },
     "vedic": {
       "source": "moira/vedic.py",
-      "source_sha256": "f76474d60e4ddc4f7c05f629d39f8bd303b1ecafea03043b5e7b9facef9b19e1",
+      "source_sha256": "e7726260d4c82853c43049ce6248021c1af6de8d28f04da48763ce83351e5b11",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -4942,6 +4972,10 @@
         "DeltaTPolicy",
         "DignityConditionProfile",
         "DignityTier",
+        "DoshaCatalogueEntry",
+        "DoshaPhaseSpan",
+        "DoshaPredicate",
+        "DoshaWitness",
         "EXALTATION_DEGREE",
         "EXALTATION_SIGN",
         "GOCHARA_PLANETS",
@@ -5019,6 +5053,13 @@
         "MuddaPeriodResultProfile",
         "MuhurtaClassification",
         "MuhurtaCoverageError",
+        "MuhurtaDoshaAssessment",
+        "MuhurtaDoshaCatalogue",
+        "MuhurtaDoshaCell",
+        "MuhurtaDoshaDay",
+        "MuhurtaDoshaFinding",
+        "MuhurtaDoshaInputs",
+        "MuhurtaDoshaPolicy",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -5108,6 +5149,7 @@
         "PanchangaShuddhiPolicy",
         "PanchangaSolarDate",
         "PanchangaSunriseDefinition",
+        "PariharaEvidence",
         "PersonalMuhurtaScore",
         "PlanetAvasthas",
         "PlanetData",
@@ -5269,6 +5311,7 @@
         "delta_t",
         "delta_t_breakdown",
         "delta_t_distribution",
+        "detect_muhurta_doshas",
         "dhana_yogas",
         "dig_bala",
         "dignity_condition_profile",
@@ -5305,6 +5348,8 @@
         "lunar_month_at",
         "mudda_dasha",
         "mudda_period_judgement",
+        "muhurta_dosha_catalogue",
+        "muhurta_doshas_for_date",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "muntha",
@@ -5436,8 +5481,8 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.9.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "019335ddb04e1bd495e48c450089a1960af692b156b6742c384ecadc653531e5",
-      "source_bytes": 335571,
+      "source_sha256": "108b50a253f3d7bec198c5306d9d1466121fffc2767d0c1ad82a4bb4e52e3940",
+      "source_bytes": 335921,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -5616,8 +5661,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "bfe9e2e5641ec4310debbb2a8cd021f7bf5b07f01291e570ab28a4a31f2c0771",
-      "source_bytes": 244504,
+      "source_sha256": "0a6d1e684d9b503ec8e2875c14101fdcd4fd7991d3e35ecb8310a26c6a78bafa",
+      "source_bytes": 244814,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -6565,5 +6610,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "a0ff843f070948ebdc43402ddb2c5b4fa1c21086fce2c2c054162ee6f532bcf7"
+  "manifest_sha256": "b4fad69eca2db2a5de4e65a1185da91c97de321a84e33e5286da7e3f5f28c4a4"
 }

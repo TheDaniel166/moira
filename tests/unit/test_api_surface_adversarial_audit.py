@@ -1775,6 +1775,18 @@ _EXPECTED_MOIRA_METHODS.update({
     "panchanga_shuddhi_from_longitudes", "panchanga_shuddhi_for_date",
 })
 
+# VED-009 finite source-selected dosha and Parihara admission.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "MuhurtaDoshaPolicy", "DoshaPhaseSpan", "MuhurtaDoshaInputs", "DoshaWitness",
+    "DoshaPredicate", "PariharaEvidence", "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment", "DoshaCatalogueEntry", "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell", "MuhurtaDoshaDay", "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas", "muhurta_doshas_for_date",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "muhurta_dosha_catalogue", "detect_muhurta_doshas", "muhurta_doshas_for_date",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

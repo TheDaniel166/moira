@@ -1,0 +1,22 @@
+{
+  "provenance": {
+    "mc": {"edition": "Avasthi commentary, Tejkumar tenth edition 2004", "sha256": "9e931eb7fdc1958516424590a168680be60753f4cfccea8f327cae973dfe4777", "pages": [15, 26, 27, 130, 131, 133, 134, 135]},
+    "kp": {"edition": "Kalaprakasika, N P Subramania Iyer, AES 1982", "sha256": "d082d5b3b29cb6c054f3cfe8e5ff50dfa6a66220128b52afa485c5a91c10c074", "pages": [222, 232]},
+    "bp": {"edition": "BPHS Santhanam volume II, scan identified by hash", "sha256": "ad7172b615568eb812961c71cff352f354c5676b955bc34cfcfdcf431404cd45", "pages": [536, 537]}
+  },
+  "mc_star_offsets": [50,24,30,40,14,21,30,20,32,30,20,18,21,20,14,14,10,14,56,24,20,10,10,18,16,24,30],
+  "kp_star_offsets": [50,24,30,40,14,21,30,20,32,30,20,18,21,20,14,14,10,14,20,24,20,10,10,18,6,24,30],
+  "kp_alternative_mula_offsets": [20,56],
+  "yamaghanta_stars_one_based_sunday_first": [10,16,6,19,3,4,13],
+  "yamaghanta_daylight_sixteenths_one_based_sunday_first": [10,8,6,4,2,14,12],
+  "kp_exempt_stars_one_based": [6,22,5,15,21,4,17],
+  "gandanta": {
+    "nakshatra_first_zero_based": [0,9,18],
+    "nakshatra_last_zero_based": [8,17,26],
+    "lagna_first_zero_based": [0,4,8],
+    "lagna_last_zero_based": [3,7,11],
+    "mc_half_width_ghatis": {"nakshatra": 2, "tithi": 1, "lagna": 0.5},
+    "bp_half_width_ghatis": {"nakshatra": 2, "tithi": 2, "lagna": 0.5}
+  },
+  "rohini_example": {"duration_ghatis": 56, "duration_palas": 18, "offset_ghatis": 37, "offset_palas": 32, "commentary_width_ghatis": 4}
+}

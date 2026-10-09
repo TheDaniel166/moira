@@ -12,6 +12,15 @@ families must continue to obey.
 
 Current implementation state:
 
+- VED-009 admits `/v1/muhurta/doshas/{catalogue,direct,day}` for six named
+  source-owned restrictions and three opt-in exceptions. Admission is
+  `admit_now` for this validated engine contract: synchronous, read-only,
+  one-day bounded composition, serving-reader ownership and typed lossless
+  witness/prerequisite transport. It does not add generic scoring/search or
+  universal exception precedence. Source decisions and resource caps are in
+  `wiki/02_standards/MUHURTA_DOSHA_STANDARD.md`; evidence is in
+  `wiki/03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md`.
+
 - VED-008 admits the source-reviewed Panchanga Shuddhi catalogue, direct
   component assessment and bounded sunrise-day cells at
   `/v1/muhurta/shuddhi/{catalogue,direct,day}`. Admission is `admit_now` for

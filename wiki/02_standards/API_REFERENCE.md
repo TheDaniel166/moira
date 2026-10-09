@@ -47,6 +47,12 @@ branches.
 
 ## Conventions
 
+The 9 October 2026 VED-009 addition is documented in the
+[Muhurta dosha standard](MUHURTA_DOSHA_STANDARD.md): six independently
+witnessed restrictions, three opt-in scoped exceptions and reader-bound day
+cells. Fifteen identical owning exports and three `Moira` methods expose
+catalogue, direct assessment and dated composition, with matching REST.
+
 The 9 October 2026 VED-008 addition is documented in the
 [Panchanga Shuddhi standard](PANCHANGA_SHUDDHI_STANDARD.md): source-policy
 catalogue, `panchaka_rahita`, direct component assessment and reader-bound

@@ -529,6 +529,23 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .muhurta_dosha import (
+    MuhurtaDoshaPolicy,
+    DoshaPhaseSpan,
+    MuhurtaDoshaInputs,
+    DoshaWitness,
+    DoshaPredicate,
+    PariharaEvidence,
+    MuhurtaDoshaFinding,
+    MuhurtaDoshaAssessment,
+    DoshaCatalogueEntry,
+    MuhurtaDoshaCatalogue,
+    MuhurtaDoshaCell,
+    MuhurtaDoshaDay,
+    muhurta_dosha_catalogue,
+    detect_muhurta_doshas,
+    muhurta_doshas_for_date,
+)
 from .panchanga_shuddhi import (
     PanchangaShuddhiPolicy,
     ShuddhiBoundary,
@@ -583,6 +600,21 @@ from .sade_sati import (
 )
 
 _VEDIC_OWN: list[str] = [
+    "MuhurtaDoshaPolicy",
+    "DoshaPhaseSpan",
+    "MuhurtaDoshaInputs",
+    "DoshaWitness",
+    "DoshaPredicate",
+    "PariharaEvidence",
+    "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment",
+    "DoshaCatalogueEntry",
+    "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell",
+    "MuhurtaDoshaDay",
+    "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas",
+    "muhurta_doshas_for_date",
     "D60Method", "D60SignResult", "d60_sign",
     # Sidereal (extended)
     "UserDefinedAyanamsa",

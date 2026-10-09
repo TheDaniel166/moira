@@ -30,6 +30,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Date-derived Gochar](02_standards/GOCHARA_DATE_DERIVED_STANDARD.md)**
 - [Personalized Muhurta policy and sampled search](02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md)
 - [Panchanga Shuddhi source profiles and bounded day](02_standards/PANCHANGA_SHUDDHI_STANDARD.md)
+- [Muhurta dosha and scoped Parihara](02_standards/MUHURTA_DOSHA_STANDARD.md)
 - [Bounded Chara Dasha cycles](02_standards/CHARA_DASHA_CYCLE_STANDARD.md)
 - [D60 source and positional admission](02_standards/D60_SOURCE_ADMISSION_STANDARD.md)
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
@@ -47,6 +48,7 @@ invariant tests where no external software can be authoritative.
 - **[Astronomical Validation](03_validation/VALIDATION_ASTRONOMY.md)**
 - **[Astrological Invariants](03_validation/VALIDATION_ASTROLOGY.md)**
 - [Panchanga Shuddhi implementation evidence](03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md)
+- [Muhurta dosha implementation evidence](03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md)
 - [Chara/D60 implementation evidence](03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md)
 - [D60 full-profile research](06_roadmap/D60_FULL_POSITION_SOURCE_RESEARCH_2026-10-07.md)
 - [D60 bounded evidence adjudication](06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md)

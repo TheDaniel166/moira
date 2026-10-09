@@ -43,9 +43,36 @@ from ..models.panchanga_shuddhi import (
 )
 from ..serializers.panchanga_shuddhi import serialize_shuddhi_assessment, serialize_shuddhi_catalogue
 from ..services.panchanga_shuddhi import compute_shuddhi_day
+from ..models.muhurta_dosha import (
+    DoshaDirectRequest, DoshaDayRequest, DoshaAssessmentResponse,
+    DoshaDayResponse, DoshaCatalogueResponse,
+)
+from ..serializers.muhurta_dosha import serialize_dosha_assessment, serialize_dosha_catalogue
+from ..services.muhurta_dosha import compute_dosha_day
 
 
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.get("/doshas/catalogue", response_model=DoshaCatalogueResponse)
+def dosha_catalogue_route() -> DoshaCatalogueResponse:
+    """Discover source tables, clocks, six detectors and opt-in scoped Parihara."""
+    from moira import muhurta_dosha_catalogue
+    return serialize_dosha_catalogue(muhurta_dosha_catalogue())
+
+
+@router.post("/doshas/direct", response_model=DoshaAssessmentResponse)
+def dosha_direct_route(request: DoshaDirectRequest) -> DoshaAssessmentResponse:
+    """Retain raw dosha witnesses and independently evaluated cancellation evidence."""
+    from moira import detect_muhurta_doshas
+    return serialize_dosha_assessment(detect_muhurta_doshas(
+        **request.engine_inputs(), policy=request.policy.to_engine()))
+
+
+@router.post("/doshas/day", response_model=DoshaDayResponse)
+def dosha_day_route(request: DoshaDayRequest, engine: Moira = Depends(get_engine)) -> DoshaDayResponse:
+    """One sunrise-owned day with solved events, carryover and uncertain root bands."""
+    return compute_dosha_day(engine, request)
 
 
 @router.get("/shuddhi/catalogue", response_model=ShuddhiCatalogueResponse)

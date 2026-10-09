@@ -11,11 +11,14 @@ five transport weights and no personalized or search admission.
 [Named Muhurta](NAMED_MUHURTA_STANDARD.md) separately owns seven named
 timing/presence families. [Panchanga Shuddhi](PANCHANGA_SHUDDHI_STANDARD.md)
 owns VED-008 source-selected restrictions/exceptions and solved day cells.
+[Muhurta dosha and Parihara](MUHURTA_DOSHA_STANDARD.md) owns VED-009's six
+detectors, three opt-in cancellation profiles and separate catalogue/direct/day
+REST routes. Cancellation retains each detected restriction and its evidence.
 These additions preserve the legacy scoring rules below. References to
 unadmitted local-sunrise/Lagna behavior below concern the generic sampled
 search, not the separate dated assessment products.
 
-Current REST products:
+Legacy classification/scoring/search REST products:
 
 - `POST /v1/muhurta/direct/classification`
 - `POST /v1/muhurta/direct/score`

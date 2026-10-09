@@ -207,6 +207,23 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
 
+    def muhurta_dosha_catalogue(self):
+        """Discover finite dosha profiles and explicitly scoped cancellation rules."""
+        from .muhurta_dosha import muhurta_dosha_catalogue
+        return muhurta_dosha_catalogue()
+
+    def detect_muhurta_doshas(self, sun_sidereal_longitude, moon_sidereal_longitude, **kwargs):
+        """Preserve independent dosha detection and source-specific Parihara evidence."""
+        from .muhurta_dosha import detect_muhurta_doshas
+        return detect_muhurta_doshas(sun_sidereal_longitude, moon_sidereal_longitude, **kwargs)
+
+    def muhurta_doshas_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, necessary_activity=None, policy=None):
+        """Compose sunrise-day dosha cells with this engine's existing reader."""
+        from .muhurta_dosha import muhurta_doshas_for_date
+        return muhurta_doshas_for_date(local_date, latitude, longitude, timezone=timezone,
+            necessary_activity=necessary_activity, policy=policy, reader=self._reader)
+
     def panchanga_shuddhi_catalogue(self):
         """Discover admitted source profiles and historical Karana activities."""
         return _panchanga_shuddhi.panchanga_shuddhi_catalogue()
