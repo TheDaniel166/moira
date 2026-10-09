@@ -26,6 +26,7 @@ _avasthas = importlib.import_module("moira.avasthas")
 _sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
 _named_muhurta = importlib.import_module("moira.named_muhurta")
 _special_muhurta = importlib.import_module("moira.special_muhurta")
+_panchanga_shuddhi = importlib.import_module("moira.panchanga_shuddhi")
 _muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
@@ -205,6 +206,22 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def list_ayanamsa_systems(self) -> dict[str, float]:
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
+
+    def panchanga_shuddhi_catalogue(self):
+        """Discover admitted source profiles and historical Karana activities."""
+        return _panchanga_shuddhi.panchanga_shuddhi_catalogue()
+
+    def panchanga_shuddhi_from_longitudes(self, sun_sidereal_longitude, moon_sidereal_longitude, **kwargs):
+        """Independent source findings from caller-owned inputs, without score migration."""
+        return _panchanga_shuddhi.panchanga_shuddhi_from_longitudes(
+            sun_sidereal_longitude, moon_sidereal_longitude, **kwargs)
+
+    def panchanga_shuddhi_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, natal_nakshatra_index=None,
+            policy: _panchanga_shuddhi.PanchangaShuddhiPolicy | None = None):
+        """Sunrise-owned source assessment cells using this engine's reader."""
+        return _panchanga_shuddhi.panchanga_shuddhi_for_date(local_date, latitude, longitude,
+            timezone=timezone, natal_nakshatra_index=natal_nakshatra_index, policy=policy, reader=self._reader)
 
     def special_muhurta_from_solar_times(self, *, weekday: int, sunrise_jd_ut1=None,
             sunset_jd_ut1=None, half_set_jd_ut1=None, upper_limb_sunset_jd_ut1=None,

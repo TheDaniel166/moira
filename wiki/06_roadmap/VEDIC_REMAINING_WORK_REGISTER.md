@@ -1,8 +1,8 @@
 # Vedic remaining work register
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
-**Last reconciled:** 8 October 2026.
-**Baseline:** engine `main`, version 6.9.9; published two-window VED-007 base `12ed2a1`, generated wiki `424799f`. VED-007 is now locally complete for all seven named families and the two explicitly distinct Amrita profiles. Sections 27–28 record the five-name extension and its inclusion in this authorized engine/wiki source-publication package; release/deployment remain separate.
+**Last reconciled:** 9 October 2026.
+**Baseline:** engine `main`, version 6.9.9; published complete VED-007 engine `c647363`, generated wiki `2e74b0b`. VED-007 is complete for all seven named families and the two explicitly distinct Amrita profiles. Sections 27–28 record the five-name extension and source-publication package; section 29 records VED-008 research, section 30 its local implementation and section 31 its authorized source-publication package. Release/deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -31,11 +31,10 @@ below preserve their distinct admission and remaining-work boundaries.
 
 `P1` closes gaps in existing products; `P2` deepens existing families or provides the next foundational composition; `P3` is a larger separately scoped programme. These are sequencing suggestions, not effort estimates, dates or an instruction to resume paused work. No item must mechanically pass twelve identical phases: use the constitutional gates that apply to its actual object.
 
-There are **24 stable numbered work packages** below: **16 remain open,
+There are **24 stable numbered work packages** below: **15 remain open,
 including bounded VED-023 and the VED-017 window frontier**.
-**VED-001/002/003/004/005/006/007/015 are complete for their selected contracts**;
-VED-001/002/003/004/005/006/015 were already source-published; the VED-007
-five-name extension is included in this authorized source-publication package.
+**VED-001/002/003/004/005/006/007/008/015 are complete for their selected contracts**;
+VED-001/002/003/004/005/006/007/008/015 are included in the engine/wiki source-publication history and this authorized package.
 Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
@@ -59,7 +58,7 @@ VED-001 is locally complete. VED-003 admits transport, selected-edition names, s
 | --- | --- | --- | --- |
 | VED-006 | Locally complete for natal-aware sampled composition: actual personal evaluator, explicit true ayanamsa and serving-reader clocks, visible failures, threshold-qualified consecutive runs, ranked peak/bracket evidence and operational caps, with bounded REST search. Exact transitions and sunrise-owned search would require separately selected composition. | [Search engine](../../moira/muhurta_search.py), repaired legacy scorer/tuple adapters, eight shared root/facade/Vedic exports, two facade methods and `POST /v1/muhurta/search`; [owning standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_PERSONAL_SEARCH_VALIDATION_2026-10-06.md). Existing rule profile retained; no Western doctrine or new classical rule admitted. | `LOCAL_COMPLETE`; bounded sampled/JD-weekday contract, engine/wiki source published, release/deployment separate |
 | VED-007 | Complete locally: Abhijit, Brahma, Godhuli, Vijaya, selected Amrita, Ravi Yoga and Sarvarthasiddhi; named source policies, precise solar/phase boundaries, source exceptions, uncertainty and partial states, public/facade and five total REST routes. Amrita Siddhi and Kalaprakasika Amirtha are separate selectable identities. | [Five-name source decision](VEDIC_NAMED_MUHURTA_FIVE_SOURCE_AND_PLAN_2026-10-08.md), [standard](../02_standards/NAMED_MUHURTA_STANDARD.md), [383-test completion receipt](../03_validation/SPECIAL_MUHURTA_VALIDATION_2026-10-08.md). All five formerly outstanding names implemented and validated, including both startup reader paths and real DE441. Generic scoring/search and activity suitability remain separate products. | `LOCAL_COMPLETE`; all-seven-family implementation validated and included in this engine/wiki source-publication package; release/deployment separate |
-| VED-008 | Deepen Panchanga Shuddhi with separately sourced Tara-cycle/paryaya variants, Panchaka Rahita and granular Yoga/Karana rules. Keep existing Tara/Chandra results intact; define exactly which extra inputs and cancellations a selected profile evaluates. | Basic [tara_bala, chandra_bala and personal_muhurta_score](../../moira/muhurta.py) already exist and are exposed through `/v1/muhurta/personal/score`. No current `panchaka_rahita` helper or full paryaya-neutralization contract was found. The old tracker is not proof of implementation. | `SOURCE_RESEARCH`, P2 |
+| VED-008 | Locally complete for named Panchaka, alternative MC/PS Tara-cycle, nine-Yoga timing and eleven-Karana/Bhadra assessments, including solved sunrise-day cells. Existing Tara/Chandra, scoring and search remain compatible. Specific excluded readings, polar discontinuous Lagna timing and general score integration are separately bounded. | [Source research](VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md), [standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md) and [622-test validation receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md). Sixteen curated exports, three facade methods, three typed REST routes; source conflicts and derived clocks remain explicit. | `LOCAL_COMPLETE`; included in this authorized engine/wiki source-publication package; release/deployment separate |
 | VED-009 | Build a finite source-owned Muhurta dosha/Parihara family: exact detection windows, independent witnesses and named neutralization rules. Resolve Vishanadi/Tyajya, Yamaghanta and finer Gandanta boundaries against editions; preserve detected, neutralized, unavailable and excluded states. | Current [Muhurta](../../moira/muhurta.py) contains Dagdha/Vishti rules and basic Gandanta classification. `detect_muhurta_doshas` is absent, and current `MuhurtaClassification` has no claimed rich dosha/neutralization fields. The paused tracker's "fully wired" description is historical drift. | `SOURCE_RESEARCH`, P2 |
 | VED-010 | Admit Muhurta Lagna, planetary-strength and Navamsha-shuddhi composition with named purpose policies. Reuse existing Varga/Shadbala results without silently choosing relationship/aspect schools; disclose missing houses/strength and keep subcomponents inspectable. | `evaluate_muhurta_lagna_strength` is absent from current [Muhurta](../../moira/muhurta.py). [Varga](../../moira/varga.py), [Shadbala](../../moira/shadbala.py) and chart inputs are ingredients, not the complete technique. | `SOURCE_RESEARCH`, P2 |
 | VED-011 | Turn selected activity guidance into finite, testable, source-owned purpose profiles: marriage variants, construction/Vastu, travel and business only after scope selection. Expose evaluated rules, exclusions and disagreements rather than letting prose or a generic score imply complete purpose coverage. | [ACTIVITY_MUHURTA_GUIDANCE](../../moira/muhurta.py) contains guidance data; it is not a comprehensive executable purpose-policy system. Existing REST provenance says activity guidance is not admitted. | `SOURCE_RESEARCH`, P2 |
@@ -133,7 +132,7 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 ## 9. Suggested package order and definition of done
 
 1. **Close existing product omissions:** VED-001/002/003/005 and their scoped VED-021/022 follow-through are complete and source-published. This first item's selected implementation scope is closed. Operational REST budgets remain a separate scope decision.
-2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008–011 remain separately sourced packages; integrating these windows into generic scoring/search also remains a separate scope decision.
+2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009–011 remain separately sourced packages; integrating these products into generic scoring/search remains a separate scope decision.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
 4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
 
@@ -559,3 +558,84 @@ rules for Tara-cycle/paryaya distinctions, Panchaka Rahita and finer
 Yoga/Karana eligibility, then provide canonical engine results and equally
 strict REST transport. Existing Tara/Chandra Bala must remain intact. This
 recommendation does not start that separate implementation package.
+
+## 29. VED-008 research and proposed admission, 8 October 2026
+
+The user authorized research following the completed VED-007 publication.
+The [source research packet](VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md)
+collates online primary witnesses and local corpus scans, including the 1946
+Sastri/Bhat Brihat Samhita, image-only chapter 100, and P. S. Sastri's textbook
+filed under the Raman author folder. Printed pages and scan hashes control
+attribution; OCR absence is not source absence.
+
+The proposed finite package covers Panchaka Rahita, separately selected MC/PS
+Tara-cycle rules, the nine adverse Nitya Yogas with partial periods, and an
+eleven-Karana catalogue plus Bhadra components. It states clock derivations,
+exception conflicts, strict engine/REST contracts and concrete acceptance
+cases. The private arithmetic check proves the KP offset formula and direct
+remainder table agree in all 68,040 bounded inputs and checks two printed
+examples; it is not astronomical or predictive validation.
+
+Research is complete for these admission decisions. The inconsistent MC Hindi
+thirds interpretation and Raman initial-ghati example have specific recorded
+deferral conditions; they do not prevent the recommended named profiles.
+Universal Bhadra exception precedence is unclaimed. Runtime implementation,
+REST additions, scoring/search integration and publication have not started.
+Eight stable packages remain complete and sixteen open/bounded.
+
+## 30. VED-008 local implementation closure, 9 October 2026
+
+The user approved implementing the named profiles together while preserving
+existing Tara/Chandra behavior. The complete selected package now includes
+Panchaka arithmetic/current Lagna, separate MC and PS Tara-cycle readings,
+nine-Yoga timed restrictions, eleven Karana activity entries, and independent
+Bhadra residence/day-night/mouth/tail claims. Derived clocks and simultaneous
+restrictions/exceptions are visible; no universal favorable verdict is added.
+
+Sixteen owning exports, three facade methods and catalogue/direct/day REST
+routes preserve the engine result. Sunrise-owned cells use full solved parent
+events, changing Lagna, coherent true ayanamsa, explicit root bands, bounded
+work and typed polar/missing-component states. The existing score/search and
+Tara/Chandra contracts are unchanged.
+
+Acceptance totals **622 passed, zero failures/errors/skips**, with **92 DE441
+resource uses**, all run: 608 new/compatibility unit/server cases and 12 new
+real-kernel integration cases, plus two final analytic solar-admission cases. Source tables, all 68,040 Panchaka arithmetic
+inputs, both Tara variants, rational temporal windows, strict REST, DST/polar
+and configured/discovered reader paths are covered in the
+[receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md).
+
+Nine of 24 stable packages are complete; fifteen remain open/bounded.
+Implementation, source research and canonical/generated documentation are
+local and uncommitted/unpushed. Version 6.9.9 is unchanged; no release,
+deployment or website/Urania work is included. VED-009 cancellation rules,
+VED-010 strength overlays and VED-011 complete purpose elections retain their
+own scope. Particular source disagreements remain named exclusions rather
+than silently merged rules.
+
+## 31. VED-008 authorized source publication and next package, 9 October 2026
+
+The user authorized committing and pushing the complete VED-008 package,
+including the source research, engine/public/facade implementation, three
+strict REST routes, independent fixtures, tests and canonical/generated docs.
+Publish the generated wiki first and commit its exact gitlink with the engine.
+The [validation receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md)
+retains the 622-test acceptance and source/clock/coverage boundaries. Nine
+stable packages are complete; fifteen remain open/bounded. Source publication
+does not imply a version release, deployment or website/Urania adoption.
+
+**Recommended next: VED-009 — Muhurta dosha and Parihara.** First collate the
+source-specific Vishanadi/Tyajya, Yamaghanta and finer Gandanta detection
+rules, clocks, exceptions and boundary ownership. Then select a finite initial
+profile set and separately named cancellation rules. Every neutralization must
+retain the detected condition, the source rule and the evidence that its
+prerequisites are met; missing evidence must remain unknown. Existing Shuddhi
+restrictions/exception overlaps must not silently acquire universal precedence.
+
+The subsequent implementation should reuse the bounded dated composition,
+carry source-separated detected/neutralized/unavailable/excluded states, and
+arrive with canonical public/facade and equally strict REST support. Independent
+source fixtures, exact boundary cases and real-reader/HTTP parity are its
+acceptance gates. VED-010 then adds selected Lagna/strength/Navamsha composition;
+VED-011 builds complete purpose profiles on those evaluated components.
+This sequence is a recommendation, not authorization to start those packages.

@@ -1,7 +1,7 @@
 # Moira Server Implementation Plan
 
 Version: 1.9
-Date: 2026-10-06
+Date: 2026-10-09
 Status: Phases 1-10 admitted; post-Phase-10 rendering adapter workflow begins
 Scope: REST access surface over the existing Moira engine
 
@@ -11,6 +11,17 @@ the implemented base architecture and the phase sequence that subsequent route
 families must continue to obey.
 
 Current implementation state:
+
+- VED-008 admits the source-reviewed Panchanga Shuddhi catalogue, direct
+  component assessment and bounded sunrise-day cells at
+  `/v1/muhurta/shuddhi/{catalogue,direct,day}`. Admission is `admit_now` for
+  the named profiles following their engine implementation and validation.
+  Transport is synchronous, read-only and one-day bounded, uses the serving
+  reader and preserves canonical typed findings. Existing Tara/Chandra,
+  scores and generic search remain compatible. Source/variant decisions,
+  operational caps and evidence are in
+  `wiki/02_standards/PANCHANGA_SHUDDHI_STANDARD.md` and
+  `wiki/03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md`.
 
 - phases 1 through 5 are implemented
 - phase 6 now exposes stations, void-of-course, rise/set, eclipse summaries,

@@ -37,9 +37,36 @@ from ..models.special_muhurta import (
 )
 from ..serializers.special_muhurta import serialize_special_muhurta_solar, serialize_muhurta_yogas
 from ..services.special_muhurta import compute_special_muhurta_day
+from ..models.panchanga_shuddhi import (
+    ShuddhiDirectRequest, ShuddhiDayRequest, ShuddhiAssessmentResponse,
+    ShuddhiDayResponse, ShuddhiCatalogueResponse,
+)
+from ..serializers.panchanga_shuddhi import serialize_shuddhi_assessment, serialize_shuddhi_catalogue
+from ..services.panchanga_shuddhi import compute_shuddhi_day
 
 
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.get("/shuddhi/catalogue", response_model=ShuddhiCatalogueResponse)
+def shuddhi_catalogue_route() -> ShuddhiCatalogueResponse:
+    """Discover named source profiles, Karana activity evidence and excluded readings."""
+    from moira import panchanga_shuddhi_catalogue
+    return serialize_shuddhi_catalogue(panchanga_shuddhi_catalogue())
+
+
+@router.post("/shuddhi/direct", response_model=ShuddhiAssessmentResponse)
+def shuddhi_direct_route(request: ShuddhiDirectRequest) -> ShuddhiAssessmentResponse:
+    """Independent source restrictions and exceptions from caller-owned sidereal inputs."""
+    from moira import panchanga_shuddhi_from_longitudes
+    return serialize_shuddhi_assessment(panchanga_shuddhi_from_longitudes(
+        **request.engine_inputs(), policy=request.policy.to_engine()))
+
+
+@router.post("/shuddhi/day", response_model=ShuddhiDayResponse)
+def shuddhi_day_route(request: ShuddhiDayRequest, engine: Moira = Depends(get_engine)) -> ShuddhiDayResponse:
+    """Bounded sunrise-day cells with solved transitions and explicit uncertainty bands."""
+    return compute_shuddhi_day(engine, request)
 
 
 @router.post("/special/solar", response_model=SpecialMuhurtaSolarResponse)

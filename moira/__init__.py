@@ -8,6 +8,24 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 from __future__ import annotations
 
 import sys as _sys
+from .panchanga_shuddhi import (
+    PanchangaShuddhiPolicy,
+    ShuddhiBoundary,
+    ShuddhiInterval,
+    ShuddhiFinding,
+    ShuddhiInputs,
+    ShuddhiValues,
+    PanchangaShuddhiAssessment,
+    ShuddhiCatalogueEntry,
+    ShuddhiCatalogue,
+    PanchakaRahita,
+    ShuddhiCell,
+    PanchangaShuddhiDay,
+    panchanga_shuddhi_catalogue,
+    panchanga_shuddhi_from_longitudes,
+    panchaka_rahita,
+    panchanga_shuddhi_for_date,
+)
 from .special_muhurta import (
     SpecialMuhurtaPolicy, SpecialMuhurtaBoundary, SpecialMuhurtaWindow,
     SpecialMuhurtaResult, SpecialMuhurtaSolarResult, MuhurtaYogaMatch,
@@ -1318,6 +1336,22 @@ from .mundane import (
 )
 
 __all__ = [
+    'PanchangaShuddhiPolicy',
+    'ShuddhiBoundary',
+    'ShuddhiInterval',
+    'ShuddhiFinding',
+    'ShuddhiInputs',
+    'ShuddhiValues',
+    'PanchangaShuddhiAssessment',
+    'ShuddhiCatalogueEntry',
+    'ShuddhiCatalogue',
+    'PanchakaRahita',
+    'ShuddhiCell',
+    'PanchangaShuddhiDay',
+    'panchanga_shuddhi_catalogue',
+    'panchanga_shuddhi_from_longitudes',
+    'panchaka_rahita',
+    'panchanga_shuddhi_for_date',
     'SpecialMuhurtaPolicy', 'SpecialMuhurtaBoundary', 'SpecialMuhurtaWindow', 'SpecialMuhurtaResult', 'SpecialMuhurtaSolarResult', 'MuhurtaYogaMatch', 'MuhurtaYogaSnapshot', 'SpecialMuhurtaDay', 'special_muhurta_from_solar_times', 'muhurta_yogas_from_longitudes', 'special_muhurta_for_date',
     "D60Method", "D60SignResult", "d60_sign",
     # Existing facade-curated Varga products.

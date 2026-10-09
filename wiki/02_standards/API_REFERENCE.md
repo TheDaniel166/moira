@@ -47,6 +47,13 @@ branches.
 
 ## Conventions
 
+The 9 October 2026 VED-008 addition is documented in the
+[Panchanga Shuddhi standard](PANCHANGA_SHUDDHI_STANDARD.md): source-policy
+catalogue, `panchaka_rahita`, direct component assessment and reader-bound
+sunrise-day cells. Sixteen owning exports are shared by `moira`, `moira.vedic`
+and `moira.facade`; three `Moira` methods expose catalogue/direct/day. Existing
+Tara/Chandra and weighted Muhurta behavior remains compatible.
+
 - Sections labeled `fields` are intended to be exhaustive for the documented vessel unless explicitly marked otherwise.
 - Rows or examples that use `...` are abbreviated for width only; they are shorthand, not alternate signatures.
 - When a section says `summary`, that label is intentional and means the section is highlighting the most important fields rather than restating every implementation detail inline.

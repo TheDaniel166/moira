@@ -1,0 +1,13 @@
+{
+  "authority": "VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md; independent name-based transcription",
+  "panchaka_examples": [[17, 7, 19, 11, 0, "rahita"], [13, 1, 9, 6, 2, "agni"]],
+  "kalaprakasika_offsets": [[15, "roga"], [12, "agni"], [10, "raja"], [8, "chora"], [4, "mrityu"]],
+  "sastri_restricted_counts": [1, 7, 12, 16, 23, 25],
+  "mc_second_cycle_padas": [[12, 1], [14, 4], [16, 3]],
+  "yoga_initial_ghatis": {"Vishkumbha": 3, "Atiganda": 6, "Shula": 5, "Ganda": 6, "Vyaghata": 9, "Vajra": 3},
+  "yoga_whole": ["Vyatipata", "Vaidhriti"],
+  "yoga_half": "Parigha",
+  "bhadra_tithi_mouth_tail": [[4, 5, 8], [8, 2, 1], [11, 7, 6], [15, 4, 3], [18, 8, 7], [22, 3, 2], [25, 6, 5], [29, 1, 4]],
+  "residence_signs_1based": {"earth": [4, 5, 11, 12], "heaven": [1, 2, 3, 8], "underworld": [6, 7, 9, 10]},
+  "karana_order": ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti", "Kimstughna", "Shakuni", "Chatushpada", "Naga"]
+}

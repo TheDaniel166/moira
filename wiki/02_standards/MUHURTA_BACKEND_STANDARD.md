@@ -1,12 +1,19 @@
 # Muhurta Backend Standard
 
 Version: 0.2
-Date: 2026-10-06
-Scope: current Muhurta classification, score, personal overlay and bounded sampled search
+Date: 2026-10-09
+Scope: current Muhurta classification, score, personal overlay and bounded sampled search; separate named/source assessments
 
 The current governing contract is [Personalized Muhurta policy and sampled search](MUHURTA_PERSONAL_SEARCH_STANDARD.md).
 It supersedes the June P-GAP-02 restrictions that described only four routes,
 five transport weights and no personalized or search admission.
+
+[Named Muhurta](NAMED_MUHURTA_STANDARD.md) separately owns seven named
+timing/presence families. [Panchanga Shuddhi](PANCHANGA_SHUDDHI_STANDARD.md)
+owns VED-008 source-selected restrictions/exceptions and solved day cells.
+These additions preserve the legacy scoring rules below. References to
+unadmitted local-sunrise/Lagna behavior below concern the generic sampled
+search, not the separate dated assessment products.
 
 Current REST products:
 

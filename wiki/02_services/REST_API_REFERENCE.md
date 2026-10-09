@@ -21,16 +21,24 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 489
-- Registered OpenAPI operations: 489 (GET 37, POST 452)
+- Registered OpenAPI paths: 492
+- Registered OpenAPI operations: 492 (GET 38, POST 454)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 485
+- Versioned `/v1` paths: 488
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+VED-008 adds `GET /v1/muhurta/shuddhi/catalogue` and
+`POST /v1/muhurta/shuddhi/direct` / `POST /v1/muhurta/shuddhi/day`.
+The [source-profile standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md)
+defines source-separated Panchaka, Tara-cycle, Yoga timing and Karana/Bhadra
+findings, strict supplied inputs and bounded reader-owned day cells. Typed
+transport preserves restrictions, exceptions, missing components and numerical
+uncertainty independently; it does not change existing scores/search.
 
 Gochara supplied-position evaluation, integrated profiles, reader-bound epoch
 and aware-datetime composition, and the cited doctrine catalogue are registered
@@ -3581,6 +3589,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
 | `POST` | `/v1/muhurta/search` | muhurta | `muhurta_search_route_v1_muhurta_search_post` |
+| `GET` | `/v1/muhurta/shuddhi/catalogue` | muhurta | `shuddhi_catalogue_route_v1_muhurta_shuddhi_catalogue_get` |
+| `POST` | `/v1/muhurta/shuddhi/day` | muhurta | `shuddhi_day_route_v1_muhurta_shuddhi_day_post` |
+| `POST` | `/v1/muhurta/shuddhi/direct` | muhurta | `shuddhi_direct_route_v1_muhurta_shuddhi_direct_post` |
 | `POST` | `/v1/muhurta/special/day` | muhurta | `special_muhurta_day_route_v1_muhurta_special_day_post` |
 | `POST` | `/v1/muhurta/special/solar` | muhurta | `special_muhurta_solar_route_v1_muhurta_special_solar_post` |
 | `POST` | `/v1/muhurta/special/yogas` | muhurta | `special_muhurta_yogas_route_v1_muhurta_special_yogas_post` |
