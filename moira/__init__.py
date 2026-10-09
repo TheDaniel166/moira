@@ -8,6 +8,18 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 from __future__ import annotations
 
 import sys as _sys
+from .muhurta_lagna import (
+    MuhurtaLagnaPolicy,
+    LagnaPlanet,
+    LagnaRuleEvidence,
+    LagnaPlacementContribution,
+    LagnaPlacementScore,
+    LagnaRestriction,
+    MuhurtaLagnaAssessment,
+    evaluate_muhurta_lagna_strength,
+    muhurta_lagna_catalogue,
+)
+from .muhurta_lagna_dated import MuhurtaLagnaSnapshot, muhurta_lagna_for_datetime
 from .muhurta_dosha import (
     MuhurtaDoshaPolicy,
     DoshaPhaseSpan,
@@ -1353,6 +1365,17 @@ from .mundane import (
 )
 
 __all__ = [
+    "MuhurtaLagnaPolicy",
+    "LagnaPlanet",
+    "LagnaRuleEvidence",
+    "LagnaPlacementContribution",
+    "LagnaPlacementScore",
+    "LagnaRestriction",
+    "MuhurtaLagnaAssessment",
+    "evaluate_muhurta_lagna_strength",
+    "muhurta_lagna_catalogue",
+    "MuhurtaLagnaSnapshot",
+    "muhurta_lagna_for_datetime",
     "MuhurtaDoshaPolicy",
     "DoshaPhaseSpan",
     "MuhurtaDoshaInputs",

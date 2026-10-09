@@ -207,6 +207,21 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
 
+    def muhurta_lagna_catalogue(self):
+        """Discover source-specific Lagna, Navamsa and strength policies."""
+        from .muhurta_lagna import muhurta_lagna_catalogue
+        return muhurta_lagna_catalogue()
+
+    def evaluate_muhurta_lagna_strength(self, sidereal_longitudes, **kwargs):
+        """Compose inspectable Lagna rules from supplied sidereal truth."""
+        from .muhurta_lagna import evaluate_muhurta_lagna_strength
+        return evaluate_muhurta_lagna_strength(sidereal_longitudes, **kwargs)
+
+    def muhurta_lagna_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Derive one Lagna snapshot using this engine's bound reader."""
+        from .muhurta_lagna_dated import muhurta_lagna_for_datetime
+        return muhurta_lagna_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
     def muhurta_dosha_catalogue(self):
         """Discover finite dosha profiles and explicitly scoped cancellation rules."""
         from .muhurta_dosha import muhurta_dosha_catalogue

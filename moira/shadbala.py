@@ -1035,7 +1035,8 @@ def sthana_bala(
     # Even-sign planets (Moon, Venus): 15 Sha in even D1 and D9 signs
     # Mercury: neutral — not listed; Raman gives Mercury in both
     d1_sign  = int(lon // 30)
-    d9_idx   = int(lon // (30.0 / 9)) % 12  # Navamsa sign index (0 = Aries)
+    from .varga import varga_sign_index
+    d9_idx = varga_sign_index(lon, 9)  # Same rational boundaries as Saptavargaja.
     odd_planets   = {'Sun', 'Mars', 'Jupiter', 'Saturn'}
     even_planets  = {'Moon', 'Venus'}
     ojayugma_sha  = 0.0

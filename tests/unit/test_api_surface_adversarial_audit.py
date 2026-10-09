@@ -1787,6 +1787,19 @@ _EXPECTED_MOIRA_METHODS.update({
     "muhurta_dosha_catalogue", "detect_muhurta_doshas", "muhurta_doshas_for_date",
 })
 
+# VED-010 source-selected Lagna composition.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "MuhurtaLagnaPolicy", "LagnaPlanet", "LagnaRuleEvidence",
+    "LagnaPlacementContribution", "LagnaPlacementScore", "LagnaRestriction",
+    "MuhurtaLagnaAssessment", "MuhurtaLagnaSnapshot",
+    "evaluate_muhurta_lagna_strength", "muhurta_lagna_catalogue",
+    "muhurta_lagna_for_datetime",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "muhurta_lagna_catalogue", "evaluate_muhurta_lagna_strength",
+    "muhurta_lagna_for_datetime",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

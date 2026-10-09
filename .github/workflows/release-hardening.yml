@@ -172,6 +172,7 @@ jobs:
           python -m pytest tests/unit/test_dasha.py -q
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
+          python -m pytest tests/unit/test_muhurta_lagna.py tests/server/test_server_muhurta_lagna.py -q
 
       - name: Planet-first stellium and selected-zodiac house contracts
         run: |

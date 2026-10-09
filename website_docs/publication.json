@@ -36,17 +36,17 @@
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "6829501519ec9160fe589d03fa182b3b92782af55a8655000f1332c739a8cc45"
+      "source_sha256": "b373d678a87d921d65646cc50d277ba04cb0dbe8efb3cc19daab4507a5c6c3f0"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "770b195fd1f39d40a976cc507c407b5c641bb78460633194357ca5f67c9b5435"
+      "source_sha256": "b077a84d556818f28e1bb1a7d74a0ae7ab2c66ad050a339e7b99b353ca1cf234"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "0a6d1e684d9b503ec8e2875c14101fdcd4fd7991d3e35ecb8310a26c6a78bafa"
+      "source_sha256": "4274bb5bbe3380a90a060fdf9ca848630595f59637f62cb83c768a0ae40a2dda"
     },
     {
       "id": "rest_router_registration",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "6829501519ec9160fe589d03fa182b3b92782af55a8655000f1332c739a8cc45",
+      "source_sha256": "b373d678a87d921d65646cc50d277ba04cb0dbe8efb3cc19daab4507a5c6c3f0",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -518,6 +518,11 @@
         "LILLY_1647_HORARY_V1",
         "LILLY_1647_PERFECTION_V1",
         "LUNAR_ECLIPTIC_DIRECTION_V1",
+        "LagnaPlacementContribution",
+        "LagnaPlacementScore",
+        "LagnaPlanet",
+        "LagnaRestriction",
+        "LagnaRuleEvidence",
         "LajjitadiAvasthas",
         "LajjitadiState",
         "LastAspect",
@@ -590,6 +595,9 @@
         "MuhurtaDoshaFinding",
         "MuhurtaDoshaInputs",
         "MuhurtaDoshaPolicy",
+        "MuhurtaLagnaAssessment",
+        "MuhurtaLagnaPolicy",
+        "MuhurtaLagnaSnapshot",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -1186,6 +1194,7 @@
         "evaluate_dorotheus_rooted_context",
         "evaluate_lots",
         "evaluate_major_progressed_relation",
+        "evaluate_muhurta_lagna_strength",
         "evaluate_ramesey_moon_condition",
         "evaluate_sahl_matter_profile",
         "evaluate_sahl_moon_condition",
@@ -1261,6 +1270,8 @@
         "moon_connection_flow_at",
         "muhurta_dosha_catalogue",
         "muhurta_doshas_for_date",
+        "muhurta_lagna_catalogue",
+        "muhurta_lagna_for_datetime",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "mutual_receptions",
@@ -2756,7 +2767,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "770b195fd1f39d40a976cc507c407b5c641bb78460633194357ca5f67c9b5435",
+      "source_sha256": "b077a84d556818f28e1bb1a7d74a0ae7ab2c66ad050a339e7b99b353ca1cf234",
       "symbols": [
         "ACGLine",
         "AGRIPPA_MANSIONS",
@@ -3308,6 +3319,11 @@
         "LILLY_1647_HORARY_V1",
         "LILLY_1647_PERFECTION_V1",
         "LUNAR_ECLIPTIC_DIRECTION_V1",
+        "LagnaPlacementContribution",
+        "LagnaPlacementScore",
+        "LagnaPlanet",
+        "LagnaRestriction",
+        "LagnaRuleEvidence",
         "LajjitadiAvasthas",
         "LajjitadiState",
         "LastAspect",
@@ -3425,6 +3441,9 @@
         "MuhurtaDoshaFinding",
         "MuhurtaDoshaInputs",
         "MuhurtaDoshaPolicy",
+        "MuhurtaLagnaAssessment",
+        "MuhurtaLagnaPolicy",
+        "MuhurtaLagnaSnapshot",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -4404,6 +4423,7 @@
         "evaluate_dorotheus_rooted_context",
         "evaluate_lots",
         "evaluate_major_progressed_relation",
+        "evaluate_muhurta_lagna_strength",
         "evaluate_paran_site",
         "evaluate_paran_stability",
         "evaluate_ramesey_moon_condition",
@@ -4613,6 +4633,8 @@
         "mudda_period_judgement",
         "muhurta_dosha_catalogue",
         "muhurta_doshas_for_date",
+        "muhurta_lagna_catalogue",
+        "muhurta_lagna_for_datetime",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "multiple_star",
@@ -4910,7 +4932,7 @@
     },
     "vedic": {
       "source": "moira/vedic.py",
-      "source_sha256": "e7726260d4c82853c43049ce6248021c1af6de8d28f04da48763ce83351e5b11",
+      "source_sha256": "0e635337d7b06506fe61ff9469ed769799bf0994286347d489c1d2828fe537dc",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -5032,6 +5054,11 @@
         "KarakaRole",
         "Karakamsa",
         "KaranaType",
+        "LagnaPlacementContribution",
+        "LagnaPlacementScore",
+        "LagnaPlanet",
+        "LagnaRestriction",
+        "LagnaRuleEvidence",
         "LajjitadiAvasthas",
         "LajjitadiState",
         "LunarLunation",
@@ -5060,6 +5087,9 @@
         "MuhurtaDoshaFinding",
         "MuhurtaDoshaInputs",
         "MuhurtaDoshaPolicy",
+        "MuhurtaLagnaAssessment",
+        "MuhurtaLagnaPolicy",
+        "MuhurtaLagnaSnapshot",
         "MuhurtaMomentScore",
         "MuhurtaPolicy",
         "MuhurtaResourceError",
@@ -5318,6 +5348,7 @@
         "drig_bala",
         "dwadashamsa",
         "evaluate_avasthas",
+        "evaluate_muhurta_lagna_strength",
         "evaluate_yogas",
         "find_aspects",
         "find_muhurta_windows",
@@ -5350,6 +5381,8 @@
         "mudda_period_judgement",
         "muhurta_dosha_catalogue",
         "muhurta_doshas_for_date",
+        "muhurta_lagna_catalogue",
+        "muhurta_lagna_for_datetime",
         "muhurta_score_for_chart",
         "muhurta_yogas_from_longitudes",
         "muntha",
@@ -5661,8 +5694,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "0a6d1e684d9b503ec8e2875c14101fdcd4fd7991d3e35ecb8310a26c6a78bafa",
-      "source_bytes": 244814,
+      "source_sha256": "4274bb5bbe3380a90a060fdf9ca848630595f59637f62cb83c768a0ae40a2dda",
+      "source_bytes": 245157,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -5767,8 +5800,8 @@
       "description": "Bounded external comparisons, doctrine checks, invariants, and explicit non-oracle cases for astrological convention layers.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "8fef2b75a7bc011ccf65b03339afe8cc86c67bdac0c0be25e01ecffc7cc35ffe",
-      "source_bytes": 39444,
+      "source_sha256": "6360851137add3439100826e8918a384eb3f2db0e5869b2d26acbf8f9abe3fd7",
+      "source_bytes": 39758,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -6610,5 +6643,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "b4fad69eca2db2a5de4e65a1185da91c97de321a84e33e5286da7e3f5f28c4a4"
+  "manifest_sha256": "da1780c1c6b82a29c1aad77c3514ede8e39a520c66f58480fceea5e523efbce8"
 }

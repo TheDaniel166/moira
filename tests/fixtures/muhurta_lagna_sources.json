@@ -1,0 +1,251 @@
+{
+  "authority": "Daivajna Rama, Muhurta Chintamani, Ramlal Avasthi commentary, Tejkumar Book Depot, 2004",
+  "scan_sha256": "9e931eb7fdc1958516424590a168680be60753f4cfccea8f327cae973dfe4777",
+  "table_locus": "Vivaha 87, printed 146 / PDF 155; weights 92, printed 148 / PDF 157; visually transcribed",
+  "favorable_houses_and_weights": {
+    "Sun": [
+      [
+        3,
+        6,
+        8,
+        11
+      ],
+      3.5
+    ],
+    "Moon": [
+      [
+        2,
+        3,
+        11
+      ],
+      5
+    ],
+    "Mars": [
+      [
+        3,
+        6,
+        11
+      ],
+      1.5
+    ],
+    "Mercury": [
+      [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11
+      ],
+      2
+    ],
+    "Jupiter": [
+      [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11
+      ],
+      3
+    ],
+    "Venus": [
+      [
+        1,
+        2,
+        4,
+        5,
+        9,
+        10,
+        11
+      ],
+      2
+    ],
+    "Saturn": [
+      [
+        3,
+        6,
+        8,
+        11
+      ],
+      1.5
+    ],
+    "Rahu": [
+      [
+        3,
+        6,
+        8,
+        11
+      ],
+      1.5
+    ],
+    "Ketu": [
+      [
+        3,
+        6,
+        8,
+        11
+      ],
+      1.5
+    ]
+  },
+  "aspect_examples_locus": "Vivaha 76 commentary, printed 141-142 / PDF 150-151; Aries Lagna, Gemini Navamsa",
+  "aspect_examples": [
+    {
+      "planet": "Mercury",
+      "longitude": 185,
+      "rule": "lagna_support_76",
+      "quarter_count": 2,
+      "target": 2
+    },
+    {
+      "planet": "Mercury",
+      "longitude": 275,
+      "rule": "lagna_support_76",
+      "quarter_count": 3,
+      "target": 0
+    },
+    {
+      "planet": "Jupiter",
+      "longitude": 185,
+      "rule": "seventh_support_76",
+      "quarter_count": 1,
+      "target": 8
+    },
+    {
+      "planet": "Jupiter",
+      "longitude": 95,
+      "rule": "seventh_support_76",
+      "quarter_count": 3,
+      "target": 6
+    }
+  ],
+  "navamsa_examples_locus": "Vivaha 84-85 commentary, printed 145 / PDF154",
+  "last_segment_examples": [
+    {
+      "lagna": 28,
+      "d9_sign": 8,
+      "satisfied": false
+    },
+    {
+      "lagna": 58,
+      "d9_sign": 5,
+      "satisfied": false
+    },
+    {
+      "lagna": 88,
+      "d9_sign": 2,
+      "satisfied": true,
+      "basis": "derived vargottama exception, not a printed worked example"
+    }
+  ],
+  "grade_locus": "Vivaha 92 commentary, printed148: less than5 prohibited;5-10 inauspicious;10-15 middling;15-20 auspicious; retain shared endpoints",
+  "friendship_locus": "BPHS Santhanam I 3.55 printed40/PDF39, visually transcribed; directional, never symmetric",
+  "bphs_sha256": "13609f1af89541e070c798b8c70c6bfd74a8b9a71a71388913bf898e9f9ddf3f",
+  "relationships": {
+    "Sun": [
+      [
+        "Moon",
+        "Mars",
+        "Jupiter"
+      ],
+      [
+        "Venus",
+        "Saturn"
+      ],
+      [
+        "Mercury"
+      ]
+    ],
+    "Moon": [
+      [
+        "Sun",
+        "Mercury"
+      ],
+      [],
+      [
+        "Mars",
+        "Jupiter",
+        "Venus",
+        "Saturn"
+      ]
+    ],
+    "Mars": [
+      [
+        "Sun",
+        "Moon",
+        "Jupiter"
+      ],
+      [
+        "Mercury"
+      ],
+      [
+        "Venus",
+        "Saturn"
+      ]
+    ],
+    "Mercury": [
+      [
+        "Sun",
+        "Venus"
+      ],
+      [
+        "Moon"
+      ],
+      [
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ]
+    ],
+    "Jupiter": [
+      [
+        "Sun",
+        "Moon",
+        "Mars"
+      ],
+      [
+        "Mercury",
+        "Venus"
+      ],
+      [
+        "Saturn"
+      ]
+    ],
+    "Venus": [
+      [
+        "Mercury",
+        "Saturn"
+      ],
+      [
+        "Moon",
+        "Sun"
+      ],
+      [
+        "Mars",
+        "Jupiter"
+      ]
+    ],
+    "Saturn": [
+      [
+        "Mercury",
+        "Venus"
+      ],
+      [
+        "Sun",
+        "Moon",
+        "Mars"
+      ],
+      [
+        "Jupiter"
+      ]
+    ]
+  }
+}

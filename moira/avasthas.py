@@ -602,7 +602,8 @@ def _is_combust(planet: str, sidereal_longitudes: dict[str, float]) -> bool:
 
 
 def _navamsa_sign(lon: float) -> int:
-    return int(lon % 360.0 // (30.0 / 9)) % 12
+    from .varga import varga_sign_index
+    return varga_sign_index(lon, 9)
 
 
 def _sign_dignity(planet: str, lon: float) -> tuple[bool, bool, bool]:

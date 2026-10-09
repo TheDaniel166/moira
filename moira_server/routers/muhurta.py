@@ -192,4 +192,32 @@ def muhurta_chart_score_route(
     return compute_muhurta_chart_score(engine, request)
 
 
+from ..models.muhurta_lagna import (
+    LagnaDirectRequest, LagnaDatetimeRequest, LagnaAssessmentResponse,
+    LagnaSnapshotResponse, LagnaCatalogueResponse,
+)
+from ..serializers.muhurta_lagna import serialize_lagna_assessment
+from ..services.muhurta_lagna import compute_lagna_snapshot
+
+
+@router.get("/lagna/catalogue", response_model=LagnaCatalogueResponse)
+def muhurta_lagna_catalogue_route() -> LagnaCatalogueResponse:
+    """Discover named purpose, Navamsa, aspect and strength composition policies."""
+    from moira import muhurta_lagna_catalogue
+    return LagnaCatalogueResponse(**muhurta_lagna_catalogue())
+
+
+@router.post("/lagna/direct", response_model=LagnaAssessmentResponse)
+def muhurta_lagna_direct_route(request: LagnaDirectRequest) -> LagnaAssessmentResponse:
+    """Evaluate supplied sidereal Lagna facts with explicit missing-data evidence."""
+    from moira import evaluate_muhurta_lagna_strength
+    return serialize_lagna_assessment(evaluate_muhurta_lagna_strength(**request.engine_inputs()))
+
+
+@router.post("/lagna/datetime", response_model=LagnaSnapshotResponse)
+def muhurta_lagna_datetime_route(request: LagnaDatetimeRequest, engine: Moira = Depends(get_engine)) -> LagnaSnapshotResponse:
+    """Reader-bound instantaneous Lagna and optional canonical Shadbala context."""
+    return compute_lagna_snapshot(engine, request)
+
+
 __all__ = ["router"]

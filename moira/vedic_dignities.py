@@ -282,7 +282,10 @@ for _planet, _signs in OWN_SIGNS.items():
 # ---------------------------------------------------------------------------
 # Natural friendship tables (Naisargika Maitri)
 #
-# Source: BPHS Ch. 3.
+# Source: BPHS Santhanam I, 3.55, printed 40 / PDF 39.
+# VED-010 visual audit: Venus treats Moon as an enemy; the reverse direction
+# is neutral. Source hash and complete directional fixture are in the Lagna
+# source packet. This corrects the former Venus->Moon neutral entry.
 # ---------------------------------------------------------------------------
 
 NATURAL_FRIENDS: dict[str, set[str]] = {
@@ -301,7 +304,7 @@ NATURAL_NEUTRALS: dict[str, set[str]] = {
     'Mars':    {'Venus', 'Saturn'},
     'Mercury': {'Mars', 'Jupiter', 'Saturn'},
     'Jupiter': {'Saturn'},
-    'Venus':   {'Mars', 'Jupiter', 'Moon'},
+    'Venus':   {'Mars', 'Jupiter'},
     'Saturn':  {'Jupiter'},
 }
 
@@ -311,7 +314,7 @@ NATURAL_ENEMIES: dict[str, set[str]] = {
     'Mars':    {'Mercury'},
     'Mercury': {'Moon'},
     'Jupiter': {'Mercury', 'Venus'},
-    'Venus':   {'Sun'},
+    'Venus':   {'Sun', 'Moon'},
     'Saturn':  {'Sun', 'Moon', 'Mars'},
 }
 

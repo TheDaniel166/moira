@@ -529,6 +529,18 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .muhurta_lagna import (
+    MuhurtaLagnaPolicy,
+    LagnaPlanet,
+    LagnaRuleEvidence,
+    LagnaPlacementContribution,
+    LagnaPlacementScore,
+    LagnaRestriction,
+    MuhurtaLagnaAssessment,
+    evaluate_muhurta_lagna_strength,
+    muhurta_lagna_catalogue,
+)
+from .muhurta_lagna_dated import MuhurtaLagnaSnapshot, muhurta_lagna_for_datetime
 from .muhurta_dosha import (
     MuhurtaDoshaPolicy,
     DoshaPhaseSpan,
@@ -600,6 +612,17 @@ from .sade_sati import (
 )
 
 _VEDIC_OWN: list[str] = [
+    "MuhurtaLagnaPolicy",
+    "LagnaPlanet",
+    "LagnaRuleEvidence",
+    "LagnaPlacementContribution",
+    "LagnaPlacementScore",
+    "LagnaRestriction",
+    "MuhurtaLagnaAssessment",
+    "evaluate_muhurta_lagna_strength",
+    "muhurta_lagna_catalogue",
+    "MuhurtaLagnaSnapshot",
+    "muhurta_lagna_for_datetime",
     "MuhurtaDoshaPolicy",
     "DoshaPhaseSpan",
     "MuhurtaDoshaInputs",

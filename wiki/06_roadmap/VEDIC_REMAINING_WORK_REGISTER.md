@@ -2,7 +2,7 @@
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
 **Last reconciled:** 9 October 2026.
-**Baseline:** engine `main`, version 6.9.9; VED-008 and the subsequent release-gate repair are published at engine `c33dca1`, generated wiki `37681cb`. Sections 27–31 retain VED-007/008 research, implementation and publication checkpoints. Sections 32–33 record the VED-009 local implementation and authorized source-publication package. Ten of 24 stable packages are locally complete; fourteen remain open/bounded. Release/deployment remain separate.
+**Baseline:** engine `main`, version 6.9.9; VED-009 is published at engine `571788a`, generated wiki `ed68937`, with hosted Release Hardening and Acceptance Matrix green. Sections 27–33 retain earlier checkpoints. Section 34 records the locally complete VED-010 source/implementation package. Eleven of 24 stable packages are locally complete; thirteen remain open/bounded. Release/deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -31,10 +31,10 @@ below preserve their distinct admission and remaining-work boundaries.
 
 `P1` closes gaps in existing products; `P2` deepens existing families or provides the next foundational composition; `P3` is a larger separately scoped programme. These are sequencing suggestions, not effort estimates, dates or an instruction to resume paused work. No item must mechanically pass twelve identical phases: use the constitutional gates that apply to its actual object.
 
-There are **24 stable numbered work packages** below: **15 remain open,
+There are **24 stable numbered work packages** below: **13 remain open/bounded,
 including bounded VED-023 and the VED-017 window frontier**.
-**VED-001/002/003/004/005/006/007/008/015 are complete for their selected contracts**;
-VED-001/002/003/004/005/006/007/008/015 are included in the engine/wiki source-publication history and this authorized package.
+**VED-001/002/003/004/005/006/007/008/009/010/015 are complete for their selected contracts**;
+VED-001/002/003/004/005/006/007/008/009/015 are in the engine/wiki source-publication history; VED-010 is complete and included in the authorized wiki-first publication package.
 Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
@@ -59,14 +59,14 @@ VED-001 is locally complete. VED-003 admits transport, selected-edition names, s
 | VED-006 | Locally complete for natal-aware sampled composition: actual personal evaluator, explicit true ayanamsa and serving-reader clocks, visible failures, threshold-qualified consecutive runs, ranked peak/bracket evidence and operational caps, with bounded REST search. Exact transitions and sunrise-owned search would require separately selected composition. | [Search engine](../../moira/muhurta_search.py), repaired legacy scorer/tuple adapters, eight shared root/facade/Vedic exports, two facade methods and `POST /v1/muhurta/search`; [owning standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_PERSONAL_SEARCH_VALIDATION_2026-10-06.md). Existing rule profile retained; no Western doctrine or new classical rule admitted. | `LOCAL_COMPLETE`; bounded sampled/JD-weekday contract, engine/wiki source published, release/deployment separate |
 | VED-007 | Complete locally: Abhijit, Brahma, Godhuli, Vijaya, selected Amrita, Ravi Yoga and Sarvarthasiddhi; named source policies, precise solar/phase boundaries, source exceptions, uncertainty and partial states, public/facade and five total REST routes. Amrita Siddhi and Kalaprakasika Amirtha are separate selectable identities. | [Five-name source decision](VEDIC_NAMED_MUHURTA_FIVE_SOURCE_AND_PLAN_2026-10-08.md), [standard](../02_standards/NAMED_MUHURTA_STANDARD.md), [383-test completion receipt](../03_validation/SPECIAL_MUHURTA_VALIDATION_2026-10-08.md). All five formerly outstanding names implemented and validated, including both startup reader paths and real DE441. Generic scoring/search and activity suitability remain separate products. | `LOCAL_COMPLETE`; all-seven-family implementation validated and included in this engine/wiki source-publication package; release/deployment separate |
 | VED-008 | Locally complete for named Panchaka, alternative MC/PS Tara-cycle, nine-Yoga timing and eleven-Karana/Bhadra assessments, including solved sunrise-day cells. Existing Tara/Chandra, scoring and search remain compatible. Specific excluded readings, polar discontinuous Lagna timing and general score integration are separately bounded. | [Source research](VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md), [standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md) and [622-test validation receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md). Sixteen curated exports, three facade methods, three typed REST routes; source conflicts and derived clocks remain explicit. | `LOCAL_COMPLETE`; included in this authorized engine/wiki source-publication package; release/deployment separate |
-| VED-009 | Locally complete finite six-detector/three-exception package: source-specific stellar Vishanadi, both Yamaghantas and temporal nakshatra/tithi/Lagna Gandanta; raw evidence retained after opt-in neutralization. Other Tyajya types, angular/Abhukta variants and the complete twenty-one-dosha catalogue remain explicitly excluded extensions. | [Source packet](VEDIC_DOSHA_PARIHARA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_DOSHA_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md). Fifteen owning exports, three facade methods and three strict REST routes; full-parent events, numerical bands, carryover and source-scoped cancellation evidence. Strength-dependent exceptions belong to VED-010. | `LOCAL_COMPLETE` for the selected package; included in this authorized source-publication package; broader listed extensions remain unadmitted |
-| VED-010 | Admit Muhurta Lagna, planetary-strength and Navamsha-shuddhi composition with named purpose policies. Reuse existing Varga/Shadbala results without silently choosing relationship/aspect schools; disclose missing houses/strength and keep subcomponents inspectable. | `evaluate_muhurta_lagna_strength` is absent from current [Muhurta](../../moira/muhurta.py). [Varga](../../moira/varga.py), [Shadbala](../../moira/shadbala.py) and chart inputs are ingredients, not the complete technique. | `SOURCE_RESEARCH`, P2 |
+| VED-009 | Locally complete finite six-detector/three-exception package: source-specific stellar Vishanadi, both Yamaghantas and temporal nakshatra/tithi/Lagna Gandanta; raw evidence retained after opt-in neutralization. Other Tyajya types, angular/Abhukta variants and the complete twenty-one-dosha catalogue remain explicitly excluded extensions. | [Source packet](VEDIC_DOSHA_PARIHARA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_DOSHA_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md). Fifteen owning exports, three facade methods and three strict REST routes; full-parent events, numerical bands, carryover and source-scoped cancellation evidence. Strength-dependent exceptions belong to VED-010. | `LOCAL_COMPLETE` and published at engine `571788a` / wiki `ed68937`; broader listed extensions remain unadmitted |
+| VED-010 | Source-selected general/marriage Lagna components, both Navamsa readings, quarter-aspect support, MC placement score, raw restrictions and optional MC88 exceptions. Canonical Shadbala remains inspectable context. | [Source record](VEDIC_LAGNA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_LAGNA_STANDARD.md), [validation](../03_validation/MUHURTA_LAGNA_VALIDATION_2026-10-09.md). Eleven curated exports, three facade methods and three REST routes; source-backed D9 and Venus/Moon table corrections in shared owners. | `LOCAL_COMPLETE`, included in authorized source publication; broader listed remedies remain excluded |
 | VED-011 | Turn selected activity guidance into finite, testable, source-owned purpose profiles: marriage variants, construction/Vastu, travel and business only after scope selection. Expose evaluated rules, exclusions and disagreements rather than letting prose or a generic score imply complete purpose coverage. | [ACTIVITY_MUHURTA_GUIDANCE](../../moira/muhurta.py) contains guidance data; it is not a comprehensive executable purpose-policy system. Existing REST provenance says activity guidance is not admitted. | `SOURCE_RESEARCH`, P2 |
 
 The May tracker is retained as a research trail. Its historical "fully wired"
 claim did not establish the current contract. VED-009 now has its own validated
 dosha/Parihara owner; the legacy classification has not acquired that richer
-contract, and VED-010 Lagna-strength composition remains open.
+contract. VED-010 Lagna-strength composition is locally complete for its named policies and instantaneous contract.
 
 ## 4. Other established-family depth and foundational additions
 
@@ -135,7 +135,7 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 ## 9. Suggested package order and definition of done
 
 1. **Close existing product omissions:** VED-001/002/003/005 and their scoped VED-021/022 follow-through are complete and source-published. This first item's selected implementation scope is closed. Operational REST budgets remain a separate scope decision.
-2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. **VED-010, then VED-011, remain next**; integrating these products into generic scoring/search remains a separate scope decision.
+2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is locally complete for its source-selected Lagna/strength/Navamsa components. **VED-011 is next**; integrating these products into generic scoring/search remains a separate scope decision.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
 4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
 
@@ -704,3 +704,42 @@ its named purpose/exception prerequisites; reuse existing Varga/Shadbala
 owners without hiding school choices or missing inputs. VED-011 complete
 purpose elections remain separate. Source publication does not imply a
 package release, deployment or website/Urania adoption.
+
+
+## 34. VED-009 publication and VED-010 selected composition
+
+VED-009 was committed and pushed wiki-first: generated wiki
+`ed68937510e6ce162da82420b4f42415c0480161`, then engine
+`571788a1fe705b096d5a69911f30be583c7c45d7`. Remote branch tips and the parent
+gitlink were verified. Hosted [Release Hardening](https://github.com/TheDaniel166/moira/actions/runs/37933596179)
+and [Acceptance Matrix](https://github.com/TheDaniel166/moira/actions/runs/37933596186)
+completed successfully for that engine SHA.
+
+The user then authorized VED-010. Source inspection established finite general
+and marriage Lagna profiles, named Navamsa variants, fractional-aspect support,
+MC87/92's placement score and scoped MC88 exceptions. Shadbala is separate
+context, not a blanket override. Source availability is established; broader
+remedies and VED-011 complete purpose elections remain explicit extensions.
+
+The shared Varga D9 partition and Venus-to-Moon natural relation were corrected
+against BPHS6.12 and3.55. Their dependent regression evidence is part of this
+package. See the linked source record, standard and validation receipt for
+final acceptance status. VED-010 is included in the authorized wiki-first
+source-publication package.
+
+
+VED-010 acceptance is complete locally: **363 new feature tests**, **881
+affected existing Vedic regressions**, and all four release-hardening groups.
+The deduplicated final outcome is **2,856 passed, one existing no-aspect
+void-of-course skip, zero unresolved failures/errors**. All 18 changed Python
+files pass Python3.10 grammar; full scoped Ruff, exact API/docstring guards,
+all six release-facing artifact checks and whitespace checks pass. The REST
+inventory now has 498 operations; the new unit/REST files are added to CI.
+
+Eleven of 24 stable packages are locally complete; thirteen remain open/bounded.
+**Next: VED-011**, selected complete purpose elections. This next package is
+not started by VED-010 closure. The user subsequently authorized VED-010
+commit/push, followed by a deep adversarial review of the current Vedic
+system. This publication includes the generated wiki first, then the engine
+source, tests, canonical documents, publication manifest and exact gitlink.
+The review is a separate assessment of the resulting snapshot.

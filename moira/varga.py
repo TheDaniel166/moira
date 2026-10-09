@@ -363,6 +363,26 @@ class VargaPoint:
             s += f" [{self.deity}]"
         return s
 
+def _navamsa_partition(longitude: float) -> tuple[float, int, float]:
+    """Partition the exact supplied binary angle by rational 10/3 degrees.
+
+    Rounded floor division by 30/9 misassigns exact multiples such as 10
+    and 30 degrees. Integer ratios also preserve either nextafter neighbour.
+    """
+    if isinstance(longitude, bool) or not isinstance(longitude, (int, float)):
+        raise TypeError("longitude must be a finite number")
+    longitude = float(longitude)
+    if not isfinite(longitude):
+        raise ValueError("longitude must be finite")
+    longitude %= 360.0
+    if longitude == 360.0:
+        longitude = nextafter(360.0, 0.0)
+    numerator, denominator = longitude.as_integer_ratio()
+    segment, remainder = divmod(numerator * 9, denominator * 30)
+    degree = min(remainder / denominator, nextafter(30.0, 0.0))
+    return longitude, segment, degree
+
+
 def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     """
     Calculate the divisional (varga) position for a given longitude and division 'n'.
@@ -373,6 +393,12 @@ def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     Note: Standard Parasari vargas often have specific starting offsets 
     per sign (Fire/Earth/Air/Water). 
     """
+    if n == 9:
+        longitude, segment, degree = _navamsa_partition(longitude)
+        sign = segment % 12
+        mapped = min(sign * 30.0 + degree, nextafter((sign + 1) * 30.0, 0.0))
+        return VargaPoint(name or "D9", n, longitude, mapped,
+                          SIGNS[sign], SIGN_SYMBOLS[sign], degree)
     longitude = longitude % 360.0
 
     # Total segments of size (30/n) from 0° Aries
@@ -812,6 +838,8 @@ def varga_sign_index(sidereal_longitude: float, n: int, *, d60_method: D60Method
         if n != 60:
             raise ValueError("nondefault d60_method applies only to division 60")
         return d60_sign(sidereal_longitude, method=d60_method).sign_index
+    if n == 9:
+        return _navamsa_partition(sidereal_longitude)[1] % 12
     lon = sidereal_longitude % 360.0
     sign_idx = int(lon // 30)
     deg = lon % 30.0
