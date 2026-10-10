@@ -1,8 +1,8 @@
 # Shadbala Backend Standard
 
-**Status:** Constitutional freeze — P11  
+**Status:** Current contract, adversarial repairs 9 October 2026
 **Authority:** `moira/shadbala.py`  
-**Source:** BPHS Shadbala Adhyaya; B.V. Raman, *Graha and Bhava Balas* (1959)
+**Source:** Selected Raman 1996 and BPHS Santhanam component rules; see [source and compatibility receipt](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md).
 
 ---
 
@@ -13,9 +13,7 @@
 The Shadbala subsystem is an astronomical-truth-first computation of the six
 sources of planetary strength (*bala*) used in classical Vedic astrology.
 
-Each sub-component is derived from an explicit, traceable source.  Policy is
-explicit.  Output is deterministic for fixed inputs.  No hidden defaults govern
-any sub-component computation.
+Source attribution is component-specific. Selected Saptavargaja, Kala and war rules have independently transcribed arithmetic witnesses. Retained thresholds, ingress-based Abda/Masa, osculating Chesta and sign-based Drig are identified separately; neither named Saptavargaja scale claims an entire textbook worked chart.
 
 ### 2. Layer Structure
 
@@ -74,19 +72,58 @@ The following core computations are admitted and constitutionally frozen:
 
 #### Chesta Bala
 
-Primary-source formulations from B. V. Raman's *Graha and Bhava Balas* (13th edition, 1992):
+Retained motion convention (not selected by the Saptavargaja scale):
 - **Sun**: Chapter X (§136, pp. 101–103).  Sayana (tropical) longitude + 90°, reduced to ≤ 180° and divided by 3 Shashtiamsas.  Maximum 60 Sha at Cancer ingress (northern solstice), 0 Sha at Capricorn ingress (southern solstice), 30 Sha at equinoxes.
 - **Moon**: Chapter X (§137, pp. 101–103).  Elongation |lon_Moon − lon_Sun|, reduced to ≤ 180° and divided by 3 Shashtiamsas.  Maximum 60 Sha at Full Moon (opposition), 0 Sha at New Moon (conjunction), 30 Sha at quarters.
 - **Five non-luminaries (Mars, Mercury, Jupiter, Venus, Saturn)**: Chapter VI (*Chesta Bala or Motional Strength*, pp. 64–79).  Derived from Chesta Kendra = (Seeghrochcha − (mean_lon + true_lon) / 2) mod 360°, reduced to ≤ 180° and divided by 3 Shashtiamsas.  For superior planets (Mars, Jupiter, Saturn), Seeghrochcha is the Sun's longitude and mean longitude is the planet's mean orbital longitude evaluated from the strict orbital core.  For inferior planets (Mercury, Venus), Seeghrochcha is the planet's heliocentric longitude and the mean planet is the Sun.
 - **Speed-ratio fallback**: preserved for callers without positions or ephemeris access (retrograde gives 60 Sha; standstill gives 0 Sha).
 
+#### Explicit geometry and source components
+
+Full calculation requires immutable `ShadbalaContext`: UT epoch, named ayanamsa,
+seven apparent geocentric sidereal longitudes, seven true-equatorial tropical
+declinations, Chesta inputs, local apparent solar fraction, sunrise/set/next
+sunrise, named year/month/day/hour lords and provenance. `derive_shadbala_context`
+and `Moira.shadbala_context` bind the serving reader for all dependencies.
+Supplied contexts perform no hidden ephemeris lookup. Missing polar solar events
+remain inspectable and raise `ShadbalaContextError` for full strength.
+
+Saptavargaja defaults to `raman_1996`; `bphs_santhanam_27` changes only the seven
+awards. Both use the explicit Raman D1-only Moolatrikona convention, actual D1
+degrees, and D1 compound relationships. Temporary friendship is houses
+2,3,4,10,11,12. Source D7 counts from own/seventh for odd/even signs, D12 from
+own sign, and D30 uses unequal planetary spans. Public generic harmonic
+selectors are separate. `SaptavargajaEntry` preserves each sign/lord/state/award.
+Mercury receives both odd-sign Ojayugma contributions like Sun/Mars/Jupiter/Saturn.
+
+Nathonnatha is linear in apparent solar hour angle; Mercury always receives60.
+Paksha uses continuous Sun–Moon phase, with Moon doubling. The named Moira
+nature convention treats Moon as benefic on [84,264) degrees and Mercury as
+malefic when sharing a D1 sign with Sun/Mars/Saturn or a malefic Moon. A supplied
+context may explicitly select Mercury benefic/malefic. These endpoint and
+association choices are declared interpretations, not an undisputed universal.
+Tribhaga divides actual day/night arcs in thirds: Mercury/Sun/Saturn by day,
+Moon/Venus/Mars by night; Jupiter always 60. Half-open boundaries assign the
+new third. Ayana applies `(24 + signed_declination)*60/48`; Sun is doubled,
+Mercury uses absolute declination, Moon/Saturn reverse sign. Declinations beyond
+24 degrees retain the formula's signed result rather than an undocumented cap.
+
 #### Kala Bala — Yuddha Bala (Graha Yuddha)
 
-- Only the five non-luminaries (Mars, Mercury, Jupiter, Venus, Saturn) participate.
-- War condition: two war-eligible planets within 1° sidereal longitude.
-- Victor determination: greater geocentric latitude; fallback = greater sidereal longitude when `planet_latitudes` is not supplied.
-- Victor's `KalaBala.yuddha` receives the loser's raw Chesta Bala.
-- Loser's `chesta_bala` is set to 0.
+Only Mars/Mercury/Jupiter/Venus/Saturn participate, at separation strictly below
+one degree. Raman 1996 articles 76–77 select lesser normalized longitude and
+`abs(raw_aggregate_difference)/abs(source_disc_diameter_difference)`. Raw
+aggregate is Sthana+Dig+Kala through Hora, excluding Ayana. Fixed source disc
+values are9.4,6.6,190.4,16.6,158.0 arcseconds respectively; they are not modern
+observed angular diameters. Winner gains and loser loses the same Kala amount;
+Chesta is unchanged.
+
+`moira_simultaneous_raman_raw_pairs_v1` evaluates every pair once against
+immutable pre-war components, accumulates all credits/debits, and retains
+signed net values. Exact equal longitude pairs have a stable lexical label
+and zero adjustment. These tie/multi-way choices are Moira composition rules;
+the inspected source passages prescribe two-body behavior only. `WarResolution`
+is canonical for final totals, chart/network/Bhava/full and Lagna consumers.
 
 #### Drig Bala
 
@@ -138,15 +175,15 @@ stored — from the vessel's own displayed components:
 - `kashta_phala` = √((60 − Uchcha) × (60 − Chesta))
 
 Both on the 0–60 Shashtiamsa scale.  Policy: the *displayed* Chesta Bala is
-used, so the Sun and Moon consume the Raman Chapter X Motional Strength and a war
-loser's zeroed Chesta flows through honestly.
+used; war adjustments leave the displayed Chesta unchanged.
 
 #### Graha Yuddha transfer disclosure
 
-`GrahaYuddha.chesta_transferred` records the Shashtiamsas moved by a war
-(loser's raw Chesta Bala; victor gains it in `KalaBala.yuddha`, loser
-forfeits it).  It is `None` — unknown, not silently 0 — when planet speeds
-were not supplied to `graha_yuddha_pairs`.
+`GrahaYuddha.adjustment_shashtiamsas` carries the actual resolved Kala amount.
+Detection-only pairs carry None. Deprecated `chesta_transferred` remains a
+legacy construction field and is never populated by current calculation.
+REST retains `shashtiamsas_transferred`, with `adjustment_component=kala_yuddha`.
+The full ledger exposes raw totals, bases, Chesta, credits/debits and net values.
 
 ---
 
@@ -207,7 +244,7 @@ public surface of this module.
 1. `victor` ∈ `{Mars, Mercury, Jupiter, Venus, Saturn}`
 2. `loser` ∈ `{Mars, Mercury, Jupiter, Venus, Saturn}`
 3. `victor ≠ loser`
-4. `0 < separation_deg ≤ 1.0`
+4. Detected separation is `0 <= separation_deg < 1.0`; the legacy vessel still permits1.0, but canonical ledger validation rejects such a fabricated detection.
 
 ### `PlanetShadbala`
 1. `total_shashtiamsas = sthana_bala.total + dig_bala + kala_bala.total + chesta_bala + naisargika_bala + drig_bala`
@@ -264,7 +301,7 @@ The following are verified by the test suite (`tests/unit/test_shadbala.py`,
 - All NAISARGIKA_BALA, REQUIRED_RUPAS, MEAN_DAILY_MOTION canonical values.
 - `chesta_bala`: Raman Ch. X luminary solstices/elongations, Raman Ch. VI non-luminary Chesta Kendra, and backward-compatible speed-ratio cases.
 - `drig_bala`: Jupiter/Saturn 7th-sign opposition, Mars special aspects, no-aspect → 0.
-- `kala_bala`: Mercury always-60 fields, Vara lord bonus, Paksha Bala benefic/malefic, tithi boundary.
+- `kala_bala`: local solar time, continuous phase/nature, actual thirds, declination rules and explicit AMVH inputs.
 - `sthana_bala`: sub-component sum equals total.
 - `dig_bala`: float in [0, 60]; at strong cusp → maximum.
 - `shadbala` integration: 7 planets present; total_rupas = total_shashtiamsas / 60; is_sufficient correct; invalid tithi raises.
@@ -272,9 +309,7 @@ The following are verified by the test suite (`tests/unit/test_shadbala.py`,
 - `__all__` surface: all exported names importable.
 - `validate_shadbala_output`: valid result does not raise; planet-key mismatch raises.
 
-Yuddha Bala correctness is verified by targeted `_detect_wars` / `graha_yuddha_pairs`
-functional checks.  A chart-level integration test with a known war is not
-yet included in the test baseline.
+The repair acceptance adds independent pair arithmetic, permutations, corrupted-ledger rejection and real May2000/December2020 chart/full/Lagna HTTP witnesses. See the linked current validation receipt.
 
 ---
 
@@ -286,6 +321,54 @@ All six chart/result/profile/network/condition/Bhava/full routes use the
 owning engine's reader-bound Shadbala call. They expose requested/applied
 ayanamsa and requested/resolved/effective house systems in `policy_receipt`,
 including actual polar fallback. Unknown house systems reject; registered
-names and codes are admitted. Numerical Bala rules are unchanged. See the
+names and codes are admitted. That admission checkpoint did not change numerical Bala rules; the subsequent October9 repair above does. See the
 [VED-005 admission standard](VEDIC_REST_ADMISSION_STANDARD.md) and its
 [verification receipt](../03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md).
+
+## Direct-call and REST migration — 9 October 2026
+
+`shadbala(..., context=ctx)` and `kala_bala(..., context=ctx)` now reject missing,
+partial or contradictory context. `sthana_bala` requires all seven D1 positions
+through `sidereal_longitudes`. Dated facade callers supply observer coordinates
+or a context; REST derives one per request. REST strength planets are now
+apparent **geocentric** positions; observer location controls houses and solar
+geometry. Older topocentric REST positions were incompatible with that contract.
+
+Output validation checks typed components, sums, Rupas, thresholds, context,
+Saptavargaja evidence and every war ledger entry. Negative Ayana requires its
+declination context; nonzero Yuddha requires its canonical ledger. Existing
+legacy manually constructed zero-war results remain structurally admissible.
+An internally inconsistent service result is a server error, not client 422.
+Polar full-strength unavailability is typed 422 `shadbala_context_unavailable`;
+Lagna keeps its independent evidence and explicit unavailable strength basis.
+
+The public surface also includes `ShadbalaContext`, `ShadbalaContextError`,
+`derive_shadbala_context`, `SaptavargajaEntry`, `saptavargaja_breakdown` and
+`WarResolution`. Exact exports are tested. Required Rupas retain their existing
+values, including Sun 6.5, as a separate Moira threshold convention.
+
+## Second adversarial pass: composition and receipt validation
+
+Derived contexts declare `vara_basis="civil_utc_midnight"` and `vara_jd_utc`.
+This preserves dated Panchanga's UTC weekday convention while all geometry
+continues to use UT1. Dated adapters pass the original UTC JD; direct UT1
+context derivation uses the time owner's inverse. The context checks that
+the UTC evidence converts to its exact UT1 epoch and selects its Vara lord.
+Legacy synthetic contexts retain `vara_basis="supplied"` with no UTC claim.
+This does not attribute a UTC-midnight convention to a classical source;
+ingress-based Abda/Masa conventions remain separately declared.
+
+Context-backed validation recomputes Uchcha, Ojayugma, Drekkana and Drig from
+the accepted positions, as well as the existing Kala, Chesta, Saptavargaja
+and war checks. Positional ranges and discrete awards are enforced. Balanced
+component changes cannot pass merely by preserving sums. House-independent
+positional calculation and validation share one formula owner. Kendradi
+membership and Dig's range are checked, but their exact values cannot be
+reconstructed without house evidence, which is not carried in this context.
+Legacy context-free results receive structural validation; neither kind of
+supplied receipt proves the observational authenticity of caller data.
+
+After compatibility checking, Lagna and Bhava consumers use the accepted
+context positions before discrete sign, Navamsa, house or aspect decisions.
+The 1e-9-degree comparison tolerance is unchanged. Lagna retains missing
+bodies and caller-supplied nodes; context evidence does not fill input gaps.

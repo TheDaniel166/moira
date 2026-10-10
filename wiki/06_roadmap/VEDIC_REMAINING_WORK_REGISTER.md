@@ -1,8 +1,8 @@
 # Vedic remaining work register
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
-**Last reconciled:** 9 October 2026.
-**Baseline:** engine `main`, version 6.9.9; VED-009 is published at engine `571788a`, generated wiki `ed68937`, with hosted Release Hardening and Acceptance Matrix green. Sections 27–33 retain earlier checkpoints. Section 34 records the locally complete VED-010 source/implementation package. Eleven of 24 stable packages are locally complete; thirteen remain open/bounded. Release/deployment remain separate.
+**Last reconciled:** 10 October 2026.
+**Baseline:** engine `main`, version 6.9.9; VED-010 was published at engine `b578ec8`, generated wiki `9d35913`, with hosted Release Hardening and Acceptance Matrix green. Sections 27–35 retain earlier feature and review checkpoints. Sections 36–37 close all eleven first-pass and five second-pass adversarial findings; section 38 records the authorized publication package. Eleven of 24 stable feature packages have been delivered for their selected scopes; thirteen remain open/bounded. Repair findings are tracked separately from those feature counts. VED-011 is next. Release/deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -33,8 +33,8 @@ below preserve their distinct admission and remaining-work boundaries.
 
 There are **24 stable numbered work packages** below: **13 remain open/bounded,
 including bounded VED-023 and the VED-017 window frontier**.
-**VED-001/002/003/004/005/006/007/008/009/010/015 are complete for their selected contracts**;
-VED-001/002/003/004/005/006/007/008/009/015 are in the engine/wiki source-publication history; VED-010 is complete and included in the authorized wiki-first publication package.
+**VED-001/002/003/004/005/006/007/008/009/010/015 reached their selected feature-delivery checkpoints**;
+VED-001/002/003/004/005/006/007/008/009/010/015 are in the engine/wiki source-publication history. The separate repair acceptance in sections 36–37 closes all sixteen adversarial findings, including VED-010's optional Shadbala composition failure; it does not change these feature-delivery counts.
 Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
@@ -60,7 +60,7 @@ VED-001 is locally complete. VED-003 admits transport, selected-edition names, s
 | VED-007 | Complete locally: Abhijit, Brahma, Godhuli, Vijaya, selected Amrita, Ravi Yoga and Sarvarthasiddhi; named source policies, precise solar/phase boundaries, source exceptions, uncertainty and partial states, public/facade and five total REST routes. Amrita Siddhi and Kalaprakasika Amirtha are separate selectable identities. | [Five-name source decision](VEDIC_NAMED_MUHURTA_FIVE_SOURCE_AND_PLAN_2026-10-08.md), [standard](../02_standards/NAMED_MUHURTA_STANDARD.md), [383-test completion receipt](../03_validation/SPECIAL_MUHURTA_VALIDATION_2026-10-08.md). All five formerly outstanding names implemented and validated, including both startup reader paths and real DE441. Generic scoring/search and activity suitability remain separate products. | `LOCAL_COMPLETE`; all-seven-family implementation validated and included in this engine/wiki source-publication package; release/deployment separate |
 | VED-008 | Locally complete for named Panchaka, alternative MC/PS Tara-cycle, nine-Yoga timing and eleven-Karana/Bhadra assessments, including solved sunrise-day cells. Existing Tara/Chandra, scoring and search remain compatible. Specific excluded readings, polar discontinuous Lagna timing and general score integration are separately bounded. | [Source research](VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md), [standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md) and [622-test validation receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md). Sixteen curated exports, three facade methods, three typed REST routes; source conflicts and derived clocks remain explicit. | `LOCAL_COMPLETE`; included in this authorized engine/wiki source-publication package; release/deployment separate |
 | VED-009 | Locally complete finite six-detector/three-exception package: source-specific stellar Vishanadi, both Yamaghantas and temporal nakshatra/tithi/Lagna Gandanta; raw evidence retained after opt-in neutralization. Other Tyajya types, angular/Abhukta variants and the complete twenty-one-dosha catalogue remain explicitly excluded extensions. | [Source packet](VEDIC_DOSHA_PARIHARA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_DOSHA_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md). Fifteen owning exports, three facade methods and three strict REST routes; full-parent events, numerical bands, carryover and source-scoped cancellation evidence. Strength-dependent exceptions belong to VED-010. | `LOCAL_COMPLETE` and published at engine `571788a` / wiki `ed68937`; broader listed extensions remain unadmitted |
-| VED-010 | Source-selected general/marriage Lagna components, both Navamsa readings, quarter-aspect support, MC placement score, raw restrictions and optional MC88 exceptions. Canonical Shadbala remains inspectable context. | [Source record](VEDIC_LAGNA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_LAGNA_STANDARD.md), [validation](../03_validation/MUHURTA_LAGNA_VALIDATION_2026-10-09.md). Eleven curated exports, three facade methods and three REST routes; source-backed D9 and Venus/Moon table corrections in shared owners. | `LOCAL_COMPLETE`, included in authorized source publication; broader listed remedies remain excluded |
+| VED-010 | Source-selected general/marriage Lagna components, both Navamsa readings, quarter-aspect support, MC placement score, raw restrictions and optional MC88 exceptions. Canonical Shadbala remains inspectable context; its dated multi-war failure and subsequent context/clock admission defects are repaired. | [Source record](VEDIC_LAGNA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_LAGNA_STANDARD.md), [feature validation](../03_validation/MUHURTA_LAGNA_VALIDATION_2026-10-09.md), [combined repair validation](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md). Eleven curated exports, three facade methods and three REST routes; source-backed D9 and Venus/Moon table corrections in shared owners. | `LOCAL_COMPLETE`; feature source-published and all identified repairs included in the section 38 publication package; broader listed remedies remain excluded |
 | VED-011 | Turn selected activity guidance into finite, testable, source-owned purpose profiles: marriage variants, construction/Vastu, travel and business only after scope selection. Expose evaluated rules, exclusions and disagreements rather than letting prose or a generic score imply complete purpose coverage. | [ACTIVITY_MUHURTA_GUIDANCE](../../moira/muhurta.py) contains guidance data; it is not a comprehensive executable purpose-policy system. Existing REST provenance says activity guidance is not admitted. | `SOURCE_RESEARCH`, P2 |
 
 The May tracker is retained as a research trail. Its historical "fully wired"
@@ -134,8 +134,10 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 
 ## 9. Suggested package order and definition of done
 
+**Next package: VED-011 — selected complete purpose elections.** All eleven findings in the [Vedic adversarial repair plan](VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md) and all five second-pass findings have completed [combined repair acceptance](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md). The user authorized publishing those repairs on 10 October. VED-011 starts with source research and selection of finite activity/lineage profiles; it has not started and remains separately authorized work.
+
 1. **Close existing product omissions:** VED-001/002/003/005 and their scoped VED-021/022 follow-through are complete and source-published. This first item's selected implementation scope is closed. Operational REST budgets remain a separate scope decision.
-2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is locally complete for its source-selected Lagna/strength/Navamsa components. **VED-011 is next**; integrating these products into generic scoring/search remains a separate scope decision.
+2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is source-published for its selected Lagna/Navamsa components; its optional Shadbala composition and subsequent admission defects have passed combined repair acceptance. **VED-011 is next**; integrating these products into generic scoring/search remains a separate scope decision.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
 4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
 
@@ -737,9 +739,111 @@ all six release-facing artifact checks and whitespace checks pass. The REST
 inventory now has 498 operations; the new unit/REST files are added to CI.
 
 Eleven of 24 stable packages are locally complete; thirteen remain open/bounded.
-**Next: VED-011**, selected complete purpose elections. This next package is
+**Next at this checkpoint: VED-011**, selected complete purpose elections;
+section 35 subsequently puts the identified repairs first. This next package is
 not started by VED-010 closure. The user subsequently authorized VED-010
 commit/push, followed by a deep adversarial review of the current Vedic
 system. This publication includes the generated wiki first, then the engine
 source, tests, canonical documents, publication manifest and exact gitlink.
 The review is a separate assessment of the resulting snapshot.
+
+## 35. VED-010 publication and adversarial repair priority
+
+VED-010 was published wiki-first at `9d3591367af6311bbec5f47afeab7918939b5724`,
+then engine `b578ec89b90f709c8e64d5d9405ca06d29fcc69c`. Hosted
+[Release Hardening](https://github.com/TheDaniel166/moira/actions/runs/37995452783)
+and [Acceptance Matrix](https://github.com/TheDaniel166/moira/actions/runs/37995452792)
+succeeded. The separate adversarial review identified **eleven findings:
+four P1 and seven P2**, comprising ten runtime/contract defects and one stale
+validation fixture. Their root causes predate VED-010.
+
+The completed broader regression run was **4,387 passed, one failed, zero
+errors/skips**, across 112 files, with all 406 DE441 resource receipts run.
+The failure reproduces alone and is attributable to the Einstein alternate-
+Dasha fixture retaining balances derived with the superseded precession
+scalar. Independent source/boundary/HTTP probes establish the other findings,
+including a valid dated Lagna request failing only when Shadbala is included.
+The broader run is not green; the narrower release gates do not override it.
+
+The user requested a [plan covering all eleven repairs](VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md).
+It groups full-parent Dasha timing and fixture reconciliation, Varga boundaries,
+source-defined Shadbala components, war allocation/evidence, and reader/scan
+robustness into five packages with individual and combined acceptance.
+VA-01 through VA-11 remain open. This is a planning checkpoint, with no
+corrective implementation or new publication. VED-011 follows their closure.
+
+
+## 36. All eleven adversarial repairs closed locally — 9 October 2026
+
+The user approved the five-package plan and implementation. VA-01 through
+VA-11 are now closed across engine, curated/facade and REST surfaces. Dasha
+subperiods use full parents before clipping; Varga boundaries use one exact
+partition; source-selected strength components use explicit geometry; one
+canonical ledger governs all war adjustments; borrowed readers and Sade Sati
+work limits are enforced. The shared temporary-friendship correction and the
+geocentric REST strength frame are documented dependent repairs.
+
+The [completion/source receipt](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md)
+records **6,276 distinct passing tests, one existing unrelated VOC skip,
+zero unresolved failures/errors**, across 173 files. Every original 112-file
+adversarial selection was rerun, plus new/affected consumers and all 62 current
+release-hardening files. Five initial migration failures were resolved with
+exact comparisons retained; the 23-file reconciliation passed 1,215 tests.
+All 835 DE441 resource uses ran. Independent 65,880-case Varga and 4,320-case
+D60 consistency corpora remain green. Source disagreements, retained
+conventions and sampling limits remain visible in the policy receipts.
+
+This closes the repair checkpoint, not the remaining Vedic roadmap. Eleven
+of 24 VED packages remain complete and thirteen open/bounded; VA identifiers
+are repairs, not new VED packages. **Next: VED-011**, selected complete purpose
+elections. It is not started here. All changes remain local, uncommitted and
+unpushed at 6.9.9. Publication, release and deployment remain separate actions.
+
+## 37. Second adversarial pass: five repairs closed locally — 9 October 2026
+
+The second review identified five additional composition/admission defects.
+The approved repair now unifies dated Shadbala's UTC weekday evidence,
+canonicalizes Lagna/Bhava positions against their accepted strength context,
+recomputes house-independent strength components during receipt validation,
+checks Dasha full-parent/child and year provenance across engine/REST, and
+uses one half-open Sade Sati longitude normalization. Existing partial-child
+REST requests remain admitted through an explicit validator mode; generated
+trees continue to require complete coverage. Declared contradictory evidence
+rejects in both modes.
+
+The updated [validation receipt](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md)
+records **6,342 distinct passing tests, one existing unrelated VOC skip and
+zero unresolved failures/errors**, across 175 files. The 121-file Vedic run
+and all 64 release-hardening files completed; a final 17-file reconciliation
+passed 1,104 tests, including all three compatibility regressions identified
+by those runs. All 814 DE441 resource receipts in the three runs executed.
+The 66 new regression cases are wired into CI. Original adversarial probes,
+250 generated Dasha trees / 166,118 nodes, all six documentation checks,
+grammar, scoped Ruff and whitespace checks also pass.
+
+This closes VA2-01 through VA2-05. The VED package count and remaining policy
+boundaries are unchanged; VED-011 remains the next separately authorized
+package. The complete repair work remains local and uncommitted/unpushed.
+
+## 38. Combined repair publication package — 10 October 2026
+
+The user authorized committing and pushing all accumulated repairs: VA-01
+through VA-11 and VA2-01 through VA2-05, with their regression tests, CI
+selection, owning standards and validation receipt. Publication order is the
+generated wiki first, then the engine and its exact wiki gitlink. Sections
+35–37 preserve the review and local-completion states at their earlier
+checkpoints; their uncommitted/unpushed statements are historical.
+
+The combined acceptance remains **6,342 distinct passing tests, one existing
+unrelated VOC skip and zero unresolved failures/errors**, with the resource
+execution and source-policy limits recorded in the validation receipt. The
+roadmap now consistently identifies **VED-011** as the next package: select
+finite purpose profiles, collate their sources and disagreements, then admit
+engine and REST rules with explicit evaluated/excluded/unavailable evidence.
+Marriage variants, construction/Vastu, travel and business are candidate
+scopes, not a promise of universal activity coverage. Research and
+implementation of VED-011 have not begun in this publication package.
+
+Version remains 6.9.9. Source publication, release and deployment remain
+distinct; no tag, package release, runtime deployment or website/Urania
+adoption is included.

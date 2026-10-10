@@ -170,6 +170,8 @@ jobs:
           python -m pytest tests/unit/test_public_api_drift.py -q
           python -m pytest tests/unit/test_public_doctrine_surfaces.py -q
           python -m pytest tests/unit/test_dasha.py -q
+          python -m pytest tests/unit/test_dasha_systems.py tests/unit/test_dasha_full_intervals.py tests/unit/test_varga_exact_partition.py tests/unit/test_shadbala_source_repairs.py tests/unit/test_vedic_reader_scan_repairs.py -q
+          python -m pytest tests/unit/test_vedic_second_pass_repairs.py tests/server/test_server_vedic_second_pass_repairs.py -q
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
           python -m pytest tests/unit/test_muhurta_lagna.py tests/server/test_server_muhurta_lagna.py -q

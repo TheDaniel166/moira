@@ -35,7 +35,7 @@ raises MuhurtaCoverageError. Borrowed readers are never closed or replaced.
 
 The snapshot carries the resolved epoch, reader binding, node mode, longitude
 frame and actual inputs. Lagna geometry uses the canonical house owner.
-Shadbala is opt-in, with declared Porphyry geometry, JD weekday, geometric
+Shadbala is opt-in, with declared Porphyry geometry, JD weekday, actual sunrise/sunset
 day/night and optional caller hora lord. It exposes every existing component;
 it does not act as a surrogate for dignity or cancel restrictions by threshold.
 For direct Shadbala input, matching epoch/frame and consistent arithmetic are
@@ -74,3 +74,22 @@ dignity and consumers of natural/compound relations. These changes preserve
 the existing algorithms' declared authorities rather than introducing a
 second incompatible table. Other Varga methods, legacy Muhurta score/search,
 Tara/Chandra policy and VED-009 detection contracts are preserved.
+
+## Strength repair follow-through — 9 October 2026
+
+`shadbala_result` now retains the complete supplied/derived strength receipt
+alongside the per-planet summary, including context, selected Saptavargaja
+scale and canonical war ledger. Direct REST input accepts the engine dataclass
+shape, including paired-array evidence. Signed canonical Kala war adjustments
+are admitted only with their checked ledger; corrupted sums/thresholds/evidence
+still reject. Missing polar solar events preserve Lagna evidence with
+`shadbala_basis=unavailable_shadbala_solar_geometry` and no fabricated strength.
+
+The second adversarial repair canonicalizes admitted classical-planet
+positions from the Shadbala context before computing Lagna signs, Navamsas,
+houses, predicates and placement scores. A tolerated difference across a
+discrete boundary therefore cannot contradict the attached strength evidence.
+Missing input bodies remain missing, and supplied nodes remain unchanged.
+Context-backed positional components are recomputed during direct admission;
+balanced edits that preserve totals still reject. Dated strength uses the
+same explicitly declared civil-UTC weekday as the Shadbala REST products.

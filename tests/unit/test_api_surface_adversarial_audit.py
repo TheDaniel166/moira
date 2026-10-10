@@ -1824,6 +1824,15 @@ _EXPECTED_MOIRA_METHODS.update({
 })
 
 
+# VA-01..11: explicit geometry, source evidence and bounded scan contracts.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    'ShadbalaContext', 'ShadbalaContextError', 'derive_shadbala_context',
+    'SaptavargajaEntry', 'saptavargaja_breakdown', 'WarResolution',
+    'SadeSatiBudgetError', 'DEFAULT_SADE_SATI_EVALUATIONS', 'MAX_SADE_SATI_EVALUATIONS',
+})
+_EXPECTED_MOIRA_METHODS.add('shadbala_context')
+
+
 def test_root_public_surface_snapshot_is_exact() -> None:
     actual = set(moira.__all__)
     assert actual == _EXPECTED_ROOT_PUBLIC_NAMES, (

@@ -246,3 +246,11 @@ finite input types, classical planet/key admission, valid partial maps and
 registered chart ayanamsas. Unknown relationship keys now reject rather than
 silently disappearing. The engine's classical tables and direct-map
 calculation behavior are unchanged.
+
+## Shared temporary relationship correction — 9 October 2026
+
+Raman1996 article25 assigns friendship to houses2,3,4,10,11,12 counted
+inclusively from the planet. Same-sign,5th,6th,7th,8th,9th are enemies. The
+previous helper incorrectly used1,2,3,9,10,11. This source-dependent repair
+changes public relationship and Shadbala compound results together; all144
+origin/distance combinations are checked against the transcribed rule.

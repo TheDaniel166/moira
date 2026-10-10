@@ -3,7 +3,9 @@ from typing import Annotated, Literal
 from datetime import datetime
 from pydantic import Field, model_validator
 from moira.muhurta_lagna import MuhurtaLagnaPolicy, evaluate_muhurta_lagna_strength
-from moira.shadbala import SthanaBala, KalaBala, PlanetShadbala, ShadbalaResult
+from moira.shadbala import (SthanaBala, KalaBala, PlanetShadbala, ShadbalaResult,
+    ShadbalaContext, WarResolution, GrahaYuddha, SaptavargajaEntry)
+from .shadbala import ShadbalaContextResponse
 from .common import _StrictModel
 from ._vedic_inputs import FiniteNumber, ClassicalPlanet, CivilDateTime
 from .varga import VargaPointResponse
@@ -70,13 +72,71 @@ class LagnaStrengthModel(_StrictModel):
                              kala_bala=KalaBala(**self.kala_bala.model_dump()))
 
 
+class LagnaShadbalaContext(ShadbalaContextResponse):
+    """Strict supplied geometry; JSON lists become immutable engine pairs."""
+    jd: FiniteNumber
+    vara_jd_utc: FiniteNumber | None = None
+    sidereal_longitudes: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    declinations: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    chesta_values: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    local_apparent_day_fraction: FiniteNumber
+    sunrise_jd: FiniteNumber | None
+    sunset_jd: FiniteNumber | None
+    next_sunrise_jd: FiniteNumber | None
+    observer_latitude: FiniteNumber | None
+    observer_longitude: FiniteNumber | None
+
+
+class LagnaWarPair(_StrictModel):
+    victor: ClassicalPlanet
+    loser: ClassicalPlanet
+    separation_deg: FiniteNumber
+    chesta_transferred: FiniteNumber | None = None
+    adjustment_shashtiamsas: FiniteNumber | None = None
+    tied: Annotated[bool, Field(strict=True)] = False
+    rule: str = 'raman_1996_lesser_longitude'
+
+
+class LagnaWarResolution(_StrictModel):
+    pairs: tuple[LagnaWarPair, ...]
+    raw_aggregates: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    raw_totals: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    raw_chesta: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    credits: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    debits: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    adjustments: tuple[tuple[ClassicalPlanet, FiniteNumber], ...]
+    policy: str
+    source: str
+
+
+class LagnaSaptavargajaEntry(_StrictModel):
+    division: Annotated[int, Field(strict=True)]
+    sign_index: Annotated[int, Field(strict=True)]
+    lord: ClassicalPlanet
+    dignity: str
+    shashtiamsas: FiniteNumber
+
+
 class LagnaShadbalaInput(_StrictModel):
     jd: FiniteNumber
     ayanamsa_system: Annotated[str, Field(strict=True)]
     planets: dict[ClassicalPlanet,LagnaStrengthModel]
+    context: LagnaShadbalaContext | None = None
+    war_resolution: LagnaWarResolution | None = None
+    saptavargaja_profile: Literal['raman_1996', 'bphs_santhanam_27'] | None = None
+    saptavargaja_evidence: tuple[tuple[ClassicalPlanet, tuple[LagnaSaptavargajaEntry, ...]], ...] = ()
 
     def to_engine(self):
-        return ShadbalaResult(self.jd, self.ayanamsa_system, {p:v.to_engine() for p,v in self.planets.items()})
+        ledger = None
+        if self.war_resolution is not None:
+            values = self.war_resolution.model_dump(exclude={'pairs'})
+            ledger = WarResolution(pairs=tuple(GrahaYuddha(**p.model_dump()) for p in self.war_resolution.pairs), **values)
+        return ShadbalaResult(self.jd, self.ayanamsa_system, {p:v.to_engine() for p,v in self.planets.items()},
+            war_resolution=ledger,
+            context=None if self.context is None else ShadbalaContext(**self.context.model_dump()),
+            saptavargaja_profile=self.saptavargaja_profile,
+            saptavargaja_evidence=tuple((p, tuple(SaptavargajaEntry(**e.model_dump()) for e in entries))
+                                      for p,entries in self.saptavargaja_evidence))
 
 
 class LagnaDirectRequest(_StrictModel):
@@ -188,6 +248,7 @@ class LagnaAssessmentResponse(_StrictModel):
     excluded_rules: tuple[str,...]
     activity_suitability: Literal['not_evaluated']
     input_basis: str
+    shadbala_result: LagnaShadbalaInput | None = None
 
 
 class LagnaSnapshotResponse(_StrictModel):

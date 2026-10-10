@@ -228,8 +228,8 @@ def test_alternate_chart_omitted_policy_uses_requested_ayanamsa(moira_engine, mo
 def test_polar_house_receipt_preserves_engine_fallback(moira_engine, monkeypatch):
     from datetime import datetime, timezone
     monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
-    payload = {**OBSERVER, "observer_lat": 78.0}
-    houses = moira_engine.houses(datetime(2000, 1, 1, 12, tzinfo=timezone.utc), latitude=78.0, longitude=-74.006, system="P")
+    payload = {**OBSERVER, "dt": "2000-03-21T12:00:00Z", "observer_lat": 78.0}
+    houses = moira_engine.houses(datetime(2000, 3, 21, 12, tzinfo=timezone.utc), latitude=78.0, longitude=-74.006, system="P")
     def run():
         with TestClient(create_app(ServerConfig(prewarm_enabled=False))) as client:
             response = client.post("/v1/shadbala/chart", json=payload)
@@ -237,5 +237,8 @@ def test_polar_house_receipt_preserves_engine_fallback(moira_engine, monkeypatch
             receipt = response.json()["policy_receipt"]
             assert receipt["requested_house_system"] == "P"
             assert receipt["effective_house_system"] == houses.effective_system
-            assert receipt["polar_fallback_applied"] == houses.fallback
+            assert receipt["polar_fallback_applied"] == houses.fallback is True
+            winter = client.post("/v1/shadbala/chart", json=payload | {"dt": OBSERVER["dt"]})
+            assert winter.status_code == 422
+            assert winter.json()["error_code"] == "shadbala_context_unavailable"
     Context().run(run)

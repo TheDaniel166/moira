@@ -1,6 +1,7 @@
 """Serializers for Phase-9 Shadbala vessels (P9-02)."""
 
 from __future__ import annotations
+from dataclasses import asdict
 
 from moira.shadbala import (
     BhavaBala,
@@ -28,6 +29,7 @@ from ..models.shadbala import (
     ShadbalaNetworkProfileResponse,
     ShadbalaResultResponse,
     SthanaBalaResponse,
+    ShadbalaContextResponse, WarResolutionResponse, SaptavargajaEntryResponse,
 )
 
 
@@ -59,7 +61,8 @@ def serialize_graha_yuddha(war: GrahaYuddha) -> GrahaYuddhaResponse:
         victor=war.victor,
         loser=war.loser,
         separation_deg=war.separation_deg,
-        shashtiamsas_transferred=war.chesta_transferred,
+        shashtiamsas_transferred=war.adjustment_shashtiamsas,
+        tied=war.tied, rule=war.rule,
     )
 
 
@@ -94,7 +97,17 @@ def _ayanamsa_degrees(jd: float, ayanamsa_system: str) -> float:
 
 
 def serialize_shadbala_result(result: ShadbalaResult, *, policy_receipt: ShadbalaAppliedPolicyResponse | None = None) -> ShadbalaResultResponse:
+    ledger = None
+    if result.war_resolution is not None:
+        values = asdict(result.war_resolution)
+        values['pairs'] = [serialize_graha_yuddha(w) for w in result.war_resolution.pairs]
+        ledger = WarResolutionResponse(**values)
     return ShadbalaResultResponse(
+        context=ShadbalaContextResponse(**asdict(result.context)) if result.context else None,
+        war_resolution=ledger,
+        saptavargaja_profile=result.saptavargaja_profile,
+        saptavargaja_evidence={p:[SaptavargajaEntryResponse(**asdict(e)) for e in entries]
+                             for p,entries in result.saptavargaja_evidence},
         policy_receipt=policy_receipt,
         jd=result.jd,
         ayanamsa_system=result.ayanamsa_system,

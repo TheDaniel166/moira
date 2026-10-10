@@ -487,3 +487,28 @@ coverage are retained. The [VED-005 standard](VEDIC_REST_ADMISSION_STANDARD.md)
 and [validation receipt](../03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md)
 own transport and reader checks; they are not new historical authority claims.
 
+
+## Full-parent timing repair — 9 October 2026
+
+Generated periods carry `full_start_jd` and `full_end_jd`. Children subdivide
+that full doctrinal interval before clipping to the visible parent; the first
+visible child may have a different lord than its parent. Birth balance and
+clipped horizon are intersections, not new clocks. Intervals are half-open.
+The metadata must be supplied together and contain the visible interval;
+legacy manually constructed periods with neither field use their visible span.
+
+Alternate periods additionally carry paired `year_days`/`year_basis` provenance;
+legacy unknown metadata stays unknown and the legacy `.years` property remains
+Julian. REST carries these fields through sequence, current and recursive
+period input/output. Existing clocks and tolerances are unchanged. The corrected
+Einstein fixture independently checks general precession, frame and birth
+progress rather than replacing a scalar from current runtime output alone.
+See [repair validation](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md).
+
+The second adversarial repair validates the full child interval against its
+full parent whenever both are known. A known child's visible interval must
+equal the intersection of its full span and its parent's visible span.
+Year length and named year basis must agree throughout the hierarchy;
+declared Vimshottari year labels must also match their numeric lengths.
+Paired absent full endpoints retain unknown legacy provenance rather than
+inventing it. Existing adjacency/coverage checks and tolerances remain.

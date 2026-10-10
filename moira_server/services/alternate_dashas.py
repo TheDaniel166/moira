@@ -217,14 +217,7 @@ def _derive_alternate_dasha_context(engine: Moira, request) -> SiderealChartCont
 
 
 def period_from_request(request: AlternateDashaPeriodRequest) -> AlternateDashaPeriod:
-    return AlternateDashaPeriod(
-        system=request.system,
-        level=request.level,
-        lord=request.lord,
-        start_jd=request.start_jd,
-        end_jd=request.end_jd,
-        sub=[period_from_request(sub) for sub in request.sub],
-    )
+    return request.to_engine()
 
 
 def compute_alternate_period_profile(

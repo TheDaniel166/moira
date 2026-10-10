@@ -3,15 +3,14 @@
 MC = Daivajna Rama, Muhurta Chintamani, Avasthi commentary, 2004.
 The source packet records verse loci, competing readings and operational choices.
 """
-from dataclasses import dataclass, field, fields, is_dataclass
-from math import isclose
+from dataclasses import dataclass, field
 from .muhurta_dosha import DoshaPredicate, _choice
 from .panchanga_shuddhi import _number, _longitude
 from .sidereal import list_ayanamsa_systems
 from .varga import navamsa, varga_sign_index, _navamsa_partition, VargaPoint
 from .vedic_dignities import NATURAL_ENEMIES, NATURAL_FRIENDS, DEBILITATION_SIGN, OWN_SIGNS
 from .shadbala import (ShadbalaResult, PlanetShadbala, SthanaBala, KalaBala,
-                      REQUIRED_RUPAS, validate_shadbala_output)
+                      validate_shadbala_output)
 from .avasthas import _is_combust
 
 _SEVEN = ('Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn')
@@ -141,6 +140,7 @@ class MuhurtaLagnaAssessment:
     excluded_rules: tuple[str, ...] = field(init=False, default=_EXCLUDED)
     activity_suitability: str = field(init=False, default='not_evaluated')
     input_basis: str = 'caller_supplied_sidereal_same_epoch'
+    shadbala_result: ShadbalaResult | None = None
 
 
 def _and(values):
@@ -182,7 +182,7 @@ def _nature(positions):
     return nature
 
 
-def _strength(result, jd, policy):
+def _strength(result, jd, policy, positions):
     if result is None:
         return ()
     if not isinstance(result, ShadbalaResult):
@@ -191,33 +191,16 @@ def _strength(result, jd, policy):
         raise ValueError('Shadbala epoch/ayanamsa must match the Lagna inputs exactly')
     if set(result.planets) != set(_SEVEN):
         raise ValueError('Shadbala must contain exactly the seven classical planets')
-    def finite_fields(obj):
-        for f in fields(obj):
-            value = getattr(obj, f.name)
-            if is_dataclass(value):
-                finite_fields(value)
-            elif f.name not in ('planet', 'is_sufficient'):
-                numeric = _number(f.name, value)
-                if numeric < 0 and f.name != 'drig_bala':
-                    raise ValueError(f'Shadbala {f.name} must be nonnegative')
+    # The owner validates typed numeric components, signed Ayana/Yuddha,
+    # source receipts and all sums. Keep strict epoch/body checks above.
     for p in _SEVEN:
         ps = result.planets[p]
-        if not isinstance(ps, PlanetShadbala):
-            raise TypeError('Shadbala entries must be PlanetShadbala')
-        if not isinstance(ps.sthana_bala, SthanaBala) or not isinstance(ps.kala_bala, KalaBala):
-            raise TypeError('Shadbala subcomponents must be typed')
-        finite_fields(ps)
-        if type(ps.is_sufficient) is not bool or ps.required_rupas != REQUIRED_RUPAS[p]:
-            raise ValueError('Shadbala sufficiency/threshold must follow its canonical owner')
-        for sub in (ps.sthana_bala, ps.kala_bala):
-            expected = sum(getattr(sub, f.name) for f in fields(sub) if f.name != 'total')
-            if not isclose(sub.total, expected, rel_tol=0, abs_tol=1e-6):
-                raise ValueError('Shadbala subcomponent total is inconsistent')
-        total = (ps.sthana_bala.total + ps.dig_bala + ps.kala_bala.total + ps.chesta_bala
-                 + ps.naisargika_bala + ps.drig_bala)
-        if not isclose(total, ps.total_shashtiamsas, rel_tol=0, abs_tol=1e-6):
-            raise ValueError('Shadbala total is inconsistent')
+        if not isinstance(ps, PlanetShadbala) or not isinstance(ps.sthana_bala, SthanaBala) or not isinstance(ps.kala_bala, KalaBala):
+            raise TypeError('Shadbala entries and subcomponents must be typed')
     validate_shadbala_output(result)
+    if result.context is not None:
+        result.context.check_positions(jd, policy.ayanamsa_system,
+            {p: lon for p,lon in positions.items() if p in _SEVEN})
     return tuple(result.planets[p] for p in _SEVEN)
 
 
@@ -252,6 +235,13 @@ def evaluate_muhurta_lagna_strength(sidereal_longitudes: dict[str, float], *, jd
     if not isinstance(sidereal_longitudes, dict) or not set(sidereal_longitudes) <= set(_NINE):
         raise ValueError('sidereal_longitudes must map only the nine Vedic planet names')
     positions = {p: _longitude(p, x) for p, x in sidereal_longitudes.items()}
+    strengths = _strength(shadbala_result, jd, active, positions)
+    if shadbala_result is not None and shadbala_result.context is not None:
+        # Compatibility tolerance admits the supplied chart; one canonical
+        # position must govern all discrete signs, Navamsas and predicates.
+        # Preserve missing bodies and supplied nodes rather than filling gaps.
+        canonical = dict(shadbala_result.context.sidereal_longitudes)
+        positions = {p: canonical[p] if p in _SEVEN else x for p, x in positions.items()}
     if {'Rahu', 'Ketu'} <= positions.keys():
         if (abs(abs(positions['Rahu'] - positions['Ketu']) - 180) > 1e-9
                 or int(positions['Ketu']//30) != (int(positions['Rahu']//30)+6)%12):
@@ -268,7 +258,6 @@ def evaluate_muhurta_lagna_strength(sidereal_longitudes: dict[str, float], *, jd
     nature = _nature(positions)
     planets = tuple(LagnaPlanet(p, positions[p], signs[p], navamsa(positions[p]), houses[p], nature[p])
                     for p in _NINE if p in positions)
-    strengths = _strength(shadbala_result, jd, active)
     reasons = tuple(f'missing_position:{p}' for p in _NINE if p not in positions)
     if lagna is None:
         reasons += ('missing_lagna',)
@@ -373,7 +362,7 @@ def evaluate_muhurta_lagna_strength(sidereal_longitudes: dict[str, float], *, jd
     return MuhurtaLagnaAssessment(jd, active, lagna_sidereal_longitude, d9,
         natal_moon_sidereal_longitude, natal_lagna_sidereal_longitude, planets, tuple(rules),
         _score(positions,houses) if active.purpose_profile == _MARRIAGE else None,
-        tuple(restrictions), strengths, reasons)
+        tuple(restrictions), strengths, reasons, shadbala_result=shadbala_result)
 
 
 def muhurta_lagna_catalogue() -> dict:

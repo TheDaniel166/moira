@@ -45,8 +45,11 @@ def compute_sade_sati_windows(
         end_jd,
         ayanamsa_system=request.ayanamsa_system,
         reader=engine._reader_obj,
+        max_evaluations=request.max_evaluations,
     )
     return SadeSatiWindowsResponse(
+        scan_step_days=result.scan_step_days, evaluations=result.evaluations,
+        max_evaluations=result.max_evaluations, search_semantics=result.search_semantics,
         janma_rashi_index=result.janma_rashi_index,
         start_jd=result.start_jd,
         end_jd=result.end_jd,

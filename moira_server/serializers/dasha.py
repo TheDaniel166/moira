@@ -28,6 +28,8 @@ def _serialize_dasha_period(period: DashaPeriod) -> DashaPeriodResponse:
         planet=period.planet,
         start_jd=period.start_jd,
         end_jd=period.end_jd,
+        full_start_jd=period.full_start_jd,
+        full_end_jd=period.full_end_jd,
         years=period.years,
         days=period.days,
         start_date=period.start_dt.isoformat(),

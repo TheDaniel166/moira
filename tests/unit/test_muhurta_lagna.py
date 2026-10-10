@@ -9,7 +9,7 @@ from moira import (MuhurtaLagnaPolicy, evaluate_muhurta_lagna_strength, navamsa,
                    varga_sign_index, muhurta_lagna_catalogue)
 from moira.constants import SIGNS
 from moira.muhurta_lagna import _aspect, _GENERAL, _FIVE, _PAR
-from moira.shadbala import ShadbalaResult, SthanaBala, KalaBala, PlanetShadbala, REQUIRED_RUPAS
+from moira.shadbala import ShadbalaResult, SthanaBala, KalaBala, PlanetShadbala, REQUIRED_RUPAS, NAISARGIKA_BALA
 
 SOURCE=json.loads((Path(__file__).parents[1]/'fixtures/muhurta_lagna_sources.json').read_text(encoding='utf-8-sig'))
 POSITIONS={'Sun':65.,'Moon':35.,'Mars':65.,'Mercury':5.,'Jupiter':5.,'Venus':5.,'Saturn':65.,'Rahu':65.,'Ketu':245.}
@@ -33,8 +33,8 @@ def strength():
     for p,req in REQUIRED_RUPAS.items():
         s=SthanaBala(60.,20.,15.,60.,15.,170.)
         k=KalaBala(60.,30.,0.,45.,30.,0.,165.)
-        total=170+165+60+30+30-5
-        entries[p]=PlanetShadbala(p,s,60.,k,30.,30.,-5.,total,total/60,req,total/60>=req)
+        total=170+165+60+30+NAISARGIKA_BALA[p]-5
+        entries[p]=PlanetShadbala(p,s,60.,k,30.,NAISARGIKA_BALA[p],-5.,total,total/60,req,total/60>=req)
     return ShadbalaResult(2451545.,'Lahiri',entries)
 
 
@@ -203,7 +203,7 @@ def test_d9_consumers_agree_at_exact_angle():
     assert navamsa(10.).sign=='Cancer' and _navamsa_sign(10.)==3
     # Sun: odd Aries D1 + even Cancer D9 -> only the D1 15-shashtiamsa share.
     from tests.unit.test_shadbala import _MockHouses
-    assert sthana_bala('Sun',10.,_MockHouses(),2451545.).ojayugma==15
+    assert sthana_bala('Sun',10.,_MockHouses(),2451545.,sidereal_longitudes=dict.fromkeys(('Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'),10.)).ojayugma==15
 
 def test_near_antipodal_nodes_cannot_claim_two_favorable_houses():
     with pytest.raises(ValueError,match='antipodal'):

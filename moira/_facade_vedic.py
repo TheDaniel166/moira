@@ -724,6 +724,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         ayanamsa_system: str = "Lahiri",
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        *, context=None, policy=None,
     ):
         """Compute Shadbala from caller-supplied sidereal chart truth."""
         return _facade_module().shadbala(
@@ -737,7 +738,16 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=ayanamsa_system,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
         )
+
+    def shadbala_context(self, jd: float, latitude: float, longitude: float, *,
+                         ayanamsa_system: str = 'Lahiri', hora_lord: str | None = None,
+                         jd_utc: float | None = None):
+        """Derive immutable Shadbala evidence through this engine's reader."""
+        return _shadbala.derive_shadbala_context(jd, latitude, longitude,
+            ayanamsa_system=ayanamsa_system, hora_lord=hora_lord,
+            jd_utc=jd_utc, reader=self._reader)
 
     def shadbala_for_chart(
         self,
@@ -748,11 +758,19 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         is_day: bool | None = None,
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        context=None, policy=None,
+        observer_latitude: float | None = None,
+        observer_longitude: float | None = None,
     ):
         """Compute Shadbala using an existing chart, houses, and Panchanga truth."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
+        if context is None:
+            if observer_latitude is None or observer_longitude is None:
+                raise _shadbala.ShadbalaContextError('chart Shadbala requires observer coordinates or explicit context')
+            context = self.shadbala_context(jd_ut1, observer_latitude, observer_longitude,
+                ayanamsa_system=system, hora_lord=hora_lord, jd_utc=chart.jd_ut)
         seven = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
         sidereal_longitudes = self._sidereal_longitudes_from_chart(
             chart,
@@ -771,7 +789,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             }
         panchanga_result = self.panchanga(chart, ayanamsa_system=system)
         day_chart = (
-            facade.is_day_chart(chart.planets["Sun"].longitude, houses.asc)
+            context.is_day
             if is_day is None
             else is_day
         )
@@ -786,6 +804,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=system,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
         )
 
     def shadbala_profile(self, result):
@@ -823,6 +842,9 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         is_day: bool | None = None,
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        context=None, policy=None,
+        observer_latitude: float | None = None,
+        observer_longitude: float | None = None,
     ):
         """Compute Bhava Bala using an existing chart and houses, deriving
         the prerequisite Shadbala internally via ``shadbala_for_chart``."""
@@ -836,6 +858,8 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             is_day=is_day,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
+            observer_latitude=observer_latitude, observer_longitude=observer_longitude,
         )
         sidereal_longitudes = self._sidereal_longitudes_from_chart(
             chart,

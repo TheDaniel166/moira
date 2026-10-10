@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from datetime import datetime
 
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
 from ._vedic_inputs import CivilDateTime, FiniteNumber, KnownAyanamsa
@@ -42,6 +42,7 @@ class SadeSatiWindowsRequest(_StrictModel):
     start_dt: CivilDateTime
     end_dt: CivilDateTime
     ayanamsa_system: KnownAyanamsa = "Lahiri"
+    max_evaluations: int = Field(default=10000, strict=True, ge=2, le=20000)
 
     @field_validator("natal_moon_sidereal_lon")
     @classmethod
@@ -86,6 +87,10 @@ class SadeSatiWindowsResponse(_StrictModel):
     end_jd: float
     ayanamsa_system: str
     windows: tuple[SadeSatiWindowResponse, ...]
+    scan_step_days: float
+    evaluations: int
+    max_evaluations: int
+    search_semantics: str
 
 
 __all__ = [

@@ -7,7 +7,7 @@ Archetype: Engine
 Purpose
 -------
 Computes the six-fold planetary strength (Shadbala) for the seven classical
-planets as defined by Parashara.  Shadbala is measured in Shashtiamsas
+planets under explicitly identified component conventions.  Shadbala is measured in Shashtiamsas
 (Sha); 60 Sha = 1 Rupa.
 
 The six Balas (strengths) and their sub-components:
@@ -30,7 +30,7 @@ The six Balas (strengths) and their sub-components:
   5. Naisargika Bala — Natural Fixed Strength (constant, never changes)
   6. Drig Bala      — Aspectual Strength (benefic minus malefic aspect weight)
 
-Required minimum Rupas (Parashara):
+Retained minimum Rupas (Moira convention):
   Sun:6.5, Moon:6.0, Mars:5.0, Mercury:7.0, Jupiter:6.5, Venus:5.5, Saturn:5.0
 
 Bhava Bala (house strength, Raman Part II) is also computed here, three-fold:
@@ -40,11 +40,14 @@ Bhava Bala (house strength, Raman Part II) is also computed here, three-fold:
 
 Tradition and sources
 ---------------------
-Parashara, "Brihat Parashara Hora Shastra" (BPHS), Shadbala Adhyaya.
-B.V. Raman, "Graha and Bhava Balas" (1959) — the primary engineering
-  reference; contains a fully worked example chart verifiable to 2 decimal
-  places in Rupas.  All sub-component formulas and constants are cross-
-  checked against this source.
+Raman, Bhava and Graha Balas (1996), articles 25/30, 47-57, 75-77:
+selected relationship, Saptavargaja, Kala and pairwise-war rules. BPHS,
+Santhanam I 27.2-4 supplies an alternative Saptavargaja scale only.
+Independent arithmetic witnesses cover these selected components; this
+module does not claim agreement with an entire published worked chart.
+Required Rupas, ingress-based Abda/Masa, osculating Chesta and sign-based
+Drig remain separately identified Moira conventions. A Saptavargaja profile
+selection does not attribute those methods to that book.
 
 Boundary declaration
 --------------------
@@ -57,38 +60,22 @@ Delegates: Vedic dignity rank to ``moira.vedic_dignities``,
 
 Import-time side effects: None
 
-Implementation note — Kala Bala completeness
---------------------------------------------
-Nathonnatha, Paksha, Tribhaga, and Ayana Bala are fully implemented.
-Abda/Masa/Vara/Hora Bala are fully implemented per Raman Ch. 4.  Abda
-(15 Sha) and Masa (30 Sha) are located by bisection on the Sun's actual
-apparent sidereal longitude from the kernel (``moira.planets.planet_at``),
-pinning the Sankranti JD to 1-second precision.  Vara (45 Sha) uses the
-supplied ``vara_lord`` parameter.  Hora (60 Sha) is included when
-``kala_bala()`` receives a non-None ``hora_lord`` argument; compute it via
-``hora_lord_at(birth_jd, sunrise_jd)``.
-
-Chesta Bala — Primary-source formulations from B. V. Raman's "Graha and
-Bhava Balas" (13th edition, 1992):
-  - Luminaries (Sun and Moon): Chapter X (§§136–137, pp. 101–103).
-    Sun uses Sayana (tropical) longitude + 90° reduced to ≤ 180° / 3 Sha.
-    Moon uses Sun–Moon elongation reduced to ≤ 180° / 3 Sha.
-  - Five Non-Luminaries (Mars, Mercury, Jupiter, Venus, Saturn): Chapter VI
-    ("Chesta Bala or Motional Strength", pp. 64–79).
-    Derived from Chesta Kendra = (Seeghrochcha − (mean_lon + true_lon) / 2)
-    reduced to ≤ 180° / 3 Sha.  For superior planets (Mars, Jupiter, Saturn),
-    Seeghrochcha is the Sun.  For inferior planets (Mercury, Venus),
-    Seeghrochcha is the planet's heliocentric position and the mean planet
-    is the Sun.  Mean orbital longitudes are evaluated directly from the
-    strict orbital core.
-
-Yuddha Bala (planetary war) is fully implemented via ``_detect_wars()``.
-The five non-luminaries are checked for conjunction within 1° of longitude.
-Victor is the planet with greater geocentric latitude (Raman Ch. 9); greater
-sidereal longitude is used as a fallback when ``planet_latitudes`` is not
-supplied to ``shadbala()``.
-
-Drig Bala uses sign-based Vedic aspect doctrine (not degree-based).
+Calculation context and war policy
+----------------------------------
+Full results require a same-epoch ShadbalaContext. Dated callers derive
+apparent geocentric positions, true equatorial declinations and actual
+solar events through the serving reader. Synthetic callers supply context;
+missing polar events produce typed unavailability, not a full ranking.
+Nathonnatha uses apparent solar hour angle; Paksha uses continuous phase;
+Tribhaga uses actual day/night thirds; Ayana uses the signed 24-degree
+linear rule with planet-specific signs and Sun doubling. See the context
+receipt for the explicitly selected Moon/Mercury nature convention.
+Raman war detection uses separation strictly below one degree and the
+lesser normalized longitude as victor. Pair amounts use pre-war Sthana +
+Dig + Kala through Hora, divided by the fixed source disc-diameter
+difference. Chesta is unchanged. Simultaneous pair accumulation and exact
+ties with zero adjustment are named Moira conventions, not classical
+multi-way attribution. The canonical ledger retains signed debits.
 
 Public surface
 --------------
@@ -144,9 +131,15 @@ P12 -- Public API curation: __all__, docstring.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from .shadbala_context import ShadbalaContext, ShadbalaContextError, derive_shadbala_context
+from ._shadbala_components import (
+    SaptavargajaEntry, saptavargaja_breakdown, kala_components, positional_components,
+)
 
 __all__ = [
+    "ShadbalaContext", "ShadbalaContextError", "derive_shadbala_context",
+    "SaptavargajaEntry", "saptavargaja_breakdown", "WarResolution",
     "NAISARGIKA_BALA",
     "REQUIRED_RUPAS",
     "MEAN_DAILY_MOTION",
@@ -200,30 +193,20 @@ class GrahaYuddha:
     """
     P5 vessel for a Graha Yuddha (planetary war) between two non-luminaries.
 
-    Two non-luminaries are at war when their sidereal longitudes are within
-    1° of each other.  The victor is determined by greater geocentric latitude
-    (Raman Ch. 9, “Graha and Bhava Balas”).  When latitude is unavailable,
-    the planet with greater sidereal longitude is treated as victor.
-
-    Attributes
-    ----------
-    victor : str
-        Name of the victorious planet.
-    loser : str
-        Name of the defeated planet.
-    separation_deg : float
-        Angular separation in degrees at the moment of war (0 < value ≤ 1.0).
-    chesta_transferred : float or None
-        Shashtiamsas transferred by the war: the loser's raw Chesta Bala,
-        which the victor gains (``KalaBala.yuddha``) and the loser forfeits
-        (Chesta zeroed).  ``None`` when planet speeds were not supplied to
-        the detector, so the amount is unknown rather than silently 0.
+    Detection uses separation strictly below one degree and lesser normalized
+    longitude. Exact ties retain a lexical label and zero adjustment.
+    ``adjustment_shashtiamsas`` is the actual Kala adjustment from the ledger;
+    detection alone leaves it None. Deprecated ``chesta_transferred`` remains
+    a legacy construction field; current computation never populates it.
     """
 
     victor:         str
     loser:          str
     separation_deg: float
     chesta_transferred: float | None = None
+    adjustment_shashtiamsas: float | None = None
+    tied: bool = False
+    rule: str = "raman_1996_lesser_longitude"
 
     def __post_init__(self) -> None:
         if self.victor not in _WAR_PLANETS:
@@ -241,11 +224,13 @@ class GrahaYuddha:
                 "GrahaYuddha.victor and .loser must be different planets, "
                 f"both are {self.victor!r}"
             )
-        if not (0.0 < self.separation_deg <= 1.0):
+        if not (0.0 <= self.separation_deg <= 1.0):
             raise ValueError(
                 f"GrahaYuddha.separation_deg must be in (0, 1], "
                 f"got {self.separation_deg}"
             )
+        if self.adjustment_shashtiamsas is not None and (not math.isfinite(self.adjustment_shashtiamsas) or self.adjustment_shashtiamsas < 0):
+            raise ValueError('war adjustment must be finite and nonnegative')
         if self.chesta_transferred is not None and not (
             0.0 <= self.chesta_transferred <= 60.0
         ):
@@ -273,7 +258,7 @@ NAISARGIKA_BALA: dict[str, float] = {
 }
 
 # ---------------------------------------------------------------------------
-# Required minimum Rupas (Parashara)
+# Retained minimum Rupas (separate from source-component profiles)
 # ---------------------------------------------------------------------------
 
 REQUIRED_RUPAS: dict[str, float] = {
@@ -378,37 +363,6 @@ _RASI_LORDS: tuple[str, ...] = (
     'Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury',
     'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter',
 )
-
-# ---------------------------------------------------------------------------
-# Saptavargaja Bala — dignity Shashtiamsa values
-#
-# Source: Raman "Graha and Bhava Balas" Ch. 6.
-# ---------------------------------------------------------------------------
-
-_SAPTAVARGAJA_SHA: dict[str, float] = {
-    'exaltation':   20.0,
-    'own_sign':     15.0,
-    'adhi_mitra':   10.0,    # Great friend's sign
-    'mitra':         7.5,    # Friend's sign
-    'sama':          5.0,    # Neutral's sign
-    'shatru':        2.5,    # Enemy's sign
-    'adhi_shatru':   1.25,   # Great enemy's sign
-    'debilitation':  0.0,
-}
-
-# Map VedicDignityRank values to Saptavargaja keys
-_DIGNITY_TO_SAPTAVARGAJA: dict[str, str] = {
-    'exaltation':   'exaltation',
-    'mulatrikona':  'own_sign',      # Mulatrikona counts as own sign in Saptavargaja
-    'own_sign':     'own_sign',
-    'friend_sign':  'mitra',
-    'neutral_sign': 'sama',
-    'enemy_sign':   'shatru',
-    'debilitation': 'debilitation',
-}
-
-# The 7 vargas used in Saptavargaja Bala: D1, D2, D3, D7, D9, D12, D30
-_SAPTAVARGA_DIVISIONS: tuple[int, ...] = (1, 2, 3, 7, 9, 12, 30)
 
 # ---------------------------------------------------------------------------
 # Kala Bala — weekday and hora helpers
@@ -549,7 +503,7 @@ class PlanetShadbala:
                 f"PlanetShadbala.planet must be one of {_SEVEN_PLANETS}, "
                 f"got {self.planet!r}"
             )
-        if self.total_shashtiamsas < 0.0:
+        if self.total_shashtiamsas < 0.0 and self.kala_bala.yuddha >= 0:
             raise ValueError(
                 f"PlanetShadbala.total_shashtiamsas must be >= 0, "
                 f"got {self.total_shashtiamsas}"
@@ -572,9 +526,8 @@ class PlanetShadbala:
         ``√(Uchcha Bala × Chesta Bala)`` per BPHS Ch. 27 (Ishta-Kashta
         Adhyaya); Raman, "Graha and Bhava Balas", Part on predicting
         results.  Uses this vessel's displayed Chesta Bala, so the Sun and
-        Moon consume the Raman apogee-distance Chesta — the same number
-        shown in the breakdown — and a war loser's zeroed Chesta flows
-        through honestly.
+        Moon consume the retained motion convention shown in the breakdown.
+        Canonical war adjustments leave Chesta unchanged.
         """
         u = min(max(self.sthana_bala.uchcha, 0.0), 60.0)
         c = min(max(self.chesta_bala, 0.0), 60.0)
@@ -611,6 +564,11 @@ class ShadbalaResult:
     jd: float
     ayanamsa_system: str
     planets: dict[str, PlanetShadbala]
+
+    war_resolution: 'WarResolution | None' = None
+    context: ShadbalaContext | None = None
+    saptavargaja_profile: str | None = None
+    saptavargaja_evidence: tuple[tuple[str, tuple[SaptavargajaEntry, ...]], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.ayanamsa_system:
@@ -796,62 +754,66 @@ def _weekday_lord(jd: float) -> str:
 
 
 
-def _detect_wars(
-    sidereal_longitudes: dict[str, float],
-    planet_latitudes: dict[str, float] | None,
-    planet_speeds: dict[str, float] | None = None,
-) -> tuple['GrahaYuddha', ...]:
+def _detect_wars(sidereal_longitudes, planet_latitudes=None, planet_speeds=None):
+    """Raman 1996 art.76: separation <1 degree, lesser normalized longitude wins.
+
+    Exact ties have a stable lexical label and zero adjustment under the
+    explicit Moira composition rule. Latitudes/speeds are compatibility
+    inputs, not evidence of a transfer. Actual amounts require the raw ledger.
     """
-    Detect Graha Yuddha (planetary wars) and return one GrahaYuddha per pair.
-
-    Only the five non-luminaries (Mars, Mercury, Jupiter, Venus, Saturn)
-    participate.  Two planets are at war when their sidereal longitudes are
-    within 1° of each other.
-
-    Victor determination (Raman Ch. 9):
-        The planet with greater geocentric latitude wins.  When
-        ``planet_latitudes`` is ``None``, the planet with greater sidereal
-        longitude wins (fallback approximation).
-
-    When ``planet_speeds`` is supplied, each war record carries
-    ``chesta_transferred`` — the loser's raw (speed-ratio) Chesta Bala, the
-    amount the victor gains and the loser forfeits.
-
-    Returns
-    -------
-    tuple[GrahaYuddha, ...]
-        One record per war pair.  Empty when no wars are detected.
-    """
-    wars: list[GrahaYuddha] = []
+    from .varga import _normalize_longitude
+    wars = []
     candidates = sorted(p for p in _WAR_PLANETS if p in sidereal_longitudes)
-    for i, p1 in enumerate(candidates):
-        for p2 in candidates[i + 1:]:
-            lon1 = sidereal_longitudes[p1] % 360.0
-            lon2 = sidereal_longitudes[p2] % 360.0
-            diff = abs(lon1 - lon2)
-            if diff > 180.0:
-                diff = 360.0 - diff
-            if diff > 1.0:
+    for i,p1 in enumerate(candidates):
+        for p2 in candidates[i+1:]:
+            lon1 = _normalize_longitude(sidereal_longitudes[p1])
+            lon2 = _normalize_longitude(sidereal_longitudes[p2])
+            diff = _arc_distance(lon1, lon2)
+            if diff >= 1:
                 continue
-            if planet_latitudes is not None:
-                lat1 = planet_latitudes.get(p1, 0.0)
-                lat2 = planet_latitudes.get(p2, 0.0)
-                victor = p1 if lat1 >= lat2 else p2
-            else:
-                victor = p1 if lon1 >= lon2 else p2
+            victor = p1 if lon1 <= lon2 else p2
             loser = p2 if victor == p1 else p1
-            transferred = None
-            if planet_speeds is not None and loser in planet_speeds:
-                # War losers are always non-luminaries, so the raw Chesta is
-                # the speed-ratio value — the same amount shadbala() moves.
-                transferred = chesta_bala(loser, planet_speeds[loser])
-            wars.append(GrahaYuddha(
-                victor=victor,
-                loser=loser,
-                separation_deg=diff,
-                chesta_transferred=transferred,
-            ))
+            wars.append(GrahaYuddha(victor, loser, diff, tied=(diff == 0)))
     return tuple(wars)
+
+
+@dataclass(frozen=True, slots=True)
+class WarResolution:
+    """Canonical simultaneous raw-pair ledger, a named Moira composition.
+
+    Each Raman pair amount is evaluated once against immutable pre-war
+    aggregates (Sthana + Dig + Kala through Hora, excluding Ayana). Every
+    debit has an equal credit. Chesta remains unchanged; no finite Chesta
+    pool is repeatedly spent. Signed Kala and signed net totals are retained.
+    """
+    pairs: tuple[GrahaYuddha, ...]
+    raw_aggregates: tuple[tuple[str, float], ...]
+    raw_totals: tuple[tuple[str, float], ...]
+    raw_chesta: tuple[tuple[str, float], ...]
+    credits: tuple[tuple[str, float], ...]
+    debits: tuple[tuple[str, float], ...]
+    adjustments: tuple[tuple[str, float], ...]
+    policy: str = 'moira_simultaneous_raman_raw_pairs_v1'
+    source: str = 'Raman1996:76-77:printed60-61'
+
+
+def _resolve_wars(raw, positions):
+    diameters = {'Mars':9.4, 'Mercury':6.6, 'Jupiter':190.4, 'Venus':16.6, 'Saturn':158.0}
+    aggregates = {p: s.total + d + k.total - k.ayana for p,(s,d,k,c,n,dr) in raw.items()}
+    totals = {p: s.total + d + k.total + c + n + dr for p,(s,d,k,c,n,dr) in raw.items()}
+    credits = {p: [] for p in _SEVEN_PLANETS}
+    debits = {p: [] for p in _SEVEN_PLANETS}
+    resolved = []
+    for war in _detect_wars(positions):
+        amount = 0. if war.tied else abs(aggregates[war.victor]-aggregates[war.loser]) / abs(diameters[war.victor]-diameters[war.loser])
+        resolved.append(replace(war, adjustment_shashtiamsas=amount))
+        credits[war.victor].append(amount)
+        debits[war.loser].append(amount)
+    credit = {p: math.fsum(credits[p]) for p in _SEVEN_PLANETS}
+    debit = {p: math.fsum(debits[p]) for p in _SEVEN_PLANETS}
+    return WarResolution(tuple(resolved), tuple((p,aggregates[p]) for p in _SEVEN_PLANETS),
+        tuple((p,totals[p]) for p in _SEVEN_PLANETS), tuple((p,raw[p][3]) for p in _SEVEN_PLANETS),
+        tuple(credit.items()), tuple(debit.items()), tuple((p,credit[p]-debit[p]) for p in _SEVEN_PLANETS))
 
 
 def _sankranti_jd(
@@ -958,6 +920,9 @@ def sthana_bala(
     houses: object,
     jd: float,
     ayanamsa_system: str = 'Lahiri',
+    *,
+    sidereal_longitudes: dict[str, float] | None = None,
+    saptavargaja_profile: str = 'raman_1996',
 ) -> SthanaBala:
     """
     Compute Sthana Bala (Positional Strength) for one planet.
@@ -980,79 +945,17 @@ def sthana_bala(
     -------
     SthanaBala
     """
-    from .vedic_dignities import vedic_dignity
     from .sidereal import tropical_to_sidereal
+    from .varga import _normalize_longitude
 
-    lon = sidereal_lon % 360.0
+    lon = _normalize_longitude(sidereal_lon)
 
-    # --- (a) Uchcha Bala ---
-    dig_result = vedic_dignity(planet, lon)
-    uchcha_sha = dig_result.exaltation_score * 60.0
+    uchcha_sha, ojayugma_sha, drekkana_sha = positional_components(planet, lon)
 
-    # --- (b) Saptavargaja Bala ---
-    # For each of 7 vargas, compute the planet's dignity in that varga sign.
-    # D1: sidereal sign (already known)
-    # D2–D30: use varga wrappers (accept sidereal longitude)
-    # Use the actual varga wrappers to get sign indices
-    from .varga import hora as _hora, saptamsa as _saptamsa, navamsa as _navamsa
-    from .varga import dwadashamsa as _dwad, trimshamsa as _trim
+    entries = saptavargaja_breakdown(planet, lon, sidereal_longitudes, saptavargaja_profile)
+    saptavargaja_sha = sum(e.shashtiamsas for e in entries)
 
-    def _varga_sign(n: int, lon_deg: float) -> int:
-        if n == 1:
-            return int(lon_deg % 360.0 // 30)
-        vp_map = {
-            2:  _hora(lon_deg),
-            7:  _saptamsa(lon_deg),
-            9:  _navamsa(lon_deg),
-            12: _dwad(lon_deg),
-            30: _trim(lon_deg),
-        }
-        if n in vp_map:
-            vp = vp_map[n]
-            from .constants import SIGNS
-            return SIGNS.index(vp.sign)
-        # D3: Parashari drekkana formula
-        sign_idx = int(lon_deg % 360.0 // 30)
-        seg = int((lon_deg % 30.0) / 10.0)
-        return (sign_idx + seg * 4) % 12
-
-    saptavargaja_sha = 0.0
-    for n in _SAPTAVARGA_DIVISIONS:
-        v_sign = _varga_sign(n, lon)
-        # Probe at 1° within the varga sign.  vedic_dignity() checks exaltation,
-        # debilitation, and own-sign by sign index only (not by degree), so the
-        # probe point is adequate for those ranks.  The mulatrikona check is
-        # degree-sensitive: if the mulatrikona range does not include 1°, the
-        # rank falls through to own_sign.  This is a known approximation for
-        # Saptavargaja; degree-precise mulatrikona detection within each varga
-        # would require computing the planet's exact longitude within the varga.
-        v_dig = vedic_dignity(planet, v_sign * 30.0 + 1.0)
-        rank_key = _DIGNITY_TO_SAPTAVARGAJA.get(v_dig.dignity_rank, 'sama')
-        saptavargaja_sha += _SAPTAVARGAJA_SHA[rank_key]
-
-    # --- (c) Ojayugmarasyamsa Bala ---
-    # Odd-sign planets (Sun, Mars, Jupiter, Saturn): 15 Sha in odd D1 and D9 signs
-    # Even-sign planets (Moon, Venus): 15 Sha in even D1 and D9 signs
-    # Mercury: neutral — not listed; Raman gives Mercury in both
     d1_sign  = int(lon // 30)
-    from .varga import varga_sign_index
-    d9_idx = varga_sign_index(lon, 9)  # Same rational boundaries as Saptavargaja.
-    odd_planets   = {'Sun', 'Mars', 'Jupiter', 'Saturn'}
-    even_planets  = {'Moon', 'Venus'}
-    ojayugma_sha  = 0.0
-    if planet in odd_planets:
-        if d1_sign % 2 == 0:    # 0-based: Aries=0 is 1st (odd)
-            ojayugma_sha += 15.0
-        if d9_idx % 2 == 0:
-            ojayugma_sha += 15.0
-    elif planet in even_planets:
-        if d1_sign % 2 == 1:    # Taurus=1 is 2nd (even)
-            ojayugma_sha += 15.0
-        if d9_idx % 2 == 1:
-            ojayugma_sha += 15.0
-    else:
-        # Mercury: 15 Sha in odd D1 and 15 Sha in even D1 (i.e. always 15 for D1)
-        ojayugma_sha = 15.0
 
     # --- (d) Kendradi Bala ---
     asc_trop = float(getattr(houses, 'asc', 0.0))
@@ -1065,19 +968,6 @@ def sthana_bala(
         kendradi_sha = 30.0
     else:
         kendradi_sha = 15.0
-
-    # --- (e) Drekkana Bala ---
-    decan_no = int((lon % 30.0) / 10.0) + 1   # 1, 2, or 3
-    male_planets      = {'Sun', 'Mars', 'Jupiter'}
-    hermaphrodite_pla = {'Mercury', 'Saturn'}
-    female_planets    = {'Moon', 'Venus'}
-    drekkana_sha = 0.0
-    if planet in male_planets and decan_no == 1:
-        drekkana_sha = 15.0
-    elif planet in hermaphrodite_pla and decan_no == 2:
-        drekkana_sha = 15.0
-    elif planet in female_planets and decan_no == 3:
-        drekkana_sha = 15.0
 
     total = uchcha_sha + saptavargaja_sha + ojayugma_sha + kendradi_sha + drekkana_sha
     return SthanaBala(
@@ -1153,159 +1043,26 @@ def kala_bala(
     hora_lord: str | None = None,
     ayanamsa_system: str = 'Lahiri',
     local_day_frac: float | None = None,
+    *,
+    context: ShadbalaContext | None = None,
 ) -> KalaBala:
+    """Compute source-defined temporal strength from explicit context.
+
+    ``jd`` is UT; positions and ayanamsa must match the context. Declinations
+    are tropical true-equatorial degrees. Day/vara/hora and any supplied
+    apparent solar fraction must agree with that context. Tithi and speeds
+    are retained compatibility inputs; continuous phase governs Paksha.
+    Missing solar events raise ShadbalaContextError without ephemeris fallback.
     """
-    Compute Kala Bala (Temporal Strength) for one planet.
-
-    Parameters
-    ----------
-    planet : str
-    sidereal_lon : float
-        Sidereal longitude of the planet.
-    sun_sidereal_lon : float
-        Sidereal longitude of the Sun (for Ayana Bala).
-    jd : float
-        Julian date (UT); used for Abda/Masa Sankranti bisection and as
-        fallback for time-of-day fraction when ``local_day_frac`` is None.
-    tithi_number : int
-        Current Tithi (1–30) from Panchanga.
-    is_day : bool
-        ``True`` if birth is during daytime (between sunrise and sunset).
-    vara_lord : str
-        Planetary lord of the current Vedic weekday.
-    planet_speeds : dict[str, float]
-        Daily motion (°/day, signed) for each planet.  Negative = retrograde.
-    hora_lord : str or None, optional
-        Planetary lord of the birth hora.  When provided, contributes 60 Sha
-        to the matching planet.  Compute via ``hora_lord_at(birth_jd,
-        sunrise_jd)``; defaults to ``None`` (Hora Bala omitted).
-    ayanamsa_system : str
-        Ayanamsa system used for the Abda and Masa Sankranti bisections.
-        Must match the system used for all other sidereal coordinates in
-        the chart.  Defaults to ``'Lahiri'``.
-    local_day_frac : float or None, optional
-        Fractional position within the local solar day, in [0.0, 1.0).
-        0.0 corresponds to local solar midnight; 0.5 to local solar noon.
-        Used for Nathonnatha and Tribhaga Bala. When ``None`` (default),
-        the fraction is approximated from ``jd % 1.0``, which is UTC-anchored
-        and will be wrong for observers outside UTC.  Callers should pass
-        ``(jd + observer_longitude_deg / 360.0) % 1.0`` for a mean solar
-        approximation, or derive it from sunrise/sunset JDs for true solar time.
-
-    Returns
-    -------
-    KalaBala
-    """
-    # --- (a) Nathonnatha Bala ---
-    day_planets = {'Sun', 'Jupiter', 'Venus'}
-    # Mercury is equally strong day and night
-    # time_frac: fractional position in local solar day [0, 1).
-    # JD epoch is noon UT, so jd % 1.0 == 0.0 at UT noon — not local noon
-    # for non-UTC observers.  Callers should pass local_day_frac for accuracy.
-    if local_day_frac is not None:
-        time_frac = float(local_day_frac) % 1.0
-    else:
-        time_frac = (jd % 1.0)
-    if planet == 'Mercury':
-        nathonnatha = 60.0
-    elif planet in day_planets:
-        # Peaks at midday (time_frac ≈ 0.5 for mean solar noon)
-        nathonnatha = abs(math.sin(math.pi * time_frac)) * 60.0 if is_day else 30.0
-    else:
-        # Night planets: peak at midnight
-        nathonnatha = abs(math.sin(math.pi * time_frac)) * 60.0 if not is_day else 30.0
-
-    # --- (b) Paksha Bala ---
-    # Tithi 1–15 = Shukla (waxing); 16–30 = Krishna (waning)
-    shukla = tithi_number if tithi_number <= 15 else 30 - tithi_number  # 0–15
-    benefic_planets = {'Jupiter', 'Venus', 'Moon', 'Mercury'}
-    if planet in benefic_planets:
-        paksha = float(shukla) * 4.0   # 0–60 Sha
-    else:
-        paksha = float(15 - shukla) * 4.0
-
-    # --- (c) Tribhaga Bala ---
-    # Day: Jupiter (1st third), Sun (2nd third), Saturn (3rd third)
-    # Night: Moon (1st third), Venus (2nd third), Mars (3rd third)
-    # Mercury: always strong
-    # Uses the same time_frac as Nathonnatha (see local_day_frac note above).
-    tribhaga = 0.0
-    if planet == 'Mercury':
-        tribhaga = 60.0
-    else:
-        if is_day:
-            third = int(time_frac * 3)   # 0, 1, or 2
-            tribhaga_day_lords = ['Jupiter', 'Sun', 'Saturn']
-            if third < len(tribhaga_day_lords) and planet == tribhaga_day_lords[third]:
-                tribhaga = 60.0
-        else:
-            third = int(time_frac * 3)
-            tribhaga_night_lords = ['Moon', 'Venus', 'Mars']
-            if third < len(tribhaga_night_lords) and planet == tribhaga_night_lords[third]:
-                tribhaga = 60.0
-
-    # --- (d) Abda/Masa/Vara/Hora Bala ---
-    # Per Raman "Graha and Bhava Balas" Ch. 4: Abda=15, Masa=30, Vara=45, Hora=60 Sha.
-    #
-    # Abda lord (year lord): weekday lord of the most recent Mesha Sankranti
-    #   (Sun's sidereal longitude = 0°, i.e. entry into Aries).
-    # Masa lord (month lord): weekday lord of the most recent Rashi Sankranti
-    #   (Sun's sidereal longitude = floor(sun_sid/30)*30°).
-    # Both are located by bisection on the Sun's actual apparent sidereal
-    # longitude via moira.planets.planet_at + moira.sidereal.tropical_to_sidereal.
-    # The Masa target is derived from the kernel-queried real Sun position at jd
-    # (not from the passed sun_sidereal_lon) to keep Sankranti calculations
-    # fully self-consistent with the bisection.
-    # Source: BPHS Shadbala Adhyaya; Raman "Graha and Bhava Balas" Ch. 4.
-    from .planets import planet_at as _planet_at
-    from .sidereal import tropical_to_sidereal as _t2s
-    from .spk_reader import get_reader as _get_reader
-    _reader = _get_reader()
-    _sun_real = _planet_at('Sun', jd, reader=_reader)
-    _sun_sid_real = _t2s(_sun_real.longitude, jd, system=ayanamsa_system)
-    _abda_target = 0.0
-    _masa_target = float(int(_sun_sid_real // 30) * 30)
-    abda_planet = _weekday_lord(_sankranti_jd(_abda_target, jd, ayanamsa_system, window_days=370.0))
-    masa_planet = _weekday_lord(_sankranti_jd(_masa_target, jd, ayanamsa_system, window_days=32.0))
-    amvh_sha    = 0.0
-    if planet == abda_planet:
-        amvh_sha += 15.0
-    if planet == masa_planet:
-        amvh_sha += 30.0
-    if planet == vara_lord:
-        amvh_sha += 45.0
-    if hora_lord is not None and planet == hora_lord:
-        amvh_sha += 60.0
-
-    # --- (e) Ayana Bala ---
-    # Sun's declination proxy: sin(dec) ≈ sin(obliquity) × sin(sun_lon)
-    from .obliquity import true_obliquity as _true_obliquity_kala
-    from .julian import ut_to_tt as _ut_to_tt_kala
-    obliquity_rad = math.radians(_true_obliquity_kala(_ut_to_tt_kala(jd)))
-    sun_lon_rad   = math.radians(sun_sidereal_lon % 360.0)
-    sin_dec       = math.sin(obliquity_rad) * math.sin(sun_lon_rad)
-    ayana_sha     = 24.0 * abs(sin_dec)   # 0–24 Sha (approximately)
-
-    # Benefics gain in Uttara Ayana (Capricorn→Gemini, i.e. dec > 0 or sun_lon in [270,360)∪[0,90))
-    # Raman simplifies: all planets get ayana_sha; sign depends on planet type vs ayana.
-    # We use the absolute value per Raman's formula.
-
-    # --- (f) Yuddha Bala ---
-    # Set to 0 here; shadbala() rebuilds KalaBala for war participants after
-    # a first-pass loop via _detect_wars().  Victor gets the loser's raw
-    # Chesta Bala added to this field; loser's chesta_bala is set to 0.
-    yuddha = 0.0
-
-    total = nathonnatha + paksha + tribhaga + amvh_sha + ayana_sha + yuddha
-    return KalaBala(
-        nathonnatha=nathonnatha,
-        paksha=paksha,
-        tribhaga=tribhaga,
-        abda_masa_vara_hora=amvh_sha,
-        ayana=ayana_sha,
-        yuddha=yuddha,
-        total=total,
-    )
+    if not isinstance(context, ShadbalaContext):
+        raise ShadbalaContextError('Kala Bala requires explicit same-epoch solar and declination context')
+    context.check_positions(jd, ayanamsa_system, {planet: sidereal_lon, 'Sun': sun_sidereal_lon})
+    if local_day_frac is not None and local_day_frac != context.local_apparent_day_fraction:
+        raise ShadbalaContextError('local solar time disagrees with context')
+    if is_day != context.is_day or vara_lord != context.vara_lord or hora_lord != context.hora_lord:
+        raise ShadbalaContextError('day/vara/hora inputs disagree with context')
+    values = kala_components(planet, context)
+    return KalaBala(*values, 0., sum(values))
 
 
 def chesta_bala(
@@ -1719,6 +1476,12 @@ def bhava_bala(
     -------
     BhavaBalaResult
     """
+    if shadbala_result.context is not None:
+        validate_shadbala_output(shadbala_result)
+        shadbala_result.context.check_positions(
+            shadbala_result.jd, shadbala_result.ayanamsa_system, sidereal_longitudes)
+        canonical = dict(shadbala_result.context.sidereal_longitudes)
+        sidereal_longitudes = {p: canonical[p] for p in sidereal_longitudes}
     madhyas = _bhava_madhya_sidereal(
         houses, shadbala_result.jd, shadbala_result.ayanamsa_system,
     )
@@ -1787,6 +1550,9 @@ def shadbala(
     ayanamsa_system: str = 'Lahiri',
     hora_lord: str | None = None,
     planet_latitudes: dict[str, float] | None = None,
+    *,
+    context: ShadbalaContext | None = None,
+    policy: 'ShadbalaPolicy | None' = None,
 ) -> ShadbalaResult:
     """
     Compute full Shadbala for all seven classical planets.
@@ -1816,12 +1582,13 @@ def shadbala(
     hora_lord : str or None, optional
         Planetary lord of the birth hora.  Forwarded to ``kala_bala()``.
         Compute via ``hora_lord_at(birth_jd, sunrise_jd)``.
-    planet_latitudes : dict[str, float] or None, optional
-        Geocentric latitudes (degrees, signed) for the five non-luminaries.
-        Used by ``_detect_wars()`` to identify Yuddha Bala victors: the
-        planet with greater latitude (north wins) is the victor per Raman
-        Ch. 9.  When ``None``, victors are determined by greater sidereal
-        longitude (fallback approximation).
+    planet_latitudes : dict or None
+        Retained compatibility input; the selected Raman war rule uses longitude.
+    context : ShadbalaContext
+        Required same-epoch geometry, continuous phase and motion evidence.
+    policy : ShadbalaPolicy or None
+        Named Saptavargaja scale; defaults to Raman 1996. Other component
+        conventions retain their separate attribution.
 
     Returns
     -------
@@ -1835,61 +1602,49 @@ def shadbala(
         If a required planet is absent from ``sidereal_longitudes`` or
         ``planet_speeds``.
     """
-    if not (1 <= tithi_number <= 30):
+    if type(tithi_number) is not int or not (1 <= tithi_number <= 30):
         raise ValueError(f"tithi_number must be in [1, 30], got {tithi_number}")
 
-    sun_sid = sidereal_longitudes.get('Sun', 0.0)
-
-    from .spk_reader import get_reader as _get_reader
-    _reader = _get_reader()
+    active = ShadbalaPolicy(ayanamsa_system) if policy is None else policy
+    if set(sidereal_longitudes) != set(_SEVEN_PLANETS):
+        raise ShadbalaContextError('full Shadbala requires exactly seven classical positions')
+    for planet in _SEVEN_PLANETS:
+        speed = planet_speeds[planet]
+        if isinstance(speed,bool) or not isinstance(speed,(int,float)) or not math.isfinite(speed):
+            raise ValueError('planet speeds must be finite numbers')
+    if active.ayanamsa_system != ayanamsa_system:
+        raise ShadbalaContextError('policy ayanamsa must match input frame')
+    if not isinstance(context, ShadbalaContext):
+        raise ShadbalaContextError('Full Shadbala requires explicit context; dated callers use derive_shadbala_context')
+    context.check_positions(jd, ayanamsa_system, sidereal_longitudes)
+    context.require_complete()
+    # The receipt is authoritative after same-frame comparison (1e-9 degrees).
+    # Use its normalized values consistently at discrete Varga boundaries.
+    sidereal_longitudes = dict(context.sidereal_longitudes)
+    sun_sid = sidereal_longitudes['Sun']
 
     # --- First pass: raw balas for all planets (yuddha = 0 initially) ---
     _raw: dict[str, tuple] = {}
     for planet in _SEVEN_PLANETS:
         p_lon   = sidereal_longitudes[planet]
-        p_speed = planet_speeds[planet]
+        _ = planet_speeds[planet]
 
-        s_bala  = sthana_bala(planet, p_lon, houses, jd, ayanamsa_system)
+        s_bala  = sthana_bala(planet, p_lon, houses, jd, ayanamsa_system,
+            sidereal_longitudes=sidereal_longitudes, saptavargaja_profile=active.saptavargaja_profile)
         d_bala  = dig_bala(planet, p_lon, houses, jd, ayanamsa_system)
-        k_bala  = kala_bala(
-            planet, p_lon, sun_sid, jd, tithi_number,
-            is_day, vara_lord, planet_speeds,
-            hora_lord=hora_lord,
-            ayanamsa_system=ayanamsa_system,
-        )
-        c_bala  = chesta_bala(
-            planet,
-            speed=p_speed,
-            planet_sidereal_lon=p_lon,
-            sun_sidereal_lon=sun_sid,
-            jd=jd,
-            ayanamsa_system=ayanamsa_system,
-            reader=_reader,
-        )
+        k_bala = kala_bala(planet, p_lon, sun_sid, jd, tithi_number,
+            is_day, vara_lord, planet_speeds, hora_lord=hora_lord,
+            ayanamsa_system=ayanamsa_system, context=context)
+        c_bala = dict(context.chesta_values)[planet]
         n_bala  = NAISARGIKA_BALA[planet]
         dr_bala = drig_bala(planet, sidereal_longitudes)
         _raw[planet] = (s_bala, d_bala, k_bala, c_bala, n_bala, dr_bala)
 
-    # --- Yuddha Bala: detect wars and apply winner/loser adjustments ---
-    # Source: Raman "Graha and Bhava Balas" (1959), Ch. 9.
-    # Victor gains the loser's raw Chesta Bala in KalaBala.yuddha.
-    # Loser's Chesta Bala is reduced to 0.
-    _wars = _detect_wars(sidereal_longitudes, planet_latitudes)
-    _adj_c: dict[str, float]    = {p: _raw[p][3] for p in _SEVEN_PLANETS}
-    _adj_k: dict[str, KalaBala] = {p: _raw[p][2] for p in _SEVEN_PLANETS}
-    for war in _wars:
-        loser_c = _raw[war.loser][3]
-        old_k   = _adj_k[war.victor]
-        _adj_k[war.victor] = KalaBala(
-            nathonnatha=old_k.nathonnatha,
-            paksha=old_k.paksha,
-            tribhaga=old_k.tribhaga,
-            abda_masa_vara_hora=old_k.abda_masa_vara_hora,
-            ayana=old_k.ayana,
-            yuddha=loser_c,
-            total=old_k.total + loser_c,
-        )
-        _adj_c[war.loser] = 0.0
+    resolution = _resolve_wars(_raw, sidereal_longitudes)
+    _adj_c = dict(resolution.raw_chesta)
+    changes = dict(resolution.adjustments)
+    _adj_k = {p: replace(_raw[p][2], yuddha=changes[p],
+                        total=_raw[p][2].total + changes[p]) for p in _SEVEN_PLANETS}
 
     # --- Second pass: assemble result vessels ---
     result: dict[str, PlanetShadbala] = {}
@@ -1917,11 +1672,21 @@ def shadbala(
             is_sufficient=(total_rup >= req_rup),
         )
 
-    return ShadbalaResult(
+    output = ShadbalaResult(
         jd=jd,
         ayanamsa_system=ayanamsa_system,
         planets=result,
+        war_resolution=resolution,
+        context=context,
+        saptavargaja_profile=active.saptavargaja_profile,
+        saptavargaja_evidence=tuple((p, saptavargaja_breakdown(p, sidereal_longitudes[p],
+            sidereal_longitudes, active.saptavargaja_profile)) for p in _SEVEN_PLANETS),
     )
+    try:
+        validate_shadbala_output(output)
+    except ValueError as exc:
+        raise RuntimeError('internally inconsistent Shadbala result') from exc
+    return output
 
 
 # ---------------------------------------------------------------------------
@@ -1942,7 +1707,11 @@ class ShadbalaPolicy:
 
     ayanamsa_system: str = 'Lahiri'
 
+    saptavargaja_profile: str = 'raman_1996'
+
     def __post_init__(self) -> None:
+        if self.saptavargaja_profile not in ('raman_1996', 'bphs_santhanam_27'):
+            raise ValueError('unsupported Saptavargaja profile')
         if not self.ayanamsa_system:
             raise ValueError(
                 "ShadbalaPolicy.ayanamsa_system must be non-empty"
@@ -2110,30 +1879,106 @@ def validate_shadbala_output(result: ShadbalaResult) -> None:
     ValueError
         On any inconsistency.
     """
-    if not result.ayanamsa_system:
-        raise ValueError(
-            "validate_shadbala_output: ayanamsa_system must be non-empty"
-        )
+    if not isinstance(result, ShadbalaResult):
+        raise ValueError('canonical ShadbalaResult required')
+    if isinstance(result.jd, bool) or not math.isfinite(result.jd) or not result.ayanamsa_system:
+        raise ValueError('Shadbala epoch and ayanamsa must be valid')
+    if set(result.planets) != set(_SEVEN_PLANETS):
+        raise ValueError('Shadbala must contain exactly seven classical planets')
+    def equal(a,b,label):
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (a,b)) or abs(a-b) > 1e-6:
+            raise ValueError(f'Shadbala {label} is inconsistent')
     for planet, ps in result.planets.items():
-        if planet != ps.planet:
-            raise ValueError(
-                f"validate_shadbala_output: key {planet!r} does not match "
-                f"PlanetShadbala.planet {ps.planet!r}"
-            )
-        expected_rupas = ps.total_shashtiamsas / 60.0
-        if abs(ps.total_rupas - expected_rupas) > 1e-6:
-            raise ValueError(
-                f"validate_shadbala_output: {planet} total_rupas "
-                f"{ps.total_rupas} != total_shashtiamsas/60 "
-                f"({expected_rupas:.6f})"
-            )
-        expected_sufficient = (ps.total_rupas >= ps.required_rupas)
-        if ps.is_sufficient != expected_sufficient:
-            raise ValueError(
-                f"validate_shadbala_output: {planet} is_sufficient "
-                f"{ps.is_sufficient} inconsistent with rupas "
-                f"{ps.total_rupas} vs required {ps.required_rupas}"
-            )
+        if not isinstance(ps, PlanetShadbala) or planet != ps.planet:
+            raise ValueError('Shadbala key does not match planet')
+        sb, kb = ps.sthana_bala, ps.kala_bala
+        if not isinstance(sb,SthanaBala) or not isinstance(kb,KalaBala):
+            raise ValueError('Shadbala components must use canonical vessels')
+        if kb.yuddha != 0 and result.war_resolution is None:
+            raise ValueError('nonzero Yuddha requires its canonical ledger')
+        svals = (sb.uchcha,sb.saptavargaja,sb.ojayugma,sb.kendradi,sb.drekkana)
+        kvals = (kb.nathonnatha,kb.paksha,kb.tribhaga,kb.abda_masa_vara_hora,kb.ayana,kb.yuddha)
+        positive = svals + kvals[:4] + (ps.dig_bala,ps.chesta_bala,ps.naisargika_bala)
+        if any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) or v < 0 for v in positive):
+            raise ValueError('Shadbala component must be finite and nonnegative')
+        if kb.ayana < 0 and result.context is None:
+            raise ValueError('signed Ayana requires its declination context')
+        for v in kvals[4:] + (ps.drig_bala,):
+            equal(v,v,'signed component')
+        equal(ps.naisargika_bala, NAISARGIKA_BALA[planet], 'Naisargika')
+        equal(sb.total, sum(svals), 'subcomponent total')
+        equal(kb.total, sum(kvals), 'subcomponent total')
+        equal(ps.total_shashtiamsas, sb.total+ps.dig_bala+kb.total+ps.chesta_bala+ps.naisargika_bala+ps.drig_bala, 'total')
+        equal(ps.total_rupas, ps.total_shashtiamsas/60, 'total_rupas')
+        equal(ps.required_rupas, REQUIRED_RUPAS[planet], 'required_rupas')
+        if type(ps.is_sufficient) is not bool or ps.is_sufficient != (ps.total_rupas >= ps.required_rupas):
+            raise ValueError('Shadbala is_sufficient inconsistent with rupas threshold')
+    if result.context is None and (result.saptavargaja_profile is not None or result.saptavargaja_evidence):
+        raise ValueError('source-profile evidence requires its context')
+    if result.context is not None:
+        if result.war_resolution is None:
+            raise ValueError('source-context result requires its canonical war ledger')
+        if not isinstance(result.context, ShadbalaContext):
+            raise ValueError('canonical Shadbala context required')
+        result.context.__post_init__()
+        result.context.require_complete()
+        if result.jd != result.context.jd or result.ayanamsa_system != result.context.ayanamsa_system:
+            raise ValueError('Shadbala context frame/epoch mismatch')
+        positions = dict(result.context.sidereal_longitudes)
+        if len(result.saptavargaja_evidence) != 7 or {p for p,_ in result.saptavargaja_evidence} != set(_SEVEN_PLANETS):
+            raise ValueError('Saptavargaja evidence must cover seven planets')
+        for p, ps in result.planets.items():
+            sb = ps.sthana_bala
+            for name, value in zip(('uchcha', 'ojayugma', 'drekkana'),
+                                   positional_components(p, positions[p])):
+                equal(getattr(sb, name), value, 'context positional '+name)
+            if (not 0 <= sb.uchcha <= 60 or sb.ojayugma not in (0., 15., 30.)
+                    or sb.drekkana not in (0., 15.) or sb.kendradi not in (15., 30., 60.)
+                    or not 0 <= ps.dig_bala <= 60):
+                raise ValueError('Shadbala positional awards outside admitted ranges')
+            equal(ps.drig_bala, drig_bala(p, positions), 'context Drig')
+            expected_kala = kala_components(p, result.context)
+            actual_kala = ps.kala_bala
+            for name,value in zip(('nathonnatha','paksha','tribhaga','abda_masa_vara_hora','ayana'), expected_kala):
+                equal(getattr(actual_kala,name),value,'context Kala '+name)
+            equal(ps.chesta_bala,dict(result.context.chesta_values)[p],'context Chesta')
+        for p,entries in result.saptavargaja_evidence:
+            if any(not isinstance(e,SaptavargajaEntry) or type(e.division) is not int
+                   or type(e.sign_index) is not int or isinstance(e.shashtiamsas,bool) for e in entries):
+                raise ValueError('Saptavargaja evidence requires canonical typed entries')
+            expected = saptavargaja_breakdown(p, positions[p], positions, result.saptavargaja_profile)
+            if entries != expected:
+                raise ValueError('Saptavargaja evidence disagrees with context/profile')
+            equal(sum(e.shashtiamsas for e in entries), result.planets[p].sthana_bala.saptavargaja, 'Saptavargaja total')
+    ledger = result.war_resolution
+    if ledger is not None:
+        if (not isinstance(ledger, WarResolution) or result.context is None
+                or ledger.policy != 'moira_simultaneous_raman_raw_pairs_v1'
+                or ledger.source != 'Raman1996:76-77:printed60-61'):
+            raise ValueError('war resolution requires canonical policy and context')
+        raw = {p: (ps.sthana_bala, ps.dig_bala,
+            replace(ps.kala_bala,yuddha=0.,total=ps.kala_bala.total-ps.kala_bala.yuddha),
+            ps.chesta_bala, ps.naisargika_bala, ps.drig_bala) for p,ps in result.planets.items()}
+        expected = _resolve_wars(raw, dict(result.context.sidereal_longitudes))
+        if len(ledger.pairs) != len(expected.pairs):
+            raise ValueError('war detection receipt mismatch')
+        for a,b in zip(ledger.pairs,expected.pairs):
+            if not isinstance(a,GrahaYuddha) or type(a.tied) is not bool or isinstance(a.separation_deg,bool):
+                raise ValueError('canonical typed war pair required')
+            if (a.victor,a.loser,a.separation_deg,a.tied,a.rule,a.chesta_transferred) != (b.victor,b.loser,b.separation_deg,b.tied,b.rule,None):
+                raise ValueError('war pair identity mismatch')
+            if a.adjustment_shashtiamsas is None:
+                raise ValueError('missing actual war amount')
+            equal(a.adjustment_shashtiamsas,b.adjustment_shashtiamsas,'war adjustment')
+        for name in ('raw_aggregates','raw_totals','raw_chesta','credits','debits','adjustments'):
+            actual, reference = getattr(ledger,name), getattr(expected,name)
+            if tuple(p for p,_ in actual) != tuple(p for p,_ in reference):
+                raise ValueError('war ledger planet coverage mismatch')
+            for (p,a),(_,b) in zip(actual,reference):
+                equal(a,b,name)
+        for p,amount in ledger.adjustments:
+            equal(amount, result.planets[p].kala_bala.yuddha, 'applied war adjustment')
+        equal(math.fsum(v for _,v in ledger.adjustments),0.,'war conservation')
 
 
 # ---------------------------------------------------------------------------
@@ -2156,15 +2001,10 @@ def graha_yuddha_pairs(
     ----------
     sidereal_longitudes : dict[str, float]
         Sidereal longitudes for any subset of the five war-eligible planets.
-    planet_latitudes : dict[str, float] or None, optional
-        Geocentric latitudes (signed degrees) for the same planets.  The
-        planet with greater latitude (north wins) is the victor per Raman
-        Ch. 9.  When ``None``, the planet with greater sidereal longitude
-        is used as victor (fallback approximation).
-    planet_speeds : dict[str, float] or None, optional
-        Daily motions (°/day, signed).  When supplied, each war record
-        carries ``chesta_transferred`` — the loser's raw Chesta Bala, the
-        Shashtiamsa amount the victor gains and the loser forfeits.
+    planet_latitudes, planet_speeds : dict or None
+        Compatibility inputs; unused by the selected Raman detection rule.
+        Actual amounts require raw strength components and are populated
+        only by the canonical full-result WarResolution.
 
     Returns
     -------
@@ -2242,6 +2082,8 @@ def shadbala_network_profile(
         raise ValueError(
             "shadbala_network_profile: result.planets must not be empty"
         )
+    if result.war_resolution is not None:
+        wars = result.war_resolution.pairs
     ranked = sorted(
         result.planets.values(),
         key=lambda ps: ps.total_rupas,

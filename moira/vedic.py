@@ -343,6 +343,13 @@ from .shadbala import (
     PlanetShadbala,
     ShadbalaResult,
     ShadbalaPolicy,
+    ShadbalaContext,
+    ShadbalaContextError,
+    derive_shadbala_context,
+    SaptavargajaEntry,
+    saptavargaja_breakdown,
+    WarResolution,
+
     ShadbalaConditionProfile,
     ShadbalaChartProfile,
     sthana_bala,
@@ -607,6 +614,10 @@ from .sade_sati import (
     SadeSatiStatus,
     SadeSatiWindow,
     SadeSatiResult,
+    SadeSatiBudgetError,
+    DEFAULT_SADE_SATI_EVALUATIONS,
+    MAX_SADE_SATI_EVALUATIONS,
+
     sade_sati_status,
     sade_sati_windows,
 )
@@ -887,6 +898,13 @@ _VEDIC_OWN: list[str] = [
     "PlanetShadbala",
     "ShadbalaResult",
     "ShadbalaPolicy",
+    "ShadbalaContext",
+    "ShadbalaContextError",
+    "derive_shadbala_context",
+    "SaptavargajaEntry",
+    "saptavargaja_breakdown",
+    "WarResolution",
+
     "ShadbalaConditionProfile",
     "ShadbalaChartProfile",
     "sthana_bala",
@@ -1075,6 +1093,10 @@ _VEDIC_OWN: list[str] = [
     "SadeSatiStatus",
     "SadeSatiWindow",
     "SadeSatiResult",
+    "SadeSatiBudgetError",
+    "DEFAULT_SADE_SATI_EVALUATIONS",
+    "MAX_SADE_SATI_EVALUATIONS",
+
     "sade_sati_status",
     "sade_sati_windows",
 ]

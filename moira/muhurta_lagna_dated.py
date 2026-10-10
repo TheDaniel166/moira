@@ -68,7 +68,8 @@ def muhurta_lagna_for_datetime(dt: datetime, latitude: float, longitude: float, 
     try:
         bound = get_reader() if reader is None else reader
         with use_reader_override(bound):
-            jd = utc_to_ut1(jd_from_datetime(dt))
+            jd_utc = jd_from_datetime(dt)
+            jd = utc_to_ut1(jd_utc)
             epoch = _epoch(jd, bound, GocharaDatePolicy(ayanamsa_system=active.ayanamsa_system))
             positions = {p.planet: p.position.sidereal_longitude for p in epoch.positions}
             rahu = (true_node(jd, reader=bound, jd_tt=epoch.jd_tt).longitude - epoch.ayanamsa_degrees) % 360
@@ -92,8 +93,7 @@ def muhurta_lagna_for_datetime(dt: datetime, latitude: float, longitude: float, 
                 basis = 'unavailable_lagna_geometry'
             elif include_shadbala:
                 from .planets import planet_at
-                from .shadbala import shadbala
-                from .dignities import is_day_chart
+                from .shadbala import shadbala, derive_shadbala_context
                 from .panchanga import _panchanga_from_resolved_longitudes
                 from .sidereal import _nakshatra_position_from_sidereal
                 if houses.effective_system != 'O':
@@ -102,12 +102,17 @@ def muhurta_lagna_for_datetime(dt: datetime, latitude: float, longitude: float, 
                 limbs = _panchanga_from_resolved_longitudes(
                     epoch.tropical_longitudes[0], epoch.tropical_longitudes[1], positions['Sun'], positions['Moon'],
                     jd, active.ayanamsa_system, _nakshatra_position_from_sidereal(positions['Moon']))
-                strength = shadbala({p: positions[p] for p in _SEVEN}, {p: planets[p].speed for p in _SEVEN},
-                    houses, jd, limbs.tithi.number, limbs.vara_lord,
-                    is_day_chart(epoch.tropical_longitudes[0], tropical_lagna),
+                context = derive_shadbala_context(jd, lat, lon,
                     ayanamsa_system=active.ayanamsa_system, hora_lord=hora_lord,
-                    planet_latitudes={p: planets[p].latitude for p in _SEVEN})
-                basis = 'canonical_shadbala_porphyry_jd_weekday_geometric_day_caller_hora'
+                    jd_utc=jd_utc, reader=bound)
+                if context.missing_components:
+                    basis = 'unavailable_shadbala_solar_geometry'
+                else:
+                    strength = shadbala({p: positions[p] for p in _SEVEN}, {p: planets[p].speed for p in _SEVEN},
+                        houses, jd, limbs.tithi.number, context.vara_lord, context.is_day,
+                        ayanamsa_system=active.ayanamsa_system, hora_lord=hora_lord,
+                        planet_latitudes={p: planets[p].latitude for p in _SEVEN}, context=context)
+                    basis = 'canonical_shadbala_porphyry_apparent_solar_context'
             assessment = evaluate_muhurta_lagna_strength(positions, jd_ut1=jd,
                 lagna_sidereal_longitude=lagna, policy=active, shadbala_result=strength,
                 natal_moon_sidereal_longitude=natal_moon_sidereal_longitude,

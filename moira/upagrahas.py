@@ -322,6 +322,14 @@ def kalavela_upagrahas(
     point of its planet's portion; its longitude is the ascendant rising
     at that instant (BPHS 3.70).
     """
+    from contextlib import nullcontext
+    from .spk_reader import use_reader_override
+    with use_reader_override(reader) if reader is not None else nullcontext():
+        return _kalavela_bound(jd_ut, latitude, longitude, ayanamsa_system, policy, reader)
+
+
+def _kalavela_bound(jd_ut, latitude, longitude, ayanamsa_system, policy, reader):
+    """Entire event/angle/frame composition shares the borrowed reader scope."""
     policy = policy or UpagrahaPolicy()
     sunrise, sunset, next_sunrise = _solar_frame(
         jd_ut, latitude, longitude, reader,

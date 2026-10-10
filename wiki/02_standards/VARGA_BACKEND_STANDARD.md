@@ -52,9 +52,9 @@ The generic formula divides each 30-degree sign into `n` equal segments and
 maps the segment index through the zodiac:
 
 ```text
-segment_idx = floor(longitude / (30 / n))
+segment_idx, remainder = divmod(exact_binary_longitude * n, 30)
 sign_idx = segment_idx % 12
-sign_degree = (longitude % (30 / n)) * n
+sign_degree = representable_inside_sign(remainder)
 ```
 
 This is the active computation for:
@@ -253,3 +253,16 @@ selected D60 method for groups containing D60 and copies its actual receipt.
 See [REST reference](../02_services/REST_API_REFERENCE.md) and the
 [implementation receipt](../03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md)
 and [full-profile receipt](../03_validation/D60_FULL_POSITION_VALIDATION_2026-10-07.md).
+
+## Numerical boundaries — 9 October 2026
+
+Generic placement uses the exact integer ratio of the supplied finite binary
+float for one partition decision. Sign, degree and mapped longitude stay on
+the same half-open side of every boundary. A nonzero negative residue whose
+modulo rounds to360 is represented by `nextafter(360,0)`; exact turns remain0.
+Booleans, nonfinite and nonnumeric values reject. Named mappings retain their
+own doctrine and reuse normalization/partition where appropriate. This changes
+numerically incorrect boundary assignments without changing source-specific D60
+policy. The separate Shadbala source D7/D12/D30 helpers do not change the public
+harmonic selectors. Independent corpus:65,880 D1–D60 boundary cases plus4,320
+explicit D60 profile consistency cases; see the repair validation receipt.

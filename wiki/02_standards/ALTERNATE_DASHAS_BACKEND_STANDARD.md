@@ -376,3 +376,30 @@ tree admission. Chart-backed requests with no nested policy use their selected
 chart ayanamsa for the actual period calculation. Supplied policy/chart frame
 mismatches still reject. Periods retain the existing numerical year-basis and
 historical applicability semantics.
+
+## Full-parent timing repair — 9 October 2026
+
+Generated periods carry `full_start_jd` and `full_end_jd`. Children subdivide
+that full doctrinal interval before clipping to the visible parent; the first
+visible child may have a different lord than its parent. Birth balance and
+clipped horizon are intersections, not new clocks. Intervals are half-open.
+The metadata must be supplied together and contain the visible interval;
+legacy manually constructed periods with neither field use their visible span.
+
+Alternate periods additionally carry paired `year_days`/`year_basis` provenance;
+legacy unknown metadata stays unknown and the legacy `.years` property remains
+Julian. REST carries these fields through sequence, current and recursive
+period input/output. Existing clocks and tolerances are unchanged. The corrected
+Einstein fixture independently checks general precession, frame and birth
+progress rather than replacing a scalar from current runtime output alone.
+See [repair validation](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md).
+
+The second adversarial repair uses the shared full-parent/child intersection
+validator. Known full children must lie within known full parents, and
+visible children must be their full spans intersected with the visible
+parent. Unknown legacy provenance remains unknown. Recursive REST period
+admission now delegates to the engine's tree validator with an explicit
+partial-child-list mode, preserving existing period-profile requests.
+Both modes enforce full containment, clipping, ordering and uniform year
+metadata; generated output additionally requires complete visible coverage. A nested
+savana parent with a Julian child rejects before period-profile computation.

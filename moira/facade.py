@@ -1031,6 +1031,7 @@ from .jaimini_extended import (
     chara_dasha,
 )
 from .sade_sati import (
+    SadeSatiBudgetError, DEFAULT_SADE_SATI_EVALUATIONS, MAX_SADE_SATI_EVALUATIONS,
     SADE_SATI_PHASES,
     SadeSatiStatus, SadeSatiWindow, SadeSatiResult,
     sade_sati_status, sade_sati_windows,
@@ -1838,6 +1839,8 @@ from .ashtakavarga import (
     shodhya_pinda,
 )
 from .shadbala import (
+    ShadbalaContext, ShadbalaContextError, derive_shadbala_context,
+    SaptavargajaEntry, saptavargaja_breakdown, WarResolution,
     NAISARGIKA_BALA,
     REQUIRED_RUPAS,
     MEAN_DAILY_MOTION,
@@ -2590,6 +2593,7 @@ __all__ = [
     # Sade Sati
     "SADE_SATI_PHASES", "SadeSatiStatus", "SadeSatiWindow", "SadeSatiResult",
     "sade_sati_status", "sade_sati_windows",
+    "SadeSatiBudgetError", "DEFAULT_SADE_SATI_EVALUATIONS", "MAX_SADE_SATI_EVALUATIONS",
     # Gochara Phala
     "GOCHARA_PROFILE", "GOCHARA_PLANETS", "GocharaVedhaStatus",
     "GocharaPosition", "GocharaVedhaWitness", "GocharaPlanetResult",
@@ -3106,6 +3110,8 @@ __all__ += [
     "NAISARGIKA_BALA", "REQUIRED_RUPAS", "MEAN_DAILY_MOTION",
     "ShadbalaTier", "SthanaBala", "KalaBala", "PlanetShadbala",
     "ShadbalaResult", "ShadbalaPolicy", "ShadbalaConditionProfile",
+    "ShadbalaContext", "ShadbalaContextError", "derive_shadbala_context",
+    "SaptavargajaEntry", "saptavargaja_breakdown", "WarResolution",
     "ShadbalaChartProfile", "sthana_bala", "dig_bala", "kala_bala",
     "chesta_bala", "drig_bala", "shadbala", "hora_lord_at",
     "shadbala_condition_profile", "shadbala_chart_profile",

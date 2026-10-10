@@ -114,6 +114,10 @@ class AlternateDashaPeriodRequest(_StrictModel):
     lord: str
     start_jd: FiniteNumber
     end_jd: FiniteNumber
+    full_start_jd: FiniteNumber | None = None
+    full_end_jd: FiniteNumber | None = None
+    year_days: FiniteNumber | None = None
+    year_basis: str | None = None
     # Both admitted systems have eight lords per subdivision cycle.
     sub: list[AlternateDashaPeriodRequest] = Field(default_factory=list, max_length=8)
 
@@ -133,6 +137,7 @@ class AlternateDashaPeriodRequest(_StrictModel):
 
     @model_validator(mode="after")
     def _admitted_period_tree(self) -> "AlternateDashaPeriodRequest":
+        from moira.dasha_systems import _validate_alternate_children
         lords = ASHTOTTARI_SEQUENCE if self.system == "ashtottari" else YOGINI_SEQUENCE
         if self.lord not in lords:
             raise ValueError(f"unrecognized {self.system} lord: {self.lord!r}")
@@ -140,15 +145,16 @@ class AlternateDashaPeriodRequest(_StrictModel):
             raise ValueError("start_jd must be < end_jd")
         if not math.isfinite(self.end_jd - self.start_jd):
             raise ValueError("period duration must be finite")
-        previous_end = self.start_jd
-        for child in self.sub:
-            if child.system != self.system or child.level != self.level + 1:
-                raise ValueError("child periods must retain the system and advance one level")
-            tolerance = ALTERNATE_PERIOD_INTERVAL_TOLERANCE_DAYS
-            if child.start_jd < previous_end - tolerance or child.end_jd > self.end_jd + tolerance:
-                raise ValueError("child periods must be ordered, nonoverlapping and contained by the parent")
-            previous_end = child.end_jd
+        _validate_alternate_children(self.to_engine(), require_complete=False)
         return self
+
+    def to_engine(self):
+        """Reconstruct once through the same owner used for tree admission."""
+        from moira.dasha_systems import AlternateDashaPeriod
+
+        return AlternateDashaPeriod(self.system, self.level, self.lord,
+            self.start_jd, self.end_jd, [child.to_engine() for child in self.sub],
+            self.full_start_jd, self.full_end_jd, self.year_days, self.year_basis)
 
 
 AlternateDashaPeriodRequest.model_rebuild()
@@ -160,6 +166,10 @@ class AlternateDashaPeriodResponse(_StrictModel):
     lord: str
     start_jd: float
     end_jd: float
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
+    year_days: float | None = None
+    year_basis: str | None = None
     years: float
     is_terminal: bool
     sub: list[AlternateDashaPeriodResponse] = Field(default_factory=list)

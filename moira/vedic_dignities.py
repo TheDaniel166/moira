@@ -541,12 +541,11 @@ def _temporary_relationship(sign_a: int, sign_b: int) -> str:
 
     A planet at sign_b is a temporary friend of the planet at sign_a when
     the 1-based sign-distance from sign_a to sign_b falls in
-    {1, 2, 3, 9, 10, 11}.  All other distances are temporary enemies.
-    Distance 0 (same sign, i.e. the planet itself) should never be passed
-    here — it is excluded at the call site.
+    {2, 3, 4, 10, 11, 12} (Raman 1996 article 25). Other distances,
+    including another planet in the same sign, are temporary enemies.
     """
     distance = (sign_b - sign_a) % 12 + 1   # 1–12
-    if distance in {1, 2, 3, 9, 10, 11}:
+    if distance in {2, 3, 4, 10, 11, 12}:
         return 'friend'
     return 'enemy'
 

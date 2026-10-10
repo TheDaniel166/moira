@@ -230,17 +230,7 @@ def d60_sign(sidereal_longitude: float, *, method: D60Method = D60Method.HARMONI
     _d60_method(method)
     if isinstance(sidereal_longitude, bool) or not isinstance(sidereal_longitude, (int, float)):
         raise ValueError("sidereal_longitude must be a finite number without coercion")
-    try:
-        lon = float(sidereal_longitude)
-    except OverflowError as exc:
-        raise ValueError("sidereal_longitude must be finite") from exc
-    if not isfinite(lon):
-        raise ValueError("sidereal_longitude must be finite")
-    lon %= 360.0
-    # Modulo can round a tiny negative angle to 360; preserve its left
-    # circular limit at the nearest representable angle inside the domain.
-    if lon == 360.0:
-        lon = nextafter(360.0, 0.0)
+    lon = _normalize_longitude(sidereal_longitude)
     natal_sign = int(lon // 30.0)
     segment = int((lon % 30.0) // 0.5)
     sign = (segment + (0 if method is D60Method.HARMONIC else natal_sign)) % 12
@@ -363,24 +353,36 @@ class VargaPoint:
             s += f" [{self.deity}]"
         return s
 
-def _navamsa_partition(longitude: float) -> tuple[float, int, float]:
-    """Partition the exact supplied binary angle by rational 10/3 degrees.
-
-    Rounded floor division by 30/9 misassigns exact multiples such as 10
-    and 30 degrees. Integer ratios also preserve either nextafter neighbour.
-    """
+def _normalize_longitude(longitude: float) -> float:
+    """Finite half-open cyclic normalization, including a tiny negative residue."""
     if isinstance(longitude, bool) or not isinstance(longitude, (int, float)):
         raise TypeError("longitude must be a finite number")
-    longitude = float(longitude)
+    try:
+        longitude = float(longitude)
+    except OverflowError as exc:
+        raise ValueError("longitude must be finite") from exc
     if not isfinite(longitude):
         raise ValueError("longitude must be finite")
     longitude %= 360.0
     if longitude == 360.0:
         longitude = nextafter(360.0, 0.0)
+    return longitude
+
+
+def _varga_partition(longitude: float, n: int) -> tuple[float, int, float]:
+    """Partition the exact supplied binary angle by rational 30/n degrees."""
+    if isinstance(n, bool) or not isinstance(n, int) or n < 1:
+        raise ValueError("varga divisor must be a positive integer")
+    longitude = _normalize_longitude(longitude)
     numerator, denominator = longitude.as_integer_ratio()
-    segment, remainder = divmod(numerator * 9, denominator * 30)
+    segment, remainder = divmod(numerator * n, denominator * 30)
     degree = min(remainder / denominator, nextafter(30.0, 0.0))
     return longitude, segment, degree
+
+
+def _navamsa_partition(longitude: float) -> tuple[float, int, float]:
+    """D9 compatibility helper using the shared exact partition."""
+    return _varga_partition(longitude, 9)
 
 
 def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
@@ -393,35 +395,17 @@ def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     Note: Standard Parasari vargas often have specific starting offsets 
     per sign (Fire/Earth/Air/Water). 
     """
-    if n == 9:
-        longitude, segment, degree = _navamsa_partition(longitude)
-        sign = segment % 12
-        mapped = min(sign * 30.0 + degree, nextafter((sign + 1) * 30.0, 0.0))
-        return VargaPoint(name or "D9", n, longitude, mapped,
-                          SIGNS[sign], SIGN_SYMBOLS[sign], degree)
-    longitude = longitude % 360.0
-
-    # Total segments of size (30/n) from 0° Aries
-    segment_idx = int(longitude // (30.0 / n))
-    
-    # The Varga Sign Index
-    # For many vargas (D2, D3, D9, D12), the segments simply cycle through the zodiac.
-    # D1 (Rashi): index = floor(L/30) % 12
-    # D9 (Navamsa): index = floor(L/(30/9)) % 12
+    longitude, segment_idx, varga_deg = _varga_partition(longitude, n)
     sign_idx = segment_idx % 12
     
     sign_name = SIGNS[sign_idx]
     sign_sym = SIGN_SYMBOLS[sign_idx]
     
-    # Degree within the varga sign
-    # We map the segment (30/n) to a full sign (30 degrees)
-    varga_deg = (longitude % (30.0 / n)) * n
-    
     return VargaPoint(
         varga_name=name or f"D{n}",
         varga_number=n,
         longitude=longitude,
-        varga_longitude=(sign_idx * 30.0 + varga_deg),
+        varga_longitude=min(sign_idx * 30.0 + varga_deg, nextafter((sign_idx + 1) * 30.0, 0.0)),
         sign=sign_name,
         sign_symbol=sign_sym,
         sign_degree=varga_deg,
@@ -506,7 +490,7 @@ def _d27_sign(sign_idx: int, deg_in_sign: float) -> int:
     one sign per 30/27° segment.
     """
     start = _D27_TRIPLICITY_START[sign_idx]
-    segment = int(deg_in_sign / (30.0 / 27))   # 0–26
+    segment = _varga_partition(deg_in_sign, 27)[1]
     return (start + segment) % 12
 
 
@@ -529,7 +513,7 @@ def _d45_sign(sign_idx: int, deg_in_sign: float) -> int:
     Odd D1 signs start from Aries (index 0); even start from Capricorn
     (index 9).  Each segment spans 30/45 = 0.6̄°.
     """
-    seg = int(deg_in_sign / (30.0 / 45))   # 0–44
+    seg = _varga_partition(deg_in_sign, 45)[1]
     start = 0 if (sign_idx % 2 == 0) else 9   # Aries or Capricorn
     return (start + seg) % 12
 
@@ -548,7 +532,7 @@ def _build_varga_point(
         varga_name=name,
         varga_number=n,
         longitude=longitude,
-        varga_longitude=sign_idx * 30.0 + sign_degree,
+        varga_longitude=min(sign_idx * 30.0 + sign_degree, nextafter((sign_idx + 1) * 30.0, 0.0)),
         sign=sign_name,
         sign_symbol=sign_sym,
         sign_degree=sign_degree,
@@ -578,7 +562,7 @@ def hora(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 2.  ``sign`` is always Cancer or Leo.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     h_sign      = _hora_sign(sign_idx, deg_in_sign)
@@ -603,7 +587,7 @@ def chaturthamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 4.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d4_s        = _d4_sign(sign_idx, deg_in_sign)
@@ -654,12 +638,11 @@ def saptavimshamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 27.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d27_s       = _d27_sign(sign_idx, deg_in_sign)
-    seg_width   = 30.0 / 27
-    sign_degree = (deg_in_sign % seg_width) * 27
+    sign_degree = _varga_partition(lon, 27)[2]
     return _build_varga_point(lon, d27_s, sign_degree, 27, "Saptavimshamsha")
 
 
@@ -680,7 +663,7 @@ def khavedamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 40.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d40_s       = _d40_sign(sign_idx, deg_in_sign)
@@ -705,12 +688,11 @@ def akshavedamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 45.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d45_s       = _d45_sign(sign_idx, deg_in_sign)
-    seg_width   = 30.0 / 45
-    sign_degree = (deg_in_sign % seg_width) * 45
+    sign_degree = _varga_partition(lon, 45)[2]
     return _build_varga_point(lon, d45_s, sign_degree, 45, "Akshavedamsha")
 
 
@@ -744,7 +726,7 @@ def shashtiamsha(sidereal_longitude: float, *, d60_method: D60Method = D60Method
     # the strict sign helper's finite circular normalization.
     placement = (d60_sign(sidereal_longitude, method=d60_method)
                  if d60_method is not D60Method.HARMONIC else None)
-    lon = placement.longitude if placement is not None else sidereal_longitude % 360.0
+    lon = placement.longitude if placement is not None else _normalize_longitude(sidereal_longitude)
     sign_idx = int(lon // 30)
     deg_in_sign = lon % 30.0
     
@@ -840,7 +822,7 @@ def varga_sign_index(sidereal_longitude: float, n: int, *, d60_method: D60Method
         return d60_sign(sidereal_longitude, method=d60_method).sign_index
     if n == 9:
         return _navamsa_partition(sidereal_longitude)[1] % 12
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx = int(lon // 30)
     deg = lon % 30.0
     if n == 1:
@@ -857,7 +839,7 @@ def varga_sign_index(sidereal_longitude: float, n: int, *, d60_method: D60Method
         return _d40_sign(sign_idx, deg)
     if n == 45:
         return _d45_sign(sign_idx, deg)
-    return int(lon // (30.0 / n)) % 12
+    return _varga_partition(lon, n)[1] % 12
 
 
 @dataclass(frozen=True, slots=True)

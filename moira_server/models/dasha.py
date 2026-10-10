@@ -70,6 +70,8 @@ class DashaPeriodResponse(_StrictModel):
     is_luminary_dasha: bool
     birth_nakshatra: str | None
     nakshatra_fraction: float | None
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
     sub: list[DashaPeriodResponse] = Field(default_factory=list)
 
 

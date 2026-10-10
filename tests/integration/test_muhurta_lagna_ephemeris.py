@@ -56,8 +56,7 @@ def test_http_and_active_reader_parity(planetary_kernel_path,configured):
                 assert not engine._reader_obj._closed
                 direct={'sidereal_longitudes':{p.planet:p.sidereal_longitude for p in expected.assessment.planets},
                         'lagna_sidereal_longitude':expected.assessment.lagna_sidereal_longitude,'jd_ut1':expected.epoch.jd_ut1,
-                        'shadbala_result':{'jd':expected.epoch.jd_ut1,'ayanamsa_system':'Lahiri',
-                          'planets':{p.planet:asdict(p) for p in expected.assessment.shadbala}}}
+                        'shadbala_result':asdict(expected.assessment.shadbala_result)}
                 transport=client.post('/v1/muhurta/lagna/direct',json=direct)
                 assert transport.status_code==200,transport.text
                 dated_assessment=response.json()['assessment']

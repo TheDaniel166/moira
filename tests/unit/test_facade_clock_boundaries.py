@@ -504,7 +504,7 @@ def test_vedic_chart_adapters_route_UT1_to_astronomical_callees(
         ),
     )
 
-    _Vedic().shadbala_for_chart(chart, houses)
+    _Vedic().shadbala_for_chart(chart, houses, context=SimpleNamespace(is_day=True))
     assert received["shadbala_jd"] == 1300.25
     assert sidereal_epochs == [1300.25] * 7
 
