@@ -635,6 +635,12 @@ selected marriage scope. The source standard records the named interpretations
 and exclusions; the final validation receipt records source/geometry evidence,
 227 focused passing tests, both full real-reader HTTP cases, repaired adversarial
 findings, operational limits and generated-documentation checks. The catalogue
-now reports `source_scoped_public`. The measured six-hour request takes about
-28 minutes on this host; no background-job or website service is implied.
+now reports `source_scoped_public`. The original six-hour request took about
+28 minutes on this host. The subsequent
+[first performance optimization](../03_validation/MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md)
+reduces that measured HTTP calculation to 8.3 minutes with the complete
+response preserved apart from its native-backend fingerprint. The subsequent
+[exact-reuse pass](../03_validation/MARRIAGE_ELECTION_REUSE_2026-10-10.md)
+records further optimization and reusable computation infrastructure.
+No background-job or website service is implied.
 Other VED-011 purpose profiles, publication and release remain separate.

@@ -8,6 +8,7 @@ including their last planetary argument, are preserved exactly.
 """
 from dataclasses import dataclass
 from math import ulp
+from ._bounded_memo import binary64_key, bounded_memo
 
 from ._muhurta_marriage_enclosure import Interval as I, PI, polynomial, EnclosureUnavailable
 from .nutation_2000a import _ensure_tables_loaded, _LS_J0_COUNT, _PL_J0_COUNT
@@ -136,6 +137,12 @@ def _jet_polynomial(p,x):
     return result
 
 
+def _differential_key(value):
+    """All interval, derivative and common-center bits govern reuse."""
+    return binary64_key(value.value.lo,value.value.hi,value.rate.lo,value.rate.hi,
+                        value.center.lo,value.center.hi,value.radius)+bytes((value.centered,))
+
+
 class FrameEnclosures:
     """RITE: Celestial-frame enclosure
 
@@ -161,6 +168,7 @@ class FrameEnclosures:
         "frozen": [],
         "internal": [
           "__init__",
+          "_polynomials",
           "nutation",
           "angles"
         ]
@@ -213,6 +221,13 @@ class FrameEnclosures:
                 r=r+amp*(omega*multiplier+(I.point(1)/_CY if index>=j0 else 0.))
             coarse.append(((v*_AS/1000000).hi,(r*_AS/1000000).hi))
         self.coarse=tuple(coarse)
+        # These owners freeze the source rows for this request. Coarse and
+        # precise nutation share only the identical precession polynomials.
+        self._polynomials=bounded_memo(self._polynomials,key=_differential_key,maxsize=4096)
+        self.angles=bounded_memo(self.angles,
+            key=lambda tt,coarse=False:_differential_key(tt)+bytes((coarse,)),maxsize=4096)
+        self.sincos=bounded_memo(lambda angle:(angle.cos(),angle.sin()),
+                                key=_differential_key,maxsize=4096)
 
     def nutation(self,tt,*,coarse=False):
         if tt.value.lo<2415020.5 or tt.value.hi>=2488434.5:
@@ -235,28 +250,33 @@ class FrameEnclosures:
                 base+rate*(tt.center-anchor),tt.radius,tt.centered).with_error(error))
         return tuple(result)
 
-    def angles(self,tt,*,coarse=False):
+    def _polynomials(self,tt):
+        """Frame polynomials independent of the nutation enclosure mode."""
         t=(tt-2451545.)/_CY
         fw=tuple(_jet_polynomial(p,t)*_AS for p in _FW)
+        return fw,_jet_polynomial(_PA,t)*_AS
+
+    def angles(self,tt,*,coarse=False):
+        fw,precession=self._polynomials(tt)
         psi,eps=self.nutation(tt,coarse=coarse)
         true_eps=fw[3]+eps
-        ayanamsa=_jet_polynomial(_PA,t)*_AS+psi+I.point(_AYANAMSA_AT_J2000['Lahiri'])*PI/180
+        ayanamsa=precession+psi+I.point(_AYANAMSA_AT_J2000['Lahiri'])*PI/180
         return fw,psi,eps,true_eps,ayanamsa
 
 
-def rotate_x(vector,angle):
+def rotate_x(vector,angle,*,sincos=None):
     x,y,z=vector
-    c,s=angle.cos(),angle.sin()
+    c,s=(angle.cos(),angle.sin()) if sincos is None else sincos(angle)
     return x,c*y+s*z,-s*y+c*z
 
 
-def rotate_z(vector,angle):
+def rotate_z(vector,angle,*,sincos=None):
     x,y,z=vector
-    c,s=angle.cos(),angle.sin()
+    c,s=(angle.cos(),angle.sin()) if sincos is None else sincos(angle)
     return c*x+s*y,-s*x+c*y,z
 
 
-def true_equator(vector,angles):
+def true_equator(vector,angles,*,sincos=None):
     # Native forms matrix products while this owner applies rotations. There
     # are fewer than512 basic operations and eight orthogonal stages. The
     # induced1-norm amplification is <=sqrt(3)^8=81, so this guards either
@@ -264,11 +284,11 @@ def true_equator(vector,angles):
     schedule_error=(gamma(512)*81*_sum(I.point(v.value.magnitude) for v in vector)).hi
     fw,psi,deps,_,_=angles
     gamb,phib,psib,epsa=fw
-    vector=rotate_z(vector,gamb)
-    vector=rotate_x(vector,phib)
-    vector=rotate_z(vector,-psib)
-    vector=rotate_x(vector,-epsa)
+    vector=rotate_z(vector,gamb,sincos=sincos)
+    vector=rotate_x(vector,phib,sincos=sincos)
+    vector=rotate_z(vector,-psib,sincos=sincos)
+    vector=rotate_x(vector,-epsa,sincos=sincos)
     # N = Rx(-(epsa+deps)) Rz(-dpsi) Rx(epsa), passive rotations.
-    vector=rotate_x(vector,epsa)
-    vector=rotate_z(vector,-psi)
-    return tuple(v.with_error(schedule_error) for v in rotate_x(vector,-(epsa+deps)))
+    vector=rotate_x(vector,epsa,sincos=sincos)
+    vector=rotate_z(vector,-psi,sincos=sincos)
+    return tuple(v.with_error(schedule_error) for v in rotate_x(vector,-(epsa+deps),sincos=sincos))

@@ -28,7 +28,19 @@ pybind11_add_module(_moira_native
     src/native/src/cpu_features.cpp
     src/native/src/lola.cpp
     src/native/src/nutation.cpp
+    src/native/src/marriage_enclosure.cpp
 )
+
+# The marriage enclosure kernel preserves each Python reference rounding
+# boundary. Keep contraction, reassociation and link-time rewriting disabled
+# only for this translation unit; other native kernels retain their settings.
+if(MSVC)
+    set_source_files_properties(src/native/src/marriage_enclosure.cpp PROPERTIES
+        COMPILE_OPTIONS "/fp:strict;/GL-")
+else()
+    set_source_files_properties(src/native/src/marriage_enclosure.cpp PROPERTIES
+        COMPILE_OPTIONS "-ffp-contract=off;-fno-fast-math;-fno-lto")
+endif()
 
 # Keep the extension baseline portable and compile the AVX2 kernel as one
 # separately dispatched translation unit.  This avoids making AVX2 a wheel-wide

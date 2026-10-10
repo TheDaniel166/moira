@@ -141,6 +141,23 @@ enclosures include endpoints and every possible internal extremum using
 interval pi. Initial clock/frame certificates cover 1900–2100 inclusive;
 unsupported supporting epochs retain explicit numerical unavailability.
 
+The repeated interval-Chebyshev value/derivative recurrence uses a private
+native helper with the original Python operation schedule retained as an
+executable reference. Outward rounding, common-center intersections and
+both admissible recurrence orders are preserved. Its translation unit
+disables contraction/reassociation; Python still owns record/clock selection
+and the entire event certificate. The
+[performance receipt](../03_validation/MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md)
+records exact-state parity, measured speed and full-request validation.
+
+Pure clock, record-argument and frame calculations also use
+[bounded computation reuse](BOUNDED_COMPUTATION_REUSE_STANDARD.md). Exact
+binary64 keys retain every interval/differential field and the selected mode.
+Request-owned immutable results can be reused without repeating their
+arithmetic; source admission and work accounting remain outside those memos.
+The [reuse receipt](../03_validation/MARRIAGE_ELECTION_REUSE_2026-10-10.md)
+records its separate performance and correctness evidence.
+
 Receipts preserve requested limits, actual counters, achieved root-band
 width, source/table/native hashes, pool generation and each supporting
 certificate's domain and unresolved regions. Requested tolerance is not

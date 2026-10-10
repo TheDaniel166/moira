@@ -928,8 +928,9 @@ explicit evaluated/excluded/unavailable evidence, source fixtures, boundary
 tests and real-reader/HTTP validation. The table does not authorize a new
 implementation or assert that sources are unavailable.
 
-Operational follow-through remains valuable: the tested full marriage HTTP
-calculations take about 25–28 minutes. Performance improvements must preserve
+At this source-publication checkpoint, the tested full marriage HTTP
+calculations took about 25–28 minutes; section 42 records their subsequent
+optimization. Performance improvements must preserve
 the source predicates, uncertainty bands and completeness certificates;
 background-job orchestration belongs to a separately selected service scope.
 Whole-ceremony-duration coverage is an optional new marriage contract; the
@@ -941,3 +942,92 @@ The selected marriage implementation is complete. The overall VED-011 entry
 remains open for the other purpose/profile selections above. Version 6.9.9
 is unchanged; source publication does not imply a tag, package release,
 deployment or website/Urania adoption.
+
+## 42. VED-011 marriage performance optimization — 10 October 2026
+
+The marriage package is source-published at engine `03dc7e0` with wiki
+`2ce8edc`. The user then authorized performance optimization while preserving
+accuracy and validation. The [performance receipt](../03_validation/MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md)
+records the locally completed change: one private native interval-Chebyshev
+primitive, with its exact Python reference retained and strict floating-point
+compilation confined to that primitive's translation unit. Source rules,
+search tolerances, supporting domains, resource limits, public contracts and
+work counters are unchanged.
+
+The six-hour HTTP window calculation improves from 28.4 to **8.3 minutes**;
+the high-latitude HTTP instant improves from 25.2 to **7.4 minutes**. Both are
+approximately **3.4x faster** in the measured runs. Each complete calculation
+response matches its original after accounting only for the new native
+backend fingerprint; the personal direct worked case is byte-identical.
+The paired same-process crossing benchmarks corroborate 2.6–3.9x speedups
+with identical roots, certificates and counters.
+
+Acceptance has **345 distinct passing tests**, six unrelated disclosed skips,
+both full real-kernel HTTP cases executed, bit-exact primitive/serving-record
+parity and independent rational first/second derivative checks. Isolated
+native checks also verify rejection of unsupported host arithmetic modes.
+The optimization is complete locally and remains uncommitted/unpushed;
+version 6.9.9 is unchanged. Full synchronous requests still take minutes.
+Other VED-011 purposes, additional marriage traditions, whole-ceremony
+extensions and service orchestration retain their separately selected scopes.
+
+## 43. VED-011 exact computation reuse — 10 October 2026
+
+The user authorized a second marriage performance pass, including reusable
+infrastructure for other engine computations. The [reuse standard](../02_standards/BOUNDED_COMPUTATION_REUSE_STANDARD.md)
+and [validation receipt](../03_validation/MARRIAGE_ELECTION_REUSE_2026-10-10.md)
+record the completed local implementation. A private standard-library helper
+provides bounded, thread-owned reuse of immutable results under exact byte keys.
+It is independent of marriage and is tested with a standalone NAIF TT/TDB
+consumer. Another feature must bind its own stable sources/policy and validate
+its admission; no shared cross-request result service is introduced.
+
+Marriage uses five bounded memos for TT/TDB differentials, record arguments,
+frame polynomials, frame angles and trigonometric pairs. Serving-reader/source
+admission and public work accounting remain outside them. Original operation
+order, numerical bounds, tolerances, resource limits and engine/REST semantics
+are unchanged. No new native source or build change was required.
+
+The six-hour HTTP window calculation improves from **8.3 to 6.8 minutes**
+(497.29 to 409.20 seconds); the high-latitude assessment improves from **7.4
+to 5.8 minutes** (442.40 to 347.89 seconds). These observed reductions are
+17.7 and 21.4 percent. Both complete responses match their predecessors with
+no response-field normalization; the personal direct worked case is byte-identical.
+The two requests record 371,422 and 313,401 successful helper reuses while
+retaining the same source evidence, certificates, unavailable states and counters.
+
+Acceptance has **374 distinct passing tests**, six unrelated optional skips,
+both full DE441 HTTP cases executed and no unresolved failures. Exact key,
+dependency isolation, eviction, exception, immutability, thread ownership,
+request lifetime and budget behavior are tested. The paired benchmark provides
+separate timing/equality evidence; historical whole-request timings do not
+establish a universal latency guarantee.
+
+Both performance passes remain local and uncommitted/unpushed, on version
+6.9.9. Full calculations still take minutes. Other VED-011 purposes, further
+source profiles and service orchestration remain separately selected scopes.
+
+## 44. Both marriage performance passes — source publication checkpoint, 10 October 2026
+
+The user authorized committing and pushing both completed performance passes
+together. This checkpoint supersedes the local/uncommitted publication status
+recorded at acceptance in sections 42 and 43 and their linked receipts. Those
+acceptance measurements and evidence remain historical records of the tested
+implementation.
+
+Publication starts from engine `03dc7e0` and wiki `2ce8edc`. All twelve distinct
+computational, native-build, benchmark and test source fingerprints across the
+two passes match their final validation manifests, using the reuse pass's
+astronomy module fingerprint where it supersedes the first pass. The native
+binary, five final reuse receipts and both aggregate test XML inputs also
+match their recorded fingerprints. Acceptance remains **374 distinct passes**
+and six disclosed unrelated optional skips, including both successful full
+DE441 HTTP cases. No computational change is introduced by publication.
+
+The publication sequence is generated wiki first, then the engine with that
+exact wiki reference. Release-facing documentation, release identity,
+Hellenistic and REST inventories, website documentation metadata, wiki
+synchronization and changed-line whitespace are checked before committing.
+Version 6.9.9 and the separately selected remaining VED-011 scopes are unchanged.
+This checkpoint covers source publication; it does not authorize a tag,
+package release or deployment.

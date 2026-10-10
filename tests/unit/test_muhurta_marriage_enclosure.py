@@ -8,6 +8,116 @@ from moira._muhurta_marriage_enclosure import (Interval, chebyshev,
 from moira._muhurta_marriage_search import WorkMeter, MarriageSearchLimits
 
 
+def _differential_bits(pair):
+    """Exact state comparison, including signed zero and centered ownership."""
+    import struct
+    return tuple((struct.pack('!7d',state.value.lo,state.value.hi,
+        state.rate.lo,state.rate.hi,state.center.lo,state.center.hi,state.radius),
+        state.centered) for state in pair)
+
+
+@pytest.mark.parametrize('centered',(False,True))
+@pytest.mark.parametrize('radius',(0.,2.**-40,.001,.25))
+def test_native_chebyshev_matches_python_rounding_schedule(centered,radius):
+    import random
+    from math import nextafter,inf
+    from moira._muhurta_marriage_frames import Differential as D
+    from moira._muhurta_marriage_astronomy import _cheb,_cheb_python
+    randomizer=random.Random(110011)
+    for center in (-1.0000000001,-1.,-.5,-0.,0.,nextafter(0.,inf),.75,1.,1.0000000001):
+        rate=Interval(-.3,.7)
+        value=Interval.point(center)+rate*Interval(-radius,radius)
+        argument=D(value,rate,Interval.point(center),radius,centered)
+        for degree,scale in ((0,1.),(1,1e8),(4,1e-290),(8,1.),(17,1e8),(32,1e-200)):
+            coefficients=tuple(randomizer.uniform(-1.,1.)*scale for _ in range(degree+1))
+            expected=_cheb_python(coefficients,argument)
+            assert _differential_bits(_cheb(coefficients,argument))==_differential_bits(expected)
+
+
+def test_native_chebyshev_subnormal_binade_and_cancellation_states():
+    from math import nextafter,inf,ulp
+    from moira._muhurta_marriage_frames import Differential as D
+    from moira._muhurta_marriage_astronomy import _cheb,_cheb_python
+    for coefficients in ((0.,),(-0.,), (nextafter(0.,inf),),
+            (2.**-1022,-2.**-1022,nextafter(0.,inf)),
+            (1.,-1.,ulp(1.),-ulp(1.)),(2.**500,-2.**500,2.**450),
+            (2.**-500,-2.**-500,2.**-550)):
+        for x in (-1.,-.5,-0.,0.,.5,1.):
+            argument=D(Interval.point(x),Interval.point(1.))
+            assert _differential_bits(_cheb(coefficients,argument))==_differential_bits(_cheb_python(coefficients,argument))
+
+
+@pytest.mark.parametrize('degree',(1,2,4,8))
+def test_native_chebyshev_encloses_exact_rational_values_and_derivatives(degree):
+    from fractions import Fraction as F
+    from moira._muhurta_marriage_frames import Differential as D
+    from moira._muhurta_marriage_astronomy import _cheb
+    # Independently expanded T_n polynomials, ascending ordinary powers.
+    polynomials={1:(0,1),2:(-1,0,2),4:(1,0,-8,0,8),
+                 8:(1,0,-32,0,160,0,-256,0,128)}
+    for numerator in range(-16,17):
+        x=F(numerator,16)
+        coefficients=polynomials[degree]
+        exact=sum(F(c)*x**k for k,c in enumerate(coefficients))
+        derivative=sum(k*F(c)*x**(k-1) for k,c in enumerate(coefficients) if k)
+        second=sum(k*(k-1)*F(c)*x**(k-2) for k,c in enumerate(coefficients) if k>=2)
+        value,rate=_cheb((0.,)*degree+(1.,),D(Interval.point(float(x)),Interval.point(1.)))
+        assert F(value.value.lo)<=exact<=F(value.value.hi)
+        assert F(rate.value.lo)<=derivative<=F(rate.value.hi)
+        assert F(value.rate.lo)<=derivative<=F(value.rate.hi)
+        assert F(rate.rate.lo)<=second<=F(rate.rate.hi)
+
+
+@pytest.mark.parametrize('coefficients', [(),(float('nan'),),(float('inf'),),(-float('inf'),)])
+def test_native_chebyshev_rejects_invalid_coefficients(coefficients):
+    from moira import moira_native
+    with pytest.raises(ValueError):
+        moira_native._marriage_chebyshev_enclosure(coefficients,(0.,0.,1.,1.,0.,0.,0.),True)
+
+
+@pytest.mark.parametrize('argument',[(1.,0.,1.,1.,0.,0.,0.),
+    (0.,0.,1.,1.,0.,0.,-1.),(float('nan'),0.,1.,1.,0.,0.,0.),
+    (0.,0.,1.,1.,0.,0.,float('inf'))])
+def test_native_chebyshev_rejects_invalid_argument_state(argument):
+    from moira import moira_native
+    with pytest.raises(ValueError):
+        moira_native._marriage_chebyshev_enclosure((1.,2.),argument,True)
+
+
+def test_native_chebyshev_preserves_unavailable_error_identity(monkeypatch):
+    from moira import moira_native
+    from moira._muhurta_marriage_astronomy import _cheb
+    from moira._muhurta_marriage_frames import Differential as D
+    from moira._muhurta_marriage_enclosure import EnclosureUnavailable
+    for message in ('inconsistent_centered_differential',
+                    'marriage_arithmetic_model_requires_round_to_nearest'):
+        def reject(*args):
+            raise ValueError(message)
+        monkeypatch.setattr(moira_native,'_marriage_chebyshev_enclosure',reject)
+        with pytest.raises(EnclosureUnavailable,match=message):
+            _cheb((1.,),D.point(0.))
+
+
+@pytest.mark.requires_ephemeris
+def test_native_chebyshev_exact_serving_record_parity_at_endpoints(planetary_kernel_path):
+    from moira.spk_reader import SpkReader
+    from moira._muhurta_marriage_frames import Differential as D
+    from moira._muhurta_marriage_astronomy import _cheb,_cheb_python
+    with SpkReader(planetary_kernel_path) as reader:
+        for center,target in ((0,10),(0,3),(3,399),(3,301),(0,1),(0,2),(0,5),(0,6)):
+            for jd in (2415021.,2451545.,2461324.,2488433.):
+                segment=reader._segment_for_tdb(center,target,jd)
+                evaluator=segment._load_native_evaluator()
+                init,length,count,_,_=evaluator.chebyshev_metadata()
+                index=int(((jd-2451545.)*86400-init)//length)
+                coefficients=evaluator.chebyshev_records(min(count-1,index))[0]
+                for lo,hi in ((-1.0000000001,-.9999999999),(-.001,.001),(.9999999999,1.0000000001)):
+                    s=D(Interval(lo,hi),Interval.point(2*86400/length),
+                        Interval.point((lo+hi)/2),(hi-lo)*length/(4*86400))
+                    for axis in coefficients:
+                        assert _differential_bits(_cheb(axis,s))==_differential_bits(_cheb_python(axis,s))
+
+
 def test_branch_family_newton_retains_roots_with_identical_endpoint_signs():
     from moira._muhurta_marriage_certification import Signal,isolate
     def signal(a,b,coarse):

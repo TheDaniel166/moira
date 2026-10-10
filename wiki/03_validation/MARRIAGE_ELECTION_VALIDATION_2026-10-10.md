@@ -5,6 +5,10 @@ This receipt accompanies the [selected source standard](../02_standards/MARRIAGE
 and [approved implementation plan](../06_roadmap/VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md).
 Both full HTTP cases and all affected follow-up checks pass. The catalogue
 reports `source_scoped_public`. This does not admit a release or deployment.
+The subsequent [performance receipt](MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md)
+records an accepted native recurrence optimization and exact full-response
+comparisons. This document retains the original implementation measurements
+and fingerprints as historical validation evidence.
 
 ## 1. Scope and evidence ownership
 

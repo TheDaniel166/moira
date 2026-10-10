@@ -30,6 +30,7 @@
 #include "physical_visibility_kernels.hpp"
 #include "houses.hpp"
 #include "primary_directions.hpp"
+#include "marriage_enclosure.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -1003,6 +1004,9 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
 } // namespace
 
 PYBIND11_MODULE(_moira_native, m) {
+    m.def("_marriage_chebyshev_enclosure", &marriage_chebyshev_enclosure,
+          py::arg("coefficients"), py::arg("argument"), py::arg("centered"),
+          "Private exact-schedule interval Chebyshev value/derivative recurrence.");
     m.doc() = "Moira Native Backend Forge";
 
     // --- Evaluators ---

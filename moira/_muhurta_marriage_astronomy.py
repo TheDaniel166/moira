@@ -8,7 +8,8 @@ from functools import lru_cache
 from math import floor,ulp
 
 from ._muhurta_marriage_enclosure import Interval as I, PI, EnclosureUnavailable, ServingRecordEnclosures, atan2_interval
-from ._muhurta_marriage_frames import Differential as D, FrameEnclosures, true_equator, rotate_x, rotate_z
+from ._muhurta_marriage_frames import Differential as D, FrameEnclosures, true_equator, rotate_x, rotate_z, _differential_key
+from ._bounded_memo import binary64_key, bounded_memo
 from ._muhurta_marriage_clock import MarriageClockEnclosures, tdb_interval,tdb_reference,tdb_error
 from .constants import NAIF_ROUTES, EARTH_ROUTE, C_KM_PER_DAY
 from .corrections import SCHWARZSCHILD_RADII
@@ -48,7 +49,8 @@ def unit(a):
     return tuple(x/length for x in a)
 
 
-def _cheb(c,s):
+def _cheb_python(c,s):
+    """Python reference schedule for the admitted native polynomial primitive."""
     first=second=D.point(0.)
     first_rate=second_rate=D.point(0.)
     s2=2*s
@@ -60,6 +62,20 @@ def _cheb(c,s):
         first_rate,second_rate=recurrence(2*first,s2*first_rate,second_rate),first_rate
         first,second=recurrence(D.point(coefficient),s2*first,second),first
     return recurrence(D.point(c[0]),s*first,second),recurrence(first,s*first_rate,second_rate)
+
+
+def _cheb(c,s):
+    """Fuse the reference recurrence without changing its rounded branch hulls."""
+    from . import moira_native
+    try:
+        states=moira_native._marriage_chebyshev_enclosure(c,
+            (s.value.lo,s.value.hi,s.rate.lo,s.rate.hi,s.center.lo,s.center.hi,s.radius),s.centered)
+    except ValueError as exc:
+        if str(exc)=='inconsistent_centered_differential' or str(exc).startswith('marriage_arithmetic_model_'):
+            raise EnclosureUnavailable(str(exc)) from exc
+        raise
+    return tuple(D(I(v[0],v[1]),I(v[2],v[3]),I(v[4],v[5]),v[6],centered)
+                 for v,centered in states)
 
 
 def _tdb(tt):
@@ -193,6 +209,12 @@ class AstronomyEnclosures:
         self.records=ServingRecordEnclosures(self.reader,self.meter)
         self.frames=FrameEnclosures(self.meter)
         self.clock=None
+        # Pure transformations only: serving-reader admission and accounting
+        # stay at pair(), outside these exact-input request-owned memos.
+        self._tdb=bounded_memo(_tdb,key=_differential_key,maxsize=4096)
+        self._record_arguments=bounded_memo(record_arguments,
+            key=lambda t,init,length,count:(_differential_key(t)+binary64_key(init,length)
+                                            +count.to_bytes(8,'big',signed=True)),maxsize=8192)
         for name,size in (('pair',8192),('barycentric',4096),('_apparent',4096),
                           ('coordinates_tt',4096),('solar_xyz_tt',4096)):
             setattr(self,name,lru_cache(maxsize=size)(getattr(self,name)))
@@ -249,7 +271,7 @@ class AstronomyEnclosures:
             raise EnclosureUnavailable('unsupported_record_layout')
         positions,velocities=[],[]
         scale=D.point(172800.)/length
-        for index,s in record_arguments(tdb,init,length,count):
+        for index,s in self._record_arguments(tdb,init,length,count):
             record=self.records._record(evaluator,index)
             states=tuple(_cheb(c,s) for c in record)
             positions.append(tuple(p for p,_ in states))
@@ -258,7 +280,7 @@ class AstronomyEnclosures:
         return tuple(hull([p[i] for p in positions]) for i in range(3)),tuple(hull([p[i] for p in velocities]) for i in range(3))
 
     def barycentric(self,body,tt):
-        tdb=_tdb(tt)
+        tdb=self._tdb(tt)
         routes=EARTH_ROUTE if body=='Earth' else ((0,3),(3,301)) if body=='Moon' else NAIF_ROUTES[body]
         position=velocity=(D.point(0.),)*3
         for center,target in routes:
@@ -322,19 +344,19 @@ class AstronomyEnclosures:
         tt=D(I(a,b),I.point(1.),I.point(mid),(I(a,b)-mid).magnitude)
         angles=self.frames.angles(tt,coarse=coarse)
         if body in ('Rahu','Ketu'):
-            tdb=_tdb(tt)
+            tdb=self._tdb(tt)
             moon,mv=self.pair(3,301,tdb)
             earth,ev=self.pair(3,399,tdb)
-            normal=true_equator(cross(sub(moon,earth),sub(mv,ev)),angles)
+            normal=true_equator(cross(sub(moon,earth),sub(mv,ev)),angles,sincos=self.frames.sincos)
             eps=angles[3]
             pole=(D.point(0.),-eps.sin(),eps.cos())
             equatorial=cross(pole,normal)
             if body=='Ketu':
                 equatorial=tuple(-v for v in equatorial)
         else:
-            equatorial=true_equator(self._apparent(body,tt),angles)
-        tropical=rotate_x(equatorial,angles[3])
-        sidereal=rotate_z(tropical,angles[4])
+            equatorial=true_equator(self._apparent(body,tt),angles,sincos=self.frames.sincos)
+        tropical=rotate_x(equatorial,angles[3],sincos=self.frames.sincos)
+        sidereal=rotate_z(tropical,angles[4],sincos=self.frames.sincos)
         return equatorial,tropical,sidereal
 
     def coordinates(self,body,a,b,*,coarse=False):
@@ -344,7 +366,8 @@ class AstronomyEnclosures:
     def solar_xyz_tt(self,a,b,coarse=False):
         mid=(a+b)/2
         tt=D(I(a,b),I.point(1.),I.point(mid),(I(a,b)-mid).magnitude)
-        return true_equator(self._apparent('Sun',tt,with_distance=True),self.frames.angles(tt,coarse=coarse))
+        return true_equator(self._apparent('Sun',tt,with_distance=True),self.frames.angles(tt,coarse=coarse),
+                            sincos=self.frames.sincos)
 
 
 def longitude_rectangle(vector,reference):
