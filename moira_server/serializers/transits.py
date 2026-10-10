@@ -202,12 +202,19 @@ def serialize_ingress_event(event: IngressEvent) -> IngressEventResponse:
     )
 
 
-def serialize_lunar_phase_event(event: LunarPhaseEvent) -> LunarPhaseEventResponse:
+def serialize_lunar_phase_event(
+    event: LunarPhaseEvent,
+    *,
+    moon_longitude: float,
+    sun_longitude: float,
+) -> LunarPhaseEventResponse:
     return LunarPhaseEventResponse(
         phase_type=event.phase_type,
         jd_ut=event.jd_ut,
         datetime_utc=datetime_from_jd(event.jd_ut).isoformat(),
         phase_angle=event.phase_angle,
+        moon_longitude=moon_longitude,
+        sun_longitude=sun_longitude,
     )
 
 

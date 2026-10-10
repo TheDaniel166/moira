@@ -25,6 +25,10 @@ def serialize_varga_point(point: VargaPoint) -> VargaPointResponse:
         sign=point.sign,
         sign_symbol=point.sign_symbol,
         sign_degree=point.sign_degree,
+        deity=point.deity,
+        d60_method=point.d60_method,
+        d60_source_references=point.d60_source_references,
+        d60_degree_attribution=point.d60_degree_attribution,
     )
 
 

@@ -22,6 +22,7 @@ from .geodetic import router as geodetic_router
 from .galactic import router as galactic_router
 from .galactic_houses import router as galactic_houses_router
 from .gauquelin import router as gauquelin_router
+from .gochara import router as gochara_router
 from .harmograms import router as harmograms_router
 from .harmonics import router as harmonics_router
 from .hellenistic_aspects import router as hellenistic_aspects_router
@@ -50,6 +51,8 @@ from .vedic_extended import (
 )
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
+from .almuten import router as almuten_router
+from .hyleg import router as hyleg_router
 from .panchanga import router as panchanga_router
 from .pancha_pakshi import router as pancha_pakshi_router
 from .orbits import router as orbits_router
@@ -109,6 +112,7 @@ __all__ = [
     "galactic_router",
     "galactic_houses_router",
     "gauquelin_router",
+    "gochara_router",
     "harmograms_router",
     "harmonics_router",
     "hellenistic_aspects_router",
@@ -135,6 +139,8 @@ __all__ = [
     "jaimini_extended_router",
     "nodes_router",
     "nine_parts_router",
+    "almuten_router",
+    "hyleg_router",
     "orbits_router",
     "panchanga_router",
     "pancha_pakshi_router",

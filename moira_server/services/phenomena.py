@@ -10,10 +10,14 @@ from moira.eclipse import EclipseCalculator, next_solar_eclipse_at_location
 from moira.heliacal import (
     HeliacalEventKind,
     VisibilitySearchPolicy,
+    phasis_events_near,
     planet_acronychal_rising,
     planet_acronychal_setting,
+    planet_cosmical_setting,
+    planet_evening_first,
     planet_heliacal_rising,
     planet_heliacal_setting,
+    planet_morning_last,
     visibility_event,
 )
 from moira.occultations import (
@@ -57,6 +61,7 @@ from ..models.phenomena import (
     CloseApproachRequest,
     EclipseSearchRequest,
     GeneralVisibilityEventRequest,
+    HeliacalPhasisRequest,
     HeliacalPlanetEventRequest,
     LunarOccultationPathAtRequest,
     LunarOccultationPathRequest,
@@ -152,16 +157,19 @@ _VALID_HELIACAL_PLANET_BODIES = frozenset(
 _VALID_SOLAR_ECLIPSE_KINDS = frozenset({"any", "total", "annular", "partial", "central", "hybrid"})
 _VALID_LUNAR_ECLIPSE_KINDS = frozenset({"any", "total", "partial", "penumbral"})
 _VALID_LUNAR_ECLIPSE_MODES = frozenset({"native", "nasa_compat"})
-_VALID_HELIACAL_KINDS = frozenset(
-    kind.value for kind in (
-        HeliacalEventKind.HELIACAL_RISING,
-        HeliacalEventKind.HELIACAL_SETTING,
-        HeliacalEventKind.ACRONYCHAL_RISING,
-        HeliacalEventKind.ACRONYCHAL_SETTING,
-        HeliacalEventKind.COSMIC_RISING,
-        HeliacalEventKind.COSMIC_SETTING,
-    )
-)
+_VALID_HELIACAL_KINDS = frozenset(kind.value for kind in HeliacalEventKind)
+# Planet endpoint: the standard phenomena (Ptolemy / Schoch nomenclature, see
+# moira.heliacal.HeliacalEventKind) plus the deprecated acronychal_setting
+# synonym.  The Moira cosmic twilight kinds stay on /heliacal/visibility-event.
+_PLANET_HELIACAL_FUNCTIONS = {
+    HeliacalEventKind.HELIACAL_RISING.value: planet_heliacal_rising,
+    HeliacalEventKind.HELIACAL_SETTING.value: planet_heliacal_setting,
+    HeliacalEventKind.EVENING_FIRST.value: planet_evening_first,
+    HeliacalEventKind.MORNING_LAST.value: planet_morning_last,
+    HeliacalEventKind.ACRONYCHAL_RISING.value: planet_acronychal_rising,
+    HeliacalEventKind.COSMICAL_SETTING.value: planet_cosmical_setting,
+    HeliacalEventKind.ACRONYCHAL_SETTING.value: planet_acronychal_setting,
+}
 _VALID_PARAN_CIRCLES = frozenset({"Rising", "Setting", "Culminating", "AntiCulminating"})
 _VALID_PARAN_FIELD_METRICS = frozenset({"match_presence", "exactness_score", "survival_rate"})
 
@@ -493,6 +501,24 @@ def compute_next_lunar_eclipse(engine: Moira, request: EclipseSearchRequest):
     _require_finite(request.jd_start, "jd_start")
     kind = _require_allowed(request.kind, "lunar eclipse kind", _VALID_LUNAR_ECLIPSE_KINDS)
     return EclipseCalculator(reader=getattr(engine, "_reader", None)).next_lunar_eclipse(
+        request.jd_start,
+        kind=kind,
+    )
+
+
+def compute_previous_solar_eclipse(engine: Moira, request: EclipseSearchRequest):
+    _require_finite(request.jd_start, "jd_start")
+    kind = _require_allowed(request.kind, "solar eclipse kind", _VALID_SOLAR_ECLIPSE_KINDS)
+    return EclipseCalculator(reader=getattr(engine, "_reader", None)).previous_solar_eclipse(
+        request.jd_start,
+        kind=kind,
+    )
+
+
+def compute_previous_lunar_eclipse(engine: Moira, request: EclipseSearchRequest):
+    _require_finite(request.jd_start, "jd_start")
+    kind = _require_allowed(request.kind, "lunar eclipse kind", _VALID_LUNAR_ECLIPSE_KINDS)
+    return EclipseCalculator(reader=getattr(engine, "_reader", None)).previous_lunar_eclipse(
         request.jd_start,
         kind=kind,
     )
@@ -896,20 +922,22 @@ def compute_planet_heliacal_event(engine: Moira, request: HeliacalPlanetEventReq
     if request.search_days <= 0:
         raise ValueError("search_days must be > 0")
     kind = _require_allowed(request.kind, "heliacal kind", _VALID_HELIACAL_KINDS)
+    function = _PLANET_HELIACAL_FUNCTIONS.get(kind)
+    if function is None:
+        raise ValueError(
+            "planet heliacal endpoint supports only heliacal_rising, heliacal_setting, "
+            "evening_first, morning_last, acronychal_rising, cosmical_setting, "
+            "and the deprecated acronychal_setting"
+        )
     reader = getattr(engine, "_reader", None)
     with use_reader_override(reader):
-        if kind == HeliacalEventKind.HELIACAL_RISING.value:
-            return planet_heliacal_rising(request.body, request.jd_start, request.lat, request.lon, search_days=request.search_days)
-        if kind == HeliacalEventKind.HELIACAL_SETTING.value:
-            return planet_heliacal_setting(request.body, request.jd_start, request.lat, request.lon, search_days=request.search_days)
-        if kind == HeliacalEventKind.ACRONYCHAL_RISING.value:
-            return planet_acronychal_rising(request.body, request.jd_start, request.lat, request.lon, search_days=request.search_days)
-        if kind == HeliacalEventKind.ACRONYCHAL_SETTING.value:
-            return planet_acronychal_setting(request.body, request.jd_start, request.lat, request.lon, search_days=request.search_days)
-    raise ValueError(
-        "planet heliacal endpoint supports only heliacal_rising, heliacal_setting, "
-        "acronychal_rising, and acronychal_setting"
-    )
+        return function(
+            request.body,
+            request.jd_start,
+            request.lat,
+            request.lon,
+            search_days=request.search_days,
+        )
 
 
 def compute_general_visibility_event(engine: Moira, request: GeneralVisibilityEventRequest):
@@ -927,6 +955,20 @@ def compute_general_visibility_event(engine: Moira, request: GeneralVisibilityEv
             request.lat,
             request.lon,
             search_policy=VisibilitySearchPolicy(search_window_days=request.search_window_days),
+        )
+
+
+def compute_heliacal_phasis(engine: Moira, request: HeliacalPhasisRequest):
+    _require_finite(request.jd_ut, "jd_ut")
+    _validate_lat_lon(request.lat, request.lon)
+    reader = getattr(engine, "_reader", None)
+    with use_reader_override(reader):
+        return phasis_events_near(
+            request.body,
+            request.jd_ut,
+            request.lat,
+            request.lon,
+            window_days=request.window_days,
         )
 
 
@@ -1094,6 +1136,9 @@ def compute_paran_field_structure(engine: Moira, request: ParanFieldMetricReques
 
 
 __all__ = [
+    "compute_heliacal_phasis",
+    "compute_previous_lunar_eclipse",
+    "compute_previous_solar_eclipse",
     "compute_next_station",
     "compute_next_void_of_course",
     "compute_next_lunar_eclipse",

@@ -71,12 +71,15 @@ Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
         self,
         chart_a,
         chart_b,
-        tier: int = 2,
+        tier: int = 0,
         orbs: dict[float, float] | None = None,
         orb_factor: float = 1.0,
         include_nodes: bool = True,
     ):
-        """Find inter-aspects between two natal charts."""
+        """Find inter-aspects between two natal charts.
+
+        Default tier 0 = the five major (Ptolemaic) aspects (6.9.9).
+        """
         return _facade_module().synastry_aspects(
             chart_a,
             chart_b,

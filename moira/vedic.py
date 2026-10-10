@@ -4,7 +4,8 @@ moira.vedic — Vedic astrology surface.
 Builds on ``moira.essentials`` and collects every Vedic-domain subsystem
 into a single, coherent import surface: panchanga, sidereal/ayanamsa,
 nakshatra, varga (divisional charts), Vedic dignities, Vimshottari and
-alternate dasha systems, Jaimini karakas, Ashtakavarga, and Shadbala.
+alternate dasha systems, Jaimini karakas and extended techniques, yogas,
+avasthas, Muhurta, upagrahas, Sade Sati, Gochara, Ashtakavarga, and Shadbala.
 
 This module does not include the full Western classical surface
 (Arabic lots, Firdaria, Zodiacal Releasing, Huber, etc.). For that,
@@ -66,6 +67,15 @@ from .sidereal import (
 )
 
 # ── Panchanga ────────────────────────────────────────────────────────────
+from .lunar_month import (
+    LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
+    LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
+)
+from .daily_panchanga import (
+    PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
+    PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
+    DailyPanchangaProvenance, DailyPanchangaResult, daily_panchanga,
+)
 from .panchanga import (
     TithiPaksha,
     YogaClass,
@@ -195,6 +205,7 @@ from .vedic_dignities import (
 
 # ── Varga (divisional charts) ────────────────────────────────────────────
 from .varga import (
+    D60Method, D60SignResult, d60_sign,
     VargaPoint,
     calculate_varga,
     navamsa,
@@ -302,6 +313,25 @@ from .ashtakavarga import (
     validate_ashtakavarga_output,
 )
 
+# ── Gochara Phala ────────────────────────────────────────────────────────
+from .gochara import (
+    GOCHARA_PROFILE, GOCHARA_PLANETS, GocharaVedhaStatus,
+    GocharaPosition, GocharaVedhaWitness, GocharaPlanetResult,
+    GocharaResult, gochara_from_positions,
+    DEFAULT_GOCHARA_POLICY, GocharaSourceProfile, GocharaVedhaMode,
+    GocharaCompleteness, GocharaBavMode, GocharaAdmissionStatus,
+    GocharaDoctrineOption, GocharaPolicy, gochara_doctrine_options,
+    GocharaBaselineClass, GocharaBavAvailability, GocharaVedhaRelationClass,
+    GocharaLocalCondition, GocharaLocalProfile, GocharaChartSummary,
+    GocharaNetworkNode, GocharaVedhaNetwork, GocharaSubsystemProfile,
+    gochara_local_profiles, gochara_subsystem_profile,
+)
+from .gochara_dated import (
+    GocharaNatalBavMode, GocharaDatePolicy, DEFAULT_GOCHARA_DATE_POLICY,
+    GocharaBirthLocation, GocharaDatedPosition, GocharaEpoch, GocharaDateResult,
+    GocharaResourceError, GocharaCoverageError, gochara_at, gochara_for_datetimes,
+)
+
 # ── Shadbala ─────────────────────────────────────────────────────────────
 from .shadbala import (
     NAISARGIKA_BALA,
@@ -313,6 +343,13 @@ from .shadbala import (
     PlanetShadbala,
     ShadbalaResult,
     ShadbalaPolicy,
+    ShadbalaContext,
+    ShadbalaContextError,
+    derive_shadbala_context,
+    SaptavargajaEntry,
+    saptavargaja_breakdown,
+    WarResolution,
+
     ShadbalaConditionProfile,
     ShadbalaChartProfile,
     sthana_bala,
@@ -382,7 +419,237 @@ from .varshaphal import (
 
 # ── Build __all__ ────────────────────────────────────────────────────────
 
+# Existing curated varga products.
+from .varga import (
+    VIMSHOPAKA_GROUPS,
+    VARGA_VISHVA,
+    VimshopakaVargaEntry,
+    VimshopakaBala,
+    varga_sign_index,
+    vimshopaka_bala,
+    vimshopaka_all,
+    is_vargottama,
+    vargottama_planets,
+)
+
+# Existing curated ashtakavarga products.
+from .ashtakavarga import (
+    KAKSHYA_LORDS,
+    RASIMANA,
+    GRAHAMANA,
+    KakshyaTransit,
+    ShodhyaPinda,
+    kakshya_transit,
+    shodhya_pinda,
+)
+
+# Existing curated shadbala products.
+from .shadbala import (
+    BhavaBala,
+    BhavaBalaResult,
+    bhava_bala,
+    bhava_dig_bala,
+    bhava_drishti_bala,
+)
+
+# Existing curated yogas products.
+from .yogas import (
+    YogaPolicy,
+    YogaCondition,
+    YogaResult,
+    YogaChartResult,
+    benefic_malefic_classification,
+    pancha_mahapurusha_yogas,
+    chandra_yogas,
+    surya_yogas,
+    nabhasa_yogas,
+    raja_yogas,
+    dhana_yogas,
+    evaluate_yogas,
+)
+
+# Existing curated avasthas products.
+from .avasthas import (
+    AvasthaPolicy,
+    SayanadiAvastha,
+    SayanadiPolicy,
+    SayanadiName,
+    SayanadiGhati,
+    SayanadiContext,
+    SayanadiTrace,
+    SayanadiEffectProvenance,
+    sayanadi_avastha,
+    sayanadi_ghati_from_elapsed,
+    BaladiAvastha,
+    JagradadiAvastha,
+    DeeptadiAvastha,
+    LajjitadiState,
+    LajjitadiAvasthas,
+    PlanetAvasthas,
+    AvasthaChartResult,
+    baladi_avastha,
+    jagradadi_avastha,
+    deeptadi_avastha,
+    lajjitadi_avasthas,
+    evaluate_avasthas,
+)
+from .sayanadi_dated import (
+    SayanadiBirthPolicy,
+    SayanadiSunriseBracket,
+    AvasthaBirthResult,
+    SayanadiResourceError,
+    SayanadiCoverageError,
+    avasthas_for_datetime,
+)
+
+# Existing curated jaimini_extended products.
+from .jaimini_extended import (
+    JaiminiExtendedPolicy,
+    rasi_aspects,
+    rasi_drishti_of,
+    ArudhaPada,
+    ArudhaResult,
+    arudha_padas,
+    ArgalaHouse,
+    ArgalaResult,
+    argala,
+    Karakamsa,
+    karakamsa,
+    CharaDashaPeriod,
+    CharaDashaResult,
+    CharaDashaComputation,
+    chara_dasha,
+)
+
+# Existing curated muhurta products.
+from .muhurta import (
+    MuhurtaPolicy,
+    MuhurtaClassification,
+    MuhurtaScore,
+    classify_muhurta,
+    score_muhurta,
+    TARA_NAMES,
+    TaraBala,
+    tara_bala,
+    ChandraBala,
+    chandra_bala,
+    PersonalMuhurtaScore,
+    personal_muhurta_score,
+)
+from .muhurta_lagna import (
+    MuhurtaLagnaPolicy,
+    LagnaPlanet,
+    LagnaRuleEvidence,
+    LagnaPlacementContribution,
+    LagnaPlacementScore,
+    LagnaRestriction,
+    MuhurtaLagnaAssessment,
+    evaluate_muhurta_lagna_strength,
+    muhurta_lagna_catalogue,
+)
+from .muhurta_lagna_dated import MuhurtaLagnaSnapshot, muhurta_lagna_for_datetime
+from .muhurta_dosha import (
+    MuhurtaDoshaPolicy,
+    DoshaPhaseSpan,
+    MuhurtaDoshaInputs,
+    DoshaWitness,
+    DoshaPredicate,
+    PariharaEvidence,
+    MuhurtaDoshaFinding,
+    MuhurtaDoshaAssessment,
+    DoshaCatalogueEntry,
+    MuhurtaDoshaCatalogue,
+    MuhurtaDoshaCell,
+    MuhurtaDoshaDay,
+    muhurta_dosha_catalogue,
+    detect_muhurta_doshas,
+    muhurta_doshas_for_date,
+)
+from .panchanga_shuddhi import (
+    PanchangaShuddhiPolicy,
+    ShuddhiBoundary,
+    ShuddhiInterval,
+    ShuddhiFinding,
+    ShuddhiInputs,
+    ShuddhiValues,
+    PanchangaShuddhiAssessment,
+    ShuddhiCatalogueEntry,
+    ShuddhiCatalogue,
+    PanchakaRahita,
+    ShuddhiCell,
+    PanchangaShuddhiDay,
+    panchanga_shuddhi_catalogue,
+    panchanga_shuddhi_from_longitudes,
+    panchaka_rahita,
+    panchanga_shuddhi_for_date,
+)
+from .special_muhurta import (
+    SpecialMuhurtaPolicy, SpecialMuhurtaBoundary, SpecialMuhurtaWindow,
+    SpecialMuhurtaResult, SpecialMuhurtaSolarResult, MuhurtaYogaMatch,
+    MuhurtaYogaSnapshot, SpecialMuhurtaDay, special_muhurta_from_solar_times,
+    muhurta_yogas_from_longitudes, special_muhurta_for_date,
+)
+from .named_muhurta import (
+    NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval,
+    NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
+)
+from .muhurta_search import (
+    MuhurtaSearchPolicy, MuhurtaMomentScore, MuhurtaSearchWindow, MuhurtaSearchResult,
+    MuhurtaResourceError, MuhurtaCoverageError, muhurta_score_for_chart, find_muhurta_windows,
+)
+
+# Existing curated upagrahas products.
+from .upagrahas import (
+    UpagrahaPolicy,
+    SunBasedUpagrahas,
+    KalavelaUpagraha,
+    KalavelaResult,
+    sun_based_upagrahas,
+    kalavela_upagrahas,
+)
+
+# Existing curated sade_sati products.
+from .sade_sati import (
+    SADE_SATI_PHASES,
+    SadeSatiStatus,
+    SadeSatiWindow,
+    SadeSatiResult,
+    SadeSatiBudgetError,
+    DEFAULT_SADE_SATI_EVALUATIONS,
+    MAX_SADE_SATI_EVALUATIONS,
+
+    sade_sati_status,
+    sade_sati_windows,
+)
+
 _VEDIC_OWN: list[str] = [
+    "MuhurtaLagnaPolicy",
+    "LagnaPlanet",
+    "LagnaRuleEvidence",
+    "LagnaPlacementContribution",
+    "LagnaPlacementScore",
+    "LagnaRestriction",
+    "MuhurtaLagnaAssessment",
+    "evaluate_muhurta_lagna_strength",
+    "muhurta_lagna_catalogue",
+    "MuhurtaLagnaSnapshot",
+    "muhurta_lagna_for_datetime",
+    "MuhurtaDoshaPolicy",
+    "DoshaPhaseSpan",
+    "MuhurtaDoshaInputs",
+    "DoshaWitness",
+    "DoshaPredicate",
+    "PariharaEvidence",
+    "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment",
+    "DoshaCatalogueEntry",
+    "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell",
+    "MuhurtaDoshaDay",
+    "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas",
+    "muhurta_doshas_for_date",
+    "D60Method", "D60SignResult", "d60_sign",
     # Sidereal (extended)
     "UserDefinedAyanamsa",
     "NakshatraPosition",
@@ -405,6 +672,11 @@ _VEDIC_OWN: list[str] = [
     "SankrantiResult",
     "TithiConditionProfile",
     "PanchangaProfile",
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
+    "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
+    "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
+    "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "panchanga_at",
     "sankranti_at",
     "tithi_condition_profile",
@@ -602,6 +874,20 @@ _VEDIC_OWN: list[str] = [
     "sign_strength_profile",
     "ashtakavarga_chart_profile",
     "validate_ashtakavarga_output",
+    # Gochara Phala
+    "GOCHARA_PROFILE", "GOCHARA_PLANETS", "GocharaVedhaStatus",
+    "GocharaPosition", "GocharaVedhaWitness", "GocharaPlanetResult",
+    "GocharaResult", "gochara_from_positions",
+    "DEFAULT_GOCHARA_POLICY", "GocharaSourceProfile", "GocharaVedhaMode",
+    "GocharaCompleteness", "GocharaBavMode", "GocharaAdmissionStatus",
+    "GocharaDoctrineOption", "GocharaPolicy", "gochara_doctrine_options",
+    "GocharaBaselineClass", "GocharaBavAvailability", "GocharaVedhaRelationClass",
+    "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
+    "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
+    "gochara_local_profiles", "gochara_subsystem_profile",
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch", "GocharaDateResult",
+    "GocharaResourceError", "GocharaCoverageError", "gochara_at", "gochara_for_datetimes",
     # Shadbala
     "NAISARGIKA_BALA",
     "REQUIRED_RUPAS",
@@ -612,6 +898,13 @@ _VEDIC_OWN: list[str] = [
     "PlanetShadbala",
     "ShadbalaResult",
     "ShadbalaPolicy",
+    "ShadbalaContext",
+    "ShadbalaContextError",
+    "derive_shadbala_context",
+    "SaptavargajaEntry",
+    "saptavargaja_breakdown",
+    "WarResolution",
+
     "ShadbalaConditionProfile",
     "ShadbalaChartProfile",
     "sthana_bala",
@@ -675,6 +968,137 @@ _VEDIC_OWN: list[str] = [
     "muntha_condition_profile",
     "varshaphal_sahams",
     "build_varshaphal_chart",
+    # Varga strength and flags.
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
+    # ashtakavarga completion
+    "KAKSHYA_LORDS",
+    "RASIMANA",
+    "GRAHAMANA",
+    "KakshyaTransit",
+    "ShodhyaPinda",
+    "kakshya_transit",
+    "shodhya_pinda",
+    # shadbala completion
+    "BhavaBala",
+    "BhavaBalaResult",
+    "bhava_bala",
+    "bhava_dig_bala",
+    "bhava_drishti_bala",
+    # yogas completion
+    "YogaPolicy",
+    "YogaCondition",
+    "YogaResult",
+    "YogaChartResult",
+    "benefic_malefic_classification",
+    "pancha_mahapurusha_yogas",
+    "chandra_yogas",
+    "surya_yogas",
+    "nabhasa_yogas",
+    "raja_yogas",
+    "dhana_yogas",
+    "evaluate_yogas",
+    # avasthas completion
+    "AvasthaPolicy",
+    "SayanadiAvastha",
+    "SayanadiPolicy",
+    "SayanadiName",
+    "SayanadiGhati",
+    "SayanadiContext",
+    "SayanadiTrace",
+    "SayanadiEffectProvenance",
+    "sayanadi_avastha",
+    "sayanadi_ghati_from_elapsed",
+    "SayanadiBirthPolicy",
+    "SayanadiSunriseBracket",
+    "AvasthaBirthResult",
+    "SayanadiResourceError",
+    "SayanadiCoverageError",
+    "avasthas_for_datetime",
+    "BaladiAvastha",
+    "JagradadiAvastha",
+    "DeeptadiAvastha",
+    "LajjitadiState",
+    "LajjitadiAvasthas",
+    "PlanetAvasthas",
+    "AvasthaChartResult",
+    "baladi_avastha",
+    "jagradadi_avastha",
+    "deeptadi_avastha",
+    "lajjitadi_avasthas",
+    "evaluate_avasthas",
+    # jaimini_extended completion
+    "JaiminiExtendedPolicy",
+    "rasi_aspects",
+    "rasi_drishti_of",
+    "ArudhaPada",
+    "ArudhaResult",
+    "arudha_padas",
+    "ArgalaHouse",
+    "ArgalaResult",
+    "argala",
+    "Karakamsa",
+    "karakamsa",
+    "CharaDashaPeriod",
+    "CharaDashaResult", "CharaDashaComputation",
+    "chara_dasha",
+    # muhurta completion
+    "MuhurtaPolicy",
+    "MuhurtaClassification",
+    "MuhurtaScore",
+    "classify_muhurta",
+    "score_muhurta",
+    "TARA_NAMES",
+    "TaraBala",
+    "tara_bala",
+    "ChandraBala",
+    "chandra_bala",
+    "PersonalMuhurtaScore",
+    "personal_muhurta_score",
+    'PanchangaShuddhiPolicy',
+    'ShuddhiBoundary',
+    'ShuddhiInterval',
+    'ShuddhiFinding',
+    'ShuddhiInputs',
+    'ShuddhiValues',
+    'PanchangaShuddhiAssessment',
+    'ShuddhiCatalogueEntry',
+    'ShuddhiCatalogue',
+    'PanchakaRahita',
+    'ShuddhiCell',
+    'PanchangaShuddhiDay',
+    'panchanga_shuddhi_catalogue',
+    'panchanga_shuddhi_from_longitudes',
+    'panchaka_rahita',
+    'panchanga_shuddhi_for_date',
+    "SpecialMuhurtaPolicy", "SpecialMuhurtaBoundary", "SpecialMuhurtaWindow", "SpecialMuhurtaResult", "SpecialMuhurtaSolarResult", "MuhurtaYogaMatch", "MuhurtaYogaSnapshot", "SpecialMuhurtaDay", "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes", "special_muhurta_for_date",
+    "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval", "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times", "named_muhurta_for_date",
+    "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow", "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError", "muhurta_score_for_chart", "find_muhurta_windows",
+    # upagrahas completion
+    "UpagrahaPolicy",
+    "SunBasedUpagrahas",
+    "KalavelaUpagraha",
+    "KalavelaResult",
+    "sun_based_upagrahas",
+    "kalavela_upagrahas",
+    # sade_sati completion
+    "SADE_SATI_PHASES",
+    "SadeSatiStatus",
+    "SadeSatiWindow",
+    "SadeSatiResult",
+    "SadeSatiBudgetError",
+    "DEFAULT_SADE_SATI_EVALUATIONS",
+    "MAX_SADE_SATI_EVALUATIONS",
+
+    "sade_sati_status",
+    "sade_sati_windows",
 ]
 
 __all__ = list(_essentials_all) + _VEDIC_OWN

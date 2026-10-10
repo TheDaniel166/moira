@@ -140,7 +140,7 @@ class TestVariantNature:
     """variant_nature() tradition lookups."""
 
     def test_al_biruni_raises_error(self):
-        with pytest.raises(ValueError, match="al-Biruni star-based tradition does not support"):
+        with pytest.raises(ValueError, match="al-Biruni tradition does not support"):
             variant_nature(1, MansionTradition.AL_BIRUNI)
 
     def test_abenragel_mansion_1(self):
@@ -179,7 +179,7 @@ class TestVariantSignification:
     """variant_signification() tradition lookups."""
 
     def test_al_biruni_raises_error(self):
-        with pytest.raises(ValueError, match="al-Biruni star-based tradition does not support"):
+        with pytest.raises(ValueError, match="al-Biruni tradition does not support"):
             variant_signification(1, MansionTradition.AL_BIRUNI)
 
     def test_abenragel_mansion_1(self):
@@ -255,4 +255,144 @@ class TestManazilPublicApi:
 
     def test_all_count(self):
         import moira.manazil as _mod
-        assert len(_mod.__all__) == 14
+        assert len(_mod.__all__) == 16
+
+
+# ===========================================================================
+# SOURCE-BACKED CATALOGUE (6.9.9)
+# ===========================================================================
+
+class TestAlBiruniEqualMansions:
+    """al-Biruni, Book of Instruction §164: the stations are counted from the
+    vernal equinox like the equal signs; the stars mark them, not bound them."""
+
+    def test_no_jd_needed_and_equal_division(self):
+        from moira.manazil import AstronomicalMansion
+        result = mansion_of(254.526, MansionTradition.AL_BIRUNI)
+        assert isinstance(result.mansion, AstronomicalMansion)
+        assert result.mansion.index == 20
+        assert result.mansion.arabic_name == "al-Naʿāʾim"
+        assert result.degrees_in == pytest.approx(254.526 - 19 * MANSION_SPAN)
+
+    def test_same_mansion_index_as_agrippa_everywhere(self):
+        for tenth in range(0, 3600, 7):
+            lon = tenth / 10.0
+            assert (
+                mansion_of(lon, MansionTradition.AL_BIRUNI).mansion.index
+                == mansion_of(lon, MansionTradition.AGRIPPA).mansion.index
+            )
+
+    def test_jd_does_not_change_the_result(self):
+        a = mansion_of(100.0, MansionTradition.AL_BIRUNI)
+        b = mansion_of(100.0, MansionTradition.AL_BIRUNI, jd=2407422.951412)
+        assert a.mansion.index == b.mansion.index
+        assert a.degrees_in == b.degrees_in
+
+    def test_repr_handles_astronomical_mansion(self):
+        assert "Al-Sharatain" in repr(mansion_of(1.0, MansionTradition.AL_BIRUNI))
+
+    def test_arabic_names_and_aliases(self):
+        from moira.manazil import AL_BIRUNI_MANSIONS
+        by_index = {m.index: m for m in AL_BIRUNI_MANSIONS}
+        assert [m.index for m in AL_BIRUNI_MANSIONS] == list(range(1, 29))
+        assert by_index[26].arabic_name == "Al-Fargh al-Muqaddam"
+        assert by_index[27].arabic_name == "Al-Fargh al-Muʾakhkhar"
+        assert "Al-Rishāʾ" in by_index[28].aliases
+
+    def test_marker_stars_follow_section_164(self):
+        from moira.manazil import AL_BIRUNI_MANSIONS
+        stars = {m.index: m.marker_stars for m in AL_BIRUNI_MANSIONS}
+        assert stars[5] == ("lam Ori", "phi01 Ori", "phi02 Ori")
+        assert stars[6] == ("gam Gem", "ksi Gem")
+        assert stars[18] == ("alf Sco", "sig Sco", "tau Sco")
+        assert set(stars[20]) == {"gam02 Sgr", "del Sgr", "eps Sgr", "eta Sgr",
+                                  "sig Sgr", "phi Sgr", "tau Sgr", "zet Sgr"}
+        assert stars[23][0] == "eps Aqr"
+        assert "conventional marker" in AL_BIRUNI_MANSIONS[20].note
+
+    def test_every_marker_star_resolves_in_the_star_catalogue(self):
+        from moira.manazil import AL_BIRUNI_MANSIONS
+        from moira.stars import star_name_resolves
+        missing = [
+            (m.index, name)
+            for m in AL_BIRUNI_MANSIONS
+            for name in m.marker_stars
+            if not star_name_resolves(name)
+        ]
+        assert missing == []
+
+
+class TestLatinNamesPerTradition:
+    """Agrippa II.33 and Picatrix I.4 each govern their own Latin names."""
+
+    def test_agrippa_uses_first_named_form_with_alternatives(self):
+        from moira.manazil import electional_mansion
+        m3 = electional_mansion(3, MansionTradition.AGRIPPA)
+        assert m3.latin_name == "Achaomazon"
+        assert m3.latin_aliases == ("Athoray",)
+        assert electional_mansion(5, MansionTradition.AGRIPPA).latin_name == "Alchatay"
+        assert electional_mansion(6, MansionTradition.AGRIPPA).latin_name == "Alhanna"
+        assert electional_mansion(15, MansionTradition.AGRIPPA).latin_name == "Agrapha"
+        assert electional_mansion(25, MansionTradition.AGRIPPA).latin_name == "Sadalabra"
+
+    def test_picatrix_uses_its_own_names(self):
+        from moira.manazil import PICATRIX_LATIN_NAMES, electional_mansion
+        assert len(PICATRIX_LATIN_NAMES) == 28
+        assert electional_mansion(3, MansionTradition.PICATRIX).latin_name == "Azoraya"
+        assert electional_mansion(5, MansionTradition.PICATRIX).latin_name == "Almices"
+        assert electional_mansion(25, MansionTradition.PICATRIX).latin_name == "Caadalhacbia"
+        assert mansion_of(0.0, MansionTradition.PICATRIX).mansion.latin_name == "Alnath"
+
+    def test_electional_mansion_carries_tradition_nature(self):
+        from moira.manazil import electional_mansion
+        assert electional_mansion(2, MansionTradition.PICATRIX).nature == variant_nature(2, MansionTradition.PICATRIX)
+
+    def test_electional_mansion_rejects_al_biruni(self):
+        from moira.manazil import electional_mansion
+        with pytest.raises(ValueError, match="al-Biruni"):
+            electional_mansion(1, MansionTradition.AL_BIRUNI)
+
+
+@pytest.mark.requires_ephemeris
+class TestSiderealAlBiruni:
+    JD_J2000 = 2451545.0
+
+    def test_sidereal_al_biruni_matches_agrippa_index(self):
+        for lon in range(0, 360, 17):
+            a = mansion_of_sidereal(float(lon), self.JD_J2000, tradition=MansionTradition.AL_BIRUNI)
+            b = mansion_of_sidereal(float(lon), self.JD_J2000, tradition=MansionTradition.AGRIPPA)
+            assert a.mansion.index == b.mansion.index
+            assert a.degrees_in == pytest.approx(b.degrees_in)
+            assert 0.0 <= a.degrees_in < MANSION_SPAN
+
+
+class TestSourceFidelity6_9_9:
+    """Spot checks that the catalogue follows its cited texts.
+
+    al-Biruni, Book of Instruction §164 (Wright 1934, from p. 81); Agrippa,
+    De occulta philosophia II.33 (English 1651).
+    """
+
+    def test_al_biruni_star_counts_are_qualified_where_modern_lists_differ(self):
+        from moira.manazil import AL_BIRUNI_MANSIONS
+
+        by_index = {m.index: m for m in AL_BIRUNI_MANSIONS}
+        assert "four stars" in by_index[13].note
+        assert "two stars" in by_index[15].note
+        assert "head of Andromeda" in by_index[28].note
+        assert by_index[28].marker_stars == ("bet And",)
+
+    @pytest.mark.parametrize(
+        ("index", "fragment", "nature"),
+        [
+            (1, "discords and journeys", "Mixed"),
+            (4, "gold-mines", "Unfortunate"),
+            (19, "perdition of captives", "Unfortunate"),
+            (25, "spells against copulation", "Unfortunate"),
+            (28, "loss of treasures", "Mixed"),
+        ],
+    )
+    def test_agrippa_significations_follow_ii_33(self, index, fragment, nature):
+        mansion = AGRIPPA_MANSIONS[index - 1]
+        assert fragment in mansion.signification
+        assert mansion.nature == nature

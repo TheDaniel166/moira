@@ -1085,3 +1085,43 @@ def test_oracle_vibrational_fingerprint_peak_matches_sweep():
     sweep_ranked = sorted(vf.sweep, key=lambda e: (-e.score, e.harmonic))
     if sweep_ranked and sweep_ranked[0].score > 0:
         assert vf.peak_harmonic == sweep_ranked[0].harmonic
+
+
+# ---------------------------------------------------------------------------
+# 6.9.9 — default orb: Hamblin's 12 degree conjunction orb on the harmonic
+# wheel (natal-circle allowance 12/H).  Source: David Hamblin, "The Importance
+# of Harmonics", Astrodienst article aa_article220307.
+# ---------------------------------------------------------------------------
+
+def test_default_orb_is_twelve_degrees_on_the_harmonic_wheel():
+    assert _harm_mod.DEFAULT_HARMONIC_REFERENCE_ORB_DEG == 12.0
+    policy = HarmonicOrbPolicy()
+    assert policy.reference_orb_deg == 12.0
+    truth = policy.resolve(13)
+    assert truth.projected_orb_limit_deg == 12.0
+    # Hamblin's worked example: 720' / 13 = 55.4' for H13.
+    assert truth.source_orb_limit_deg * 60.0 == pytest.approx(720.0 / 13.0)
+
+
+def test_default_orb_sees_a_1_05_degree_natal_conjunction():
+    pair = {"Sun": 10.0, "Moon": 11.05}
+    assert len(harmonic_conjunctions(pair, 1)) == 1
+    fingerprint = vibrational_fingerprint(pair, max_harmonic=8)
+    assert fingerprint.total_score > 0
+    assert fingerprint.peak_harmonic == 1
+
+
+def test_default_orb_admits_cross_chart_quintile_within_12_over_5():
+    # 72.5 deg separation -> 2.5 deg apart on H5 (natal allowance 2.4 deg * 5).
+    found = composite_harmonic({"Sun": 10.0}, {"Moon": 82.5}, 5)
+    assert len(found) == 1
+    assert found[0].orb == pytest.approx(2.5)
+    # 75 deg separation -> 15 deg apart on H5: beyond the 12 deg default.
+    assert composite_harmonic({"Sun": 10.0}, {"Moon": 85.0}, 5) == []
+
+
+def test_transit_forecast_policy_default_orb_is_unchanged():
+    from moira.harmonic_transits import MixedOriginHarmonicTransitForecastPolicy
+
+    policy = MixedOriginHarmonicTransitForecastPolicy(harmonics=(5,))
+    assert policy.orb_policy.reference_orb_deg == 1.0

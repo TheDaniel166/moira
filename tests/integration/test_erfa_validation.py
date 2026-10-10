@@ -14,7 +14,7 @@ from moira.julian import (
     ut_to_tt,
 )
 from moira.obliquity import nutation, true_obliquity
-from moira.precession import mean_obliquity_p03, precession_matrix
+from moira.precession import general_precession_in_longitude, mean_obliquity_p03, precession_matrix
 
 erfa = pytest.importorskip("erfa")
 
@@ -106,6 +106,26 @@ def test_mean_obliquity_matches_erfa(label: str, jd_tt: float, _jd_ut: float) ->
     moira_eps = mean_obliquity_p03(jd_tt)
 
     assert abs(erfa_eps - moira_eps) * ARCSEC < PASS_THRESHOLD_ARCSEC
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("jd_tt", [
+    *(jd_tt for _, jd_tt, _ in TEST_EPOCHS),
+    2435553.5,  # Historical Lahiri origin epoch, already in TT.
+    2461206.808439629,  # June 2026 ingress neighbourhood, already in TT.
+    2451545.0 - 50 * 36525.0,
+    2451545.0 + 50 * 36525.0,
+])
+def test_general_precession_matches_erfa_p06e(jd_tt: float) -> None:
+    # eraP06e output 12 is p_A, general precession; output 15 is the
+    # distinct Fukushima-Williams rotation angle psi. Authority:
+    # https://github.com/liberfa/erfa/blob/v2.0.1/src/p06e.c
+    # Compare a signed, unwrapped scalar over the stated +/-50-century
+    # polynomial interval. The existing 0.001-arcsecond gate is unchanged.
+    d1, d2 = _split(jd_tt)
+    expected = math.degrees(erfa.p06e(d1, d2)[12])
+    actual = general_precession_in_longitude(jd_tt)
+    assert abs(actual - expected) * ARCSEC < PASS_THRESHOLD_ARCSEC
 
 
 @pytest.mark.integration

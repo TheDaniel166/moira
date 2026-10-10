@@ -400,7 +400,12 @@ class MixedOriginHarmonicTransitForecastPolicy:
 
     harmonics: tuple[int, ...]
     modes: tuple[MixedOriginHarmonicTransitMode, ...] = _DEFAULT_MODES
-    orb_policy: HarmonicOrbPolicy = field(default_factory=HarmonicOrbPolicy)
+    # Pinned to the pre-6.9.9 1 degree harmonic-wheel orb: the natal-chart
+    # default moved to Hamblin's 12 degrees in 6.9.9, but this sampled
+    # transit forecast keeps its own tight default (unchanged behaviour).
+    orb_policy: HarmonicOrbPolicy = field(
+        default_factory=lambda: HarmonicOrbPolicy(reference_orb_deg=1.0)
+    )
     minimum_observed_duration_days: float = 0.0
     maximum_sample_gap_days: float = 1.0
 

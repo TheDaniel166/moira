@@ -111,12 +111,19 @@ jobs:
         run: python -m pip install -e ".[dev,server]"
 
       - name: Check release-facing doc consistency
-        run: |
-          python scripts/check_doc_consistency.py
-          python scripts/check_release_identity.py
-          python scripts/generate_hellenistic_inventory.py --check
-          python scripts/sync_rest_api_reference.py --check
-          python scripts/sync_git_wiki.py --check
+        run: python scripts/check_doc_consistency.py
+
+      - name: Check release identity
+        run: python scripts/check_release_identity.py
+
+      - name: Check generated Hellenistic inventories
+        run: python scripts/generate_hellenistic_inventory.py --check
+
+      - name: Check generated REST API reference
+        run: python scripts/sync_rest_api_reference.py --check
+
+      - name: Check generated Git wiki
+        run: python scripts/sync_git_wiki.py --check
 
       - name: Check tagged website publication bundle
         run: |
@@ -163,8 +170,11 @@ jobs:
           python -m pytest tests/unit/test_public_api_drift.py -q
           python -m pytest tests/unit/test_public_doctrine_surfaces.py -q
           python -m pytest tests/unit/test_dasha.py -q
+          python -m pytest tests/unit/test_dasha_systems.py tests/unit/test_dasha_full_intervals.py tests/unit/test_varga_exact_partition.py tests/unit/test_shadbala_source_repairs.py tests/unit/test_vedic_reader_scan_repairs.py -q
+          python -m pytest tests/unit/test_vedic_second_pass_repairs.py tests/server/test_server_vedic_second_pass_repairs.py -q
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
+          python -m pytest tests/unit/test_muhurta_lagna.py tests/server/test_server_muhurta_lagna.py -q
 
       - name: Planet-first stellium and selected-zodiac house contracts
         run: |
@@ -200,5 +210,5 @@ jobs:
             tests/server/test_server_patterns_policy.py \
             -q
 
-      - name: Reject real unused imports in source
-        run: ruff check moira moira_server scripts --select F401 --no-fix
+      - name: Reject unused imports and undefined names in source
+        run: ruff check moira moira_server scripts --select F401,F821,F822,F823 --no-fix

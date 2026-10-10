@@ -44,11 +44,13 @@ Techniques and lineages
    from dasha sign to its lord (zodiacal for savya signs,
    anti-zodiacal for apasavya) minus one, lord-in-sign = 12; NO
    exaltation/debilitation adjustment (Rao explicitly); Sc/Aq co-lord
-   rules with Rao's tie-break (companions → dual>fixed>movable →
+   rules with the existing Moira tie-break (companions → dual>fixed>movable →
    higher degree); antardashas = 12 equal parts in sequence direction
    starting from the sign after the dasha sign (dasha sign last).
-   First cycle only — Rao's second-cycle rule could not be verified
-   from his book text and is deferred rather than guessed.
+   One or two cycles; the existing repetition convention is supported
+   by two second-cycle durations in Rao's published Chandrasekhar example.
+   Full-cycle and co-lord-chain source limits are recorded in
+   wiki/02_standards/CHARA_DASHA_CYCLE_STANDARD.md.
 
 Sources
 -------
@@ -60,7 +62,8 @@ lineage material.  Sutra numbers cited by named edition (the editions
 drift by 1-2 sutras).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from math import isfinite
 
 __all__ = [
     "JaiminiExtendedPolicy",
@@ -76,6 +79,7 @@ __all__ = [
     "karakamsa",
     "CharaDashaPeriod",
     "CharaDashaResult",
+    "CharaDashaComputation",
     "chara_dasha",
 ]
 
@@ -526,13 +530,33 @@ class CharaDashaPeriod:
 
 
 @dataclass(frozen=True, slots=True)
+class CharaDashaComputation:
+    """Actual execution convention; source limits belong to the named standard."""
+
+    cycle_count: int
+    lord_mode: str
+    formulation_id: str = field(init=False, default="moira_kn_rao_existing_v1")
+    cycle_policy: str = field(init=False, default="repeat_first_cycle")
+    year_basis: str = field(init=False, default="julian_365.25")
+    year_days: float = field(init=False, default=_YEAR_DAYS)
+    epoch_basis: str = field(init=False, default="caller_supplied_julian_day")
+
+    def __post_init__(self) -> None:
+        if type(self.cycle_count) is not int or self.cycle_count not in (1, 2):
+            raise ValueError("cycle_count must be a strict integer, 1 or 2")
+        if self.lord_mode not in ("classical_seven", "moira_existing_co_lords"):
+            raise ValueError("unknown Chara lord_mode")
+
+
+@dataclass(frozen=True, slots=True)
 class CharaDashaResult:
     """
     Chara Dasha result containing consecutive mahadashas.
 
-    Rao's second-cycle rule is admitted as a direct repetition of the 
-    first cycle's sign sequence and dasha span (years), as proven by 
-    his text *Predicting Through Jaimini's Chara Dasa* (pages 13-14).
+    Moira repeats the first sign/year/lord cycle. Rao's published
+    Chandrasekhar example supports two second-cycle durations, not a
+    universal proof of every period. Legacy manual construction may have
+    unknown computation metadata; the engine always supplies its receipt.
     """
 
     lagna_sign: int
@@ -540,6 +564,36 @@ class CharaDashaResult:
     birth_jd: float
     periods: tuple[CharaDashaPeriod, ...]
     lineage: str
+    computation: CharaDashaComputation | None = None
+
+    @property
+    def period_count(self) -> int:
+        return len(self.periods)
+
+    def __post_init__(self) -> None:
+        if self.computation is not None:
+            if not isinstance(self.computation, CharaDashaComputation):
+                raise TypeError("computation must be a CharaDashaComputation or None")
+            if self.period_count != 12 * self.computation.cycle_count:
+                raise ValueError("period_count must equal twelve times cycle_count")
+
+
+def _chara_number(value: float, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite number without coercion")
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{name} must be finite") from exc
+    if not isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _chara_map(value: dict[str, float], required: set[str], name: str) -> dict[str, float]:
+    if not isinstance(value, dict) or set(value) != required:
+        raise ValueError(f"{name} must contain exactly {sorted(required)}")
+    return {key: _chara_number(lon, f"{name}.{key}") for key, lon in value.items()}
 
 
 def _chara_sign_years(
@@ -547,7 +601,7 @@ def _chara_sign_years(
     sidereal_longitudes: dict[str, float],
     node_longitudes: dict[str, float] | None,
 ) -> tuple[int, str, str]:
-    """(years, lord, note) for one dasha sign per K.N. Rao's rules."""
+    """(years, lord, note) under the existing Moira Chara convention."""
     count_dir = 1 if sign in _SAVYA_SIGNS else -1
 
     def count_to(lord_sign: int) -> int:
@@ -571,7 +625,8 @@ def _chara_sign_years(
             return (years if years > 0 else 12, other,
                     f"{in_sign[0]} in the sign -> count to {other}")
         # Neither in the sign: the stronger (companions -> dual>fixed>
-        # movable -> higher degree — Rao's ordering).
+        # movable -> higher degree — existing Moira convention; full
+        # source collation remains incomplete).
         def companions(s: int, excluding: str) -> int:
             return sum(
                 1 for p in _SEVEN_PLANETS
@@ -592,7 +647,7 @@ def _chara_sign_years(
         lord_sign = _sign(lons[lord])
         years = count_to(lord_sign) - 1
         return (years if years > 0 else 12, lord,
-                "stronger co-lord (Rao tie-break)")
+                "stronger co-lord (existing Moira tie-break)")
 
     lord = _RASI_LORDS[sign]
     lord_sign = _sign(sidereal_longitudes[lord])
@@ -613,8 +668,7 @@ def chara_dasha(
     Chara Dasha per K.N. Rao (Neelakantha karika lineage).
 
     Sequence: 12 contiguous signs from the lagna; direction by the
-    9th-from-lagna's savya/apasavya group (the verified Rao/Raman rule —
-    NOT the common "savya lagnas run direct" misstatement).  Length:
+    9th-from-lagna's savya/apasavya group. Length:
     count from the dasha sign to its lord minus one (12 when the lord
     is in its own sign); no exaltation/debilitation adjustment.
     Antardashas: 12 equal parts, sequence direction, starting from the
@@ -622,6 +676,13 @@ def chara_dasha(
     Sc/Aq use both lords when ``node_longitudes`` is supplied, else the
     classical Mars/Saturn.
     """
+    if type(cycles) is not int or cycles not in (1, 2):
+        raise ValueError("cycles must be a strict integer, 1 or 2")
+    sidereal_longitudes = _chara_map(sidereal_longitudes, set(_SEVEN_PLANETS), "sidereal_longitudes")
+    lagna_sidereal_lon = _chara_number(lagna_sidereal_lon, "lagna_sidereal_lon")
+    birth_jd = _chara_number(birth_jd, "birth_jd")
+    if node_longitudes is not None:
+        node_longitudes = _chara_map(node_longitudes, {"Rahu", "Ketu"}, "node_longitudes")
     lagna_sign = _sign(lagna_sidereal_lon)
     ninth_sign = (lagna_sign + 8) % 12
     direction = 1 if ninth_sign in _SAVYA_SIGNS else -1
@@ -639,6 +700,10 @@ def chara_dasha(
         )
         ad_len = span / 12.0
         ad_starts = tuple(cursor + i * ad_len for i in range(12))
+        endpoints = ad_starts + (cursor + span,)
+        if (not all(isfinite(x) for x in endpoints)
+                or any(a >= b for a, b in zip(endpoints, endpoints[1:]))):
+            raise ValueError("birth_jd cannot represent finite ordered Chara intervals")
         periods.append(CharaDashaPeriod(
             sign=sign,
             years=years,
@@ -660,6 +725,12 @@ def chara_dasha(
             "K.N. Rao (Neelakantha karika): 9th-from-lagna direction "
             "rule; no exaltation/debilitation adjustment; antardashas "
             "start after the dasha sign (dasha sign last). Second cycle "
-            "verified as direct repetition of the first."
+            "uses existing Moira repetition, supported by two durations in "
+            "Rao's Chandrasekhar article; full-cycle and co-lord-chain source "
+            "limits remain."
+        ),
+        computation=CharaDashaComputation(
+            cycle_count=cycles,
+            lord_mode="classical_seven" if node_longitudes is None else "moira_existing_co_lords",
         ),
     )

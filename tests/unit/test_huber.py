@@ -165,14 +165,21 @@ class TestAgePoint:
         assert ap.cycle == 2  # second cycle
 
     def test_intensity_at_cusp_is_maximum(self, koch_cusps):
-        ap = age_point(0.0, koch_cusps)
+        ap = age_point(0.0, koch_cusps, include_intensity=True)
         assert abs(ap.intensity - 1.0) < 0.01
 
     def test_intensity_at_low_point_is_minimum(self, koch_cusps):
         """At PHI of house (3.708 years in), intensity should be ~0."""
         age_at_lp = PHI * YEARS_PER_HOUSE  # ~3.708 years
-        ap = age_point(age_at_lp, koch_cusps)
+        ap = age_point(age_at_lp, koch_cusps, include_intensity=True)
         assert ap.intensity < 0.01
+
+    def test_intensity_is_excluded_by_default(self, koch_cusps):
+        """6.9.9: the unverified editorial curve is opt-in only."""
+        assert age_point(0.0, koch_cusps).intensity is None
+        assert age_point(3.0, koch_cusps).intensity is None
+        with pytest.raises(ValueError, match="include_intensity"):
+            age_point(0.0, koch_cusps, include_intensity=1)  # type: ignore[arg-type]
 
     def test_zone_cardinal_at_cusp(self, koch_cusps):
         ap = age_point(0.5, koch_cusps)  # just inside house 1

@@ -41,9 +41,6 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
         request.dt,
         bodies=list(_PLANETS),
         include_nodes=False,
-        observer_lat=request.observer_lat,
-        observer_lon=request.observer_lon,
-        observer_elev_m=request.observer_elev_m,
     )
     jd_ut = utc_to_ut1(chart.jd_ut)
     houses = moira_engine.houses(
@@ -74,6 +71,8 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
         jd_ut,
         ayanamsa_system=ayanamsa_system,
     )
+    context = moira_engine.shadbala_context(jd_ut,request.observer_lat,request.observer_lon,
+        ayanamsa_system=ayanamsa_system,hora_lord=request.hora_lord)
     return shadbala(
         sidereal_longitudes=sidereal_longitudes,
         planet_speeds=planet_speeds,
@@ -81,10 +80,10 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
         jd=jd_ut,
         tithi_number=panchanga_support.tithi.number,
         vara_lord=panchanga_support.vara_lord,
-        is_day=is_day_chart(tropical_longitudes["Sun"], houses.asc),
+        is_day=context.is_day,
         ayanamsa_system=ayanamsa_system,
         hora_lord=request.hora_lord,
-        planet_latitudes=planet_latitudes,
+        planet_latitudes=planet_latitudes, context=context,
     ), graha_yuddha_pairs(sidereal_longitudes, planet_latitudes)
 
 
@@ -156,6 +155,8 @@ def test_shadbala_serializer_preserves_component_strengths(moira_engine) -> None
 def test_shadbala_network_serializer_preserves_war_vessel_shape(
     planetary_reader,
 ) -> None:
+    from tests.support.shadbala_context import supplied_context
+    context = supplied_context(dict(zip(_PLANETS,(0.,30.,60.,60.5,120.,150.,180.))))
     result = shadbala(
         sidereal_longitudes={
             "Sun": 0.0,
@@ -177,6 +178,7 @@ def test_shadbala_network_serializer_preserves_war_vessel_shape(
         vara_lord="Sun",
         is_day=True,
         planet_latitudes={"Mars": 1.0, "Mercury": 0.0},
+        context=context,
     )
     wars = graha_yuddha_pairs(
         {"Mars": 60.0, "Mercury": 60.5},

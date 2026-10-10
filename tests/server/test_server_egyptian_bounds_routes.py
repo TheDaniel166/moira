@@ -343,6 +343,7 @@ def test_egyptian_bounds_openapi_exposes_corrected_doctrines_and_provenance() ->
         "ptolemaic",
         "chaldean_day",
         "chaldean_night",
+        "william_lilly_1647",
     ]
     assert "source_citation" in schema["components"]["schemas"][
         "EgyptianBoundsTableResponse"

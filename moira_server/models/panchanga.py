@@ -8,12 +8,13 @@ from datetime import datetime
 from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import CivilDateTime, KnownAyanamsa
 
 
 class PanchangaPolicyRequest(_StrictModel):
     """Explicit Panchanga computation policy."""
 
-    ayanamsa_system: str = "Lahiri"
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
 
     @field_validator("ayanamsa_system")
     @classmethod
@@ -26,10 +27,10 @@ class PanchangaPolicyRequest(_StrictModel):
 class PanchangaDirectRequest(_StrictModel):
     """Direct Panchanga request using caller-supplied derived longitudes."""
 
-    sun_tropical_lon: float
-    moon_tropical_lon: float
-    jd: float
-    ayanamsa_system: str = "Lahiri"
+    sun_tropical_lon: float = Field(strict=True)
+    moon_tropical_lon: float = Field(strict=True)
+    jd: float = Field(strict=True)
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
     policy: PanchangaPolicyRequest | None = None
 
     @field_validator("sun_tropical_lon", "moon_tropical_lon", "jd")
@@ -50,12 +51,19 @@ class PanchangaDirectRequest(_StrictModel):
 class PanchangaChartRequest(_StrictModel):
     """Chart-backed Panchanga request deriving Sun/Moon through Moira."""
 
-    dt: datetime
-    observer_lat: float | None = Field(default=None, ge=-90.0, le=90.0)
-    observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
-    observer_elev_m: float = 0.0
-    ayanamsa_system: str = "Lahiri"
+    dt: CivilDateTime
+    observer_lat: float | None = Field(default=None, strict=True, ge=-90.0, le=90.0)
+    observer_lon: float | None = Field(default=None, strict=True, ge=-180.0, le=180.0)
+    observer_elev_m: float = Field(default=0.0, strict=True)
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
     policy: PanchangaPolicyRequest | None = None
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _civil_datetime(cls, value):
+        if not isinstance(value, (str, datetime)):
+            raise ValueError("dt must be a timezone-aware civil datetime, not a numeric timestamp")
+        return value
 
     @field_validator("dt")
     @classmethod

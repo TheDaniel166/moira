@@ -3,44 +3,27 @@ upagrahas, avasthas, and the Jaimini extended techniques."""
 
 from __future__ import annotations
 
-import math
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
-
-
-_SEVEN_PLANETS = frozenset(
-    {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+from ._vedic_inputs import ClassicalPlanet, NodePlanet, FiniteNumber, require_classical
+from .sayanadi import (
+    AvasthaBirthEvidenceResponse, SayanadiContextRequest, SayanadiContextResponse,
+    SayanadiResponse,
 )
 
 
 def _validate_seven(value: dict[str, float]) -> dict[str, float]:
-    missing = _SEVEN_PLANETS - set(value)
-    if missing:
-        raise ValueError(
-            f"sidereal_longitudes must include all seven classical "
-            f"planets; missing: {sorted(missing)}"
-        )
-    for name, lon in value.items():
-        if not math.isfinite(lon):
-            raise ValueError(f"longitude for {name} must be finite")
-    return value
+    return require_classical(value)
 
 
 # --- Upagrahas --------------------------------------------------------------
 
 class SunBasedUpagrahasRequest(_StrictModel):
-    sun_sidereal_lon: float
-
-    @field_validator("sun_sidereal_lon")
-    @classmethod
-    def _finite(cls, value: float) -> float:
-        if not math.isfinite(value):
-            raise ValueError("sun_sidereal_lon must be finite")
-        return value
+    sun_sidereal_lon: FiniteNumber
 
 
 class SunBasedUpagrahasResponse(_StrictModel):
@@ -54,8 +37,8 @@ class SunBasedUpagrahasResponse(_StrictModel):
 
 class KalavelaRequest(_StrictModel):
     dt: datetime
-    latitude: float
-    longitude: float
+    latitude: FiniteNumber = Field(ge=-90, le=90)
+    longitude: FiniteNumber = Field(ge=-180, le=180)
     ayanamsa_system: str = "Lahiri"
     portion_point: Literal["beginning", "middle", "end"] = "beginning"
     mandi_mode: Literal[
@@ -94,18 +77,27 @@ class KalavelaResponse(_StrictModel):
 # --- Avasthas ---------------------------------------------------------------
 
 class AvasthaRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber
     deeptadi_source: Literal[
         "bphs_9", "saravali_9", "jataka_parijata_10", "phaladeepika_11"
     ] = "bphs_9"
     relationship_scheme: Literal["compound", "natural"] = "compound"
-    node_longitudes: dict[str, float] | None = None
+    node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
+    vriddha_fraction: FiniteNumber | None = Field(default=None, ge=0, le=1)
+    sayanadi_context: SayanadiContextRequest | None = None
 
     @field_validator("sidereal_longitudes")
     @classmethod
     def _seven(cls, value: dict[str, float]) -> dict[str, float]:
         return _validate_seven(value)
+
+    @model_validator(mode="after")
+    def _sayanadi_nodes(self):
+        if (self.sayanadi_context is not None and self.sayanadi_context.evaluate_nodes
+                and (self.node_longitudes is None or set(self.node_longitudes) != {"Rahu", "Ketu"})):
+            raise ValueError("Sayanadi node evaluation requires exactly Rahu and Ketu")
+        return self
 
 
 class LajjitadiStateResponse(_StrictModel):
@@ -129,23 +121,39 @@ class PlanetAvasthasResponse(_StrictModel):
     lajjitadi: tuple[LajjitadiStateResponse, ...]
     lajjitadi_active: tuple[str, ...]
     lajjitadi_notes: str
+    sayanadi: SayanadiResponse | None = None
 
 
 class AvasthaChartResponse(_StrictModel):
     deeptadi_source: str
+    relationship_scheme: Literal["compound", "natural"] = "compound"
+    vriddha_fraction: float | None = None
     planets: dict[str, PlanetAvasthasResponse]
+    sayanadi_status: Literal["omitted", "evaluated"] | None = None
+    sayanadi_context: SayanadiContextResponse | None = None
+    sayanadi_nodes: dict[NodePlanet, SayanadiResponse] = Field(default_factory=dict)
+
+
+class AvasthaBirthResponse(AvasthaBirthEvidenceResponse):
+    chart: AvasthaChartResponse | None
 
 
 # --- Jaimini extended -------------------------------------------------------
 
 class ArudhaRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber
     arudha_exception: Literal["rath_tenth", "none"] = "rath_tenth"
     arudha_lords: Literal[
         "classical_seven", "jaimini_co_lords"
     ] = "classical_seven"
-    node_longitudes: dict[str, float] | None = None
+    node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
+
+    @model_validator(mode="after")
+    def _co_lord_inputs(self) -> "ArudhaRequest":
+        if self.arudha_lords == "jaimini_co_lords" and set(self.node_longitudes or {}) != {"Rahu", "Ketu"}:
+            raise ValueError("jaimini_co_lords requires both Rahu and Ketu longitudes")
+        return self
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -173,9 +181,9 @@ class ArudhaResponse(_StrictModel):
 
 
 class ArgalaRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float
-    node_longitudes: dict[str, float] | None = None
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber
+    node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -199,9 +207,15 @@ class ArgalaResponse(_StrictModel):
 
 
 class KarakamsaRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float | None = None
-    scheme: int = 7
+    sidereal_longitudes: dict[Literal["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu"], FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber | None = None
+    scheme: Annotated[int, Field(strict=True, ge=7, le=8)] = 7
+
+    @model_validator(mode="after")
+    def _rahu_for_eight(self) -> "KarakamsaRequest":
+        if self.scheme == 8 and "Rahu" not in self.sidereal_longitudes:
+            raise ValueError("eight-karaka scheme requires Rahu in sidereal_longitudes")
+        return self
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -218,10 +232,18 @@ class KarakamsaResponse(_StrictModel):
 
 
 class CharaDashaRequest(_StrictModel):
-    sidereal_longitudes: dict[str, float]
-    lagna_sidereal_lon: float
-    birth_jd: float
-    node_longitudes: dict[str, float] | None = None
+    sidereal_longitudes: dict[ClassicalPlanet, FiniteNumber]
+    lagna_sidereal_lon: FiniteNumber
+    birth_jd: FiniteNumber
+    node_longitudes: dict[NodePlanet, FiniteNumber] | None = None
+    cycles: Annotated[int, Field(strict=True, ge=1, le=2)] = 1
+
+    @field_validator("node_longitudes")
+    @classmethod
+    def _pair(cls, value: dict[str, float] | None) -> dict[str, float] | None:
+        if value is not None and set(value) != {"Rahu", "Ketu"}:
+            raise ValueError("node_longitudes must contain exactly Rahu and Ketu; omit for classical lords")
+        return value
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -240,12 +262,24 @@ class CharaDashaPeriodResponse(_StrictModel):
     antardasha_starts: tuple[float, ...]
 
 
+class CharaDashaComputationResponse(_StrictModel):
+    cycle_count: Literal[1, 2]
+    lord_mode: Literal["classical_seven", "moira_existing_co_lords"]
+    formulation_id: Literal["moira_kn_rao_existing_v1"]
+    cycle_policy: Literal["repeat_first_cycle"]
+    year_basis: Literal["julian_365.25"]
+    year_days: Literal[365.25]
+    epoch_basis: Literal["caller_supplied_julian_day"]
+
+
 class CharaDashaResponse(_StrictModel):
     lagna_sign: int
     direction: int
     birth_jd: float
     periods: tuple[CharaDashaPeriodResponse, ...]
     lineage: str
+    period_count: int
+    computation: CharaDashaComputationResponse
 
 
 __all__ = [
@@ -253,6 +287,7 @@ __all__ = [
     "ArudhaPadaResponse", "ArudhaRequest", "ArudhaResponse",
     "AvasthaChartResponse", "AvasthaRequest",
     "CharaDashaPeriodResponse", "CharaDashaRequest", "CharaDashaResponse",
+    "CharaDashaComputationResponse",
     "KalavelaRequest", "KalavelaResponse", "KalavelaUpagrahaResponse",
     "KarakamsaRequest", "KarakamsaResponse",
     "LajjitadiStateResponse", "PlanetAvasthasResponse",

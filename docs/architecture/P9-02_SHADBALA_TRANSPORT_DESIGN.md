@@ -425,3 +425,13 @@ it should materialize intermediate support truth in named local variables:
 
 This is a protected doctrine surface. Do not collapse those stages into an
 opaque helper that hides how Shadbala support truth is assembled.
+
+## October2026 repair compatibility
+
+The owning Shadbala standard and Vedic adversarial repair receipt supersede
+initial numerical assumptions. Requests now select a named Saptavargaja scale;
+responses carry geometry context, source evidence and canonical war ledger.
+Positions are apparent geocentric, solar geometry is local, and all composed
+surfaces consume the same result. Missing polar events raise a typed422;
+internal invariant failures remain500. See the generated REST reference for
+current additive models and the standard for direct-call migration.

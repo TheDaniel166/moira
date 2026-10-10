@@ -275,8 +275,18 @@ class AlternateDashaPeriod:
     start_jd: float
     end_jd: float
     sub: list["AlternateDashaPeriod"]
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
+    year_days: float | None = None
+    year_basis: str | None = None
 
     def __post_init__(self) -> None:
+        from ._dasha_intervals import validate_interval
+        validate_interval(self.start_jd, self.end_jd, self.full_start_jd, self.full_end_jd)
+        if (self.year_days is None) != (self.year_basis is None):
+            raise ValueError("year_days and year_basis must be supplied together")
+        if self.year_basis is not None and _YEAR_BASIS.get(self.year_basis) != self.year_days:
+            raise ValueError("year_days must match the declared year_basis")
         if self.system not in ('ashtottari', 'yogini'):
             raise ValueError(
                 f"AlternateDashaPeriod.system must be 'ashtottari' or 'yogini', "
@@ -498,20 +508,24 @@ def _build_sub_periods(
     if current_level >= max_levels:
         return period
 
-    period_years = (period.end_jd - period.start_jd) / year_days
     sub_sequence = _sequence_from(sequence, period.lord)
-    current_jd = period.start_jd
     sub_periods: list[AlternateDashaPeriod] = []
-
-    for sub_lord in sub_sequence:
-        sub_years = (years_table[sub_lord] / total_years) * period_years
-        sub_end_jd = current_jd + sub_years * year_days
+    from ._dasha_intervals import subdivisions
+    for index, start, end, full_start, full_end in subdivisions(
+        period.start_jd, period.end_jd, period.full_start_jd, period.full_end_jd,
+        [years_table[lord] for lord in sub_sequence],
+    ):
+        sub_lord = sub_sequence[index]
         sub = AlternateDashaPeriod(
             system=period.system,
             level=current_level + 1,
             lord=sub_lord,
-            start_jd=current_jd,
-            end_jd=sub_end_jd,
+            start_jd=start,
+            end_jd=end,
+            full_start_jd=full_start,
+            full_end_jd=full_end,
+            year_days=period.year_days,
+            year_basis=period.year_basis,
             sub=[],
         )
         sub = _build_sub_periods(
@@ -519,7 +533,6 @@ def _build_sub_periods(
             current_level + 1, max_levels,
         )
         sub_periods.append(sub)
-        current_jd = sub_end_jd
 
     return AlternateDashaPeriod(
         system=period.system,
@@ -528,6 +541,10 @@ def _build_sub_periods(
         start_jd=period.start_jd,
         end_jd=period.end_jd,
         sub=sub_periods,
+        full_start_jd=period.full_start_jd,
+        full_end_jd=period.full_end_jd,
+        year_days=period.year_days,
+        year_basis=period.year_basis,
     )
 
 
@@ -563,7 +580,9 @@ def _compute_dashas(
             duration_years = base_years * (1.0 - fraction_elapsed_in_first)
         else:
             duration_years = base_years
-        end_jd = min(current_jd + duration_years * year_days, cycle_end_jd)
+        full_end_jd = current_jd + duration_years * year_days
+        full_start_jd = full_end_jd - base_years * year_days if i == 0 else current_jd
+        end_jd = min(full_end_jd, cycle_end_jd)
         period = AlternateDashaPeriod(
             system=system,
             level=1,
@@ -571,6 +590,10 @@ def _compute_dashas(
             start_jd=current_jd,
             end_jd=end_jd,
             sub=[],
+            full_start_jd=full_start_jd,
+            full_end_jd=full_end_jd,
+            year_days=year_days,
+            year_basis=next(key for key, days in _YEAR_BASIS.items() if days == year_days),
         )
         if levels > 1:
             period = _build_sub_periods(
@@ -949,6 +972,7 @@ def validate_alternate_dasha_output(
     else:
         valid_lords = frozenset(YOGINI_SEQUENCE)
     for i, p in enumerate(periods):
+        _validate_alternate_children(p)
         if p.system != system:
             raise ValueError(
                 f"periods[{i}].system = {p.system!r} differs from "
@@ -970,3 +994,33 @@ def validate_alternate_dasha_output(
                     f"Gap or overlap between periods[{i - 1}] and "
                     f"periods[{i}]: Δ = {gap:.8f} JD"
                 )
+
+
+def _validate_alternate_children(
+    period: AlternateDashaPeriod, *, require_complete: bool = True,
+) -> None:
+    """Check identity, chronology and provenance, with explicit coverage mode.
+
+    Generated outputs require complete visible coverage. Supplied REST period
+    profiles may select a partial child list; gaps do not waive containment,
+    order, full-interval intersection, or uniform year metadata.
+    """
+    from ._dasha_intervals import validate_child_interval
+
+    period.__post_init__()
+    if require_complete and period.sub and (abs(period.sub[0].start_jd - period.start_jd) > 1e-6
+                       or abs(period.sub[-1].end_jd - period.end_jd) > 1e-6):
+        raise ValueError("Alternate Dasha children must cover their visible parent")
+    previous = period.start_jd
+    valid = ASHTOTTARI_SEQUENCE if period.system == 'ashtottari' else YOGINI_SEQUENCE
+    for child in period.sub:
+        if (child.level != period.level + 1 or child.system != period.system
+                or child.lord not in valid or child.year_basis != period.year_basis
+                or child.year_days != period.year_days):
+            raise ValueError("Invalid alternate Dasha child identity, level or year basis")
+        if (child.start_jd < previous - 1e-6 or child.end_jd > period.end_jd + 1e-6
+                or (require_complete and abs(child.start_jd - previous) > 1e-6)):
+            raise ValueError("Alternate Dasha children must be ordered and contained; complete trees must be adjacent")
+        validate_child_interval(period, child, tolerance=1e-6)
+        _validate_alternate_children(child, require_complete=require_complete)
+        previous = child.end_jd

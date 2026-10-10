@@ -1,9 +1,14 @@
 """
 Unit tests for planet heliacal / acronychal visibility computation.
 
-moira/heliacal.py — planet_heliacal_rising, planet_heliacal_setting,
-                    planet_acronychal_rising, planet_acronychal_setting,
+moira/heliacal.py — planet_heliacal_rising, planet_evening_first,
+                    planet_morning_last, planet_acronychal_setting,
                     PlanetHeliacalEvent.
+
+Nomenclature (6.9.9): the standard Ptolemy / Schoch names.  The event this
+file historically called "heliacal setting" (last morning) is MORNING_LAST and
+the one it called "acronychal rising" (first evening) is EVENING_FIRST; see
+tests/unit/test_heliacal_standard_kinds.py for the full standard set.
 
 All tests marked @pytest.mark.requires_ephemeris (DE441 kernel required).
 
@@ -21,11 +26,11 @@ Events are validated against known apparition dates with ±15-day tolerance
                                  conjunction April 11 2023 (JD 2460045).
                                  Expected ~late April 2023 (JD 2460060–2460090).
 
-  Venus acronychal rising 2021 — first evening star after superior
+  Venus evening first 2021     — first evening star after superior
                                  conjunction March 26 2021 (JD 2459299).
                                  Expected ~late April 2021 (JD 2459315–2459360).
 
-  Venus heliacal setting 2021  — last morning visibility before superior
+  Venus morning last 2021      — last morning visibility before superior
                                  conjunction March 26 2021.  Start from
                                  July 2020 (well into morning apparition).
                                  Expected ~late January / early February 2021
@@ -34,8 +39,8 @@ Events are validated against known apparition dates with ±15-day tolerance
 Physical plausibility constraints (no external reference needed):
   - planet_altitude_deg > 0 (above horizon)
   - sun_altitude_deg < 0 (below horizon)
-  - HELIACAL_* events have elongation_deg < 0 (morning sky)
-  - ACRONYCHAL_* events have elongation_deg > 0 (evening sky)
+  - HELIACAL_RISING / MORNING_LAST events have elongation_deg < 0 (morning sky)
+  - EVENING_FIRST / ACRONYCHAL_SETTING events have elongation_deg > 0 (evening sky)
   - apparent_magnitude is finite
 """
 from __future__ import annotations
@@ -51,8 +56,9 @@ from moira.heliacal import (
     VisibilityModel,
     planet_acronychal_rising,
     planet_acronychal_setting,
+    planet_evening_first,
     planet_heliacal_rising,
-    planet_heliacal_setting,
+    planet_morning_last,
 )
 from moira.constants import Body
 
@@ -101,17 +107,17 @@ def jupiter_heliacal_rising(planetary_reader):
 
 
 @pytest.fixture(scope="module")
-def venus_acronychal_rising(planetary_reader):
+def venus_evening_first(planetary_reader):
     with use_reader_override(planetary_reader):
-        return planet_acronychal_rising(
+        return planet_evening_first(
             Body.VENUS, _VENUS_SUPERIOR_CONJ_2021, _LAT, _LON
         )
 
 
 @pytest.fixture(scope="module")
-def venus_heliacal_setting(planetary_reader):
+def venus_morning_last(planetary_reader):
     with use_reader_override(planetary_reader):
-        return planet_heliacal_setting(
+        return planet_morning_last(
             Body.VENUS,
             _VENUS_MORNING_2020,
             _LAT,
@@ -157,13 +163,13 @@ def test_kind_heliacal_rising(venus_heliacal_rising):
 
 
 @pytest.mark.requires_ephemeris
-def test_kind_acronychal_rising(venus_acronychal_rising):
-    assert venus_acronychal_rising.kind == HeliacalEventKind.ACRONYCHAL_RISING
+def test_kind_evening_first(venus_evening_first):
+    assert venus_evening_first.kind == HeliacalEventKind.EVENING_FIRST
 
 
 @pytest.mark.requires_ephemeris
-def test_kind_heliacal_setting(venus_heliacal_setting):
-    assert venus_heliacal_setting.kind == HeliacalEventKind.HELIACAL_SETTING
+def test_kind_morning_last(venus_morning_last):
+    assert venus_morning_last.kind == HeliacalEventKind.MORNING_LAST
 
 
 @pytest.mark.requires_ephemeris
@@ -191,8 +197,8 @@ def test_all_fields_present(venus_heliacal_rising):
 @pytest.mark.parametrize("fixture_name", [
     "venus_heliacal_rising",
     "jupiter_heliacal_rising",
-    "venus_acronychal_rising",
-    "venus_heliacal_setting",
+    "venus_evening_first",
+    "venus_morning_last",
     "saturn_acronychal_setting",
 ])
 def test_jd_finite_and_positive(fixture_name, request):
@@ -205,8 +211,8 @@ def test_jd_finite_and_positive(fixture_name, request):
 @pytest.mark.parametrize("fixture_name", [
     "venus_heliacal_rising",
     "jupiter_heliacal_rising",
-    "venus_acronychal_rising",
-    "venus_heliacal_setting",
+    "venus_evening_first",
+    "venus_morning_last",
     "saturn_acronychal_setting",
 ])
 def test_planet_above_horizon(fixture_name, request):
@@ -220,8 +226,8 @@ def test_planet_above_horizon(fixture_name, request):
 @pytest.mark.parametrize("fixture_name", [
     "venus_heliacal_rising",
     "jupiter_heliacal_rising",
-    "venus_acronychal_rising",
-    "venus_heliacal_setting",
+    "venus_evening_first",
+    "venus_morning_last",
     "saturn_acronychal_setting",
 ])
 def test_sun_below_horizon(fixture_name, request):
@@ -235,8 +241,8 @@ def test_sun_below_horizon(fixture_name, request):
 @pytest.mark.parametrize("fixture_name", [
     "venus_heliacal_rising",
     "jupiter_heliacal_rising",
-    "venus_acronychal_rising",
-    "venus_heliacal_setting",
+    "venus_evening_first",
+    "venus_morning_last",
     "saturn_acronychal_setting",
 ])
 def test_sun_at_twilight_depth(fixture_name, request):
@@ -251,8 +257,8 @@ def test_sun_at_twilight_depth(fixture_name, request):
 @pytest.mark.parametrize("fixture_name", [
     "venus_heliacal_rising",
     "jupiter_heliacal_rising",
-    "venus_acronychal_rising",
-    "venus_heliacal_setting",
+    "venus_evening_first",
+    "venus_morning_last",
     "saturn_acronychal_setting",
 ])
 def test_apparent_magnitude_finite(fixture_name, request):
@@ -276,14 +282,14 @@ def test_heliacal_rising_jupiter_morning_sky(jupiter_heliacal_rising):
 
 
 @pytest.mark.requires_ephemeris
-def test_heliacal_setting_morning_sky(venus_heliacal_setting):
-    assert venus_heliacal_setting.elongation_deg < 0.0
+def test_morning_last_morning_sky(venus_morning_last):
+    assert venus_morning_last.elongation_deg < 0.0
 
 
 @pytest.mark.requires_ephemeris
-def test_acronychal_rising_evening_sky(venus_acronychal_rising):
-    """Acronychal rising must have positive elongation (planet east of Sun)."""
-    assert venus_acronychal_rising.elongation_deg > 0.0
+def test_evening_first_evening_sky(venus_evening_first):
+    """Evening first must have positive elongation (planet east of Sun)."""
+    assert venus_evening_first.elongation_deg > 0.0
 
 
 @pytest.mark.requires_ephemeris
@@ -332,37 +338,37 @@ def test_jupiter_heliacal_rising_after_conjunction(jupiter_heliacal_rising):
 
 
 @pytest.mark.requires_ephemeris
-def test_venus_acronychal_rising_2021_window(venus_acronychal_rising):
+def test_venus_evening_first_2021_window(venus_evening_first):
     """Venus first evening visibility after superior conjunction March 26 2021.
 
     Expected window: April 10 – May 20 2021 (JD 2459314 – 2459354).
     """
-    assert 2459310.0 < venus_acronychal_rising.jd_ut < 2459360.0, (
-        f"Venus acronychal rising JD {venus_acronychal_rising.jd_ut:.1f} "
+    assert 2459310.0 < venus_evening_first.jd_ut < 2459360.0, (
+        f"Venus evening first JD {venus_evening_first.jd_ut:.1f} "
         f"outside expected window"
     )
 
 
 @pytest.mark.requires_ephemeris
-def test_venus_acronychal_rising_after_superior_conjunction(venus_acronychal_rising):
-    assert venus_acronychal_rising.jd_ut > _VENUS_SUPERIOR_CONJ_2021
+def test_venus_evening_first_after_superior_conjunction(venus_evening_first):
+    assert venus_evening_first.jd_ut > _VENUS_SUPERIOR_CONJ_2021
 
 
 @pytest.mark.requires_ephemeris
-def test_venus_heliacal_setting_before_superior_conjunction(venus_heliacal_setting):
+def test_venus_morning_last_before_superior_conjunction(venus_morning_last):
     """Venus last morning visibility must precede the superior conjunction."""
-    assert venus_heliacal_setting.jd_ut < _VENUS_SUPERIOR_CONJ_2021
+    assert venus_morning_last.jd_ut < _VENUS_SUPERIOR_CONJ_2021
 
 
 @pytest.mark.requires_ephemeris
-def test_venus_heliacal_setting_2021_window(venus_heliacal_setting):
+def test_venus_morning_last_2021_window(venus_morning_last):
     """Venus last morning visibility ~4–8 weeks before superior conjunction.
 
     Superior conjunction March 26 2021 (JD 2459299).
     Expected window: January 15 – March 10 2021 (JD 2459229 – 2459283).
     """
-    assert 2459220.0 < venus_heliacal_setting.jd_ut < 2459290.0, (
-        f"Venus heliacal setting JD {venus_heliacal_setting.jd_ut:.1f} "
+    assert 2459220.0 < venus_morning_last.jd_ut < 2459290.0, (
+        f"Venus morning last JD {venus_morning_last.jd_ut:.1f} "
         f"outside expected window"
     )
 
@@ -454,3 +460,20 @@ def test_importable_from_moira():
     assert hasattr(_m, "PlanetHeliacalEvent")
     result = _m.planet_heliacal_rising(Body.VENUS, _VENUS_INFERIOR_CONJ_2020, _LAT, _LON)
     assert isinstance(result, _m.PlanetHeliacalEvent)
+
+
+@pytest.mark.requires_ephemeris
+def test_superior_planet_has_no_morning_last_at_opposition(planetary_reader):
+    """Saturn's 1878 morning apparition ends at opposition (1878-09-22), not in
+    the Sun's glare, so there is no morning last visibility (the event named
+    HELIACAL_SETTING before 6.9.9). The search used to carry the last morning
+    sighting across the opposition and return it."""
+    with use_reader_override(planetary_reader):
+        event = planet_morning_last(
+            Body.SATURN,
+            2407166.5,  # 1878-07-01 00:00 UT, Saturn on the morning side
+            48.4,
+            9.98,
+            search_days=320,
+        )
+    assert event is None

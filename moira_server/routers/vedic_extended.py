@@ -8,6 +8,9 @@ from moira import Moira
 from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..dependencies import get_engine
+from ..models.sayanadi import AvasthaBirthRequest, SayanadiRequest, SayanadiResponse
+from ..serializers.avasthas import serialize_avastha_birth, serialize_avastha_chart
+from ..services.avasthas import compute_avastha_birth
 from ..models.vedic_extended import (
     ArgalaHouseResponse,
     ArgalaRequest,
@@ -16,17 +19,17 @@ from ..models.vedic_extended import (
     ArudhaRequest,
     ArudhaResponse,
     AvasthaChartResponse,
+    AvasthaBirthResponse,
     AvasthaRequest,
     CharaDashaPeriodResponse,
     CharaDashaRequest,
     CharaDashaResponse,
+    CharaDashaComputationResponse,
     KalavelaRequest,
     KalavelaResponse,
     KalavelaUpagrahaResponse,
     KarakamsaRequest,
     KarakamsaResponse,
-    LajjitadiStateResponse,
-    PlanetAvasthasResponse,
     SunBasedUpagrahasRequest,
     SunBasedUpagrahasResponse,
 )
@@ -112,48 +115,33 @@ def kalavelas_route(
 
 @avasthas_router.post("/evaluate", response_model=AvasthaChartResponse)
 def avasthas_route(request: AvasthaRequest) -> AvasthaChartResponse:
-    """All four avastha systems (BPHS Ch. 45): Baladi, Jagradadi,
-    Deeptadi (source-parameterized — the four primaries genuinely
-    disagree and are never merged), and the six non-exclusive Lajjitadi
-    flags with evidence."""
+    """Four classical avastha families and optional complete Sayanadi context."""
     from moira.avasthas import AvasthaPolicy, evaluate_avasthas
 
     result = evaluate_avasthas(
-        request.sidereal_longitudes,
-        request.lagna_sidereal_lon,
-        AvasthaPolicy(
-            deeptadi_source=request.deeptadi_source,
-            relationship_scheme=request.relationship_scheme,
-        ),
+        request.sidereal_longitudes, request.lagna_sidereal_lon,
+        AvasthaPolicy(deeptadi_source=request.deeptadi_source,
+                      relationship_scheme=request.relationship_scheme,
+                      vriddha_fraction=request.vriddha_fraction),
         node_longitudes=request.node_longitudes,
+        sayanadi_context=request.sayanadi_context.to_engine() if request.sayanadi_context is not None else None,
     )
-    return AvasthaChartResponse(
-        deeptadi_source=request.deeptadi_source,
-        planets={
-            name: PlanetAvasthasResponse(
-                planet=pa.planet,
-                baladi_state=pa.baladi.state,
-                baladi_effect_fraction=pa.baladi.effect_fraction,
-                baladi_effect_label=pa.baladi.effect_label,
-                jagradadi_state=pa.jagradadi.state,
-                jagradadi_reason=pa.jagradadi.reason,
-                jagradadi_effect_fraction=pa.jagradadi.effect_fraction,
-                deeptadi_state=pa.deeptadi.state,
-                deeptadi_source=pa.deeptadi.source,
-                deeptadi_reason=pa.deeptadi.reason,
-                deeptadi_citation=pa.deeptadi.citation,
-                lajjitadi=tuple(
-                    LajjitadiStateResponse(
-                        state=s.state, applies=s.applies, evidence=s.evidence,
-                    )
-                    for s in pa.lajjitadi.states
-                ),
-                lajjitadi_active=pa.lajjitadi.active,
-                lajjitadi_notes=pa.lajjitadi.notes,
-            )
-            for name, pa in result.planets.items()
-        },
-    )
+    return serialize_avastha_chart(result)
+
+
+@avasthas_router.post("/sayanadi", response_model=SayanadiResponse)
+def sayanadi_route(request: SayanadiRequest) -> SayanadiResponse:
+    """One of nine source-defined subjects, supplied positions and explicit clock/name."""
+    from moira.avasthas import sayanadi_avastha
+    result = sayanadi_avastha(request.planet, request.sidereal_longitudes,
+                              request.lagna_sidereal_lon, context=request.context.to_engine())
+    return SayanadiResponse.model_validate(result)
+
+
+@avasthas_router.post("/from-datetime", response_model=AvasthaBirthResponse)
+def avastha_birth_route(request: AvasthaBirthRequest, engine: Moira = Depends(get_engine)) -> AvasthaBirthResponse:
+    """Reader-bound birth chart, previous-sunrise brackets and ghati availability."""
+    return serialize_avastha_birth(compute_avastha_birth(engine, request))
 
 
 @jaimini_extended_router.post("/arudhas", response_model=ArudhaResponse)
@@ -239,8 +227,8 @@ def karakamsa_route(request: KarakamsaRequest) -> KarakamsaResponse:
 
 @jaimini_extended_router.post("/chara-dasha", response_model=CharaDashaResponse)
 def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
-    """First-cycle Chara Dasha per K.N. Rao (Neelakantha karika lineage,
-    named): 9th-from-lagna direction rule, count-to-lord years with no
+    """Bounded one/two-cycle Chara Dasha in the existing Moira formulation,
+    with ninth-from-lagna direction, count-to-lord years with no
     exaltation adjustment, antardashas with the dasha sign last."""
     from moira.jaimini_extended import chara_dasha
 
@@ -249,6 +237,7 @@ def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
         request.lagna_sidereal_lon,
         request.birth_jd,
         node_longitudes=request.node_longitudes,
+        cycles=request.cycles,
     )
     return CharaDashaResponse(
         lagna_sign=result.lagna_sign,
@@ -265,6 +254,11 @@ def chara_dasha_route(request: CharaDashaRequest) -> CharaDashaResponse:
             for p in result.periods
         ),
         lineage=result.lineage,
+        period_count=result.period_count,
+        computation=CharaDashaComputationResponse(
+            **{name: getattr(result.computation, name)
+               for name in CharaDashaComputationResponse.model_fields}
+        ),
     )
 
 

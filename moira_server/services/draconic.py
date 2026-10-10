@@ -11,7 +11,7 @@ from moira.draconic import (
     draconic_longitude,
 )
 
-from ..models.chart import ChartRequest
+from ..models.chart import ChartRequest, HousesRequest
 from ..models.draconic import (
     DraconicAnchorResponse,
     DraconicChartRequest,
@@ -22,7 +22,7 @@ from ..models.draconic import (
     DraconicPositionsRequest,
     DraconicProvenanceResponse,
 )
-from ._shared import build_chart_context
+from ._shared import build_chart_context, build_houses_context
 
 
 def _serialize_anchor(anchor: DraconicAnchor) -> DraconicAnchorResponse:
@@ -40,6 +40,8 @@ def _serialize_anchor(anchor: DraconicAnchor) -> DraconicAnchorResponse:
 def _serialize_chart(
     vessel: DraconicChart,
     provenance: DraconicProvenanceResponse,
+    *,
+    house_system: str | None = None,
 ) -> DraconicChartResponse:
     positions = [
         DraconicPositionResponse(
@@ -63,6 +65,7 @@ def _serialize_chart(
         origin=vessel.origin if hasattr(vessel, "origin") else "caller_supplied",
         houses=list(vessel.houses) if getattr(vessel, "houses", None) is not None else None,
         angles=dict(vessel.angles) if getattr(vessel, "angles", None) is not None else None,
+        house_system=house_system,
         source_zodiac=vessel.source_zodiac,
         interpretation_scope=vessel.interpretation_scope,
         anchor_residual=vessel.anchor_residual,
@@ -146,10 +149,24 @@ def compute_draconic_chart(
         observer_elev_m=request.observer_elev_m,
     )
     chart = build_chart_context(engine, chart_request)
+    houses = None
+    if (request.latitude is None) != (request.longitude is None):
+        raise ValueError("latitude and longitude must be given together for draconic houses")
+    if request.latitude is not None and request.longitude is not None:
+        houses = build_houses_context(
+            engine,
+            HousesRequest(
+                dt=request.dt,
+                latitude=request.latitude,
+                longitude=request.longitude,
+                system=request.house_system,
+            ),
+        )
     vessel = draconic_chart(
         chart,
         node_mode=request.node_mode,
         include_nodes=request.include_nodes,
+        houses=houses,
     )
     return _serialize_chart(
         vessel,
@@ -169,4 +186,5 @@ def compute_draconic_chart(
                 "draconic_chart_response_serialization",
             ],
         ),
+        house_system=getattr(houses, "effective_system", None) if houses is not None else None,
     )

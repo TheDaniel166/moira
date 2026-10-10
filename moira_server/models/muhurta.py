@@ -19,13 +19,15 @@ MuhurtaScoreDirection = Literal["higher_is_more_favorable_under_policy"]
 
 
 class MuhurtaPolicyRequest(_StrictModel):
-    weight_tithi: float = 1.0
-    weight_vara: float = 1.0
-    weight_nakshatra: float = 1.0
-    weight_yoga: float = 1.5
-    weight_karana: float = 0.8
+    weight_tithi: float = Field(default=1.0, strict=True)
+    weight_vara: float = Field(default=1.0, strict=True)
+    weight_nakshatra: float = Field(default=1.0, strict=True)
+    weight_yoga: float = Field(default=1.5, strict=True)
+    weight_karana: float = Field(default=0.8, strict=True)
+    weight_tara: float = Field(default=1.0, strict=True)
+    weight_chandra: float = Field(default=1.0, strict=True)
 
-    @field_validator("weight_tithi", "weight_vara", "weight_nakshatra", "weight_yoga", "weight_karana")
+    @field_validator("weight_tithi", "weight_vara", "weight_nakshatra", "weight_yoga", "weight_karana", "weight_tara", "weight_chandra")
     @classmethod
     def _finite_non_negative_weight(cls, value: float) -> float:
         if not math.isfinite(value):
@@ -34,11 +36,17 @@ class MuhurtaPolicyRequest(_StrictModel):
             raise ValueError("Muhurta policy weights must be non-negative")
         return value
 
+    @model_validator(mode="after")
+    def _engine_policy(self):
+        from moira.muhurta import MuhurtaPolicy
+        MuhurtaPolicy(**self.model_dump())
+        return self
+
 
 class MuhurtaDirectRequest(_StrictModel):
-    sun_tropical_lon: float
-    moon_tropical_lon: float
-    jd: float
+    sun_tropical_lon: float = Field(strict=True)
+    moon_tropical_lon: float = Field(strict=True)
+    jd: float = Field(strict=True)
     ayanamsa_system: str = "Lahiri"
     panchanga_policy: PanchangaPolicyRequest | None = None
     muhurta_policy: MuhurtaPolicyRequest | None = None
@@ -60,12 +68,19 @@ class MuhurtaDirectRequest(_StrictModel):
 
 class MuhurtaChartRequest(_StrictModel):
     dt: datetime
-    observer_lat: float | None = Field(default=None, ge=-90.0, le=90.0)
-    observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
-    observer_elev_m: float = 0.0
+    observer_lat: float | None = Field(default=None, strict=True, ge=-90.0, le=90.0)
+    observer_lon: float | None = Field(default=None, strict=True, ge=-180.0, le=180.0)
+    observer_elev_m: float = Field(default=0.0, strict=True)
     ayanamsa_system: str = "Lahiri"
     panchanga_policy: PanchangaPolicyRequest | None = None
     muhurta_policy: MuhurtaPolicyRequest | None = None
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _civil_datetime(cls, value):
+        if not isinstance(value, (str, datetime)):
+            raise ValueError("dt must be a timezone-aware civil datetime, not a numeric timestamp")
+        return value
 
     @field_validator("dt")
     @classmethod
@@ -108,13 +123,19 @@ class MuhurtaRequestEchoResponse(_StrictModel):
 
 
 class MuhurtaPolicyResponse(_StrictModel):
+    rule_profile: Literal["moira.muhurta.existing_weighted_profile.v1"]
     weight_tithi: float
     weight_vara: float
     weight_nakshatra: float
     weight_yoga: float
     weight_karana: float
+    weight_tara: float
+    weight_chandra: float
+    use_classical_ashubha_yoga: Literal[True] = True
     exposed_policy_fields: list[str]
     omitted_policy_fields: list[str]
+    applied_policy_fields: list[str]
+    reserved_policy_fields: list[str]
 
 
 class MuhurtaClassificationResponse(_StrictModel):
@@ -160,6 +181,7 @@ class MuhurtaProvenanceResponse(_StrictModel):
     search_semantics: Literal["not_admitted"]
     activity_guidance: Literal["not_admitted"]
     score_scale: str
+    vara_basis: Literal["jd_weekday", "civil_utc_weekday"]
     stage_sequence: list[str]
 
 
@@ -188,7 +210,7 @@ class MuhurtaPersonalRequest(MuhurtaDirectRequest):
     and rashi source).
     """
 
-    janma_moon_sidereal_lon: float
+    janma_moon_sidereal_lon: float = Field(strict=True)
 
     @field_validator("janma_moon_sidereal_lon")
     @classmethod
@@ -217,16 +239,16 @@ class ChandraBalaResponse(_StrictModel):
     is_chandrashtama: bool
 
 
-class MuhurtaPersonalScoreResponse(_StrictModel):
+class MuhurtaPersonalScoreResponse(MuhurtaScoreResponse):
     """Natal-personalized score: generic score + tara/chandra overlays."""
 
-    total: float
-    breakdown: dict[str, float]
-    classification: MuhurtaClassificationResponse
     tara: TaraBalaResponse
     chandra: ChandraBalaResponse
-    score_scale: MuhurtaScoreScale
-    score_direction: MuhurtaScoreDirection
+    policy: MuhurtaPolicyResponse
+    panchanga: PanchangaResultResponse
+    janma_moon_sidereal_lon: float
+    transit_moon_sidereal_lon: float
+    provenance: MuhurtaProvenanceResponse
 
 
 __all__ = [

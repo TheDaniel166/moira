@@ -12,7 +12,8 @@ layer consumes it.
 Doctrinal notes
 ---------------
 - Uses source-identified Egyptian, Ptolemaic, and Chaldaean bounds/terms in the
-  tropical zodiac.
+  tropical zodiac, and William Lilly's 1647 terms (his own printed table,
+  which differs from Robbins' Ptolemaic terms in seven signs).
 - Bound rulers are the five non-luminaries only: Mercury, Venus, Mars,
   Jupiter, and Saturn.
 - A planet in its own bound receives minor essential dignity under the
@@ -49,6 +50,7 @@ __all__ = [
     "PTOLEMAIC_BOUNDS",
     "CHALDEAN_DAY_BOUNDS",
     "CHALDEAN_NIGHT_BOUNDS",
+    "WILLIAM_LILLY_1647_TERMS",
     "egyptian_bound_of",
     "bound_ruler",
     "classify_egyptian_bound",
@@ -104,6 +106,7 @@ class EgyptianBoundsDoctrine(StrEnum):
     PTOLEMAIC = "ptolemaic"
     CHALDEAN_DAY = "chaldean_day"
     CHALDEAN_NIGHT = "chaldean_night"
+    WILLIAM_LILLY_1647 = "william_lilly_1647"
 
 
 @dataclass(frozen=True)
@@ -154,6 +157,11 @@ BOUNDS_SOURCE_CITATIONS: dict[EgyptianBoundsDoctrine, str] = {
         "Ptolemy, Tetrabiblos I.20/I.21, Chaldaean terms, nocturnal ordering, "
         "F. E. Robbins trans. (Loeb 435, 1940), pp. 100-103"
     ),
+    EgyptianBoundsDoctrine.WILLIAM_LILLY_1647: (
+        "William Lilly, Christian Astrology (London, 1647), Book I ch. XVIII, "
+        "'A Table of the Essential Dignities of the Planets according to "
+        "Ptolomy', p. 104, terms columns"
+    ),
 }
 
 
@@ -173,6 +181,29 @@ PTOLEMAIC_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
     "Capricorn":   [("Venus", 0, 6), ("Mercury", 6, 12), ("Jupiter", 12, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
     "Aquarius":    [("Saturn", 0, 6), ("Mercury", 6, 12), ("Venus", 12, 20), ("Jupiter", 20, 25), ("Mars", 25, 30)],
     "Pisces":      [("Venus", 0, 8), ("Jupiter", 8, 14), ("Mercury", 14, 20), ("Mars", 20, 25), ("Saturn", 25, 30)],
+}
+
+
+# William Lilly's terms, from the table on p. 104 of Christian Astrology
+# (1647), Book I ch. XVIII ("according to Ptolomy"). Lilly's printed terms
+# differ from Robbins' Ptolemaic terms above in seven signs: Taurus (Saturn
+# 22-26, Mars 26-30), Gemini, Leo, Libra, Scorpio, Capricorn and Pisces.
+# Read from the Astrology Classics edition's reset of the table and checked
+# against the 1647 OCR; Lilly reckons "the first six degrees" as
+# 0°01'-6°00', while this module keeps its [start, end) convention.
+WILLIAM_LILLY_1647_TERMS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Jupiter", 0, 6), ("Venus", 6, 14), ("Mercury", 14, 21), ("Mars", 21, 26), ("Saturn", 26, 30)],
+    "Taurus":      [("Venus", 0, 8), ("Mercury", 8, 15), ("Jupiter", 15, 22), ("Saturn", 22, 26), ("Mars", 26, 30)],
+    "Gemini":      [("Mercury", 0, 7), ("Jupiter", 7, 14), ("Venus", 14, 21), ("Saturn", 21, 25), ("Mars", 25, 30)],
+    "Cancer":      [("Mars", 0, 6), ("Jupiter", 6, 13), ("Mercury", 13, 20), ("Venus", 20, 27), ("Saturn", 27, 30)],
+    "Leo":         [("Saturn", 0, 6), ("Mercury", 6, 13), ("Venus", 13, 19), ("Jupiter", 19, 25), ("Mars", 25, 30)],
+    "Virgo":       [("Mercury", 0, 7), ("Venus", 7, 13), ("Jupiter", 13, 18), ("Saturn", 18, 24), ("Mars", 24, 30)],
+    "Libra":       [("Saturn", 0, 6), ("Venus", 6, 11), ("Jupiter", 11, 19), ("Mercury", 19, 24), ("Mars", 24, 30)],
+    "Scorpio":     [("Mars", 0, 6), ("Jupiter", 6, 14), ("Venus", 14, 21), ("Mercury", 21, 27), ("Saturn", 27, 30)],
+    "Sagittarius": [("Jupiter", 0, 8), ("Venus", 8, 14), ("Mercury", 14, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
+    "Capricorn":   [("Venus", 0, 6), ("Mercury", 6, 12), ("Jupiter", 12, 19), ("Mars", 19, 25), ("Saturn", 25, 30)],
+    "Aquarius":    [("Saturn", 0, 6), ("Mercury", 6, 12), ("Venus", 12, 20), ("Jupiter", 20, 25), ("Mars", 25, 30)],
+    "Pisces":      [("Venus", 0, 8), ("Jupiter", 8, 14), ("Mercury", 14, 20), ("Mars", 20, 26), ("Saturn", 26, 30)],
 }
 
 
@@ -800,6 +831,8 @@ def _table_for_policy(policy: EgyptianBoundsPolicy) -> dict[str, list[tuple[str,
         return CHALDEAN_DAY_BOUNDS
     if policy.doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
         return CHALDEAN_NIGHT_BOUNDS
+    if policy.doctrine is EgyptianBoundsDoctrine.WILLIAM_LILLY_1647:
+        return WILLIAM_LILLY_1647_TERMS
     return EGYPTIAN_BOUNDS
 
 
@@ -1159,5 +1192,6 @@ for _admitted_bounds_table in (
     PTOLEMAIC_BOUNDS,
     CHALDEAN_DAY_BOUNDS,
     CHALDEAN_NIGHT_BOUNDS,
+    WILLIAM_LILLY_1647_TERMS,
 ):
     _validate_bounds_table(_admitted_bounds_table)

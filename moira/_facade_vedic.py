@@ -11,12 +11,23 @@ from __future__ import annotations
 import importlib
 import sys
 from datetime import datetime
+from datetime import date
 from fractions import Fraction
 from typing import Any
+from .spk_reader import MissingEphemerisKernelError
 
 _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
+_daily_panchanga = importlib.import_module("moira.daily_panchanga")
+_lunar_month = importlib.import_module("moira.lunar_month")
+_gochara_dated = importlib.import_module("moira.gochara_dated")
+_avasthas = importlib.import_module("moira.avasthas")
+_sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
+_named_muhurta = importlib.import_module("moira.named_muhurta")
+_special_muhurta = importlib.import_module("moira.special_muhurta")
+_panchanga_shuddhi = importlib.import_module("moira.panchanga_shuddhi")
+_muhurta_search = importlib.import_module("moira.muhurta_search")
 _pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
@@ -65,7 +76,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     "risk": "medium",
     "api": {
         "frozen": [
-            "panchanga", "panchanga_profile",
+            "panchanga", "panchanga_profile", "daily_panchanga", "lunar_month_at",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
             "pancha_pakshi_uromarisi_constitution_status",
             "pancha_pakshi_astronomical_paksha",
@@ -91,7 +102,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "jaimini_pair", "ashtakavarga", "ashtakavarga_for_chart",
             "ashtakavarga_profile", "ashtakavarga_sign_profile",
             "ashtakavarga_transit_strength", "varga", "varga_named",
-            "varga_for_chart", "shodashvarga", "shodashvarga_for_chart",
+            "varga_for_chart", "shodashvarga", "shodashvarga_for_chart", "d60_sign",
             "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical",
             "list_ayanamsa_systems"
         ],
@@ -196,6 +207,114 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
 
+    def muhurta_lagna_catalogue(self):
+        """Discover source-specific Lagna, Navamsa and strength policies."""
+        from .muhurta_lagna import muhurta_lagna_catalogue
+        return muhurta_lagna_catalogue()
+
+    def evaluate_muhurta_lagna_strength(self, sidereal_longitudes, **kwargs):
+        """Compose inspectable Lagna rules from supplied sidereal truth."""
+        from .muhurta_lagna import evaluate_muhurta_lagna_strength
+        return evaluate_muhurta_lagna_strength(sidereal_longitudes, **kwargs)
+
+    def muhurta_lagna_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Derive one Lagna snapshot using this engine's bound reader."""
+        from .muhurta_lagna_dated import muhurta_lagna_for_datetime
+        return muhurta_lagna_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
+    def muhurta_dosha_catalogue(self):
+        """Discover finite dosha profiles and explicitly scoped cancellation rules."""
+        from .muhurta_dosha import muhurta_dosha_catalogue
+        return muhurta_dosha_catalogue()
+
+    def detect_muhurta_doshas(self, sun_sidereal_longitude, moon_sidereal_longitude, **kwargs):
+        """Preserve independent dosha detection and source-specific Parihara evidence."""
+        from .muhurta_dosha import detect_muhurta_doshas
+        return detect_muhurta_doshas(sun_sidereal_longitude, moon_sidereal_longitude, **kwargs)
+
+    def muhurta_doshas_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, necessary_activity=None, policy=None):
+        """Compose sunrise-day dosha cells with this engine's existing reader."""
+        from .muhurta_dosha import muhurta_doshas_for_date
+        return muhurta_doshas_for_date(local_date, latitude, longitude, timezone=timezone,
+            necessary_activity=necessary_activity, policy=policy, reader=self._reader)
+
+    def panchanga_shuddhi_catalogue(self):
+        """Discover admitted source profiles and historical Karana activities."""
+        return _panchanga_shuddhi.panchanga_shuddhi_catalogue()
+
+    def panchanga_shuddhi_from_longitudes(self, sun_sidereal_longitude, moon_sidereal_longitude, **kwargs):
+        """Independent source findings from caller-owned inputs, without score migration."""
+        return _panchanga_shuddhi.panchanga_shuddhi_from_longitudes(
+            sun_sidereal_longitude, moon_sidereal_longitude, **kwargs)
+
+    def panchanga_shuddhi_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, natal_nakshatra_index=None,
+            policy: _panchanga_shuddhi.PanchangaShuddhiPolicy | None = None):
+        """Sunrise-owned source assessment cells using this engine's reader."""
+        return _panchanga_shuddhi.panchanga_shuddhi_for_date(local_date, latitude, longitude,
+            timezone=timezone, natal_nakshatra_index=natal_nakshatra_index, policy=policy, reader=self._reader)
+
+    def special_muhurta_from_solar_times(self, *, weekday: int, sunrise_jd_ut1=None,
+            sunset_jd_ut1=None, half_set_jd_ut1=None, upper_limb_sunset_jd_ut1=None,
+            policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Source-selected Vijaya/Godhuli from caller-owned solar anchors."""
+        return _special_muhurta.special_muhurta_from_solar_times(weekday=weekday,
+            sunrise_jd_ut1=sunrise_jd_ut1, sunset_jd_ut1=sunset_jd_ut1,
+            half_set_jd_ut1=half_set_jd_ut1, upper_limb_sunset_jd_ut1=upper_limb_sunset_jd_ut1, policy=policy)
+
+    def muhurta_yogas_from_longitudes(self, sun_sidereal_longitude: float,
+            moon_sidereal_longitude: float, *, weekday: int,
+            policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Selected Muhurta yoga presence, with no reader or ayanamsa conversion."""
+        return _special_muhurta.muhurta_yogas_from_longitudes(sun_sidereal_longitude,
+            moon_sidereal_longitude, weekday=weekday, policy=policy)
+
+    def special_muhurta_for_date(self, local_date: date, latitude: float, longitude: float,
+            *, timezone: str, policy: _special_muhurta.SpecialMuhurtaPolicy | None = None):
+        """Seven-name source-selected product using this facade's reader."""
+        return _special_muhurta.special_muhurta_for_date(local_date, latitude, longitude,
+            timezone=timezone, policy=policy, reader=self._reader)
+
+    def named_muhurta_from_solar_times(
+        self, sunrise_jd_ut1: float, sunset_jd_ut1: float | None = None,
+        previous_sunset_jd_ut1: float | None = None, *, weekday: int,
+        policy: _named_muhurta.NamedMuhurtaPolicy | None = None,
+    ) -> _named_muhurta.NamedMuhurtaResult:
+        """Named intervals from supplied UT1 solar anchors, Monday=0 weekday."""
+        return _named_muhurta.named_muhurta_from_solar_times(
+            sunrise_jd_ut1, sunset_jd_ut1, previous_sunset_jd_ut1, weekday=weekday, policy=policy,
+        )
+
+    def named_muhurta_for_date(
+        self, local_date: date, latitude: float, longitude: float, *, timezone: str,
+        policy: _named_muhurta.NamedMuhurtaPolicy | None = None,
+    ) -> _named_muhurta.NamedMuhurtaDay:
+        """Named intervals for a sunrise date, using this facade's reader."""
+        return _named_muhurta.named_muhurta_for_date(
+            local_date, latitude, longitude, timezone=timezone, policy=policy, reader=self._reader,
+        )
+
+    def sayanadi_avastha(self, planet, sidereal_longitudes, lagna_sidereal_lon,
+                         birth_ghati=None, first_syllable_value=None, *, context=None):
+        """Source-owned standalone Sayanadi with canonical arithmetic trace."""
+        return _avasthas.sayanadi_avastha(planet, sidereal_longitudes, lagna_sidereal_lon,
+                                         birth_ghati, first_syllable_value, context=context)
+
+    def evaluate_avasthas(self, sidereal_longitudes, lagna_sidereal_lon, policy=None,
+                          node_longitudes=None, sayanadi_context=None):
+        """Four classical families, with optional complete Sayanadi context."""
+        return _avasthas.evaluate_avasthas(sidereal_longitudes, lagna_sidereal_lon,
+                                          policy, node_longitudes, sayanadi_context)
+
+    def avasthas_for_datetime(self, birth, latitude, longitude, *, name,
+                              timezone_name=None, policy=None, avastha_policy=None):
+        """Birth avasthas and previous-sunrise ghati using this reader."""
+        return _sayanadi_dated.avasthas_for_datetime(
+            birth, latitude, longitude, name=name, timezone_name=timezone_name,
+            policy=policy, avastha_policy=avastha_policy, reader=self._reader,
+        )
+
     def panchanga(self, chart, ayanamsa_system: str | None = None, policy=None):
         """Compute Panchanga truth from a chart's Sun and Moon positions."""
         facade = _facade_module()
@@ -215,6 +334,60 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def panchanga_profile(self, result):
         """Build the Panchanga profile for an existing Panchanga result."""
         return _facade_module().panchanga_profile(result)
+
+    def lunar_month_at(self, jd_ut1: float, *, policy=None):
+        """Source-declared lunation context with this engine's reader."""
+        return _lunar_month.lunar_month_at(jd_ut1, policy=policy, reader=self._reader)
+
+    def find_muhurta_windows(self, start_jd_ut1: float, end_jd_ut1: float, *,
+                             janma_moon_sidereal_lon=None, policy=None):
+        """Complete bounded sampled Muhurta search using this engine's reader."""
+        _muhurta_search._search_arguments(start_jd_ut1, end_jd_ut1,
+                                           janma_moon_sidereal_lon, policy)
+        return _muhurta_search.find_muhurta_windows(
+            start_jd_ut1, end_jd_ut1, janma_moon_sidereal_lon=janma_moon_sidereal_lon,
+            policy=policy, reader=self._muhurta_reader(),
+        )
+
+    def muhurta_score_for_chart(self, chart, *, janma_moon_sidereal_lon=None,
+                                ayanamsa_system="Lahiri", policy=None):
+        """Score supplied tropical chart inputs with this reader for live anchors."""
+        return _muhurta_search.muhurta_score_for_chart(
+            chart, janma_moon_sidereal_lon=janma_moon_sidereal_lon,
+            ayanamsa_system=ayanamsa_system, policy=policy, reader=self._muhurta_reader(),
+        )
+
+    def _muhurta_reader(self):
+        try:
+            return self._reader
+        except MissingEphemerisKernelError as exc:
+            raise _muhurta_search.MuhurtaResourceError(
+                "this Moira instance has no Muhurta planetary reader",
+            ) from exc
+
+    def gochara_at(self, natal_jd_ut1: float, transit_jd_ut1: float, *,
+                   birth_location=None, policy=None):
+        """Complete date-derived Gochar with this engine's reader at both epochs."""
+        return _gochara_dated.gochara_at(
+            natal_jd_ut1, transit_jd_ut1, birth_location=birth_location,
+            policy=policy, reader=self._reader,
+        )
+
+    def gochara_for_datetimes(self, natal_dt: datetime, transit_dt: datetime, *,
+                             birth_location=None, policy=None):
+        """Gochar from two aware civil instants, converted once to UT1."""
+        return _gochara_dated.gochara_for_datetimes(
+            natal_dt, transit_dt, birth_location=birth_location,
+            policy=policy, reader=self._reader,
+        )
+
+    def daily_panchanga(self, local_date: date, latitude: float, longitude: float,
+                        *, timezone: str, policy=None):
+        """Compute a sunrise-owned daily Panchanga with this facade's reader."""
+        return _daily_panchanga.daily_panchanga(
+            local_date, latitude, longitude, timezone=timezone,
+            policy=policy, reader=self._reader,
+        )
 
     def pancha_pakshi_profiles(
         self,
@@ -551,6 +724,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         ayanamsa_system: str = "Lahiri",
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        *, context=None, policy=None,
     ):
         """Compute Shadbala from caller-supplied sidereal chart truth."""
         return _facade_module().shadbala(
@@ -564,7 +738,16 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=ayanamsa_system,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
         )
+
+    def shadbala_context(self, jd: float, latitude: float, longitude: float, *,
+                         ayanamsa_system: str = 'Lahiri', hora_lord: str | None = None,
+                         jd_utc: float | None = None):
+        """Derive immutable Shadbala evidence through this engine's reader."""
+        return _shadbala.derive_shadbala_context(jd, latitude, longitude,
+            ayanamsa_system=ayanamsa_system, hora_lord=hora_lord,
+            jd_utc=jd_utc, reader=self._reader)
 
     def shadbala_for_chart(
         self,
@@ -575,11 +758,19 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         is_day: bool | None = None,
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        context=None, policy=None,
+        observer_latitude: float | None = None,
+        observer_longitude: float | None = None,
     ):
         """Compute Shadbala using an existing chart, houses, and Panchanga truth."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
+        if context is None:
+            if observer_latitude is None or observer_longitude is None:
+                raise _shadbala.ShadbalaContextError('chart Shadbala requires observer coordinates or explicit context')
+            context = self.shadbala_context(jd_ut1, observer_latitude, observer_longitude,
+                ayanamsa_system=system, hora_lord=hora_lord, jd_utc=chart.jd_ut)
         seven = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
         sidereal_longitudes = self._sidereal_longitudes_from_chart(
             chart,
@@ -598,7 +789,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             }
         panchanga_result = self.panchanga(chart, ayanamsa_system=system)
         day_chart = (
-            facade.is_day_chart(chart.planets["Sun"].longitude, houses.asc)
+            context.is_day
             if is_day is None
             else is_day
         )
@@ -613,6 +804,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=system,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
         )
 
     def shadbala_profile(self, result):
@@ -650,6 +842,9 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         is_day: bool | None = None,
         hora_lord: str | None = None,
         planet_latitudes: dict[str, float] | None = None,
+        context=None, policy=None,
+        observer_latitude: float | None = None,
+        observer_longitude: float | None = None,
     ):
         """Compute Bhava Bala using an existing chart and houses, deriving
         the prerequisite Shadbala internally via ``shadbala_for_chart``."""
@@ -663,6 +858,8 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             is_day=is_day,
             hora_lord=hora_lord,
             planet_latitudes=planet_latitudes,
+            context=context, policy=policy,
+            observer_latitude=observer_latitude, observer_longitude=observer_longitude,
         )
         sidereal_longitudes = self._sidereal_longitudes_from_chart(
             chart,
@@ -770,18 +967,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the Ashtakavarga rekha count for a planet transiting a sign."""
         return _facade_module().transit_strength(planet, transit_sign_index, bhinna)
 
-    def _varga_function(self, varga: str):
+    def _varga_function(self, varga: str, *, d60_method=_varga.D60Method.HARMONIC):
+        _varga._require_d60_full_point(d60_method)
         if varga not in self._SHODASHVARGA_SELECTORS:
             raise ValueError(f"unknown varga selector: {varga!r}")
+        if d60_method is not _varga.D60Method.HARMONIC:
+            if varga != "shashtiamsha":
+                raise ValueError("nondefault d60_method applies only to shashtiamsha")
+            return lambda longitude: _varga.shashtiamsha(longitude, d60_method=d60_method)
         return getattr(_varga, varga)
 
     def varga(self, sidereal_longitude: float, divisor: int, name: str = ""):
         """Compute a generic Varga division from a sidereal longitude."""
         return _facade_module().calculate_varga(sidereal_longitude, divisor, name)
 
-    def varga_named(self, sidereal_longitude: float, varga: str):
+    def varga_named(self, sidereal_longitude: float, varga: str, *, d60_method=_varga.D60Method.HARMONIC):
         """Compute one named Varga from a sidereal longitude."""
-        return self._varga_function(varga)(sidereal_longitude)
+        return self._varga_function(varga, d60_method=d60_method)(sidereal_longitude)
+
+    def d60_sign(self, sidereal_longitude: float, *, method=_varga.D60Method.HARMONIC):
+        """Return an explicitly selected sign-only D60 result."""
+        return _varga.d60_sign(sidereal_longitude, method=method)
 
     def varga_for_chart(
         self,
@@ -790,8 +996,10 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         varga: str,
         *,
         ayanamsa_system: str | None = None,
+        d60_method=_varga.D60Method.HARMONIC,
     ):
         """Compute one named Varga for one body in an existing chart."""
+        function = self._varga_function(varga, d60_method=d60_method)
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         sidereal = self._sidereal_longitudes_from_chart(
@@ -799,12 +1007,19 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             (body,),
             ayanamsa_system=system,
         )[body]
-        return self._varga_function(varga)(sidereal)
+        return function(sidereal)
 
-    def shodashvarga(self, sidereal_longitude: float):
+    def shodashvarga(self, sidereal_longitude: float, *, d60_method=_varga.D60Method.HARMONIC):
         """Compute Moira's admitted Shodashvarga set for one sidereal longitude."""
+        _varga._require_d60_full_point(d60_method)
+        if d60_method is not _varga.D60Method.HARMONIC:
+            # Source profiles own strict circular normalization. Give every
+            # division the same canonical input, including the left wrap limit.
+            sidereal_longitude = _varga.d60_sign(sidereal_longitude, method=d60_method).longitude
         return {
-            selector: self._varga_function(selector)(sidereal_longitude)
+            selector: self._varga_function(
+                selector, d60_method=d60_method if selector == "shashtiamsha" else _varga.D60Method.HARMONIC,
+            )(sidereal_longitude)
             for selector in self._SHODASHVARGA_SELECTORS
         }
 
@@ -814,8 +1029,10 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         body: str,
         *,
         ayanamsa_system: str | None = None,
+        d60_method=_varga.D60Method.HARMONIC,
     ):
         """Compute Moira's admitted Shodashvarga set for one chart body."""
+        _varga._require_d60_full_point(d60_method)
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
         sidereal = self._sidereal_longitudes_from_chart(
@@ -823,4 +1040,4 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             (body,),
             ayanamsa_system=system,
         )[body]
-        return self.shodashvarga(sidereal)
+        return self.shodashvarga(sidereal, d60_method=d60_method)

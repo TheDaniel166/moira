@@ -63,6 +63,11 @@ def test_sequence_route_preserves_continuous_loop_cycle(client: TestClient) -> N
     ]
     assert body["periods"][0]["house"] == 1
     assert body["periods"][83]["house"] == 12
+    # Unsourced house glosses were removed from computed payloads in 6.9.9.
+    assert all(period["house_signification"] is None for period in body["periods"])
+    assert all(
+        profile["house_signification"] is None for profile in body["condition_profiles"]
+    )
     assert body["aggregate"]["planet_year_counts"] == expected.planet_year_counts
     assert body["aggregate"]["cycle_coincidence_years"] == [1]
     assert body["validation"] == {"included": True, "passed": True, "failures": []}

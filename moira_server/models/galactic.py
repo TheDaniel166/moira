@@ -6,7 +6,7 @@ import math
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from moira.cosmic_references import CosmicReferenceKind
 
@@ -143,9 +143,18 @@ class CosmicReferencePointsRequest(_StrictModel):
 class GalacticChartPositionsRequest(_StrictModel):
     dt: datetime
     bodies: list[str] | None = None
-    observer_lat: float = Field(default=0.0, ge=-90.0, le=90.0)
-    observer_lon: float = Field(default=0.0, ge=-180.0, le=180.0)
+    # No observer means geocentric positions, like the natal chart. The former
+    # default (0 N, 0 E) silently made the Moon topocentric for a point in the
+    # Gulf of Guinea.
+    observer_lat: float | None = Field(default=None, ge=-90.0, le=90.0)
+    observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
     observer_elev_m: float = 0.0
+
+    @model_validator(mode="after")
+    def _observer_pair(self) -> "GalacticChartPositionsRequest":
+        if (self.observer_lat is None) != (self.observer_lon is None):
+            raise ValueError("observer_lat and observer_lon must be given together")
+        return self
 
     @field_validator("dt")
     @classmethod

@@ -7,6 +7,12 @@ from fastapi import APIRouter, Depends
 from moira import Moira
 
 from ..dependencies import get_engine
+from ..models.daily_panchanga import DailyPanchangaRequest, DailyPanchangaResponse
+from ..services.daily_panchanga import compute_daily_panchanga
+from ..serializers.daily_panchanga import serialize_daily_panchanga
+from ..models.lunar_month import LunarMonthRequest, LunarMonthResponse
+from ..services.lunar_month import compute_lunar_month
+from ..serializers.lunar_month import serialize_lunar_month
 from ..models.panchanga import (
     PanchangaChartRequest,
     PanchangaDirectRequest,
@@ -26,6 +32,24 @@ from ..services.panchanga import (
 
 
 router = APIRouter(prefix="/v1/panchanga", tags=["panchanga"])
+
+
+@router.post("/lunar-month", response_model=LunarMonthResponse)
+def panchanga_lunar_month_route(
+    request: LunarMonthRequest,
+    engine: Moira = Depends(get_engine),
+) -> LunarMonthResponse:
+    """Lunation boundaries, month naming and explicit intercalation availability."""
+    return serialize_lunar_month(compute_lunar_month(engine, request))
+
+
+@router.post("/day", response_model=DailyPanchangaResponse)
+def panchanga_day_route(
+    request: DailyPanchangaRequest,
+    engine: Moira = Depends(get_engine),
+) -> DailyPanchangaResponse:
+    """Sunrise-owned local day, solved limb endings and explicit availability."""
+    return serialize_daily_panchanga(compute_daily_panchanga(engine, request))
 
 
 @router.post("/instant", response_model=PanchangaResultResponse)

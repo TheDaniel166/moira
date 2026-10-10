@@ -440,6 +440,12 @@ edition identity, and lineage differences must be settled first.
 
 ### 6.2 Explicitly deferred Jyotish depth
 
+> **OUTDATED — this Vedic subsection is historical (6 October 2026).**
+> Current remaining work and engine-versus-REST boundaries are in the
+> [Vedic remaining work register](../06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md).
+> In particular, Rao cycle computation and standalone Sayanadi now exist;
+> their integration/evidence gaps must not be described as total absence.
+
 The following are known, recorded deferrals rather than accidental omissions:
 
 - Kalachakra Dasha and its Savya/Apasavya lineage choices;
@@ -450,9 +456,10 @@ The following are known, recorded deferrals rather than accidental omissions:
   source-owned purpose profiles;
 - remaining lineage-specific yoga and avastha expansions.
 
-These should be considered only after rechecking the current
-[Vedic Phase 2 gap register](../06_roadmap/vedic_jyotish_phase2_gaps.md), because
-much of its original prose is historical beneath later "closed" notices.
+These historical leads must be reconciled through the
+[Vedic remaining work register](../06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md)
+before implementation. The older Phase 2 register is superseded, and this
+subsection does not authorize resuming any deferred programme.
 
 ### 6.3 Chinese and Tibetan systems
 

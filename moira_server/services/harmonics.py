@@ -66,10 +66,18 @@ from ..models.harmonics import (
 
 
 def _preset_for(harmonic: float) -> tuple[str | None, str | None]:
+    """Return the conventional aspect name for an integer harmonic.
+
+    The second element is always ``None`` in computed payloads: the preset
+    keyword glosses in HARMONIC_PRESETS are unsourced Moira editorial and
+    are not carried as computed truth (6.9.9).  They remain readable, and
+    labelled, only through the /presets catalogue.
+    """
     value = float(harmonic)
     if not value.is_integer():
         return None, None
-    return HARMONIC_PRESETS.get(int(value), (None, None))
+    name, _editorial_gloss = HARMONIC_PRESETS.get(int(value), (None, None))
+    return name, None
 
 
 def _harmonic_kind(harmonic: float) -> str:
@@ -231,6 +239,12 @@ def list_harmonic_presets() -> HarmonicCatalogResponse:
                 "preset_catalog_read",
                 "harmonic_preset_serialization",
             ],
+            note=(
+                "Preset names are the conventional aspect names for the 360/H "
+                "division. Preset descriptions are unsourced Moira editorial "
+                "keywords, not attributed to a harmonic author, and are not "
+                "carried in computed harmonic payloads."
+            ),
         ),
     )
 
@@ -490,17 +504,24 @@ def compute_composite_harmonic(request: HarmonicCompositeRequest) -> HarmonicCom
         input_count_b=len(request.longitudes_b),
         provenance=HarmonicProvenanceResponse(
             engine_entrypoint="composite_harmonic",
-            harmonic_kind="composite",
+            harmonic_kind="cross_chart",
             preset_name=preset_name,
             preset_description=preset_description,
             stage_sequence=[
                 "caller_longitude_validation",
-                "composite_label_validation",
+                "cross_chart_label_validation",
                 _harmonic_validation_stage(request.harmonic),
                 "orb_validation",
                 "cross_chart_harmonic_conjunction_computation",
-                "composite_harmonic_response_serialization",
+                "cross_chart_harmonic_response_serialization",
             ],
+            note=(
+                "Cross-chart (synastry) harmonic conjunctions: each natal "
+                "chart is projected onto harmonic H separately and chart A "
+                "bodies are compared with chart B bodies. No composite "
+                "chart is constructed; the engine entrypoint name "
+                "composite_harmonic is historical."
+            ),
             orb_policy=_serialize_orb_policy(
                 orb_policy,
                 harmonic=request.harmonic,

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import CivilDateTime, KnownAyanamsa, VimshottariYearBasis
 
 
 # ---------------------------------------------------------------------------
@@ -21,9 +20,9 @@ class DashaNatalRequest(_StrictModel):
     year_basis: "savana_360" or "julian_365.25"; None uses the engine default.
     """
 
-    dt: datetime
-    ayanamsa: str | None = None
-    year_basis: str | None = None
+    dt: CivilDateTime
+    ayanamsa: KnownAyanamsa | None = None
+    year_basis: VimshottariYearBasis | None = None
 
 
 class DashaSequenceRequest(_StrictModel):
@@ -34,15 +33,21 @@ class DashaSequenceRequest(_StrictModel):
     """
 
     natal: DashaNatalRequest
-    levels: int = Field(default=2, ge=1, le=5)
+    levels: int = Field(default=2, strict=True, ge=1, le=5)
 
 
 class DashaCurrentRequest(_StrictModel):
     """Request for the currently active Vimshottari Dasha chain."""
 
     natal: DashaNatalRequest
-    current_dt: datetime
-    levels: int = Field(default=5, ge=1, le=5)
+    current_dt: CivilDateTime
+    levels: int = Field(default=5, strict=True, ge=1, le=5)
+
+    @model_validator(mode="after")
+    def _current_not_before_birth(self) -> "DashaCurrentRequest":
+        if self.current_dt < self.natal.dt:
+            raise ValueError("current_dt must not be earlier than natal dt")
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +70,8 @@ class DashaPeriodResponse(_StrictModel):
     is_luminary_dasha: bool
     birth_nakshatra: str | None
     nakshatra_fraction: float | None
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
     sub: list[DashaPeriodResponse] = Field(default_factory=list)
 
 

@@ -23,6 +23,21 @@ import pytest
 
 
 _EXPECTED_ROOT_PUBLIC_NAMES = {
+    # VED-004/006 bounded composition admission.
+    "MuhurtaSearchPolicy", "MuhurtaMomentScore", "MuhurtaSearchWindow",
+    "MuhurtaSearchResult", "MuhurtaResourceError", "MuhurtaCoverageError",
+    "muhurta_score_for_chart", "find_muhurta_windows",
+    # Published dated-Gochar package cbb4abc; its static guard was not reconciled.
+    "GocharaNatalBavMode", "GocharaDatePolicy", "DEFAULT_GOCHARA_DATE_POLICY",
+    "GocharaBirthLocation", "GocharaDatedPosition", "GocharaEpoch",
+    "GocharaDateResult", "GocharaResourceError", "GocharaCoverageError",
+    "gochara_at", "gochara_for_datetimes",
+    "LunarMonthSystem", "LunarMonthPolicy", "CalendarBoundary", "LunarMonthLabel",
+    "LunarLunation", "LunarMonthProvenance", "LunarMonthResult", "lunar_month_at",
+
+    "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
+    "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
+    "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
     "ASHTOTTARI_TOTAL",
@@ -437,6 +452,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES = {
 # Explicit admissions added since the original frozen root-surface baseline.
 # Keeping these names literal preserves drift detection for future changes.
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
+    'D60Method', 'D60SignResult', 'd60_sign',
     'LUNAR_ECLIPTIC_DIRECTION_V1',
     'LunarEclipticDirectionPolicy',
     'LunarEclipticDirectionWitness',
@@ -474,6 +490,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'ChandraBala',
     'CharaDashaPeriod',
     'CharaDashaResult',
+    'CharaDashaComputation',
     'ChurchOfLightProgressedAstrodynesChart',
     'ChurchOfLightProgressionGeometry',
     'ChurchOfLightProgressionPolicy',
@@ -1062,6 +1079,19 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "transiting_astrocartography",
 })
 
+# 6.9.9 standard heliacal phenomena (Ptolemy / Schoch names) and the
+# phasis search, admitted alongside the existing planet_* heliacal wrappers.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "PhasisKindResult",
+    "PhasisSearchResult",
+    "STANDARD_HELIACAL_EVENT_KINDS",
+    "heliacal_event_kind_applies",
+    "phasis_events_near",
+    "planet_cosmical_setting",
+    "planet_evening_first",
+    "planet_morning_last",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
@@ -1239,6 +1269,8 @@ _EXPECTED_ROOT_ONLY_NAMES = {
 }
 
 _EXPECTED_MOIRA_METHODS = {
+    "daily_panchanga",
+    "lunar_month_at",
     "almuten_figuris",
     "almuten_of_degree",
     "antiscia",
@@ -1496,6 +1528,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'varga',
     'varga_for_chart',
     'varga_named',
+    'd60_sign',
 })
 
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
@@ -1680,6 +1713,93 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 _EXPECTED_MOIRA_METHODS.add("orbit_class")
 _EXPECTED_MOIRA_METHODS.add("orbit_classes_at")
 
+# Existing facade-curated Varga products, now available at package root.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "VargaPoint",
+    "calculate_varga",
+    "navamsa",
+    "saptamsa",
+    "dashamansa",
+    "dwadashamsa",
+    "trimshamsa",
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
+})
+
+# Additive Gochara snapshot constitutional public contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "GOCHARA_PROFILE", "GOCHARA_PLANETS", "GocharaVedhaStatus",
+    "GocharaPosition", "GocharaVedhaWitness", "GocharaPlanetResult",
+    "GocharaResult", "gochara_from_positions",
+    "DEFAULT_GOCHARA_POLICY", "GocharaSourceProfile", "GocharaVedhaMode",
+    "GocharaCompleteness", "GocharaBavMode", "GocharaAdmissionStatus",
+    "GocharaDoctrineOption", "GocharaPolicy", "gochara_doctrine_options",
+    "GocharaBaselineClass", "GocharaBavAvailability", "GocharaVedhaRelationClass",
+    "GocharaLocalCondition", "GocharaLocalProfile", "GocharaChartSummary",
+    "GocharaNetworkNode", "GocharaVedhaNetwork", "GocharaSubsystemProfile",
+    "gochara_local_profiles", "gochara_subsystem_profile",
+})
+
+# Published VED-002 Sayanadi, VED-007 named windows, and VED-008 Shuddhi APIs.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "SayanadiPolicy", "SayanadiGhati", "SayanadiName", "SayanadiContext",
+    "SayanadiTrace", "SayanadiAvastha", "SayanadiEffectProvenance",
+    "sayanadi_avastha", "sayanadi_ghati_from_elapsed", "SayanadiBirthPolicy",
+    "SayanadiSunriseBracket", "AvasthaBirthResult", "SayanadiCoverageError",
+    "SayanadiResourceError", "avasthas_for_datetime",
+    "NamedMuhurtaPolicy", "NamedMuhurtaAnchor", "NamedMuhurtaInterval",
+    "NamedMuhurtaResult", "NamedMuhurtaDay", "named_muhurta_from_solar_times",
+    "named_muhurta_for_date", "SpecialMuhurtaPolicy", "SpecialMuhurtaBoundary",
+    "SpecialMuhurtaWindow", "SpecialMuhurtaResult", "SpecialMuhurtaSolarResult",
+    "MuhurtaYogaMatch", "MuhurtaYogaSnapshot", "SpecialMuhurtaDay",
+    "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes",
+    "special_muhurta_for_date", "PanchangaShuddhiPolicy", "ShuddhiBoundary",
+    "ShuddhiInterval", "PanchakaRahita", "ShuddhiCatalogueEntry",
+    "ShuddhiCatalogue", "ShuddhiInputs", "ShuddhiValues", "ShuddhiFinding",
+    "PanchangaShuddhiAssessment", "ShuddhiCell", "PanchangaShuddhiDay",
+    "panchaka_rahita", "panchanga_shuddhi_catalogue",
+    "panchanga_shuddhi_from_longitudes", "panchanga_shuddhi_for_date",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "evaluate_avasthas", "sayanadi_avastha", "avasthas_for_datetime",
+    "named_muhurta_from_solar_times", "named_muhurta_for_date",
+    "special_muhurta_from_solar_times", "muhurta_yogas_from_longitudes",
+    "special_muhurta_for_date", "panchanga_shuddhi_catalogue",
+    "panchanga_shuddhi_from_longitudes", "panchanga_shuddhi_for_date",
+})
+
+# VED-009 finite source-selected dosha and Parihara admission.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "MuhurtaDoshaPolicy", "DoshaPhaseSpan", "MuhurtaDoshaInputs", "DoshaWitness",
+    "DoshaPredicate", "PariharaEvidence", "MuhurtaDoshaFinding",
+    "MuhurtaDoshaAssessment", "DoshaCatalogueEntry", "MuhurtaDoshaCatalogue",
+    "MuhurtaDoshaCell", "MuhurtaDoshaDay", "muhurta_dosha_catalogue",
+    "detect_muhurta_doshas", "muhurta_doshas_for_date",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "muhurta_dosha_catalogue", "detect_muhurta_doshas", "muhurta_doshas_for_date",
+})
+
+# VED-010 source-selected Lagna composition.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "MuhurtaLagnaPolicy", "LagnaPlanet", "LagnaRuleEvidence",
+    "LagnaPlacementContribution", "LagnaPlacementScore", "LagnaRestriction",
+    "MuhurtaLagnaAssessment", "MuhurtaLagnaSnapshot",
+    "evaluate_muhurta_lagna_strength", "muhurta_lagna_catalogue",
+    "muhurta_lagna_for_datetime",
+})
+_EXPECTED_MOIRA_METHODS.update({
+    "muhurta_lagna_catalogue", "evaluate_muhurta_lagna_strength",
+    "muhurta_lagna_for_datetime",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)
@@ -1696,6 +1816,21 @@ _EXPECTED_SKY_GALACTIC_PUBLIC_NAMES = set(sky_galactic.__all__)
 _EXPECTED_SKY_EVENTS_PUBLIC_NAMES = set(sky_events.__all__)
 _EXPECTED_SKY_ECLIPSE_PUBLIC_NAMES = set(sky_eclipse.__all__)
 _EXPECTED_SKY_OCCULTATION_PUBLIC_NAMES = set(sky_occultation.__all__)
+
+
+_EXPECTED_MOIRA_METHODS.update({
+    "find_muhurta_windows", "muhurta_score_for_chart",
+    "gochara_at", "gochara_for_datetimes",
+})
+
+
+# VA-01..11: explicit geometry, source evidence and bounded scan contracts.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    'ShadbalaContext', 'ShadbalaContextError', 'derive_shadbala_context',
+    'SaptavargajaEntry', 'saptavargaja_breakdown', 'WarResolution',
+    'SadeSatiBudgetError', 'DEFAULT_SADE_SATI_EVALUATIONS', 'MAX_SADE_SATI_EVALUATIONS',
+})
+_EXPECTED_MOIRA_METHODS.add('shadbala_context')
 
 
 def test_root_public_surface_snapshot_is_exact() -> None:

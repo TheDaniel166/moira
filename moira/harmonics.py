@@ -40,7 +40,11 @@ Public surface / exports:
     HarmonicsService      — OOP facade over all harmonic computations
 
     # Constants
-    HARMONIC_PRESETS      — dict of harmonic number → (name, description)
+    HARMONIC_PRESETS      — dict of harmonic number → (name, description);
+                            the descriptions are unsourced Moira editorial
+                            keywords, not computed truth
+    DEFAULT_HARMONIC_REFERENCE_ORB_DEG — default conjunction orb on the
+                            harmonic wheel (12°, Hamblin)
 
     # Core computation
     calculate_harmonic()     — project all bodies onto harmonic H
@@ -51,7 +55,10 @@ Public surface / exports:
     harmonic_pattern_score() — Cochrane-style pattern density for one H
     harmonic_sweep()         — sweep H1..Hmax, rank by pattern score
     harmonic_aspects()       — decode natal aspects as harmonic conjunctions
-    composite_harmonic()     — cross-chart harmonic conjunctions (synastry)
+    composite_harmonic()     — cross-chart harmonic conjunctions between two
+                               natal charts (a synastry comparison; despite
+                               the historical name, no composite chart is
+                               built)
     vibrational_fingerprint() — synthesised vibrational profile
 """
 
@@ -97,9 +104,31 @@ __all__ = [
 
 _TROPICAL_YEAR: float = TROPICAL_YEAR
 
+# Addey, Harmonics in Astrology (Cambridge Circle, 1976; checked against the
+# archive.org scan of the 1977 printing): Ch. 14 "New Light on Aspects" begins
+# p. 124 (table of contents); the rule that "the orb must diminish in direct
+# proportion to the number of the harmonic", worked with a 12 deg full orb,
+# falls at about pp. 129-130 (page read from the scan, approximate).  Ch. 9
+# ("Harmonics in the Aspect Circle", p. 67) points forward to it.  The wire
+# strings below keep their 6.9.8 form.
 _ADDEY_ORB_AUTHORITY = "John Addey, Harmonics in Astrology, Ch. 14"
 _ADDEY_ORB_SOURCE_LOCATOR = "Harmonics in Astrology, Chapter 14"
 _ADDEY_ORB_FORMULA = "O_H = O_1 / H"
+
+# Default H1-reference (conjunction) orb, applied on the harmonic chart.
+#
+# Harmonic practice reads a harmonic chart with an ordinary conjunction orb
+# on the harmonic wheel; the equivalent allowance on the natal circle is
+# that orb divided by the harmonic number.  David Hamblin states the rule as
+# "the orb allowed for any harmonic is the orb for the conjunction, divided
+# by the number of the harmonic" and works it with a 12 degree conjunction
+# orb (12 deg / 13 = 55' for H13).  Source: David Hamblin, "The Importance
+# of Harmonics", Astrodienst article aa_article220307 (astro.com); the same
+# rule underlies Hamblin, Harmonic Charts (1983).  Before 6.9.9 the default
+# was 1 degree on the harmonic wheel (1 deg / H on the natal circle), which
+# is not an orb any harmonic author uses and left H1 unable to see a 1.05
+# degree natal conjunction.
+DEFAULT_HARMONIC_REFERENCE_ORB_DEG: float = 12.0
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +243,7 @@ class HarmonicOrbTruth:
 class HarmonicOrbPolicy:
     """H1-equivalent conjunction-orb policy with fixed Addey provenance."""
 
-    reference_orb_deg: float = 1.0
+    reference_orb_deg: float = DEFAULT_HARMONIC_REFERENCE_ORB_DEG
     scaling_mode: HarmonicOrbScalingMode = (
         HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC
     )
@@ -252,7 +281,9 @@ def _selected_orb_policy(
             raise ValueError("orb_policy must be a HarmonicOrbPolicy")
         return orb_policy
     return HarmonicOrbPolicy(
-        reference_orb_deg=1.0 if orb is None else orb,
+        reference_orb_deg=(
+            DEFAULT_HARMONIC_REFERENCE_ORB_DEG if orb is None else orb
+        ),
     )
 
 
@@ -265,7 +296,13 @@ def _resolve_orb_truth(
 
 
 # ---------------------------------------------------------------------------
-# Preset harmonics with astrological meanings
+# Preset harmonic names
+#
+# The names are the conventional aspect names for the 360/H division.  The
+# second element of each tuple is a short Moira editorial keyword gloss; it
+# is NOT sourced to a harmonic author and is not computed truth.  Computed
+# REST payloads do not carry it (6.9.9); only the /presets catalogue
+# returns it, labelled as unsourced editorial.
 # ---------------------------------------------------------------------------
 
 HARMONIC_PRESETS: dict[int, tuple[str, str]] = {
@@ -535,7 +572,8 @@ class HarmonicAspect:
             - orb >= 0 and orb <= requested orb at call time.
             - separation is the shorter arc (0 ≤ separation ≤ 180).
 
-    Canon: John Addey, Harmonics in Astrology (1976), Ch. 2.
+    Canon: John Addey, Harmonics in Astrology (1976), Ch. 9 ("Harmonics in
+           the Aspect Circle") and Ch. 14 ("New Light on Aspects").
 
     [MACHINE_CONTRACT v1]
     {
@@ -925,7 +963,8 @@ def harmonic_conjunctions(
     planet_longitudes : dict of body name → natal longitude (degrees)
     harmonic          : positive finite real harmonic
     orb               : legacy positional H1-reference conjunction orb;
-                        defaults to 1.0 when no policy is supplied
+                        defaults to DEFAULT_HARMONIC_REFERENCE_ORB_DEG
+                        (12 degrees, Hamblin) when no policy is supplied
     orb_policy        : explicit H1-reference orb policy; mutually exclusive
                         with ``orb``
 
@@ -1177,10 +1216,11 @@ def composite_harmonic(
     """
     Find cross-chart harmonic conjunctions between two natal charts.
 
-    Projects each chart independently onto the Hth harmonic wheel, then
-    checks every planet from chart A against every planet from chart B for
-    proximity within *orb* degrees.  A conjunction means the two people
-    resonate at harmonic H through those two planetary principles.
+    Despite the historical name, this does NOT build a composite (midpoint)
+    chart.  It is a synastry comparison: each natal chart is projected
+    independently onto the Hth harmonic wheel, and every planet from chart A
+    is checked against every planet from chart B for proximity within *orb*
+    degrees on that wheel (equivalently, orb/H on the natal circle).
 
     Planet names are prefixed with label_a / label_b (default "A:" / "B:")
     to prevent name collisions when both charts contain the same bodies.
@@ -1190,7 +1230,8 @@ def composite_harmonic(
     lons_a     : dict of body name → natal longitude for person A (degrees)
     lons_b     : dict of body name → natal longitude for person B (degrees)
     harmonic   : positive finite real harmonic
-    orb        : legacy positional H1-reference conjunction orb
+    orb        : legacy positional H1-reference conjunction orb; defaults to
+                 DEFAULT_HARMONIC_REFERENCE_ORB_DEG (12 degrees, Hamblin)
     label_a    : prefix for chart A planet names (default "A")
     label_b    : prefix for chart B planet names (default "B")
     orb_policy : explicit H1-reference orb policy; mutually exclusive with

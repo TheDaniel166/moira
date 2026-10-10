@@ -33,6 +33,8 @@ def _nine_parts_planets() -> dict[str, float]:
     return {
         "Sun": 20.0,
         "Moon": 55.0,
+        "Mercury": 40.0,
+        "Venus": 70.0,
         "Mars": 130.0,
         "Jupiter": 210.0,
         "Saturn": 285.0,

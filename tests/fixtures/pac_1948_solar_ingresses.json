@@ -1,0 +1,34 @@
+{
+  "source": {
+    "publisher": "Positional Astronomy Centre, India Meteorological Department",
+    "title": "Rashtriya Panchang 1948 Saka Era (2026-27), English",
+    "url": "https://packolkata.imd.gov.in/download/EnglishRP2627.zip",
+    "retrieved": "2026-10-06",
+    "pdf_filename": "RP 1948 SE Final.pdf",
+    "pdf_sha256": "a8816abe4fae7fc0f0e4349a3d91eef00cfc0044a5f050b1b3bfe826847f9eaa",
+    "printed_page": 158,
+    "pdf_page_one_based": 178,
+    "table": "Transits of Sun and Planets into Nirayana Rasis / Sun",
+    "semantics": "Increasing ayanamsa or fixed initial point; geocentric solar ingress, not the fixed-23deg15min saura calendar",
+    "timescale": "IST (UTC+05:30); converted to UT1 with moira.julian.utc_to_ut1",
+    "precision_seconds": 60,
+    "acceptance_seconds": 60,
+    "acceptance_basis": "Original one-minute authority comparison, unchanged after diagnosis; published minute precision is not a subsecond oracle",
+    "transcription": "All 13 Sun rows, checked against the rendered PDF page; printed month names normalized to ISO Gregorian dates"
+  },
+  "cases": [
+    {"name": "Mesha", "ist": "2026-04-14T09:33:00", "target_degrees": 0},
+    {"name": "Vrisha", "ist": "2026-05-15T06:22:00", "target_degrees": 30},
+    {"name": "Mithuna", "ist": "2026-06-15T12:53:00", "target_degrees": 60},
+    {"name": "Karkata", "ist": "2026-07-16T23:39:00", "target_degrees": 90},
+    {"name": "Simha", "ist": "2026-08-17T07:59:00", "target_degrees": 120},
+    {"name": "Kanya", "ist": "2026-09-17T07:53:00", "target_degrees": 150},
+    {"name": "Tula", "ist": "2026-10-17T19:52:00", "target_degrees": 180},
+    {"name": "Vrishchika", "ist": "2026-11-16T19:43:00", "target_degrees": 210},
+    {"name": "Dhanus", "ist": "2026-12-16T10:25:00", "target_degrees": 240},
+    {"name": "Makara", "ist": "2027-01-14T21:10:00", "target_degrees": 270},
+    {"name": "Kumbha", "ist": "2027-02-13T10:09:00", "target_degrees": 300},
+    {"name": "Mina", "ist": "2027-03-15T07:00:00", "target_degrees": 330},
+    {"name": "Mesha", "ist": "2027-04-14T15:28:00", "target_degrees": 0}
+  ]
+}

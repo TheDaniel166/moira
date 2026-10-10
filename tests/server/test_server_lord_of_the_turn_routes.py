@@ -60,7 +60,7 @@ def test_profile_route_preserves_domicile_only_boundary(client: TestClient) -> N
             "sr_house": None,
             "is_combust": False,
             "is_retrograde": False,
-            "is_well_placed": True,
+            "is_well_placed": None,  # no SR house given: placement not judged
             "blocker_reasons": [],
             "witnesses_target": True,
             "testimony_count": 2,

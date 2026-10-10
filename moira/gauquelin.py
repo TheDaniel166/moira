@@ -42,6 +42,7 @@ from enum import Enum
 from .constants import DEG2RAD, RAD2DEG
 
 __all__ = [
+    "GauquelinEffectStatus",
     "GauquelinHorizonStatus",
     "GauquelinPosition",
     "gauquelin_sector",
@@ -53,14 +54,59 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 # Gauquelin's primary "plus zones" are the three sectors following rise and
-# the three following upper culmination.  He reports weaker, echo-like effects
-# after setting and lower culmination, but does not classify those opposite
-# sectors as the primary plus zones.  See Michel Gauquelin, ``Birth-Times``
-# (1983 English edition), pp. 31-32 and 40; and ``Cosmic Influences on Human
-# Behavior`` (1973), pp. 49-52.
+# the three following upper culmination (36-sector numbering from rise:
+# sectors 1-3 and 10-12).  He reports weaker, echo-like effects after
+# setting and lower culmination, but does not treat those as the primary
+# plus zones.  See Michel Gauquelin, ``Cosmic Influences on Human Behavior``
+# (New York: Stein and Day, 1973), pp. 43 (36 sectors), 49 (sectors 1-3 and
+# 10-12), 51-52, 55; and ``Birthtimes`` (New York: Hill and Wang, 1983),
+# pp. 31-32 and 36, where the plus zones are illustrated with 12- and
+# 18-sector divisions.  (Pages checked through archive.org search-inside of
+# those editions; Birthtimes p. 40, cited before 6.9.9, concerns heredity.)
 _PLUS_ZONE_SECTORS: frozenset[int] = frozenset(
     list(range(1, 4)) + list(range(10, 13))
 )
+
+# The bodies for which the Gauquelins published plus-zone (key-sector)
+# effects: the Moon, Venus, Mars, Jupiter and Saturn.  Their professional-
+# group and heredity results concern only these five; the Sun, Mercury,
+# Uranus, Neptune and Pluto showed no such effect in their data, and
+# points (nodes, angles, lots) were never part of the research.  See Michel
+# Gauquelin, ``Cosmic Influences on Human Behavior`` (1973), pp. 49-51
+# (professional groups: Mars, Jupiter, Saturn, Moon), 182 (heredity: Moon,
+# Venus, Mars, Jupiter, Saturn; none for Mercury, Uranus, Neptune, Pluto),
+# 234; ``Birthtimes`` (1983), pp. 63, 123 (the five bodies).  The Sun's
+# exclusion: page locator unverified.  Plus-zone classification
+# is therefore given only for these bodies (6.9.9); any other named body
+# receives the explicit ``no_published_effect`` status instead of a
+# plus/neutral label.
+_GAUQUELIN_EFFECT_BODIES: frozenset[str] = frozenset(
+    {"Moon", "Venus", "Mars", "Jupiter", "Saturn"}
+)
+
+_ZONE_NO_PUBLISHED_EFFECT = "Not Classified"
+
+# Canonical research resolution.  The Gauquelins tabulated 36 sectors
+# throughout; other resolutions are accepted by the engine as explicit
+# custom divisions but carry no plus-zone classification.
+GAUQUELIN_CANONICAL_SECTORS = 36
+
+
+class GauquelinEffectStatus(str, Enum):
+    """Whether plus-zone classification applies to the named body."""
+
+    EFFECT_BODY = "effect_body"
+    NO_PUBLISHED_EFFECT = "no_published_effect"
+    UNSPECIFIED_BODY = "unspecified_body"
+
+
+def _effect_status_for(body: str) -> GauquelinEffectStatus:
+    name = body.strip()
+    if not name:
+        return GauquelinEffectStatus.UNSPECIFIED_BODY
+    if name.title() in _GAUQUELIN_EFFECT_BODIES:
+        return GauquelinEffectStatus.EFFECT_BODY
+    return GauquelinEffectStatus.NO_PUBLISHED_EFFECT
 
 _HORIZON_SINGULARITY_EPS = 1.0e-15
 _SECTOR_BOUNDARY_EPS = 1.0e-12
@@ -198,9 +244,27 @@ class GauquelinPosition:
         return offset
 
     @property
+    def effect_status(self) -> GauquelinEffectStatus:
+        """Whether Gauquelin plus-zone classification applies to this body.
+
+        ``effect_body`` for the Moon, Venus, Mars, Jupiter and Saturn;
+        ``no_published_effect`` for any other named body;
+        ``unspecified_body`` when no body name was given (the position is
+        then classified geometrically and the caller owns the body identity).
+        """
+        return _effect_status_for(self.body)
+
+    @property
     def is_plus_zone(self) -> bool:
-        """Whether this position lies in a canonical 36-sector plus zone."""
-        return self.sectors == 36 and self.sector in _PLUS_ZONE_SECTORS
+        """Whether this position lies in a canonical 36-sector plus zone.
+
+        Always False for a named body outside the Gauquelin effect set.
+        """
+        return (
+            self.sectors == GAUQUELIN_CANONICAL_SECTORS
+            and self.sector in _PLUS_ZONE_SECTORS
+            and self.effect_status is not GauquelinEffectStatus.NO_PUBLISHED_EFFECT
+        )
 
     def __repr__(self) -> str:
         zone_str = self.zone if self.zone is not None else "N/A"
@@ -262,9 +326,11 @@ def gauquelin_sector(
                        a positive integer and a divisor of 360 for whole-degree
                        bins, though non-divisors are accepted.  At sectors=36
                        the ``zone`` field carries the canonical Plus Zone
-                       classification; at any other value ``zone`` is ``None``
-                       because no empirical plus-zone definition exists for
-                       custom resolutions.
+                       classification for the Gauquelin effect bodies (Moon,
+                       Venus, Mars, Jupiter, Saturn) and ``"Not Classified"``
+                       for any other named body; at any other resolution
+                       ``zone`` is ``None`` because no empirical plus-zone
+                       definition exists for custom resolutions.
     """
     if isinstance(sectors, bool) or not isinstance(sectors, int) or sectors <= 0:
         raise ValueError("sectors must be a positive integer")
@@ -376,10 +442,13 @@ def gauquelin_sector(
         sector_coordinate = float(nearest_boundary)
     sector = min(sectors, math.floor(sector_coordinate) + 1)
 
-    zone: str | None = (
-        ("Plus Zone" if sector in _PLUS_ZONE_SECTORS else "Neutral Zone")
-        if sectors == 36 else None
-    )
+    zone: str | None
+    if sectors != GAUQUELIN_CANONICAL_SECTORS:
+        zone = None
+    elif _effect_status_for(body) is GauquelinEffectStatus.NO_PUBLISHED_EFFECT:
+        zone = _ZONE_NO_PUBLISHED_EFFECT
+    else:
+        zone = "Plus Zone" if sector in _PLUS_ZONE_SECTORS else "Neutral Zone"
 
     return GauquelinPosition(
         body=body,

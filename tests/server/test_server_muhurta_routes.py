@@ -162,7 +162,7 @@ def test_muhurta_direct_route_rejects_non_finite_inputs(client_with_engine: Test
         json={**_DIRECT_PAYLOAD, "sun_tropical_lon": "NaN"},
     )
 
-    _assert_validation_envelope(response, message_fragment="numeric Muhurta direct inputs")
+    _assert_validation_envelope(response, message_fragment="valid number")
 
 
 def test_muhurta_route_rejects_invalid_policy_weight(client_with_engine: TestClient) -> None:

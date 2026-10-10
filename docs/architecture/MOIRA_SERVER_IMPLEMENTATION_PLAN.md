@@ -1,7 +1,7 @@
 # Moira Server Implementation Plan
 
-Version: 1.8
-Date: 2026-06-12
+Version: 1.9
+Date: 2026-10-09
 Status: Phases 1-10 admitted; post-Phase-10 rendering adapter workflow begins
 Scope: REST access surface over the existing Moira engine
 
@@ -11,6 +11,26 @@ the implemented base architecture and the phase sequence that subsequent route
 families must continue to obey.
 
 Current implementation state:
+
+- VED-009 admits `/v1/muhurta/doshas/{catalogue,direct,day}` for six named
+  source-owned restrictions and three opt-in exceptions. Admission is
+  `admit_now` for this validated engine contract: synchronous, read-only,
+  one-day bounded composition, serving-reader ownership and typed lossless
+  witness/prerequisite transport. It does not add generic scoring/search or
+  universal exception precedence. Source decisions and resource caps are in
+  `wiki/02_standards/MUHURTA_DOSHA_STANDARD.md`; evidence is in
+  `wiki/03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md`.
+
+- VED-008 admits the source-reviewed Panchanga Shuddhi catalogue, direct
+  component assessment and bounded sunrise-day cells at
+  `/v1/muhurta/shuddhi/{catalogue,direct,day}`. Admission is `admit_now` for
+  the named profiles following their engine implementation and validation.
+  Transport is synchronous, read-only and one-day bounded, uses the serving
+  reader and preserves canonical typed findings. Existing Tara/Chandra,
+  scores and generic search remain compatible. Source/variant decisions,
+  operational caps and evidence are in
+  `wiki/02_standards/PANCHANGA_SHUDDHI_STANDARD.md` and
+  `wiki/03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md`.
 
 - phases 1 through 5 are implemented
 - phase 6 now exposes stations, void-of-course, rise/set, eclipse summaries,
@@ -38,6 +58,14 @@ Current implementation state:
   generic/named/Shodashvarga/batch routes, and Decans/Decanates
   decanate-placement routes; all Hermetic catalog/longitude/rising/night-hour
   transport has been removed
+- the 6 October Vedic surface closure additionally admits bounded supplied-
+  position Gochara evaluation, subsystem profile and doctrine-option discovery;
+  it hardens existing direct yoga, avastha, extended Jaimini, Vimshopaka,
+  Kakshya, Shodhya Pinda and upagraha requests without changing engine doctrine
+  or closing new daily-almanac, special-Lagna or dasha admissions. The complete
+  scope and validation receipt are in
+  `wiki/06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md`; the transport
+  contract is `wiki/02_standards/GOCHARA_REST_STANDARD.md`
 - phase 10 is implemented as a bounded first admission: Astrocartography line
   and subplanetary routes, Local Space direct/chart-backed horizon routes,
   Geodetic direct/chart-backed location-chart and equivalent routes, Galactic

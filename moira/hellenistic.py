@@ -28,6 +28,7 @@ from .dignities import (
     DignityHorizonFrame,
     EssentialDignityKind,
     EssentialDignityDoctrine,
+    EssentialDignityPolicy,
     PLANETARY_JOYS,
     PlanetaryReception,
     PlanetarySolarPhaseTruth,
@@ -38,6 +39,7 @@ from .dignities import (
     calculate_dignities,
 )
 from .egyptian_bounds import (
+    EgyptianBoundsDoctrine,
     EgyptianBoundsPolicy,
     EgyptianBoundTruth,
     egyptian_bound_of,
@@ -285,8 +287,19 @@ class HellenisticSignPerMonthProfection:
 class HellenisticProfilePolicy:
     """Explicit selectors governing profile composition."""
 
+    # The dignity projection names its triplicity table explicitly so that
+    # the essential-dignity components and ``triplicity_assignment`` use the
+    # same (Dorothean) table. Its term table is named explicitly too, as the
+    # Ptolemaic (Robbins) terms it has always used: since 6.9.9 an unset term
+    # table under Lilly scoring would resolve to Lilly's own p. 104 terms,
+    # which do not belong to a Hellenistic profile.
     dignity: DignityComputationPolicy = field(
-        default_factory=DignityComputationPolicy
+        default_factory=lambda: DignityComputationPolicy(
+            essential=EssentialDignityPolicy(
+                bounds_doctrine=EgyptianBoundsDoctrine.PTOLEMAIC,
+                triplicity_doctrine=TriplicityDoctrine.DOROTHEAN_PINGREE_1976,
+            ),
+        )
     )
     lots: LotsComputationPolicy = field(default_factory=LotsComputationPolicy)
     triplicity_doctrine: TriplicityDoctrine = (
@@ -351,6 +364,13 @@ class HellenisticProfilePolicy:
             raise ValueError(
                 "Hellenistic profiles require DOROTHEAN_PINGREE_1976 "
                 "triplicity doctrine"
+            )
+        if self.dignity.resolved_triplicity_doctrine is not self.triplicity_doctrine:
+            raise ValueError(
+                "Hellenistic profile dignity policy must use the profile's "
+                "triplicity doctrine "
+                f"({self.triplicity_doctrine.value}); got "
+                f"{self.dignity.resolved_triplicity_doctrine.value}"
             )
         if (
             self.lots.unresolved_reference_mode

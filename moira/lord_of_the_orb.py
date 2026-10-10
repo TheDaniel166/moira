@@ -2,7 +2,7 @@
 Moira — Lord of the Orb Engine
 Governs computation of Abu Ma'shar's Lord of the Orb annual time-lord technique using planetary hour determination and Chaldean sequence arithmetic.
 
-Boundary: owns the Lord of the Orb catalogue, Chaldean sequence arithmetic, cycle-variant logic, house signification mapping, result vessels, condition profiling, and aggregate intelligence. Delegates birth planetary hour determination to moira.planetary_hours.
+Boundary: owns the Lord of the Orb catalogue, Chaldean sequence arithmetic, cycle-variant logic, result vessels, condition profiling, and aggregate intelligence. Delegates birth planetary hour determination to moira.planetary_hours.
 
 Import-time side effects: None
 
@@ -65,8 +65,11 @@ CHALDEAN_ORDER: tuple[str, ...] = (
 
 _CHALDEAN_INDEX: dict[str, int] = {p: i for i, p in enumerate(CHALDEAN_ORDER)}
 
-#: Traditional house significations used for Lord of the Orb domain labelling.
-#: Abbreviated to the core domain each house governs in this annual context.
+#: EDITORIAL — NOT SOURCED. Short modern house glosses kept only so that
+#: existing imports keep working. They are not traced to Abu Ma'shar or any
+#: other cited source and, since Moira 6.9.9, are no longer emitted in computed
+#: results (``house_signification`` is always None). Do not use them as
+#: doctrine.
 HOUSE_SIGNIFICATIONS: dict[int, str] = {
     1:  "Life, body, disposition",
     2:  "Wealth, substance, livelihood",
@@ -156,13 +159,15 @@ class LordOfOrbPeriod:
     RITE OF PURPOSE:
         LordOfOrbPeriod is the atomic output unit of lord_of_orb(). Without
         it, callers would receive bare (year, planet, house) tuples with no
-        inspectability, no cycle context, and no house signification. It
+        inspectability and no cycle context. It
         exists to give every consumer a complete, named record for each year.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store year, planet, house, chaldean_index, cycle_kind, and
-              house_signification.
+            - Store year, planet, house, chaldean_index, and cycle_kind.
+            - ``house_signification`` is kept for compatibility and is always
+              None in engine output since 6.9.9 (the former glosses were
+              unsourced).
         Non-responsibilities:
             - Does not compute the period (delegated to lord_of_orb()).
             - Does not look up the planet's natal or solar return condition.
@@ -204,7 +209,7 @@ class LordOfOrbPeriod:
     house:              int
     chaldean_index:     int
     cycle_kind:         LordOfOrbCycleKind
-    house_signification: str
+    house_signification: str | None = None  # always None since 6.9.9
 
     def __post_init__(self) -> None:
         if self.year < 1:
@@ -379,13 +384,14 @@ class LordOfOrbConditionProfile:
     """
     Integrated per-period condition profile for a single Lord of the Orb year.
 
-    Combines the period's planet and house with the house signification,
-    the Abu Ma'shar annual hierarchy position, and cycle position context.
+    Combines the period's planet and house with the Abu Ma'shar annual
+    hierarchy position and cycle position context.
 
     period
         The LordOfOrbPeriod this profile describes.
     house_signification
-        Traditional domain of the house governing this year.
+        Always None since 6.9.9. The former house glosses were unsourced
+        editorial text; the field is kept for compatibility.
     hierarchy_rank
         Rank of the Lord of the Orb in Abu Ma'shar's eight-indicator annual
         hierarchy. Always 6 in the Abu Ma'shar system.
@@ -396,7 +402,7 @@ class LordOfOrbConditionProfile:
         In CONTINUOUS_LOOP these two cycles are independent.
     """
     period:              LordOfOrbPeriod
-    house_signification: str
+    house_signification: str | None
     hierarchy_rank:      int
     house_cycle_number:  int
     planet_cycle_number: int
@@ -590,7 +596,7 @@ def lord_of_orb(
             house               = house,
             chaldean_index      = planet_index,
             cycle_kind          = cycle_kind,
-            house_signification = HOUSE_SIGNIFICATIONS[house],
+            house_signification = None,
         ))
 
     sequence = LordOfOrbSequence(
@@ -603,7 +609,7 @@ def lord_of_orb(
     for period in periods:
         profiles.append(LordOfOrbConditionProfile(
             period              = period,
-            house_signification = HOUSE_SIGNIFICATIONS[period.house],
+            house_signification = None,
             hierarchy_rank      = 6,
             house_cycle_number  = ((period.year - 1) // 12) + 1,
             planet_cycle_number = ((period.year - 1) // 7) + 1,

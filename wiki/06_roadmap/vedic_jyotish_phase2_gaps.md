@@ -1,5 +1,11 @@
 # Vedic Jyotish — Phase 2 Gap Register
 
+> **OUTDATED — superseded as a work register (6 October 2026).** The July
+> notes mix original absence claims, later closure notices and remaining
+> enrichment. Use the [Vedic remaining work register](VEDIC_REMAINING_WORK_REGISTER.md)
+> for current engine/public/REST boundaries. The text below remains historical
+> evidence and source leads, not a current implementation checklist.
+
 **Audit date:** 2026-07-08
 **Method:** code inspection of every Vedic-family module (`sidereal`, `varga`,
 `vedic_dignities`, `jaimini`, `panchanga`, `muhurta`, `dasha`, `dasha_systems`,

@@ -1,8 +1,8 @@
 # Moira Server Full Engine Exposure Plan
 
-Version: 1.6
-Date: 2026-06-11
-Status: Governing expansion plan after phase 8 closure; phase 9 opened with Panchanga, Shadbala, and Jaimini
+Version: 1.7
+Date: 2026-10-06
+Status: Governing expansion plan; current admissions tracked by the route inventory and family ledgers
 Scope: Full public engine exposure through REST, subject to server-boundary law
 
 This document defines the remaining work required to expose the full
@@ -80,14 +80,21 @@ The implemented server already exposes these route families:
 - Panchanga direct and chart-backed instant/profile routes
 - Shadbala chart-backed result/profile/network/condition routes
 - Jaimini direct and chart-backed karaka/profile/condition/pair routes
+- Varga and Ashtakavarga families, yoga evaluation, avasthas, extended
+  Jaimini, upagrahas, Muhurta and Sade Sati
+- Gochara supplied-position snapshot evaluation, subsystem profile and cited
+  doctrine-option discovery, admitted in the 6 October Vedic surface closure
 - website-only location lookup and reduction-pipeline inspection aliases
 - website-only chart-wheel drawing primitive packets
 - asteroid and comet position, bulk, and list routes for fast website
   integration
 - fixed-star, variable-star, and multiple-star catalog/state surfaces
 
-This is the completed surface through phase 8, with a website-driven early
-subset of phase 11 admitted under the same transport discipline.
+This list records the earlier base surface and subsequent Vedic additions.
+The implementation plan and phase ledgers track the wider phase-9 and phase-10
+admissions; the live route inventory is authoritative for exact operations.
+A website-driven subset of phase 11 is also admitted under the same transport
+discipline.
 
 The website-only location and pipeline routes are admitted as transport
 conveniences, not as engine doctrine. Location lookup is a bounded seeded
@@ -112,10 +119,14 @@ catalog and small-body acceleration. They are fast bounded surfaces for single
 object lookup, bounded bulk computation, and listing. They do not close the
 entire catalog/small-body phase.
 
-The remaining work is expansion, not bootstrap. Phase 9 has opened with
-Panchanga, chart-backed Shadbala, and direct/chart-backed Jaimini. As of this
-audit, the live app does not expose broad `/v1/varga/*`,
-`/v1/ashtakavarga/*`, `/v1/vedic/*`, or `/v1/classical/*` route families.
+The remaining work is expansion, not bootstrap. Existing `/v1/varga/*`,
+`/v1/ashtakavarga/*`, `/v1/vedic/*` and `/v1/classical/*` admissions are tracked
+in the route inventory and implementation plan. The 6 October closure adds
+three `/v1/gochara/*` operations and hardens existing direct Vedic inputs;
+its receipt is `wiki/06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md`.
+Daily sunrise-based Panchanga, special Lagnas, Kalachakra and other new Vedic
+families still require separate source and engine admission. Existing instant
+Panchanga and supplied Gochar snapshots do not close those families.
 
 ---
 
@@ -387,6 +398,7 @@ more quickly than the engine can honestly support it.
 Current ledger:
 
 - `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
+- `wiki/06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md`
 
 Modules:
 
@@ -395,6 +407,7 @@ Modules:
 - `moira.varga`
 - `moira.ashtakavarga`
 - `moira.jaimini`
+- `moira.gochara`
 - `moira.vedic_dignities`
 - `moira.dasha_systems`
 - `moira.classical`
@@ -410,6 +423,7 @@ Proposed route groups:
 - `/v1/varga/*`
 - `/v1/ashtakavarga/*`
 - `/v1/jaimini/*`
+- `/v1/gochara/*` (supplied snapshot, profile and evidence catalogue admitted)
 - `/v1/vedic/*`
 - `/v1/classical/*`
 

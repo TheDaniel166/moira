@@ -840,7 +840,10 @@ def test_validate_vimshottari_output_detects_overlapping_mahadashas() -> None:
     overlap_start = (first.start_jd + first.end_jd) / 2.0
     # end_jd must still be > overlap_start so the vessel is valid
     overlap_end   = overlap_start + 1.0
-    overlapping   = dataclasses.replace(second, start_jd=overlap_start, end_jd=overlap_end)
+    # Keep this a sequence-overlap test using a legacy period of unknown
+    # source extent; a contradictory full extent is now rejected at creation.
+    overlapping   = dataclasses.replace(second, start_jd=overlap_start, end_jd=overlap_end,
+                                        full_start_jd=None, full_end_jd=None)
     tampered = [first, overlapping] + periods[2:]
     with pytest.raises(ValueError, match="overlap or are out of order"):
         validate_vimshottari_output(tampered)

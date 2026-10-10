@@ -17,6 +17,8 @@ from ..models.phenomena import (
     EventInstantResponse,
     GeneralVisibilityEventRequest,
     GeneralVisibilityEventResponse,
+    HeliacalPhasisRequest,
+    HeliacalPhasisResponse,
     HeliacalPlanetEventRequest,
     LunarEclipseLocalCircumstancesResponse,
     LunarEclipseLocationRequest,
@@ -89,6 +91,7 @@ from ..serializers.phenomena import (
     serialize_eclipse_event,
     serialize_event_instant,
     serialize_general_visibility_event,
+    serialize_heliacal_phasis,
     serialize_lunar_eclipse_local,
     serialize_lunar_eclipse_global_circumstances,
     serialize_lunar_eclipse_visibility_map,
@@ -120,6 +123,7 @@ from ..services.phenomena import (
     compute_all_lunar_occultations,
     compute_close_approaches,
     compute_general_visibility_event,
+    compute_heliacal_phasis,
     compute_lunar_eclipse_local,
     compute_lunar_eclipse_global_circumstances,
     compute_lunar_eclipse_visibility,
@@ -139,6 +143,8 @@ from ..services.phenomena import (
     compute_next_station,
     compute_next_lunar_eclipse,
     compute_next_solar_eclipse,
+    compute_previous_lunar_eclipse,
+    compute_previous_solar_eclipse,
     compute_next_visible_solar_eclipse,
     compute_next_void_of_course,
     compute_parans,
@@ -297,6 +303,22 @@ def next_lunar_eclipse_route(
     engine: Moira = Depends(get_engine),
 ) -> EclipseEventResponse:
     return serialize_eclipse_event(compute_next_lunar_eclipse(engine, request))
+
+
+@router.post("/eclipses/solar/previous", response_model=EclipseEventResponse)
+def previous_solar_eclipse_route(
+    request: EclipseSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> EclipseEventResponse:
+    return serialize_eclipse_event(compute_previous_solar_eclipse(engine, request))
+
+
+@router.post("/eclipses/lunar/previous", response_model=EclipseEventResponse)
+def previous_lunar_eclipse_route(
+    request: EclipseSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> EclipseEventResponse:
+    return serialize_eclipse_event(compute_previous_lunar_eclipse(engine, request))
 
 
 @router.post("/eclipses/solar/local-visible", response_model=SolarEclipseLocalCircumstancesResponse)
@@ -661,6 +683,15 @@ def general_visibility_event_route(
 ) -> GeneralVisibilityEventResponse | None:
     event = compute_general_visibility_event(engine, request)
     return serialize_general_visibility_event(event) if event is not None else None
+
+
+@router.post("/heliacal/phasis", response_model=HeliacalPhasisResponse)
+def heliacal_phasis_route(
+    request: HeliacalPhasisRequest,
+    engine: Moira = Depends(get_engine),
+) -> HeliacalPhasisResponse:
+    """Nearest occurrence of every standard heliacal phenomenon within jd_ut +/- window_days."""
+    return serialize_heliacal_phasis(compute_heliacal_phasis(engine, request))
 
 
 @router.post("/parans/search", response_model=ParanSearchResponse)

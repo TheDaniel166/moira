@@ -417,9 +417,9 @@ class TestCompoundRelationship:
         raise AssertionError
 
     def test_friend_plus_friend_is_great_friend(self):
-        # Sun at Aries (0), Moon at Aries (0): temp friend (dist=1)
+        # Sun at Aries (0), Moon at Taurus (1): temp friend (dist=2)
         # Sun→Moon natural = friend; temp = friend → adhi_mitra
-        r = self._make_rels(0, 0, "friend")
+        r = self._make_rels(0, 1, "friend")
         assert r.compound == CompoundRelationship.GREAT_FRIEND
 
     def test_enemy_plus_enemy_is_great_enemy(self):
@@ -429,8 +429,8 @@ class TestCompoundRelationship:
         assert r.compound == CompoundRelationship.GREAT_ENEMY
 
     def test_neutral_plus_friend_is_friend(self):
-        # Sun→Mercury natural=neutral; place Mercury in Aries (same sign: temp friend, dist=1)
-        r = self._make_rels(0, 0, "neutral")
+        # Sun→Mercury natural=neutral; place Mercury in Taurus (temp friend, dist=2)
+        r = self._make_rels(0, 1, "neutral")
         assert r.compound == CompoundRelationship.FRIEND
 
     def test_neutral_plus_enemy_is_enemy(self):

@@ -207,7 +207,7 @@ class TestPrimarySourceEntryRules:
 
     def test_einstein_jyeshtha_starts_mercury_and_bhadrika(self):
         # 1879-03-14 10:50 UTC, Ulm.  The fixed tropical Moon longitude is
-        # 254.52591156 degrees; Moira's Lahiri conversion places it 42.6606%
+        # 254.52591156 degrees; corrected Lahiri places it 42.6375%
         # through Jyeshtha.  The value is a fixed Moira DE441 result that was
         # corroborated against JPL Horizons during source research; this
         # kernel-free unit test does not itself perform that external query.
@@ -227,9 +227,14 @@ class TestPrimarySourceEntryRules:
         )[0]
 
         assert ashtottari_first.lord == "Mercury"
-        assert ashtottari_first.years == pytest.approx(8.9158985291, abs=1e-9)
+        # VA-11: P03 p_A at TT 2407422.951355262 plus the stored Lahiri
+        # J2000 reference and independently checked IAU 2000A nutation gives
+        # 22.174240802711857 degrees. BPHS: Mercury has three equal places;
+        # Jyeshtha is place two. Yogini Bhadrika spans one nakshatra.
+        fraction = (moon_tropical_longitude - 22.174240802711857 - 680/3) / (40/3)
+        assert ashtottari_first.years == pytest.approx(17 * (2-fraction)/3, abs=1e-9)
         assert yogini_first.lord == "Bhadrika"
-        assert yogini_first.years == pytest.approx(2.8669692904, abs=1e-9)
+        assert yogini_first.years == pytest.approx(5 * (1-fraction), abs=1e-9)
 
 
 # ===========================================================================

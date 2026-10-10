@@ -51,8 +51,8 @@ def _witness(result, kind):
 def test_lilly_policy_is_named_and_not_generic_traditional_mode() -> None:
     assert LILLY_1647_PERFECTION_V1.profile_id == "lilly_1647_perfection_v1"
     assert LILLY_1647_PERFECTION_V1.contact_scope == "summed_planetary_moieties"
-    assert LILLY_1647_PERFECTION_V1.bounds_doctrine == "egyptian"
-    assert LILLY_1647_PERFECTION_V1.triplicity_doctrine == "dorothean_sect_active"
+    assert LILLY_1647_PERFECTION_V1.bounds_doctrine == "william_lilly_1647"
+    assert LILLY_1647_PERFECTION_V1.triplicity_doctrine == "william_lilly_1647_sect_active"
     assert LILLY_1647_PERFECTION_V1.longitude_product == "apparent_geocentric_true_ecliptic_of_date"
     assert LILLY_1647_PERFECTION_V1.motion_product == "astrometric_geocentric_longitude_rate"
 

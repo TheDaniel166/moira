@@ -146,10 +146,21 @@ class HellenisticAdherenceTruthResponse(_StrictModel):
     reason: str | None = None
 
 
+class HellenisticRayStrikeResponse(_StrictModel):
+    origin_body: str
+    aspect_name: str
+    focal_point_deg: float
+    orb_mode: str
+    allowed_orb_deg: float
+    distance_deg: float
+    motion_state: str | None = None
+
+
 class HellenisticRayTruthResponse(_StrictModel):
     status: HellenisticAspectEvaluationStatus
     subject: str
-    reason: str
+    strikes: list[HellenisticRayStrikeResponse] = []
+    reason: str | None = None
 
 
 class HellenisticAssembleConditionResponse(_StrictModel):
@@ -167,6 +178,7 @@ __all__ = [
     "HellenisticAssembleConditionResponse",
     "HellenisticConditionRequest",
     "HellenisticPlanetOvercomingTruthResponse",
+    "HellenisticRayStrikeResponse",
     "HellenisticRayTruthResponse",
     "HellenisticTestimonyTruthResponse",
     "HellenisticTestimonyWitnessResponse",

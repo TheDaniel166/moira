@@ -1269,7 +1269,7 @@ def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
 
 # One threshold doctrine is shared by event searches and point-in-time truth.
 _CAZIMI_DEG = 17.0 / 60.0
-_COMBUST_DEG = 8.0
+_COMBUST_DEG = 8.5  # Lilly: within 8°30′ of the Sun; same as moira.dignities
 _SUNBEAMS_DEG = 17.0
 _MAX_PROXIMITY_THRESHOLD_DEG = 30.0
 _SCORE_CAZIMI = 5
@@ -1430,7 +1430,7 @@ def solar_condition_events_in_range(
     """
     Search for solar condition ingress/egress events for a planet.
     
-    Supported conditions: "cazimi" (17'), "combust" (8°), "under_sunbeams" (17°)
+    Supported conditions: "cazimi" (17'), "combust" (8°30'), "under_sunbeams" (17°)
     """
     thresholds = {
         "cazimi": _CAZIMI_DEG,
@@ -1459,12 +1459,16 @@ def solar_condition_at(
     """Return the solar proximity condition for *planet* at *jd_ut*.
 
     Returns a :class:`SolarConditionTruth` whose ``present`` flag is True
-    when the planet is within the under-sunbeams orb (17°). ``condition`` is
+    when the body is within the under-sunbeams orb (17°). ``condition`` is
     ``"cazimi"``, ``"combust"``, or ``"under_sunbeams"`` when present, ``None``
-    otherwise. ``distance_from_sun`` is always populated.
+    otherwise. ``distance_from_sun`` (the elongation) is populated for every
+    body except the Sun itself.
 
-    Luminaries (Sun, Moon) are accepted but will always return ``present=False``
-    since the solar condition is undefined for them.
+    The band is the one :func:`moira.dignities.solar_proximity_truth` assigns,
+    so this surface and the dignity scoring always agree: cazimi within 17′,
+    combust within 8°30′ (Lilly, *Christian Astrology* I), under the beams
+    within 17°, boundaries inclusive. Every body but the Sun is evaluated,
+    the Moon included, as in Lilly's own scoring of the Moon.
 
     Parameters
     ----------
@@ -1475,18 +1479,22 @@ def solar_condition_at(
     reader : SpkReader, optional
         SPK kernel reader; default reader used when omitted.
     """
+    if planet in (Body.SUN, "Sun"):
+        # The Sun cannot be combust by itself: nothing to measure.
+        return SolarConditionTruth(False, None, None, 0, None)
+    from .dignities import solar_proximity_truth
+    from .dignities_types import SolarProximityBand
+
     if reader is None:
         reader = get_reader()
-    if planet in (Body.SUN, Body.MOON, "Sun", "Moon"):
-        return SolarConditionTruth(False, None, None, 0, None)
     sun = planet_at(Body.SUN, jd_ut, reader=reader)
     p   = planet_at(planet, jd_ut, reader=reader)
-    dist = abs(p.longitude - sun.longitude) % 360.0
-    dist = min(dist, 360.0 - dist)
-    if dist <= _CAZIMI_DEG:
+    truth = solar_proximity_truth(str(planet), p.longitude, sun.longitude)
+    dist = truth.distance_from_sun_deg
+    if truth.band is SolarProximityBand.CAZIMI:
         return SolarConditionTruth(True, "cazimi", "Cazimi", _SCORE_CAZIMI, dist)
-    if dist <= _COMBUST_DEG:
+    if truth.band is SolarProximityBand.COMBUST:
         return SolarConditionTruth(True, "combust", "Combust", _SCORE_COMBUST, dist)
-    if dist <= _SUNBEAMS_DEG:
+    if truth.band is SolarProximityBand.UNDER_SUNBEAMS:
         return SolarConditionTruth(True, "under_sunbeams", "Under Sunbeams", _SCORE_SUNBEAMS, dist)
     return SolarConditionTruth(False, None, None, 0, dist)

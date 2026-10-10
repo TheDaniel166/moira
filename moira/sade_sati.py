@@ -40,8 +40,11 @@ Moira-derived from kernel ephemerides, not from tabulated almanacs.
 """
 
 from dataclasses import dataclass
+import math
+from .varga import _normalize_longitude
 
 __all__ = [
+    "SadeSatiBudgetError", "DEFAULT_SADE_SATI_EVALUATIONS", "MAX_SADE_SATI_EVALUATIONS",
     "SADE_SATI_PHASES",
     "SadeSatiStatus",
     "SadeSatiWindow",
@@ -59,6 +62,36 @@ SADE_SATI_PHASES: dict[int, str] = {
 
 _SCAN_STEP_DAYS = 5.0      # Saturn moves <= ~0.13°/day; 5 days ≈ 0.65° max
 _BISECT_TOL_DAYS = 1e-3    # ~86 s ingress precision
+
+DEFAULT_SADE_SATI_EVALUATIONS = 10_000
+MAX_SADE_SATI_EVALUATIONS = 20_000
+
+
+class SadeSatiBudgetError(ValueError):
+    """Requested sampled search exceeds its explicit evaluation budget."""
+    def __init__(self, budget, evaluations, stage):
+        self.budget, self.evaluations, self.stage = budget, evaluations, stage
+        super().__init__(f'Sade Sati evaluation budget {budget} exceeded during {stage} ({evaluations} used)')
+
+
+def _validate_scan(start, end, step, budget):
+    for name,value in (('start_jd',start),('end_jd',end),('scan_step_days',step)):
+        try:
+            finite = math.isfinite(value)
+        except (TypeError, OverflowError):
+            finite = False
+        if isinstance(value,bool) or not isinstance(value,(int,float)) or not finite:
+            raise ValueError(f'{name} must be finite and numeric')
+    if not start < end or not math.isfinite(end-start):
+        raise ValueError('start_jd must be less than end_jd with finite duration')
+    if not 0 < step <= _SCAN_STEP_DAYS:
+        raise ValueError('scan_step_days must be positive and at most 5 days')
+    if start + step <= start or end - step >= end:
+        raise ValueError('scan_step_days cannot advance at the requested JD precision')
+    if type(budget) is not int or not 2 <= budget <= MAX_SADE_SATI_EVALUATIONS:
+        raise ValueError('max_evaluations must be an integer in [2,20000]')
+    if end-start > (budget-1)*step:
+        raise SadeSatiBudgetError(budget,0,'preflight')
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +128,9 @@ class SadeSatiStatus:
     is_kantaka_shani:   bool
 
     def __post_init__(self) -> None:
+        for sign in (self.janma_rashi_index, self.saturn_rashi_index):
+            if type(sign) is not int or not 0 <= sign < 12:
+                raise ValueError('Sade Sati sign indices must be integers in [0,11]')
         if not (1 <= self.house_from_moon <= 12):
             raise ValueError(
                 f"SadeSatiStatus.house_from_moon must be in [1, 12], "
@@ -136,6 +172,8 @@ class SadeSatiWindow:
     end_is_egress:    bool
 
     def __post_init__(self) -> None:
+        if type(self.sign_index) is not int or not 0 <= self.sign_index < 12:
+            raise ValueError('Sade Sati sign index must be an integer in [0,11]')
         if self.phase not in SADE_SATI_PHASES.values():
             raise ValueError(
                 f"SadeSatiWindow.phase must be one of "
@@ -168,6 +206,15 @@ class SadeSatiResult:
     end_jd: float
     ayanamsa_system: str
     windows: tuple[SadeSatiWindow, ...]
+    scan_step_days: float = _SCAN_STEP_DAYS
+    evaluations: int = 0
+    max_evaluations: int = DEFAULT_SADE_SATI_EVALUATIONS
+    search_semantics: str = 'sampled_sign_changes_no_substep_excursion_guarantee'
+
+    def __post_init__(self) -> None:
+        if type(self.janma_rashi_index) is not int or not 0 <= self.janma_rashi_index < 12:
+            raise ValueError('Sade Sati Moon sign index must be an integer in [0,11]')
+
 
 
 def _status_from_house(janma_rashi: int, saturn_rashi: int) -> SadeSatiStatus:
@@ -195,8 +242,8 @@ def sade_sati_status(
     kernel access.  Use ``sade_sati_windows`` for phase timing.
     """
     return _status_from_house(
-        int(natal_moon_sidereal_lon % 360.0 // 30),
-        int(saturn_sidereal_lon % 360.0 // 30),
+        int(_normalize_longitude(natal_moon_sidereal_lon) // 30),
+        int(_normalize_longitude(saturn_sidereal_lon) // 30),
     )
 
 
@@ -204,8 +251,12 @@ def _saturn_sidereal_sign(jd: float, ayanamsa_system: str, reader) -> int:
     from .planets import planet_at
     from .sidereal import tropical_to_sidereal
 
-    lon_trop = planet_at("Saturn", jd, reader=reader).longitude
-    return int(tropical_to_sidereal(lon_trop, jd, system=ayanamsa_system) % 360.0 // 30)
+    from contextlib import nullcontext
+    from .spk_reader import use_reader_override
+
+    with use_reader_override(reader) if reader is not None else nullcontext():
+        lon_trop = planet_at("Saturn", jd, reader=reader).longitude
+        return int(_normalize_longitude(tropical_to_sidereal(lon_trop, jd, system=ayanamsa_system)) // 30)
 
 
 def _bisect_sign_change(
@@ -214,16 +265,23 @@ def _bisect_sign_change(
     sign_lo: int,
     ayanamsa_system: str,
     reader,
+    evaluate=None,
 ) -> float:
     """JD at which Saturn's sidereal sign first differs from *sign_lo*."""
     lo, hi = jd_lo, jd_hi
-    while (hi - lo) > _BISECT_TOL_DAYS:
-        mid = 0.5 * (lo + hi)
-        if _saturn_sidereal_sign(mid, ayanamsa_system, reader) == sign_lo:
+    if evaluate is None:
+        evaluate = lambda jd: _saturn_sidereal_sign(jd, ayanamsa_system, reader)
+    for _ in range(64):
+        if hi-lo <= _BISECT_TOL_DAYS:
+            return hi
+        mid = lo+(hi-lo)/2
+        if not lo < mid < hi:
+            raise ValueError('Sade Sati refinement cannot progress at JD precision')
+        if evaluate(mid) == sign_lo:
             lo = mid
         else:
             hi = mid
-    return hi
+    raise RuntimeError('Sade Sati refinement did not converge within 64 iterations')
 
 
 def sade_sati_windows(
@@ -233,13 +291,16 @@ def sade_sati_windows(
     ayanamsa_system: str = "Lahiri",
     reader=None,
     scan_step_days: float = _SCAN_STEP_DAYS,
+    *, max_evaluations: int = DEFAULT_SADE_SATI_EVALUATIONS,
 ) -> SadeSatiResult:
     """
-    Find every Sade Sati phase window in ``[start_jd, end_jd]``.
+    Find sampled Sade Sati phase windows in ``[start_jd, end_jd]``.
 
     Saturn's sidereal sign is sampled every *scan_step_days*; each sign
     change is bisected to ~86 s.  Retrograde boundary re-entries yield
-    separate windows.  Windows clamped by the range bounds are marked via
+    separate windows when detected. An excursion entirely between samples
+    can be missed; the five-day upper bound is not a completeness guarantee.
+    Windows clamped by the range bounds are marked via
     ``start_is_ingress`` / ``end_is_egress``.
 
     Parameters
@@ -255,31 +316,42 @@ def sade_sati_windows(
     scan_step_days : float
         Sampling step.  The default (5 d) bounds Saturn's motion per step
         to well under one degree.
+    max_evaluations : int
+        Shared sampling/refinement budget, 2 to 20,000, default 10,000.
+        Exhaustion raises SadeSatiBudgetError and never returns partial windows.
 
     Returns
     -------
     SadeSatiResult
     """
-    if not (start_jd < end_jd):
-        raise ValueError(f"start_jd must be < end_jd, got {start_jd} >= {end_jd}")
-
-    janma_rashi = int(natal_moon_sidereal_lon % 360.0 // 30)
+    _validate_scan(start_jd,end_jd,scan_step_days,max_evaluations)
+    from .varga import _normalize_longitude
+    janma_rashi = int(_normalize_longitude(natal_moon_sidereal_lon) // 30)
+    evaluations = 0
+    def evaluate(jd):
+        nonlocal evaluations
+        if evaluations >= max_evaluations:
+            raise SadeSatiBudgetError(max_evaluations,evaluations,'sampling_or_refinement')
+        evaluations += 1
+        return _saturn_sidereal_sign(jd,ayanamsa_system,reader)
 
     # Build contiguous same-sign segments across the range.
     segments: list[tuple[float, float, int, bool, bool]] = []
     seg_start = start_jd
-    seg_sign = _saturn_sidereal_sign(start_jd, ayanamsa_system, reader)
+    seg_sign = evaluate(start_jd)
     seg_started_by_ingress = False
 
     jd = start_jd
     while jd < end_jd:
         jd_next = min(jd + scan_step_days, end_jd)
-        sign_next = _saturn_sidereal_sign(jd_next, ayanamsa_system, reader)
+        if not jd < jd_next <= end_jd:
+            raise ValueError('Sade Sati scan failed to advance')
+        sign_next = evaluate(jd_next)
         if sign_next != seg_sign:
-            crossing = _bisect_sign_change(jd, jd_next, seg_sign, ayanamsa_system, reader)
+            crossing = _bisect_sign_change(jd, jd_next, seg_sign, ayanamsa_system, reader, evaluate)
             segments.append((seg_start, crossing, seg_sign, seg_started_by_ingress, True))
             seg_start = crossing
-            seg_sign = _saturn_sidereal_sign(jd_next, ayanamsa_system, reader)
+            seg_sign = sign_next
             seg_started_by_ingress = True
         jd = jd_next
     segments.append((seg_start, end_jd, seg_sign, seg_started_by_ingress, False))
@@ -304,4 +376,5 @@ def sade_sati_windows(
         end_jd=end_jd,
         ayanamsa_system=ayanamsa_system,
         windows=tuple(windows),
+        scan_step_days=scan_step_days, evaluations=evaluations, max_evaluations=max_evaluations,
     )

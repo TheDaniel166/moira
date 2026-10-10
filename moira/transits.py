@@ -25,6 +25,7 @@ External dependency assumptions:
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from ._strenum import StrEnum
@@ -1598,9 +1599,11 @@ def next_transit(
     _require_positive(max_days, "max_days")
     if step_days is not None:
         _require_positive(step_days, "step_days")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
+    if isinstance(target_lon, (int, float)) and not math.isfinite(target_lon):
+        raise ValueError("Transit input target longitude must be finite")
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     # Auto step: fast movers need a small step; slow movers can use larger
     if step_days is None:
@@ -1709,18 +1712,50 @@ def find_transits(
     List of TransitEvent ordered by search motion:
     chronological for 'forward', reverse chronological for 'backward'
     """
+    return _find_transits_to_targets(
+        body,
+        (target_lon,),
+        jd_start,
+        jd_end,
+        step_days=step_days,
+        reader=reader,
+        policy=policy,
+        search_motion=search_motion,
+    )[0]
+
+
+def _find_transits_to_targets(
+    body: str,
+    target_lons: Sequence[str | float],
+    jd_start: float,
+    jd_end: float,
+    step_days: float | None = None,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
+) -> list[list[TransitEvent]]:
+    """Run :func:`find_transits` for several targets over one body scan.
+
+    The moving body's longitude is sampled once per grid step and each
+    target's sign change is tested against that shared sample.  The grid,
+    crossing test, bisection, and event assembly are exactly those of
+    :func:`find_transits` for a single target, so the returned list at index
+    ``i`` is identical to ``find_transits(body, target_lons[i], ...)``; only
+    the repeated evaluation of the body's longitude is removed.
+    """
     _require_non_empty_body(body)
     _validate_transit_range(jd_start, jd_end)
     _validate_search_motion(search_motion)
     if step_days is not None:
         _require_positive(step_days, "step_days")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
     if step_days is None:
         step_days = policy.transit.step_days_override or _auto_step(body)
 
-    events: list[TransitEvent] = []
+    targets = tuple(target_lons)
+    events_by_target: list[list[TransitEvent]] = [[] for _ in targets]
     jd = jd_start if search_motion == "forward" else jd_end
     lon_prev = _lon(body, jd, reader)
 
@@ -1732,62 +1767,92 @@ def find_transits(
         )
         lon_next = _lon(body, jd_next, reader)
 
-        target_prev = _lon(target_lon, jd, reader)
-        target_next = _lon(target_lon, jd_next, reader)
-        diff_prev = _signed_diff(lon_prev, target_prev)
-        diff_next = _signed_diff(lon_next, target_next)
+        for target_index, target_lon in enumerate(targets):
+            target_prev = _lon(target_lon, jd, reader)
+            target_next = _lon(target_lon, jd_next, reader)
+            diff_prev = _signed_diff(lon_prev, target_prev)
+            diff_next = _signed_diff(lon_next, target_next)
 
-        if (diff_prev * diff_next < 0
-                and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0):
-            jd_cross, search_truth = _find_crossing(
-                body,
-                target_lon,
-                min(jd, jd_next),
-                max(jd, jd_next),
-                reader,
-                tol_days=policy.transit.solver_tolerance_days,
-            )
-            lon_before = _lon(body, jd_cross - 0.25, reader)
-            lon_after  = _lon(body, jd_cross + 0.25, reader)
-            speed = _signed_diff(lon_after, lon_before) / 0.5
-            mov = "direct" if speed >= 0 else "retrograde"
-            target_truth = _resolve_longitude_truth(target_lon, jd_cross, reader)
-            computation_truth = TransitComputationTruth(
-                body=body,
-                requested_target=target_lon,
-                direction_filter="either",
-                search_motion=search_motion,
-                target_truth=target_truth,
-                search_truth=CrossingSearchTruth(
-                    search_start_jd_ut=jd_start,
-                    search_end_jd_ut=jd_end,
-                    step_days=step_days,
-                    bracket_start_jd_ut=search_truth.bracket_start_jd_ut,
-                    bracket_end_jd_ut=search_truth.bracket_end_jd_ut,
-                    crossing_jd_ut=search_truth.crossing_jd_ut,
-                    solver_tolerance_days=search_truth.solver_tolerance_days,
-                ),
-            )
-            classification = _classify_transit_computation_truth(
-                computation_truth,
-                wrapper_kind=TransitWrapperKind.TRANSIT_RANGE,
-            )
-            relation = _build_transit_relation(computation_truth)
-            events.append(TransitEvent(
-                body=body,
-                longitude=target_truth.longitude,
-                jd_ut=jd_cross,
-                direction=mov,
-                computation_truth=computation_truth,
-                classification=classification,
-                relation=relation,
-                condition_profile=_build_transit_condition_profile(classification, relation),
-            ))
+            if (diff_prev * diff_next < 0
+                    and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0):
+                events_by_target[target_index].append(
+                    _transit_event_at_crossing(
+                        body,
+                        target_lon,
+                        min(jd, jd_next),
+                        max(jd, jd_next),
+                        jd_start,
+                        jd_end,
+                        step_days,
+                        reader,
+                        policy,
+                        search_motion,
+                    )
+                )
 
         jd = jd_next
         lon_prev = lon_next
 
-    return events
+    return events_by_target
+
+
+def _transit_event_at_crossing(
+    body: str,
+    target_lon: str | float,
+    bracket_lo: float,
+    bracket_hi: float,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    reader: SpkReader,
+    policy: TransitComputationPolicy,
+    search_motion: str,
+) -> TransitEvent:
+    """Refine one bracketed crossing and assemble its TransitEvent."""
+    jd_cross, search_truth = _find_crossing(
+        body,
+        target_lon,
+        bracket_lo,
+        bracket_hi,
+        reader,
+        tol_days=policy.transit.solver_tolerance_days,
+    )
+    lon_before = _lon(body, jd_cross - 0.25, reader)
+    lon_after  = _lon(body, jd_cross + 0.25, reader)
+    speed = _signed_diff(lon_after, lon_before) / 0.5
+    mov = "direct" if speed >= 0 else "retrograde"
+    target_truth = _resolve_longitude_truth(target_lon, jd_cross, reader)
+    computation_truth = TransitComputationTruth(
+        body=body,
+        requested_target=target_lon,
+        direction_filter="either",
+        search_motion=search_motion,
+        target_truth=target_truth,
+        search_truth=CrossingSearchTruth(
+            search_start_jd_ut=jd_start,
+            search_end_jd_ut=jd_end,
+            step_days=step_days,
+            bracket_start_jd_ut=search_truth.bracket_start_jd_ut,
+            bracket_end_jd_ut=search_truth.bracket_end_jd_ut,
+            crossing_jd_ut=search_truth.crossing_jd_ut,
+            solver_tolerance_days=search_truth.solver_tolerance_days,
+        ),
+    )
+    classification = _classify_transit_computation_truth(
+        computation_truth,
+        wrapper_kind=TransitWrapperKind.TRANSIT_RANGE,
+    )
+    relation = _build_transit_relation(computation_truth)
+    return TransitEvent(
+        body=body,
+        longitude=target_truth.longitude,
+        jd_ut=jd_cross,
+        direction=mov,
+        computation_truth=computation_truth,
+        classification=classification,
+        relation=relation,
+        condition_profile=_build_transit_condition_profile(classification, relation),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1813,9 +1878,9 @@ def find_ingresses(
     _validate_transit_range(jd_start, jd_end)
     if step_days is not None:
         _require_positive(step_days, "step_days")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
     if step_days is None:
         step_days = policy.ingress.step_days_override or _auto_step(body)
 
@@ -1917,9 +1982,9 @@ def next_ingress(
     _require_finite_jd(jd_start, "jd_start")
     if max_days is not None:
         _require_positive(max_days, "max_days")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     # Use a per-body ingress horizon rather than the return-search table.
     # Return windows are tuned to longitude returns and are not sufficient to
@@ -1975,9 +2040,9 @@ def next_ingress_into(
             f"next_ingress_into: '{sign}' is not a valid zodiac sign. "
             f"Expected one of: {', '.join(SIGNS)}"
         )
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     if max_days is None:
         max_days = _INGRESS_INTO_SEARCH_DAYS.get(body, 12000.0)
@@ -2076,9 +2141,9 @@ def _planet_return_event(
         raise ValueError("Transit input natal_lon must be finite")
     _require_finite_jd(jd_start, "jd_start")
     _validate_direction(direction)
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     max_days = _return_window_days(
         body,
@@ -2175,8 +2240,7 @@ def solar_return(
     """
     if not math.isfinite(natal_sun_lon):
         raise ValueError("Transit input natal_sun_lon must be finite")
-    if reader is None:
-        reader = get_reader()
+    # The reader is only passed on: planet_return() acquires one if None.
 
     # Start searching ~10 days before the expected date derived from the
     # vernal equinox offset, then delegate to planet_return().
@@ -2245,9 +2309,9 @@ def varshaphal(
     broader Tajika doctrine such as Muntha, Sahams, or Tajika aspects.
     """
     _require_finite_jd(birth_jd, "birth_jd")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     natal_sun_tropical = planet_at(Body.SUN, birth_jd, reader=reader).longitude
     natal_sun_sidereal = tropical_to_sidereal(
@@ -2479,9 +2543,9 @@ def _last_new_moon_search_truth(
     """
 
     _require_finite_jd(jd, "jd")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     synodic_month_days = 29.53058868
     jd_cur = jd
@@ -2542,9 +2606,9 @@ def _last_full_moon_search_truth(
     """
 
     _require_finite_jd(jd, "jd")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     synodic_month_days = 29.53058868
     jd_cur = jd
@@ -2639,9 +2703,9 @@ def prenatal_syzygy(
     (jd_syzygy, phase) where phase is 'New Moon' or 'Full Moon'.
     """
     _require_finite_jd(jd, "jd")
+    policy = _validate_policy(policy)  # reject a bad policy before touching the ephemeris
     if reader is None:
         reader = get_reader()
-    policy = _validate_policy(policy)
 
     jd_nm, _ = _last_new_moon_search_truth(jd, reader, policy)
     jd_fm, _ = _last_full_moon_search_truth(jd, reader, policy)

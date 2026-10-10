@@ -82,10 +82,11 @@ def test_synastry_aspects_match_cross_chart_engine_surface(moira_engine) -> None
         _aspect_signature(a)
         for a in engine.synastry_aspects(chart_a, chart_b, tier=2, include_nodes=True)
     )
-    lons_a = chart_a.longitudes(include_nodes=True)
-    lons_b = chart_b.longitudes(include_nodes=True)
-    speeds_a = chart_a.speeds()
-    speeds_b = chart_b.speeds()
+    # Synastry doctrine (6.9.8): one node and one Lilith, and no speeds, since
+    # two natal charts describe unrelated moments.
+    duplicates = {"Mean Node", "True Lilith", "Mean Lilith"}
+    lons_a = {k: v for k, v in chart_a.longitudes(include_nodes=True).items() if k not in duplicates}
+    lons_b = {k: v for k, v in chart_b.longitudes(include_nodes=True).items() if k not in duplicates}
 
     manual_aspects = []
     for name_a, lon_a in lons_a.items():
@@ -97,8 +98,6 @@ def test_synastry_aspects_match_cross_chart_engine_surface(moira_engine) -> None
                     name_b,
                     lon_b,
                     tier=2,
-                    speed_a=speeds_a.get(name_a),
-                    speed_b=speeds_b.get(name_b),
                 )
             )
     manual = sorted(_aspect_signature(a) for a in manual_aspects)
@@ -1037,7 +1036,8 @@ def test_default_synastry_policy_preserves_existing_behavior(moira_engine) -> No
     chart_b = engine.chart(dt_b)
     default_policy = SynastryComputationPolicy()
 
-    direct = synastry_contacts(chart_a, chart_b, tier=2, include_nodes=True)
+    # 6.9.9: the default policy tier is 0 (major Ptolemaic aspects).
+    direct = synastry_contacts(chart_a, chart_b, tier=0, include_nodes=True)
     via_policy = synastry_contacts(chart_a, chart_b, policy=default_policy)
 
     assert [_aspect_signature(item.aspect) for item in via_policy] == [
@@ -1095,7 +1095,7 @@ def test_narrower_synastry_policy_explicitly_governs_contact_overlay_and_chart_d
 
 
 def test_invalid_synastry_policy_values_fail_clearly() -> None:
-    with pytest.raises(ValueError, match="tier must be 1 or 2"):
+    with pytest.raises(ValueError, match="tier must be 0, 1, or 2"):
         SynastryAspectPolicy(tier=3)
 
     with pytest.raises(ValueError, match="orb_factor must be positive and finite"):
@@ -1121,7 +1121,7 @@ def test_synastry_malformed_inputs_fail_deterministically() -> None:
     with pytest.raises(ValueError, match="synastry labels must be non-empty"):
         synastry_contacts(chart, chart, source_label="", target_label="B")  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="synastry tier must be 1 or 2"):
+    with pytest.raises(ValueError, match="synastry tier must be 0, 1, or 2"):
         synastry_aspects(chart, chart, tier=3)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="synastry overlay include_nodes must be boolean"):
@@ -1226,3 +1226,50 @@ def test_synastry_additional_hardening_failures_are_deterministic(moira_engine) 
 
     with pytest.raises(ValueError, match="lat_a must be finite"):
         engine.davison_chart(dt_a, float("nan"), -0.1, dt_b, 40.7128, -74.0060)
+
+
+def test_synastry_default_tier_is_major_ptolemaic_aspects() -> None:
+    """6.9.9: synastry defaults to tier 0 (the five major aspects)."""
+    from moira.constants import ASPECT_TIERS
+    from moira.synastry import SynastryComputationPolicy
+
+    assert SynastryAspectPolicy().tier == 0
+    assert SynastryComputationPolicy().aspects.tier == 0
+    assert [a.name for a in ASPECT_TIERS[0]] == [
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    ]
+    # Tier 0 is admitted explicitly as well as by default.
+    assert SynastryAspectPolicy(tier=0).tier == 0
+    with pytest.raises(ValueError, match="tier must be 0, 1, or 2"):
+        SynastryAspectPolicy(tier=True)  # type: ignore[arg-type]
+
+
+@pytest.mark.requires_ephemeris
+def test_corrected_davison_uses_shorter_arc_longitude_midpoint(moira_engine) -> None:
+    """6.9.9: corrected Davison places the chart like the default Davison.
+
+    Tokyo (139.69 E) and Honolulu (157.86 W) straddle the antimeridian: the
+    shorter-arc midpoint lies near 170.9 E, the arithmetic mean near 9 W.
+    """
+    engine = moira_engine
+    dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    lat_a, lon_a = 35.6762, 139.6503
+    lat_b, lon_b = 21.3069, -157.8583
+
+    corrected = engine.davison_chart_corrected(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b)
+    default = engine.davison_chart(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b)
+
+    truth = corrected.info.computation_truth
+    assert truth is not None
+    assert truth.longitude_mode == "shorter_arc_midpoint"
+    assert corrected.info.classification.longitude_mode == "shorter_arc_midpoint"
+    expected = ((lon_a + (lon_b + 360.0)) / 2.0 + 180.0) % 360.0 - 180.0
+    assert truth.longitude_midpoint == pytest.approx(expected, abs=1e-12)
+    assert truth.longitude_midpoint == pytest.approx(170.89600, abs=1e-5)
+    assert corrected.info.longitude_midpoint == pytest.approx(
+        default.info.longitude_midpoint, abs=1e-12
+    )
+    assert corrected.info.latitude_midpoint == pytest.approx(
+        default.info.latitude_midpoint, abs=1e-12
+    )

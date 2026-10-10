@@ -32,9 +32,11 @@ class _StrictModel(BaseModel):
 class MansionInfoResponse(_StrictModel):
     index: int
     arabic_name: str | None = None
+    arabic_aliases: list[str] | None = None
     latin_name: str | None = None
-    ruling_star: str | None = None
+    latin_aliases: list[str] | None = None
     marker_stars: list[str] | None = None
+    marker_note: str | None = None
     nature: str | None = None
     signification: str | None = None
 
@@ -63,7 +65,7 @@ class MansionProvenanceResponse(_StrictModel):
 class MansionCatalogResponse(_StrictModel):
     mansions: list[MansionInfoResponse]
     total: int
-    span_degrees: float
+    span_degrees: float | None
     traditions: list[MansionTraditionName]
     provenance: MansionProvenanceResponse
 
@@ -74,7 +76,7 @@ class MansionPositionRequest(_StrictModel):
     jd_ut: float | None = None
     ayanamsa_system: str = "Lahiri"
     ayanamsa_mode: str = "true"
-    tradition: MansionTraditionName = MansionTraditionName.al_biruni
+    tradition: MansionTraditionName = MansionTraditionName.agrippa
 
     @field_validator("longitude", "jd_ut")
     @classmethod
@@ -103,7 +105,7 @@ class MansionBulkRequest(_StrictModel):
     jd_ut: float | None = None
     ayanamsa_system: str = "Lahiri"
     ayanamsa_mode: str = "true"
-    tradition: MansionTraditionName = MansionTraditionName.al_biruni
+    tradition: MansionTraditionName = MansionTraditionName.agrippa
 
     @field_validator("positions")
     @classmethod

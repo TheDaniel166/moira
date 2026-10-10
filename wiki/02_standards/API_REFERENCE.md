@@ -1,7 +1,7 @@
 # Moira API Reference
 
 **Document revision:** 2.3.0
-**Engine baseline:** 6.9.0
+**Engine baseline:** 6.9.9
 **Last verified:** 2026-09-26
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
@@ -46,6 +46,19 @@ branches.
 ---
 
 ## Conventions
+
+The 9 October 2026 VED-009 addition is documented in the
+[Muhurta dosha standard](MUHURTA_DOSHA_STANDARD.md): six independently
+witnessed restrictions, three opt-in scoped exceptions and reader-bound day
+cells. Fifteen identical owning exports and three `Moira` methods expose
+catalogue, direct assessment and dated composition, with matching REST.
+
+The 9 October 2026 VED-008 addition is documented in the
+[Panchanga Shuddhi standard](PANCHANGA_SHUDDHI_STANDARD.md): source-policy
+catalogue, `panchaka_rahita`, direct component assessment and reader-bound
+sunrise-day cells. Sixteen owning exports are shared by `moira`, `moira.vedic`
+and `moira.facade`; three `Moira` methods expose catalogue/direct/day. Existing
+Tara/Chandra and weighted Muhurta behavior remains compatible.
 
 - Sections labeled `fields` are intended to be exhaustive for the documented vessel unless explicitly marked otherwise.
 - Rows or examples that use `...` are abbreviated for width only; they are shorthand, not alternate signatures.
@@ -298,6 +311,30 @@ from moira.vedic import *   # includes everything from essentials, plus the full
 
 A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 
+The unified surface also includes the already-curated yoga, avastha, extended
+Jaimini, Muhurta, upagraha and Sade Sati families; Vimshopaka/Vargottama,
+Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara
+snapshot and doctrine catalogue, plus reader-bound epoch/aware-datetime Gochar
+composition. See the [dated Gochar standard](GOCHARA_DATE_DERIVED_STANDARD.md)
+for `gochara_at`, `gochara_for_datetimes`, astronomical policies, BAV provenance
+and typed errors. Imports share the owning engine objects. Bounded Muhurta search and chart scoring
+also share the owning `muhurta_search` objects: `find_muhurta_windows`,
+`muhurta_score_for_chart` and their typed policies, receipts and errors. See the
+[personalized Muhurta/search standard](MUHURTA_PERSONAL_SEARCH_STANDARD.md) for
+reader binding, sampling limits, JD-weekday Vara and explicit exclusions.
+Varga products already exposed through the facade are also available at the
+package root. Sayanadi now admits the collated BPHS Navamsa-ordinal profile,
+strict name/ghati context, optional chart evaluation and reader-bound
+previous-sunrise birth composition through root/facade/`vedic`. See the
+[Sayanadi standard](SAYANADI_ADMISSION_STANDARD.md) for source variants,
+inspectable trace, unavailable clocks and conditional-prose provenance.
+Special Lagnas and Kalachakra remain separate admissions. Daily sunrise-owned Panchanga has its separately
+admitted policy and [standard](DAILY_PANCHANGA_STANDARD.md). See the
+[Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
+for the completed package and the
+[Vedic remaining work register](../06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md)
+for current integration and enrichment gaps.
+
 | Added domain | Key symbols |
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
@@ -310,6 +347,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 | Jaimini karakas | `jaimini_karakas`, `atmakaraka`, `JaiminiKarakaResult`, `JaiminiPolicy` |
 | Ashtakavarga | `bhinnashtakavarga`, `ashtakavarga`, `transit_strength`, `AshtakavargaResult`, `AshtakavargaPolicy` |
 | Shadbala | `shadbala`, `sthana_bala`, `dig_bala`, `kala_bala`, `ShadbalaResult`, `ShadbalaPolicy` |
+| Sayanadi | `sayanadi_avastha`, `sayanadi_ghati_from_elapsed`, `SayanadiPolicy`, `SayanadiName`, `SayanadiGhati`, `SayanadiContext`, `SayanadiTrace`, `avasthas_for_datetime`, `SayanadiBirthPolicy`, `AvasthaBirthResult` |
 
 `moira.vedic` does not include the Western classical surface (Arabic lots, Firdaria, Zodiacal Releasing, Huber). For that, use `moira.classical`. See [Section 21](#21-moiravedic--vedic-astrology-surface) for the full export reference.
 
@@ -617,7 +655,7 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=2, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-aspects between two natal charts |
+| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-aspects between two natal charts (default tier 0: the five major aspects; 6.9.9) |
 | `house_overlay(chart_source, target_houses, include_nodes=True, source_label="A", target_label="B")` | `SynastryHouseOverlay` | Place chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, include_nodes=True)` | `MutualHouseOverlay` | Both overlay directions in one call |
 | `composite_chart(chart_a, chart_b, houses_a=None, houses_b=None)` | `CompositeChart` | Midpoint composite |
@@ -2592,6 +2630,12 @@ from moira import (
 | `panchanga_profile(result)` | `PanchangaProfile` | Aggregate Panchanga condition summary |
 | `validate_panchanga_output(result)` | `None` | Validate Panchanga result invariants |
 
+`Moira.lunar_month_at(jd_ut1, *, policy=None)` binds the engine reader.
+`LunarMonthPolicy` selects the month system, ayanamsa and solver tolerance.
+Exceptional Purnimanta mappings remain explicitly unsupported. See the
+[lunar-month and festival policy surface](LUNAR_MONTH_AND_FESTIVAL_POLICY.md)
+for all eight exports, the REST contract, sources and remaining admission gates.
+
 #### `PanchangaResult` fields
 
 | Field | Type | Description |
@@ -3403,7 +3447,7 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=2, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-chart aspects |
+| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-chart aspects (default tier 0: major aspects) |
 | `synastry_contacts(chart_a, chart_b, ...)` | `list[SynastryAspectContact]` | Contacts with classification |
 | `house_overlay(chart_source, target_houses, ...)` | `SynastryHouseOverlay` | chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, ...)` | `MutualHouseOverlay` | Both overlay directions |
@@ -5986,6 +6030,8 @@ from moira.vedic import (
 | Function | Signature | Description |
 |---|---|---|
 | `panchanga_at(sun_tropical_lon, moon_tropical_lon, jd, ayanamsa_system='Lahiri', policy=None)` | `→ PanchangaResult` | Five Panchanga elements at a given JD |
+| `daily_panchanga(local_date, latitude, longitude, *, timezone, policy=None, reader=None)` | `→ DailyPanchangaResult` | Local sunrise-to-next-sunrise day, exact computed limb endings, selected policy and unavailable states |
+| `lunar_month_at(jd_ut1, *, policy=None, reader=None)` | `→ LunarMonthResult` | Solved surrounding lunations, Amanta/ordinary Purnimanta labels, intercalation evidence and explicit unavailable mappings |
 | `sankranti_at(jd_start, jd_end, reader=None)` | `→ SankrantiResult` | Solar ingress into each rashi in a date range |
 | `tithi_condition_profile(result)` | `→ TithiConditionProfile` | Tithi quality assessment |
 | `panchanga_profile(result)` | `→ PanchangaProfile` | Aggregate Panchanga quality profile |
@@ -5996,6 +6042,14 @@ these boundaries by subtracting two separately rounded sidereal longitudes.
 This preserves exact conjunction, opposition, tithi, and half-tithi ownership;
 the Panchanga result still publishes the selected sidereal longitudes for the
 products that use them.
+
+`Moira.daily_panchanga(local_date, latitude, longitude, *, timezone, policy=None)`
+binds the facade's reader. `DailyPanchangaPolicy` selects a named ayanamsa,
+sunrise convention and bounded solver tolerance. Numerical event moments are
+explicit UT1 JDs with converted UTC/local timestamps. Daily coverage and an
+actual limb ending after next sunrise remain separate fields. See the
+[daily standard and worked request](DAILY_PANCHANGA_STANDARD.md) for all nine
+curated exports, source choices, strict REST contract and verification.
 
 #### `PanchangaResult` fields
 
@@ -6071,6 +6125,87 @@ Named functions follow the pattern `navamsa(longitude) → VargaPoint`:
 | `khavedamsha` | D-40 | Auspicious/inauspicious effects |
 | `akshavedamsha` | D-45 | All matters |
 | `shashtiamsha` | D-60 | Past life karma |
+
+
+`VargaPoint` now preserves nullable `deity` and actual `d60_method`. Named
+`shashtiamsha` enriches the point; generic divisor 60 retains `deity=None`.
+Full D60 numeric defaults remain harmonic. Four source-owned strings changed:
+`Kindar` to `Kinnara`, `Suddh` to `Sudha`, `Dhannayudh` to `Dandayudha`, and
+`Brahman` to `Bhramana`; these are corrections, not source aliases.
+
+```python
+from moira.vedic import D60Method, D60SignResult, d60_sign, vimshopaka_bala
+
+source_sign = d60_sign(283 + 25 / 60, method=D60Method.SANTHANAM_SIGN)
+assert source_sign.sign == "Pisces"
+assert source_sign.position_scope == "sign_only"
+```
+
+`d60_sign(longitude, *, method=D60Method.HARMONIC)` returns a frozen sign-only
+result with method and source receipt, without `sign_degree` or
+`varga_longitude`. `Moira.d60_sign` delegates to the same helper.
+`varga_sign_index(..., 60, d60_method=...)`, `vimshopaka_bala` and
+`vimshopaka_all` accept the source method; a nondefault selection requires
+D60. Full `shashtiamsha`, named/Shodashvarga and chart facade methods reject
+this sign-only selection. See [D60 source admission](D60_SOURCE_ADMISSION_STANDARD.md).
+
+`D60Method.PVR_TEXTBOOK_LINEAR` separately admits a full-position profile
+composed from Rao's 2000 textbook sign sequence and 2013 proportional degree
+rule. Exact partitions are half-open; both natal parities count forward while
+the selected Santhanam deity list reverses on even signs. This profile accepts
+strict finite numeric inputs and carries both positional source locators in
+`VargaPoint.d60_source_references`, also copied through REST. It is available
+in `shashtiamsha(..., d60_method=...)` and named, chart and Shodashvarga Moira
+methods; another named division rejects it. Strength helpers accept the same
+selection in groups containing D60 and preserve their applied source receipt.
+Generic Varga keeps its harmonic contract. The composed modern admission does
+not establish a classical degree verse or current JHora equivalence.
+
+```python
+from moira.vedic import D60Method, shashtiamsha
+
+position = shashtiamsha(31.125, d60_method=D60Method.PVR_TEXTBOOK_LINEAR)
+assert (position.sign, position.sign_degree) == ("Cancer", 7.5)
+assert len(position.d60_source_references) == 2
+```
+
+`D60Method.CLASSICAL_DERIVED_LINEAR` separately selects a complete full-degree
+policy with classical and commentarial support and an explicit Moira
+proportional-coordinate derivation. It shares the selected forward sign and
+degree arithmetic with the modern profile while preserving different
+provenance. `VargaPoint.d60_degree_attribution`, copied to REST, distinguishes
+`classical_derived`, `modern_composed`, `generic_harmonic` and unknown/null
+metadata. A directly prescribed classical continuous D60 degree law is not
+claimed. See the [source adjudication](../06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md).
+
+```python
+position = shashtiamsha(31.125, d60_method=D60Method.CLASSICAL_DERIVED_LINEAR)
+assert (position.sign, position.sign_degree) == ("Cancer", 7.5)
+assert position.d60_degree_attribution == "classical_derived"
+assert position.d60_source_references[-1] == "Moira:D60:classical-derived-proportional:v1"
+```
+
+The choice is supported by the named/Shodashvarga facade and chart methods,
+all seven corresponding REST request shapes, sign projection and
+D60-containing Vimshopaka groups. Source-profile groups apply their circular
+normalization before evaluating other divisions and D1 relationships. The
+strength calculation uses D60 signs; it does not require or prescribe degrees.
+
+### Bounded Chara Dasha
+
+`chara_dasha(sidereal_longitudes, lagna_sidereal_lon, birth_jd,
+node_longitudes=None, cycles=1)` admits strict integer cycles 1 or 2, exactly
+seven classical bodies and either omitted nodes or an exact Rahu/Ketu pair.
+All numbers must be finite without coercion. The original default arithmetic
+and five-field `CharaDashaResult` constructor are preserved; a legacy/manual
+result has unknown `computation=None`.
+
+Engine results always carry the frozen `CharaDashaComputation` receipt and
+actual `period_count`, including repeated-cycle policy, applied lord mode,
+365.25-day year and caller-owned Julian-day epoch. Root, facade and Vedic
+exports share canonical identities. The published repetition witness and
+unresolved complete-cycle/co-lord authority are described in the
+[Chara cycle standard](CHARA_DASHA_CYCLE_STANDARD.md).
 
 ---
 

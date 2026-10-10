@@ -13,7 +13,7 @@ from moira.dignities import (
     SectHayzPolicy,
     SolarConditionPolicy,
 )
-from moira.egyptian_bounds import EgyptianBoundsPolicy
+from moira.egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy
 from moira.hellenistic import (
     HELLENISTIC_CLASSICAL_PLANETS,
     HellenisticChartProfile,
@@ -45,8 +45,20 @@ def _policy_from_request(
         dignity=DignityComputationPolicy(
             essential=EssentialDignityPolicy(
                 doctrine=dignity.essential.doctrine,
-                bounds_doctrine=dignity.essential.bounds_doctrine,
-                triplicity_doctrine=dignity.essential.triplicity_doctrine,
+                # An unset term table keeps the profile's Ptolemaic (Robbins)
+                # terms rather than the Lilly scoring mode's own p. 104 terms.
+                bounds_doctrine=(
+                    dignity.essential.bounds_doctrine
+                    if dignity.essential.bounds_doctrine is not None
+                    else EgyptianBoundsDoctrine.PTOLEMAIC
+                ),
+                # An unset dignity triplicity table follows the profile's own
+                # (Dorothean) table rather than the Lilly scoring mode's.
+                triplicity_doctrine=(
+                    dignity.essential.triplicity_doctrine
+                    if dignity.essential.triplicity_doctrine is not None
+                    else request.triplicity_doctrine
+                ),
                 participating_ruler_policy=dignity.essential.participating_ruler_policy,
             ),
             accidental=AccidentalDignityPolicy(

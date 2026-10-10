@@ -765,7 +765,10 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         )
 
     def almuten_of_degree(self, longitude: float, is_day: bool) -> str:
-        """Compute the essential almuten of a zodiacal degree."""
+        """Compute the essential almuten of a zodiacal degree under the
+        legacy moira_legacy_v1 count (Egyptian bounds, Dorothean
+        triplicity); moira.dignities.almuten_of_degree_determination
+        gives Lilly's 1647 table by default."""
         return _facade_module().almuten_of_degree(longitude, is_day)
 
     def almuten_figuris(
@@ -776,13 +779,30 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         day_ruler: str | None = None,
         hour_ruler: str | None = None,
         strict: bool = False,
+        *,
+        geo_latitude: float | None = None,
+        geo_longitude: float | None = None,
     ) -> str:
         """
-        Compute the traditional Almuten Figuris for a natal chart.
+        Compute the Almuten Figuris for a natal chart under the legacy
+        moira_legacy_v1 count: essential dignities at Sun, Moon,
+        Ascendant, Lot of Fortune and prenatal syzygy plus house, day-ruler
+        and hour-ruler points (accidental weights not traced to a source; see
+        moira.dignities.AlmutenDoctrine). Lilly's 1647 count is
+        moira.dignities.almuten_figuris_determination (its default).
         If prenatal_syzygy_lon, day_ruler, or hour_ruler are not passed,
-        they are resolved automatically from the chart and house coordinates.
-        If strict is True, any auto-resolution errors will bubble up.
+        they are resolved from the chart and house coordinates. A failed
+        resolution is never dropped: the underlying error propagates, and a
+        ruler that cannot be resolved raises ValueError: the rulers need the
+        birthplace (``geo_latitude``/``geo_longitude``, else ``geo_lat``/
+        ``geo_lon`` on ``houses`` or ``latitude``/``longitude`` on ``chart``;
+        Moira's own house and chart vessels carry none) and a planetary hour
+        containing the birth instant. Before 6.9.9 a chart without those
+        coordinates was silently counted with no day/hour-ruler points. Since 6.9.9 ``strict`` has no effect and is
+        kept only so existing calls keep working; before 6.9.9
+        ``strict=False`` silently counted without the unresolved input.
         """
+        del strict  # retained for call compatibility; resolution is always strict
         facade = _facade_module()
         lons = chart.longitudes(include_nodes=False)
         day = facade.is_day_chart(lons.get("Sun", 0.0), houses.asc)
@@ -795,38 +815,49 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
                 jd_ut1 = facade.utc_to_ut1(jd_utc)
             return jd_ut1
 
-        # 1. Resolve prenatal syzygy degree if not provided
+        # 1. Resolve the prenatal syzygy degree if not provided.
         if prenatal_syzygy_lon is None:
-            try:
-                from .transits import prenatal_syzygy
-                from .planets import planet_at
-                reader = getattr(chart, "_reader", None)
-                jd_syzygy, phase = prenatal_syzygy(chart_ut1(), reader=reader)
-                if phase == "New Moon":
-                    prenatal_syzygy_lon = planet_at("Sun", jd_syzygy, reader=reader).longitude
-                else:
-                    prenatal_syzygy_lon = planet_at("Moon", jd_syzygy, reader=reader).longitude
-            except Exception as e:
-                if strict:
-                    raise e
-
-        # 2. Resolve day and hour rulers if not provided
-        if day_ruler is None or hour_ruler is None:
-            lat = getattr(houses, "geo_lat", getattr(chart, "latitude", None))
-            lon = getattr(houses, "geo_lon", getattr(chart, "longitude", None))
+            from .transits import prenatal_syzygy
+            from .planets import planet_at
             reader = getattr(chart, "_reader", None)
-            if lat is not None and lon is not None:
-                try:
-                    from .planetary_hours import _planetary_hours_from_utc
-                    ph_day = _planetary_hours_from_utc(jd_utc, lat, lon, reader=reader)
-                    found_hour = ph_day.hour_at(chart_ut1())
-                    if found_hour is not None:
-                        hour_ruler = found_hour.ruler
-                    if ph_day.hours:
-                        day_ruler = ph_day.hours[0].ruler
-                except Exception as e:
-                    if strict:
-                        raise e
+            jd_syzygy, phase = prenatal_syzygy(chart_ut1(), reader=reader)
+            if phase == "New Moon":
+                prenatal_syzygy_lon = planet_at("Sun", jd_syzygy, reader=reader).longitude
+            else:
+                prenatal_syzygy_lon = planet_at("Moon", jd_syzygy, reader=reader).longitude
+
+        # 2. Resolve whichever of the day and hour rulers was not provided.
+        if day_ruler is None or hour_ruler is None:
+            lat = geo_latitude
+            if lat is None:
+                lat = getattr(houses, "geo_lat", getattr(chart, "latitude", None))
+            lon = geo_longitude
+            if lon is None:
+                lon = getattr(houses, "geo_lon", getattr(chart, "longitude", None))
+            if lat is None or lon is None:
+                raise ValueError(
+                    "almuten_figuris cannot resolve the planetary day/hour ruler: "
+                    "no geographic latitude and longitude; pass geo_latitude and "
+                    "geo_longitude, or day_ruler and hour_ruler"
+                )
+            reader = getattr(chart, "_reader", None)
+            from .planetary_hours import _planetary_hours_from_utc
+            ph_day = _planetary_hours_from_utc(jd_utc, lat, lon, reader=reader)
+            if hour_ruler is None:
+                found_hour = ph_day.hour_at(chart_ut1())
+                if found_hour is None:
+                    raise ValueError(
+                        "almuten_figuris cannot resolve the hour ruler: no planetary "
+                        "hour contains the birth instant; pass hour_ruler"
+                    )
+                hour_ruler = found_hour.ruler
+            if day_ruler is None:
+                if not ph_day.hours:
+                    raise ValueError(
+                        "almuten_figuris cannot resolve the day ruler: the planetary "
+                        "day has no hours; pass day_ruler"
+                    )
+                day_ruler = ph_day.hours[0].ruler
 
         return facade.almuten_figuris(
             lons,
@@ -841,9 +872,15 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         """Compute Huber golden-section zone boundaries for a house frame."""
         return _facade_module().house_zones(house_cusps)
 
-    def huber_age_point(self, age_years: float, house_cusps):
-        """Compute the Huber Age Point for a caller-supplied house frame."""
-        return _facade_module().age_point(age_years, house_cusps)
+    def huber_age_point(self, age_years: float, house_cusps, *, include_intensity: bool = False):
+        """Compute the Huber Age Point for a caller-supplied house frame.
+
+        ``include_intensity`` opts in to the unverified editorial intensity
+        curve value (default off since 6.9.9).
+        """
+        return _facade_module().age_point(
+            age_years, house_cusps, include_intensity=include_intensity
+        )
 
     def huber_age_point_contacts(
         self,
@@ -887,7 +924,11 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         is_night_chart: bool,
         policy=None,
     ):
-        """Compute Abu Ma'shar's Nine Parts from caller-supplied chart truth."""
+        """Compute the seven Hermetic lots of Paulus Alexandrinus (Introduction
+        ch. 23) from caller-supplied chart truth; the unsourced Sword and Node
+        extension lots only when ``policy`` opts in. The name ``nine_parts``
+        is historical: no source groups these lots as Abu Ma'shar's "nine
+        parts"."""
         if policy is None:
             policy = _nine_parts.DEFAULT_NINE_PARTS_POLICY
         return _nine_parts.nine_parts_abu_mashar(

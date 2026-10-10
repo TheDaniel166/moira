@@ -385,13 +385,6 @@ def test_calculate_midpoints_modern_planet_set():
     assert len(mps) == 45
 
 
-def test_calculate_midpoints_unknown_set_defaults_to_classic():
-    """Unknown planet_set string silently defaults to CLASSIC_7."""
-    mps_default  = calculate_midpoints(_LONS)
-    mps_unknown  = calculate_midpoints(_LONS, planet_set="nonexistent")
-    assert len(mps_default) == len(mps_unknown)
-
-
 def test_calculate_midpoints_exact_known_value():
     """midpoint(Sun=10°, Moon=50°) = 30° in _LONS_EXACT."""
     mps = calculate_midpoints(_LONS_EXACT)
@@ -911,3 +904,11 @@ def test_oracle_larger_orb_finds_at_least_as_many_clusters():
     n_tight = len(midpoint_clusters(_LONS, cluster_orb=0.5, min_size=2, dial=90))
     n_wide  = len(midpoint_clusters(_LONS, cluster_orb=2.0, min_size=2, dial=90))
     assert n_wide >= n_tight
+
+
+def test_unknown_planet_set_is_an_error_not_classic():
+    import pytest as _pytest
+    from moira.midpoints import calculate_midpoints
+
+    with _pytest.raises(ValueError, match="planet_set"):
+        calculate_midpoints({"Sun": 10.0, "Moon": 50.0}, planet_set="bogus")

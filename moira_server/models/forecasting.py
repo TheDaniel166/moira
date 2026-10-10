@@ -33,8 +33,17 @@ class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+# 6.9.9: each moving body is scanned once for all of its perfection
+# longitudes (moira.transits._find_transits_to_targets), so the mover cap
+# rises from 4 to the ten planets.  The canonical-search and scan-sample
+# budgets in services/forecasting.py still bound the total work.
+RELATIONSHIP_TRANSIT_MAX_MOVING_BODIES = 10
+
+
 class _RelationshipTransitRequest(_StrictModel):
-    moving_bodies: list[str] = Field(min_length=1, max_length=4)
+    moving_bodies: list[str] = Field(
+        min_length=1, max_length=RELATIONSHIP_TRANSIT_MAX_MOVING_BODIES
+    )
     jd_start: float
     jd_end: float
     tier: Literal[0, 1, 2] = 0

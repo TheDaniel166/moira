@@ -297,7 +297,9 @@ def test_native_heliacal_search_rejects_invalid_policy_inputs() -> None:
     ("event_kind", "native_name"),
     [
         ("heliacal_rising", "search_heliacal_rising"),
-        ("heliacal_setting", "search_heliacal_setting"),
+        # The compiled setting kernel serves the pre-6.9.9 last-morning
+        # event; the standard (evening last) heliacal setting is Python-only.
+        ("last_morning_visibility", "search_heliacal_setting"),
     ],
 )
 def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
@@ -337,7 +339,7 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
             "delta_t_rate_seconds_per_day": delta_t_rate,
             "nutation_cache": moira_native.NutationEpochCache(),
         }
-        if event_kind == "heliacal_setting":
+        if event_kind == "last_morning_visibility":
             search_kwargs.update(
                 setting_elongation_threshold=(
                     policy.heliacal.setting_elongation_threshold
@@ -391,7 +393,7 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-@pytest.mark.parametrize("event_kind", ["heliacal_rising", "heliacal_setting"])
+@pytest.mark.parametrize("event_kind", ["heliacal_rising", "last_morning_visibility"])
 @pytest.mark.parametrize("latitude", [-30.0, 0.0, 31.2, 60.0])
 def test_native_heliacal_batch_matches_python_event_oracle(
     event_kind: str,
@@ -445,7 +447,7 @@ def test_native_heliacal_batch_matches_python_event_oracle(
 
 
 @pytest.mark.requires_ephemeris
-def test_native_heliacal_setting_honors_custom_disappearance_policy() -> None:
+def test_native_last_morning_visibility_honors_custom_disappearance_policy() -> None:
     kernel_path = find_planetary_kernel()
     jd_start = julian_day(2024, 1, 1, 0.0)
     doctrine = stars.HeliacalSearchPolicy(
@@ -455,7 +457,7 @@ def test_native_heliacal_setting_honors_custom_disappearance_policy() -> None:
 
     with SpkReader(kernel_path) as reader, use_reader_override(reader):
         python_result = stars.heliacal_catalog_batch(
-            "heliacal_setting",
+            "last_morning_visibility",
             jd_start,
             31.2,
             29.9,
@@ -467,7 +469,7 @@ def test_native_heliacal_setting_honors_custom_disappearance_policy() -> None:
             ),
         )
         native_result = stars.heliacal_catalog_batch(
-            "heliacal_setting",
+            "last_morning_visibility",
             jd_start,
             31.2,
             29.9,
@@ -494,7 +496,7 @@ def test_native_heliacal_setting_honors_custom_disappearance_policy() -> None:
     ("python_search", "event_kind"),
     [
         (stars.heliacal_rising_event, "heliacal_rising"),
-        (stars.heliacal_setting_event, "heliacal_setting"),
+        (stars.last_morning_visibility_event, "last_morning_visibility"),
     ],
 )
 def test_single_star_native_search_matches_python_oracle(
@@ -534,7 +536,7 @@ def test_single_star_native_search_matches_python_oracle(
 @pytest.mark.parametrize("year", [1900, 2100])
 @pytest.mark.parametrize(
     "search_function",
-    [stars.heliacal_rising_event, stars.heliacal_setting_event],
+    [stars.heliacal_rising_event, stars.last_morning_visibility_event],
 )
 def test_single_star_native_event_parity_across_modern_epochs(
     year: int,
@@ -596,7 +598,11 @@ def test_single_star_native_not_found_matches_one_day_python_window() -> None:
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
     "search_function",
-    [stars.heliacal_rising_event, stars.heliacal_setting_event],
+    [
+        stars.heliacal_rising_event,
+        stars.heliacal_setting_event,
+        stars.last_morning_visibility_event,
+    ],
 )
 def test_native_single_and_batch_searches_never_return_before_forward_start(
     search_function,
@@ -642,14 +648,19 @@ def test_native_single_and_batch_searches_never_return_before_forward_start(
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize("use_native", [False, True])
+@pytest.mark.parametrize(
+    "search_function",
+    [stars.heliacal_setting_event, stars.last_morning_visibility_event],
+)
 def test_heliacal_setting_cannot_manufacture_event_beyond_de441_coverage(
     use_native: bool,
+    search_function,
 ) -> None:
     kernel_path = find_planetary_kernel()
 
     with SpkReader(kernel_path) as reader, use_reader_override(reader):
         with pytest.raises(ValueError, match="none covers JD"):
-            stars.heliacal_setting_event(
+            search_function(
                 "Sirius",
                 8_000_000.0,
                 0.0,

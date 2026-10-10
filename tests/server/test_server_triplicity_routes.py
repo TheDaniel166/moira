@@ -195,3 +195,22 @@ def test_triplicity_routes_are_registered() -> None:
     assert "/v1/triplicity/table" in paths
     assert "/v1/triplicity/assignment" in paths
     assert "/v1/triplicity/score" in paths
+
+
+def test_triplicity_table_route_serves_lilly_1647_doctrine() -> None:
+    """Christian Astrology (1647) I ch. XVIII: Mars rules water day and night."""
+    with _client() as client:
+        response = client.get(
+            "/v1/triplicity/table",
+            params={"doctrine": "william_lilly_1647", "is_day_chart": "true"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["doctrine"] == "william_lilly_1647"
+    by_sign = {item["sign"]: item for item in body["assignments"]}
+    for sign in ("Cancer", "Scorpio", "Pisces"):
+        assert by_sign[sign]["day_ruler"] == "Mars"
+        assert by_sign[sign]["night_ruler"] == "Mars"
+        assert by_sign[sign]["active_ruler"] == "Mars"
+    assert all(item["participating_ruler"] is None for item in body["assignments"])

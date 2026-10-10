@@ -91,9 +91,25 @@ def harmonic_fingerprint_route(request: HarmonicSweepRequest) -> HarmonicFingerp
     return compute_harmonic_fingerprint(request)
 
 
-@router.post("/composite", response_model=HarmonicCompositeResponse)
+@router.post("/cross-chart-conjunctions", response_model=HarmonicCompositeResponse)
+def harmonic_cross_chart_conjunctions_route(
+    request: HarmonicCompositeRequest,
+) -> HarmonicCompositeResponse:
+    """Find conjunctions between two natal charts on one harmonic wheel.
+
+    Each chart is projected onto harmonic H separately; no composite chart
+    is built.
+    """
+    return compute_composite_harmonic(request)
+
+
+@router.post("/composite", response_model=HarmonicCompositeResponse, deprecated=True)
 def harmonic_composite_route(request: HarmonicCompositeRequest) -> HarmonicCompositeResponse:
-    """Find cross-chart conjunctions on one bounded harmonic chart."""
+    """Deprecated alias of /cross-chart-conjunctions (kept for compatibility).
+
+    The name is historical: this route compares two natal charts on one
+    harmonic wheel and does not build a composite chart.
+    """
     return compute_composite_harmonic(request)
 
 

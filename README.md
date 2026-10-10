@@ -681,7 +681,23 @@ changing server routes, run
 `.\.venv\Scripts\python.exe scripts\sync_rest_api_reference.py` in an
 environment with the `server` extra installed; CI checks its generated OpenAPI
 inventory, the Git wiki mirror, and the website publication manifest for
-drift.
+drift. Public export or allowlisted documentation changes also require a
+manifest refresh, even when the package version is unchanged.
+
+Refresh affected artifacts in dependency order before pushing:
+
+1. `scripts/generate_hellenistic_inventory.py` when its admitted families change.
+2. `scripts/sync_rest_api_reference.py` after server route changes.
+3. `scripts/sync_git_wiki.py` after canonical documentation changes.
+4. `scripts/build_website_docs_bundle.py` after public exports, route references
+   or allowlisted documents change, once the current version's release tag
+   exists. This refreshes engine-owned metadata; it does not deploy a website.
+
+Use the project `.venv` for these commands. Before publishing, run the separate
+documentation, release-identity and generated-artifact checks listed in
+[Release Hardening](.github/workflows/release-hardening.yml), including each
+generator's `--check` mode. Hellenistic route details remain independently
+checked; complete server counts belong to the REST API reference.
 
 | Document | Contents |
 | :--- | :--- |

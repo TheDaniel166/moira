@@ -226,9 +226,10 @@ def test_profile_route_can_enable_optional_overlays(
     assert len(body["lots"]) == 4
     assert body["supporting_lots"]
     assert body["planets"][0]["assemble_condition"]["subject"] == "Sun"
-    assert body["planets"][0]["assemble_condition"]["ray"]["reason"] == (
-        "doctrine_not_admitted"
-    )
+    ray = body["planets"][0]["assemble_condition"]["ray"]
+    assert ray["status"] == "evaluated"
+    assert ray["reason"] is None
+    assert isinstance(ray["strikes"], list)
     assert body["twelfth_parts"]
     assert body["zodiacal_releasing"]["peak_grades"]
     assert body["zodiacal_releasing_fortune"]["lot_name"] == "Fortune"

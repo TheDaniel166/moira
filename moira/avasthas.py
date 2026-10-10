@@ -47,8 +47,9 @@ Ambiguity policy (declared)
 * "Benefic/malefic varga" (Saravali/JP/PD): the planet's NAVAMSA sign
   lord's nature — declared policy, the texts do not name the varga.
 * Watery signs (Trushita): Cancer, Scorpio, Pisces.
-* Nodes: not avastha subjects by default; Rahu/Ketu participate only as
-  Lajjita afflictors when their longitudes are supplied.
+* Nodes: separate opt-in Sayanadi subjects. They participate as Lajjita
+  afflictors when node longitudes are supplied; the other four families
+  retain their seven-classical-body domains.
 
 Sources
 -------
@@ -58,7 +59,9 @@ Saravali Ch. 5 (Santhanam); Jataka Parijata Adhyaya 2 (Sastri lineage,
 secondary-verified); Phaladeepika Ch. 3 (Sastri/wisdomlib).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from fractions import Fraction
+import math
 
 from .sayanadi_effects import get_sayanadi_effect
 
@@ -70,6 +73,8 @@ __all__ = [
     "LajjitadiState",
     "LajjitadiAvasthas",
     "SayanadiAvastha",
+    "SayanadiPolicy", "SayanadiName", "SayanadiGhati", "SayanadiContext",
+    "SayanadiTrace", "SayanadiEffectProvenance", "sayanadi_ghati_from_elapsed",
     "PlanetAvasthas",
     "AvasthaChartResult",
     "baladi_avastha",
@@ -124,6 +129,215 @@ _SAYANADI_SUBSTATE_ADDEND: dict[str, int] = {
     'Sun': 5, 'Moon': 2, 'Mars': 2, 'Mercury': 3,
     'Jupiter': 5, 'Venus': 3, 'Saturn': 3, 'Rahu': 4, 'Ketu': 4
 }
+
+# Sharma BPHS 47, printed p.625; Rao 15.4.4, table 37, printed p.193.
+# Exact single Devanagari sounds only; personal-name/transliteration choice
+# belongs to the caller. No normalization guesses or full-name extraction.
+_SAYANADI_SOUNDS = (
+    "अ क छ ड ध भ व", "इ ख ज ढ न म श", "उ ग झ त प य ष",
+    "ए घ ट थ फ र स", "ओ च ठ द ब ल ह",
+)
+_SAYANADI_SOUND_VALUES = {
+    sound: value for value, row in enumerate(_SAYANADI_SOUNDS, 1)
+    for sound in row.split()
+}
+
+
+def _sayanadi_number(name: str, value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be a finite real number")
+    try:
+        number = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{name} must be finite") from exc
+    if not math.isfinite(number):
+        raise ValueError(f"{name} must be finite")
+    return number
+
+
+def _sayanadi_partition(value: float) -> tuple[float, int, int, int]:
+    """Exact cell ownership of the admitted binary64 input, without epsilon.
+
+    The float display may round a tiny negative wrap to 360. Its displayed
+    value is capped at the adjacent interior float; integer cell ownership
+    is always derived from the exact rational, never the display.
+    """
+    normalized = Fraction.from_float(value) % 360
+    display = min(float(normalized), math.nextafter(360.0, 0.0))
+    return (display, int(normalized * 27 // 360) + 1,
+            int((normalized % 30) * 9 // 30) + 1,
+            int(normalized // 30) + 1)
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiPolicy:
+    """One executing profile; the degree-based lineage is not an enum option."""
+
+    formulation: str = "bphs_navamsa_ordinal"
+    source_profile: str = field(init=False, default="santhanam_collated_sharma")
+    name_table: str = field(init=False, default="sharma_pvr_35_sounds")
+    partition: str = field(init=False, default="exact_binary64_mod360_half_open")
+    state_names: str = field(init=False, default="moira_legacy_santhanam_labels")
+    citations: tuple[str, ...] = field(init=False, default=(
+        "BPHS Santhanam vol.1 ch.45 vv.30-37, printed pp.454-456",
+        "BPHS Sharma vol.1 1999 reprint ch.47 vv.30-37, printed pp.623-626",
+        "PVR Vedic Astrology 15.4.4 table 37, printed pp.192-193",
+    ))
+
+    def __post_init__(self) -> None:
+        if self.formulation != "bphs_navamsa_ordinal":
+            raise ValueError("only bphs_navamsa_ordinal is admitted")
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiName:
+    """Exactly one source-table value or canonical single initial sound."""
+
+    value: int | None = None
+    sound: str | None = None
+    resolved_value: int = field(init=False)
+    basis: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if (self.value is None) == (self.sound is None):
+            raise ValueError("supply exactly one of value or sound")
+        if self.value is not None:
+            if type(self.value) is not int or not 1 <= self.value <= 5:
+                raise ValueError("name value must be a strict integer in [1, 5]")
+            value, basis = self.value, "caller_supplied_value"
+        else:
+            if not isinstance(self.sound, str) or self.sound not in _SAYANADI_SOUND_VALUES:
+                raise ValueError("sound must be one canonical Devanagari initial")
+            value, basis = _SAYANADI_SOUND_VALUES[self.sound], "canonical_devanagari_sound"
+        object.__setattr__(self, "resolved_value", value)
+        object.__setattr__(self, "basis", basis)
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiGhati:
+    """Positive ghati ordinal, with inspectable elapsed-input provenance."""
+
+    ordinal: int
+    basis: str = "caller_supplied_ordinal"
+    elapsed_seconds: float | None = None
+    whole_ghatis: int | None = None
+    vighatis: int | None = None
+    rounding: str = field(init=False, default="ceiling_positive_zero_is_first_ghati")
+
+    def __post_init__(self) -> None:
+        if type(self.ordinal) is not int or self.ordinal < 1:
+            raise ValueError("ghati ordinal must be a strict positive integer")
+        if self.basis == "caller_supplied_ordinal":
+            if any(v is not None for v in (self.elapsed_seconds, self.whole_ghatis, self.vighatis)):
+                raise ValueError("supplied ordinal cannot claim elapsed-time provenance")
+            return
+        if self.basis not in ("elapsed_seconds", "elapsed_ghati_vighati", "sunrise_derived_ut1"):
+            raise ValueError("unknown ghati input basis")
+        elapsed = _sayanadi_number("elapsed_seconds", self.elapsed_seconds)
+        if elapsed < 0:
+            raise ValueError("elapsed_seconds must be nonnegative")
+        if self.basis == "elapsed_ghati_vighati":
+            if (type(self.whole_ghatis) is not int or self.whole_ghatis < 0
+                    or type(self.vighatis) is not int or not 0 <= self.vighatis < 60):
+                raise ValueError("whole ghatis must be nonnegative and vighatis in [0, 59]")
+            exact = self.whole_ghatis * 1440 + self.vighatis * 24
+            if exact != elapsed:
+                raise ValueError("ghati/vighati and elapsed seconds disagree")
+        else:
+            if self.whole_ghatis is not None or self.vighatis is not None:
+                raise ValueError("this input basis has no ghati/vighati pair")
+            exact = Fraction.from_float(elapsed)
+        if self.ordinal != max(1, math.ceil(Fraction(exact) / 1440)):
+            raise ValueError("ordinal must match the declared elapsed-time rounding")
+
+
+def sayanadi_ghati_from_elapsed(*, elapsed_seconds: float | None = None,
+                              whole_ghatis: int | None = None,
+                              vighatis: int | None = None) -> SayanadiGhati:
+    """Admit seconds or a strict integer ghati/vighati pair, never both."""
+    if elapsed_seconds is not None:
+        if whole_ghatis is not None or vighatis is not None:
+            raise ValueError("elapsed clock inputs are mutually exclusive")
+        elapsed = _sayanadi_number("elapsed_seconds", elapsed_seconds)
+        if elapsed < 0:
+            raise ValueError("elapsed_seconds must be nonnegative")
+        return SayanadiGhati(max(1, math.ceil(Fraction.from_float(elapsed) / 1440)),
+                             "elapsed_seconds", elapsed)
+    if (type(whole_ghatis) is not int or whole_ghatis < 0
+            or type(vighatis) is not int or not 0 <= vighatis < 60):
+        raise ValueError("supply nonnegative whole_ghatis and vighatis in [0, 59]")
+    seconds = whole_ghatis * 1440 + vighatis * 24
+    return SayanadiGhati(max(1, math.ceil(Fraction(seconds, 1440))),
+                         "elapsed_ghati_vighati", seconds, whole_ghatis, vighatis)
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiContext:
+    """Explicit birth-time and name inputs with the selected Sayanadi policy."""
+
+    ghati: SayanadiGhati
+    name: SayanadiName
+    policy: SayanadiPolicy = field(default_factory=SayanadiPolicy)
+    evaluate_nodes: bool = False
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.ghati, SayanadiGhati) or not isinstance(self.name, SayanadiName):
+            raise TypeError("ghati and name must be typed Sayanadi inputs")
+        if not isinstance(self.policy, SayanadiPolicy):
+            raise TypeError("policy must be SayanadiPolicy")
+        if type(self.evaluate_nodes) is not bool:
+            raise TypeError("evaluate_nodes must be bool")
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiEffectProvenance:
+    """Compatibility prose is not an evaluated or source-certified prediction."""
+    catalogue: str = field(init=False, default="moira.sayanadi_effects.legacy_summary")
+    audit_status: str = field(init=False, default="not_source_certified")
+    conditions_evaluated: bool = field(init=False, default=False)
+
+
+@dataclass(frozen=True, slots=True)
+class SayanadiTrace:
+    """Sayanadi input normalization, arithmetic terms, and intermediate remainders."""
+
+    planet: str
+    planet_longitude: float
+    moon_longitude: float
+    lagna_longitude: float
+    normalized_planet_longitude: float
+    normalized_moon_longitude: float
+    normalized_lagna_longitude: float
+    planet_nakshatra: int
+    navamsa_ordinal: int
+    moon_nakshatra: int
+    lagna_sign: int
+    planet_multiplier: int
+    planet_addend: int
+    total: int
+    state_remainder: int
+    stage1_remainder: int
+    stage2_remainder: int
+    context: SayanadiContext
+
+    def __post_init__(self) -> None:
+        if self.planet not in _SAYANADI_PLANET_NUMBERS or not isinstance(self.context, SayanadiContext):
+            raise ValueError("trace needs a recognized planet and typed context")
+        parts = [_sayanadi_partition(_sayanadi_number(label, value)) for label, value in (
+            ("planet_longitude", self.planet_longitude), ("moon_longitude", self.moon_longitude),
+            ("lagna_longitude", self.lagna_longitude))]
+        p, m, asc = parts
+        total = p[1] * _SAYANADI_PLANET_NUMBERS[self.planet] * p[2] + m[1] + self.context.ghati.ordinal + asc[3]
+        first = ((total % 12 or 12) ** 2 + self.context.name.resolved_value) % 12
+        expected = (p[0], m[0], asc[0], p[1], p[2], m[1], asc[3],
+                    _SAYANADI_PLANET_NUMBERS[self.planet], _SAYANADI_SUBSTATE_ADDEND[self.planet],
+                    total, total % 12, first, (first + _SAYANADI_SUBSTATE_ADDEND[self.planet]) % 3)
+        actual = (self.normalized_planet_longitude, self.normalized_moon_longitude,
+                  self.normalized_lagna_longitude, self.planet_nakshatra, self.navamsa_ordinal,
+                  self.moon_nakshatra, self.lagna_sign, self.planet_multiplier, self.planet_addend,
+                  self.total, self.state_remainder, self.stage1_remainder, self.stage2_remainder)
+        if actual != expected or any(type(v) is not int for v in actual[3:]):
+            raise ValueError("Sayanadi trace must agree with its inputs and source arithmetic")
 
 _BALADI_STATES: tuple[str, ...] = ('Bala', 'Kumara', 'Yuva', 'Vriddha', 'Mrita')
 _BALADI_FRACTIONS: dict[str, float | None] = {
@@ -237,7 +451,22 @@ class SayanadiAvastha:
     state: str                  # 'Shayana' | 'Upavesana' | ...
     substate: str               # 'Drishti' | 'Cheshta' | 'Vicheshta'
     avastha_index: int          # 1-12
-    effect: str                 # The BPHS classical Phala interpretation
+    effect: str                 # Legacy summary; conditions are not evaluated.
+    trace: SayanadiTrace | None = None
+    effect_provenance: SayanadiEffectProvenance | None = None
+
+    def __post_init__(self) -> None:
+        # Legacy five-field construction has unknown computational provenance.
+        if self.trace is not None:
+            if not isinstance(self.trace, SayanadiTrace):
+                raise TypeError("trace must be SayanadiTrace")
+            index = self.trace.state_remainder or 12
+            if (self.planet != self.trace.planet or self.avastha_index != index
+                    or self.state != _SAYANADI_STATES[index - 1]
+                    or self.substate != {1: "Drishti", 2: "Cheshta", 0: "Vicheshta"}[self.trace.stage2_remainder]):
+                raise ValueError("Sayanadi result must agree with its canonical trace")
+        if self.effect_provenance is not None and not isinstance(self.effect_provenance, SayanadiEffectProvenance):
+            raise TypeError("effect_provenance must be SayanadiEffectProvenance")
 
 
 @dataclass(frozen=True, slots=True)
@@ -277,6 +506,32 @@ class AvasthaChartResult:
 
     policy: AvasthaPolicy
     planets: dict[str, PlanetAvasthas]
+    sayanadi_status: str | None = None
+    sayanadi_context: SayanadiContext | None = None
+    sayanadi_nodes: dict[str, SayanadiAvastha] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.sayanadi_status is None:
+            if self.sayanadi_context is not None or self.sayanadi_nodes:
+                raise ValueError("unknown Sayanadi provenance cannot claim context or nodes")
+            return
+        if self.sayanadi_status not in ("omitted", "evaluated"):
+            raise ValueError("unknown chart Sayanadi status")
+        if self.sayanadi_status == "omitted":
+            if self.sayanadi_context is not None or self.sayanadi_nodes:
+                raise ValueError("omitted Sayanadi cannot claim context or nodes")
+        else:
+            if not isinstance(self.sayanadi_context, SayanadiContext):
+                raise ValueError("evaluated Sayanadi requires typed context")
+            if any(p.sayanadi is None or p.sayanadi.trace is None
+                   or p.sayanadi.trace.context != self.sayanadi_context for p in self.planets.values()):
+                raise ValueError("evaluated chart must preserve its Sayanadi context")
+            expected = {"Rahu", "Ketu"} if self.sayanadi_context.evaluate_nodes else set()
+            if set(self.sayanadi_nodes) != expected or any(
+                p.planet != key or p.trace is None or p.trace.context != self.sayanadi_context
+                for key, p in self.sayanadi_nodes.items()
+            ):
+                raise ValueError("chart Sayanadi nodes must match selected evaluation")
 
 
 # ---------------------------------------------------------------------------
@@ -347,7 +602,8 @@ def _is_combust(planet: str, sidereal_longitudes: dict[str, float]) -> bool:
 
 
 def _navamsa_sign(lon: float) -> int:
-    return int(lon % 360.0 // (30.0 / 9)) % 12
+    from .varga import varga_sign_index
+    return varga_sign_index(lon, 9)
 
 
 def _sign_dignity(planet: str, lon: float) -> tuple[bool, bool, bool]:
@@ -819,58 +1075,49 @@ def sayanadi_avastha(
     planet: str,
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
-    birth_ghati: int,
-    first_syllable_value: int,
+    birth_ghati: int | None = None,
+    first_syllable_value: int | None = None,
+    *, context: SayanadiContext | None = None,
 ) -> SayanadiAvastha:
+    """BPHS within-sign Navamsa ordinal; all integer stages are returned.
+
+    Santhanam's printed example is consistent: Sa=4 gives first remainder
+    1 and final remainder 0. Degree-based lineages are separate research.
+    The positional ghati is a caller-supplied ordinal, not decimal elapsed
+    time. Use typed context for sound/elapsed provenance.
     """
-    Computes the 12 Sayanadi states and their 3 sub-states based on BPHS
-    Chapter 45. The arithmetic inconsistency in Santhanam's printed sub-state
-    example is resolved by strictly following the Sanskrit operations:
-    Stage 1: (Avastha^2 + SyllableValue) % 12
-    Stage 2: (Stage1_Remainder + PlanetConstant) % 3
-    """
-    lon = sidereal_longitudes[planet]
-    
-    # 1. Planet's Nakshatra (1-27)
-    planet_nakshatra = int((lon % 360.0) // (360.0 / 27)) + 1
-    
-    # 2. Planet's Navamsa within its sign (1-9)
-    deg_in_sign = lon % 30.0
-    planet_navamsa = int(deg_in_sign // (30.0 / 9)) + 1
-    
-    # 3. Janma Nakshatra (Moon's Nakshatra, 1-27)
-    moon_lon = sidereal_longitudes.get('Moon', lon)
-    janma_nakshatra = int((moon_lon % 360.0) // (360.0 / 27)) + 1
-    
-    # 4. Lagna Rasi (1-12)
-    lagna_rasi = _sign(lagna_sidereal_lon) + 1
-    
-    P = _SAYANADI_PLANET_NUMBERS.get(planet, 1)
-    
-    # Core Formula
-    avastha_index = ((planet_nakshatra * P * planet_navamsa) + janma_nakshatra + birth_ghati + lagna_rasi) % 12
-    if avastha_index == 0:
-        avastha_index = 12
-        
-    state = _SAYANADI_STATES[avastha_index - 1]
-    
-    # Sub-state
-    r1 = ((avastha_index * avastha_index) + first_syllable_value) % 12
-    pa = _SAYANADI_SUBSTATE_ADDEND.get(planet, 3)
-    r2 = (r1 + pa) % 3
-    
-    substate = {
-        1: "Drishti",
-        2: "Cheshta",
-        0: "Vicheshta"
-    }[r2]
-    
+    if not isinstance(planet, str) or planet not in _SAYANADI_PLANET_NUMBERS:
+        raise ValueError("planet must be one of the nine Sayanadi bodies")
+    if not isinstance(sidereal_longitudes, dict):
+        raise TypeError("sidereal_longitudes must be a body map")
+    if set(sidereal_longitudes) - _SAYANADI_PLANET_NUMBERS.keys():
+        raise ValueError("sidereal_longitudes contains unknown bodies")
+    if planet not in sidereal_longitudes or "Moon" not in sidereal_longitudes:
+        raise ValueError("subject and Moon longitudes are required")
+    for body, value in sidereal_longitudes.items():
+        _sayanadi_number(f"{body} longitude", value)
+    if context is None:
+        context = SayanadiContext(SayanadiGhati(birth_ghati), SayanadiName(value=first_syllable_value))
+    elif not isinstance(context, SayanadiContext):
+        raise TypeError("context must be SayanadiContext")
+    elif birth_ghati is not None or first_syllable_value is not None:
+        raise ValueError("context and positional name/clock inputs are mutually exclusive")
+    lon = _sayanadi_number("planet longitude", sidereal_longitudes[planet])
+    moon = _sayanadi_number("Moon longitude", sidereal_longitudes["Moon"])
+    lagna = _sayanadi_number("lagna longitude", lagna_sidereal_lon)
+    p, m, asc = map(_sayanadi_partition, (lon, moon, lagna))
+    multiplier, addend = _SAYANADI_PLANET_NUMBERS[planet], _SAYANADI_SUBSTATE_ADDEND[planet]
+    total = p[1] * multiplier * p[2] + m[1] + context.ghati.ordinal + asc[3]
+    index = total % 12 or 12
+    first = (index * index + context.name.resolved_value) % 12
+    second = (first + addend) % 3
+    trace = SayanadiTrace(planet, lon, moon, lagna, p[0], m[0], asc[0],
+                          p[1], p[2], m[1], asc[3], multiplier, addend,
+                          total, total % 12, first, second, context)
     return SayanadiAvastha(
-        planet=planet,
-        state=state,
-        substate=substate,
-        avastha_index=avastha_index,
-        effect=get_sayanadi_effect(planet, avastha_index) or "",
+        planet, _SAYANADI_STATES[index - 1],
+        {1: "Drishti", 2: "Cheshta", 0: "Vicheshta"}[second], index,
+        get_sayanadi_effect(planet, index) or "", trace, SayanadiEffectProvenance(),
     )
 
 # ---------------------------------------------------------------------------
@@ -883,13 +1130,35 @@ def evaluate_avasthas(
     lagna_sidereal_lon: float,
     policy: AvasthaPolicy | None = None,
     node_longitudes: dict[str, float] | None = None,
+    sayanadi_context: SayanadiContext | None = None,
 ) -> AvasthaChartResult:
     """
-    All four implemented avastha systems for every supplied classical
-    planet.  Sayanadi (BPHS 45.30-155) is deferred: it needs birth ghatis
-    and the native's name-syllable — inputs beyond the chart.
+    Four avastha families, plus Sayanadi when complete typed context is
+    supplied. Omission is explicit. Nodes may be separate Sayanadi subjects
+    without being assigned the other four families.
     """
+    if sayanadi_context is not None and policy is not None and not isinstance(policy, AvasthaPolicy):
+        raise TypeError("policy must be AvasthaPolicy")
     policy = policy or AvasthaPolicy()
+    if sayanadi_context is not None:
+        if not isinstance(sayanadi_context, SayanadiContext):
+            raise TypeError("sayanadi_context must be SayanadiContext")
+        if policy.vriddha_fraction is not None:
+            fraction = _sayanadi_number("vriddha_fraction", policy.vriddha_fraction)
+            if not 0 <= fraction <= 1:
+                raise ValueError("vriddha_fraction must be in [0, 1]")
+        if not isinstance(sidereal_longitudes, dict) or set(sidereal_longitudes) != set(_SEVEN_PLANETS):
+            raise ValueError("Sayanadi chart requires exactly seven classical bodies")
+        for body, value in sidereal_longitudes.items():
+            _sayanadi_number(f"{body} longitude", value)
+        _sayanadi_number("lagna longitude", lagna_sidereal_lon)
+        if node_longitudes is not None:
+            if not isinstance(node_longitudes, dict) or set(node_longitudes) - {"Rahu", "Ketu"}:
+                raise ValueError("node_longitudes must contain only Rahu/Ketu")
+            for body, value in node_longitudes.items():
+                _sayanadi_number(f"{body} longitude", value)
+        if sayanadi_context.evaluate_nodes and (node_longitudes is None or set(node_longitudes) != {"Rahu", "Ketu"}):
+            raise ValueError("node evaluation requires exactly Rahu and Ketu")
     planets: dict[str, PlanetAvasthas] = {}
     for planet in _SEVEN_PLANETS:
         if planet not in sidereal_longitudes:
@@ -903,5 +1172,14 @@ def evaluate_avasthas(
                 planet, sidereal_longitudes, lagna_sidereal_lon,
                 policy, node_longitudes,
             ),
+            sayanadi=(sayanadi_avastha(planet, sidereal_longitudes, lagna_sidereal_lon,
+                                      context=sayanadi_context) if sayanadi_context is not None else None),
         )
-    return AvasthaChartResult(policy=policy, planets=planets)
+    nodes = {}
+    if sayanadi_context is not None and sayanadi_context.evaluate_nodes:
+        for node in ("Rahu", "Ketu"):
+            nodes[node] = sayanadi_avastha(node, sidereal_longitudes | node_longitudes,
+                                          lagna_sidereal_lon, context=sayanadi_context)
+    return AvasthaChartResult(policy, planets,
+                             "evaluated" if sayanadi_context is not None else "omitted",
+                             sayanadi_context, nodes)

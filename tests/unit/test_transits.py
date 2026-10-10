@@ -640,13 +640,15 @@ def test_transit_truth_and_classification_vessels_preserve_computational_path_in
     assert ingress.condition_state is TransitConditionState.BOUNDARY_EVENT
 
 
-def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift() -> None:
+@pytest.mark.requires_ephemeris
+def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift(moira_engine) -> None:
     event = next_transit(
         Body.SUN,
         0.0,
         jd_from_datetime(datetime(2024, 3, 18, 0, 0, tzinfo=timezone.utc)),
         direction="direct",
         max_days=10.0,
+        reader=moira_engine._reader,
     )
     assert event is not None
     assert event.computation_truth is not None
@@ -802,8 +804,13 @@ def test_transit_truth_vessels_fail_loudly_on_invalid_internal_state() -> None:
     with pytest.raises(ValueError, match="Transit input jd must be finite"):
         last_new_moon(float("nan"))
 
+
+@pytest.mark.requires_ephemeris
+def test_unresolvable_transit_target_fails_loudly(moira_engine) -> None:
     with pytest.raises(ValueError, match="Transit target specification could not be resolved"):
-        next_transit(Body.SUN, "Definitely Not A Real Target", 2451545.0, max_days=1.0)
+        next_transit(
+            Body.SUN, "Definitely Not A Real Target", 2451545.0, max_days=1.0, reader=moira_engine._reader
+        )
 
 
 def test_planet_target_resolution_surfaces_substrate_failures(monkeypatch: pytest.MonkeyPatch) -> None:

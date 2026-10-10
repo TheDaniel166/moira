@@ -89,7 +89,7 @@ class LordOfTheOrbPeriodResponse(_StrictModel):
     house: int
     chaldean_index: int
     cycle_kind: str
-    house_signification: str
+    house_signification: str | None  # always null since 6.9.9 (unsourced glosses removed)
     house_zero_indexed: int
     is_year_one_planet: bool
     is_house_cycle_start: bool
@@ -106,7 +106,7 @@ class LordOfTheOrbSequenceTruthResponse(_StrictModel):
 
 class LordOfTheOrbConditionProfileResponse(_StrictModel):
     period: LordOfTheOrbPeriodResponse
-    house_signification: str
+    house_signification: str | None  # always null since 6.9.9 (unsourced glosses removed)
     hierarchy_rank: int
     house_cycle_number: int
     planet_cycle_number: int

@@ -5,9 +5,10 @@ from __future__ import annotations
 import math
 from datetime import datetime
 
-from pydantic import Field, field_validator
+from pydantic import Field, StrictBool, field_validator
 
 from .common import _StrictModel
+from ._vedic_inputs import CivilDateTime, FiniteNumber, KnownAyanamsa, KnownHouseSystem
 
 
 class SiderealChartBaseRequest(_StrictModel):
@@ -59,6 +60,18 @@ class SiderealChartBaseRequest(_StrictModel):
         return value
 
 
+class VedicSiderealChartRequest(SiderealChartBaseRequest):
+    """Strict admission for VED-005 chart families; shared context is unchanged."""
+
+    dt: CivilDateTime
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
+    observer_lat: FiniteNumber | None = Field(default=None, gt=-90.0, lt=90.0)
+    observer_lon: FiniteNumber | None = Field(default=None, ge=-180.0, le=180.0)
+    observer_elev_m: FiniteNumber = 0.0
+    include_nodes: StrictBool = False
+    house_system: KnownHouseSystem | None = None
+
+
 class SiderealObserverResponse(_StrictModel):
     latitude: float
     longitude: float
@@ -98,6 +111,7 @@ class SiderealChartContextResponse(SiderealChartProvenanceResponse):
 
 
 __all__ = [
+    "VedicSiderealChartRequest",
     "SiderealChartBaseRequest",
     "SiderealChartContextResponse",
     "SiderealChartProvenanceResponse",

@@ -131,11 +131,25 @@ class HuberHouseZonesRequest(_StrictModel):
 class HuberAgePointRequest(_StrictModel):
     age_years: float = Field(ge=0.0)
     house_frame: HuberHouseFrameRequest
+    include_intensity: bool = Field(
+        default=False,
+        description=(
+            "Opt in to the unverified Moira editorial intensity curve value. "
+            "Off by default: no published Huber formula has been verified."
+        ),
+    )
 
     @field_validator("age_years", mode="before")
     @classmethod
     def _finite_age(cls, value: float) -> float:
         return _finite(value, "age_years")
+
+    @field_validator("include_intensity", mode="before")
+    @classmethod
+    def _strict_include_intensity(cls, value: object) -> object:
+        if not isinstance(value, bool):
+            raise ValueError("include_intensity must be a boolean")
+        return value
 
 
 class HuberIntensityAtRequest(HuberHouseZonesRequest):
@@ -217,7 +231,11 @@ class HuberProvenanceResponse(_StrictModel):
     engine_entrypoint: str
     house_frame_source: str = "caller_supplied"
     curve_basis: str = "piecewise_half_cosine_reconstruction"
-    curve_verification_note: str = "primary-text exact formula not independently verified"
+    curve_status: str = "unverified_editorial"
+    curve_verification_note: str = (
+        "Moira editorial reconstruction of the Hubers' described curve shape; "
+        "no published Huber formula verified; values are not Huber values"
+    )
     bounds: HuberBoundsResponse = Field(default_factory=HuberBoundsResponse)
     psychological_interpretation: str = "not_provided"
     chart_construction: str = "not_computed"
@@ -262,7 +280,7 @@ class HuberAgePointResponse(_StrictModel):
     longitude: float
     zone: str
     years_into_house: float
-    intensity: float
+    intensity: float | None = None
     house_frame_provenance: HuberHouseFrameProvenanceResponse
     provenance: HuberProvenanceResponse
 

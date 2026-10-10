@@ -50,8 +50,12 @@ class TestTriplicityDoctrine:
     def test_value(self):
         assert TriplicityDoctrine.DOROTHEAN_PINGREE_1976 == "dorothean_pingree_1976"
 
-    def test_exactly_one_value(self):
-        assert len(list(TriplicityDoctrine)) == 1
+    def test_admitted_values(self):
+        assert set(TriplicityDoctrine) == {
+            TriplicityDoctrine.DOROTHEAN_PINGREE_1976,
+            TriplicityDoctrine.WILLIAM_LILLY_1647,
+        }
+        assert TriplicityDoctrine.WILLIAM_LILLY_1647 == "william_lilly_1647"
 
 
 # ---------------------------------------------------------------------------
@@ -636,3 +640,54 @@ class TestHardening:
             assert len(elements) == 1, (
                 f"Signs group {set(key)} spans multiple elements: {elements}"
             )
+
+
+# ---------------------------------------------------------------------------
+# WILLIAM_LILLY_1647 — Christian Astrology (1647), Book I ch. XVIII table:
+# fire Sun/Jupiter, earth Venus/Moon, air Saturn/Mercury, water Mars day and
+# night ("Mars excepted, who night and day ruleth the watry Triplicity",
+# p. 102). No participating ruler.
+# ---------------------------------------------------------------------------
+
+_LILLY = TriplicityDoctrine.WILLIAM_LILLY_1647
+_LILLY_EXPECTED = {
+    "Aries": ("Sun", "Jupiter"), "Leo": ("Sun", "Jupiter"), "Sagittarius": ("Sun", "Jupiter"),
+    "Taurus": ("Venus", "Moon"), "Virgo": ("Venus", "Moon"), "Capricorn": ("Venus", "Moon"),
+    "Gemini": ("Saturn", "Mercury"), "Libra": ("Saturn", "Mercury"), "Aquarius": ("Saturn", "Mercury"),
+    "Cancer": ("Mars", "Mars"), "Scorpio": ("Mars", "Mars"), "Pisces": ("Mars", "Mars"),
+}
+
+
+class TestWilliamLilly1647:
+
+    @pytest.mark.parametrize("sign", SIGNS)
+    def test_table_matches_lilly(self, sign):
+        day, night = _LILLY_EXPECTED[sign]
+        for is_day in (True, False):
+            a = triplicity_assignment_for(sign, is_day_chart=is_day, doctrine=_LILLY)
+            assert a.doctrine is _LILLY
+            assert (a.day_ruler, a.night_ruler) == (day, night)
+            assert a.participating_ruler is None
+            assert a.active_ruler == (day if is_day else night)
+            assert a.has_participating_overlap is False
+            assert len(a.signs) == 3
+
+    @pytest.mark.parametrize("sign", ["Cancer", "Scorpio", "Pisces"])
+    def test_mars_rules_water_day_and_night(self, sign):
+        for is_day in (True, False):
+            assert triplicity_score("Mars", sign, is_day_chart=is_day, doctrine=_LILLY) == 3
+            assert triplicity_score("Venus", sign, is_day_chart=is_day, doctrine=_LILLY) == 0
+            assert triplicity_score(
+                "Moon", sign, is_day_chart=is_day, doctrine=_LILLY,
+                participating_policy=ParticipatingRulerPolicy.AWARD_REDUCED,
+            ) == 0
+
+    def test_lilly_example_sun_in_aries_by_night(self):
+        """Lilly p. 102: by night the Sun has no triplicity in Aries; Jupiter rules."""
+        assert triplicity_score("Sun", "Aries", is_day_chart=False, doctrine=_LILLY) == 0
+        assert triplicity_score("Jupiter", "Aries", is_day_chart=False, doctrine=_LILLY) == 3
+
+    def test_dorothean_remains_default(self):
+        a = triplicity_assignment_for("Pisces", is_day_chart=True)
+        assert a.doctrine is TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+        assert a.active_ruler == "Venus"

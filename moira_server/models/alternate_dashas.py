@@ -5,10 +5,13 @@ from __future__ import annotations
 import math
 from typing import Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, StrictBool, field_validator, model_validator
+
+from moira.dasha_systems import ASHTOTTARI_SEQUENCE, YOGINI_SEQUENCE
 
 from .common import _StrictModel
-from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
+from ._vedic_inputs import FiniteNumber, KnownAyanamsa, SignIndex
+from .sidereal_context import VedicSiderealChartRequest, SiderealChartProvenanceResponse
 
 
 YearBasis = Literal[
@@ -18,13 +21,16 @@ YearBasis = Literal[
     "sidereal_365.2564",
 ]
 AlternateDashaSystemName = Literal["ashtottari", "yogini"]
+# Same Julian-day interval tolerance as validate_alternate_dasha_output.
+# Generated child endpoints accumulate binary64 rounding; never snap inputs.
+ALTERNATE_PERIOD_INTERVAL_TOLERANCE_DAYS = 1e-6
 
 
 class AshtottariPolicyRequest(_StrictModel):
     year_basis: YearBasis = "julian_365.25"
-    ayanamsa_system: str = "Lahiri"
-    bypass_eligibility: bool = True
-    lagna_sign_index: int | None = Field(default=None, ge=0, le=11)
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
+    bypass_eligibility: StrictBool = True
+    lagna_sign_index: SignIndex | None = None
 
     @field_validator("ayanamsa_system")
     @classmethod
@@ -36,7 +42,7 @@ class AshtottariPolicyRequest(_StrictModel):
 
 class YoginiPolicyRequest(_StrictModel):
     year_basis: YearBasis = "julian_365.25"
-    ayanamsa_system: str = "Lahiri"
+    ayanamsa_system: KnownAyanamsa = "Lahiri"
 
     @field_validator("ayanamsa_system")
     @classmethod
@@ -47,9 +53,9 @@ class YoginiPolicyRequest(_StrictModel):
 
 
 class AshtottariSequenceRequest(_StrictModel):
-    moon_tropical_lon: float
-    natal_jd: float
-    levels: int = Field(default=2, ge=1, le=4)
+    moon_tropical_lon: FiniteNumber
+    natal_jd: FiniteNumber
+    levels: int = Field(default=2, strict=True, ge=1, le=4)
     policy: AshtottariPolicyRequest | None = None
 
     @field_validator("moon_tropical_lon", "natal_jd")
@@ -61,9 +67,9 @@ class AshtottariSequenceRequest(_StrictModel):
 
 
 class YoginiSequenceRequest(_StrictModel):
-    moon_tropical_lon: float
-    natal_jd: float
-    levels: int = Field(default=2, ge=1, le=4)
+    moon_tropical_lon: FiniteNumber
+    natal_jd: FiniteNumber
+    levels: int = Field(default=2, strict=True, ge=1, le=4)
     policy: YoginiPolicyRequest | None = None
 
     @field_validator("moon_tropical_lon", "natal_jd")
@@ -74,8 +80,8 @@ class YoginiSequenceRequest(_StrictModel):
         return value
 
 
-class AshtottariChartSequenceRequest(SiderealChartBaseRequest):
-    levels: int = Field(default=2, ge=1, le=4)
+class AshtottariChartSequenceRequest(VedicSiderealChartRequest):
+    levels: int = Field(default=2, strict=True, ge=1, le=4)
     policy: AshtottariPolicyRequest | None = None
 
     @model_validator(mode="after")
@@ -88,8 +94,8 @@ class AshtottariChartSequenceRequest(SiderealChartBaseRequest):
         return self
 
 
-class YoginiChartSequenceRequest(SiderealChartBaseRequest):
-    levels: int = Field(default=2, ge=1, le=4)
+class YoginiChartSequenceRequest(VedicSiderealChartRequest):
+    levels: int = Field(default=2, strict=True, ge=1, le=4)
     policy: YoginiPolicyRequest | None = None
 
     @model_validator(mode="after")
@@ -104,11 +110,16 @@ class YoginiChartSequenceRequest(SiderealChartBaseRequest):
 
 class AlternateDashaPeriodRequest(_StrictModel):
     system: AlternateDashaSystemName
-    level: int = Field(ge=1)
+    level: int = Field(strict=True, ge=1, le=4)
     lord: str
-    start_jd: float
-    end_jd: float
-    sub: list[AlternateDashaPeriodRequest] = Field(default_factory=list)
+    start_jd: FiniteNumber
+    end_jd: FiniteNumber
+    full_start_jd: FiniteNumber | None = None
+    full_end_jd: FiniteNumber | None = None
+    year_days: FiniteNumber | None = None
+    year_basis: str | None = None
+    # Both admitted systems have eight lords per subdivision cycle.
+    sub: list[AlternateDashaPeriodRequest] = Field(default_factory=list, max_length=8)
 
     @field_validator("lord")
     @classmethod
@@ -124,6 +135,27 @@ class AlternateDashaPeriodRequest(_StrictModel):
             raise ValueError("start_jd and end_jd must be finite")
         return value
 
+    @model_validator(mode="after")
+    def _admitted_period_tree(self) -> "AlternateDashaPeriodRequest":
+        from moira.dasha_systems import _validate_alternate_children
+        lords = ASHTOTTARI_SEQUENCE if self.system == "ashtottari" else YOGINI_SEQUENCE
+        if self.lord not in lords:
+            raise ValueError(f"unrecognized {self.system} lord: {self.lord!r}")
+        if self.start_jd >= self.end_jd:
+            raise ValueError("start_jd must be < end_jd")
+        if not math.isfinite(self.end_jd - self.start_jd):
+            raise ValueError("period duration must be finite")
+        _validate_alternate_children(self.to_engine(), require_complete=False)
+        return self
+
+    def to_engine(self):
+        """Reconstruct once through the same owner used for tree admission."""
+        from moira.dasha_systems import AlternateDashaPeriod
+
+        return AlternateDashaPeriod(self.system, self.level, self.lord,
+            self.start_jd, self.end_jd, [child.to_engine() for child in self.sub],
+            self.full_start_jd, self.full_end_jd, self.year_days, self.year_basis)
+
 
 AlternateDashaPeriodRequest.model_rebuild()
 
@@ -134,6 +166,10 @@ class AlternateDashaPeriodResponse(_StrictModel):
     lord: str
     start_jd: float
     end_jd: float
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
+    year_days: float | None = None
+    year_basis: str | None = None
     years: float
     is_terminal: bool
     sub: list[AlternateDashaPeriodResponse] = Field(default_factory=list)

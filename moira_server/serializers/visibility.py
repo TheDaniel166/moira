@@ -40,6 +40,7 @@ def serialize_lunar_crescent_details(
         topocentric_crescent_width_arcmin=details.topocentric_crescent_width_arcmin,
         q=details.q,
         visibility_class=details.visibility_class.value,
+        observation_window=details.observation_window,
     )
 
 

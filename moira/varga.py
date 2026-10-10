@@ -22,14 +22,27 @@ generic ``segment_idx % 12`` formula:
   D40 Khavedamsha    — odd signs start Aries; even signs start Libra.
   D45 Akshavedamsha  — odd signs start Aries; even signs start Capricorn.
 
-All remaining vargas use the generic formula.
+All remaining full-position wrappers default to the generic formula. D60
+also admits Santhanam sign-only, PVR textbook/linear, and an explicitly
+classical-derived proportional full-position profile.
 
 Tradition and sources
 ---------------------
-Parashara, "Brihat Parashara Hora Shastra" (BPHS), Shodashavarga Adhyaya,
-Chapters 6–22.  Specific sign-offset rules are derived from the Parashari
-tables as consolidated in B.V. Raman, "How to Judge a Horoscope" and
-verified against Jhora (Jagannatha Hora) reference output.
+Parashara, "Brihat Parashara Hora Shastra" (BPHS), Shodashavarga Adhyaya.
+The existing five sign-offset wrappers retain their arithmetic; their
+historical Raman/JHora attribution is not newly source-validated here.
+
+D60 admission: R. Santhanam, BPHS Vol. I, chapter 6.33-41, printed p.83
+(PDF p.82). The commentary supports sign selection, not a continuous
+degree mapping. See wiki/02_standards/D60_SOURCE_ADMISSION_STANDARD.md;
+software agreement does not supply source authority for that mapping.
+The separately named PVR profile combines Rao's 2000 textbook, section
+6.2.20, with his 2013 divisional-longitude scaling rule. It is an explicitly
+composed modern profile, not a continuous-degree attribution to BPHS.
+The classical-derived profile combines the selected BPHS sign law with
+Moira's proportional-coordinate extension, supported separately by Saravali
+3.18, Jataka Parijata 3.43 and Raman's Prasna Marga 5.27-28 notes. Its receipt
+distinguishes that derivation from a direct classical D60 degree prescription.
 
 Boundary declaration
 --------------------
@@ -64,28 +77,34 @@ Public surface
 ``saptavimshamsha``   — D27 Saptavimshamsha (Parashari triplicity-start rule).
 ``khavedamsha``       — D40 Khavedamsha  (Parashari odd/even-start rule).
 ``akshavedamsha``     — D45 Akshavedamsha (Parashari odd/even-start rule).
-``shashtiamsha``      — D60 Shashtiamsha (generic).
+``shashtiamsha``      — D60 Shashtiamsha (explicit full-position profile).
+``D60Method``         — harmonic, Santhanam sign-only or PVR textbook/linear.
+``D60SignResult``     — immutable sign-only result with source receipt.
+``d60_sign``          — sign selection under the explicitly chosen method.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
+from math import isfinite, nextafter
 from .constants import SIGNS, SIGN_SYMBOLS
 
 SHASHTIAMSHA_DEITIES: tuple[str, ...] = (
-    "Ghora", "Rakshasa", "Deva", "Kuber", "Yaksh", "Kindar", "Bhrasht", "Kulaghna",
+    "Ghora", "Rakshasa", "Deva", "Kuber", "Yaksh", "Kinnara", "Bhrasht", "Kulaghna",
     "Garal", "Vahni", "Maya", "Purishak", "Apampathi", "Marutwan", "Kaal", "Sarpa",
     "Amrit", "Indu", "Mridu", "Komal", "Heramba", "Brahma", "Vishnu", "Maheshwara",
     "Deva", "Ardr", "Kalinas", "Kshitees", "Kamalakar", "Gulik", "Mrityu", "Kaal",
-    "Davagni", "Ghora", "Yama", "Kantak", "Suddh", "Amrit", "PurnaCandr", "Vishadagdha",
+    "Davagni", "Ghora", "Yama", "Kantak", "Sudha", "Amrit", "PurnaCandr", "Vishadagdha",
     "Kulanas", "Vamshakshaya", "Utpat", "Kaal", "Saumya", "Komal", "Sheetal", "Karaladamshtr",
-    "Candramukhi", "Praveen", "Kaalpavak", "Dhannayudh", "Nirmal", "Saumya", "Krur",
-    "Atisheetal", "Amrit", "Payodhi", "Brahman", "CandraRekha"
+    "Candramukhi", "Praveen", "Kaalpavak", "Dandayudha", "Nirmal", "Saumya", "Krur",
+    "Atisheetal", "Amrit", "Payodhi", "Bhramana", "CandraRekha"
 )
 
 __all__ = [
     # Core
     "VargaPoint",
+    "D60Method", "D60SignResult", "d60_sign",
     "calculate_varga",
     # Original wrappers
     "navamsa",
@@ -116,6 +135,107 @@ __all__ = [
     "is_vargottama",
     "vargottama_planets",
 ]
+
+
+class D60Method(str, Enum):
+    """Bounded D60 profiles; no claim of a universally correct classical law."""
+
+    HARMONIC = "harmonic"
+    SANTHANAM_SIGN = "bphs_santhanam_sign"
+    PVR_TEXTBOOK_LINEAR = "pvr_textbook_linear"
+    CLASSICAL_DERIVED_LINEAR = "classical_derived_linear"
+
+
+def _d60_source_references(method: D60Method | None) -> tuple[str, ...]:
+    if method is None:
+        return ()
+    _d60_method(method)
+    if method is D60Method.HARMONIC:
+        return ("moira_generic_harmonic",)
+    if method is D60Method.SANTHANAM_SIGN:
+        return ("BPHS-Santhanam-Vol1:6.33:printed83:commentary",)
+    if method is D60Method.CLASSICAL_DERIVED_LINEAR:
+        # BPHS governs the sign; the other passages support fractional
+        # progress. Their extension to D60 degrees is explicitly Moira's
+        # derivation, not a continuous-D60 prescription in those texts.
+        return (
+            "BPHS-Santhanam-Vol1:6.33:printed83:commentary",
+            "Saravali:3.18:subdivision-coordinate",
+            "Jataka-Parijata-Sastri:3.43:printed139:fractional-correspondence",
+            "Prasna-Marga-Raman:5.27-28:printed171-173:notes:navamsa-degrees",
+            "Moira:D60:classical-derived-proportional:v1",
+        )
+    return (
+        "PVR-Integrated-Approach:2000:6.2.20:printed60",
+        "PVR-Two-Novel-Transit-Principles:2013-12-31:v1:pdf2:Calculation",
+    )
+
+
+def _d60_method(method: D60Method) -> None:
+    if not isinstance(method, D60Method):
+        raise TypeError("d60_method must be a D60Method")
+
+
+def _require_d60_full_point(method: D60Method) -> None:
+    """Fail before any chart/resource work for a sign-only requested method."""
+    _d60_method(method)
+    if method is D60Method.SANTHANAM_SIGN:
+        raise ValueError("bphs_santhanam_sign supports sign-only results; use d60_sign")
+
+
+@dataclass(frozen=True, slots=True)
+class D60SignResult:
+    """Sign-level D60 placement; deliberately has no varga longitude or degree."""
+
+    longitude: float
+    sign_index: int
+    method: D60Method
+
+    def __post_init__(self) -> None:
+        _d60_method(self.method)
+        if isinstance(self.longitude, bool) or not isinstance(self.longitude, (int, float)):
+            raise ValueError("longitude must be a finite number")
+        if not 0 <= self.longitude < 360 or not isfinite(self.longitude):
+            raise ValueError("longitude must be normalized to [0, 360)")
+        if type(self.sign_index) is not int or not 0 <= self.sign_index < 12:
+            raise ValueError("sign_index must be an integer in [0, 11]")
+
+    @property
+    def sign(self) -> str:
+        return SIGNS[self.sign_index]
+
+    @property
+    def sign_symbol(self) -> str:
+        return SIGN_SYMBOLS[self.sign_index]
+
+    @property
+    def position_scope(self) -> str:
+        return "sign_only"
+
+    @property
+    def source_reference(self) -> str:
+        return _d60_source_references(self.method)[0]
+
+
+def d60_sign(sidereal_longitude: float, *, method: D60Method = D60Method.HARMONIC) -> D60SignResult:
+    """D60 sign by explicit convention; no astronomical/frame conversion.
+
+    Santhanam Vol. I, ch. 6.33 commentary (printed p.83): discard the
+    natal sign for the degree calculation, double degrees, take integer
+    remainder modulo twelve, and count that remainder forward from the
+    natal sign. Capricorn 13d25m -> the third sign, Pisces. Even-sign
+    reversal governs deity names, not this commentary's sign calculation.
+    No continuous-degree law is admitted from that sign-level passage.
+    """
+    _d60_method(method)
+    if isinstance(sidereal_longitude, bool) or not isinstance(sidereal_longitude, (int, float)):
+        raise ValueError("sidereal_longitude must be a finite number without coercion")
+    lon = _normalize_longitude(sidereal_longitude)
+    natal_sign = int(lon // 30.0)
+    segment = int((lon % 30.0) // 0.5)
+    sign = (segment + (0 if method is D60Method.HARMONIC else natal_sign)) % 12
+    return D60SignResult(lon, sign, method)
+
 
 @dataclass(frozen=True, slots=True)
 class VargaPoint:
@@ -160,14 +280,15 @@ class VargaPoint:
             "public_methods": ["__repr__"],
             "public_attributes": [
                 "varga_name", "varga_number", "longitude",
-                "varga_longitude", "sign", "sign_symbol", "sign_degree"
+                "varga_longitude", "sign", "sign_symbol", "sign_degree", "deity", "d60_method",
+                "d60_source_references", "d60_degree_attribution"
             ]
         },
         "state": {
             "mutable": false,
             "fields": [
                 "varga_name", "varga_number", "longitude",
-                "varga_longitude", "sign", "sign_symbol", "sign_degree", "deity"
+                "varga_longitude", "sign", "sign_symbol", "sign_degree", "deity", "d60_method"
             ]
         },
         "effects": {
@@ -180,8 +301,8 @@ class VargaPoint:
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
-            "raises": [],
-            "policy": "caller ensures finite longitude before construction"
+            "raises": ["TypeError", "ValueError"],
+            "policy": "reject invalid or sign-only D60 receipt; caller ensures finite longitude"
         },
         "succession": {
             "stance": "terminal",
@@ -199,6 +320,29 @@ class VargaPoint:
     sign_symbol: str
     sign_degree: float
     deity: str | None = None
+    d60_method: D60Method | None = None
+
+    def __post_init__(self) -> None:
+        if self.d60_method is not None:
+            _require_d60_full_point(self.d60_method)
+            if self.varga_number != 60:
+                raise ValueError("d60_method applies only to division 60")
+
+    @property
+    def d60_source_references(self) -> tuple[str, ...]:
+        """Applied source chain; empty for non-D60 or unknown method."""
+        return _d60_source_references(self.d60_method)
+
+    @property
+    def d60_degree_attribution(self) -> str | None:
+        """Degree authority category; classical-derived is not direct text."""
+        if self.d60_method is None:
+            return None
+        return {
+            D60Method.HARMONIC: "generic_harmonic",
+            D60Method.PVR_TEXTBOOK_LINEAR: "modern_composed",
+            D60Method.CLASSICAL_DERIVED_LINEAR: "classical_derived",
+        }[self.d60_method]
 
     def __repr__(self) -> str:
         d = int(self.sign_degree)
@@ -208,6 +352,38 @@ class VargaPoint:
         if self.deity:
             s += f" [{self.deity}]"
         return s
+
+def _normalize_longitude(longitude: float) -> float:
+    """Finite half-open cyclic normalization, including a tiny negative residue."""
+    if isinstance(longitude, bool) or not isinstance(longitude, (int, float)):
+        raise TypeError("longitude must be a finite number")
+    try:
+        longitude = float(longitude)
+    except OverflowError as exc:
+        raise ValueError("longitude must be finite") from exc
+    if not isfinite(longitude):
+        raise ValueError("longitude must be finite")
+    longitude %= 360.0
+    if longitude == 360.0:
+        longitude = nextafter(360.0, 0.0)
+    return longitude
+
+
+def _varga_partition(longitude: float, n: int) -> tuple[float, int, float]:
+    """Partition the exact supplied binary angle by rational 30/n degrees."""
+    if isinstance(n, bool) or not isinstance(n, int) or n < 1:
+        raise ValueError("varga divisor must be a positive integer")
+    longitude = _normalize_longitude(longitude)
+    numerator, denominator = longitude.as_integer_ratio()
+    segment, remainder = divmod(numerator * n, denominator * 30)
+    degree = min(remainder / denominator, nextafter(30.0, 0.0))
+    return longitude, segment, degree
+
+
+def _navamsa_partition(longitude: float) -> tuple[float, int, float]:
+    """D9 compatibility helper using the shared exact partition."""
+    return _varga_partition(longitude, 9)
+
 
 def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     """
@@ -219,32 +395,21 @@ def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     Note: Standard Parasari vargas often have specific starting offsets 
     per sign (Fire/Earth/Air/Water). 
     """
-    longitude = longitude % 360.0
-
-    # Total segments of size (30/n) from 0° Aries
-    segment_idx = int(longitude // (30.0 / n))
-    
-    # The Varga Sign Index
-    # For many vargas (D2, D3, D9, D12), the segments simply cycle through the zodiac.
-    # D1 (Rashi): index = floor(L/30) % 12
-    # D9 (Navamsa): index = floor(L/(30/9)) % 12
+    longitude, segment_idx, varga_deg = _varga_partition(longitude, n)
     sign_idx = segment_idx % 12
     
     sign_name = SIGNS[sign_idx]
     sign_sym = SIGN_SYMBOLS[sign_idx]
     
-    # Degree within the varga sign
-    # We map the segment (30/n) to a full sign (30 degrees)
-    varga_deg = (longitude % (30.0 / n)) * n
-    
     return VargaPoint(
         varga_name=name or f"D{n}",
         varga_number=n,
         longitude=longitude,
-        varga_longitude=(sign_idx * 30.0 + varga_deg),
+        varga_longitude=min(sign_idx * 30.0 + varga_deg, nextafter((sign_idx + 1) * 30.0, 0.0)),
         sign=sign_name,
         sign_symbol=sign_sym,
-        sign_degree=varga_deg
+        sign_degree=varga_deg,
+        d60_method=D60Method.HARMONIC if n == 60 else None,
     )
 
 def navamsa(longitude: float) -> VargaPoint:
@@ -325,7 +490,7 @@ def _d27_sign(sign_idx: int, deg_in_sign: float) -> int:
     one sign per 30/27° segment.
     """
     start = _D27_TRIPLICITY_START[sign_idx]
-    segment = int(deg_in_sign / (30.0 / 27))   # 0–26
+    segment = _varga_partition(deg_in_sign, 27)[1]
     return (start + segment) % 12
 
 
@@ -348,7 +513,7 @@ def _d45_sign(sign_idx: int, deg_in_sign: float) -> int:
     Odd D1 signs start from Aries (index 0); even start from Capricorn
     (index 9).  Each segment spans 30/45 = 0.6̄°.
     """
-    seg = int(deg_in_sign / (30.0 / 45))   # 0–44
+    seg = _varga_partition(deg_in_sign, 45)[1]
     start = 0 if (sign_idx % 2 == 0) else 9   # Aries or Capricorn
     return (start + seg) % 12
 
@@ -367,7 +532,7 @@ def _build_varga_point(
         varga_name=name,
         varga_number=n,
         longitude=longitude,
-        varga_longitude=sign_idx * 30.0 + sign_degree,
+        varga_longitude=min(sign_idx * 30.0 + sign_degree, nextafter((sign_idx + 1) * 30.0, 0.0)),
         sign=sign_name,
         sign_symbol=sign_sym,
         sign_degree=sign_degree,
@@ -397,7 +562,7 @@ def hora(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 2.  ``sign`` is always Cancer or Leo.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     h_sign      = _hora_sign(sign_idx, deg_in_sign)
@@ -422,7 +587,7 @@ def chaturthamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 4.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d4_s        = _d4_sign(sign_idx, deg_in_sign)
@@ -473,12 +638,11 @@ def saptavimshamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 27.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d27_s       = _d27_sign(sign_idx, deg_in_sign)
-    seg_width   = 30.0 / 27
-    sign_degree = (deg_in_sign % seg_width) * 27
+    sign_degree = _varga_partition(lon, 27)[2]
     return _build_varga_point(lon, d27_s, sign_degree, 27, "Saptavimshamsha")
 
 
@@ -499,7 +663,7 @@ def khavedamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 40.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d40_s       = _d40_sign(sign_idx, deg_in_sign)
@@ -524,21 +688,27 @@ def akshavedamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 45.
     """
-    lon = sidereal_longitude % 360.0
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx    = int(lon // 30)
     deg_in_sign = lon % 30.0
     d45_s       = _d45_sign(sign_idx, deg_in_sign)
-    seg_width   = 30.0 / 45
-    sign_degree = (deg_in_sign % seg_width) * 45
+    sign_degree = _varga_partition(lon, 45)[2]
     return _build_varga_point(lon, d45_s, sign_degree, 45, "Akshavedamsha")
 
 
-def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
+def shashtiamsha(sidereal_longitude: float, *, d60_method: D60Method = D60Method.HARMONIC) -> VargaPoint:
     """
-    D60 Shashtiamsha — Past-Life Karma (generic formula).
+    D60 Shashtiamsha under an explicitly selected full-position profile.
 
     The 60 Shashtiamsha divisions each span 0.5°. Sign assignment uses
-    the generic formula. The traditional named Shashtiamsha deities (60
+    the generic formula by default. PVR_TEXTBOOK_LINEAR counts signs from
+    the natal sign and scales progress through each half-degree by 60.
+    CLASSICAL_DERIVED_LINEAR uses the same coordinates, with BPHS sign
+    assignment and Moira's proportional-degree derivation supported by
+    Saravali 3.18, Jataka Parijata 3.43 and Raman's Prasna Marga 5.27-28
+    notes. None of these passages directly prescribes continuous D60
+    degrees. The PVR profile retains its separate modern source chain.
+    The traditional named Shashtiamsha deities (60
     names from BPHS Chapter 6) are mapped, reversing order for even signs.
 
     Parameters
@@ -551,7 +721,12 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
     VargaPoint
         ``varga_number`` is 60. ``deity`` is populated.
     """
-    lon = sidereal_longitude % 360.0
+    _require_d60_full_point(d60_method)
+    # Retain the original harmonic numeric path. The opt-in profile uses
+    # the strict sign helper's finite circular normalization.
+    placement = (d60_sign(sidereal_longitude, method=d60_method)
+                 if d60_method is not D60Method.HARMONIC else None)
+    lon = placement.longitude if placement is not None else _normalize_longitude(sidereal_longitude)
     sign_idx = int(lon // 30)
     deg_in_sign = lon % 30.0
     
@@ -561,7 +736,21 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
     deity_idx = segment_in_sign if is_odd else (59 - segment_in_sign)
     deity = SHASHTIAMSHA_DEITIES[deity_idx]
     
-    vp = calculate_varga(sidereal_longitude, 60, "Shashtiamsha")
+    if placement is None:
+        vp = calculate_varga(sidereal_longitude, 60, "Shashtiamsha")
+    else:
+        degree = (deg_in_sign - segment_in_sign * 0.5) * 60.0
+        lower = placement.sign_index * 30.0
+        upper = lower + 30.0
+        mapped = lower + degree
+        # Addition can round a left-limit point to the next sign. Preserve
+        # the selected segment's half-open domain without an epsilon window.
+        if mapped >= upper:
+            mapped = nextafter(upper, lower)
+        vp = VargaPoint(
+            "Shashtiamsha", 60, lon, mapped, placement.sign,
+            placement.sign_symbol, degree, d60_method=d60_method,
+        )
     return VargaPoint(
         varga_name=vp.varga_name,
         varga_number=vp.varga_number,
@@ -570,7 +759,8 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
         sign=vp.sign,
         sign_symbol=vp.sign_symbol,
         sign_degree=vp.sign_degree,
-        deity=deity
+        deity=deity,
+        d60_method=vp.d60_method,
     )
 
 
@@ -615,7 +805,7 @@ VARGA_VISHVA: dict[str, float] = {
 }
 
 
-def varga_sign_index(sidereal_longitude: float, n: int) -> int:
+def varga_sign_index(sidereal_longitude: float, n: int, *, d60_method: D60Method = D60Method.HARMONIC) -> int:
     """
     Return the varga sign index (0-11) for any supported division.
 
@@ -625,7 +815,14 @@ def varga_sign_index(sidereal_longitude: float, n: int) -> int:
     5th, decan 3 -> 9th), matching the Saptavargaja doctrine in
     ``moira.shadbala``.
     """
-    lon = sidereal_longitude % 360.0
+    _d60_method(d60_method)
+    if d60_method is not D60Method.HARMONIC:
+        if n != 60:
+            raise ValueError("nondefault d60_method applies only to division 60")
+        return d60_sign(sidereal_longitude, method=d60_method).sign_index
+    if n == 9:
+        return _navamsa_partition(sidereal_longitude)[1] % 12
+    lon = _normalize_longitude(sidereal_longitude)
     sign_idx = int(lon // 30)
     deg = lon % 30.0
     if n == 1:
@@ -642,7 +839,7 @@ def varga_sign_index(sidereal_longitude: float, n: int) -> int:
         return _d40_sign(sign_idx, deg)
     if n == 45:
         return _d45_sign(sign_idx, deg)
-    return int(lon // (30.0 / n)) % 12
+    return _varga_partition(lon, n)[1] % 12
 
 
 @dataclass(frozen=True, slots=True)
@@ -700,8 +897,13 @@ class VimshopakaBala:
     group:   str
     entries: tuple[VimshopakaVargaEntry, ...]
     total:   float
+    d60_method: D60Method | None = None
 
     def __post_init__(self) -> None:
+        if self.d60_method is not None:
+            _d60_method(self.d60_method)
+            if 60 not in VIMSHOPAKA_GROUPS.get(self.group, {}):
+                raise ValueError("d60_method is not applied in this group")
         if self.group not in VIMSHOPAKA_GROUPS:
             raise ValueError(
                 f"VimshopakaBala.group must be one of "
@@ -712,11 +914,16 @@ class VimshopakaBala:
                 f"VimshopakaBala.total must be in [0, 20], got {self.total}"
             )
 
+    @property
+    def d60_source_references(self) -> tuple[str, ...]:
+        return _d60_source_references(self.d60_method)
+
 
 def vimshopaka_bala(
     planet: str,
     sidereal_longitudes: dict[str, float],
     group: str = 'shodashavarga',
+    *, d60_method: D60Method = D60Method.HARMONIC,
 ) -> VimshopakaBala:
     """
     Compute Vimshopaka Bala for one planet over the chosen varga group.
@@ -745,8 +952,19 @@ def vimshopaka_bala(
         raise ValueError(
             f"group must be one of {sorted(VIMSHOPAKA_GROUPS)}, got {group!r}"
         )
+    _d60_method(d60_method)
+    if 60 not in weights and d60_method is not D60Method.HARMONIC:
+        raise ValueError("nondefault d60_method requires a group containing D60")
     if planet not in sidereal_longitudes:
         raise KeyError(f"{planet!r} missing from sidereal_longitudes")
+
+    if d60_method is not D60Method.HARMONIC:
+        # All divisions and D1 relationships share the source profile's
+        # normalized circular input; this does not alter their sign doctrines.
+        sidereal_longitudes = {
+            body: d60_sign(lon, method=d60_method).longitude
+            for body, lon in sidereal_longitudes.items()
+        }
 
     # Sign lords (classical, no nodes).
     lord_of_sign: dict[int, str] = {}
@@ -765,7 +983,7 @@ def vimshopaka_bala(
     entries: list[VimshopakaVargaEntry] = []
     total = 0.0
     for division in sorted(weights):
-        v_sign = varga_sign_index(lon, division)
+        v_sign = varga_sign_index(lon, division, d60_method=d60_method if division == 60 else D60Method.HARMONIC)
         lord = lord_of_sign[v_sign]
         if lord == planet:
             dignity = 'own_sign'
@@ -790,16 +1008,18 @@ def vimshopaka_bala(
         group=group,
         entries=tuple(entries),
         total=total,
+        d60_method=d60_method if 60 in weights else None,
     )
 
 
 def vimshopaka_all(
     sidereal_longitudes: dict[str, float],
     group: str = 'shodashavarga',
+    *, d60_method: D60Method = D60Method.HARMONIC,
 ) -> dict[str, VimshopakaBala]:
     """Vimshopaka Bala for every planet present in *sidereal_longitudes*."""
     return {
-        planet: vimshopaka_bala(planet, sidereal_longitudes, group)
+        planet: vimshopaka_bala(planet, sidereal_longitudes, group, d60_method=d60_method)
         for planet in sidereal_longitudes
     }
 

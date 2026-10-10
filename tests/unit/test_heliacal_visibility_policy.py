@@ -31,10 +31,11 @@ from moira.heliacal import (
     _ks1991_scattering_function,
     _ks1991_moonlight_nanolamberts,
     _ks1991_dark_sky_nanolamberts,
-    planet_acronychal_rising,
     planet_acronychal_setting,
+    planet_evening_first,
     planet_heliacal_rising,
     planet_heliacal_setting,
+    planet_morning_last,
     visibility_assessment,
     visibility_tonight,
     is_visible_tonight,
@@ -169,9 +170,12 @@ def test_visibility_event_returns_generalized_lunar_event_with_yallop(monkeypatc
         q=0.3,
         visibility_class=LunarCrescentVisibilityClass.A,
     )
+    # No crescent on the evening before the window, then a visible one: a
+    # first sighting is a transition from not observable to observable.
+    evenings = iter([None])
     monkeypatch.setattr(
         "moira.heliacal._lunar_crescent_details_for_evening",
-        lambda *args, **kwargs: details,
+        lambda *args, **kwargs: next(evenings, details),
     )
     monkeypatch.setattr(
         "moira.heliacal._lunar_crescent_details_at",
@@ -193,7 +197,7 @@ def test_visibility_event_returns_generalized_lunar_event_with_yallop(monkeypatc
 
     event = visibility_event(
         Body.MOON,
-        HeliacalEventKind.ACRONYCHAL_RISING,
+        HeliacalEventKind.EVENING_FIRST,
         2451545.0,
         0.0,
         0.0,
@@ -204,14 +208,14 @@ def test_visibility_event_returns_generalized_lunar_event_with_yallop(monkeypatc
     assert isinstance(event, GeneralVisibilityEvent)
     assert event is not None
     assert event.target_kind is VisibilityTargetKind.MOON
-    assert event.kind is HeliacalEventKind.ACRONYCHAL_RISING
+    assert event.kind is HeliacalEventKind.EVENING_FIRST
     assert event.lunar_crescent_details is not None
     assert event.lunar_crescent_details.visibility_class is LunarCrescentVisibilityClass.A
     assert event.assessment.criterion_family is VisibilityCriterionFamily.YALLOP_LUNAR_CRESCENT
 
 
 def test_yallop_lunar_family_rejects_morning_event_kinds() -> None:
-    with pytest.raises(NotImplementedError, match="evening first-sighting"):
+    with pytest.raises(NotImplementedError, match="evening-first crescent"):
         visibility_event(
             Body.MOON,
             HeliacalEventKind.HELIACAL_RISING,
@@ -665,12 +669,13 @@ def test_visibility_event_matches_legacy_planetary_wrapper() -> None:
 @pytest.mark.parametrize(
     ("body", "kind", "jd_start", "legacy_fn", "search_days"),
     [
-        (Body.VENUS, HeliacalEventKind.ACRONYCHAL_RISING, 2459299.5, planet_acronychal_rising, None),
-        (Body.VENUS, HeliacalEventKind.HELIACAL_SETTING, 2459050.5, planet_heliacal_setting, None),
+        (Body.VENUS, HeliacalEventKind.EVENING_FIRST, 2459299.5, planet_evening_first, None),
+        (Body.VENUS, HeliacalEventKind.MORNING_LAST, 2459050.5, planet_morning_last, None),
+        (Body.VENUS, HeliacalEventKind.HELIACAL_SETTING, 2459400.5, planet_heliacal_setting, None),
         (Body.SATURN, HeliacalEventKind.ACRONYCHAL_SETTING, 2459992.5 - 170.0, planet_acronychal_setting, 220),
         (Body.JUPITER, HeliacalEventKind.ACRONYCHAL_SETTING, 2460045.5 - 170.0, planet_acronychal_setting, 220),
         (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_SETTING, 2460000.0, planet_acronychal_setting, 220),
-        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_RISING, 2460000.0, planet_acronychal_rising, 220),
+        (Body.MERCURY, HeliacalEventKind.EVENING_FIRST, 2460000.0, planet_evening_first, 220),
     ],
 )
 def test_visibility_event_matches_legacy_planetary_wrappers_across_event_families(
@@ -1022,7 +1027,7 @@ def test_visibility_event_live_ephemeris_ks1991_populates_event_diagnostics_and_
 
     event_ignore = visibility_event(
         Body.VENUS,
-        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.MORNING_LAST,
         2459050.5,
         35.0,
         35.0,
@@ -1030,7 +1035,7 @@ def test_visibility_event_live_ephemeris_ks1991_populates_event_diagnostics_and_
     )
     event_ks = visibility_event(
         Body.VENUS,
-        HeliacalEventKind.HELIACAL_SETTING,
+        HeliacalEventKind.MORNING_LAST,
         2459050.5,
         35.0,
         35.0,
@@ -1078,7 +1083,7 @@ def test_visibility_event_live_ephemeris_ks1991_can_be_active_without_material_s
     ("body", "kind", "jd_start", "search_days"),
     [
         (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_SETTING, 2460000.0, 220),
-        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_RISING, 2460000.0, 220),
+        (Body.MERCURY, HeliacalEventKind.EVENING_FIRST, 2460000.0, 220),
     ],
 )
 def test_visibility_event_live_ephemeris_ks1991_mercury_evening_family_can_be_active_without_material_shift(
@@ -1147,3 +1152,21 @@ def test_visibility_event_live_ephemeris_ks1991_jupiter_acronychal_setting_popul
     assert event_ks.assessment.moonlight_sky_nanolamberts is not None
     assert event_ks.assessment.effective_limiting_magnitude < event_ignore.assessment.effective_limiting_magnitude
     assert abs(event_ks.jd_ut - event_ignore.jd_ut) < 0.01
+
+
+@pytest.mark.requires_ephemeris
+def test_limiting_magnitude_criterion_is_not_applied_in_daylight() -> None:
+    """The dark-sky limiting-magnitude threshold must not call a planet
+    observable while the Sun is up. Einstein's birth, 1879-03-14 10:50 UT at
+    Ulm: the Sun is about 38° high; Mercury and Venus were reported
+    observable before this fix."""
+    jd_day = 2407422.951412
+    for body in (Body.MERCURY, Body.VENUS, Body.SATURN):
+        result = visibility_assessment(body, jd_day, 48.4, 9.9833)
+        assert result.criterion_applicable is False
+        assert result.criterion_reason == "daylight_sun_above_horizon"
+        assert result.observable is False
+
+    # The same criterion still applies at night: midnight local time.
+    night = visibility_assessment(Body.JUPITER, jd_day + 0.5, 48.4, 9.9833)
+    assert night.criterion_reason != "daylight_sun_above_horizon"

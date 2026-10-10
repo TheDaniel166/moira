@@ -253,7 +253,7 @@ def test_jaimini_and_shadbala_receive_resolved_ut1(monkeypatch) -> None:
             name: planet.longitude for name, planet in planets.items()
         },
     )
-    houses = SimpleNamespace(asc=0.0)
+    houses = SimpleNamespace(asc=0.0, effective_system="P")
     engine = SimpleNamespace(
         chart=lambda *_args, **_kwargs: chart,
         houses=lambda *_args, **_kwargs: houses,
@@ -283,11 +283,7 @@ def test_jaimini_and_shadbala_receive_resolved_ut1(monkeypatch) -> None:
             tithi=SimpleNamespace(number=1), vara_lord="Sun"
         ),
     )
-    monkeypatch.setattr(
-        shadbala,
-        "shadbala",
-        lambda **kwargs: captured.update(jd=kwargs["jd"]) or sentinel,
-    )
+    engine.shadbala = lambda **kwargs: captured.update(jd=kwargs["jd"]) or sentinel
     monkeypatch.setattr(shadbala, "validate_shadbala_output", lambda _result: None)
     monkeypatch.setattr(shadbala, "graha_yuddha_pairs", lambda *_args: ())
     monkeypatch.setattr(shadbala, "is_day_chart", lambda *_args: True)

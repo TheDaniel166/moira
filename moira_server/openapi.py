@@ -38,6 +38,7 @@ FAMILY_LABELS: dict[str, str] = {
 }
 
 _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
+
     {
         "name": "meta",
         "x-displayName": "Meta",
@@ -209,13 +210,28 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "nine-parts",
         "x-displayName": "Nine Parts",
-        "description": "Abu Ma'shar Nine Parts aggregate profile surface.",
+        "description": (
+            "Seven Hermetic lots of Paulus Alexandrinus ch. 23; unsourced "
+            "Sword and Node lots only on explicit opt-in."
+        ),
+        "x-family": "relationship",
+    },
+    {
+        "name": "almuten",
+        "x-displayName": "Almuten",
+        "description": "Caller-supplied almuten of a degree and almuten figuris; Lilly 1647 by default, the pre-6.9.9 count by name.",
+        "x-family": "relationship",
+    },
+    {
+        "name": "hyleg",
+        "x-displayName": "Hyleg",
+        "description": "Caller-supplied hyleg (luminaries, dominion step, Ascendant or Part of Fortune) and alcocoden per Lilly 1647; named not_evaluable reasons where an input or tie leaves it open.",
         "x-family": "relationship",
     },
     {
         "name": "panchanga",
         "x-displayName": "Panchanga",
-        "description": "Panchanga direct, chart-backed, Nakshatra, and profile surfaces.",
+        "description": "Panchanga direct, chart-backed, sunrise-owned daily almanac, lunar-month context, Nakshatra, and profile surfaces.",
         "x-family": "classical-vedic",
     },
     {
@@ -303,9 +319,15 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "gochara",
+        "x-displayName": "Gochara Phala",
+        "description": "Source-bound supplied and date-derived sidereal snapshots, epoch/frame and raw natal BAV evidence, Vedha profiles and doctrine admission catalogue.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "muhurta",
         "x-displayName": "Muhurta",
-        "description": "Vedic Muhurta direct, chart-backed, and natal-personalized (Tara/Chandra Bala) classification and score surfaces.",
+        "description": "Vedic Muhurta direct, chart-backed and natal-personalized scores, plus bounded sampled search with explicit JD-weekday Vara and threshold evidence.",
         "x-family": "classical-vedic",
     },
     {

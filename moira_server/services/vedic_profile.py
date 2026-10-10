@@ -12,6 +12,7 @@ from ..models.shadbala import ShadbalaChartRequest
 from ..models.vedic_profile import (
     VedicChartProfileRequest,
     VedicChartProfileResponse,
+    VedicProfilePolicyReceiptResponse,
 )
 from ..serializers.chart import serialize_chart_with_reduction
 from ..serializers.dasha import (
@@ -22,14 +23,11 @@ from ..serializers.panchanga import (
     serialize_panchanga_profile,
     serialize_panchanga_result,
 )
-from ..serializers.shadbala import (
-    serialize_shadbala_chart_profile,
-    serialize_shadbala_result,
-)
 from .chart import compute_chart_with_reduction
 from .dasha import compute_dasha_active_line, compute_dasha_lord_pair_service
 from .panchanga import compute_panchanga_chart, compute_panchanga_chart_profile
-from .shadbala import compute_shadbala_chart, compute_shadbala_chart_profile
+from .shadbala import build_shadbala_chart_response, build_shadbala_profile_response
+from ._shared import require_supported_chart_bodies
 
 
 def _chart_request(request: VedicChartProfileRequest) -> ChartRequest:
@@ -68,6 +66,8 @@ def _shadbala_request(request: VedicChartProfileRequest) -> ShadbalaChartRequest
 
 
 def _dasha_request(request: VedicChartProfileRequest) -> DashaCurrentRequest:
+    from moira.dasha import DEFAULT_VIMSHOTTARI_POLICY
+
     if request.current_dt is None:
         raise ValueError(
             "current_dt is required when requesting Vedic dasha snapshot sections"
@@ -76,7 +76,7 @@ def _dasha_request(request: VedicChartProfileRequest) -> DashaCurrentRequest:
         natal=DashaNatalRequest(
             dt=request.dt,
             ayanamsa=request.ayanamsa_system,
-            year_basis=request.dasha_year_basis,
+            year_basis=request.dasha_year_basis or DEFAULT_VIMSHOTTARI_POLICY.year.year_basis,
         ),
         current_dt=request.current_dt,
         levels=request.dasha_levels,
@@ -105,6 +105,17 @@ def compute_vedic_chart_profile(
 ) -> VedicChartProfileResponse:
     """Compute a Vedic profile bundle from existing route-equivalent strata."""
 
+    # Resolve selected child requests and identities before any astronomy work.
+    chart_request = _chart_request(request) if request.include.chart else None
+    if chart_request is not None:
+        require_supported_chart_bodies(chart_request.bodies)
+    panchanga_selected = request.include.panchanga or request.include.panchanga_profile
+    shadbala_selected = request.include.shadbala or request.include.shadbala_profile
+    dasha_selected = request.include.dasha_current or request.include.dasha_lord_pair
+    panchanga_request = _panchanga_request(request) if panchanga_selected else None
+    shadbala_request = _shadbala_request(request) if shadbala_selected else None
+    dasha_request = _dasha_request(request) if dasha_selected else None
+
     included_sections: list[str] = []
     included_surfaces: list[str] = []
     chart_response = None
@@ -117,14 +128,13 @@ def compute_vedic_chart_profile(
     dasha_lord_pair_response = None
 
     if request.include.chart:
-        chart, reduction = compute_chart_with_reduction(engine, _chart_request(request))
+        chart, reduction = compute_chart_with_reduction(engine, chart_request)
         serialized = serialize_chart_with_reduction(chart, reduction)
         chart_response = serialized.result
         chart_reduction = serialized.reduction
         included_sections.extend(("chart", "chart_reduction"))
         included_surfaces.append("POST /v1/chart/reduction")
 
-    panchanga_request = _panchanga_request(request)
     if request.include.panchanga:
         panchanga_response = serialize_panchanga_result(
             compute_panchanga_chart(engine, panchanga_request)
@@ -139,23 +149,17 @@ def compute_vedic_chart_profile(
         included_sections.append("panchanga_profile")
         included_surfaces.append("POST /v1/panchanga/chart/profile")
 
-    shadbala_request = _shadbala_request(request)
     if request.include.shadbala:
-        shadbala_response = serialize_shadbala_result(
-            compute_shadbala_chart(engine, shadbala_request)
-        )
+        shadbala_response = build_shadbala_chart_response(engine, shadbala_request)
         included_sections.append("shadbala")
         included_surfaces.append("POST /v1/shadbala/chart")
 
     if request.include.shadbala_profile:
-        shadbala_profile_response = serialize_shadbala_chart_profile(
-            compute_shadbala_chart_profile(engine, shadbala_request)
-        )
+        shadbala_profile_response = build_shadbala_profile_response(engine, shadbala_request)
         included_sections.append("shadbala_profile")
         included_surfaces.append("POST /v1/shadbala/chart/profile")
 
     if request.include.dasha_current or request.include.dasha_lord_pair:
-        dasha_request = _dasha_request(request)
         if request.include.dasha_current:
             dasha_current_response = serialize_dasha_active_line(
                 compute_dasha_active_line(engine, dasha_request)
@@ -170,8 +174,37 @@ def compute_vedic_chart_profile(
             included_surfaces.append("POST /v1/dasha/vimshottari/lord-pair")
 
     sections = tuple(included_sections)
+    component_ayanamsas = {}
+    if panchanga_selected:
+        component_ayanamsas["panchanga"] = (
+            request.panchanga_policy.ayanamsa_system if request.panchanga_policy
+            else request.ayanamsa_system
+        )
+    if shadbala_selected:
+        component_ayanamsas["shadbala"] = (
+            request.shadbala_policy.ayanamsa_system if request.shadbala_policy
+            else request.ayanamsa_system
+        )
+    if dasha_selected:
+        component_ayanamsas["dasha"] = request.ayanamsa_system
+    inactive = []
+    for selected, fields in (
+        (request.include.chart, ("bodies", "include_nodes")),
+        (panchanga_selected, ("panchanga_policy",)),
+        (shadbala_selected, ("house_system", "hora_lord", "shadbala_policy")),
+        (dasha_selected, ("current_dt", "dasha_levels", "dasha_year_basis")),
+    ):
+        if not selected:
+            inactive.extend(field for field in fields if field in request.model_fields_set)
     return VedicChartProfileResponse(
         request=request,
+        policy_receipt=VedicProfilePolicyReceiptResponse(
+            requested_ayanamsa_system=request.ayanamsa_system,
+            component_ayanamsa_systems=component_ayanamsas,
+            mixed_ayanamsa_frames=len(set(component_ayanamsas.values())) > 1,
+            applied_dasha_year_basis=dasha_request.natal.year_basis if dasha_selected else None,
+            inactive_inputs=tuple(inactive),
+        ),
         included_sections=sections,
         chart=chart_response,
         chart_reduction=chart_reduction,

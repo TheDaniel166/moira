@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 import moira.facade as facade
+from moira.spk_reader import use_reader_override
 from moira import varga as varga_module
 
 shadbala_module = importlib.import_module("moira.shadbala")
@@ -198,18 +199,23 @@ def test_vedic_facade_shadbala_chart_wrapper_delegates_to_engine() -> None:
     )
     is_day = facade.is_day_chart(chart.planets["Sun"].longitude, houses.asc)
 
-    via_facade = engine.shadbala_for_chart(chart, houses)
-    direct = facade.shadbala(
-        sidereal,
-        speeds,
-        houses,
-        jd_ut1,
-        panchanga.tithi.number,
-        panchanga.vara_lord,
-        is_day,
-        ayanamsa_system=facade.Ayanamsa.LAHIRI,
-        planet_latitudes=latitudes,
-    )
+    from tests.support.shadbala_context import supplied_context
+    context = supplied_context(sidereal,jd_ut1,is_day=is_day,vara_lord=panchanga.vara_lord)
+    via_facade = engine.shadbala_for_chart(chart, houses,context=context)
+    # The module path is kernel-bound too: compare through the same reader
+    # owned by the facade, rather than depending on an unrelated global reader.
+    with use_reader_override(engine._reader):
+        direct = facade.shadbala(
+            sidereal,
+            speeds,
+            houses,
+            jd_ut1,
+            panchanga.tithi.number,
+            panchanga.vara_lord,
+            is_day,
+            ayanamsa_system=facade.Ayanamsa.LAHIRI,
+            planet_latitudes=latitudes, context=context,
+        )
 
     assert via_facade == direct
     assert engine.shadbala_profile(via_facade) == facade.shadbala_chart_profile(direct)
@@ -229,8 +235,11 @@ def test_vedic_facade_bhava_bala_chart_wrapper_delegates_to_engine() -> None:
     bodies = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
     sidereal = _sidereal_chart_longitudes(chart, bodies)
 
-    graha_result = engine.shadbala_for_chart(chart, houses)
-    via_facade = engine.bhava_bala_for_chart(chart, houses)
+    from tests.support.shadbala_context import supplied_context
+    context = supplied_context(sidereal,facade.utc_to_ut1(chart.jd_ut),
+        vara_lord=engine.panchanga(chart).vara_lord)
+    graha_result = engine.shadbala_for_chart(chart, houses,context=context)
+    via_facade = engine.bhava_bala_for_chart(chart, houses,context=context)
     direct = facade.bhava_bala(graha_result, sidereal, houses)
 
     assert via_facade == direct

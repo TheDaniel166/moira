@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira.harmonics import DEFAULT_HARMONIC_REFERENCE_ORB_DEG
+
 
 HARMONICS_MAX_BODIES = 64
 HARMONICS_MAX_COMPOSITE_BODIES = 32
@@ -137,7 +139,9 @@ class HarmonicAgeChartRequest(_StrictModel):
 
 
 class HarmonicConjunctionRequest(HarmonicChartRequest):
-    orb: float = Field(default=1.0, ge=0.0, le=HARMONICS_MAX_ORB)
+    orb: float = Field(
+        default=DEFAULT_HARMONIC_REFERENCE_ORB_DEG, ge=0.0, le=HARMONICS_MAX_ORB
+    )
     orb_policy: HarmonicOrbPolicyRequest | None = None
 
     @field_validator("orb", mode="before")
@@ -155,7 +159,9 @@ class HarmonicConjunctionRequest(HarmonicChartRequest):
 
 class HarmonicAspectsRequest(_StrictModel):
     longitudes: dict[str, float]
-    orb: float = Field(default=1.0, ge=0.0, le=HARMONICS_MAX_ORB)
+    orb: float = Field(
+        default=DEFAULT_HARMONIC_REFERENCE_ORB_DEG, ge=0.0, le=HARMONICS_MAX_ORB
+    )
     orb_policy: HarmonicOrbPolicyRequest | None = None
     max_harmonic: int = Field(
         default=HARMONICS_DEFAULT_MAX_HARMONIC,
@@ -203,7 +209,9 @@ class HarmonicCompositeRequest(_StrictModel):
     longitudes_a: dict[str, float]
     longitudes_b: dict[str, float]
     harmonic: float = Field(ge=1.0, le=float(HARMONICS_MAX_HARMONIC))
-    orb: float = Field(default=1.0, ge=0.0, le=HARMONICS_MAX_ORB)
+    orb: float = Field(
+        default=DEFAULT_HARMONIC_REFERENCE_ORB_DEG, ge=0.0, le=HARMONICS_MAX_ORB
+    )
     orb_policy: HarmonicOrbPolicyRequest | None = None
     label_a: str = Field(default="A", min_length=1, max_length=HARMONICS_MAX_LABEL_LENGTH)
     label_b: str = Field(default="B", min_length=1, max_length=HARMONICS_MAX_LABEL_LENGTH)

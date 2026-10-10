@@ -21,6 +21,7 @@
     "latitude_deg": 30.0,
     "longitude_deg": 31.2,
     "delegation_tolerance_minutes": 1.0,
-    "expected_jd_ut": 2461041.6700517233
+    "expected_jd_ut": 2461341.6407005205,
+    "revision_note": "6.9.9: regenerated from Moira's own output after the 6.9.8 heliacal apparition fix (9e559e0). The former value 2461041.67 was the search start day, the old behaviour of relabelling an already-visible star's first morning as a rising. The next true heliacal rising is 2026-10-28 03:22 UT, about two weeks after Spica's solar conjunction. Regression parity only, not an external authority."
   }
 ]

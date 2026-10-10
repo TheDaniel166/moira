@@ -37,6 +37,11 @@ from moira import (
 )
 
 from .config import ServerConfigurationError
+from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
+from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
+from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
+from moira.sade_sati import SadeSatiBudgetError
+from moira.shadbala_context import ShadbalaContextError
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -362,6 +367,61 @@ _LUNAR_ORIENTATION_ERROR_POLICIES = (
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
+
+    @app.exception_handler(SadeSatiBudgetError)
+    async def handle_sade_budget(request: Request, exc: SadeSatiBudgetError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code='sade_sati_budget_exceeded', message=str(exc), category='search_budget',
+            request_id=getattr(request.state,'request_id',None),
+            details={'max_evaluations':exc.budget,'evaluations':exc.evaluations,'stage':exc.stage}))
+
+    @app.exception_handler(ShadbalaContextError)
+    async def handle_strength_context(request: Request, exc: ShadbalaContextError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code='shadbala_context_unavailable', message=str(exc), category='calculation_context',
+            request_id=getattr(request.state,'request_id',None)))
+
+    @app.exception_handler(SayanadiResourceError)
+    async def handle_sayanadi_resource(request: Request, exc: SayanadiResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="sayanadi_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(SayanadiCoverageError)
+    async def handle_sayanadi_coverage(request: Request, exc: SayanadiCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="sayanadi_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(GocharaResourceError)
+    async def handle_gochara_resource(request: Request, exc: GocharaResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="gochara_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(GocharaCoverageError)
+    async def handle_gochara_coverage(request: Request, exc: GocharaCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="gochara_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(MuhurtaResourceError)
+    async def handle_muhurta_resource(request: Request, exc: MuhurtaResourceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content=_error_body(
+            error_code="muhurta_resource_unavailable", message=str(exc),
+            category="ephemeris_availability", request_id=getattr(request.state, "request_id", None),
+        ))
+
+    @app.exception_handler(MuhurtaCoverageError)
+    async def handle_muhurta_coverage(request: Request, exc: MuhurtaCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="muhurta_date_outside_coverage", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
+        ))
 
     @app.exception_handler(RequestValidationError)
     async def handle_request_validation_error(

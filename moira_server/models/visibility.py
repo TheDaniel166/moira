@@ -54,6 +54,9 @@ class LunarCrescentDetailsResponse(_StrictModel):
     topocentric_crescent_width_arcmin: float
     q: float
     visibility_class: str
+    # "evening" (young crescent), "morning" (old crescent: sunset_jd_ut and
+    # moonset_jd_ut then hold sunrise and moonrise) or "instant".
+    observation_window: str = "evening"
 
 
 class ObserverVisibilityEnvironmentRequest(_StrictModel):

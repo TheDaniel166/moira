@@ -21,16 +21,49 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 467
-- Registered OpenAPI operations: 467 (GET 36, POST 431)
+- Registered OpenAPI paths: 498
+- Registered OpenAPI operations: 498 (GET 40, POST 458)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 463
+- Versioned `/v1` paths: 494
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+VED-008 adds `GET /v1/muhurta/shuddhi/catalogue` and
+`POST /v1/muhurta/shuddhi/direct` / `POST /v1/muhurta/shuddhi/day`.
+The [source-profile standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md)
+defines source-separated Panchaka, Tara-cycle, Yoga timing and Karana/Bhadra
+findings, strict supplied inputs and bounded reader-owned day cells. Typed
+transport preserves restrictions, exceptions, missing components and numerical
+uncertainty independently; it does not change existing scores/search.
+
+Gochara supplied-position evaluation, integrated profiles, reader-bound epoch
+and aware-datetime composition, and the cited doctrine catalogue are registered
+under `/v1/gochara`. See the
+[Gochara REST standard](../02_standards/GOCHARA_REST_STANDARD.md) for policies,
+strict numeric/BAV input rules, clock/frame receipts, resource outcomes,
+partial observation truth and source limitations. Dated forecast windows remain open.
+
+The 6 October 2026 Vedic surface closure also strengthens the existing direct
+yoga, avastha, extended Jaimini, Vimshopaka, Kakshya and Shodhya requests. Their
+affected numeric fields require finite JSON numbers, and named participant/sign
+domains reject unknown keys. Avastha exposes its optional `vriddha_fraction`
+and returns the selected relationship scheme/fraction. Co-lord Arudha requests
+require both named nodes; eight-karaka Karakamsa requests require Rahu. The
+[closure ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
+records the exact validated scope and remaining admissions.
+
+The 8 October Sayanadi admission adds optional complete context to
+`POST /v1/avasthas/evaluate`, the nine-subject supplied-input route
+`POST /v1/avasthas/sayanadi`, and reader-bound birth composition at
+`POST /v1/avasthas/from-datetime`. Strict discriminated clocks, source-owned
+name mapping, full arithmetic trace, separate node subjects and explicit
+sunrise/ghati unavailability preserve canonical engine truth. See the
+[Sayanadi standard](../02_standards/SAYANADI_ADMISSION_STANDARD.md) and
+[execution receipt](../03_validation/SAYANADI_VALIDATION_2026-10-08.md).
 
 The REST implementation is past bootstrap.
 
@@ -239,7 +272,7 @@ Not yet broadly exposed as REST families:
 | occultations | 12 |
 | orbits | 4 |
 | pancha-pakshi | 19 |
-| panchanga | 4 |
+| panchanga | 6 |
 | parans | 8 |
 | patterns | 3 |
 | phase | 6 |
@@ -1087,12 +1120,27 @@ those relationship-chart routes.
 
 ## Panchanga Routes
 
+`POST /v1/panchanga/lunar-month` accepts strict finite `jd_ut1` and named
+`system`/`ayanamsa_system`/`solver_tolerance_seconds` policy. It preserves three
+surrounding lunations, solved phase/ingress brackets, month labels and
+Adhika/Kshaya evidence. Exceptional Purnimanta mappings return typed domain
+unavailability. [Source and policy standard](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
+This is an astronomical month context; festival selection is not yet admitted.
+
+The daily product is a separate local-date contract with sunrise-owned Vara,
+solved angular limb endings and explicit solar unavailability. Its
+[standard](../02_standards/DAILY_PANCHANGA_STANDARD.md) documents policy,
+timestamps and a complete request. Existing instant/profile routes retain
+their current conventions.
+
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/panchanga/instant` | `panchanga_instant_route` |
 | POST | `/v1/panchanga/instant/profile` | `panchanga_instant_profile_route` |
 | POST | `/v1/panchanga/chart` | `panchanga_chart_route` |
 | POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
+| POST | `/v1/panchanga/day` | `panchanga_day_route` |
+| POST | `/v1/panchanga/lunar-month` | `panchanga_lunar_month_route` |
 | GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
 | POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
 | POST | `/v1/sidereal/convert` | `sidereal_convert_route` |
@@ -1450,11 +1498,24 @@ policy weights, classification labels, reasons, and provenance. Score
 responses preserve the raw unbounded engine score, score breakdown, score
 scale, and score direction.
 
-This admission does not expose Muhurta search windows, activity-specific
-guidance, Abhijit/Brahma Muhurta routes, Tara Bala inputs, recommendation
-language, Western electional search/scoring, arbitrary predicates, arbitrary
-scorers, or async search jobs. The separate Ramesey v1 single-moment route is
-not a Muhurta product or a search route.
+Later admissions extend this family with personal Tara/Chandra scoring and
+bounded sampled search under `POST /v1/muhurta/personal/score` and
+`POST /v1/muhurta/search`; see the
+[personal/search standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md).
+
+VED-007 adds `POST /v1/muhurta/named/direct` and
+`POST /v1/muhurta/named/day`. The first accepts supplied UT1 solar anchors
+and an explicit Monday=0 weekday. The second derives reader-bound solar
+anchors for one civil sunrise date, location and timezone. Both return
+canonical Abhijit/Brahma intervals, source policies, endpoint bounds,
+separate weekday eligibility and per-window unavailable reasons. Default
+Brahma uses Arunadatta's fixed-ghati reading; proportional-night compatibility
+is explicitly selectable. See the
+[named interval standard](../02_standards/NAMED_MUHURTA_STANDARD.md).
+
+Activity-specific guidance, recommendation language, Western doctrine,
+arbitrary predicates/scorers and async jobs remain outside this Muhurta
+admission. The separate Ramesey v1 route is a different product.
 
 ## Shadbala Routes
 
@@ -1464,6 +1525,15 @@ not a Muhurta product or a search route.
 | POST | `/v1/shadbala/chart/profile` | `shadbala_chart_profile_route` |
 | POST | `/v1/shadbala/chart/network` | `shadbala_chart_network_route` |
 | POST | `/v1/shadbala/chart/condition` | `shadbala_chart_condition_route` |
+| POST | `/v1/shadbala/chart/bhava` | `bhava_bala_chart_route` |
+| POST | `/v1/shadbala/chart/full` | `shadbala_full_route` |
+
+All six routes include `policy_receipt`: requested/applied ayanamsa,
+requested/resolved/effective house system, actual polar fallback and optional
+Hora lord. Unknown house systems reject before computation; supported names
+and codes resolve through the engine registry. The calculation uses its owning
+engine's reader, including when the kernel is automatically discovered.
+See [Vedic REST admission](../02_standards/VEDIC_REST_ADMISSION_STANDARD.md).
 
 ## Jaimini Routes
 
@@ -1739,6 +1809,17 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/vedic-dignities/chart/relationships` | `vedic_dignity_chart_backed_relationships_route` |
 | POST | `/v1/vedic-dignities/chart/profile` | `vedic_dignity_chart_backed_profile_route` |
 
+VED-005 rejects coerced numeric inputs and unknown classical identities,
+including relationship-map keys. Valid partial classical maps remain admitted;
+missing entries are not fabricated. Direct ayanamsa labels retain their upstream
+provenance meaning; chart-backed conversion requires a registered system.
+
+The 30-route [Vedic admission contract](../02_standards/VEDIC_REST_ADMISSION_STANDARD.md)
+also covers dasha, Sade Sati and `/v1/vedic/chart-profile`. Civil dates reject
+numeric epochs and numeric timestamp strings. The profile exposes evaluated
+component frames, mixed-frame status, applied dasha year basis and supplied
+inactive inputs in `policy_receipt`; omitted sections remain omitted.
+
 ## Ashtakavarga Routes
 
 | Method | Path | Handler |
@@ -1756,6 +1837,8 @@ include the primary-source citation for the selected variant.
 
 | Method | Path | Handler |
 |---|---|---|
+| POST | `/v1/varga/d60/sign` | `d60_sign_route` |
+| POST | `/v1/varga/vimshopaka` | `vimshopaka_route` |
 | POST | `/v1/varga/generic` | `varga_generic_route` |
 | POST | `/v1/varga/named` | `varga_named_route` |
 | POST | `/v1/varga/shodashvarga` | `varga_shodashvarga_route` |
@@ -1764,6 +1847,62 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/varga/chart/named` | `varga_chart_named_route` |
 | POST | `/v1/varga/chart/shodashvarga` | `varga_chart_shodashvarga_route` |
 | POST | `/v1/varga/chart/shodashvarga/batch` | `varga_chart_shodashvarga_batch_route` |
+
+Every `VargaPointResponse` includes canonical nullable `deity`, applied
+`d60_method`, `d60_source_references` and `d60_degree_attribution`. Named D60 supplies its corrected deity string; generic divisor
+60 and other divisions retain `deity=null`. Full D60 numeric output uses
+`harmonic` by default, with `pvr_textbook_linear` and `classical_derived_linear`
+explicitly available on named products; non-D60 points report `d60_method=null`,
+an empty source array and null degree attribution.
+
+Seven named/full Shodashvarga request shapes accept the optional enumeration
+`d60_method=harmonic|pvr_textbook_linear|classical_derived_linear`. `bphs_santhanam_sign`, unknown methods and null selections
+fail with HTTP 422 before chart derivation. Generic inputs retain their
+original contract.
+
+Both source full-position selections apply only to D60. Another named selector receives 422;
+Shodashvarga applies the selected convention only to its D60 entry. Direct source-profile scalar/batch inputs
+reject booleans, strings and nonfinite numbers without coercion. The result
+names the dated textbook/linear composition and both positional authorities;
+the corrected deity table remains Santhanam-owned. Its computed degrees are
+abstract divisional positions, with `d60_degree_attribution=modern_composed`.
+
+`classical_derived_linear` supplies full degrees with BPHS Santhanam sign
+assignment and Moira's explicit proportional-degree extension. Its receipt
+reports `d60_degree_attribution=classical_derived`, the reviewed classical and
+commentarial source chain, and a Moira derivation locator. It does not label
+a direct classical D60 degree prescription. Harmonic degrees report
+`generic_harmonic`. Source-profile composition normalizes a shared circular
+input before other divisions and strength relationships, preserving tiny
+negative left limits without another division rounding the input to 360.
+
+`POST /v1/varga/d60/sign` accepts strict finite `sidereal_longitude` and
+`method=harmonic|bphs_santhanam_sign|pvr_textbook_linear|classical_derived_linear` (default harmonic). Its typed response
+contains normalized input longitude, sign index/name/symbol, applied method,
+`position_scope=sign_only` and `source_reference`. It contains no continuous
+D60 degree or mapped longitude. The source commentary example, Capricorn
+13 degrees 25 minutes, yields Pisces; the harmonic method yields Gemini.
+
+Vimshopaka accepts `d60_method` and returns each planet's actual applied
+method and positional source array. A nondefault selection requires `dashavarga` or `shodashavarga`;
+other groups report null/empty receipts and reject any nondefault selection. See the
+[D60 source standard](../02_standards/D60_SOURCE_ADMISSION_STANDARD.md) for
+edition limits, exact name migration values and weighted effects.
+
+## Bounded Chara Dasha contract
+
+`POST /v1/jaimini/extended/chara-dasha` accepts `cycles` as a strict integer
+1 or 2, default 1. The seven-body map and finite longitude/epoch inputs are
+required. `node_longitudes` may be omitted/null; a supplied map must contain
+exactly Rahu and Ketu. Empty/partial maps and bool/string/float/out-of-bound
+cycles fail with the standard HTTP 422 validation envelope.
+
+The response adds actual `period_count` and canonical `computation` containing
+`cycle_count`, `lord_mode`, `formulation_id`, `cycle_policy`, `year_basis`,
+`year_days` and `epoch_basis`. One cycle has 12 periods; two have 24 with
+retained first-cycle repetition and continuous endpoints. The server copies
+the engine receipt. The [Chara cycle standard](../02_standards/CHARA_DASHA_CYCLE_STANDARD.md)
+limits the source claim to the inspected published witness.
 
 ## Decans And Decanates Routes
 
@@ -2619,7 +2758,8 @@ The admitted Harmonics REST surface is the bounded P12-02
 - `POST /v1/harmonics/aspects`
 - `POST /v1/harmonics/sweep`
 - `POST /v1/harmonics/fingerprint`
-- `POST /v1/harmonics/composite`
+- `POST /v1/harmonics/cross-chart-conjunctions`
+- `POST /v1/harmonics/composite` (deprecated alias of `cross-chart-conjunctions`)
 - `POST /v1/harmonics/transit-forecast`
 
 These routes accept caller-supplied named ecliptic longitude maps. Longitude
@@ -2632,8 +2772,10 @@ range `1..128`; `5.5` remains `5.5` and is not truncated to `5`. Integer values
 are ordinary cyclic harmonics. Non-integer values are explicit
 zero-Aries-anchored continuous multipliers computed from each input's canonical
 `[0, 360)` representative. Responses preserve the requested/effective value,
-input count, sorted positions, integer-preset metadata when known, and
-provenance identifying `moira.harmonics`, the engine entrypoint, caller-owned
+input count, sorted positions, the conventional aspect name for an integer
+preset when known (`preset_description` is `null` in computed payloads since
+6.9.9; the editorial keyword glosses appear only in `/presets`, labelled as
+unsourced), and provenance identifying `moira.harmonics`, the engine entrypoint, caller-owned
 longitudes, and `(normalized_longitude * harmonic) mod 360`.
 
 Age-harmonic responses preserve the derived decimal harmonic, `jd_birth`,
@@ -2642,7 +2784,11 @@ not the transport adapter for an arbitrary fractional harmonic request.
 
 Pattern-analysis routes expose one-harmonic conjunctions, one-harmonic pattern
 scores, harmonic aspect decoding, bounded sweeps, bounded vibrational
-fingerprints, and bounded composite harmonic comparison. Sweep and fingerprint
+fingerprints, and bounded cross-chart harmonic comparison. The cross-chart
+route projects each natal chart onto harmonic H separately and compares chart A
+bodies with chart B bodies; it does not build a composite chart (the older
+`/composite` path and the `composite_harmonic` entrypoint name are historical).
+Sweep and fingerprint
 provenance explicitly labels scores as pattern-density measures rather than
 interpretive judgments. Aspects, sweeps, and fingerprints retain integer
 harmonic ranges.
@@ -2653,7 +2799,10 @@ configurable H1-reference and projected-chart threshold. Optional
 policy selection explicit. Provenance reports the projected limit `O_1`, its
 locally equivalent source-circle allowance `O_1/H`, authority, formula,
 adapter mode, and the continuous-extension flag. Clients must not divide the
-projected threshold by H again.
+projected threshold by H again. Since 6.9.9 the default `orb` is 12 degrees on
+the harmonic wheel (12/H on the natal circle), the conjunction orb David Hamblin
+works his divide-by-H rule with ("The Importance of Harmonics", Astrodienst);
+it was previously 1 degree. `transit-forecast` keeps its 1 degree default.
 
 `POST /v1/harmonics/transit-forecast` evaluates only caller-supplied,
 strictly time-ordered samples at explicitly requested integer harmonics. It
@@ -3189,6 +3338,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/meta/kernel` | meta | `kernel_meta_meta_kernel_get` |
 | `GET` | `/meta/version` | meta | `version_meta_version_get` |
 | `GET` | `/ready` | meta | `ready_ready_get` |
+| `POST` | `/v1/almuten/degree` | almuten | `almuten_of_degree_route_v1_almuten_degree_post` |
+| `POST` | `/v1/almuten/figuris` | almuten | `almuten_figuris_route_v1_almuten_figuris_post` |
 | `POST` | `/v1/antiscia/contacts` | antiscia | `antiscia_contacts_route_v1_antiscia_contacts_post` |
 | `POST` | `/v1/antiscia/reflect` | antiscia | `antiscia_reflect_route_v1_antiscia_reflect_post` |
 | `POST` | `/v1/antiscia/to-point` | antiscia | `antiscia_to_point_route_v1_antiscia_to_point_post` |
@@ -3243,6 +3394,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/astrodynes/progressed/search` | astrodynes | `progressed_astrodynes_search_route_v1_astrodynes_progressed_search_post` |
 | `POST` | `/v1/astrodynes/progressed/total-influence` | astrodynes | `progressed_astrodynes_total_influence_route_v1_astrodynes_progressed_total_influence_post` |
 | `POST` | `/v1/avasthas/evaluate` | avasthas | `avasthas_route_v1_avasthas_evaluate_post` |
+| `POST` | `/v1/avasthas/from-datetime` | avasthas | `avastha_birth_route_v1_avasthas_from_datetime_post` |
+| `POST` | `/v1/avasthas/sayanadi` | avasthas | `sayanadi_route_v1_avasthas_sayanadi_post` |
 | `POST` | `/v1/batch/charts` | batch | `batch_charts_route_v1_batch_charts_post` |
 | `POST` | `/v1/batch/charts/reduction` | batch | `batch_charts_reduction_route_v1_batch_charts_reduction_post` |
 | `POST` | `/v1/batch/events` | batch | `batch_events_route_v1_batch_events_post` |
@@ -3295,6 +3448,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/eclipses/lunar/global-circumstances` | phenomena | `lunar_eclipse_global_circumstances_route_v1_eclipses_lunar_global_circumstances_post` |
 | `POST` | `/v1/eclipses/lunar/local` | phenomena | `lunar_eclipse_local_route_v1_eclipses_lunar_local_post` |
 | `POST` | `/v1/eclipses/lunar/next` | phenomena | `next_lunar_eclipse_route_v1_eclipses_lunar_next_post` |
+| `POST` | `/v1/eclipses/lunar/previous` | phenomena | `previous_lunar_eclipse_route_v1_eclipses_lunar_previous_post` |
 | `POST` | `/v1/eclipses/lunar/visibility` | phenomena | `lunar_eclipse_visibility_route_v1_eclipses_lunar_visibility_post` |
 | `POST` | `/v1/eclipses/solar/cartography` | phenomena | `solar_eclipse_cartography_route_v1_eclipses_solar_cartography_post` |
 | `POST` | `/v1/eclipses/solar/footprint` | phenomena | `solar_eclipse_footprint_route_v1_eclipses_solar_footprint_post` |
@@ -3302,6 +3456,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/eclipses/solar/local-visible` | phenomena | `next_visible_solar_eclipse_route_v1_eclipses_solar_local_visible_post` |
 | `POST` | `/v1/eclipses/solar/next` | phenomena | `next_solar_eclipse_route_v1_eclipses_solar_next_post` |
 | `POST` | `/v1/eclipses/solar/path` | phenomena | `solar_eclipse_path_route_v1_eclipses_solar_path_post` |
+| `POST` | `/v1/eclipses/solar/previous` | phenomena | `previous_solar_eclipse_route_v1_eclipses_solar_previous_post` |
 | `POST` | `/v1/egyptian-bounds/aggregate` | egyptian-bounds | `egyptian_bounds_aggregate_route_v1_egyptian_bounds_aggregate_post` |
 | `POST` | `/v1/egyptian-bounds/bound` | egyptian-bounds | `egyptian_bound_route_v1_egyptian_bounds_bound_post` |
 | `POST` | `/v1/egyptian-bounds/classification` | egyptian-bounds | `egyptian_bound_classification_route_v1_egyptian_bounds_classification_post` |
@@ -3344,6 +3499,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
 | `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
 | `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
+| `GET` | `/v1/gochara/doctrine-options` | gochara | `doctrine_route_v1_gochara_doctrine_options_get` |
+| `POST` | `/v1/gochara/evaluate` | gochara | `evaluate_route_v1_gochara_evaluate_post` |
+| `POST` | `/v1/gochara/from-datetimes` | gochara | `datetimes_route_v1_gochara_from_datetimes_post` |
+| `POST` | `/v1/gochara/from-epochs` | gochara | `epochs_route_v1_gochara_from_epochs_post` |
+| `POST` | `/v1/gochara/profile` | gochara | `profile_route_v1_gochara_profile_post` |
 | `POST` | `/v1/harmograms/intensity-spectrum` | harmograms | `harmogram_intensity_spectrum_route_v1_harmograms_intensity_spectrum_post` |
 | `POST` | `/v1/harmograms/projection` | harmograms | `harmogram_projection_route_v1_harmograms_projection_post` |
 | `POST` | `/v1/harmograms/trace` | harmograms | `harmogram_trace_route_v1_harmograms_trace_post` |
@@ -3354,11 +3514,13 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/harmonics/chart` | harmonics | `harmonic_chart_route_v1_harmonics_chart_post` |
 | `POST` | `/v1/harmonics/composite` | harmonics | `harmonic_composite_route_v1_harmonics_composite_post` |
 | `POST` | `/v1/harmonics/conjunctions` | harmonics | `harmonic_conjunctions_route_v1_harmonics_conjunctions_post` |
+| `POST` | `/v1/harmonics/cross-chart-conjunctions` | harmonics | `harmonic_cross_chart_conjunctions_route_v1_harmonics_cross_chart_conjunctions_post` |
 | `POST` | `/v1/harmonics/fingerprint` | harmonics | `harmonic_fingerprint_route_v1_harmonics_fingerprint_post` |
 | `POST` | `/v1/harmonics/pattern-score` | harmonics | `harmonic_pattern_score_route_v1_harmonics_pattern_score_post` |
 | `GET` | `/v1/harmonics/presets` | harmonics | `harmonic_presets_route_v1_harmonics_presets_get` |
 | `POST` | `/v1/harmonics/sweep` | harmonics | `harmonic_sweep_route_v1_harmonics_sweep_post` |
 | `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
+| `POST` | `/v1/heliacal/phasis` | phenomena | `heliacal_phasis_route_v1_heliacal_phasis_post` |
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
 | `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
@@ -3380,6 +3542,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/huber/dynamic-intensity` | huber | `huber_dynamic_intensity_route_v1_huber_dynamic_intensity_post` |
 | `POST` | `/v1/huber/house-zones` | huber | `huber_house_zones_route_v1_huber_house_zones_post` |
 | `POST` | `/v1/huber/intensity-at` | huber | `huber_intensity_at_route_v1_huber_intensity_at_post` |
+| `POST` | `/v1/hyleg/lilly-1647` | hyleg | `hyleg_lilly_1647_route_v1_hyleg_lilly_1647_post` |
+| `POST` | `/v1/hyleg/lilly-1647/alcocoden` | hyleg | `alcocoden_lilly_1647_route_v1_hyleg_lilly_1647_alcocoden_post` |
 | `POST` | `/v1/jaimini/chart/condition` | jaimini | `jaimini_chart_condition_route_v1_jaimini_chart_condition_post` |
 | `POST` | `/v1/jaimini/chart/karakas` | jaimini | `jaimini_chart_karakas_route_v1_jaimini_chart_karakas_post` |
 | `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |
@@ -3421,7 +3585,22 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
 | `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
+| `GET` | `/v1/muhurta/doshas/catalogue` | muhurta | `dosha_catalogue_route_v1_muhurta_doshas_catalogue_get` |
+| `POST` | `/v1/muhurta/doshas/day` | muhurta | `dosha_day_route_v1_muhurta_doshas_day_post` |
+| `POST` | `/v1/muhurta/doshas/direct` | muhurta | `dosha_direct_route_v1_muhurta_doshas_direct_post` |
+| `GET` | `/v1/muhurta/lagna/catalogue` | muhurta | `muhurta_lagna_catalogue_route_v1_muhurta_lagna_catalogue_get` |
+| `POST` | `/v1/muhurta/lagna/datetime` | muhurta | `muhurta_lagna_datetime_route_v1_muhurta_lagna_datetime_post` |
+| `POST` | `/v1/muhurta/lagna/direct` | muhurta | `muhurta_lagna_direct_route_v1_muhurta_lagna_direct_post` |
+| `POST` | `/v1/muhurta/named/day` | muhurta | `named_muhurta_day_route_v1_muhurta_named_day_post` |
+| `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
+| `POST` | `/v1/muhurta/search` | muhurta | `muhurta_search_route_v1_muhurta_search_post` |
+| `GET` | `/v1/muhurta/shuddhi/catalogue` | muhurta | `shuddhi_catalogue_route_v1_muhurta_shuddhi_catalogue_get` |
+| `POST` | `/v1/muhurta/shuddhi/day` | muhurta | `shuddhi_day_route_v1_muhurta_shuddhi_day_post` |
+| `POST` | `/v1/muhurta/shuddhi/direct` | muhurta | `shuddhi_direct_route_v1_muhurta_shuddhi_direct_post` |
+| `POST` | `/v1/muhurta/special/day` | muhurta | `special_muhurta_day_route_v1_muhurta_special_day_post` |
+| `POST` | `/v1/muhurta/special/solar` | muhurta | `special_muhurta_solar_route_v1_muhurta_special_solar_post` |
+| `POST` | `/v1/muhurta/special/yogas` | muhurta | `special_muhurta_yogas_route_v1_muhurta_special_yogas_post` |
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |
@@ -3467,8 +3646,10 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/pancha-pakshi/sookshma/select` | pancha-pakshi | `pancha_pakshi_sookshma_temporal_selection_route_v1_pancha_pakshi_sookshma_select_post` |
 | `POST` | `/v1/panchanga/chart` | panchanga | `panchanga_chart_route_v1_panchanga_chart_post` |
 | `POST` | `/v1/panchanga/chart/profile` | panchanga | `panchanga_chart_profile_route_v1_panchanga_chart_profile_post` |
+| `POST` | `/v1/panchanga/day` | panchanga | `panchanga_day_route_v1_panchanga_day_post` |
 | `POST` | `/v1/panchanga/instant` | panchanga | `panchanga_instant_route_v1_panchanga_instant_post` |
 | `POST` | `/v1/panchanga/instant/profile` | panchanga | `panchanga_instant_profile_route_v1_panchanga_instant_profile_post` |
+| `POST` | `/v1/panchanga/lunar-month` | panchanga | `panchanga_lunar_month_route_v1_panchanga_lunar_month_post` |
 | `POST` | `/v1/parans/field/analysis` | phenomena | `paran_field_analysis_route_v1_parans_field_analysis_post` |
 | `POST` | `/v1/parans/field/contours` | phenomena | `paran_field_contours_route_v1_parans_field_contours_post` |
 | `POST` | `/v1/parans/field/paths` | phenomena | `paran_field_paths_route_v1_parans_field_paths_post` |
@@ -3576,13 +3757,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/stations/search` | phenomena | `station_search_route_v1_stations_search_post` |
 | `POST` | `/v1/stelliums/analyze` | stelliums | `analyze_stelliums_route_v1_stelliums_analyze_post` |
 | `POST` | `/v1/synastry/aspects` | relationship | `synastry_aspects_route_v1_synastry_aspects_post` |
-| `POST` | `/v1/synastry/chart-condition` | relationship | `synastry_chart_condition_route_v1_synastry_chart_condition_post` |
-| `POST` | `/v1/synastry/condition-profiles` | relationship | `synastry_condition_profiles_route_v1_synastry_condition_profiles_post` |
-| `POST` | `/v1/synastry/contact-relations` | relationship | `synastry_contact_relations_route_v1_synastry_contact_relations_post` |
 | `POST` | `/v1/synastry/contacts` | relationship | `synastry_contacts_route_v1_synastry_contacts_post` |
-| `POST` | `/v1/synastry/network` | relationship | `synastry_network_route_v1_synastry_network_post` |
 | `POST` | `/v1/synastry/overlay` | relationship | `synastry_directional_overlay_route_v1_synastry_overlay_post` |
-| `POST` | `/v1/synastry/overlay-relations` | relationship | `synastry_overlay_relations_route_v1_synastry_overlay_relations_post` |
 | `POST` | `/v1/synastry/overlays` | relationship | `synastry_overlays_route_v1_synastry_overlays_post` |
 | `POST` | `/v1/timelords/decennials/active-pair` | timelords | `decennials_active_pair_route_v1_timelords_decennials_active_pair_post` |
 | `POST` | `/v1/timelords/decennials/active-path` | timelords | `decennials_active_path_route_v1_timelords_decennials_active_path_post` |
@@ -3615,6 +3791,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/varga/chart/named` | varga | `varga_chart_named_route_v1_varga_chart_named_post` |
 | `POST` | `/v1/varga/chart/shodashvarga` | varga | `varga_chart_shodashvarga_route_v1_varga_chart_shodashvarga_post` |
 | `POST` | `/v1/varga/chart/shodashvarga/batch` | varga | `varga_chart_shodashvarga_batch_route_v1_varga_chart_shodashvarga_batch_post` |
+| `POST` | `/v1/varga/d60/sign` | varga | `d60_sign_route_v1_varga_d60_sign_post` |
 | `POST` | `/v1/varga/generic` | varga | `varga_generic_route_v1_varga_generic_post` |
 | `POST` | `/v1/varga/named` | varga | `varga_named_route_v1_varga_named_post` |
 | `POST` | `/v1/varga/named/batch` | varga | `varga_named_batch_route_v1_varga_named_batch_post` |

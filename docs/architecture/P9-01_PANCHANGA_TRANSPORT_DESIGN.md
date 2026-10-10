@@ -2,8 +2,14 @@
 
 Version: 1.0
 Date: 2026-06-11
-Status: P9-01 admitted; four Panchanga routes live and tested
+Status: P9-01 initial instant/profile design admitted; daily extension recorded separately
 Scope: Phase 9 Panchanga REST admission design
+
+Current extension (6 October 2026): VED-015 adds the public daily engine and
+`POST /v1/panchanga/day`. The source/policy, typed transport, reader lifecycle,
+bounded synchronous stance and verification are owned by
+`wiki/02_standards/DAILY_PANCHANGA_STANDARD.md`. The initial four routes below
+retain their instant semantics. This design is not a deployed-route receipt.
 
 This document declares the initial REST route shapes for Panchanga before any
 Pydantic request models, response models, serializers, services, or routers are
@@ -27,6 +33,10 @@ The governing engine object is the five-limb Panchanga instant:
 The authoritative engine function is `moira.panchanga.panchanga_at(...)`.
 
 ---
+
+The subsequent lunar-month extension is `POST /v1/panchanga/lunar-month`.
+Its separate source-owned contract and festival admission boundary are in
+`wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md`.
 
 ## 1. Route Family
 

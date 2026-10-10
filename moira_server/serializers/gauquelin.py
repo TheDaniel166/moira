@@ -32,6 +32,7 @@ def serialize_gauquelin_position(
         sectors=position.sectors,
         degree_in_sector=position.degree_in_sector,
         is_plus_zone=position.is_plus_zone,
+        effect_status=position.effect_status.value,
         horizon_status=position.horizon_status.value,
         right_ascension=right_ascension,
         declination=declination,

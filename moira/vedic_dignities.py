@@ -282,7 +282,10 @@ for _planet, _signs in OWN_SIGNS.items():
 # ---------------------------------------------------------------------------
 # Natural friendship tables (Naisargika Maitri)
 #
-# Source: BPHS Ch. 3.
+# Source: BPHS Santhanam I, 3.55, printed 40 / PDF 39.
+# VED-010 visual audit: Venus treats Moon as an enemy; the reverse direction
+# is neutral. Source hash and complete directional fixture are in the Lagna
+# source packet. This corrects the former Venus->Moon neutral entry.
 # ---------------------------------------------------------------------------
 
 NATURAL_FRIENDS: dict[str, set[str]] = {
@@ -301,7 +304,7 @@ NATURAL_NEUTRALS: dict[str, set[str]] = {
     'Mars':    {'Venus', 'Saturn'},
     'Mercury': {'Mars', 'Jupiter', 'Saturn'},
     'Jupiter': {'Saturn'},
-    'Venus':   {'Mars', 'Jupiter', 'Moon'},
+    'Venus':   {'Mars', 'Jupiter'},
     'Saturn':  {'Jupiter'},
 }
 
@@ -311,7 +314,7 @@ NATURAL_ENEMIES: dict[str, set[str]] = {
     'Mars':    {'Mercury'},
     'Mercury': {'Moon'},
     'Jupiter': {'Mercury', 'Venus'},
-    'Venus':   {'Sun'},
+    'Venus':   {'Sun', 'Moon'},
     'Saturn':  {'Sun', 'Moon', 'Mars'},
 }
 
@@ -538,12 +541,11 @@ def _temporary_relationship(sign_a: int, sign_b: int) -> str:
 
     A planet at sign_b is a temporary friend of the planet at sign_a when
     the 1-based sign-distance from sign_a to sign_b falls in
-    {1, 2, 3, 9, 10, 11}.  All other distances are temporary enemies.
-    Distance 0 (same sign, i.e. the planet itself) should never be passed
-    here — it is excluded at the call site.
+    {2, 3, 4, 10, 11, 12} (Raman 1996 article 25). Other distances,
+    including another planet in the same sign, are temporary enemies.
     """
     distance = (sign_b - sign_a) % 12 + 1   # 1–12
-    if distance in {1, 2, 3, 9, 10, 11}:
+    if distance in {2, 3, 4, 10, 11, 12}:
         return 'friend'
     return 'enemy'
 

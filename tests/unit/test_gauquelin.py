@@ -232,3 +232,39 @@ def test_gauquelin_chart_service_resolves_utc_tt_and_ut1_for_dependencies(monkey
     ]
     assert result.provenance.jd_ut == jd_ut1
     assert result.provenance.jd_tt == jd_tt
+
+
+# 6.9.9: plus-zone classification only for the Gauquelin effect bodies
+# (Moon, Venus, Mars, Jupiter, Saturn).
+@pytest.mark.parametrize("body", ["Moon", "Venus", "Mars", "Jupiter", "Saturn", "mars"])
+def test_plus_zone_is_classified_for_gauquelin_effect_bodies(body: str) -> None:
+    from moira.gauquelin import GauquelinEffectStatus
+
+    position = gauquelin_sector(0.0, 0.0, 0.0, 299.0, body=body)
+
+    assert position.sector == 3
+    assert position.zone == "Plus Zone"
+    assert position.is_plus_zone is True
+    assert position.effect_status is GauquelinEffectStatus.EFFECT_BODY
+
+
+@pytest.mark.parametrize("body", ["Sun", "Mercury", "Uranus", "Neptune", "Pluto", "True Node"])
+def test_plus_zone_is_not_given_to_bodies_without_a_published_effect(body: str) -> None:
+    from moira.gauquelin import GauquelinEffectStatus
+
+    position = gauquelin_sector(0.0, 0.0, 0.0, 299.0, body=body)
+
+    assert position.sector == 3  # the geometry is unchanged
+    assert position.zone == "Not Classified"
+    assert position.is_plus_zone is False
+    assert position.effect_status is GauquelinEffectStatus.NO_PUBLISHED_EFFECT
+
+
+def test_unnamed_position_keeps_geometric_plus_zone_classification() -> None:
+    from moira.gauquelin import GauquelinEffectStatus
+
+    position = gauquelin_sector(0.0, 0.0, 0.0, 299.0)
+
+    assert position.zone == "Plus Zone"
+    assert position.is_plus_zone is True
+    assert position.effect_status is GauquelinEffectStatus.UNSPECIFIED_BODY

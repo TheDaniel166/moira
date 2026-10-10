@@ -9,7 +9,7 @@ from moira.manazil import (
     MansionPosition,
     MansionTradition,
     AL_BIRUNI_MANSIONS,
-    AGRIPPA_MANSIONS,
+    electional_mansion,
     mansion_of,
     mansion_of_sidereal,
     variant_nature,
@@ -35,16 +35,30 @@ def _engine_tradition(tradition: MansionTraditionName) -> MansionTradition:
     return MansionTradition(tradition.value)
 
 
+# Who each tradition follows. Every tradition divides the zodiac into 28 equal
+# mansions; they differ only in names, marker stars and meanings.
+_AUTHORITY = {
+    MansionTraditionName.al_biruni: "al_biruni_book_of_instruction",
+    MansionTraditionName.agrippa: "agrippa_de_occulta_philosophia_ii_33",
+    MansionTraditionName.picatrix: "picatrix_i_4",
+    MansionTraditionName.abenragel: "abenragel_tradition",
+    MansionTraditionName.ibn_alarabi: "ibn_al_arabi_tradition",
+}
+
+
 def _serialize_info(info: AstronomicalMansion | ElectionalMansion) -> MansionInfoResponse:
     if isinstance(info, AstronomicalMansion):
         return MansionInfoResponse(
             index=info.index,
             arabic_name=info.arabic_name,
+            arabic_aliases=list(info.aliases),
             marker_stars=list(info.marker_stars),
+            marker_note=info.note,
         )
     return MansionInfoResponse(
         index=info.index,
         latin_name=info.latin_name,
+        latin_aliases=list(info.latin_aliases),
         nature=info.nature,
         signification=info.signification,
     )
@@ -54,13 +68,31 @@ def _serialize_position(
     position: MansionPosition,
     *,
     tradition: MansionTraditionName,
+    computation_longitude: float,
 ) -> MansionPositionResponse:
     return MansionPositionResponse(
         mansion=_serialize_info(position.mansion),
         degrees_in=position.degrees_in,
         longitude=position.longitude,
-        computation_longitude=((position.mansion.index - 1) * MANSION_SPAN + position.degrees_in) % 360.0,
+        computation_longitude=computation_longitude,
     )
+
+
+def _computation_longitude(
+    *,
+    longitude: float,
+    mode: MansionComputationMode,
+    jd_ut: float | None,
+    ayanamsa_system: str,
+    ayanamsa_mode: str,
+) -> float:
+    """The longitude the mansion was found from: tropical, or sidereal in sidereal mode."""
+    if mode is MansionComputationMode.sidereal:
+        from moira.sidereal import tropical_to_sidereal
+
+        assert jd_ut is not None
+        return tropical_to_sidereal(longitude, jd_ut, ayanamsa_system, ayanamsa_mode) % 360.0
+    return longitude % 360.0
 
 
 def _provenance(
@@ -74,6 +106,9 @@ def _provenance(
     stage_sequence: list[str],
 ) -> MansionProvenanceResponse:
     return MansionProvenanceResponse(
+        mansion_system="Arabic_Manazil_28_equal_mansions",
+        computational_basis="equal_division_360_by_28",
+        default_authority=_AUTHORITY[tradition],
         mode=mode,
         tradition=tradition,
         requested_longitude=requested_longitude,
@@ -105,11 +140,15 @@ def _compute_position(
 def manazil_catalog(
     tradition: MansionTraditionName = MansionTraditionName.agrippa,
 ) -> MansionCatalogResponse:
-    source_mansions = AL_BIRUNI_MANSIONS if tradition == MansionTraditionName.al_biruni else AGRIPPA_MANSIONS
+    if tradition == MansionTraditionName.al_biruni:
+        mansions = [_serialize_info(info) for info in AL_BIRUNI_MANSIONS]
+    else:
+        engine_tradition = _engine_tradition(tradition)
+        mansions = [_serialize_info(electional_mansion(index, engine_tradition)) for index in range(1, 29)]
     return MansionCatalogResponse(
-        mansions=[_serialize_info(info) for info in source_mansions],
-        total=len(source_mansions),
-        span_degrees=MANSION_SPAN if tradition != MansionTraditionName.al_biruni else 0.0,
+        mansions=mansions,
+        total=len(mansions),
+        span_degrees=MANSION_SPAN,
         traditions=[t for t in MansionTraditionName],
         provenance=_provenance(
             mode=MansionComputationMode.tropical,
@@ -135,7 +174,17 @@ def compute_mansion_position(
         tradition=request.tradition,
     )
     return MansionPositionEnvelopeResponse(
-        result=_serialize_position(position, tradition=request.tradition),
+        result=_serialize_position(
+            position,
+            tradition=request.tradition,
+            computation_longitude=_computation_longitude(
+                longitude=request.longitude,
+                mode=request.mode,
+                jd_ut=request.jd_ut,
+                ayanamsa_system=request.ayanamsa_system,
+                ayanamsa_mode=request.ayanamsa_mode,
+            ),
+        ),
         provenance=_provenance(
             mode=request.mode,
             tradition=request.tradition,
@@ -166,6 +215,13 @@ def compute_mansion_bulk(request: MansionBulkRequest) -> MansionBulkResponse:
                 tradition=request.tradition,
             ),
             tradition=request.tradition,
+            computation_longitude=_computation_longitude(
+                longitude=longitude,
+                mode=request.mode,
+                jd_ut=request.jd_ut,
+                ayanamsa_system=request.ayanamsa_system,
+                ayanamsa_mode=request.ayanamsa_mode,
+            ),
         )
         for name, longitude in request.positions.items()
     }

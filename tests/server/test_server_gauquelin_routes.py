@@ -77,6 +77,7 @@ def test_gauquelin_direct_sector_route_matches_service_truth(
     assert body["position"]["sector"] == 3
     assert body["position"]["zone"] == "Plus Zone"
     assert body["position"]["is_plus_zone"] is True
+    assert body["position"]["effect_status"] == "effect_body"
     assert body["provenance"]["coordinate_source"] == "direct_apparent_ra_dec_lst"
     assert body["provenance"]["stage_sequence"][0] == "direct_ra_dec_validation"
 
@@ -356,3 +357,43 @@ def test_gauquelin_rest_rejects_custom_sector_count(
     )
 
     _assert_validation_envelope(response, message_fragment="36")
+
+
+def test_gauquelin_route_does_not_flag_pluto_plus_zone(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/gauquelin/sector",
+        json={
+            "body": "Pluto",
+            "right_ascension": 0.0,
+            "declination": 0.0,
+            "latitude": 0.0,
+            "local_sidereal_time": 299.0,
+        },
+    )
+
+    assert response.status_code == 200
+    position = response.json()["position"]
+    assert position["sector"] == 3
+    assert position["is_plus_zone"] is False
+    assert position["zone"] == "Not Classified"
+    assert position["effect_status"] == "no_published_effect"
+
+
+def test_gauquelin_route_admits_only_the_36_sector_resolution(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/gauquelin/sector",
+        json={
+            "body": "Mars",
+            "right_ascension": 0.0,
+            "declination": 0.0,
+            "latitude": 0.0,
+            "local_sidereal_time": 299.0,
+            "sectors": 12,
+        },
+    )
+
+    assert response.status_code in (400, 422)

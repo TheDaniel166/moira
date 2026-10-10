@@ -162,8 +162,20 @@ def test_age_point_route_preserves_engine_truth(client: TestClient, age: float) 
     assert body["longitude"] == pytest.approx(expected.longitude)
     assert body["zone"] == expected.zone.value
     assert body["years_into_house"] == pytest.approx(expected.years_into_house)
-    assert body["intensity"] == pytest.approx(expected.intensity)
+    # 6.9.9: the unverified editorial intensity curve is opt-in only.
+    assert expected.intensity is None
+    assert body["intensity"] is None
     assert body["provenance"]["engine_entrypoint"] == "age_point"
+    assert body["provenance"]["curve_status"] == "unverified_editorial"
+
+    opted_in = client.post(
+        "/v1/huber/age-point",
+        json={"age_years": age, "house_frame": _house_frame(), "include_intensity": True},
+    )
+    assert opted_in.status_code == 200
+    assert opted_in.json()["intensity"] == pytest.approx(
+        age_point(age, _cusps(), include_intensity=True).intensity
+    )
 
 
 def test_intensity_at_route_preserves_house_assignment(client: TestClient) -> None:

@@ -21,6 +21,11 @@ regression baseline once behavior is validated
 
 ---
 
+VED-010 source-selected Lagna, Navamsa, placement restrictions and optional
+Shadbala composition are recorded in the [9 October 2026 receipt](MUHURTA_LAGNA_VALIDATION_2026-10-09.md).
+Its source audit also corrects exact D9 boundaries and the directional
+Venus-to-Moon natural relationship in their shared owners.
+
 ## 1. Executive Statement
 
 This document covers the astrological convention layer of Moira: techniques

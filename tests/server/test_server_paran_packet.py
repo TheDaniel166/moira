@@ -243,3 +243,64 @@ def test_fixed_star_target_traverses_kernel_free_field_routes(
     assert paths.json()["orphan_segments"] == []
     assert structure.status_code == 200
     assert structure.json()["dominant_path_index"] == 0
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["heliacal_rising", "heliacal_setting", "acronychal_rising", "cosmical_setting"],
+)
+def test_paran_packet_accepts_every_standard_heliacal_kind_for_stars(
+    kernel_free_client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    kind: str,
+) -> None:
+    seen: list[str] = []
+
+    def fake_visibility_event(body, event_kind, *args, **kwargs):
+        seen.append(event_kind.value)
+        return None
+
+    monkeypatch.setattr(
+        "moira_server.services.paran_packet.visibility_event",
+        fake_visibility_event,
+    )
+    response = kernel_free_client.post(
+        "/v1/website/parans/packet",
+        json={
+            "bodies": ["Regulus"],
+            "natal_jd": 2451545.0,
+            "lat": 30.0,
+            "lon": 0.0,
+            "include_crossing_inventory": False,
+            "include_angular_contacts": False,
+            "include_heliacal": True,
+            "heliacal_kind": kind,
+        },
+    )
+
+    assert response.status_code == 200
+    assert seen == [kind]
+    assert response.json()["warnings"] == ["heliacal_event_not_found:Regulus"]
+
+
+@pytest.mark.parametrize("kind", ["evening_first", "morning_last", "cosmic_rising", "nonsense"])
+def test_paran_packet_rejects_heliacal_kinds_that_do_not_apply_to_stars(
+    kernel_free_client: TestClient,
+    kind: str,
+) -> None:
+    response = kernel_free_client.post(
+        "/v1/website/parans/packet",
+        json={
+            "bodies": ["Regulus"],
+            "natal_jd": 2451545.0,
+            "lat": 30.0,
+            "lon": 0.0,
+            "include_crossing_inventory": False,
+            "include_angular_contacts": False,
+            "include_heliacal": True,
+            "heliacal_kind": kind,
+        },
+    )
+
+    assert response.status_code == 422
+    assert "acronychal_rising" in response.json()["message"]

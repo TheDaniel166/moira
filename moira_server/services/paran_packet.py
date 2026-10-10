@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from moira.heliacal import HeliacalEventKind, VisibilitySearchPolicy, visibility_event
+from moira.heliacal import (
+    STANDARD_HELIACAL_EVENT_KINDS,
+    HeliacalEventKind,
+    VisibilitySearchPolicy,
+    heliacal_event_kind_applies,
+    visibility_event,
+)
 from moira.parans import (
     _paran_crossing_cache_scope,
     natal_angular_contacts,
@@ -24,11 +30,15 @@ from ..serializers.phenomena import (
 from .phenomena import get_paran_star_canon
 
 
+# The packet searches fixed stars only, so it admits the standard heliacal
+# kinds (Ptolemy / Schoch) that occur in a fixed star's annual cycle, as the
+# engine's applicability rule decides: heliacal rising, heliacal setting,
+# acronychal rising and cosmical setting.  Evening first and morning last
+# belong to Mercury, Venus and the Moon and are rejected.
 _PACKET_HELIACAL_KINDS = frozenset(
-    {
-        HeliacalEventKind.HELIACAL_RISING.value,
-        HeliacalEventKind.HELIACAL_SETTING.value,
-    }
+    kind.value
+    for kind in STANDARD_HELIACAL_EVENT_KINDS
+    if heliacal_event_kind_applies("fixed_star", kind)
 )
 
 

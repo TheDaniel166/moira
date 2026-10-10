@@ -1,0 +1,72 @@
+[
+  {
+    "engine": "pyjhora",
+    "commit": "48e57d29b47a3143519910a24866758116467485",
+    "url": "https://raw.githubusercontent.com/naturalstupid/PyJHora/48e57d29b47a3143519910a24866758116467485/src/jhora/horoscope/chart/charts.py",
+    "file": "pyjhora_charts.py",
+    "sha256": "c36c214e59c6a095438e67dacc29c7622dc8917ec25c723389c42655035ca86b"
+  },
+  {
+    "engine": "pyjhora",
+    "commit": "48e57d29b47a3143519910a24866758116467485",
+    "url": "https://raw.githubusercontent.com/naturalstupid/PyJHora/48e57d29b47a3143519910a24866758116467485/src/jhora/const.py",
+    "file": "pyjhora_const.py",
+    "sha256": "094ae1f0e5cc4b00edb0fbb5f5acfc9a65a98c65396a9a48973ae54838ce212d"
+  },
+  {
+    "engine": "pyjhora",
+    "commit": "48e57d29b47a3143519910a24866758116467485",
+    "url": "https://raw.githubusercontent.com/naturalstupid/PyJHora/48e57d29b47a3143519910a24866758116467485/LICENSE",
+    "file": "pyjhora_LICENSE",
+    "sha256": "3b091306f8a4c22c2cc7f332f32f4ec146a4cbf99898688a04e59ec8d6c3c355"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/jyotish/Varga.cpp",
+    "file": "maitreya_Varga.cpp",
+    "sha256": "f081e3321e8051ddaffe709c5e558151a71b29721b64e335b222de8cb328ee95"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/jyotish/Varga.h",
+    "file": "maitreya_Varga.h",
+    "sha256": "039afca1b49dd7f02bf3e38a5187e149336fe305eea4f8a5cbf6a69c1781982e"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/COPYING",
+    "file": "maitreya_COPYING",
+    "sha256": "7e0639f486fc57f7d9fcb23dc64585bed09f6bac5489335509aff98d59d8a8a1"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/jyotish/astrobase.h",
+    "file": "maitreya_astrobase.h",
+    "sha256": "1ae8ad02c0d1f5dca0c447a68f640e06c6c562fcf613b2a231af11298050db88"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/jyotish/astrobase.cpp",
+    "file": "maitreya_astrobase.cpp",
+    "sha256": "df6f5c7c8c63d041daf53dcb0bfda46e4e2047201443ef80b8614046d23e33fb"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/base/mathbase.h",
+    "file": "maitreya_mathbase.h",
+    "sha256": "a8ef922c8922255b5d321016021273adb56068868d0667e6704db4ef6f58c074"
+  },
+  {
+    "engine": "maitreya",
+    "commit": "dc468ded92798638f36a318838fc34eaf8623640",
+    "url": "https://raw.githubusercontent.com/martin-pe/maitreya8/dc468ded92798638f36a318838fc34eaf8623640/src/base/mathbase.cpp",
+    "file": "maitreya_mathbase.cpp",
+    "sha256": "5b9b9a3990998a6906b2b9f819ee40a843d3ab23b671ab121ae3fe1eb708ecf7"
+  }
+]

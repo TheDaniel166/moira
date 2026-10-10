@@ -63,6 +63,8 @@ from moira.shadbala import (
     _sign_aspect_drig_sha,
 )
 
+from tests.support.shadbala_context import supplied_context
+
 _J2000 = 2451545.0
 _PLANETS = ('Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn')
 
@@ -72,6 +74,9 @@ def shadbala_with_reader(planetary_reader):
     """Compute Shadbala only inside an explicitly admitted reader context."""
 
     def _compute(**kwargs) -> ShadbalaResult:
+        kwargs['context'] = supplied_context(kwargs['sidereal_longitudes'],
+            kwargs['jd'], kwargs.get('ayanamsa_system','Lahiri'), kwargs['is_day'],
+            kwargs['vara_lord'], kwargs.get('hora_lord'))
         with use_reader_override(planetary_reader):
             return shadbala(**kwargs)
 
@@ -350,13 +355,10 @@ class TestDrigBala:
 class TestKalaBala:
 
     def _call(self, planet, is_day=True, tithi=1, vara_lord='Sun'):
-        return kala_bala(
-            planet, 0.0, 0.0, _J2000,
-            tithi_number=tithi,
-            is_day=is_day,
-            vara_lord=vara_lord,
-            planet_speeds=_SPEEDS,
-        )
+        # End of the requested tithi supplies an explicit continuous phase.
+        positions={**_LONS, 'Sun':0., 'Moon':(tithi*12.)%360}
+        c=supplied_context(positions,is_day=is_day,vara_lord=vara_lord)
+        return kala_bala(planet,positions[planet],0.,_J2000,tithi,is_day,vara_lord,_SPEEDS,context=c)
 
     def test_mercury_nathonnatha_always_60(self):
         r_day   = self._call('Mercury', is_day=True)
@@ -364,9 +366,9 @@ class TestKalaBala:
         assert r_day.nathonnatha   == pytest.approx(60.0)
         assert r_night.nathonnatha == pytest.approx(60.0)
 
-    def test_mercury_tribhaga_always_60(self):
-        r_day   = self._call('Mercury', is_day=True)
-        r_night = self._call('Mercury', is_day=False)
+    def test_jupiter_tribhaga_always_60(self):
+        r_day   = self._call('Jupiter', is_day=True)
+        r_night = self._call('Jupiter', is_day=False)
         assert r_day.tribhaga   == pytest.approx(60.0)
         assert r_night.tribhaga == pytest.approx(60.0)
 
@@ -386,9 +388,9 @@ class TestKalaBala:
         assert r.abda_masa_vara_hora == pytest.approx(0.0)
 
     def test_paksha_for_benefic_waxing(self):
-        # Tithi 10, Moon is benefic → paksha = 10 * 4 = 40
+        # End of tithi 10: Moon phase 120 degrees, doubled Moon award = 80
         r = self._call('Moon', tithi=10)
-        assert r.paksha == pytest.approx(40.0)
+        assert r.paksha == pytest.approx(80.0)
 
     def test_paksha_for_malefic_waxing(self):
         # Tithi 10, Sun is malefic → shukla=10, paksha = (15-10) * 4 = 20
@@ -412,7 +414,8 @@ class TestKalaBala:
         _TAURUS_JD = 2451316.0
         r = kala_bala('Mercury', 32.3, 32.3, _TAURUS_JD,
                       tithi_number=1, is_day=True,
-                      vara_lord='Saturn', planet_speeds=_SPEEDS)
+                      vara_lord='Saturn', planet_speeds=_SPEEDS,
+                      context=supplied_context({**_LONS,'Sun':32.3,'Mercury':32.3},_TAURUS_JD,vara_lord='Saturn',abda='Mercury'))
         assert r.abda_masa_vara_hora >= 15.0, (
             f"Mercury should get at least Abda Bala (15 Sha) "
             f"but got {r.abda_masa_vara_hora}"
@@ -425,7 +428,8 @@ class TestKalaBala:
         _TAURUS_JD = 2451316.0
         r = kala_bala('Saturn', 32.3, 32.3, _TAURUS_JD,
                       tithi_number=1, is_day=True,
-                      vara_lord='Jupiter', planet_speeds=_SPEEDS)
+                      vara_lord='Jupiter', planet_speeds=_SPEEDS,
+                      context=supplied_context({**_LONS,'Sun':32.3,'Saturn':32.3},_TAURUS_JD,vara_lord='Jupiter'))
         assert r.abda_masa_vara_hora >= 30.0, (
             f"Saturn should get at least Masa Bala (30 Sha) "
             f"but got {r.abda_masa_vara_hora}"
@@ -447,25 +451,25 @@ class TestKalaBala:
 class TestSthanaBala:
 
     def test_returns_sthana_bala_instance(self):
-        result = sthana_bala('Sun', 10.0, _MockHouses(), _J2000)
+        result = sthana_bala('Sun', 10.0, _MockHouses(), _J2000, sidereal_longitudes={**_LONS,'Sun':10.})
         assert isinstance(result, SthanaBala)
 
     def test_total_equals_sum_of_sub_components(self):
         for planet in _PLANETS:
             lon = _LONS[planet]
-            s = sthana_bala(planet, lon, _MockHouses(), _J2000)
+            s = sthana_bala(planet, lon, _MockHouses(), _J2000, sidereal_longitudes={**_LONS,planet:lon})
             expected = s.uchcha + s.saptavargaja + s.ojayugma + s.kendradi + s.drekkana
             assert s.total == pytest.approx(expected)
 
     def test_uchcha_range_is_0_to_60(self):
         for planet in _PLANETS:
-            s = sthana_bala(planet, _LONS[planet], _MockHouses(), _J2000)
+            s = sthana_bala(planet, _LONS[planet], _MockHouses(), _J2000, sidereal_longitudes=_LONS)
             assert 0.0 <= s.uchcha <= 60.0
 
     def test_kendradi_is_one_of_three_values(self):
         valid = {15.0, 30.0, 60.0}
         for planet in _PLANETS:
-            s = sthana_bala(planet, _LONS[planet], _MockHouses(), _J2000)
+            s = sthana_bala(planet, _LONS[planet], _MockHouses(), _J2000, sidereal_longitudes=_LONS)
             assert s.kendradi in valid
 
 
@@ -647,9 +651,9 @@ class TestHoraLordAt:
 
     def test_uses_hora_lord_in_kala_bala(self, planetary_reader):
         # Passing hora_lord='Sun' to kala_bala for planet='Sun' adds 60 Sha.
-        r_no_hora = kala_bala('Sun', 0.0, 0.0, _J2000, 1, True, 'Sun', _SPEEDS)
+        r_no_hora = kala_bala('Sun', 0.0, 0.0, _J2000, 1, True, 'Sun', _SPEEDS, context=supplied_context(_LONS))
         r_with_hora = kala_bala('Sun', 0.0, 0.0, _J2000, 1, True, 'Sun', _SPEEDS,
-                                hora_lord='Sun')
+                                hora_lord='Sun', context=supplied_context(_LONS,hora_lord='Sun'))
         assert r_with_hora.abda_masa_vara_hora == pytest.approx(
             r_no_hora.abda_masa_vara_hora + 60.0
         )
@@ -1027,27 +1031,26 @@ class TestGrahaYuddhaTransfer:
     _WAR_LATS = {'Venus': 1.0, 'Mars': 0.2}
     _WAR_SPEEDS = {'Venus': 1.1, 'Mars': 0.5, 'Jupiter': 0.08}
 
-    def test_transfer_equals_losers_raw_chesta(self):
+    def test_detector_never_claims_an_actual_transfer(self):
         from moira.shadbala import graha_yuddha_pairs
         wars = graha_yuddha_pairs(self._WAR_LONS, self._WAR_LATS, self._WAR_SPEEDS)
         assert len(wars) == 1
         assert wars[0].victor == 'Venus'
-        assert wars[0].chesta_transferred == pytest.approx(
-            chesta_bala('Mars', self._WAR_SPEEDS['Mars'])
-        )
+        assert wars[0].chesta_transferred is None
+        assert wars[0].adjustment_shashtiamsas is None
 
     def test_transfer_is_none_without_speeds(self):
         from moira.shadbala import graha_yuddha_pairs
         wars = graha_yuddha_pairs(self._WAR_LONS, self._WAR_LATS)
         assert wars[0].chesta_transferred is None
 
-    def test_retrograde_loser_transfers_maximum(self):
+    def test_retrograde_speed_cannot_supply_actual_transfer(self):
         from moira.shadbala import graha_yuddha_pairs
         wars = graha_yuddha_pairs(
             self._WAR_LONS, self._WAR_LATS,
             {**self._WAR_SPEEDS, 'Mars': -0.3},
         )
-        assert wars[0].chesta_transferred == pytest.approx(60.0)
+        assert wars[0].chesta_transferred is None
 
     def test_out_of_range_transfer_raises(self):
         from moira.shadbala import GrahaYuddha

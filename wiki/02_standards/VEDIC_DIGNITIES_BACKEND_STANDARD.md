@@ -234,19 +234,23 @@ The minimum verification slice for this standard is:
 
 ---
 
-## Part III - REST Admission Frontier
+## Part III - Admitted REST surface
 
-P9-08 may proceed to REST transport design after this standard.
+Seven direct/chart-backed dignity, relationship and profile routes are
+implemented. Chart-backed routes derive tropical-to-sidereal context and
+return its provenance. Direct routes retain caller-supplied sidereal truth
+and an upstream provenance label; that label is not an ayanamsa operation.
 
-First admitted REST shape should be direct-sync:
+The [VED-005 admission standard](VEDIC_REST_ADMISSION_STANDARD.md) owns strict
+finite input types, classical planet/key admission, valid partial maps and
+registered chart ayanamsas. Unknown relationship keys now reject rather than
+silently disappearing. The engine's classical tables and direct-map
+calculation behavior are unchanged.
 
-- caller-supplied sidereal longitudes
-- explicit ayanamsa provenance policy
-- dignity result route
-- relationship route
-- local condition route
-- aggregate chart profile route
+## Shared temporary relationship correction — 9 October 2026
 
-Chart-backed Vedic dignity routes should be deferred until the server adapter
-clearly owns tropical-to-sidereal reduction and records the ayanamsa policy used
-to derive the sidereal longitudes.
+Raman1996 article25 assigns friendship to houses2,3,4,10,11,12 counted
+inclusively from the planet. Same-sign,5th,6th,7th,8th,9th are enemies. The
+previous helper incorrectly used1,2,3,9,10,11. This source-dependent repair
+changes public relationship and Shadbala compound results together; all144
+origin/distance combinations are checked against the transcribed rule.

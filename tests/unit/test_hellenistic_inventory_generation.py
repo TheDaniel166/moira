@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 import sys
+from types import SimpleNamespace
+
+import pytest
 
 
 _REPO_ROOT = Path(__file__).parents[2]
@@ -55,6 +59,59 @@ def _generator_module():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.fixture(scope="module")
+def runtime_app():
+    from moira_server.app import create_app
+
+    app = create_app()
+    app.openapi()
+    return app
+
+
+def _app_with_schema(app, schema):
+    return SimpleNamespace(title=app.title, version=app.version, openapi=lambda: schema)
+
+
+def test_unrelated_routes_leave_family_inventory_stable_but_change_global_inventory(runtime_app):
+    """New Vedic routes must not stale a Hellenistic-only generated artifact."""
+    from scripts.sync_rest_api_reference import _surface
+
+    generator = _generator_module()
+    schema = deepcopy(runtime_app.openapi())
+    schema["paths"]["/v1/muhurta/inventory-regression-probe"] = {
+        "post": {"operationId": "unrelated_muhurta_probe", "responses": {"200": {"description": "OK"}}}
+    }
+    changed = _app_with_schema(runtime_app, schema)
+    assert generator.render_api_inventory(changed) == generator.render_api_inventory(runtime_app)
+    assert generator.render_capability_matrix(changed) == generator.render_capability_matrix(runtime_app)
+    # The general REST gate continues to detect the changed server-wide surface.
+    assert _surface(changed) != _surface(runtime_app)
+
+
+@pytest.mark.parametrize("change", ["operation_id", "response_schema"])
+def test_admitted_route_contract_changes_still_invalidate_inventory(runtime_app, change):
+    generator = _generator_module()
+    schema = deepcopy(runtime_app.openapi())
+    selected = generator._operations(runtime_app)[0]
+    operation = schema["paths"][selected["path"]][selected["method"].lower()]
+    if change == "operation_id":
+        operation["operationId"] = "changed_admitted_operation"
+    else:
+        operation["responses"]["200"] = {
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ChangedResponse"}}}
+        }
+    changed = _app_with_schema(runtime_app, schema)
+    assert generator.render_api_inventory(changed) != generator.render_api_inventory(runtime_app)
+
+
+def test_closed_exclusions_remain_rejected(runtime_app):
+    generator = _generator_module()
+    schema = deepcopy(runtime_app.openapi())
+    schema["paths"]["/v1/hermetic/reintroduced"] = {"post": {"responses": {"200": {"description": "OK"}}}}
+    with pytest.raises(ValueError, match="Closed-exclusion"):
+        generator.render_api_inventory(_app_with_schema(runtime_app, schema))
 
 
 def test_generated_hellenistic_inventories_match_runtime_truth() -> None:

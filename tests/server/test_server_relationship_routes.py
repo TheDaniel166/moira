@@ -9,14 +9,12 @@ from moira.chart_shape import classify_chart_shape
 from moira.midpoints import calculate_midpoints, midpoint_clusters, midpoint_weighting, midpoints_to_point, planetary_pictures
 from moira.patterns import find_all_patterns, pattern_chart_condition_profile, pattern_condition_network_profile
 from moira.synastry import (
-    composite_chart,
+    composite_chart_reference_place,
     davison_chart,
     house_overlay,
     mutual_house_overlays,
     mutual_overlay_relations,
     synastry_aspects,
-    synastry_chart_condition_profile,
-    synastry_condition_network_profile,
     synastry_condition_profiles,
     synastry_contact_relations,
     synastry_contacts,
@@ -182,7 +180,7 @@ def test_midpoint_route_extended_set_admits_chart_node_names(
 @pytest.mark.parametrize(
     ("method", "extra"),
     [
-        ("midpoint", {}),
+        ("reference_place", {}),
         ("reference_place", {"reference_latitude": 40.0}),
     ],
 )
@@ -198,7 +196,11 @@ def test_composite_variants_embed_aspects(
 
     assert response.status_code == 200
     aspects = response.json()["aspects"]
-    assert aspects["computation_truth"]["tier"] == 1
+    # 6.9.9: default tier 0 (major Ptolemaic aspects), as in synastry.
+    assert aspects["computation_truth"]["tier"] == 0
+    assert {event["aspect"] for event in aspects["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert aspects["computation_truth"]["orb_factor"] == 1.0
     assert aspects["computation_truth"]["include_nodes"] is True
     assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
@@ -230,7 +232,11 @@ def test_davison_variants_embed_aspects(
 
     assert response.status_code == 200
     aspects = response.json()["aspects"]
-    assert aspects["computation_truth"]["tier"] == 1
+    # 6.9.9: default tier 0 (major Ptolemaic aspects), as in synastry.
+    assert aspects["computation_truth"]["tier"] == 0
+    assert {event["aspect"] for event in aspects["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert aspects["computation_truth"]["orb_factor"] == 1.0
     assert aspects["computation_truth"]["include_nodes"] is True
     assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
@@ -249,7 +255,10 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     direct_aspects = synastry_aspects(chart_a, chart_b)
     direct_contacts = synastry_contacts(chart_a, chart_b)
     direct_overlays = mutual_house_overlays(chart_a, houses_a, chart_b, houses_b)
-    direct_composite = composite_chart(chart_a, chart_b, houses_a, houses_b)
+    mean_latitude = (pair["first"]["latitude"] + pair["second"]["latitude"]) / 2.0  # type: ignore[index]
+    direct_composite = composite_chart_reference_place(
+        chart_a, chart_b, houses_a, houses_b, reference_latitude=mean_latitude
+    )
     direct_davison = davison_chart(
         dt_a,
         pair["first"]["latitude"],  # type: ignore[index]
@@ -271,18 +280,6 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
         orb_factor=1.25,
         include_nodes=False,
     )
-    direct_syn_profile = synastry_chart_condition_profile(
-        contacts=direct_contacts,
-        overlays=direct_overlays,
-        composite=direct_composite,
-        davison=direct_davison,
-    )
-    direct_syn_network = synastry_condition_network_profile(
-        contacts=direct_contacts,
-        overlays=direct_overlays,
-        composite=direct_composite,
-        davison=direct_davison,
-    )
 
     positions = chart_a.longitudes(include_nodes=False)
     direct_shape = classify_chart_shape(positions)
@@ -302,7 +299,7 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
         "/v1/composite/chart",
         json={
             **pair,
-            "method": "midpoint",
+            "method": "reference_place",
             "tier": 0,
             "orb_factor": 1.25,
             "include_nodes": False,
@@ -320,6 +317,7 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     )
     syn_profile_response = client_with_engine.post("/v1/synastry/chart-condition", json=pair)
     syn_network_response = client_with_engine.post("/v1/synastry/network", json=pair)
+    assert composite_response.json()["computation_truth"]["reference_latitude"] == pytest.approx(mean_latitude)
     shape_response = client_with_engine.post(
         "/v1/chart-shape/classify",
         json={"chart": pair["first"], "include_nodes": False},
@@ -359,6 +357,10 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
 
     assert aspects_response.status_code == 200
     assert len(aspects_response.json()["events"]) == len(direct_aspects)
+    # 6.9.9: synastry default tier 0 = major Ptolemaic aspects only.
+    assert {event["aspect"] for event in aspects_response.json()["events"]} <= {
+        "Conjunction", "Sextile", "Square", "Trine", "Opposition",
+    }
     assert contacts_response.status_code == 200
     assert len(contacts_response.json()["events"]) == len(direct_contacts)
 
@@ -401,11 +403,9 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
         for item in direct_davison_aspects.aspects
     ]
 
-    assert syn_profile_response.status_code == 200
-    assert syn_profile_response.json()["contact_count"] == direct_syn_profile.contact_count
-
-    assert syn_network_response.status_code == 200
-    assert len(syn_network_response.json()["nodes"]) == direct_syn_network.node_count
+    # Internal synastry bookkeeping routes were retired in 6.9.8.
+    assert syn_profile_response.status_code == 404
+    assert syn_network_response.status_code == 404
 
     assert shape_response.status_code == 200
     assert shape_response.json()["shape"] == direct_shape.shape.value
@@ -463,19 +463,9 @@ def test_synastry_layered_helper_routes_match_engine_truth(
     )
     overlay_relations_response = client_with_engine.post("/v1/synastry/overlay-relations", json=pair)
 
-    assert contact_relations_response.status_code == 200
-    assert len(contact_relations_response.json()["relations"]) == len(direct_contact_relations)
-    if direct_contact_relations:
-        assert contact_relations_response.json()["relations"][0]["kind"] == direct_contact_relations[0].kind
-        assert contact_relations_response.json()["relations"][0]["basis"] == direct_contact_relations[0].basis
-
-    assert condition_profiles_response.status_code == 200
-    assert len(condition_profiles_response.json()["profiles"]) == len(direct_condition_profiles)
-    if direct_condition_profiles:
-        assert (
-            condition_profiles_response.json()["profiles"][0]["result_kind"]
-            == direct_condition_profiles[0].result_kind
-        )
+    # contact-relations and condition-profiles were retired in 6.9.8.
+    assert contact_relations_response.status_code == 404
+    assert condition_profiles_response.status_code == 404
 
     assert overlay_response.status_code == 200
     overlay_body = overlay_response.json()
@@ -484,9 +474,30 @@ def test_synastry_layered_helper_routes_match_engine_truth(
     assert len(overlay_body["placements"]) == len(direct_overlay.placements)
     assert overlay_body["relation"]["kind"] == direct_overlay.relation.kind
 
-    assert overlay_relations_response.status_code == 200
-    assert len(overlay_relations_response.json()["relations"]) == len(direct_overlay_relations)
-    assert overlay_relations_response.json()["relations"][0]["kind"] == direct_overlay_relations[0].kind
+    assert overlay_relations_response.status_code == 404  # retired in 6.9.8
+
+
+@pytest.mark.requires_ephemeris
+def test_composite_reference_place_defaults_to_mean_birth_latitude(
+    client_with_engine: TestClient,
+) -> None:
+    pair = _pair_payload()
+    response = client_with_engine.post("/v1/composite/chart", json=pair)
+
+    assert response.status_code == 200
+    mean_latitude = (pair["first"]["latitude"] + pair["second"]["latitude"]) / 2.0  # type: ignore[index]
+    assert response.json()["computation_truth"]["reference_latitude"] == pytest.approx(mean_latitude)
+
+    explicit = client_with_engine.post("/v1/composite/chart", json={**pair, "reference_latitude": 10.0})
+    assert explicit.status_code == 200
+    assert explicit.json()["computation_truth"]["reference_latitude"] == pytest.approx(10.0)
+
+
+def test_composite_midpoint_method_is_rejected(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/composite/chart", json={**_pair_payload(), "method": "midpoint"})
+
+    assert response.status_code == 422
+    assert "midpoint" in response.json()["message"]
 
 
 def test_synastry_directional_overlay_rejects_unknown_direction(
@@ -499,3 +510,59 @@ def test_synastry_directional_overlay_rejects_unknown_direction(
 
     assert response.status_code == 422
     assert "direction" in response.json()["message"]
+
+
+@pytest.mark.requires_ephemeris
+def test_unknown_birth_time_keeps_house_free_routes_working(client_with_engine: TestClient) -> None:
+    pair = _pair_payload()
+    pair["second"] = {**pair["second"], "time_unknown": True}  # type: ignore[dict-item]
+    pair["second_label"] = "Mileva"
+
+    # Aspects and contacts need no houses: they work, without the guessed Moon.
+    aspects = client_with_engine.post("/v1/synastry/aspects", json=pair)
+    assert aspects.status_code == 200
+    assert all("Moon" != event["body2"] for event in aspects.json()["events"])
+    assert client_with_engine.post("/v1/synastry/contacts", json=pair).status_code == 200
+
+    # The unknown person's planets can still go into the known person's houses.
+    guest = client_with_engine.post("/v1/synastry/overlay", json={**pair, "direction": "second_in_first"})
+    assert guest.status_code == 200
+
+    # Anything that needs the unknown person's houses says so, by name.
+    for path, extra in (
+        ("/v1/synastry/overlay", {"direction": "first_in_second"}),
+        ("/v1/synastry/overlays", {}),
+        ("/v1/composite/chart", {}),
+        ("/v1/davison/chart", {}),
+    ):
+        response = client_with_engine.post(path, json={**pair, **extra})
+        assert response.status_code == 422, path
+        assert "Mileva's birth time is unknown" in response.json()["message"], path
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("path", ["/v1/composite/chart", "/v1/davison/chart"])
+def test_derived_chart_aspects_use_one_node_and_one_lilith(client_with_engine: TestClient, path: str) -> None:
+    response = client_with_engine.post(path, json=_pair_payload())
+    assert response.status_code == 200
+    bodies = {b for e in response.json()["aspects"]["events"] for b in (e["body1"], e["body2"])}
+    assert not bodies & {"Mean Node", "True Lilith", "Mean Lilith"}
+
+
+@pytest.mark.requires_ephemeris
+def test_davison_uses_a_shared_per_person_house_system_and_rejects_conflicts(client_with_engine: TestClient) -> None:
+    pair = _pair_payload()
+    both_whole = {
+        **pair,
+        "first": {**pair["first"], "house_system": "W"},  # type: ignore[dict-item]
+        "second": {**pair["second"], "house_system": "W"},  # type: ignore[dict-item]
+    }
+    response = client_with_engine.post("/v1/davison/chart", json=both_whole)
+    assert response.status_code == 200
+    assert response.json()["houses"]["effective_system"] == "W"
+
+    conflict = {**both_whole, "second": {**pair["second"], "house_system": "P"}}  # type: ignore[dict-item]
+    assert client_with_engine.post("/v1/davison/chart", json=conflict).status_code == 422
+
+    bodies = {**pair, "first": {**pair["first"], "bodies": ["Sun"]}}  # type: ignore[dict-item]
+    assert client_with_engine.post("/v1/davison/chart", json=bodies).status_code == 422

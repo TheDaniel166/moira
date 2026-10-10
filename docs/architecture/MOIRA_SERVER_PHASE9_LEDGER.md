@@ -70,7 +70,7 @@ them.
 
 | Unit | Engine family | Status | Reason |
 |---|---|---|---|
-| P9-01 | Panchanga | `admitted` | Four REST routes live and tested: direct/chart-backed instant plus direct/chart-backed profile. |
+| P9-01 | Panchanga | `admitted` | Six registered REST routes: four existing instant/profile routes, VED-015 daily product and bounded VED-023 lunar-month context; local verification is not a deployment receipt. |
 | P9-02 | Shadbala | `admitted` | Four chart-backed REST routes live and tested: result, profile, network, and condition. |
 | P9-03 | Jaimini | `admitted` | Eight direct/chart-backed REST routes live and tested: karakas, profile, condition, and pair. |
 | P9-04 | Classical dignities | `admitted` | Six chart-backed REST routes are live and tested against the Phase 11 backend standard, public result/truth/profile surfaces, validation doctrine, and facade/root exports. |
@@ -90,6 +90,25 @@ them.
 ## 4. Family Evaluation Records
 
 ### P9-01 Panchanga
+
+The later bounded lunar-month extension adds `POST /v1/panchanga/lunar-month`
+through public reader-bound `Moira.lunar_month_at`. It preserves surrounding
+lunations and explicit exceptional-policy unavailability. The source/policy
+record is `wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md`; VED-024
+festival selection is still unadmitted.
+
+VED-015 daily extension, 6 October 2026: the engine family was instant-only,
+so daily admission required engine composition first (`defer_for_engine_completion`).
+The completed local daily product is `admit_now`: named sunrise/ayanamsa policy,
+typed sunrise interval and angular ending witnesses, source review and focused
+proof are in `wiki/02_standards/DAILY_PANCHANGA_STANDARD.md`. It is read-only,
+synchronous and bounded to one local date plus a 72-hour ending search.
+`POST /v1/panchanga/day` calls the public `Moira.daily_panchanga` facade with
+the server's initialized reader. No kernel lifecycle mutation, arbitrary
+date-range search or server-owned doctrine is admitted. The three dedicated
+tests are `tests/unit/test_daily_panchanga.py`,
+`tests/integration/test_daily_panchanga.py` and
+`tests/server/test_server_daily_panchanga.py`.
 
 Status: `admitted`
 

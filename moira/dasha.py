@@ -322,8 +322,18 @@ class DashaPeriod:
     nakshatra_fraction: float | None = None # fraction elapsed through birth nakshatra (first Mahadasha only)
     # Phase 2: typed classification
     lord_type: str | None = None            # DashaLordType constant for this period's planet
+    full_start_jd: float | None = None
+    full_end_jd: float | None = None
 
     def __post_init__(self) -> None:
+        from ._dasha_intervals import validate_interval
+        validate_interval(self.start_jd, self.end_jd, self.full_start_jd, self.full_end_jd)
+        if (isinstance(self.year_days, bool) or not isinstance(self.year_days, (int, float))
+                or not 0 < self.year_days < float('inf')):
+            raise ValueError('Dasha year_days must be a finite positive number')
+        if (self.year_basis is not None
+                and VIMSHOTTARI_YEAR_BASIS.get(self.year_basis) != self.year_days):
+            raise ValueError('Dasha year_days must match the declared year_basis')
         if self.level not in (1, 2, 3, 4, 5):
             raise ValueError(f"DashaPeriod.level must be 1–5, got {self.level}")
         if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
@@ -820,7 +830,15 @@ def dasha_lord_pair(line: "DashaActiveLine") -> DashaLordPair:
 
 def _validate_dasha_sub_containment(period: DashaPeriod) -> None:
     """Recursively verify that sub-periods are temporally contained in their parent."""
+    from ._dasha_intervals import validate_child_interval
+
+    period.__post_init__()
     for i, sub in enumerate(period.sub):
+        if (sub.level != period.level + 1 or sub.year_days != period.year_days
+                or sub.year_basis != period.year_basis):
+            raise ValueError("Dasha children must advance one level and retain the year basis")
+        if i > 0 and abs(period.sub[i - 1].end_jd - sub.start_jd) > 1e-9:
+            raise ValueError("Dasha children must be adjacent without gaps or overlap")
         if sub.start_jd < period.start_jd - 1e-9:
             raise ValueError(
                 f"validate_vimshottari_output: '{sub.planet}' (L{sub.level}) "
@@ -838,7 +856,11 @@ def _validate_dasha_sub_containment(period: DashaPeriod) -> None:
                 f"('{period.sub[i - 1].planet}' end_jd={period.sub[i - 1].end_jd:.6f} > "
                 f"'{sub.planet}' start_jd={sub.start_jd:.6f})"
             )
+        validate_child_interval(period, sub, tolerance=1e-9)
         _validate_dasha_sub_containment(sub)
+    if period.sub and (abs(period.sub[0].start_jd - period.start_jd) > 1e-9
+                       or abs(period.sub[-1].end_jd - period.end_jd) > 1e-9):
+        raise ValueError("Dasha children must cover their visible parent")
 
 
 def validate_vimshottari_output(periods: list[DashaPeriod]) -> None:
@@ -861,9 +883,13 @@ def validate_vimshottari_output(periods: list[DashaPeriod]) -> None:
     if not periods:
         raise ValueError("validate_vimshottari_output: periods list must not be empty")
     level1 = [p for p in periods if p.level == 1]
+    if len(level1) != len(periods):
+        raise ValueError("Dasha sequence must contain only level 1 periods")
 
     # Cross-layer invariant 1: level-1 periods in chronological order, no overlap
     for i in range(len(level1) - 1):
+        if level1[i].end_jd < level1[i + 1].start_jd - 1e-9:
+            raise ValueError("Dasha sequence must have no gaps")
         if level1[i].end_jd > level1[i + 1].start_jd + 1e-9:
             raise ValueError(
                 f"validate_vimshottari_output: Mahadasha periods overlap or are out of "
@@ -929,17 +955,20 @@ def _build_sub_periods(
         return
 
     sub_sequence = _sequence_from(period.planet)
-    current_jd = period.start_jd
-
-    for sub_planet in sub_sequence:
-        sub_years = (VIMSHOTTARI_YEARS[sub_planet] / VIMSHOTTARI_TOTAL) * period.years
-        sub_end_jd = current_jd + sub_years * year_days
+    from ._dasha_intervals import subdivisions
+    for index, start, end, full_start, full_end in subdivisions(
+        period.start_jd, period.end_jd, period.full_start_jd, period.full_end_jd,
+        [VIMSHOTTARI_YEARS[lord] for lord in sub_sequence],
+    ):
+        sub_planet = sub_sequence[index]
 
         child = DashaPeriod(
             level=period.level + 1,
             planet=sub_planet,
-            start_jd=current_jd,
-            end_jd=sub_end_jd,
+            start_jd=start,
+            end_jd=end,
+            full_start_jd=full_start,
+            full_end_jd=full_end,
             year_days=year_days,
             year_basis=year_basis,
             lord_type=_DASHA_LORD_TYPE[sub_planet],
@@ -949,7 +978,6 @@ def _build_sub_periods(
         _build_sub_periods(child, levels - 1, year_days, year_basis)
 
         period.sub.append(child)
-        current_jd = sub_end_jd
 
 
 # ---------------------------------------------------------------------------
@@ -1038,12 +1066,15 @@ def vimshottari(
             duration_years = float(VIMSHOTTARI_YEARS[lord])
 
         end_jd = current_jd + duration_years * year_days
+        full_start_jd = end_jd - VIMSHOTTARI_YEARS[lord] * year_days if i == 0 else current_jd
 
         maha = DashaPeriod(
             level=1,
             planet=lord,
             start_jd=current_jd,
             end_jd=end_jd,
+            full_start_jd=full_start_jd,
+            full_end_jd=end_jd,
             year_days=year_days,
             year_basis=year_basis,
             # Birth nakshatra context is doctrinal truth of the first period only
