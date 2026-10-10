@@ -36,6 +36,9 @@ _HARNESS_SOURCE = (_TESTS_DIR / "conftest.py").read_text(encoding="utf-8")
 _RESOURCE_POLICY_SOURCE = (
     _TESTS_DIR / "support" / "resource_policy.py"
 ).read_text(encoding="utf-8")
+_SMALL_BODY_POLICY_SOURCE = (
+    _TESTS_DIR / "support" / "small_body_resource_policy.py"
+).read_text(encoding="utf-8")
 _NETWORK_POLICY_SOURCE = (
     _TESTS_DIR / "support" / "network_policy.py"
 ).read_text(encoding="utf-8")
@@ -190,6 +193,10 @@ def _make_harness_project(
     support.joinpath("__init__.py").write_text("", encoding="utf-8")
     support.joinpath("resource_policy.py").write_text(
         _RESOURCE_POLICY_SOURCE,
+        encoding="utf-8",
+    )
+    support.joinpath("small_body_resource_policy.py").write_text(
+        _SMALL_BODY_POLICY_SOURCE,
         encoding="utf-8",
     )
     support.joinpath("network_policy.py").write_text(

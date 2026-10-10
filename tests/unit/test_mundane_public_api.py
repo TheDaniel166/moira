@@ -28,8 +28,10 @@ _CURATED_PUBLIC_NAMES = frozenset(
     }
 )
 _FROZEN_MUNDANE_HASHES = {
+    # Reviewed 2026-10-10: canonical KernelPool tuple compatibility; genuine and
+    # forged pool guards are covered by test_mundane_kernel_pool_storage.py.
     "moira/mundane.py": (
-        "F417DAA618B69E3C43F668C9AE98D1C258FE1EAFE6AA1F0DAB3EB0928771E71D"
+        "2AFC22735B751C6D5A15D053B9EA61121ABC0BBD4DA587F6392CEAC12FFE000F"
     ),
     "tests/unit/test_mundane.py": (
         "BA2FABBC2272E2FBED03CBAD94785D3D7E1E64CB855F03DC71F567744B69F0BD"
@@ -37,7 +39,7 @@ _FROZEN_MUNDANE_HASHES = {
 }
 
 
-def test_b4_preserves_approved_mundane_files_byte_for_byte() -> None:
+def test_reviewed_mundane_files_match_exact_source_identities() -> None:
     repository_root = Path(__file__).resolve().parents[2]
 
     for relative_path, expected_hash in _FROZEN_MUNDANE_HASHES.items():

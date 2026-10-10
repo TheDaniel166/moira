@@ -51,6 +51,9 @@ _CURATED_PUBLIC_NAMES = [
     "cusp_speeds_at",
     "houses_from_armc",
     "house_dynamics_from_armc",
+    "analytical_asc_speed",
+    "analytical_mc_speed",
+    "analytical_vertex_speed",
     "body_house_position",
     # Rudhyar quadrant emphasis
     "Quadrant",
@@ -99,11 +102,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_46(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 46
+    def test_curated_count_is_49(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 49
 
-    def test_houses_all_count_is_46(self):
-        assert len(_houses_module.__all__) == 46
+    def test_houses_all_count_is_49(self):
+        assert len(_houses_module.__all__) == 49
 
 
 class TestInternalsRemainInternal:

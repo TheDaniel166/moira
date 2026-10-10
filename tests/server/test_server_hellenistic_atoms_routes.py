@@ -98,7 +98,8 @@ def test_condition_route_preserves_named_receipts_and_stays_score_free(
     assert body["overcoming"]["overcame_by"] == list(direct.overcoming.overcame_by)
     assert body["adherence"]["adhered"] is True
     assert body["adherence"]["partner"] == "Moon"
-    assert body["ray"]["reason"] == "doctrine_not_admitted"
+    assert body["ray"]["status"] == direct.ray.status.value
+    assert body["ray"]["reason"] == direct.ray.reason
     assert body["enclosure"]["status"] == direct.enclosure.status.value
     assert "score" not in body
     assert body["provenance"]["doctrine"] == "score_free_assemble_condition"

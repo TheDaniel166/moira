@@ -22,6 +22,7 @@ narrower is clamped to its stated valid range.
 
 Usage:
     python scripts/build_comet_catalog.py TARGETS.json START COUNT [OUTDIR]
+        [--response-cache-dir PATH]
 
 Unit law: Horizons VECTORS OUT_UNITS=KM-S; Type-13 is seconds-based so velocities
 stay km/s. Horizons epochs are JDTDB (kernel time), queried back as jd_tt with
@@ -30,6 +31,7 @@ center = 10 (Sun).
 
 from __future__ import annotations
 
+import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -60,7 +62,11 @@ REFINEMENT_STEP_DAYS = adaptive.INITIAL_REFINEMENT_STEP_DAYS
 REFINEMENT_PADDING_DAYS = adaptive.REFINEMENT_PADDING_DAYS
 HORIZONS_TLIST_LIMIT = 10_000
 REFINEMENT_REQUEST_MAX_SPAN_DAYS = 32 * 365.25
-SAMPLING_POLICY_VERSION = adaptive.POLICY_VERSION
+SAMPLING_POLICY_VERSION = "moira-comet-type13-apsidal-adaptive-v5"
+MIN_REFINEMENT_STEP_DAYS = 1.0 / 128.0
+# Exact-request construction is unchanged from shared v4. Keep this namespace
+# stable so a v5 certification rebuild can reuse the audited Horizons replies.
+HORIZONS_REQUEST_CACHE_VERSION = "moira-small-body-type13-apsidal-adaptive-v4"
 SHARD_SIZE = 25
 CENTER = 10
 FRAME = 1
@@ -83,6 +89,8 @@ def _sampling_policy() -> dict[str, object]:
         **adaptive.sampling_policy(
             base_step_days=STEP_DAYS,
             window_size=WINDOW_SIZE,
+            policy_version=SAMPLING_POLICY_VERSION,
+            minimum_refinement_step_days=MIN_REFINEMENT_STEP_DAYS,
         ),
         "horizons_tlist_limit": HORIZONS_TLIST_LIMIT,
         "reserved_integration_anchor_epochs": 2,
@@ -181,7 +189,7 @@ def _fetch_raw(command: str, start: str, stop: str) -> str:
         RESPONSE_CACHE_DIR,
         namespace="uniform-vectors",
         request_identity={
-            "policy_version": adaptive.POLICY_VERSION,
+            "policy_version": HORIZONS_REQUEST_CACHE_VERSION,
             "url": url,
         },
         fetch=lambda: _read_request(url, timeout=300),
@@ -241,7 +249,7 @@ def _fetch_tlist_raw(command: str, epochs_jd: list[float]) -> str:
         RESPONSE_CACHE_DIR,
         namespace="tlist-vectors",
         request_identity={
-            "policy_version": adaptive.POLICY_VERSION,
+            "policy_version": HORIZONS_REQUEST_CACHE_VERSION,
             "command": command,
             "epochs_jd": [f"{epoch:.12f}" for epoch in epochs_jd],
         },
@@ -325,6 +333,7 @@ def _fetch_refinement_vectors(
     *,
     query_kind: str = "extremum_refinement_tlist",
     coverage_anchor_epochs: tuple[float, float],
+    expected_target_solution: str,
 ) -> tuple[list[float], list[list[float]], list[dict[str, object]]]:
     additions: list[tuple[list[float], list[list[float]]]] = []
     receipts: list[dict[str, object]] = []
@@ -343,6 +352,13 @@ def _fetch_refinement_vectors(
             flush=True,
         )
         raw = _fetch_tlist_raw(command, augmented_chunk)
+        actual_target_solution = _parse_solution(raw)
+        if actual_target_solution != expected_target_solution:
+            raise RuntimeError(
+                "Horizons target solution changed within one comet build: "
+                f"expected {expected_target_solution!r}, got "
+                f"{actual_target_solution!r}"
+            )
         epochs, states = _parse_vectors(raw)
         if len(epochs) != len(augmented_chunk):
             raise RuntimeError(
@@ -425,6 +441,9 @@ def _fetch_comet(number: int) -> dict:
         base_epochs,
         expected_step_days=STEP_DAYS,
     )
+    target_solution = _parse_solution(raw)
+    if target_solution is None:
+        raise RuntimeError(f"comet {number}P: Horizons did not declare a target solution")
     epochs, states, certificate, refinement_receipts = (
         adaptive.build_certified_adaptive_series(
             base_epochs,
@@ -434,8 +453,10 @@ def _fetch_comet(number: int) -> dict:
                 requested,
                 query_kind=query_kind,
                 coverage_anchor_epochs=(base_epochs[0], base_epochs[-1]),
+                expected_target_solution=target_solution,
             ),
             window_size=WINDOW_SIZE,
+            minimum_refinement_step_days=MIN_REFINEMENT_STEP_DAYS,
             progress=lambda level: print(
                 "      certified level "
                 f"{level['refinement_step_days']:g}d: "
@@ -458,7 +479,7 @@ def _fetch_comet(number: int) -> dict:
         "number": number, "naif_id": 1000000 + number, "name": _parse_name(raw, number),
         "center": CENTER, "frame": FRAME, "states": states, "epochs_jd": epochs,
         "window_size": WINDOW_SIZE, "clamped": clamped, "start": start, "stop": stop,
-        "target_solution": _parse_solution(raw),
+        "target_solution": target_solution,
         "sampling_policy": _sampling_policy(),
         "base_nodes": len(base_epochs),
         "adaptive_nodes": len(epochs) - len(base_epochs),
@@ -503,7 +524,7 @@ def _shard_cached(
             have = set(int(x) for x in k.covered_bodies())
         finally:
             k.close()
-        return meta if want <= have else None
+        return meta if want == have else None
     except Exception:  # noqa: BLE001
         return None
 
@@ -528,15 +549,45 @@ def _load_targets(path: Path) -> list[dict[str, object]]:
     return targets
 
 
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("targets", type=Path)
+    parser.add_argument("start", type=int)
+    parser.add_argument("count", type=int)
+    parser.add_argument(
+        "outdir",
+        nargs="?",
+        type=Path,
+        default=ROOT / "moira" / "kernels" / "comets",
+    )
+    parser.add_argument(
+        "--response-cache-dir",
+        type=Path,
+        help=(
+            "exact Horizons response-cache directory to reuse; defaults to "
+            "OUTDIR/.horizons-cache/<request-policy-version>"
+        ),
+    )
+    args = parser.parse_args(argv)
+    if args.start < 0:
+        parser.error("START must be non-negative")
+    if args.count < 1:
+        parser.error("COUNT must be positive")
+    return args
+
+
 def main() -> None:
     global RESPONSE_CACHE_DIR
 
-    targets_path = Path(sys.argv[1])
-    start_idx = int(sys.argv[2])
-    count = int(sys.argv[3])
-    outdir = Path(sys.argv[4]) if len(sys.argv) > 4 else ROOT / "moira" / "kernels" / "comets"
+    args = _parse_args()
+    targets_path = args.targets
+    start_idx = args.start
+    count = args.count
+    outdir = args.outdir
     outdir.mkdir(parents=True, exist_ok=True)
-    RESPONSE_CACHE_DIR = outdir / ".horizons-cache" / adaptive.POLICY_VERSION
+    RESPONSE_CACHE_DIR = args.response_cache_dir or (
+        outdir / ".horizons-cache" / HORIZONS_REQUEST_CACHE_VERSION
+    )
 
     all_targets = _load_targets(targets_path)
     slice_targets = all_targets[start_idx : start_idx + count]
@@ -658,16 +709,33 @@ def _write_manifest(outdir: Path) -> None:
     shard_entries: list[dict] = []
     total_bodies = 0
     for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
-        meta = json.loads(mpath.read_text())
+        meta = json.loads(mpath.read_text(encoding="utf-8"))
+        if (
+            meta.get("sampling_policy") != _sampling_policy()
+            or meta.get("failures")
+            or not meta.get("records")
+        ):
+            continue
         kpath = outdir / meta["kernel"]
         if not kpath.exists():
             continue
         bodies = [r["naif_id"] for r in meta["records"]]
         total_bodies += len(bodies)
-        shard_entries.append({
-            "index": meta["shard"], "path": meta["kernel"],
-            "body_count": len(bodies), "bodies": bodies,
-        })
+        shard_entries.append(
+            {
+                "index": meta["shard"],
+                "path": meta["kernel"],
+                "body_count": len(bodies),
+                "bodies": bodies,
+                "bytes": kpath.stat().st_size,
+                "sha256": _sha256_file(kpath),
+                "metadata": {
+                    "path": mpath.name,
+                    "bytes": mpath.stat().st_size,
+                    "sha256": _sha256_file(mpath),
+                },
+            }
+        )
     shard_entries.sort(key=lambda s: s["index"])
     manifest = {
         "manifest_schema": "moira.small-body-catalog/v1",
@@ -691,6 +759,14 @@ def _write_manifest(outdir: Path) -> None:
         "shards": shard_entries,
     }
     (outdir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 if __name__ == "__main__":

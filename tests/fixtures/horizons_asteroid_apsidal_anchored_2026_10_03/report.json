@@ -1,0 +1,673 @@
+{
+  "schema": "moira.anchored-asteroid-authority-probe/v1",
+  "retrieved_utc": "2026-10-03T20:50:02.215108+00:00",
+  "status": "new_source_diagnostic_not_baseline_promoted",
+  "candidate_manifest_sha256": "416e1a7ae6166f935c2c346d31848e6ac7ae87f6b4f06d7250297f214972efe6",
+  "historical_fixture_sha256": "0825926b3f44a157cd3ae37c8cb3fce2d73bedc1e74391dc4647a6136264dee8",
+  "method": "independent safeguarded secant roots on exact Horizons geometric ICRF km/s states; Sun center; exact TDB; every request includes coverage endpoints",
+  "acceptance_gates": {
+    "distance_absolute_au": 1e-09,
+    "event_time_absolute_days": 0.0001
+  },
+  "events": [
+    {
+      "body": "Eros",
+      "body_naif_id": 2000433,
+      "kind": "PERICENTER",
+      "authority_epoch_tdb": 2461088.814943498,
+      "authority_distance_au": 1.1332179539276657,
+      "target_solution": "JPL#659",
+      "historical_target_solution": "JPL#659",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": 0.31832456588745117,
+      "historical_distance_delta_km": -0.010607212720840952,
+      "candidate_distance_delta_km": -2.1524875262990404e-05,
+      "candidate_vector_error_km": 0.00010717329296989743,
+      "candidate_radial_velocity_km_s": -3.26498427321799e-10,
+      "authority_radial_velocity_km_s": 4.0852390320662e-11,
+      "two_sided_radial_velocity_km_s": [
+        -0.00044468985076046404,
+        0.0004446899312346661
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.764939814,
+            2461088.8649398135,
+            2634157.5
+          ],
+          "raw_response": "2000433-000.horizons.txt",
+          "sha256": "e7e606082d65b3d66e4d5455756cd3907264b181ef9dc3eebcde3ddaf634f103",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.814943498,
+            2634157.5
+          ],
+          "raw_response": "2000433-001.horizons.txt",
+          "sha256": "f1156c76f43de57c951e8243127fff2599656213143d4b6e8915220952d28e58",
+          "bytes": 6328,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.809943498,
+            2461088.819943498,
+            2634157.5
+          ],
+          "raw_response": "2000433-002.horizons.txt",
+          "sha256": "31150b1b90f9f7a5a00eacff08320a572c6ac360a4653a227347949d56ebc196",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        }
+      ]
+    },
+    {
+      "body": "Eros",
+      "body_naif_id": 2000433,
+      "kind": "APOCENTER",
+      "authority_epoch_tdb": 2460767.2709178445,
+      "authority_distance_au": 1.7829619577616989,
+      "target_solution": "JPL#659",
+      "historical_target_solution": "JPL#659",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": 0.3161922097206116,
+      "historical_distance_delta_km": 0.017198109595928556,
+      "candidate_distance_delta_km": 0.0,
+      "candidate_vector_error_km": 1.1924653663481805e-06,
+      "candidate_radial_velocity_km_s": 1.8852151144892546e-10,
+      "authority_radial_velocity_km_s": 1.8970794493942373e-10,
+      "two_sided_radial_velocity_km_s": [
+        0.0001794715420366559,
+        -0.00017947116647645854
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.764939814,
+            2461088.8649398135,
+            2634157.5
+          ],
+          "raw_response": "2000433-000.horizons.txt",
+          "sha256": "e7e606082d65b3d66e4d5455756cd3907264b181ef9dc3eebcde3ddaf634f103",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.814943498,
+            2634157.5
+          ],
+          "raw_response": "2000433-001.horizons.txt",
+          "sha256": "f1156c76f43de57c951e8243127fff2599656213143d4b6e8915220952d28e58",
+          "bytes": 6328,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2461088.809943498,
+            2461088.819943498,
+            2634157.5
+          ],
+          "raw_response": "2000433-002.horizons.txt",
+          "sha256": "31150b1b90f9f7a5a00eacff08320a572c6ac360a4653a227347949d56ebc196",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2460767.220914185,
+            2460767.3209141847,
+            2634157.5
+          ],
+          "raw_response": "2000433-003.horizons.txt",
+          "sha256": "2f6c17d98b3f7c7a9843d5e805b96baa8d58156401f911dee70861621d3771a8",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2460767.2709178445,
+            2634157.5
+          ],
+          "raw_response": "2000433-004.horizons.txt",
+          "sha256": "b3e894b858f17a093c6fd29e91cc0b206bd55cb94b960ba4dbf2351cf34ced78",
+          "bytes": 6328,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2460767.2659178446,
+            2460767.2759178444,
+            2634157.5
+          ],
+          "raw_response": "2000433-005.horizons.txt",
+          "sha256": "56c91cb1f106e883ecd158370d1288b2b58e280e6a43190febea55180ce72c73",
+          "bytes": 6523,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#659"
+          }
+        }
+      ]
+    },
+    {
+      "body": "Chiron",
+      "body_naif_id": 2002060,
+      "kind": "PERICENTER",
+      "authority_epoch_tdb": 2468560.7317558234,
+      "authority_distance_au": 8.462269347348375,
+      "target_solution": "JPL#171",
+      "historical_target_solution": "JPL#171",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": -0.5383998155593872,
+      "historical_distance_delta_km": 0.3322635550827362,
+      "candidate_distance_delta_km": -0.00037655244750194327,
+      "candidate_vector_error_km": 0.0004316732578520967,
+      "candidate_radial_velocity_km_s": -1.3337417086604525e-09,
+      "authority_radial_velocity_km_s": -1.412031266308498e-13,
+      "two_sided_radial_velocity_km_s": [
+        -1.3609553828668845e-05,
+        1.360955228226155e-05
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.681762055,
+            2468560.7817620547,
+            2634157.5
+          ],
+          "raw_response": "2002060-000.horizons.txt",
+          "sha256": "d66b72b79ac473f9d71092a69b51db1cd1f82c05be2892592068fbb5904bf7cd",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7317558466,
+            2634157.5
+          ],
+          "raw_response": "2002060-001.horizons.txt",
+          "sha256": "9fe9d4fa660cbb9ce180d4ba50bb16e4d88657ec199f85e0eb64834000351ece",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7317558234,
+            2634157.5
+          ],
+          "raw_response": "2002060-002.horizons.txt",
+          "sha256": "b6502be803056a565689bf6a7a2282ca0bc4634916600cb68a9669bbb9a46574",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7267558235,
+            2468560.7367558233,
+            2634157.5
+          ],
+          "raw_response": "2002060-003.horizons.txt",
+          "sha256": "b97d4298186d57e638e84f17a9ea5617151fcd0403c4af5f4fc78142c8b367df",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        }
+      ]
+    },
+    {
+      "body": "Chiron",
+      "body_naif_id": 2002060,
+      "kind": "APOCENTER",
+      "authority_epoch_tdb": 2477758.0605748193,
+      "authority_distance_au": 18.850421867843934,
+      "target_solution": "JPL#171",
+      "historical_target_solution": "JPL#171",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": -0.5890533328056335,
+      "historical_distance_delta_km": -0.5310696946645226,
+      "candidate_distance_delta_km": 0.0,
+      "candidate_vector_error_km": 8.19428389362545e-07,
+      "candidate_radial_velocity_km_s": 1.2568476304554673e-12,
+      "authority_radial_velocity_km_s": 1.2681915885584363e-15,
+      "two_sided_radial_velocity_km_s": [
+        2.809387774352746e-06,
+        -2.809386453721435e-06
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.681762055,
+            2468560.7817620547,
+            2634157.5
+          ],
+          "raw_response": "2002060-000.horizons.txt",
+          "sha256": "d66b72b79ac473f9d71092a69b51db1cd1f82c05be2892592068fbb5904bf7cd",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7317558466,
+            2634157.5
+          ],
+          "raw_response": "2002060-001.horizons.txt",
+          "sha256": "9fe9d4fa660cbb9ce180d4ba50bb16e4d88657ec199f85e0eb64834000351ece",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7317558234,
+            2634157.5
+          ],
+          "raw_response": "2002060-002.horizons.txt",
+          "sha256": "b6502be803056a565689bf6a7a2282ca0bc4634916600cb68a9669bbb9a46574",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2468560.7267558235,
+            2468560.7367558233,
+            2634157.5
+          ],
+          "raw_response": "2002060-003.horizons.txt",
+          "sha256": "b97d4298186d57e638e84f17a9ea5617151fcd0403c4af5f4fc78142c8b367df",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2477758.0105816373,
+            2477758.110581637,
+            2634157.5
+          ],
+          "raw_response": "2002060-004.horizons.txt",
+          "sha256": "fb6a247240e9688a5b72b96471e343261f851af8657731d045c35d3bbf67e50c",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2477758.0605749367,
+            2634157.5
+          ],
+          "raw_response": "2002060-005.horizons.txt",
+          "sha256": "685527056a7adce71f19d1464d6cc7e14a9aececf81cb5b55bcab1a1baa3cc5c",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2477758.0605748193,
+            2634157.5
+          ],
+          "raw_response": "2002060-006.horizons.txt",
+          "sha256": "04ddf5d7838fb1dc2da5660f0b1b8a183106babec50a42b4e704ac48fb4ccb46",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2477758.0555748194,
+            2477758.065574819,
+            2634157.5
+          ],
+          "raw_response": "2002060-007.horizons.txt",
+          "sha256": "b1c2a0f227bb973c91404605d75f6a381b1d9c30cc635fb4827b1347f14fb6c4",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#171"
+          }
+        }
+      ]
+    },
+    {
+      "body": "Sedna",
+      "body_naif_id": 2090377,
+      "kind": "PERICENTER",
+      "authority_epoch_tdb": 2479502.694225861,
+      "authority_distance_au": 76.18870651834153,
+      "target_solution": "JPL#51",
+      "historical_target_solution": "JPL#51",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": -5.617551505565643,
+      "historical_distance_delta_km": 2.8640074252516325,
+      "candidate_distance_delta_km": 8.503654424885098e-06,
+      "candidate_vector_error_km": 8.358263083914807e-06,
+      "candidate_radial_velocity_km_s": -3.997855029602533e-12,
+      "authority_radial_velocity_km_s": -1.6086087350645673e-14,
+      "two_sided_radial_velocity_km_s": [
+        -4.1008866397392945e-07,
+        4.100881356223112e-07
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2479502.6442908794,
+            2479502.744290879,
+            2634157.5
+          ],
+          "raw_response": "2090377-000.horizons.txt",
+          "sha256": "28c35a0f2a3ac38a04549efe141739b82a96c2f2a3336d8fd7dc561ba09bd9e1",
+          "bytes": 6519,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 90377 Sedna (2003 VB12)         {source: JPL#51}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#51"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2479502.6942261634,
+            2634157.5
+          ],
+          "raw_response": "2090377-001.horizons.txt",
+          "sha256": "3b6567b4a25188d389b26e6faa021265a8571d23dbc1c0e003e1fec293125882",
+          "bytes": 6324,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 90377 Sedna (2003 VB12)         {source: JPL#51}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#51"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2479502.694225861,
+            2634157.5
+          ],
+          "raw_response": "2090377-002.horizons.txt",
+          "sha256": "f0eb16ea4ae8a14a35ce9a8c84e9daef21a9914ef99d6b16f643e5fcc7a1d73c",
+          "bytes": 6324,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 90377 Sedna (2003 VB12)         {source: JPL#51}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#51"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2479502.6892258613,
+            2479502.699225861,
+            2634157.5
+          ],
+          "raw_response": "2090377-003.horizons.txt",
+          "sha256": "4b62493e56051a22c89fa2dcbbd9d3026257ecc185bf4b1858e85bfef7d61210",
+          "bytes": 6519,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 90377 Sedna (2003 VB12)         {source: JPL#51}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#51"
+          }
+        }
+      ]
+    },
+    {
+      "body": "Eris",
+      "body_naif_id": 2136199,
+      "kind": "PERICENTER",
+      "authority_epoch_tdb": 2545751.7807996166,
+      "authority_distance_au": 38.09324521840797,
+      "target_solution": "JPL#103",
+      "historical_target_solution": "JPL#103",
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "historical_time_delta_seconds": -20.707230269908905,
+      "historical_distance_delta_km": 6.12129823808617,
+      "candidate_distance_delta_km": 2.1259136062212745e-06,
+      "candidate_vector_error_km": 2.443063441743755e-06,
+      "candidate_radial_velocity_km_s": 4.56978103714532e-13,
+      "authority_radial_velocity_km_s": 3.233000149341474e-14,
+      "two_sided_radial_velocity_km_s": [
+        -7.921703643739863e-07,
+        7.921724004737598e-07
+      ],
+      "requests": [
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2545751.731039284,
+            2545751.8310392834,
+            2634157.5
+          ],
+          "raw_response": "2136199-000.horizons.txt",
+          "sha256": "97790f193023ad45b594ae9f77417653c5ecf75753e04cea1ad4ecb2230f99b9",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 136199 Eris (2003 UB313)        {source: JPL#103}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#103"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2545751.7807989945,
+            2634157.5
+          ],
+          "raw_response": "2136199-001.horizons.txt",
+          "sha256": "df635c789dfd18949a4d57a7b92fdc3369e5b7b6ded05b459e42b43ff9d6bc18",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 136199 Eris (2003 UB313)        {source: JPL#103}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#103"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2545751.7807996166,
+            2634157.5
+          ],
+          "raw_response": "2136199-002.horizons.txt",
+          "sha256": "5951c59166f2d723f23302ae58d1e09dcf572a62b5bcbe6b6877ec92a788f2c2",
+          "bytes": 6325,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 136199 Eris (2003 UB313)        {source: JPL#103}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#103"
+          }
+        },
+        {
+          "epochs_jd_tdb": [
+            2305447.5,
+            2545751.7757996167,
+            2545751.7857996165,
+            2634157.5
+          ],
+          "raw_response": "2136199-003.horizons.txt",
+          "sha256": "0f8e85b19f0e5f1149e93b0b5082fcaa6e3ea02a952f8f0a09bf238fa09dfa5a",
+          "bytes": 6520,
+          "authority": {
+            "api_version": "1.0",
+            "api_source": "NASA/JPL Horizons API",
+            "target_body_line": "Target body name: 136199 Eris (2003 UB313)        {source: JPL#103}",
+            "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+            "target_solution": "JPL#103"
+          }
+        }
+      ]
+    }
+  ]
+}

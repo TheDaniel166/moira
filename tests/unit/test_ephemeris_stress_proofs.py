@@ -4,11 +4,12 @@ from contextlib import contextmanager
 import pytest
 
 from moira._kernel_paths import find_planetary_kernel
-from moira.constants import Body
-from moira.julian import DeltaTPolicy, decimal_year_from_jd, julian_day, tt_to_ut
+from moira._ephemeris_time import _ut1_to_ephemeris_tt
+from moira.constants import Body, C_KM_PER_DAY, RAD2DEG
+from moira.julian import DeltaTPolicy, decimal_year_from_jd, julian_day, tt_to_tdb, tt_to_ut
 from moira.phenomena import _conjunction_separation, next_conjunction
-from moira.planets import all_planets_at, planet_at, sky_position_at
-from moira.spk_reader import SpkReader, use_reader_override
+from moira.planets import _barycentric_state, all_planets_at, planet_at, sky_position_at
+from moira.spk_reader import OutOfRangeError, SpkReader, use_reader_override
 
 _ONE_SECOND_JD = 1.0 / 86400.0
 _EDGE_MARGIN_DAYS = 1.0
@@ -97,6 +98,56 @@ def _fixed_delta_t_epoch(jd_tt: float) -> tuple[float, float]:
     jd_ut = tt_to_ut(jd_tt)
     delta_t_seconds = (jd_tt - jd_ut) * 86400.0
     return jd_ut, delta_t_seconds
+
+
+def _represented_spk_second_steps(jd_ut, baseline_delta_t, reader):
+    """Measure the actual binary64 ET spacing of nominal +/-1 second probes."""
+    seconds = tuple(
+        (tt_to_tdb(_ut1_to_ephemeris_tt(
+            jd_ut, reader,
+            delta_t_policy=DeltaTPolicy(
+                model="fixed", fixed_delta_t=baseline_delta_t + offset,
+            ),
+        )) - 2451545.0) * 86400.0
+        for offset in (-1.0, 0.0, 1.0)
+    )
+    minus_step = seconds[1] - seconds[0]
+    plus_step = seconds[2] - seconds[1]
+    assert minus_step > 0.0 and plus_step > 0.0
+    return minus_step, plus_step
+
+
+def _retarded_clock_roundoff_deg(body, jd_tt, position, reader):
+    """Propagate binary64 emission-clock rounding through angular sensitivity.
+
+    Each subtraction/addition can round by half an ULP. This is a clock-noise
+    allowance, NOT a new physical-motion or external-oracle tolerance. It also
+    uses barycentric target speed, not the potentially cancelled apparent rate.
+    """
+    emission_tt = jd_tt - position.distance / C_KM_PER_DAY
+    emission_tdb = tt_to_tdb(emission_tt)
+    elapsed_days = emission_tdb - 2451545.0
+    elapsed_seconds = elapsed_days * 86400.0
+    clock_error_days = 0.5 * (
+        math.ulp(emission_tt) + math.ulp(emission_tdb)
+        + math.ulp(elapsed_days) + math.ulp(elapsed_seconds) / 86400.0
+    )
+    _, velocity = _barycentric_state(body, emission_tt, reader)
+    projected_distance = position.distance * math.cos(math.radians(position.latitude))
+    assert projected_distance > 0.0
+    return math.hypot(*velocity) * clock_error_days / projected_distance * RAD2DEG
+
+
+@pytest.mark.requires_ephemeris
+def test_ancient_one_second_probes_have_asymmetric_represented_spk_clock_spacing():
+    with _planetary_reader_context() as reader:
+        jd_ut, delta_t = _fixed_delta_t_epoch(-2661850.0)
+        minus_step, plus_step = _represented_spk_second_steps(jd_ut, delta_t, reader)
+        assert minus_step != plus_step
+        # One binary64 ET unit on either side, not an astronomy tolerance.
+        et = (tt_to_tdb(-2661850.0) - 2451545.0) * 86400.0
+        assert abs(minus_step - 1.0) <= 2 * math.ulp(et)
+        assert abs(plus_step - 1.0) <= 2 * math.ulp(et)
 
 
 def _conjunction_time_reversal_metrics(body1: str, body2: str, jd_ut: float, reader) -> tuple[float, float, float, float]:
@@ -286,7 +337,8 @@ def test_delta_t_perturbation_checkpoints_match_expected_scale(
 
 
 @pytest.mark.requires_ephemeris
-def test_delta_t_longitude_symmetry_holds_for_all_public_planets_on_500_year_tt_grid() -> None:
+@pytest.mark.parametrize("apparent", [False, True])
+def test_delta_t_longitude_symmetry_holds_for_all_public_planets_on_500_year_tt_grid(apparent) -> None:
     with _planetary_reader_context() as reader:
         for body in _PUBLIC_BODIES:
             body_tolerance_deg = _ALL_PLANET_DELTA_T_SYMMETRY_ABS_TOLERANCE_DEG[body]
@@ -299,18 +351,21 @@ def test_delta_t_longitude_symmetry_holds_for_all_public_planets_on_500_year_tt_
                     jd_ut,
                     reader=reader,
                     delta_t_policy=DeltaTPolicy(model="fixed", fixed_delta_t=baseline_delta_t),
+                    apparent=apparent,
                 )
                 plus = planet_at(
                     body,
                     jd_ut,
                     reader=reader,
                     delta_t_policy=DeltaTPolicy(model="fixed", fixed_delta_t=baseline_delta_t + 1.0),
+                    apparent=apparent,
                 )
                 minus = planet_at(
                     body,
                     jd_ut,
                     reader=reader,
                     delta_t_policy=DeltaTPolicy(model="fixed", fixed_delta_t=baseline_delta_t - 1.0),
+                    apparent=apparent,
                 )
 
                 delta_plus_deg = _signed_angle_delta(base.longitude, plus.longitude)
@@ -318,11 +373,35 @@ def test_delta_t_longitude_symmetry_holds_for_all_public_planets_on_500_year_tt_
 
                 assert math.isfinite(delta_plus_deg), body
                 assert math.isfinite(delta_minus_deg), body
-                assert delta_plus_deg == pytest.approx(-delta_minus_deg, abs=body_tolerance_deg), (
+                minus_seconds, plus_seconds = _represented_spk_second_steps(
+                    jd_ut, baseline_delta_t, reader,
+                )
+                # Compare equal clock intervals. At ancient epochs ET rounding
+                # makes nominal +/-1 second samples unequally spaced. Keep the
+                # original per-body angular tolerances after correcting spacing.
+                equivalent_minus_deg = -delta_minus_deg * plus_seconds / minus_seconds
+                ratio = plus_seconds / minus_seconds
+                clock_roundoff_deg = 0.0
+                if apparent:
+                    # The iterated light-time route rounds three distinct
+                    # emission epochs in addition to the observation clock.
+                    errors = tuple(
+                        _retarded_clock_roundoff_deg(
+                            body, _ut1_to_ephemeris_tt(
+                                jd_ut, reader, delta_t_policy=DeltaTPolicy(
+                                    model="fixed", fixed_delta_t=baseline_delta_t + offset,
+                                ),
+                            ), position, reader,
+                        )
+                        for offset, position in ((-1.0, minus), (0.0, base), (1.0, plus))
+                    )
+                    clock_roundoff_deg = errors[2] + ratio * errors[0] + (1 + ratio) * errors[1]
+                assert abs(delta_plus_deg - equivalent_minus_deg) <= body_tolerance_deg + clock_roundoff_deg, (
                     body,
                     jd_tt,
                     delta_plus_deg,
                     delta_minus_deg,
+                    clock_roundoff_deg,
                 )
 
 
@@ -353,8 +432,11 @@ def test_public_positions_fail_cleanly_outside_kernel_coverage() -> None:
     with _planetary_reader_context() as reader:
         start_tt, end_tt = _public_coverage_tt(reader)
 
-        for jd_ut in (tt_to_ut(start_tt - _EDGE_MARGIN_DAYS), tt_to_ut(end_tt + _EDGE_MARGIN_DAYS)):
-            with pytest.raises(ValueError, match="Kernel coverage may not extend"):
+        for jd_ut, error_type, message in (
+            (tt_to_ut(start_tt - _EDGE_MARGIN_DAYS), OutOfRangeError, "does not cover.*epoch"),
+            (tt_to_ut(end_tt + _EDGE_MARGIN_DAYS), ValueError, r"none covers JD\(TDB\).+Kernel coverage"),
+        ):
+            with pytest.raises(error_type, match=message):
                 planet_at(Body.MOON, jd_ut, reader=reader)
 
 

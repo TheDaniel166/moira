@@ -48,6 +48,9 @@ _HARNESS_SOURCE = (_TESTS_DIR / "conftest.py").read_text(encoding="utf-8")
 _NETWORK_POLICY_SOURCE = (
     _TESTS_DIR / "support" / "network_policy.py"
 ).read_text(encoding="utf-8")
+_SMALL_BODY_POLICY_SOURCE = (
+    _TESTS_DIR / "support" / "small_body_resource_policy.py"
+).read_text(encoding="utf-8")
 _NETWORK_BOOTSTRAP_SOURCE = (
     _TESTS_DIR / "support" / "network_bootstrap" / "sitecustomize.py"
 ).read_text(encoding="utf-8")
@@ -410,6 +413,10 @@ def _make_policy_project(pytester: pytest.Pytester) -> None:
     mini_support.joinpath("__init__.py").write_text("", encoding="utf-8")
     mini_support.joinpath("network_policy.py").write_text(
         _NETWORK_POLICY_SOURCE,
+        encoding="utf-8",
+    )
+    mini_support.joinpath("small_body_resource_policy.py").write_text(
+        _SMALL_BODY_POLICY_SOURCE,
         encoding="utf-8",
     )
     mini_bootstrap = mini_support / "network_bootstrap"

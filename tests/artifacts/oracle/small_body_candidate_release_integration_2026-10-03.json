@@ -1,0 +1,122 @@
+{
+  "schema": "moira.small-body-candidate-release-integration/v1",
+  "measurement_date": "2026-10-03",
+  "status": "passed_validation_only_not_release_admitted",
+  "implementation": {
+    "committed_base": "24b6964ed6de56da3f963316b8f6cb341c5c428a",
+    "worktree_state": "uncommitted adaptive rebuild, harness repairs and candidate integration additions",
+    "python": "3.14.3",
+    "engine_version": "6.9.8",
+    "native_backend": "_moira_native.cp314-win_amd64.pyd",
+    "native_backend_sha256": "1ddd0ea3926353634934078b3a5dec0bf386b8002e4e4809bd4f526cbc99a847",
+    "integration_test_source_sha256": "5e8cd38d8a2a0fc87554594cbd3f2c772eaef067ff787ea1119d3d0c88533667"
+  },
+  "validation_storage": {
+    "workspace": "C:/dev/moira-small-body-integration-validation-20261003",
+    "catalog_version": "2026.10.03.validation1",
+    "kernel_storage": "same-volume hard links; source files must remain unchanged",
+    "metadata_and_ledgers": "separately copied and fully checksum verified",
+    "suitable_for_immutable_publication": false
+  },
+  "catalogs": [
+    {
+      "catalog_id": "moira-asteroids",
+      "body_count": 11223,
+      "shard_count": 449,
+      "file_count": 907,
+      "source_manifest_sha256": "91f1ef2d129135cba2ea669c9c3ba32b88914f008ff0f4c48feae27cf1946bf8",
+      "validation_manifest_sha256": "416e1a7ae6166f935c2c346d31848e6ac7ae87f6b4f06d7250297f214972efe6",
+      "sampling_policy": "moira-small-body-type13-apsidal-adaptive-v4",
+      "production_loader_used": true,
+      "final_complete_checksum_verification": "passed"
+    },
+    {
+      "catalog_id": "moira-comets",
+      "body_count": 497,
+      "shard_count": 20,
+      "file_count": 49,
+      "source_manifest_sha256": "c3c65f3cab24079a494b6ff9abacbc10bb7063dcc69918087133aba44d171a18",
+      "validation_manifest_sha256": "0f436a14b4606703d2ee329ff66f5dcff8378a03ef698f0b6b96c0d98e695604",
+      "sampling_policy": "moira-comet-type13-apsidal-adaptive-v5",
+      "production_loader_used": true,
+      "final_complete_checksum_verification": "passed"
+    }
+  ],
+  "all_body_integration": {
+    "bodies_checked": 11720,
+    "products": ["J2000 ecliptic osculating elements", "true-date geometric nodes"],
+    "time_contract": "UT1 input rebound to exact JD(TDB), normally 2460676.5 or a representative covered epoch inside the true-date frame interval",
+    "source_contract": "every body must carry the exact candidate catalog version, manifest hash, shard hash and shard byte count; no ambient catalogs are opened",
+    "segment_contract": "native catalogs; exact per-shard body rosters; Sun center 10; ICRF frame 1; SPK Type 13",
+    "evidence_class": "finite-state, adapter and release-provenance invariants; not independent authority validation for every catalog member"
+  },
+  "primary_authority_samples": {
+    "asteroid_elements": ["Ceres", "Hektor", "Atira", "Apophis"],
+    "asteroid_elements_gates": "unchanged historical orbital-element product gates",
+    "asteroid_passages": {
+      "bodies": ["Eros", "Chiron", "Sedna", "Eris"],
+      "event_count": 6,
+      "reference_review": "tests/fixtures/horizons_asteroid_apsidal_anchored_2026_10_03/source_review.json",
+      "reference_review_sha256": "db800702ed89940659f85c1fca1cba757dd5cfa3189feb2ff874d2f9b1ae28f1",
+      "reference_report_sha256": "4ddc7ba4a8bdced95670b5501d5e7872437c2c53e48c19b167138c52b7c92acc",
+      "source": "official NASA/JPL Horizons; retained raw exact-TDB responses and independent root-search generator captures",
+      "coverage_anchor_epochs_jd_tdb": [2305447.5, 2634157.5],
+      "target_solutions": {"Eros": "JPL#659", "Chiron": "JPL#171", "Sedna": "JPL#51", "Eris": "JPL#103"},
+      "event_time_absolute_days": 0.0001,
+      "distance_absolute_au": 1e-9,
+      "distance_absolute_km": 0.1495978707,
+      "max_diagnostic_radial_distance_error_km": 0.00037655244750194327
+    },
+    "comet_passages": {
+      "bodies": ["1P/Halley", "2P/Encke"],
+      "event_count": 3,
+      "reference_receipt": "tests/artifacts/oracle/comet_type13_catalog_candidate_admission_2026-10-01.json",
+      "target_solutions": {"1P/Halley": "JPL#75", "2P/Encke": "JPL#K273/20"},
+      "event_time_absolute_seconds": 8.64,
+      "distance_absolute_au": 1e-9
+    }
+  },
+  "initial_discrepancy": {
+    "passed": 9,
+    "failed": 3,
+    "affected_bodies": ["Chiron", "Sedna", "Eris"],
+    "diagnosis": "Historical unanchored and catalog-endpoint-anchored Horizons integrations are different trajectory products. Same-day unanchored controls reproduce the historical distances exactly with unchanged JPL solution labels; independently solved anchored roots agree with candidate states.",
+    "historical_fixtures_changed": false,
+    "acceptance_gates_changed": false,
+    "report_file": "candidate-integration.xml",
+    "report_sha256": "2df40d8f19b330d297d993812b7c39dd39dabe26d652fc03e2393cde2a1fcca0"
+  },
+  "verification": {
+    "candidate_integration": {
+      "passed": 12, "failed": 0, "skipped": 0,
+      "seconds": 178.39,
+      "report_file": "candidate-integration-anchored.xml",
+      "report_sha256": "f6c88e1159c542d2c0207472abd74260a2e4a06ef39c5716e427bce93d3fe42c"
+    },
+    "final_source_guard_followup": {
+      "passed": 10, "failed": 0, "skipped": 0, "deselected": 2, "seconds": 21.40,
+      "report_file": "candidate-source-guards.xml",
+      "report_sha256": "7cab0a36d4914a436f9049902e743c9ab6ac69e1e8d41da95a471099b0d85603"
+    },
+    "planetary_regression": {
+      "passed": 34, "failed": 0, "skipped": 0,
+      "seconds": 12.92,
+      "report_file": "planetary-regression.xml",
+      "report_sha256": "99ead9b5c4f8b212385cd953b65ba26d93c572f6a772fa49d87e7cebcb4f26bc"
+    },
+    "storage_and_source_review_unit_slice": {"passed": 15, "failed": 0, "skipped": 0},
+    "scoped_ruff": "passed",
+    "git_diff_check": "passed"
+  },
+  "network_boundary": "pytest runs were denied external access; separate, bounded source-candidate probes intentionally queried official Horizons",
+  "limitations": [
+    "All-body integration samples one representative epoch per body, not every instant across every catalog interval.",
+    "The asteroid oracle sample is six events for four bodies; the comet sample is three events for two bodies. Builder certification and all-body integration are separate evidence classes.",
+    "The comet authority snapshot is from 2026-10-01; no new full 497-body orbit-solution freshness census was performed in this integration step.",
+    "The literal complete engine suite was not run. These checks do not themselves complete versioning, clean builder provenance, immutable release preparation, packaging, installation or publication.",
+    "Validation-view kernels share storage with their source candidates and must never be published as immutable releases."
+  ],
+  "installed_catalogs_changed": false,
+  "commit_or_push_performed": false,
+  "release_or_deployment_performed": false
+}

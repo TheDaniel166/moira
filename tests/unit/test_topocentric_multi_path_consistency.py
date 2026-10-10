@@ -14,7 +14,6 @@ from moira.corrections import (
     SCHWARZSCHILD_RADII,
     apply_aberration,
     apply_deflection,
-    apply_frame_bias,
     apply_light_time,
     topocentric_correction,
     apply_diurnal_aberration,
@@ -103,7 +102,8 @@ def _manual_chain_topocentric_ra_dec(body: str, jd_tt: float, reader) -> tuple[f
         xyz = apply_deflection(xyz, deflectors)
 
     xyz = apply_aberration(xyz, earth_vel)
-    xyz = apply_frame_bias(xyz)
+    # The IAU 2006 precession matrix already owns the ICRS frame bias.
+    # Applying the standalone bias here a second time changes the product.
     xyz = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz)
     xyz = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz)
     xyz = topocentric_correction(

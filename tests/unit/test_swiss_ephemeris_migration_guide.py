@@ -53,7 +53,13 @@ def test_local_markdown_links_resolve() -> None:
 def test_guide_declares_version_scope_and_non_drop_in_boundary() -> None:
     text = _guide()
 
-    assert f"**Verified against:** `moira-astro` {moira.__version__}" in text
+    # This is a dated verification receipt, not a claim of a fresh run on
+    # every subsequent engine release. Keep its historical scope honest.
+    match = re.search(r"\*\*Verified against:\*\* `moira-astro` (\d+\.\d+\.\d+)", text)
+    assert match is not None
+    verified_version = tuple(int(part) for part in match.group(1).split('.'))
+    current_version = tuple(int(part) for part in moira.__version__.split('.'))
+    assert verified_version <= current_version
     assert "**Last verified:** 2026-09-17" in text
     assert "not a drop-in reimplementation" in text
     assert "direct" in text

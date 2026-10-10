@@ -6,6 +6,7 @@ import pytest
 
 from moira.asteroids import ASTEROID_NAIF
 from moira._spk_body_kernel import SmallBodyKernel as _AsteroidKernel
+from moira.julian import tt_to_tdb
 from moira.daf_writer import (
     _MAX_SUMMARIES,
     _RECORD_SIZE,
@@ -180,10 +181,10 @@ def test_write_spk_type13_round_trips_interstellar_style_bodies(tmp_path: Path) 
         assert kernel.segment_center(20000001) == 10
         assert kernel.segment_center(20000002) == 10
 
-        # Written node epochs should round-trip exactly for linear trajectories.
+        # SPK nodes are written and queried in TDB, not the public TT clock.
         for idx, jd in enumerate(epochs):
-            oumuamua = kernel.position(10, 20000001, jd)
-            borisov = kernel.position(10, 20000002, jd)
+            oumuamua = kernel.position_tdb(10, 20000001, jd)
+            borisov = kernel.position_tdb(10, 20000002, jd)
             assert oumuamua == pytest.approx(
                 tuple(axis[idx] for axis in oumuamua_states[:3]),
                 abs=1e-6,
@@ -195,7 +196,7 @@ def test_write_spk_type13_round_trips_interstellar_style_bodies(tmp_path: Path) 
 
         # Midpoint interpolation should also be exact for the linear test corpus.
         midpoint = 2460402.5
-        assert kernel.position(10, 20000001, midpoint) == pytest.approx(
+        assert kernel.position_tdb(10, 20000001, midpoint) == pytest.approx(
             (
                 oumuamua_states[0][0] + (midpoint - epochs[0]) * 5.7e7,
                 oumuamua_states[1][0] + (midpoint - epochs[0]) * 1.9e7,
@@ -203,13 +204,23 @@ def test_write_spk_type13_round_trips_interstellar_style_bodies(tmp_path: Path) 
             ),
             abs=1e-3,
         )
-        assert kernel.position(10, 20000002, midpoint) == pytest.approx(
+        assert kernel.position_tdb(10, 20000002, midpoint) == pytest.approx(
             (
                 borisov_states[0][0] + (midpoint - epochs[0]) * -4.4e7,
                 borisov_states[1][0] + (midpoint - epochs[0]) * 2.3e7,
                 borisov_states[2][0] + (midpoint - epochs[0]) * 1.1e7,
             ),
             abs=1e-3,
+        )
+        # Retain a separate proof of the TT-facing adapter: it must apply
+        # exactly one conversion, and must not silently treat TT as TDB.
+        midpoint_tt = midpoint
+        expected_tdb = tt_to_tdb(midpoint_tt)
+        assert kernel.position(10, 20000001, midpoint_tt) == (
+            kernel.position_tdb(10, 20000001, expected_tdb)
+        )
+        assert kernel.position(10, 20000001, midpoint_tt) != (
+            kernel.position_tdb(10, 20000001, midpoint_tt)
         )
     finally:
         kernel.close()
@@ -256,7 +267,7 @@ def test_write_spk_type13_preserves_quadratic_trajectory_with_irregular_epochs(
         off_node_samples = [2460400.25, 2460401.75, 2460406.25, 2460410.50]
         for jd in epochs + off_node_samples:
             expected = _quadratic_position(jd, epochs[0], position0, velocity, acceleration)
-            result = kernel.position(10, naif_id, jd)
+            result = kernel.position_tdb(10, naif_id, jd)
             assert result == pytest.approx(expected, abs=1e-3), (window_size, jd)
     finally:
         kernel.close()
@@ -299,7 +310,7 @@ def test_write_spk_type13_preserves_multiple_distinct_regimes_in_one_kernel(tmp_
     kernel = _AsteroidKernel(output)
     try:
         assert kernel.list_naif_ids() == [21000001, 21000002]
-        assert kernel.position(10, 21000001, 2460302.5) == pytest.approx(
+        assert kernel.position_tdb(10, 21000001, 2460302.5) == pytest.approx(
             (
                 4.5e9 + 2.5 * 6.2e7,
                 -1.2e9 + 2.5 * 2.8e7,
@@ -307,7 +318,7 @@ def test_write_spk_type13_preserves_multiple_distinct_regimes_in_one_kernel(tmp_
             ),
             abs=1e-3,
         )
-        assert kernel.position(10, 21000002, 2460503.3) == pytest.approx(
+        assert kernel.position_tdb(10, 21000002, 2460503.3) == pytest.approx(
             _quadratic_position(
                 2460503.3,
                 epochs_quadratic[0],
@@ -432,7 +443,7 @@ def test_write_spk_type13_reproduces_centaurs_kernel_segments(tmp_path: Path) ->
 
             # Node epochs should also reproduce the original embedded state vectors exactly.
             for idx in (0, len(epochs_jd) // 2, len(epochs_jd) - 1):
-                rebuilt = rebuilt_kernel.position(center, naif_id, epochs_jd[idx])
+                rebuilt = rebuilt_kernel.position_tdb(center, naif_id, epochs_jd[idx])
                 expected = tuple(axis[idx] for axis in states[:3])
                 assert rebuilt == pytest.approx(expected, abs=1e-6), (name, idx)
     finally:

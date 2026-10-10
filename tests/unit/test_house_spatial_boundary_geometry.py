@@ -178,7 +178,7 @@ def test_fallback_geometry_describes_the_effective_system_not_the_request() -> N
         123.0,
         23.4393,
         80.0,
-        HouseSystem.CAMPANUS,
+        HouseSystem.KOCH,
         include_boundary_geometry=True,
     )
     geometry = houses.boundary_geometry

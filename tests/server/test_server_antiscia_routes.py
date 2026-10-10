@@ -112,6 +112,8 @@ def test_contacts_route_preserves_engine_contact_vessel_and_ordering(
             "lon2": pytest.approx(contact.lon2),
             "shadow": pytest.approx(contact.shadow),
             "orb": pytest.approx(contact.orb),
+            "motion_state": contact.motion_state,
+            "applying": contact.applying,
         }
         for contact in direct
     ]
@@ -155,6 +157,8 @@ def test_to_point_route_preserves_point_name_and_engine_ordering(
             "lon2": pytest.approx(contact.lon2),
             "shadow": pytest.approx(contact.shadow),
             "orb": pytest.approx(contact.orb),
+            "motion_state": contact.motion_state,
+            "applying": contact.applying,
         }
         for contact in direct
     ]

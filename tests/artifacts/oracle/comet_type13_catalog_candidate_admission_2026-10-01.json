@@ -1,0 +1,124 @@
+{
+  "schema": "moira.comet-type13-catalog-candidate-admission/v1",
+  "measurement_date": "2026-10-01",
+  "status": "candidate_validated_not_release_admitted",
+  "catalog": {
+    "catalog_id": "moira-comets",
+    "candidate_path": "C:\\dev\\moira-candidate-small-bodies-v5-final\\comets",
+    "manifest_sha256": "c3c65f3cab24079a494b6ff9abacbc10bb7063dcc69918087133aba44d171a18",
+    "comet_master_sha256": "1602e0fd72fa9ec773a70a88e55b7bc127c1afe17fa8408964153a027fed2d0f",
+    "body_count": 497,
+    "shard_count": 20,
+    "bsp_bytes": 1062366208,
+    "sampling_policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+    "max_recorded_node_round_trip_error_km": 4.0978193283081055e-08
+  },
+  "authority": {
+    "name": "NASA/JPL Horizons",
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "manual_url": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+    "target_command_template": "DES={number}P;NOFRAG;CAP",
+    "coordinate_contract": {
+      "center": "500@10",
+      "reference_plane": "FRAME",
+      "reference_system": "ICRF",
+      "output_units": "KM-S",
+      "time_scale": "JDTDB"
+    },
+    "integration_coherence": {
+      "coverage_anchor_epochs_jd_tdb": [
+        2305447.5,
+        2634157.5
+      ],
+      "rule": "every exact TLIST request includes both catalog coverage endpoints",
+      "reason": "Horizons numerically integrates small-body trajectories on demand; local and catalog-span requests are distinct trajectory products even when their source labels match"
+    },
+    "target_solutions": {
+      "1P/Halley": "JPL#75",
+      "2P/Encke": "JPL#K273/20"
+    }
+  },
+  "acceptance_gates": {
+    "event_time_absolute_seconds": 8.64,
+    "distance_absolute_au": 1e-09,
+    "origin": "pre-existing Stage 2 gates; not widened"
+  },
+  "anchored_apsidal_oracle": {
+    "method": "independent safeguarded root search on exact endpoint-anchored Horizons radial-velocity states",
+    "measurements": [
+      {
+        "body": "1P/Halley",
+        "kind": "PERICENTER",
+        "authority_epoch_tdb": 2474034.220119904,
+        "authority_distance_au": 0.592781946565395,
+        "event_time_delta_seconds": 0.0006437301635742188,
+        "distance_delta_au": 0.0,
+        "passed": true
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "PERICENTER",
+        "authority_epoch_tdb": 2461446.7264756234,
+        "authority_distance_au": 0.3385796833554102,
+        "event_time_delta_seconds": -0.0007644295692443848,
+        "distance_delta_au": 5.551115123125783e-17,
+        "passed": true
+      },
+      {
+        "body": "2P/Encke",
+        "kind": "APOCENTER",
+        "authority_epoch_tdb": 2460843.4302887022,
+        "authority_distance_au": 4.097235641405827,
+        "event_time_delta_seconds": -0.0008448958396911621,
+        "distance_delta_au": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "solution_freshness": {
+    "full_census": {
+      "checked": 497,
+      "match": 497,
+      "stale": 0,
+      "error": 0,
+      "report_sha256": "1c34ce3bac61005e7eb253a6cdb1dae1c19c167999b54ba26c72393af5c82c82"
+    },
+    "post_census_delta": {
+      "body": "2P/Encke",
+      "previous_solution": "JPL#K273/19",
+      "current_solution": "JPL#K273/20",
+      "stale_report_sha256": "9a03641d6375196ad922cdb02d738ed3321d569ca169d7909dc7591449d17aa1",
+      "refresh_receipt_sha256": "de263f05212ac3dd126897aab7ee87006534e930113b9114398284aa7f805f29",
+      "final_match_report_sha256": "5914464669f1ea9bc02f8d6f39e6e20627cd122418da7518c3c28edf06476274"
+    },
+    "interpretation": "freshness is a timestamped release receipt, not a permanent claim; JPL states that on-demand small-body orbit solutions can be superseded as observations are added"
+  },
+  "refresh_integrity": {
+    "first_generation": {
+      "replaced_bodies": 23,
+      "preserved_raw_node_tables_exact": 474
+    },
+    "second_generation": {
+      "replaced_bodies": 1,
+      "preserved_raw_node_tables_exact": 496
+    },
+    "all_manifest_kernel_and_metadata_hashes_verified": true,
+    "all_certificates_passed": true,
+    "exact_roster_verified": true
+  },
+  "size_comparison": {
+    "installed_release_bsp_bytes": 305499136,
+    "candidate_bsp_bytes": 1062366208,
+    "increase_bytes": 756867072,
+    "increase_mib": 721.8046875,
+    "size_ratio": 3.4774769641247,
+    "percent_increase": 247.74769641247
+  },
+  "limitations": [
+    "This receipt validates a local candidate; no immutable release was prepared or installed.",
+    "No commit, push, tag, publication, deployment, or release was performed.",
+    "A later Horizons solution can supersede this snapshot and should trigger the same fail-closed delta audit before a future release."
+  ],
+  "external_network_used": true,
+  "release_or_deployment_performed": false
+}

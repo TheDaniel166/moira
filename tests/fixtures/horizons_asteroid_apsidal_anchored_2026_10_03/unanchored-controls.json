@@ -1,0 +1,74 @@
+[
+  {
+    "body": "Eros",
+    "epoch_tdb": 2461088.814939814,
+    "coordinate_contract": "geometric ICRF km/s; Sun center; exact TDB",
+    "query_epochs_jd_tdb": [
+      2461088.8149398137
+    ],
+    "authority": {
+      "api_version": "1.0",
+      "api_source": "NASA/JPL Horizons API",
+      "target_body_line": "Target body name: 433 Eros (A898 PA)              {source: JPL#659}",
+      "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+      "target_solution": "JPL#659"
+    },
+    "historical_distance_delta_km": 0.0,
+    "raw_response": "2000433-unanchored-control.horizons.txt",
+    "response_sha256": "42b7a2bdb8f5d189142dd943d7a5e9e09ea375fae7f8188764da3dbc9cb6183b"
+  },
+  {
+    "body": "Chiron",
+    "epoch_tdb": 2468560.731762054,
+    "coordinate_contract": "geometric ICRF km/s; Sun center; exact TDB",
+    "query_epochs_jd_tdb": [
+      2468560.731762055
+    ],
+    "authority": {
+      "api_version": "1.0",
+      "api_source": "NASA/JPL Horizons API",
+      "target_body_line": "Target body name: 2060 Chiron (1977 UB)           {source: JPL#171}",
+      "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+      "target_solution": "JPL#171"
+    },
+    "historical_distance_delta_km": 0.0,
+    "raw_response": "2002060-unanchored-control.horizons.txt",
+    "response_sha256": "b0d796a0d7c4ef97eec0a7e80b777be06846b76de956fe21ecc33a3ea94e54f6"
+  },
+  {
+    "body": "Sedna",
+    "epoch_tdb": 2479502.69429088,
+    "coordinate_contract": "geometric ICRF km/s; Sun center; exact TDB",
+    "query_epochs_jd_tdb": [
+      2479502.694290879
+    ],
+    "authority": {
+      "api_version": "1.0",
+      "api_source": "NASA/JPL Horizons API",
+      "target_body_line": "Target body name: 90377 Sedna (2003 VB12)         {source: JPL#51}",
+      "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+      "target_solution": "JPL#51"
+    },
+    "historical_distance_delta_km": 0.0,
+    "raw_response": "2090377-unanchored-control.horizons.txt",
+    "response_sha256": "e77576e7fba981750dcea12807aa48856517d863df9c24610945a529f63be753"
+  },
+  {
+    "body": "Eris",
+    "epoch_tdb": 2545751.781039284,
+    "coordinate_contract": "geometric ICRF km/s; Sun center; exact TDB",
+    "query_epochs_jd_tdb": [
+      2545751.7810392836
+    ],
+    "authority": {
+      "api_version": "1.0",
+      "api_source": "NASA/JPL Horizons API",
+      "target_body_line": "Target body name: 136199 Eris (2003 UB313)        {source: JPL#103}",
+      "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+      "target_solution": "JPL#103"
+    },
+    "historical_distance_delta_km": 0.0,
+    "raw_response": "2136199-unanchored-control.horizons.txt",
+    "response_sha256": "2cdde027797a4cb8b36580a9c1e87304932750990fbc04cf61bcb85c0cfeb1ef"
+  }
+]

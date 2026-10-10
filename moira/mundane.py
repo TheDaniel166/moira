@@ -467,7 +467,7 @@ def _verified_reader_identity_at(
         if "_ephemeris_kernel_identity_at" in getattr(reader, "__dict__", {}):
             raise TypeError("KernelPool identity resolver must be the concrete class method")
         pool_readers = getattr(reader, "_readers", None)
-        if type(pool_readers) is not list:
+        if type(pool_readers) is not tuple:
             raise TypeError("KernelPool reader storage is not the admitted concrete vessel")
     else:
         raise TypeError(

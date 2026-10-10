@@ -82,6 +82,7 @@ def test_comet_builder_declares_moira_artifact_provenance(tmp_path: Path) -> Non
         {
             "shard": 0,
             "kernel": kernel_name,
+            "sampling_policy": build_comet_catalog._sampling_policy(),
             "records": [{"number": 1, "naif_id": 1_000_001, "name": "Halley"}],
             "failures": [],
         },
@@ -93,3 +94,30 @@ def test_comet_builder_declares_moira_artifact_provenance(tmp_path: Path) -> Non
     assert manifest["manifest_schema"] == "moira.small-body-catalog/v1"
     assert manifest["catalog_id"] == "moira-comets"
     assert manifest["provenance"] == build_comet_catalog._catalog_provenance()
+    shard = manifest["shards"][0]
+    assert shard["bytes"] == len(b"kernel")
+    assert len(shard["sha256"]) == 64
+    assert shard["metadata"]["path"] == "comet_shard_000.metadata.json"
+    assert len(shard["metadata"]["sha256"]) == 64
+
+
+def test_comet_manifest_excludes_incomplete_shards(tmp_path: Path) -> None:
+    kernel_name = "comet_shard_000.bsp"
+    (tmp_path / kernel_name).write_bytes(b"partial kernel")
+    _write_json(
+        tmp_path / "comet_shard_000.metadata.json",
+        {
+            "shard": 0,
+            "kernel": kernel_name,
+            "sampling_policy": build_comet_catalog._sampling_policy(),
+            "records": [{"number": 1, "naif_id": 1_000_001, "name": "Halley"}],
+            "failures": [{"number": 2, "error": "synthetic failure"}],
+        },
+    )
+
+    build_comet_catalog._write_manifest(tmp_path)
+
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["body_count"] == 0
+    assert manifest["shard_count"] == 0
+    assert manifest["shards"] == []

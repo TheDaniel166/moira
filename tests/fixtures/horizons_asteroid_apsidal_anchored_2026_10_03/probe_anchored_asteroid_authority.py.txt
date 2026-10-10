@@ -1,0 +1,124 @@
+"""Independent Horizons root probe; writes new diagnostics, never baselines."""
+from datetime import datetime, timezone
+import hashlib
+import json
+import math
+from pathlib import Path
+import sys
+
+REPO = Path(r"C:\dev\moira-small-body-apsides")
+OUT = Path(__file__).resolve().parent / "anchored-asteroid-authority-probe-v2"
+sys.path.insert(0, str(REPO))
+from scripts import build_unified_asteroid_catalog as horizons
+from scripts.build_apsidal_passages_fixture import _authority_metadata
+from moira._spk_body_kernel import SmallBodyKernel
+
+AU_KM = 149597870.7
+ROOT = Path(r"C:\dev\moira-small-body-integration-validation-20261003\asteroids")
+manifest_bytes = (ROOT / "manifest.json").read_bytes()
+manifest = json.loads(manifest_bytes)
+fixture_path = REPO / "tests/fixtures/horizons_apsidal_passages_reference_2026_09_28.json"
+fixture_bytes = fixture_path.read_bytes()
+fixture = json.loads(fixture_bytes)
+OUT.mkdir(exist_ok=False)
+results = []
+
+def radial(state):
+    radius = math.sqrt(sum(v * v for v in state[:3]))
+    return sum(state[i] * state[i + 3] for i in range(3)) / radius
+
+for record in fixture["records"]:
+    if record["body"] not in {"Eros", "Chiron", "Sedna", "Eris"}:
+        continue
+    target = record["body_naif_id"]
+    shard = next(s for s in manifest["shards"] if target in s["bodies"])
+    reader = SmallBodyKernel(ROOT / shard["path"])
+    try:
+        start, end = reader.coverage_intervals_tdb(10, target)[0]
+        receipts = []
+        source_solution = None
+        def states_at(epochs):
+            global source_solution
+            tags = sorted(set([start, end, *epochs]))
+            raw = horizons._fetch_tlist_raw(f"{target - 2000000};", tags)
+            authority = _authority_metadata(raw)
+            if source_solution is None:
+                source_solution = authority["target_solution"]
+            assert authority["target_solution"] == source_solution
+            raw_bytes = raw.encode("utf-8")
+            name = f"{target}-{len(receipts):03d}.horizons.txt"
+            with (OUT / name).open("xb") as stream:
+                stream.write(raw_bytes)
+            receipts.append({"epochs_jd_tdb": tags, "raw_response": name,
+                "sha256": hashlib.sha256(raw_bytes).hexdigest(),
+                "bytes": len(raw_bytes), "authority": authority})
+            parsed_epochs, columns = horizons._parse_vectors(raw)
+            states = {}
+            assert len(parsed_epochs) == len(tags)
+            for requested in tags:
+                i = min(range(len(parsed_epochs)), key=lambda j: abs(parsed_epochs[j] - requested))
+                # Horizons prints fewer fractional JD digits than TLIST accepts.
+                assert abs(parsed_epochs[i] - requested) <= 5e-9
+                states[requested] = [column[i] for column in columns]
+            return states
+
+        for expected in record["events"]:
+            lo, hi = expected["epoch_tdb"] - 0.05, expected["epoch_tdb"] + 0.05
+            states = states_at([lo, hi])
+            left, right = radial(states[lo]), radial(states[hi])
+            pericenter = expected["kind"] == "PERICENTER"
+            assert left <= 0 <= right if pericenter else left >= 0 >= right
+            for iteration in range(20):
+                slope = (right - left) / (hi - lo)
+                epoch = lo - left / slope
+                assert lo <= epoch <= hi
+                state = states_at([epoch])[epoch]
+                value = radial(state)
+                if abs(value / slope) <= 2e-8:
+                    break
+                if (value < 0) == pericenter:
+                    lo, left = epoch, value
+                else:
+                    hi, right = epoch, value
+            else:
+                raise RuntimeError("independent Horizons refinement did not converge")
+            witnesses = states_at([epoch - 0.005, epoch + 0.005])
+            before = radial(witnesses[epoch - 0.005])
+            after = radial(witnesses[epoch + 0.005])
+            assert before < 0 < after if pericenter else before > 0 > after
+            position, velocity = reader.position_and_velocity_tdb(10, target, epoch)
+            distance = math.sqrt(sum(v * v for v in state[:3])) / AU_KM
+            kernel_distance = math.sqrt(sum(v * v for v in position)) / AU_KM
+            comparison = {
+                "body": record["body"], "body_naif_id": target,
+                "kind": expected["kind"], "authority_epoch_tdb": epoch,
+                "authority_distance_au": distance,
+                "target_solution": source_solution,
+                "historical_target_solution": expected["authority"]["target_solution"],
+                "coverage_anchor_epochs_jd_tdb": [start, end],
+                "historical_time_delta_seconds": (epoch - expected["epoch_tdb"]) * 86400,
+                "historical_distance_delta_km": (distance - expected["distance_au"]) * AU_KM,
+                "candidate_distance_delta_km": (kernel_distance - distance) * AU_KM,
+                "candidate_vector_error_km": math.dist(position, state[:3]),
+                "candidate_radial_velocity_km_s": sum(position[i] * velocity[i]
+                    for i in range(3)) / math.sqrt(sum(v*v for v in position)) / 86400,
+                "authority_radial_velocity_km_s": value,
+                "two_sided_radial_velocity_km_s": [before, after],
+                "requests": list(receipts),
+            }
+            results.append(comparison)
+            print(json.dumps({key: value for key, value in comparison.items()
+                              if key != "requests"}), flush=True)
+    finally:
+        reader.close()
+
+payload = {"schema": "moira.anchored-asteroid-authority-probe/v1",
+    "retrieved_utc": datetime.now(timezone.utc).isoformat(),
+    "status": "new_source_diagnostic_not_baseline_promoted",
+    "candidate_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+    "historical_fixture_sha256": hashlib.sha256(fixture_bytes).hexdigest(),
+    "method": "independent safeguarded secant roots on exact Horizons geometric ICRF km/s states; Sun center; exact TDB; every request includes coverage endpoints",
+    "acceptance_gates": fixture["acceptance_gates"], "events": results}
+with (OUT / "report.json").open("x", encoding="utf-8") as stream:
+    json.dump(payload, stream, indent=2)
+    stream.write("\n")

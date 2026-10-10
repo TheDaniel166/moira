@@ -15,6 +15,13 @@ moira/data/deep_sky_catalog.metadata.json text eol=lf
 moira/kernels/asteroids/manifest.json text eol=lf
 moira/kernels/comets/manifest.json text eol=lf
 
+# The orbital admission receipt binds this fixture's exact SHA-256 and size.
+tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json text eol=lf
+
+# Frozen raw Horizons responses, diagnostic JSON and generator captures are
+# byte-bound evidence. Preserve their original bytes on every platform.
+tests/fixtures/horizons_asteroid_apsidal_anchored_2026_10_03/* -text
+
 # Wheel-bundled asteroid catalog is byte-hashed at import/verify time.
 moira/kernels/asteroids_wheel/* text eol=lf
 moira/kernels/asteroids_wheel/*.bsp -text
@@ -28,6 +35,21 @@ scripts/build_visibility_phase3_data_pack.py text eol=lf
 scripts/audit_visibility_phase4_jones_source.py text eol=lf
 scripts/*visibility_phase4_jones*.py text eol=lf
 scripts/build_visibility_elevated_site_probe.py text eol=lf
+scripts/build_visibility_radiance_lut.py text eol=lf
+scripts/validate_visibility_radiance_lut.py text eol=lf
+scripts/validate_visibility_elevated_site_probe.py text eol=lf
+scripts/build_visibility_direct_geometry_probe.py text eol=lf
+scripts/validate_visibility_direct_geometry_probe.py text eol=lf
+scripts/build_visibility_named_spectral_direct_probe.py text eol=lf
+scripts/validate_visibility_named_spectral_direct_probe.py text eol=lf
+scripts/build_visibility_environment_contract_probe.py text eol=lf
+scripts/validate_visibility_environment_contract_probe.py text eol=lf
+# Historical Stage 4 and Mundane receipts bind the original LF source bytes.
+docs/superpowers/specs/2026-09-15-orbital-core-design.md text eol=lf
+moira/mundane.py text eol=lf
+tests/unit/test_mundane.py text eol=lf
+# Candidate integration receipts also bind this test's exact source bytes.
+tests/integration/test_small_body_candidate_release_integration.py text eol=lf
 scripts/validate_visibility_data_pack.py text eol=lf
 scripts/validate_visibility_phase2_data_pack.py text eol=lf
 scripts/validate_visibility_phase3_data_pack.py text eol=lf

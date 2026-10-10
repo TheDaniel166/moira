@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 import urllib.error
 
+import pytest
+
 from scripts import build_comet_catalog
 
 
@@ -18,6 +20,13 @@ _PROBE_PATH = (
     / "artifacts"
     / "oracle"
     / "comet_apsidal_sampling_probe_2026-09-28.json"
+)
+_ADMISSION_PATH = (
+    _REPOSITORY_ROOT
+    / "tests"
+    / "artifacts"
+    / "oracle"
+    / "comet_type13_catalog_candidate_admission_2026-10-01.json"
 )
 
 
@@ -116,6 +125,18 @@ def test_cached_shard_must_match_sampling_policy(
         is None
     )
 
+    metadata["sampling_policy"] = build_comet_catalog._sampling_policy()
+    metadata["failures"] = [{"number": 2, "error": "synthetic failure"}]
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+    assert (
+        build_comet_catalog._shard_cached(
+            kernel_path,
+            metadata_path,
+            expected_naif_ids={1_000_001},
+        )
+        is None
+    )
+
     metadata.pop("sampling_policy")
     metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
     assert (
@@ -132,11 +153,11 @@ def test_sampling_policy_declares_nonuniform_extremum_refinement() -> None:
     policy = build_comet_catalog._sampling_policy()
 
     assert policy == {
-        "policy_version": "moira-small-body-type13-apsidal-adaptive-v4",
+        "policy_version": "moira-comet-type13-apsidal-adaptive-v5",
         "mode": "certified_adaptive_radial_extrema",
         "base_step_days": 10,
         "initial_refinement_step_days": 1.0,
-        "minimum_refinement_step_days": 0.0625,
+        "minimum_refinement_step_days": 0.0078125,
         "refinement_padding_days": 4.0,
         "refinement_request_max_span_days": 11688.0,
         "refined_extrema": ["PERICENTER", "APOCENTER"],
@@ -152,6 +173,65 @@ def test_sampling_policy_declares_nonuniform_extremum_refinement() -> None:
             "failure_action": "halve_refinement_step_or_reject_body",
         },
     }
+
+
+def test_comet_fetch_uses_the_comet_specific_refinement_floor(monkeypatch) -> None:
+    epochs = [2451545.0, 2451555.0]
+    states = _states_with_radial_velocities([1.0, 1.0])
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(build_comet_catalog, "_fetch_raw", lambda *_args: "raw")
+    monkeypatch.setattr(
+        build_comet_catalog,
+        "_parse_solution",
+        lambda _raw: "JPL#TEST",
+    )
+    monkeypatch.setattr(
+        build_comet_catalog,
+        "_parse_vectors",
+        lambda _raw: (epochs, states),
+    )
+
+    def fake_build(base_epochs, base_states, fetch_exact, **kwargs):
+        seen.update(kwargs)
+        return (
+            base_epochs,
+            base_states,
+            {
+                "status": "no_radial_extrema_in_coverage",
+                "base_extremum_brackets": 0,
+                "accepted_refinement_step_days": None,
+                "levels": [],
+                "passed": True,
+            },
+            [],
+        )
+
+    monkeypatch.setattr(
+        build_comet_catalog.adaptive,
+        "build_certified_adaptive_series",
+        fake_build,
+    )
+
+    result = build_comet_catalog._fetch_comet(1)
+
+    assert seen["minimum_refinement_step_days"] == 1.0 / 128.0
+    assert result["sampling_policy"]["policy_version"] == (
+        "moira-comet-type13-apsidal-adaptive-v5"
+    )
+
+
+def test_response_cache_directory_can_be_reused_across_policy_rebuilds(
+    tmp_path: Path,
+) -> None:
+    cache_dir = tmp_path / "shared-cache"
+
+    args = build_comet_catalog._parse_args(
+        ["targets.json", "0", "497", str(tmp_path / "candidate"),
+         "--response-cache-dir", str(cache_dir)]
+    )
+
+    assert args.response_cache_dir == cache_dir
 
 
 def test_refinement_requests_are_bounded_by_count_and_time_span(
@@ -188,12 +268,18 @@ def test_refinement_vectors_reserve_full_coverage_integration_anchors(
 
     monkeypatch.setattr(build_comet_catalog, "_fetch_tlist_raw", fake_fetch)
     monkeypatch.setattr(build_comet_catalog, "_parse_vectors", fake_parse)
+    monkeypatch.setattr(
+        build_comet_catalog,
+        "_parse_solution",
+        lambda raw: "JPL#TEST",
+    )
 
     epochs, states, receipts = build_comet_catalog._fetch_refinement_vectors(
         "'DES=1P;NOFRAG;CAP'",
         requested,
         query_kind="test",
         coverage_anchor_epochs=(0.0, 100.0),
+        expected_target_solution="JPL#TEST",
     )
 
     assert seen == [0.0, 10.0, 11.0, 100.0]
@@ -201,6 +287,24 @@ def test_refinement_vectors_reserve_full_coverage_integration_anchors(
     assert states[0] == requested
     assert states[5] == [510.0, 511.0]
     assert receipts[0]["integration_anchor_epochs_jd_tdb"] == [0.0, 100.0]
+
+
+def test_refinement_rejects_target_solution_drift(monkeypatch) -> None:
+    monkeypatch.setattr(
+        build_comet_catalog,
+        "_fetch_tlist_raw",
+        lambda _command, _epochs: (
+            "Target body name: 2P/Encke {source: JPL#NEW}"
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="changed within one comet build"):
+        build_comet_catalog._fetch_refinement_vectors(
+            "'DES=2P;NOFRAG;CAP'",
+            [10.0],
+            coverage_anchor_epochs=(0.0, 100.0),
+            expected_target_solution="JPL#OLD",
+        )
 
 
 def test_apsidal_sampling_probe_is_bound_to_current_authority_fixture() -> None:
@@ -233,6 +337,39 @@ def test_candidate_policy_passes_without_widening_stage2_gates() -> None:
             gates["distance_absolute_au"]
         )
     assert probe["diagnosis"]["fixture_gate_widened"] is False
+
+
+def test_final_candidate_admission_keeps_strict_anchored_oracle_gates() -> None:
+    receipt = json.loads(_ADMISSION_PATH.read_text(encoding="utf-8"))
+
+    assert receipt["status"] == "candidate_validated_not_release_admitted"
+    assert receipt["catalog"]["body_count"] == 497
+    assert receipt["catalog"]["shard_count"] == 20
+    assert receipt["catalog"]["sampling_policy_version"] == (
+        "moira-comet-type13-apsidal-adaptive-v5"
+    )
+    assert receipt["acceptance_gates"] == {
+        "event_time_absolute_seconds": 8.64,
+        "distance_absolute_au": 1.0e-9,
+        "origin": "pre-existing Stage 2 gates; not widened",
+    }
+    assert all(
+        measurement["passed"] is True
+        for measurement in receipt["anchored_apsidal_oracle"]["measurements"]
+    )
+    assert receipt["refresh_integrity"] == {
+        "first_generation": {
+            "replaced_bodies": 23,
+            "preserved_raw_node_tables_exact": 474,
+        },
+        "second_generation": {
+            "replaced_bodies": 1,
+            "preserved_raw_node_tables_exact": 496,
+        },
+        "all_manifest_kernel_and_metadata_hashes_verified": True,
+        "all_certificates_passed": True,
+        "exact_roster_verified": True,
+    }
 
 
 def test_transient_horizons_response_is_retried(monkeypatch) -> None:

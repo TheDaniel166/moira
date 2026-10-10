@@ -1,0 +1,40 @@
+"""Control: same live solution, with catalog endpoint anchors removed."""
+import hashlib
+import json
+import math
+from pathlib import Path
+import sys
+
+REPO = Path(r"C:\dev\moira-small-body-apsides")
+OUT = Path(__file__).resolve().parent / "anchored-asteroid-authority-probe-v2"
+sys.path.insert(0, str(REPO))
+from scripts import build_unified_asteroid_catalog as horizons
+from scripts.build_apsidal_passages_fixture import _authority_metadata
+
+fixture = json.loads((REPO / "tests/fixtures/horizons_apsidal_passages_reference_2026_09_28.json").read_bytes())
+controls = []
+for record in fixture["records"]:
+    if record["body"] not in {"Eros", "Chiron", "Sedna", "Eris"}:
+        continue
+    expected = record["events"][0]
+    epoch = expected["epoch_tdb"]
+    target = record["body_naif_id"]
+    raw = horizons._fetch_tlist_raw(f"{target - 2000000};", [epoch])
+    returned, columns = horizons._parse_vectors(raw)
+    assert len(returned) == 1 and abs(returned[0] - epoch) <= 5e-9
+    state = [column[0] for column in columns]
+    radius = math.sqrt(sum(v*v for v in state[:3]))
+    raw_bytes = raw.encode("utf-8")
+    name = f"{target}-unanchored-control.horizons.txt"
+    (OUT / name).write_bytes(raw_bytes)
+    result = {"body": record["body"], "epoch_tdb": returned[0],
+        "coordinate_contract": "geometric ICRF km/s; Sun center; exact TDB",
+        "query_epochs_jd_tdb": [epoch],
+        "authority": _authority_metadata(raw),
+        "historical_distance_delta_km": radius - expected["distance_au"] * 149597870.7,
+        "raw_response": name, "response_sha256": hashlib.sha256(raw_bytes).hexdigest()}
+    controls.append(result)
+    print(json.dumps(result), flush=True)
+with (OUT / "unanchored-controls.json").open("x", encoding="utf-8") as stream:
+    json.dump(controls, stream, indent=2)
+    stream.write("\n")

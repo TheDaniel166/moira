@@ -16,6 +16,8 @@ _EPOCHS_UT = {
 }
 _POLAR_LIMITED_SYSTEMS = (
     HouseSystem.KOCH,
+)
+_POLAR_BRANCH_SYSTEMS = (
     HouseSystem.CAMPANUS,
     HouseSystem.REGIOMONTANUS,
     HouseSystem.TOPOCENTRIC,
@@ -44,6 +46,26 @@ def _assert_same_house_figure(left, right) -> None:
 
     for left_cusp, right_cusp in zip(left.cusps, right.cusps, strict=True):
         assert left_cusp == pytest.approx(right_cusp, abs=1e-8)
+
+
+@pytest.mark.parametrize("system", _POLAR_BRANCH_SYSTEMS)
+def test_branch_capable_polar_systems_raise_only_when_the_branch_fails(system) -> None:
+    """A finite admitted branch is lawful at polar latitudes, even in strict mode."""
+    for epoch_name, jd_ut in _EPOCHS_UT.items():
+        for observer_name, (latitude, longitude) in _POLAR_OBSERVERS.items():
+            result = calculate_houses(jd_ut, latitude, longitude, system)
+            assert result.system == system, (epoch_name, observer_name, system)
+            if result.fallback:
+                assert result.effective_system == HouseSystem.PORPHYRY
+                porphyry = calculate_houses(jd_ut, latitude, longitude, HouseSystem.PORPHYRY)
+                _assert_same_house_figure(result, porphyry)
+                with pytest.raises(ValueError, match="critical latitude"):
+                    calculate_houses(jd_ut, latitude, longitude, system, policy=HousePolicy.strict())
+            else:
+                assert result.effective_system == system
+                assert result.fallback_reason is None
+                strict = calculate_houses(jd_ut, latitude, longitude, system, policy=HousePolicy.strict())
+                _assert_same_house_figure(result, strict)
 
 
 def test_dynamic_critical_latitude_fallback_holds_across_epoch_matrix() -> None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 
 from moira import Body, Moira
 from moira.transits_aspects import _require_natal_aspect_mover
@@ -122,15 +123,30 @@ def compute_natal_aspect_transits(engine: Moira, request: NatalAspectSearchReque
             _require_finite_jd(orb, f"aspect_orbs[{index}]")
             if orb < 0:
                 raise ValueError(f"aspect_orbs[{index}] must be >= 0")
-    return engine.natal_aspect_transits(
-        request.body,
-        request.natal_longitudes,
-        request.aspect_angles,
-        request.jd_start,
-        request.jd_end,
-        aspect_orbs=aspect_orbs,
-        search_motion=request.search_motion,
-    )
+    try:
+        return engine.natal_aspect_transits(
+            request.body,
+            request.natal_longitudes,
+            request.aspect_angles,
+            request.jd_start,
+            request.jd_end,
+            aspect_orbs=aspect_orbs,
+            search_motion=request.search_motion,
+        )
+    except KeyError as exc:
+        from moira.small_body_identity import resolve_small_body_identity
+
+        identity = resolve_small_body_identity(request.body)
+        if (
+            identity is not None
+            and "No segment found" in str(exc)
+            and re.search(rf"\btarget={identity.naif_id}(?!\d)", str(exc))
+        ):
+            raise ValueError(
+                f"natal-aspect mover {identity.qualified_name!r} requires a "
+                "small-body kernel covering the requested interval"
+            ) from exc
+        raise
 
 
 def compute_ingresses(engine: Moira, request: IngressSearchRequest):

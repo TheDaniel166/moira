@@ -1,0 +1,48 @@
+{
+  "schema": "moira.anchored-apsidal-reference-review/v1",
+  "status": "reviewed_for_validation_only_integration",
+  "measurement_date": "2026-10-03",
+  "authority": "official NASA/JPL Horizons VECTORS file API",
+  "authority_url": "https://ssd.jpl.nasa.gov/api/horizons_file.api",
+  "report_sha256": "4ddc7ba4a8bdced95670b5501d5e7872437c2c53e48c19b167138c52b7c92acc",
+  "controls_sha256": "818b4f1fde1654c30e8addd657998cbcbcd563c3ad2c63515ce73879118855f0",
+  "source_catalog_manifest_sha256": "91f1ef2d129135cba2ea669c9c3ba32b88914f008ff0f4c48feae27cf1946bf8",
+  "validated_view_manifest_sha256": "416e1a7ae6166f935c2c346d31848e6ac7ae87f6b4f06d7250297f214972efe6",
+  "generator_captures": {
+    "probe_anchored_asteroid_authority.py.txt": "075c74a8d8336c8ce169e6ec406f509d297fe2df8fbbe46ff078659fcdb121ff",
+    "probe_unanchored_controls.py.txt": "70961b22c6b0717bf888bfad97a6be28c69c7d4a547a31b15a39579d689cea6f"
+  },
+  "coordinate_contract": {
+    "center": "Sun (500@10)",
+    "reference_frame": "ICRF",
+    "state_units": "km and km/s",
+    "time_scale": "JDTDB",
+    "corrections": "NONE",
+    "coverage_anchor_epochs_jd_tdb": [2305447.5, 2634157.5]
+  },
+  "acceptance_gates": {
+    "event_time_absolute_days": 0.0001,
+    "distance_absolute_au": 1e-9
+  },
+  "records": [
+    {"body": "Eros", "body_naif_id": 2000433, "start_jd_tdb": 2460676.5},
+    {"body": "Chiron", "body_naif_id": 2002060, "start_jd_tdb": 2460676.5},
+    {"body": "Sedna", "body_naif_id": 2090377, "start_jd_tdb": 2477112.5},
+    {"body": "Eris", "body_naif_id": 2136199, "start_jd_tdb": 2542855.5}
+  ],
+  "event_count": 6,
+  "source_review": [
+    "Roots were independently solved on exact Horizons states, using historical reference epochs only as bracket seeds, without consulting Moira's apsidal solver.",
+    "Every numerical authority request included the candidate's actual first and last base-grid epochs; every root has opposite-sign two-sided radial-velocity witnesses.",
+    "Same-day unanchored controls reproduced the historical reference distances exactly for all four bodies, with the same JPL orbit solution labels. The historical references and anchored catalog are different integration-span products.",
+    "Anchored states agree with candidate radial distances to at most 0.000376553 km in this six-event sample. The unchanged distance gate is 0.1495978707 km (1e-9 AU), not 0.1496 metres.",
+    "Historical fixtures and their admission receipts were retained unchanged. This adds a separate reviewed authority product; it does not grant release admission or publish a catalog."
+  ],
+  "refresh_policy": "Generate a new candidate directory with retained raw responses and controls, audit frame, center, TDB, integration endpoints, orbit solutions and hashes, and perform a separate source review. Never replace these files or widen gates in response to a failure.",
+  "limitations": [
+    "This is a six-event, four-asteroid authority sample, not independent Horizons queries for all 11223 asteroids.",
+    "Captured generator text records the actual local research driver and paths, not a portable public builder command.",
+    "The diagnostic report's original not-baseline-promoted status records its creation stage; this review admits its anchored authority values only for validation-only integration."
+  ],
+  "release_admitted": false
+}

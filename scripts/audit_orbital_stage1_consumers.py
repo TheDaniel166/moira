@@ -152,6 +152,7 @@ class Decision:
 
 PUBLIC_TT_READER_FILES = frozenset(
     {
+        "moira/_lunar_apparent.py",
         "moira/asteroids.py",
         "moira/comets.py",
         "moira/daf_writer_ui.py",
@@ -172,6 +173,8 @@ PUBLIC_TT_READER_FILES = frozenset(
 )
 INTERNAL_READER_FILES = frozenset(
     {
+        "moira/_lunar_orientation_resources.py",
+        "src/native/include/pck.hpp",
         "moira/_orbital_state.py",
         "moira/_spk_body_kernel.py",
         "moira/spk_reader.py",
@@ -197,6 +200,7 @@ DUPLICATE_BIAS_REPAIRED_FILES = frozenset(
 )
 INHERITED_FRAME_FILES = frozenset(
     {
+        "moira/uranian.py",
         "moira/coordinates.py",
         "moira/corrections.py",
         "moira/cosmic_references.py",
@@ -406,6 +410,14 @@ def _reader_decision(site: Site) -> Decision:
             "tests/unit/test_draconic.py",
             "non-SPK name collision classified",
         )
+    if site.path == "src/native/include/pck.hpp":
+        return Decision(
+            "explicit JD(TDB) for binary PCK Euler coefficients",
+            "private PCK evaluator, not a planetary SPK position",
+            "no additional movement",
+            "tests/unit/test_native_pck_reader.py; tests/unit/test_adversarial_native_pck_reader.py",
+            "retained PCK time/frame boundary",
+        )
     if site.call in {"coverage", "_load_native_evaluator", "load_segment_evaluator", "load_spk_segment_evaluator", "NativePlanetaryEvaluator"}:
         return Decision(
             "date-free kernel capability",
@@ -464,6 +476,14 @@ def _frame_decision(site: Site) -> Decision:
     if site.path not in CLASSIFIED_FRAME_FILES:
         raise OrbitalConsumerAuditError(
             f"unclassified frame-transform source: {site.path} ({site.key})"
+        )
+    if site.path == "moira/uranian.py":
+        return Decision(
+            "source equinox mean equatorial vector plus JD(TT)",
+            "transpose of bias-inclusive precession into ICRF",
+            "no additional movement",
+            "tests/unit/test_uranian.py",
+            "verified inverse single-owner transform",
         )
     if site.path == "moira/_orbital_frames.py":
         return Decision(

@@ -20,6 +20,7 @@ _TESTS_DIR = Path(__file__).resolve().parents[1]
 _REPO_ROOT = _TESTS_DIR.parent
 _HARNESS_PATH = _TESTS_DIR / "conftest.py"
 _NETWORK_POLICY_PATH = _TESTS_DIR / "support" / "network_policy.py"
+_SMALL_BODY_POLICY_PATH = _TESTS_DIR / "support" / "small_body_resource_policy.py"
 _NETWORK_BOOTSTRAP_PATH = (
     _TESTS_DIR / "support" / "network_bootstrap" / "sitecustomize.py"
 )
@@ -66,6 +67,10 @@ def _make_policy_project(
     mini_support.joinpath("__init__.py").write_text("", encoding="utf-8")
     mini_support.joinpath("network_policy.py").write_text(
         _NETWORK_POLICY_PATH.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    mini_support.joinpath("small_body_resource_policy.py").write_text(
+        _SMALL_BODY_POLICY_PATH.read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     mini_bootstrap = mini_support / "network_bootstrap"

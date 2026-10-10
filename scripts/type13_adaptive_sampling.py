@@ -38,15 +38,19 @@ def sampling_policy(
     *,
     base_step_days: float = BASE_STEP_DAYS,
     window_size: int = WINDOW_SIZE,
+    policy_version: str = POLICY_VERSION,
+    minimum_refinement_step_days: float = MIN_REFINEMENT_STEP_DAYS,
 ) -> dict[str, object]:
     """Return the common, release-visible adaptive sampling policy."""
 
+    _validate_minimum_refinement_step(minimum_refinement_step_days)
+
     return {
-        "policy_version": POLICY_VERSION,
+        "policy_version": policy_version,
         "mode": "certified_adaptive_radial_extrema",
         "base_step_days": base_step_days,
         "initial_refinement_step_days": INITIAL_REFINEMENT_STEP_DAYS,
-        "minimum_refinement_step_days": MIN_REFINEMENT_STEP_DAYS,
+        "minimum_refinement_step_days": minimum_refinement_step_days,
         "refinement_padding_days": REFINEMENT_PADDING_DAYS,
         "refined_extrema": ["PERICENTER", "APOCENTER"],
         "time_tags": "nonuniform",
@@ -59,6 +63,24 @@ def sampling_policy(
             "failure_action": "halve_refinement_step_or_reject_body",
         },
     }
+
+
+def _validate_minimum_refinement_step(step_days: float) -> None:
+    """Require a positive cadence reachable by repeated policy halvings."""
+
+    if not math.isfinite(step_days) or step_days <= 0.0:
+        raise ValueError("minimum_refinement_step_days must be finite and positive")
+    ratio = INITIAL_REFINEMENT_STEP_DAYS / step_days
+    if ratio < 1.0:
+        raise ValueError(
+            "minimum_refinement_step_days must not exceed the initial cadence"
+        )
+    refinement_levels = round(math.log2(ratio))
+    if not math.isclose(ratio, 2.0**refinement_levels, rel_tol=0.0, abs_tol=1.0e-12):
+        raise ValueError(
+            "minimum_refinement_step_days must be reachable by repeated halvings "
+            "of the initial cadence"
+        )
 
 
 def _validate_series(epochs: list[float], states: list[list[float]]) -> None:
@@ -422,6 +444,7 @@ def build_certified_adaptive_series(
     fetch_exact: FetchExact,
     *,
     window_size: int = WINDOW_SIZE,
+    minimum_refinement_step_days: float = MIN_REFINEMENT_STEP_DAYS,
     progress: LevelProgress | None = None,
 ) -> tuple[list[float], list[list[float]], dict[str, object], list[dict[str, Any]]]:
     """Refine and certify one body's apsidal Type-13 representation.
@@ -433,6 +456,7 @@ def build_certified_adaptive_series(
     """
 
     _validate_series(base_epochs, base_states)
+    _validate_minimum_refinement_step(minimum_refinement_step_days)
     intervals, bracket_count = extremum_refinement_intervals(base_epochs, base_states)
     if bracket_count == 0:
         return (
@@ -451,7 +475,7 @@ def build_certified_adaptive_series(
     receipts: list[dict[str, Any]] = []
     levels: list[dict[str, object]] = []
     step = INITIAL_REFINEMENT_STEP_DAYS
-    while step + 1.0e-15 >= MIN_REFINEMENT_STEP_DAYS:
+    while step + 1.0e-15 >= minimum_refinement_step_days:
         witness_epochs = epochs_for_intervals(intervals, step_days=step / 2.0)
         returned_epochs, returned_states, new_receipts = fetch_exact(
             witness_epochs,
@@ -512,5 +536,5 @@ def build_certified_adaptive_series(
 
     raise RuntimeError(
         "adaptive Type-13 sampling failed its apsidal gates at the minimum "
-        f"{MIN_REFINEMENT_STEP_DAYS:g}-day cadence; levels={levels!r}"
+        f"{minimum_refinement_step_days:g}-day cadence; levels={levels!r}"
     )

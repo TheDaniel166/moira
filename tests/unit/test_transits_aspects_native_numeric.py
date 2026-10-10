@@ -103,9 +103,15 @@ def test_find_aspect_transits_to_longitudes_matches_single_searches(
                 reader=planetary_reader,
             )
         )
-    grid_keys = sorted((round(event.jd_exact, 5), float(event.target), event.angle) for event in grid)
-    single_keys = sorted((round(event.jd_exact, 5), float(event.target), event.angle) for event in singles)
-    assert grid_keys == single_keys
+    grid_keys = sorted((float(event.target), event.angle, event.jd_exact) for event in grid)
+    single_keys = sorted((float(event.target), event.angle, event.jd_exact) for event in singles)
+    assert len(grid_keys) == len(single_keys)
+    for grid_key, single_key in zip(grid_keys, single_keys, strict=True):
+        assert grid_key[:2] == single_key[:2]
+        # Compare distances, not rounding bins: roots arbitrarily close to
+        # a bin edge can round differently. Same 2e-6-day solver budget as
+        # the grid/single equivalence checks below (stricter than 5 decimals).
+        assert abs(grid_key[2] - single_key[2]) <= _JD_TOLERANCE_DAYS
     assert grid_keys, "Jupiter should hit at least one frozen longitude in 400 days"
     for event in grid:
         assert math.isfinite(event.jd_exact)

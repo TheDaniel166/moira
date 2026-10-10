@@ -101,6 +101,39 @@ def test_failed_level_halves_cadence_before_admission(monkeypatch) -> None:
     ]
 
 
+def test_caller_can_select_a_deeper_dyadic_refinement_floor(monkeypatch) -> None:
+    base_epochs = [2451545.0 + 10.0 * index for index in range(4)]
+    seen_steps: list[float] = []
+
+    def fake_certificate(**kwargs):
+        step = kwargs["refinement_step_days"]
+        seen_steps.append(step)
+        return {
+            "refinement_step_days": step,
+            "passed": math.isclose(step, 1.0 / 64.0),
+        }
+
+    monkeypatch.setattr(adaptive, "_level_certificate", fake_certificate)
+
+    _epochs, _states, certificate, _receipts = (
+        adaptive.build_certified_adaptive_series(
+            base_epochs,
+            _quadratic_states(base_epochs),
+            _exact_fetch,
+            minimum_refinement_step_days=1.0 / 64.0,
+        )
+    )
+
+    assert seen_steps == [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
+    assert certificate["accepted_refinement_step_days"] == 1.0 / 64.0
+
+
+@pytest.mark.parametrize("step_days", [0.0, -0.5, 0.1, 2.0, math.inf])
+def test_refinement_floor_must_be_a_positive_reachable_halving(step_days) -> None:
+    with pytest.raises(ValueError, match="minimum_refinement_step_days"):
+        adaptive.sampling_policy(minimum_refinement_step_days=step_days)
+
+
 def test_policy_is_shared_and_gate_visible() -> None:
     policy = adaptive.sampling_policy()
 
