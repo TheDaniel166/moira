@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 498
-- Registered OpenAPI operations: 498 (GET 40, POST 458)
+- Registered OpenAPI paths: 502
+- Registered OpenAPI operations: 502 (GET 41, POST 461)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 494
+- Versioned `/v1` paths: 498
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3591,6 +3591,10 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/v1/muhurta/lagna/catalogue` | muhurta | `muhurta_lagna_catalogue_route_v1_muhurta_lagna_catalogue_get` |
 | `POST` | `/v1/muhurta/lagna/datetime` | muhurta | `muhurta_lagna_datetime_route_v1_muhurta_lagna_datetime_post` |
 | `POST` | `/v1/muhurta/lagna/direct` | muhurta | `muhurta_lagna_direct_route_v1_muhurta_lagna_direct_post` |
+| `GET` | `/v1/muhurta/marriage/catalogue` | muhurta | `marriage_catalogue_route_v1_muhurta_marriage_catalogue_get` |
+| `POST` | `/v1/muhurta/marriage/datetime` | muhurta | `marriage_datetime_route_v1_muhurta_marriage_datetime_post` |
+| `POST` | `/v1/muhurta/marriage/direct` | muhurta | `marriage_direct_route_v1_muhurta_marriage_direct_post` |
+| `POST` | `/v1/muhurta/marriage/windows` | muhurta | `marriage_windows_route_v1_muhurta_marriage_windows_post` |
 | `POST` | `/v1/muhurta/named/day` | muhurta | `named_muhurta_day_route_v1_muhurta_named_day_post` |
 | `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |

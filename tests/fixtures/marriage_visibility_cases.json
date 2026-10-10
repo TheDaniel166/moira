@@ -1,0 +1,21 @@
+{
+  "source": "Surya Siddhanta, Burgess 1860, IX.1-11, printed221-224/PDF237-240",
+  "source_sha256": "2eb5c967bb5363e4e5d3e8c9a0e51fc92855af3b6d023166dcc0526ec25b930b",
+  "source_url": "https://www.wilbourhall.org/pdfs/Translation_of_the_S__rya_Siddh__nta.pdf",
+  "derivation": "Modern frozen geometric horizon. H=acos(-tan(latitude)*tan(declination)); east=RA_s-H_s-(RA_p-H_p); west=RA_p+H_p-(RA_s+H_s). Signed nearest RA branch. No atmosphere, physical first visibility or literal historical ephemeris claim.",
+  "units": "All input/output angles in degrees; waiting periods in elapsed UT1 days",
+  "evidence_class": "Hand-worked analytic geometry and primary threshold transcription; not a full external marriage oracle",
+  "geometry": [
+    {"id":"equator_east_11","latitude":0,"sun_ra":100,"sun_dec":0,"planet_ra":89,"planet_dec":0,"east":11,"west":-11,"calculation":"Both semidiurnal arcs90; 100-89=11"},
+    {"id":"equator_west_10","latitude":0,"sun_ra":100,"sun_dec":0,"planet_ra":110,"planet_dec":0,"east":-10,"west":10,"calculation":"Both semidiurnal arcs90; 110-100=10"},
+    {"id":"wrap_signed","latitude":0,"sun_ra":359,"sun_dec":0,"planet_ra":2,"planet_dec":0,"east":-3,"west":3,"calculation":"Nearest RA separation is3, not-357"},
+    {"id":"declination_arc","latitude":30,"sun_ra":100,"sun_dec":0,"planet_ra":100,"planet_dec":30,"east":19.47122063449069,"west":19.47122063449069,"calculation":"tan30 squared=1/3; acos(-1/3)-90=19.47122063449069"}
+  ],
+  "events": [
+    ["Jupiter","appearance","east",11,1], ["Jupiter","disappearance","west",11,-1],
+    ["Venus","appearance","east",8,1], ["Venus","disappearance","east",10,-1],
+    ["Venus","appearance","west",10,1], ["Venus","disappearance","west",8,-1]
+  ],
+  "buffers": [["Jupiter","east",15,15],["Jupiter","west",15,15],["Venus","east",3,15],["Venus","west",10,5]],
+  "buffer_source": "MC Avasthi2004 Samskara27; elapsed UT1 shifts are a named Moira convention"
+}

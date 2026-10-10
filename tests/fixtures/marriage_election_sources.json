@@ -1,0 +1,21 @@
+{
+  "authority": "Muhurta Chintamani, Ramlal Avasthi commentary, 2004",
+  "sha256": "9e931eb7fdc1958516424590a168680be60753f4cfccea8f327cae973dfe4777",
+  "evidence_class": "independent primary-scan transcription; not runtime-generated expectations",
+  "wedding_star_names": ["Rohini", "Mrigashira", "Magha", "UttaraPhalguni", "Hasta", "Swati", "Anuradha", "Mula", "UttaraAshadha", "UttaraBhadrapada", "Revati"],
+  "seven_line_pairs": [["Jyeshtha","Pushya"],["Shatabhisha","Swati"],["PurvaAshadha","Ardra"],["Revati","UttaraPhalguni"],["Dhanishtha","Vishakha"],["UttaraAshadha","Mrigashira"],["Ashwini","PurvaPhalguni"],["Ashlesha","Anuradha"],["Hasta","UttaraBhadrapada"],["Rohini","Abhijit"],["Mula","Punarvasu"],["Chitra","PurvaBhadrapada"],["Bharani","Magha"],["Krittika","Shravana"]],
+  "five_line_pairs": [["Rohini","Abhijit"],["Bharani","Anuradha"],["UttaraAshadha","Mrigashira"],["Shravana","Magha"],["Hasta","UttaraBhadrapada"],["Swati","Shatabhisha"],["Mula","Punarvasu"],["UttaraPhalguni","Revati"]],
+  "latta_from_ashwini": {"Sun":"UttaraPhalguni","Saturn":"Pushya","Jupiter":"Ardra","Mars":"Krittika","Mercury":"Shravana","Rahu":"Ashlesha","Moon":"Punarvasu","Venus":"Shatabhisha"},
+  "forbidden_paksha_tithis": [4,6,8,9,12,14],
+  "day_eighths": [4,7,2,5,8,3,6],
+  "kulika_day": [14,12,10,8,6,4,2],
+  "durmuhurta_day": [[14],[9,12],[4],[8],[6,12],[4,9],[1,2]],
+  "durmuhurta_night": [[],[8],[7],[],[],[8],[1]],
+  "durmuhurta_locus": "Vivaha52-54 printed126-127/PDF135-136; weekday prohibitions applied to both deity lists",
+  "kulika_night": [[13],[11],[9],[7],[5],[3],[1,15]],
+  "ingress_total_ghatis": {"Sun":33,"Moon":2,"Mars":9,"Mercury":6,"Jupiter":88,"Venus":9,"Saturn":160},
+  "ingress_locus": "Vivaha80 printed143/PDF152; total before+after, symmetric split is Moira convention",
+  "dashayoga_worked": {"residue":10,"start_star":"Mula","moon_star":"Chitra","opposite_star":"Shatabhisha"},
+  "solar_bana_weekday_correction": {"Saturday":"royal","Wednesday":"death","Tuesday":["fire","theft"],"Sunday":"illness"},
+  "source_pages": {"eleven_stars":[136,137],"pairs":[137,138],"latta":[140],"kulika":[143,144],"bana":[149],"ingresses":[152],"kartari":[131,155],"remedies":[156,157]}
+}

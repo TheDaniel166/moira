@@ -41,6 +41,7 @@ from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
 from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
 from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
 from moira.sade_sati import SadeSatiBudgetError
+from moira.muhurta_marriage_dated import MarriageSearchBudgetError
 from moira.shadbala_context import ShadbalaContextError
 
 
@@ -409,6 +410,14 @@ def register_exception_handlers(app: FastAPI) -> None:
             category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
         ))
 
+    @app.exception_handler(MarriageSearchBudgetError)
+    async def handle_marriage_budget(request: Request, exc: MarriageSearchBudgetError) -> JSONResponse:
+        request_id = getattr(request.state, 'request_id', str(uuid4()))
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code='marriage_search_budget', message=str(exc), category='search_budget',
+            request_id=request_id, details={'limit_kind':exc.limit_kind,'limit':exc.limit,
+                                           'count':exc.count,'stage':exc.stage}))
+
     @app.exception_handler(MuhurtaResourceError)
     async def handle_muhurta_resource(request: Request, exc: MuhurtaResourceError) -> JSONResponse:
         return JSONResponse(status_code=503, content=_error_body(
@@ -428,10 +437,18 @@ def register_exception_handlers(app: FastAPI) -> None:
         request: Request,
         exc: RequestValidationError,
     ) -> JSONResponse:
+        errors=exc.errors()
+        # Pydantic wraps ValueError subclasses raised by admission validators.
+        # Preserve the engine's named deterministic budget failure even when
+        # preflight rejects before the route can acquire its reader.
+        if len(errors)==1:
+            cause=errors[0].get('ctx',{}).get('error')
+            if isinstance(cause,MarriageSearchBudgetError):
+                return await handle_marriage_budget(request,cause)
         request_id = getattr(request.state, "request_id", str(uuid4()))
         details = {
             ".".join(str(part) for part in error["loc"]): error["msg"]
-            for error in exc.errors()
+            for error in errors
         }
         first_message = next(iter(details.values()), "request validation failed")
         return JSONResponse(

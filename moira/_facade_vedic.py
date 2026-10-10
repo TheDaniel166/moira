@@ -207,6 +207,26 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Return the named ayanamsa registry exposed by the sidereal engine."""
         return _facade_module().list_ayanamsa_systems()
 
+    def marriage_election_catalogue(self):
+        """Discover source-selected marriage rules and admission evidence."""
+        from .muhurta_marriage import marriage_election_catalogue
+        return marriage_election_catalogue()
+
+    def assess_marriage_election(self, evidence, **kwargs):
+        """Pure marriage assessment; supplied evidence remains caller-owned."""
+        from .muhurta_marriage import assess_marriage_election
+        return assess_marriage_election(evidence, **kwargs)
+
+    def marriage_election_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Resolve marriage evidence using this facade's serving reader."""
+        from .muhurta_marriage_dated import marriage_election_for_datetime
+        return marriage_election_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
+    def marriage_election_windows(self, start: datetime, end: datetime, latitude: float, longitude: float, **kwargs):
+        """Resolve bounded marriage intervals using this facade's serving reader."""
+        from ._muhurta_marriage_windows import marriage_election_windows
+        return marriage_election_windows(start, end, latitude, longitude, reader=self._reader, **kwargs)
+
     def muhurta_lagna_catalogue(self):
         """Discover source-specific Lagna, Navamsa and strength policies."""
         from .muhurta_lagna import muhurta_lagna_catalogue

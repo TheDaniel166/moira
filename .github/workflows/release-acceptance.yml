@@ -68,6 +68,10 @@ jobs:
       #   tests/integration/test_eclipse_nasa_reference.py
       #   tests/integration/test_occultations_external_reference.py
       #   tests/integration/test_progressions_external_reference.py
+      #   tests/integration/test_muhurta_marriage_ephemeris.py
+      # Marriage admission requires this full serving-reader/HTTP slice to
+      # execute locally with zero resource skips; kernel-free CI is additional
+      # regression coverage and does not replace that validation receipt.
       #
       # See wiki/03_release/PRODUCTION_READINESS_ROADMAP.md §3 for the full
       # acceptance matrix, local validation receipts, and known gap log.

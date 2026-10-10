@@ -1174,6 +1174,38 @@ PYBIND11_MODULE(_moira_native, m) {
         .def(py::init<double, double, size_t, size_t, size_t, std::vector<double>>());
 
     py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>, IEvaluator>(m, "SpkSegmentEvaluator")
+        .def("chebyshev_metadata", [](const SpkSegmentEvaluator& self) {
+            if (self.data_type != 2 && self.data_type != 3) {
+                throw std::invalid_argument("Chebyshev metadata requires an SPK type 2 or 3 segment");
+            }
+            return py::make_tuple(self.init, self.intlen, self.record_count,
+                                  self.component_count, self.coefficient_count);
+        })
+        .def("chebyshev_records", [](const SpkSegmentEvaluator& self, int64_t first, int64_t count) {
+            // Copy a bounded selection from this exact serving evaluator. Coefficients
+            // are always returned in ascending degree order, independently of its
+            // private storage order. No file is reopened and no mutable view escapes.
+            if ((self.data_type != 2 && self.data_type != 3) || first < 0 ||
+                count < 1 || count > 256 || static_cast<uint64_t>(first) >= self.record_count ||
+                static_cast<uint64_t>(count) > self.record_count - static_cast<size_t>(first)) {
+                throw std::invalid_argument("invalid bounded Chebyshev record selection");
+            }
+            py::tuple records(static_cast<size_t>(count));
+            for (int64_t r = 0; r < count; ++r) {
+                py::tuple components(self.component_count);
+                for (size_t c = 0; c < self.component_count; ++c) {
+                    py::tuple values(self.coefficient_count);
+                    const size_t base = ((static_cast<size_t>(first + r) * self.component_count) + c) * self.coefficient_count;
+                    for (size_t k = 0; k < self.coefficient_count; ++k) {
+                        const size_t stored = self.coefficients_in_file_order ? k : self.coefficient_count - 1 - k;
+                        values[k] = self.coefficients[base + stored];
+                    }
+                    components[c] = values;
+                }
+                records[static_cast<size_t>(r)] = components;
+            }
+            return records;
+        }, py::arg("first"), py::arg("count") = 1)
         .def("position", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double result[3];
             {

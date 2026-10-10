@@ -336,27 +336,44 @@ def lunar_month_at(jd_ut1: float, *, policy: LunarMonthPolicy | None = None,
         first, last = new[current - 1], new[current + 2]
         ingresses = _angular_boundaries(first.lower_jd_ut1 - 1, last.jd_ut1 + 1,
                                         solar, 30, selected.solver_tolerance_seconds, False)
-        context = tuple(_lunation(new[i], new[i+1], ingresses, solar)
-                        for i in range(current - 1, current + 2))
-        previous, amanta, following = context
-        angle = phase(jd_ut1)
-        paksha = "Shukla" if angle < 180 else "Krishna"
-        tithi = int(angle // 12) % 15 + 1
-        status, reasons = "available", ()
-        start, end, label = amanta.start, amanta.end, amanta.label
-        uncertain_phases = tuple(e for e in phases if e.lower_jd_ut1 <= jd_ut1 < e.jd_ut1)
-        needed = (amanta,) if selected.system is LunarMonthSystem.AMANTA else context
-        if uncertain_phases or any(lunation.uncertain_ingresses for lunation in needed):
-            status, reasons = "boundary_ambiguous", ("phase_or_ingress_brackets_overlap",)
-        elif selected.system is LunarMonthSystem.PURNIMANTA:
-            if any(lunation.label.qualifier != "ordinary" for lunation in context):
-                status, reasons = "unsupported_intercalation", ("purnimanta_intercalary_or_ksaya_neighbourhood_requires_regional_rules",)
-            else:
-                full = tuple(e for e in phases if e.kind == "full_moon")
-                start = max((e for e in full if e.jd_ut1 <= jd_ut1), key=lambda e: e.jd_ut1)
-                end = min((e for e in full if e.jd_ut1 > jd_ut1), key=lambda e: e.jd_ut1)
-                label = amanta.label if paksha == "Shukla" else following.label
-        if status != "available":
-            start, end, label = None, None, None
-        return LunarMonthResult(jd_ut1, selected, LunarMonthProvenance(binding), status,
-            reasons, paksha, tithi, uncertain_phases, previous, amanta, following, start, end, label)
+        return _month_from_boundaries(jd_ut1, selected, LunarMonthProvenance(binding),
+                                      phases, ingresses, solar, phase)
+
+
+def _month_from_boundaries(jd_ut1, selected, provenance, phases, ingresses, solar, phase):
+    """Canonical month semantics shared by admitted boundary-search owners.
+
+    The caller owns event completeness and numerical brackets; this function
+    alone owns naming, intercalation, phase ownership and uncertainty mapping.
+    """
+    new = tuple(e for e in phases if e.kind == "new_moon")
+    current = next((i for i in range(len(new)-1)
+                    if new[i].jd_ut1 <= jd_ut1 < new[i+1].jd_ut1), None)
+    if current is None or current == 0 or current + 2 >= len(new):
+        raise RuntimeError("lunar calendar surrounding conjunctions exceed supplied boundary context")
+    if any(not 20 < b.jd_ut1-a.jd_ut1 < 40 for a,b in zip(new,new[1:])):
+        raise RuntimeError("lunar calendar lunation duration bound violated")
+    context = tuple(_lunation(new[i], new[i+1], ingresses, solar)
+                    for i in range(current - 1, current + 2))
+    previous, amanta, following = context
+    angle = phase(jd_ut1)
+    paksha = "Shukla" if angle < 180 else "Krishna"
+    tithi = int(angle // 12) % 15 + 1
+    status, reasons = "available", ()
+    start, end, label = amanta.start, amanta.end, amanta.label
+    uncertain_phases = tuple(e for e in phases if e.lower_jd_ut1 <= jd_ut1 < e.jd_ut1)
+    needed = (amanta,) if selected.system is LunarMonthSystem.AMANTA else context
+    if uncertain_phases or any(lunation.uncertain_ingresses for lunation in needed):
+        status, reasons = "boundary_ambiguous", ("phase_or_ingress_brackets_overlap",)
+    elif selected.system is LunarMonthSystem.PURNIMANTA:
+        if any(lunation.label.qualifier != "ordinary" for lunation in context):
+            status, reasons = "unsupported_intercalation", ("purnimanta_intercalary_or_ksaya_neighbourhood_requires_regional_rules",)
+        else:
+            full = tuple(e for e in phases if e.kind == "full_moon")
+            start = max((e for e in full if e.jd_ut1 <= jd_ut1), key=lambda e: e.jd_ut1)
+            end = min((e for e in full if e.jd_ut1 > jd_ut1), key=lambda e: e.jd_ut1)
+            label = amanta.label if paksha == "Shukla" else following.label
+    if status != "available":
+        start, end, label = None, None, None
+    return LunarMonthResult(jd_ut1, selected, provenance, status,
+        reasons, paksha, tithi, uncertain_phases, previous, amanta, following, start, end, label)

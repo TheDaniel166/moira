@@ -48,6 +48,7 @@ from dataclasses import dataclass
 import math
 from typing import Literal
 from .electional import ElectionalPolicy, ElectionalWindow
+from ._muhurta_marriage_sources import ALLOWED_TITHI_INDICES as _MARRIAGE_TITHIS
 
 from .panchanga import (
     PanchangaResult,
@@ -731,22 +732,25 @@ __all__.extend(["is_abhijit_muhurta", "is_brahma_muhurta"])
 
 ACTIVITY_MUHURTA_GUIDANCE: dict[str, dict] = {
     "marriage": {  # Vivaha Muhurta
-        "good_tithis": [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 13],  # Shukla emphasis; avoid Rikta 4,9,14 + Amavasya
-        "preferred_tithis": [2, 3, 5, 7, 10, 11, 13],  # From Muhurta Chintamani
-        "avoid_tithis": [0, 3, 8, 13, 29],  # Rikta + Amavasya (0-based: 3=4th, etc.)
+        "good_tithis": list(_MARRIAGE_TITHIS),
+        "preferred_tithis": [],  # No separate ranking in the selected source.
+        "avoid_tithis": [i for i in range(30) if i not in _MARRIAGE_TITHIS],
+        "tithi_basis": "zero_based_absolute_0_to_29",
+        "source": "MC Avasthi 2004, Vivaha 55; Shubhashubha 34/36",
+        "status": "deprecated_guidance_only_not_complete_election",
         "good_nakshatras": [
-            "Rohini", "Mrigashira", "Pushya", "Uttara Phalguni", "Hasta",
-            "Swati", "Anuradha", "Uttara Ashadha", "Shravana", "Uttara Bhadrapada", "Revati"
+            "Rohini", "Mrigashira", "Magha", "Uttara Phalguni", "Hasta",
+            "Swati", "Anuradha", "Mula", "Uttara Ashadha", "Uttara Bhadrapada", "Revati"
         ],
         "avoid_nakshatras": [
-            "Bharani", "Krittika", "Ardra", "Ashlesha", "Jyeshtha",
-            "Purva Phalguni", "Purva Ashadha", "Purva Bhadrapada", "Mula", "Vishakha"
+            "Ashwini", "Bharani", "Krittika", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Jyeshtha",
+            "Purva Phalguni", "Chitra", "Vishakha", "Purva Ashadha", "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada"
         ],
-        "good_yogas": ["Sarvarthasiddhi", "Siddhi", "Brahma", "Harshana", "Ravi"],
+        "good_yogas": [],
         "avoid_yogas": ["Vishkumbha", "Vajra", "Ganda", "Atiganda", "Vyaghata", "Parigha", "Vaidhriti", "Vyatipata", "Shula"],
         "preferred_varas": [1, 3, 4, 5],  # Mon, Wed, Thu, Fri
         "karana": "Avoid Vishti/Bhadra",
-        "notes": "Strong Jupiter and benefic influences on Lagna/Moon highly recommended. Many doshas have pariharas in the text."
+        "notes": "Guidance only. Yoga restrictions may affect part of an occurrence. Use assess_marriage_election for typed source findings, coverage and named remedies."
     },
     "house_construction": {  # Griharambha / Foundation
         "good_tithis": [1, 2, 3, 4, 6, 7, 9, 10, 12, 13],  # Similar to marriage, Shukla preferred
@@ -793,7 +797,15 @@ ACTIVITY_MUHURTA_GUIDANCE: dict[str, dict] = {
 }
 
 def get_muhurta_guidance_for_activity(activity: str) -> dict | None:
-    """Returns the researched guidance dict for a given activity, or None."""
+    """Return legacy guidance. Marriage uses absolute zero-based tithi indices.
+
+    Marriage guidance is deprecated and cannot determine election eligibility.
+    Other activities retain their existing behavior.
+    """
+    if activity.lower() == 'marriage':
+        import warnings
+        warnings.warn('marriage activity guidance is incomplete; use assess_marriage_election',
+                      DeprecationWarning, stacklevel=2)
     return ACTIVITY_MUHURTA_GUIDANCE.get(activity.lower())
 
 

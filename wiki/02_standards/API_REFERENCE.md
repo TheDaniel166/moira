@@ -47,6 +47,16 @@ branches.
 
 ## Conventions
 
+The VED-011 marriage composition is documented in the
+[marriage election standard](MARRIAGE_ELECTION_STANDARD.md), with its
+[current acceptance receipt](../03_validation/MARRIAGE_ELECTION_VALIDATION_2026-10-10.md).
+`marriage_election_catalogue`, `assess_marriage_election`,
+`marriage_election_for_datetime` and `marriage_election_windows` share owning
+engine objects across root, facade and `vedic`, with matching REST operations.
+The catalogue exposes admission status, source contracts, named exceptions
+and operational bounds. Ordinary, personal and Godhuli outcomes preserve
+independent coverage and evidence.
+
 The 9 October 2026 VED-009 addition is documented in the
 [Muhurta dosha standard](MUHURTA_DOSHA_STANDARD.md): six independently
 witnessed restrictions, three opt-in scoped exceptions and reader-bound day

@@ -1832,6 +1832,29 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 })
 _EXPECTED_MOIRA_METHODS.add('shadbala_context')
 
+# VED-011 approved selected marriage API. This explicit additive declaration
+# preserves every prior expectation; it is not generated from runtime exports.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    'MarriageApparitionContext', 'MarriageAvailability', 'MarriageDecision',
+    'MarriageElectionAssessment', 'MarriageElectionCell', 'MarriageElectionEvidence',
+    'MarriageElectionPolicy', 'MarriageElectionSnapshot', 'MarriageElectionWindows',
+    'MarriageEvidencePart', 'MarriageException', 'MarriageExtent', 'MarriageFinding',
+    'MarriageHistoricalLongitude', 'MarriageHistoricalSkyBand', 'MarriageHistoricalSkySpan',
+    'MarriageIngress', 'MarriageIngressHistory', 'MarriageMeasure', 'MarriageMoon28Passage',
+    'MarriageParticipant', 'MarriagePersonalContext', 'MarriagePlanet',
+    'MarriageSearchBudgetError', 'MarriageSearchLimits', 'MarriageSearchReceipt',
+    'MarriageSolarContext', 'MarriageStarHistory', 'MarriageStarPassage',
+    'MarriageTimeDegrees', 'MarriageTimeSpan', 'MarriageVisibilityEvent',
+    'MarriageVisibilitySample', 'MarriageWindowWitness', 'MarriageYogaEnding',
+    'assess_marriage_election', 'marriage_election_catalogue',
+    'marriage_election_for_datetime', 'marriage_election_windows',
+    'marriage_planet_availability', 'marriage_time_degrees',
+})
+_EXPECTED_MOIRA_METHODS.update({
+    'marriage_election_catalogue', 'assess_marriage_election',
+    'marriage_election_for_datetime', 'marriage_election_windows',
+})
+
 
 def test_root_public_surface_snapshot_is_exact() -> None:
     actual = set(moira.__all__)

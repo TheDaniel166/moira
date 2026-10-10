@@ -51,7 +51,41 @@ from ..serializers.muhurta_dosha import serialize_dosha_assessment, serialize_do
 from ..services.muhurta_dosha import compute_dosha_day
 
 
+from ..models.muhurta_marriage import (MarriageCatalogueResponse,MarriageDirectRequest,
+    MarriageAssessmentResponse,MarriageDateTimeRequest,MarriageSnapshotResponse,
+    MarriageWindowsRequest,MarriageWindowsResponse)
+from ..serializers.muhurta_marriage import serialize_marriage_catalogue,serialize_marriage_assessment
+from ..services.muhurta_marriage import compute_marriage_datetime,compute_marriage_windows
+
+
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.get('/marriage/catalogue',response_model=MarriageCatalogueResponse)
+def marriage_catalogue_route() -> MarriageCatalogueResponse:
+    """Discover the source manifest, variants and explicit admission status."""
+    from moira.muhurta_marriage import marriage_election_catalogue
+    return serialize_marriage_catalogue(marriage_election_catalogue())
+
+
+@router.post('/marriage/direct',response_model=MarriageAssessmentResponse)
+def marriage_direct_route(request: MarriageDirectRequest) -> MarriageAssessmentResponse:
+    """Kernel-free assessment conditional on explicitly supplied astronomical evidence."""
+    from moira.muhurta_marriage import assess_marriage_election
+    return serialize_marriage_assessment(assess_marriage_election(request.evidence.to_engine(),
+        policy=request.policy.to_engine(),personal=None if request.personal is None else request.personal.to_engine()))
+
+
+@router.post('/marriage/datetime',response_model=MarriageSnapshotResponse)
+def marriage_datetime_route(request: MarriageDateTimeRequest,engine: Moira=Depends(get_engine)) -> MarriageSnapshotResponse:
+    """Full parent/history evidence, strict budgets, and visible numerical coverage."""
+    return compute_marriage_datetime(engine,request)
+
+
+@router.post('/marriage/windows',response_model=MarriageWindowsResponse)
+def marriage_windows_route(request: MarriageWindowsRequest,engine: Moira=Depends(get_engine)) -> MarriageWindowsResponse:
+    """Bounded transition partition with lossless shared evidence and explicit uncertainty."""
+    return compute_marriage_windows(engine,request)
 
 
 @router.get("/doshas/catalogue", response_model=DoshaCatalogueResponse)

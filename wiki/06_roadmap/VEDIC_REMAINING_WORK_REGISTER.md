@@ -2,7 +2,7 @@
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
 **Last reconciled:** 10 October 2026.
-**Baseline:** engine `main`, version 6.9.9; VED-010 was published at engine `b578ec8`, generated wiki `9d35913`, with hosted Release Hardening and Acceptance Matrix green. Sections 27–35 retain earlier feature and review checkpoints. Sections 36–37 close all eleven first-pass and five second-pass adversarial findings; section 38 records the authorized publication package. Eleven of 24 stable feature packages have been delivered for their selected scopes; thirteen remain open/bounded. Repair findings are tracked separately from those feature counts. VED-011 is next. Release/deployment remain separate.
+**Baseline:** engine `main`, version 6.9.9; the combined adversarial repairs are source-published at engine `e710726`, generated wiki `0c79a57`. Sections 27–35 retain earlier feature and review checkpoints. Sections 36–37 close all eleven first-pass and five second-pass adversarial findings; section 38 records their publication package. Section 39 records the subsequently authorized VED-011 marriage-election research. Eleven of 24 stable feature packages have been delivered for their selected scopes; thirteen remain open/bounded. Repair findings are tracked separately from those feature counts. VED-011 selected marriage implementation is complete with engine/facade/REST parity and final real-resource acceptance; section 41 records its authorized source-publication package and remaining scope. Other VED-011 purposes remain open; the stable package count is unchanged. Release/deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -61,7 +61,7 @@ VED-001 is locally complete. VED-003 admits transport, selected-edition names, s
 | VED-008 | Locally complete for named Panchaka, alternative MC/PS Tara-cycle, nine-Yoga timing and eleven-Karana/Bhadra assessments, including solved sunrise-day cells. Existing Tara/Chandra, scoring and search remain compatible. Specific excluded readings, polar discontinuous Lagna timing and general score integration are separately bounded. | [Source research](VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md), [standard](../02_standards/PANCHANGA_SHUDDHI_STANDARD.md) and [622-test validation receipt](../03_validation/PANCHANGA_SHUDDHI_VALIDATION_2026-10-09.md). Sixteen curated exports, three facade methods, three typed REST routes; source conflicts and derived clocks remain explicit. | `LOCAL_COMPLETE`; included in this authorized engine/wiki source-publication package; release/deployment separate |
 | VED-009 | Locally complete finite six-detector/three-exception package: source-specific stellar Vishanadi, both Yamaghantas and temporal nakshatra/tithi/Lagna Gandanta; raw evidence retained after opt-in neutralization. Other Tyajya types, angular/Abhukta variants and the complete twenty-one-dosha catalogue remain explicitly excluded extensions. | [Source packet](VEDIC_DOSHA_PARIHARA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_DOSHA_STANDARD.md) and [validation receipt](../03_validation/MUHURTA_DOSHA_VALIDATION_2026-10-09.md). Fifteen owning exports, three facade methods and three strict REST routes; full-parent events, numerical bands, carryover and source-scoped cancellation evidence. Strength-dependent exceptions belong to VED-010. | `LOCAL_COMPLETE` and published at engine `571788a` / wiki `ed68937`; broader listed extensions remain unadmitted |
 | VED-010 | Source-selected general/marriage Lagna components, both Navamsa readings, quarter-aspect support, MC placement score, raw restrictions and optional MC88 exceptions. Canonical Shadbala remains inspectable context; its dated multi-war failure and subsequent context/clock admission defects are repaired. | [Source record](VEDIC_LAGNA_SOURCE_AND_PLAN_2026-10-09.md), [standard](../02_standards/MUHURTA_LAGNA_STANDARD.md), [feature validation](../03_validation/MUHURTA_LAGNA_VALIDATION_2026-10-09.md), [combined repair validation](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md). Eleven curated exports, three facade methods and three REST routes; source-backed D9 and Venus/Moon table corrections in shared owners. | `LOCAL_COMPLETE`; feature source-published and all identified repairs included in the section 38 publication package; broader listed remedies remain excluded |
-| VED-011 | Turn selected activity guidance into finite, testable, source-owned purpose profiles: marriage variants, construction/Vastu, travel and business only after scope selection. Expose evaluated rules, exclusions and disagreements rather than letting prose or a generic score imply complete purpose coverage. | [ACTIVITY_MUHURTA_GUIDANCE](../../moira/muhurta.py) contains guidance data; it is not a comprehensive executable purpose-policy system. Existing REST provenance says activity guidance is not admitted. | `SOURCE_RESEARCH`, P2 |
+| VED-011 | Selected MC ordinary marriage, explicit personal assessment and named Godhuli composition are complete locally. Construction/Vastu, travel, business and other marriage traditions remain separate open scope selections. | [Approved plan](VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md), [source standard](../02_standards/MARRIAGE_ELECTION_STANDARD.md) and [current validation receipt](../03_validation/MARRIAGE_ELECTION_VALIDATION_2026-10-10.md): source-owned calendar/star/Lagna/history/availability, personal/Godhuli composition and four matching engine/REST operations. Both final full HTTP cases pass, including certified six-hour cells and high-latitude unavailability. | Marriage `LOCAL_COMPLETE`; other purposes `OPEN_ENGINE`, P2 |
 
 The May tracker is retained as a research trail. Its historical "fully wired"
 claim did not establish the current contract. VED-009 now has its own validated
@@ -134,10 +134,10 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 
 ## 9. Suggested package order and definition of done
 
-**Next package: VED-011 — selected complete purpose elections.** All eleven findings in the [Vedic adversarial repair plan](VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md) and all five second-pass findings have completed [combined repair acceptance](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md). The user authorized publishing those repairs on 10 October. VED-011 starts with source research and selection of finite activity/lineage profiles; it has not started and remains separately authorized work.
+**Latest completed scope: VED-011 — selected marriage elections.** All eleven findings in the [Vedic adversarial repair plan](VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md) and all five second-pass findings have completed [combined repair acceptance](../03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md) and are source-published. The user then authorized deep marriage-election research online and in the local book corpus. The [research packet](VEDIC_MARRIAGE_ELECTION_SOURCE_RESEARCH_2026-10-10.md) proposes an edition-owned MC ordinary astronomical timing profile, an explicit personal layer and separately scoped Godhuli exceptions. The user approved the [implementation plan](VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md). Its [final acceptance receipt](../03_validation/MARRIAGE_ELECTION_VALIDATION_2026-10-10.md) records 227 passing focused checks, both completed real HTTP cases, all identified repairs and operational calibration. Further purpose profiles require their own selected scope; they do not reopen the accepted marriage implementation.
 
 1. **Close existing product omissions:** VED-001/002/003/005 and their scoped VED-021/022 follow-through are complete and source-published. This first item's selected implementation scope is closed. Operational REST budgets remain a separate scope decision.
-2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is source-published for its selected Lagna/Navamsa components; its optional Shadbala composition and subsequent admission defects have passed combined repair acceptance. **VED-011 is next**; integrating these products into generic scoring/search remains a separate scope decision.
+2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is source-published for its selected Lagna/Navamsa components; its optional Shadbala composition and subsequent admission defects have passed combined repair acceptance. **VED-011 selected marriage is now complete locally**; other purpose profiles and integration into generic scoring/search remain separate scope decisions.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
 4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
 
@@ -847,3 +847,97 @@ implementation of VED-011 have not begun in this publication package.
 Version remains 6.9.9. Source publication, release and deployment remain
 distinct; no tag, package release, runtime deployment or website/Urania
 adoption is included.
+
+## 39. VED-011 marriage-election research — 10 October 2026
+
+The user authorized deep source research, starting with marriage elections,
+both online and in `C:\dev\ASTROLOGY-BOOKS-DATABASE`. The
+[research packet](VEDIC_MARRIAGE_ELECTION_SOURCE_RESEARCH_2026-10-10.md)
+records twelve fingerprinted PDFs, targeted visual collation, online primary
+and author sources, source disagreements, the current engine/REST boundary
+and concrete acceptance criteria. Image-only local sources were inspected as
+scans; failed text extraction was not treated as source absence.
+
+The shared eleven-star wedding list differs from the legacy guidance, whose
+tithi sets also overlap. Source-defined 28-star vedha, Latta, marriage-specific
+Bana, additional Lagna restrictions and personal completeness need explicit
+admission. Jupiter/Venus availability has a classical computational source:
+Surya Siddhanta IX uses directional heliacal events and degrees of time,
+while MC prescribes directional waiting periods. Existing longitude-orb
+combustion is a separate convention and cannot silently substitute for it.
+
+The proposed first scope is an MC Avasthi 2004 ordinary marriage astronomical
+timing profile, with separately declared personal and Godhuli layers. The
+implementation plan must enumerate every required rule, named interpretation
+and explicit exclusion before admitting complete selected-profile engine and
+REST results. Modern calendar dates are only partial comparison evidence;
+their omitted rules cannot validate the full composition.
+
+This is a research checkpoint, not runtime completion. The eleven-complete /
+thirteen-open feature count is unchanged. No runtime, tests, protected
+validation policy, dependency or version changes are included, and there is
+no commit, push, release, deployment or website adoption in this pass.
+
+## 40. VED-011 selected marriage admission — 10 October 2026
+
+The [approved plan](VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md)
+is implemented and locally accepted. The [source standard](../02_standards/MARRIAGE_ELECTION_STANDARD.md)
+and [validation receipt](../03_validation/MARRIAGE_ELECTION_VALIDATION_2026-10-10.md)
+own the exact MC Avasthi ordinary, personal and VV/MC Godhuli scope. Forty-one
+curated symbols, four facade methods and four REST operations share the same
+raw evidence, named remedies, source coverage and bounded numerical results.
+
+All 227 focused checks pass, including the complete six-hour DE441 HTTP
+partition and the high-latitude unavailable-evidence request. Source arithmetic,
+independent ERFA geometry, native record access, boundary/resource tests and
+engine/HTTP projection remain distinct evidence classes. The broader latest
+result set has 3,901 distinct passes and three unrelated disclosed skips.
+Operational costs, actual uncertainty bands, failed-attempt repairs and
+conditional arithmetic assumptions are recorded rather than hidden.
+
+This closes the selected marriage implementation. Construction/Vastu, travel,
+business and other source traditions remain open VED-011 selections, so the
+11-delivered / 13-open-or-bounded feature-package count is unchanged. The
+changes are local and uncommitted; publication and release are separate.
+
+## 41. VED-011 marriage source publication and remaining scope — 10 October 2026
+
+The user authorized committing and pushing the complete selected marriage
+package. Publish the generated wiki first, then the engine, tests, canonical
+documentation, publication metadata and exact wiki gitlink. Section 40's
+uncommitted statement records the earlier implementation checkpoint.
+Publication starts from engine `e4e9a72` and wiki `9edb51f`, preserving the
+separately published small-body and visibility-documentation changes since
+the validation baseline. All 41 marriage source-manifest fingerprints and
+seven aggregate XML receipt fingerprints still match at this checkpoint.
+The focused publication rerun passes 225 tests with eleven executed DE441
+resource uses and no skips; the two full HTTP cases retain their unchanged
+successful acceptance receipts.
+
+The remaining VED-011 implementation scope is:
+
+| Scope | Work still required |
+|---|---|
+| Construction/Vastu | Select and collate finite foundation/construction and house-entry profiles separately; implement their source-specific calendar, Lagna, direction and exception rules where established. Existing activity guidance is not a complete dated election. |
+| Travel | Select finite journey profiles and establish their direction/purpose rules, exceptions and boundaries before admitting complete engine and REST assessment/search. Existing travel guidance is not sufficient. |
+| Business | Select the specific activities and source profiles to support, then implement and validate their complete elections. A generic business label does not establish one universal rule set. |
+| Additional marriage traditions | Admit complete alternative source profiles from the comparison ledger, retaining disagreements, their own finite remedy targets and profile-specific validation. The current ordinary profile remains MC Avasthi 2004 with separately selected personal and VV/MC Godhuli composition. |
+
+Each selected extension requires the same engine/public/facade/REST contract,
+explicit evaluated/excluded/unavailable evidence, source fixtures, boundary
+tests and real-reader/HTTP validation. The table does not authorize a new
+implementation or assert that sources are unavailable.
+
+Operational follow-through remains valuable: the tested full marriage HTTP
+calculations take about 25–28 minutes. Performance improvements must preserve
+the source predicates, uncertainty bands and completeness certificates;
+background-job orchestration belongs to a separately selected service scope.
+Whole-ceremony-duration coverage is an optional new marriage contract; the
+implemented search elects ritual-anchor instants. Compatibility matching,
+family/preparatory ceremonies and the other explicit plan exclusions are
+separate scope choices, not unfinished required rules in the admitted profile.
+
+The selected marriage implementation is complete. The overall VED-011 entry
+remains open for the other purpose/profile selections above. Version 6.9.9
+is unchanged; source publication does not imply a tag, package release,
+deployment or website/Urania adoption.

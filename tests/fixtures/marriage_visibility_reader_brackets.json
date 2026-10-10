@@ -1,0 +1,463 @@
+{
+  "evidence_class": "Serving DE441 coordinate/bracket inputs for independent ERFA horizon reconstruction; not an independent planetary-position or event-date oracle.",
+  "producer": "moira.muhurta_marriage_dated._Context.apparition; whole-point and southern-hemisphere component validation runs recorded in MARRIAGE_ELECTION_VALIDATION_2026-10-10.md",
+  "refresh_policy": "Regenerate explicitly from real serving-reader receipts after changes to the declared astronomy model; compare geometry against independent ERFA altitude roots and independently transcribed thresholds.",
+  "rows": [
+    {
+      "source_receipt": "visibility--33.9.json",
+      "source_receipt_sha256": "c3103bbc46d8c33012748c63854c6ec9f2854a8032c19c8eee6f00c7088607de",
+      "event": {
+        "role": "appearance",
+        "side": "east",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461271.509526238,
+          "lower_jd_ut1": 2461271.50952595,
+          "upper_jd_ut1": 2461271.509526525
+        },
+        "before": {
+          "jd_ut1": 2461271.50952595,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 148.31135608125894,
+          "sun_declination": 12.829240166892323,
+          "planet_ra": 133.5202810609941,
+          "planet_declination": 17.97661851662201,
+          "sun_tropical_longitude": 146.06517541037397,
+          "planet_tropical_longitude": 130.92120500751366,
+          "true_obliquity": 23.43807336052924
+        },
+        "after": {
+          "jd_ut1": 2461271.509526525,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 148.3113566152588,
+          "sun_declination": 12.829239979604356,
+          "planet_ra": 133.52028118756144,
+          "planet_declination": 17.97661848335619,
+          "sun_tropical_longitude": 146.06517596370313,
+          "planet_tropical_longitude": 130.9212051324148,
+          "true_obliquity": 23.438073360523557
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9.json",
+      "source_receipt_sha256": "c3103bbc46d8c33012748c63854c6ec9f2854a8032c19c8eee6f00c7088607de",
+      "event": {
+        "role": "disappearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461636.3007027954,
+          "lower_jd_ut1": 2461636.3007026883,
+          "upper_jd_ut1": 2461636.300702903
+        },
+        "before": {
+          "jd_ut1": 2461636.3007026883,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 147.8892941287137,
+          "sun_declination": 12.97665146983827,
+          "planet_ra": 157.1582008812385,
+          "planet_declination": 10.532222485981027,
+          "sun_tropical_longitude": 145.62815847718352,
+          "planet_tropical_longitude": 154.98109987384356,
+          "true_obliquity": 23.437436541724942
+        },
+        "after": {
+          "jd_ut1": 2461636.300702903,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 147.88929432814137,
+          "sun_declination": 12.976651400309851,
+          "planet_ra": 157.1582009250854,
+          "planet_declination": 10.532222469111822,
+          "sun_tropical_longitude": 145.62815868358157,
+          "planet_tropical_longitude": 154.98109992014057,
+          "true_obliquity": 23.437436541726864
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9.json",
+      "source_receipt_sha256": "c3103bbc46d8c33012748c63854c6ec9f2854a8032c19c8eee6f00c7088607de",
+      "event": {
+        "role": "appearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461101.655324585,
+          "lower_jd_ut1": 2461101.655323594,
+          "upper_jd_ut1": 2461101.6553255757
+        },
+        "before": {
+          "jd_ut1": 2461101.655323594,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 342.9949690017543,
+          "sun_declination": -7.225914168000029,
+          "planet_ra": 355.6252797181205,
+          "planet_declination": -3.3542653712010204,
+          "sun_tropical_longitude": 341.565219738945,
+          "planet_tropical_longitude": 354.6543611815114,
+          "true_obliquity": 23.438384507540036
+        },
+        "after": {
+          "jd_ut1": 2461101.6553255757,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 342.9949708549969,
+          "sun_declination": -7.225913411931732,
+          "planet_ra": 355.62528197537205,
+          "planet_declination": -3.354264361951591,
+          "sun_tropical_longitude": 341.5652217268609,
+          "planet_tropical_longitude": 354.65436365104665,
+          "true_obliquity": 23.438384507573225
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9.json",
+      "source_receipt_sha256": "c3103bbc46d8c33012748c63854c6ec9f2854a8032c19c8eee6f00c7088607de",
+      "event": {
+        "role": "disappearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461334.696332153,
+          "lower_jd_ut1": 2461334.6963287145,
+          "upper_jd_ut1": 2461334.696335591
+        },
+        "before": {
+          "jd_ut1": 2461334.6963287145,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 205.8214859167084,
+          "sun_declination": -10.69325959248828,
+          "planet_ra": 207.8274289636344,
+          "planet_declination": -18.87776636393899,
+          "sun_tropical_longitude": 207.80700291716917,
+          "planet_tropical_longitude": 212.54174351234963,
+          "true_obliquity": 23.438024619526022
+        },
+        "after": {
+          "jd_ut1": 2461334.696335591,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 205.82149241172928,
+          "sun_declination": -10.693262039604777,
+          "planet_ra": 207.82742530899105,
+          "planet_declination": -18.877764092662066,
+          "sun_tropical_longitude": 207.80700975246504,
+          "planet_tropical_longitude": 212.54173944385272,
+          "true_obliquity": 23.43802461956908
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9-2461452.0.json",
+      "source_receipt_sha256": "de0e59ab28d5c6e4f5fb67f56048abecf830083fe25fab1021b3406d3e496d12",
+      "event": {
+        "role": "appearance",
+        "side": "east",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461271.509526238,
+          "lower_jd_ut1": 2461271.50952595,
+          "upper_jd_ut1": 2461271.509526525
+        },
+        "before": {
+          "jd_ut1": 2461271.50952595,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 148.31135608125894,
+          "sun_declination": 12.829240166892323,
+          "planet_ra": 133.5202810609941,
+          "planet_declination": 17.97661851662201,
+          "sun_tropical_longitude": 146.06517541037397,
+          "planet_tropical_longitude": 130.92120500751366,
+          "true_obliquity": 23.43807336052924
+        },
+        "after": {
+          "jd_ut1": 2461271.509526525,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 148.3113566152588,
+          "sun_declination": 12.829239979604356,
+          "planet_ra": 133.52028118756144,
+          "planet_declination": 17.97661848335619,
+          "sun_tropical_longitude": 146.06517596370313,
+          "planet_tropical_longitude": 130.9212051324148,
+          "true_obliquity": 23.438073360523557
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9-2461452.0.json",
+      "source_receipt_sha256": "de0e59ab28d5c6e4f5fb67f56048abecf830083fe25fab1021b3406d3e496d12",
+      "event": {
+        "role": "disappearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461636.3007027954,
+          "lower_jd_ut1": 2461636.3007026883,
+          "upper_jd_ut1": 2461636.300702903
+        },
+        "before": {
+          "jd_ut1": 2461636.3007026883,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 147.8892941287137,
+          "sun_declination": 12.97665146983827,
+          "planet_ra": 157.1582008812385,
+          "planet_declination": 10.532222485981027,
+          "sun_tropical_longitude": 145.62815847718352,
+          "planet_tropical_longitude": 154.98109987384356,
+          "true_obliquity": 23.437436541724942
+        },
+        "after": {
+          "jd_ut1": 2461636.300702903,
+          "planet": "Jupiter",
+          "latitude": -33.9,
+          "sun_ra": 147.88929432814137,
+          "sun_declination": 12.976651400309851,
+          "planet_ra": 157.1582009250854,
+          "planet_declination": 10.532222469111822,
+          "sun_tropical_longitude": 145.62815868358157,
+          "planet_tropical_longitude": 154.98109992014057,
+          "true_obliquity": 23.437436541726864
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9-2461452.0.json",
+      "source_receipt_sha256": "de0e59ab28d5c6e4f5fb67f56048abecf830083fe25fab1021b3406d3e496d12",
+      "event": {
+        "role": "appearance",
+        "side": "east",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461338.8794536074,
+          "lower_jd_ut1": 2461338.8794467603,
+          "upper_jd_ut1": 2461338.8794604545
+        },
+        "before": {
+          "jd_ut1": 2461338.8794467603,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 209.79682346667846,
+          "sun_declination": -12.157279852139123,
+          "planet_ra": 205.59728331367046,
+          "planet_declination": -17.356755189715084,
+          "sun_tropical_longitude": 211.9693800342334,
+          "planet_tropical_longitude": 210.00143902029862,
+          "true_obliquity": 23.43800462471607
+        },
+        "after": {
+          "jd_ut1": 2461338.8794604545,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 209.7968365630945,
+          "sun_declination": -12.157284560176777,
+          "planet_ra": 205.59727614622113,
+          "planet_declination": -17.35674983437919,
+          "sun_tropical_longitude": 211.96939367515986,
+          "planet_tropical_longitude": 210.00143065705998,
+          "true_obliquity": 23.438004624457545
+        }
+      }
+    },
+    {
+      "source_receipt": "visibility--33.9-2461452.0.json",
+      "source_receipt_sha256": "de0e59ab28d5c6e4f5fb67f56048abecf830083fe25fab1021b3406d3e496d12",
+      "event": {
+        "role": "disappearance",
+        "side": "east",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461593.6178769646,
+          "lower_jd_ut1": 2461593.6178760603,
+          "upper_jd_ut1": 2461593.617877869
+        },
+        "before": {
+          "jd_ut1": 2461593.6178760603,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 106.07526617124799,
+          "sun_declination": 22.614642718652558,
+          "planet_ra": 95.38717342020124,
+          "planet_declination": 23.44574078177958,
+          "sun_tropical_longitude": 104.80970907214794,
+          "planet_tropical_longitude": 94.94124518981353,
+          "true_obliquity": 23.43732241880246
+        },
+        "after": {
+          "jd_ut1": 2461593.617877869,
+          "planet": "Venus",
+          "latitude": -33.9,
+          "sun_ra": 106.07526802845702,
+          "sun_declination": 22.614642528636473,
+          "planet_ra": 95.38717583742552,
+          "planet_declination": 23.445740771835144,
+          "sun_tropical_longitude": 104.80971079705787,
+          "planet_tropical_longitude": 94.9412474062932,
+          "true_obliquity": 23.437322418829496
+        }
+      }
+    },
+    {
+      "source_receipt": "latest-instant-diagnostic.json",
+      "source_receipt_sha256": "d92c5ce3f99d2df175d9b641cf8b65c6a1c377289c2cbcc273b7e72101e27913",
+      "event": {
+        "role": "appearance",
+        "side": "east",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461263.5667628804,
+          "lower_jd_ut1": 2461263.5667627105,
+          "upper_jd_ut1": 2461263.5667630504
+        },
+        "before": {
+          "jd_ut1": 2461263.5667627105,
+          "planet": "Jupiter",
+          "latitude": 28.6,
+          "sun_ra": 140.86627018363183,
+          "sun_declination": 15.302473490273844,
+          "planet_ra": 131.75606031187075,
+          "planet_declination": 18.431891823427623,
+          "sun_tropical_longitude": 138.43247103381583,
+          "planet_tropical_longitude": 129.18454311569735,
+          "true_obliquity": 23.438025762119686
+        },
+        "after": {
+          "jd_ut1": 2461263.5667630504,
+          "planet": "Jupiter",
+          "latitude": 28.6,
+          "sun_ra": 140.86627050537425,
+          "sun_declination": 15.302473389608233,
+          "planet_ra": 131.75606038800916,
+          "planet_declination": 18.431891804146087,
+          "sun_tropical_longitude": 138.4324713600697,
+          "planet_tropical_longitude": 129.18454319045983,
+          "true_obliquity": 23.438025762125903
+        }
+      }
+    },
+    {
+      "source_receipt": "latest-instant-diagnostic.json",
+      "source_receipt_sha256": "d92c5ce3f99d2df175d9b641cf8b65c6a1c377289c2cbcc273b7e72101e27913",
+      "event": {
+        "role": "disappearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461631.009882277,
+          "lower_jd_ut1": 2461631.0098821023,
+          "upper_jd_ut1": 2461631.0098824515
+        },
+        "before": {
+          "jd_ut1": 2461631.0098821023,
+          "planet": "Jupiter",
+          "latitude": 28.6,
+          "sun_ra": 142.94392273479954,
+          "sun_declination": 14.640274041415324,
+          "planet_ra": 156.07981253758538,
+          "planet_declination": 10.945271852523245,
+          "sun_tropical_longitude": 140.54599444417678,
+          "planet_tropical_longitude": 153.84379264547354,
+          "true_obliquity": 23.43736668095525
+        },
+        "after": {
+          "jd_ut1": 2461631.0098824515,
+          "planet": "Jupiter",
+          "latitude": 28.6,
+          "sun_ra": 142.94392306332486,
+          "sun_declination": 14.640273935031555,
+          "planet_ra": 156.0798126085934,
+          "planet_declination": 10.9452718254465,
+          "sun_tropical_longitude": 140.54599477936577,
+          "planet_tropical_longitude": 153.8437927202726,
+          "true_obliquity": 23.437366680958327
+        }
+      }
+    },
+    {
+      "source_receipt": "latest-instant-diagnostic.json",
+      "source_receipt_sha256": "d92c5ce3f99d2df175d9b641cf8b65c6a1c377289c2cbcc273b7e72101e27913",
+      "event": {
+        "role": "appearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_appearance",
+          "jd_ut1": 2461084.101616213,
+          "lower_jd_ut1": 2461084.1016133293,
+          "upper_jd_ut1": 2461084.101619097
+        },
+        "before": {
+          "jd_ut1": 2461084.1016133293,
+          "planet": "Venus",
+          "latitude": 28.6,
+          "sun_ra": 326.1943293604272,
+          "sun_declination": -13.561312624183307,
+          "planet_ra": 335.2170456408003,
+          "planet_declination": -11.868810236474488,
+          "sun_tropical_longitude": 323.87791589735485,
+          "planet_tropical_longitude": 332.72059005403565,
+          "true_obliquity": 23.438283690807136
+        },
+        "after": {
+          "jd_ut1": 2461084.101619097,
+          "planet": "Venus",
+          "latitude": 28.6,
+          "sun_ra": 326.1943350241255,
+          "sun_declination": -13.561310696045433,
+          "planet_ra": 335.2170525263823,
+          "planet_declination": -11.868807641865855,
+          "sun_tropical_longitude": 323.87792173100377,
+          "planet_tropical_longitude": 332.7205972770187,
+          "true_obliquity": 23.438283690829184
+        }
+      }
+    },
+    {
+      "source_receipt": "latest-instant-diagnostic.json",
+      "source_receipt_sha256": "d92c5ce3f99d2df175d9b641cf8b65c6a1c377289c2cbcc273b7e72101e27913",
+      "event": {
+        "role": "disappearance",
+        "side": "west",
+        "boundary": {
+          "kind": "SS_disappearance",
+          "jd_ut1": 2461324.160272654,
+          "lower_jd_ut1": 2461324.160266938,
+          "upper_jd_ut1": 2461324.1602783706
+        },
+        "before": {
+          "jd_ut1": 2461324.160266938,
+          "planet": "Venus",
+          "latitude": 28.6,
+          "sun_ra": 196.0050311741053,
+          "sun_declination": -6.816496760489326,
+          "planet_ra": 212.4346250719648,
+          "planet_declination": -21.133712003857998,
+          "sun_tropical_longitude": 197.36115290283522,
+          "planet_tropical_longitude": 217.42335012458332,
+          "true_obliquity": 23.43809001463365
+        },
+        "after": {
+          "jd_ut1": 2461324.1602783706,
+          "planet": "Venus",
+          "latitude": 28.6,
+          "sun_ra": 196.00504169239102,
+          "sun_declination": -6.8165010822226,
+          "planet_ra": 212.43462171913302,
+          "planet_declination": -21.13371098559981,
+          "sun_tropical_longitude": 197.3611642056302,
+          "planet_tropical_longitude": 217.42334680825923,
+          "true_obliquity": 23.438090014474692
+        }
+      }
+    }
+  ]
+}

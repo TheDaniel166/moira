@@ -175,6 +175,7 @@ jobs:
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
           python -m pytest tests/unit/test_muhurta_lagna.py tests/server/test_server_muhurta_lagna.py -q
+          python -m pytest tests/unit/test_muhurta_marriage.py tests/unit/test_muhurta_marriage_visibility.py tests/unit/test_muhurta_marriage_enclosure.py tests/unit/test_muhurta_marriage_windows.py tests/server/test_server_muhurta_marriage.py -q -m "not requires_ephemeris"
 
       - name: Planet-first stellium and selected-zodiac house contracts
         run: |
