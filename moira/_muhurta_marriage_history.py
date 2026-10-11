@@ -16,11 +16,14 @@ PADA_TARGETS=tuple(sorted(set([i*360/108 for i in range(108)]+[830/3+i*(2528/9-8
 STAR28_TARGETS=tuple(sorted([i*360/27 for i in range(27) if i!=21]+[830/3,2528/9]))
 
 
-def vedha_history(context,anchor,future_end=None):
+def vedha_history(context,anchor,future_end=None,past_start=None):
     from ._muhurta_marriage_windows import _clipped_bands
     radius=context.range_radius
-    days=min(40,context.meter.limits.max_history_days)
+    from ._muhurta_marriage_tradition_sources import VV
+    days=min(70 if context.policy.profile==VV else 40,context.meter.limits.max_history_days)
     lo,hi=anchor-radius-days,max(anchor+radius+1/86400,future_end or anchor)
+    if past_start is not None:
+        lo=min(lo,past_start)
     meter=context.meter
     meter.stage='historical_piercing_and_lunar_clearance'
     context.history_extents.append(('historical_vedha',lo,hi))

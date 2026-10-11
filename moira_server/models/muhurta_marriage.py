@@ -7,6 +7,8 @@ from pydantic import Field, model_validator
 from moira import muhurta_marriage as M
 from moira import muhurta_marriage_visibility as V
 from moira import lunar_month as L
+from moira import _muhurta_marriage_longitude_visibility as A
+from moira import _muhurta_marriage_tradition_history as H
 from moira.muhurta_marriage_dated import MarriageSearchLimits, _admit
 from .common import _StrictModel
 from ._vedic_inputs import FiniteNumber, CivilDateTime
@@ -21,7 +23,8 @@ Planet = Literal['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu'
 Classical = Literal['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn']
 AvailabilityPlanet = Literal['Jupiter','Venus']
 Remedy = Literal['mc68_own_or_exalted_luminaries','mc83_lagna_aspect','mc88_weak_afflictors',
-    'mc89_benefic_kendra_trikona','mc90_anvaya_disjunction','mc90_moon_eleventh','mc91_lagna_lords_placement']
+    'mc89_benefic_kendra_trikona','mc90_anvaya_disjunction','mc90_moon_eleventh','mc91_lagna_lords_placement',
+    'vv13_11_qualified_benefic_moon_aspect','kp_xiv_dignified_benefic_lagna_finite']
 
 
 def _engine_value(value):
@@ -49,12 +52,12 @@ class MarriagePolicyRequest(_EngineModel):
     _engine_type=M.MarriageElectionPolicy
     ritual_anchor: Annotated[StrictText,Field(min_length=1,max_length=160)]
     regional_tradition: Literal['all_regions','kuru_bahlika','kalinga_vanga','saurashtra_shalva','dakshinatya']
-    profile: Literal['mc_avasthi_2004_marriage_ordinary.v1']='mc_avasthi_2004_marriage_ordinary.v1'
-    remedies: Annotated[tuple[Remedy,...],Field(max_length=7)]=('mc68_own_or_exalted_luminaries','mc83_lagna_aspect','mc88_weak_afflictors')
+    profile: Literal['mc_avasthi_2004_marriage_ordinary.v1','vv_vasantalakshmi_1935_marriage_ordinary.v1','kp_1917_marriage_ordinary.v1']='mc_avasthi_2004_marriage_ordinary.v1'
+    remedies: Annotated[tuple[Remedy,...],Field(max_length=7)]|None=None
     godhuli: StrictBool=False
     ayanamsa_system: Literal['Lahiri']='Lahiri'
     month_system: L.LunarMonthSystem=L.LunarMonthSystem.AMANTA
-    navamsa_profile: Literal['mc_avasthi_vivaha_84_four.v1','mc_vivaha_84_optional_pisces.v1']='mc_avasthi_vivaha_84_four.v1'
+    navamsa_profile: Literal['mc_avasthi_vivaha_84_four.v1','mc_vivaha_84_optional_pisces.v1','vv_4_8_human_signs_sagittarius_first_half.v1','kp_xiv_benefic_owned_navamsa.v1']|None=None
     solver_tolerance_seconds: Annotated[FiniteNumber,Field(ge=.01,le=1)]=.1
 
 
@@ -155,6 +158,64 @@ class MarriageStarHistoryModel(_EngineModel):
     transition_bands: Annotated[tuple[MarriageHistoricalSkyBandModel,...],Field(max_length=4096)]=()
 
 
+class MarriageAngularHistoryEventModel(_EngineModel):
+    _engine_type=H.MarriageAngularHistoryEvent
+    kind: Literal['solar_navamsa','planetary_conjunction']
+    boundary: ShuddhiBoundaryModel
+    first_body: Classical
+    second_body: Classical|None
+    target_degrees: Angle
+    before_first: Angle
+    after_first: Angle
+    before_second: Angle|None=None
+    after_second: Angle|None=None
+
+
+class MarriageDeclinationEventModel(_EngineModel):
+    _engine_type=H.MarriageDeclinationEvent
+    boundary: ShuddhiBoundaryModel
+    before_sun_declination: FiniteNumber
+    before_moon_declination: FiniteNumber
+    after_sun_declination: FiniteNumber
+    after_moon_declination: FiniteNumber
+    before_moon_longitude: Angle
+    after_moon_longitude: Angle
+
+
+class MarriageShadowSampleModel(_EngineModel):
+    _engine_type=H.MarriageShadowSample
+    jd_ut1: FiniteNumber
+    kind: Literal['solar','lunar_umbral']
+    sun_xyz_km: tuple[FiniteNumber,FiniteNumber,FiniteNumber]
+    moon_xyz_km: tuple[FiniteNumber,FiniteNumber,FiniteNumber]
+    moon_sidereal_longitude: Angle
+
+
+class MarriageShadowContactModel(_EngineModel):
+    _engine_type=H.MarriageShadowContact
+    boundary: ShuddhiBoundaryModel
+    before: MarriageShadowSampleModel
+    after: MarriageShadowSampleModel
+    role: Literal['start','end']
+
+
+class MarriageEclipseIntervalModel(_EngineModel):
+    _engine_type=H.MarriageEclipseInterval
+    start: MarriageShadowContactModel
+    end: MarriageShadowContactModel
+
+
+class MarriageTraditionHistoryModel(MarriageStarHistoryModel):
+    _engine_type=H.MarriageTraditionHistory
+    tradition_profile: Literal['vv_vasantalakshmi_1935_marriage_ordinary.v1','kp_1917_marriage_ordinary.v1']
+    additional_extent: MarriageExtentModel
+    declination_extent: MarriageExtentModel|None=None
+    solar_navamsa_entries: Annotated[tuple[MarriageAngularHistoryEventModel,...],Field(max_length=512)]=()
+    conjunction_events: Annotated[tuple[MarriageAngularHistoryEventModel,...],Field(max_length=512)]=()
+    declination_events: Annotated[tuple[MarriageDeclinationEventModel,...],Field(max_length=512)]=()
+    eclipse_intervals: Annotated[tuple[MarriageEclipseIntervalModel,...],Field(max_length=512)]=()
+
+
 class MarriageYogaEndingModel(_EngineModel):
     _engine_type=M.MarriageYogaEnding
     yoga_index: Annotated[StrictInt,Field(ge=0,le=26)]
@@ -190,6 +251,33 @@ class MarriageApparitionModel(_EngineModel):
     _engine_type=V.MarriageApparitionContext
     previous_event: MarriageVisibilityEventModel
     next_event: MarriageVisibilityEventModel
+
+
+class LongitudeVisibilitySampleModel(_EngineModel):
+    _engine_type=A.LongitudeVisibilitySample
+    jd_ut1: FiniteNumber
+    planet: AvailabilityPlanet
+    sun_sidereal_longitude: Angle
+    planet_sidereal_longitude: Angle
+    longitude_speed: FiniteNumber
+    ayanamsa_system: Literal['Lahiri']='Lahiri'
+
+
+class LongitudeVisibilityEventModel(_EngineModel):
+    _engine_type=A.LongitudeVisibilityEvent
+    role: Literal['appearance','disappearance']
+    side: Literal['east','west']
+    boundary: ShuddhiBoundaryModel
+    before: LongitudeVisibilitySampleModel
+    after: LongitudeVisibilitySampleModel
+    profile: Literal['kp_1917_angular_combustion_11_10_8.v1']='kp_1917_angular_combustion_11_10_8.v1'
+
+
+class LongitudeApparitionModel(_EngineModel):
+    _engine_type=A.LongitudeApparitionContext
+    previous_event: LongitudeVisibilityEventModel
+    next_event: LongitudeVisibilityEventModel
+    profile: Literal['kp_1917_angular_combustion_11_10_8.v1']='kp_1917_angular_combustion_11_10_8.v1'
 
 
 class MarriageCalendarBoundaryModel(_EngineModel):
@@ -271,11 +359,16 @@ class MarriageEvidenceModel(_EngineModel):
     karana_span: ShuddhiIntervalModel|None=None
     lunar_month: MarriageMonthModel|None=None
     ingress_history: MarriageIngressHistoryModel|None=None
-    star_history: MarriageStarHistoryModel|None=None
+    star_history: MarriageTraditionHistoryModel|MarriageStarHistoryModel|None=None
     yoga_endings: Annotated[tuple[MarriageYogaEndingModel,...],Field(max_length=64)]=()
-    jupiter_apparition: MarriageApparitionModel|None=None
-    venus_apparition: MarriageApparitionModel|None=None
+    jupiter_apparition: MarriageApparitionModel|LongitudeApparitionModel|None=None
+    venus_apparition: MarriageApparitionModel|LongitudeApparitionModel|None=None
     ayanamsa_system: Literal['Lahiri']='Lahiri'
+
+
+class VivahaVrindavanaEvidenceModel(MarriageEvidenceModel):
+    _engine_type=M.VivahaVrindavanaEvidence
+    midheaven_sidereal_longitude: Angle|None
 
 
 class MarriageParticipantModel(_EngineModel):
@@ -294,7 +387,7 @@ class MarriageParticipantModel(_EngineModel):
 class MarriagePersonalModel(_EngineModel):
     _engine_type=M.MarriagePersonalContext
     participants: Annotated[tuple[MarriageParticipantModel,...],Field(min_length=2,max_length=2)]
-    profile: Literal['mc_avasthi_2004_marriage_personal.v1']='mc_avasthi_2004_marriage_personal.v1'
+    profile: Literal['mc_avasthi_2004_marriage_personal.v1','vv_vasantalakshmi_1935_marriage_personal.v1','kp_1917_marriage_personal.v1']='mc_avasthi_2004_marriage_personal.v1'
 
 
 class MarriageLimitsModel(_EngineModel):
@@ -311,7 +404,7 @@ class MarriageLimitsModel(_EngineModel):
 
 
 class MarriageDirectRequest(_StrictModel):
-    evidence: MarriageEvidenceModel
+    evidence: VivahaVrindavanaEvidenceModel|MarriageEvidenceModel
     policy: MarriagePolicyRequest
     personal: MarriagePersonalModel|None=None
 
@@ -365,6 +458,14 @@ class MarriageEvidenceResponse(MarriageEvidenceModel):
         return M.MarriageElectionEvidence(**{name:_engine_value(getattr(self,name)) for name in MarriageEvidenceModel.model_fields})
 
 
+class VivahaVrindavanaEvidenceResponse(VivahaVrindavanaEvidenceModel):
+    longitude_frame: Literal['apparent_geocentric_true_ecliptic_of_date']='apparent_geocentric_true_ecliptic_of_date'
+    node_basis: Literal['true_geometric_of_date']='true_geometric_of_date'
+
+    def to_engine(self):
+        return M.VivahaVrindavanaEvidence(**{name:_engine_value(getattr(self,name)) for name in VivahaVrindavanaEvidenceModel.model_fields})
+
+
 class MarriageMeasureResponse(_StrictModel):
     name: str
     value: StrictBool|StrictInt|FiniteNumber|StrictText|None
@@ -402,7 +503,7 @@ class MarriageDecisionResponse(_StrictModel):
 
 class MarriageAssessmentResponse(_StrictModel):
     policy: MarriagePolicyResponse
-    evidence: MarriageEvidenceResponse
+    evidence: VivahaVrindavanaEvidenceResponse|MarriageEvidenceResponse
     personal: MarriagePersonalModel|None
     astronomical_findings: tuple[MarriageFindingResponse,...]
     personal_findings: tuple[MarriageFindingResponse,...]
@@ -483,6 +584,17 @@ class MarriageRemedyContractResponse(_StrictModel):
     selection: str
 
 
+class AdditionalMarriageProfileResponse(_StrictModel):
+    profile: str
+    personal_profile: str
+    navamsa_profile: str
+    source_receipt: tuple[str,str]
+    source_fingerprint: str
+    rule_contracts: tuple[MarriageRuleContractResponse,...]
+    remedy_contracts: tuple[MarriageRemedyContractResponse,...]
+    exclusions: tuple[tuple[str,str],...]
+
+
 class MarriageCatalogueResponse(_StrictModel):
     ordinary_profile: str
     personal_profile: str
@@ -503,6 +615,7 @@ class MarriageCatalogueResponse(_StrictModel):
     hard_maxima: MarriageLimitsModel
     minimum_parent_history_days: int
     numerical_epoch_year_domain: tuple[int,int]
+    additional_profiles: tuple[AdditionalMarriageProfileResponse,...]
 
 
 class MarriageWindowsRequest(_StrictModel):
@@ -555,7 +668,7 @@ class MarriageIngressPart(_StrictModel):
 
 class MarriageStarPart(_StrictModel):
     kind: Literal['star_history']
-    value: MarriageStarHistoryModel
+    value: MarriageTraditionHistoryModel|MarriageStarHistoryModel
 
 
 class MarriageYogaEndingsPart(_StrictModel):
@@ -565,12 +678,12 @@ class MarriageYogaEndingsPart(_StrictModel):
 
 class MarriageJupiterPart(_StrictModel):
     kind: Literal['jupiter_apparition']
-    value: MarriageApparitionModel
+    value: MarriageApparitionModel|LongitudeApparitionModel
 
 
 class MarriageVenusPart(_StrictModel):
     kind: Literal['venus_apparition']
-    value: MarriageApparitionModel
+    value: MarriageApparitionModel|LongitudeApparitionModel
 
 
 MarriagePartResponse = Annotated[MarriageSolarPart|MarriagePhasePart|MarriageYogaPart|MarriageKaranaPart|
@@ -585,9 +698,13 @@ class MarriageWindowWitnessResponse(_StrictModel):
     part_references: Annotated[tuple[StrictInt|None,...],Field(min_length=10,max_length=10)]
 
 
+class VivahaVrindavanaWindowWitnessResponse(MarriageWindowWitnessResponse):
+    midheaven_sidereal_longitude: float|None
+
+
 class MarriageCellResponse(_StrictModel):
     interval: ShuddhiIntervalModel
-    witness: MarriageWindowWitnessResponse
+    witness: VivahaVrindavanaWindowWitnessResponse|MarriageWindowWitnessResponse
     astronomical_finding_refs: tuple[int,...]
     personal_finding_refs: tuple[int,...]
     composition_finding_refs: tuple[int,...]

@@ -227,6 +227,71 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         from ._muhurta_marriage_windows import marriage_election_windows
         return marriage_election_windows(start, end, latitude, longitude, reader=self._reader, **kwargs)
 
+    def vastu_election_catalogue(self):
+        """Discover the source-specific residential election contract."""
+        from .muhurta_vastu import vastu_election_catalogue
+        return vastu_election_catalogue()
+
+    def business_election_catalogue(self):
+        """Discover MC04 action-specific commerce contracts."""
+        from .muhurta_business import business_election_catalogue
+        return business_election_catalogue()
+
+    def travel_election_catalogue(self):
+        """Discover source-specific travel profiles and component scope."""
+        from .muhurta_travel import travel_election_catalogue
+        return travel_election_catalogue()
+
+    def assess_travel_election(self, evidence, **kwargs):
+        """Assess conditional travel evidence for the declared departure."""
+        from .muhurta_travel import assess_travel_election
+        return assess_travel_election(evidence, **kwargs)
+
+    def travel_election_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Resolve selected travel dependencies with the bound reader."""
+        from .muhurta_travel import travel_election_for_datetime
+        return travel_election_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
+    def travel_election_windows(self, start: datetime, end: datetime, latitude: float, longitude: float, **kwargs):
+        """Certify travel rule cells and retain transition uncertainty."""
+        from .muhurta_travel import travel_election_windows
+        return travel_election_windows(start, end, latitude, longitude, reader=self._reader, **kwargs)
+
+    def assess_business_election(self, evidence, **kwargs):
+        """Assess conditional commercial evidence for one named actor."""
+        from .muhurta_business import assess_business_election
+        return assess_business_election(evidence, **kwargs)
+
+    def compare_business_elections(self, evidence, **kwargs):
+        """Retain buyer and seller decisions without averaging."""
+        from .muhurta_business import compare_business_elections
+        return compare_business_elections(evidence, **kwargs)
+
+    def business_election_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Resolve only selected commercial evidence using the bound reader."""
+        from .muhurta_business import business_election_for_datetime
+        return business_election_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
+    def business_election_windows(self, start: datetime, end: datetime, latitude: float, longitude: float, **kwargs):
+        """Certify commercial action cells with the bound reader."""
+        from .muhurta_business import business_election_windows
+        return business_election_windows(start, end, latitude, longitude, reader=self._reader, **kwargs)
+
+    def assess_vastu_election(self, evidence, **kwargs):
+        """Assess supplied residential election evidence without a reader."""
+        from .muhurta_vastu import assess_vastu_election
+        return assess_vastu_election(evidence, **kwargs)
+
+    def vastu_election_for_datetime(self, dt: datetime, latitude: float, longitude: float, **kwargs):
+        """Derive residential evidence with this facade's serving reader."""
+        from .muhurta_vastu import vastu_election_for_datetime
+        return vastu_election_for_datetime(dt, latitude, longitude, reader=self._reader, **kwargs)
+
+    def vastu_election_windows(self, start: datetime, end: datetime, latitude: float, longitude: float, **kwargs):
+        """Certify residential rule cells with this facade's serving reader."""
+        from .muhurta_vastu import vastu_election_windows
+        return vastu_election_windows(start, end, latitude, longitude, reader=self._reader, **kwargs)
+
     def muhurta_lagna_catalogue(self):
         """Discover source-specific Lagna, Navamsa and strength policies."""
         from .muhurta_lagna import muhurta_lagna_catalogue

@@ -42,6 +42,7 @@ from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
 from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
 from moira.sade_sati import SadeSatiBudgetError
 from moira.muhurta_marriage_dated import MarriageSearchBudgetError
+from moira.muhurta_election import ElectionSearchBudgetError
 from moira.shadbala_context import ShadbalaContextError
 
 
@@ -414,7 +415,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def handle_marriage_budget(request: Request, exc: MarriageSearchBudgetError) -> JSONResponse:
         request_id = getattr(request.state, 'request_id', str(uuid4()))
         return JSONResponse(status_code=422, content=_error_body(
-            error_code='marriage_search_budget', message=str(exc), category='search_budget',
+            error_code='election_search_budget' if isinstance(exc,ElectionSearchBudgetError) else 'marriage_search_budget', message=str(exc), category='search_budget',
             request_id=request_id, details={'limit_kind':exc.limit_kind,'limit':exc.limit,
                                            'count':exc.count,'stage':exc.stage}))
 

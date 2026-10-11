@@ -11,7 +11,7 @@ from math import floor
 
 from ._muhurta_marriage_sources import SEVEN, NINE
 from .muhurta_marriage import (MarriageElectionPolicy, MarriageElectionEvidence,
-    MarriagePlanet, MarriageSolarContext, MarriageExtent, MarriageTimeSpan,
+    MarriageSolarContext, MarriageExtent, MarriageTimeSpan,
     MarriageIngress, MarriageIngressHistory, MarriageStarPassage, MarriageStarHistory,
     MarriageYogaEnding, MarriageFinding, MarriageElectionAssessment,
     assess_marriage_election, _decision)
@@ -121,6 +121,8 @@ def _admit(dt, latitude, longitude, timezone, policy, personal, limits):
     # later searches happen to honor it. Reject before opening a resource.
     if active.max_history_days<MINIMUM_PARENT_HISTORY_DAYS:
         raise MarriageSearchBudgetError('history_days',active.max_history_days,MINIMUM_PARENT_HISTORY_DAYS,'calendar_parent_preflight')
+    from ._muhurta_marriage_tradition_history_dated import admit_history_budget
+    admit_history_budget(policy.profile,active)
     return lat,lon,zone,active
 
 
@@ -221,6 +223,7 @@ class _Context:
                           ('solar_date',128),('solar_anchors',256),('solar_threshold_anchors',512),
                           ('phase_roots',64),('visibility_sample',16384)):
             setattr(self,name,lru_cache(maxsize=size)(getattr(self,name)))
+        self.midheaven=lru_cache(maxsize=32768)(self.midheaven)
 
     @property
     def certifier(self):
@@ -282,6 +285,10 @@ class _Context:
         if abs(self.latitude)>=90-angles.obliquity:
             return None
         return (calculate_houses(jd,self.latitude,self.longitude,'O').asc-self.offset(jd))%360
+
+    def midheaven(self,jd):
+        self.meter.tick('evaluations')
+        return (calculate_houses(jd,self.latitude,self.longitude,'O').mc-self.offset(jd))%360
 
     def solar_date(self,day):
         return _solar_date(day,self.zone,self.latitude,self.longitude,self.solar_policy.sunrise_definition.altitude_degrees)
@@ -363,7 +370,13 @@ class _Context:
 
     def phase_context(self,jd):
         roots,parents,endings=self.phase_roots(floor(jd))
-        return _context_spans(parents,jd),_span(roots['yoga'],jd),_span(roots['karana'],jd),endings
+        from ._muhurta_marriage_tradition_sources import KP
+        if self.policy.profile==KP:
+            from ._muhurta_marriage_tradition_time import kp_phase_spans
+            spans=kp_phase_spans(parents,jd)
+        else:
+            spans=_context_spans(parents,jd)
+        return spans,_span(roots['yoga'],jd),_span(roots['karana'],jd),endings
 
     def ingresses(self,jd):
         if self.shared_ingresses is not None:
@@ -459,7 +472,9 @@ class _Context:
         # One preceding complete lunar revolution is a reset witness even
         # when a slow planet's preceding passage lies years earlier. Preserve
         # the actual lunar traversal, without searching every intervening year.
-        moon_lo=max(lo,jd-min(40,self.meter.limits.max_history_days)-self.range_radius)
+        from ._muhurta_marriage_tradition_sources import VV
+        clearance_days=70 if self.policy.profile==VV else 40
+        moon_lo=max(lo,jd-min(clearance_days,self.meter.limits.max_history_days)-self.range_radius)
         moon_hi=min(hi,jd+4+self.range_radius)
         moon_roots=self.angular((('Moon',1),),moon_lo,moon_hi,tuple(i*360/27 for i in range(27)),1.,'Moon_clearance')
         passages=[p for p in passages if p.planet!='Moon']
@@ -469,7 +484,13 @@ class _Context:
         from ._muhurta_marriage_history import vedha_history
         mercury_future=next((p.exit.upper_jd_ut1 for p in passages if p.planet=='Mercury'
             and p.entry.lower_jd_ut1>jd+self.range_radius),None)
-        vedha_lo,vedha_hi,vedha,moon28,bands=vedha_history(self,jd,mercury_future)
+        from ._muhurta_marriage_tradition_sources import KP
+        past=None
+        if self.policy.profile==KP:
+            earlier=[p for p in passages if p.planet=='Mercury' and p.exit.upper_jd_ut1<jd-self.range_radius]
+            if earlier:
+                past=earlier[-1].entry.lower_jd_ut1-.01
+        vedha_lo,vedha_hi,vedha,moon28,bands=vedha_history(self,jd,mercury_future,past)
         result=MarriageStarHistory(MarriageExtent(min(lo,vedha_lo),max(hi,vedha_hi)),NINE,
             tuple(sorted(passages,key=lambda p:(NINE.index(p.planet),p.entry.jd_ut1))),vedha,moon28,bands)
         if self.range_anchor is not None:
@@ -486,6 +507,10 @@ class _Context:
         return MarriageVisibilitySample(jd,planet,self.latitude,sr,sd,pr,pd,sun.longitude,body.longitude,eps)
 
     def apparition(self,planet,jd):
+        from ._muhurta_marriage_tradition_sources import KP
+        if self.policy.profile==KP:
+            from ._muhurta_marriage_longitude_visibility import apparition
+            return apparition(self,planet,jd)
         if planet in self.apparition_events:
             return self._select_apparition(planet,jd,self.apparition_events[planet])
         self.meter.stage=planet.lower()+'_apparition_history'
@@ -637,21 +662,20 @@ class _Context:
         return _month_from_boundaries(jd,selected,provenance,phases,ingresses,solar,phase)
 
     def evidence(self,jd):
-        self.meter.stage='instant_positions'
-        from ._muhurta_marriage_enclosure import EnclosureUnavailable
-        try:
-            bound=self.certifier.astro.tt(jd,jd)
-            if not bound.lo<=self.epoch(jd).epoch_tt<=bound.hi:
-                self.reasons.append('clock_source_changed_during_initial_binding')
-        except EnclosureUnavailable as exc:
-            self.reasons.append(str(exc))
-        planets=tuple(MarriagePlanet(p,self.longitude_at(p,jd),self.body(p,jd).speed) for p in NINE)
-        solar=self.solar_context(jd)
-        spans,yoga,karana,endings=self.phase_context(jd)
-        month=self.lunar_month(jd)
-        return MarriageElectionEvidence(jd,planets,self.lagna(jd),solar,spans,yoga,karana,month,
-            self.ingresses(jd),self.star_history(jd),endings,
-            self.apparition('Jupiter',jd),self.apparition('Venus',jd),self.policy.ayanamsa_system)
+        from ._muhurta_election_evidence import build_evidence
+        from ._muhurta_marriage_tradition_sources import VV,KP
+        if self.policy.profile==VV:
+            from .muhurta_marriage import VivahaVrindavanaEvidence
+            from ._muhurta_marriage_tradition_history_dated import enrich
+            result=build_evidence(self,jd,evidence_type=VivahaVrindavanaEvidence)
+            return replace(result,star_history=enrich(self,result.star_history,jd),midheaven_sidereal_longitude=self.midheaven(jd)
+                           if result.lagna_sidereal_longitude is not None else None)
+        if self.policy.profile==KP:
+            from ._muhurta_election_evidence import ElectionDependencies
+            from ._muhurta_marriage_tradition_history_dated import enrich
+            result=build_evidence(self,jd,ElectionDependencies(phases=True,month=True,ingresses=True,stars=True,apparitions=True))
+            return replace(result,star_history=enrich(self,result.star_history,jd))
+        return build_evidence(self,jd)
 
     def receipt(self):
         import hashlib
@@ -703,13 +727,14 @@ def _check_output(result,meter,*,additional=False):
     from dataclasses import fields,is_dataclass
     from enum import Enum
     from ._muhurta_marriage_windows import MarriageElectionWindows
+    from ._muhurta_election_dated import ElectionWindows
     import json
     def value(x):
         if is_dataclass(x):
             out={f.name:value(getattr(x,f.name)) for f in fields(x)}
             if isinstance(x,MarriageFinding):
                 out.update(effective_restriction=x.effective_restriction,coverage_complete=x.coverage_complete)
-            if isinstance(x,MarriageElectionWindows):
+            if isinstance(x,(MarriageElectionWindows,ElectionWindows)):
                 out.update(eligible_intervals=value(x.eligible_intervals),
                            indeterminate_cell_indices=value(x.indeterminate_cell_indices))
             return out

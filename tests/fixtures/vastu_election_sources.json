@@ -1,0 +1,13 @@
+{
+  "edition": "MC Maniprabha, Kapileshvara Shastri, 1948",
+  "scan_sha256": "d972964e36fff6311c2fe1be91b0be0943f58f49108451d5e18d7fef05140bde",
+  "loci": {"foundation": "12.13-19, PDF348-353", "entry": "13.1-7, PDF359-366", "facing_stars": "11.36, PDF297-298"},
+  "vrisha_good": [8,9,10,11,12,13,14,15,16,17,18],
+  "kalasha_good": [6,7,8,9,10,11,12,13,22,23,24,25,26,27],
+  "foundation_forbidden_tithis_one_based": {"east":[15,16,17,18,19,20,21,22,23],"north":[24,25,26,27,28,29],"west":[30,1,2,3,4,5],"south":[6,7,8,9,10,11,12,13,14]},
+  "ordinary_entry_stars": ["Rohini","Mrigashira","Uttara Phalguni","Chitra","Anuradha","Uttara Ashadha","Uttara Bhadrapada","Revati"],
+  "extra_entry_stars": ["Pushya","Swati","Dhanishtha","Shatabhisha"],
+  "north_vama_ravi_houses": [11,12,1,2,3],
+  "door_installation_separate_segments": [4,8,8,3,4],
+  "attribution": "Independent scan transcription. Unequal Abhijit boundaries, Purnimanta entry extension, seven-graha placement quantifier, SS apparition geometry and resident Bhakuta are separately named computational interpretations."
+}

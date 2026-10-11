@@ -296,9 +296,10 @@ class EventCertificates:
             opposite=body=='Ketu'
             if opposite:
                 body='Rahu'
-            if body=='Lagna':
-                vector=self.horizon.lagna(a,b,coarse=coarse)
-                reference=self.context.lagna(mid)
+            if body in ('Lagna','Midheaven'):
+                owner='lagna' if body=='Lagna' else 'midheaven'
+                vector=getattr(self.horizon,owner)(a,b,coarse=coarse)
+                reference=getattr(self.context,owner)(mid)
                 if reference is None:
                     raise EnclosureUnavailable('lagna_unavailable')
                 angle=longitude_differential(vector,reference)
@@ -333,7 +334,8 @@ class EventCertificates:
             b=nextafter(root.upper,inf)
             target=root.target%360
             def residual(t):
-                value=sum(n*(self.context.lagna(t) if p=='Lagna' else self.context.longitude_at(p,t)) for p,n in terms)
+                value=sum(n*(self.context.lagna(t) if p=='Lagna' else self.context.midheaven(t)
+                             if p=='Midheaven' else self.context.longitude_at(p,t)) for p,n in terms)
                 return (value-target+180)%360-180
             va,vb=residual(a),residual(b)
             if va*vb>0 or va==vb:

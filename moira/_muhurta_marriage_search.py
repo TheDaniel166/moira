@@ -101,9 +101,12 @@ class WorkMeter:
       }
     }
     [/MACHINE_CONTRACT]"""
-    def __init__(self, limits):
+    def __init__(self, limits, *, budget_error=MarriageSearchBudgetError):
         if not isinstance(limits,MarriageSearchLimits):
             raise ValueError('limits must be MarriageSearchLimits')
+        if not isinstance(budget_error,type) or not issubclass(budget_error,MarriageSearchBudgetError):
+            raise ValueError('budget_error must preserve the canonical budget error contract')
+        self.budget_error = budget_error
         self.limits = limits
         self.counts = {'evaluations':0,'reader_calls':0,'transitions':0,'cells':0,'output_bytes':0,
                        'root_iterations':0,'historical_cells':0}
@@ -113,7 +116,7 @@ class WorkMeter:
         self.counts[kind] += amount
         maximum = getattr(self.limits,'max_'+kind)
         if self.counts[kind] > maximum:
-            raise MarriageSearchBudgetError(kind,maximum,self.counts[kind],self.stage)
+            raise self.budget_error(kind,maximum,self.counts[kind],self.stage)
 
 
 class MeteredReader:

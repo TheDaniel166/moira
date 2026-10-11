@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 502
-- Registered OpenAPI operations: 502 (GET 41, POST 461)
+- Registered OpenAPI paths: 515
+- Registered OpenAPI operations: 515 (GET 44, POST 471)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 498
+- Versioned `/v1` paths: 511
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3581,6 +3581,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/midpoints/pictures` | relationship | `midpoint_pictures_route_v1_midpoints_pictures_post` |
 | `POST` | `/v1/midpoints/to-point` | relationship | `midpoints_to_point_route_v1_midpoints_to_point_post` |
 | `POST` | `/v1/midpoints/weighting` | relationship | `midpoint_weighting_route_v1_midpoints_weighting_post` |
+| `GET` | `/v1/muhurta/business/catalogue` | muhurta | `business_catalogue_route_v1_muhurta_business_catalogue_get` |
+| `POST` | `/v1/muhurta/business/compare` | muhurta | `business_compare_route_v1_muhurta_business_compare_post` |
+| `POST` | `/v1/muhurta/business/datetime` | muhurta | `business_datetime_route_v1_muhurta_business_datetime_post` |
+| `POST` | `/v1/muhurta/business/direct` | muhurta | `business_direct_route_v1_muhurta_business_direct_post` |
+| `POST` | `/v1/muhurta/business/windows` | muhurta | `business_windows_route_v1_muhurta_business_windows_post` |
 | `POST` | `/v1/muhurta/chart/classification` | muhurta | `muhurta_chart_classification_route_v1_muhurta_chart_classification_post` |
 | `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
@@ -3605,6 +3610,14 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/special/day` | muhurta | `special_muhurta_day_route_v1_muhurta_special_day_post` |
 | `POST` | `/v1/muhurta/special/solar` | muhurta | `special_muhurta_solar_route_v1_muhurta_special_solar_post` |
 | `POST` | `/v1/muhurta/special/yogas` | muhurta | `special_muhurta_yogas_route_v1_muhurta_special_yogas_post` |
+| `GET` | `/v1/muhurta/travel/catalogue` | muhurta | `travel_catalogue_route_v1_muhurta_travel_catalogue_get` |
+| `POST` | `/v1/muhurta/travel/datetime` | muhurta | `travel_datetime_route_v1_muhurta_travel_datetime_post` |
+| `POST` | `/v1/muhurta/travel/direct` | muhurta | `travel_direct_route_v1_muhurta_travel_direct_post` |
+| `POST` | `/v1/muhurta/travel/windows` | muhurta | `travel_windows_route_v1_muhurta_travel_windows_post` |
+| `GET` | `/v1/muhurta/vastu/catalogue` | muhurta | `vastu_catalogue_route_v1_muhurta_vastu_catalogue_get` |
+| `POST` | `/v1/muhurta/vastu/datetime` | muhurta | `vastu_datetime_route_v1_muhurta_vastu_datetime_post` |
+| `POST` | `/v1/muhurta/vastu/direct` | muhurta | `vastu_direct_route_v1_muhurta_vastu_direct_post` |
+| `POST` | `/v1/muhurta/vastu/windows` | muhurta | `vastu_windows_route_v1_muhurta_vastu_windows_post` |
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |

@@ -20,6 +20,7 @@ def serialize_marriage_snapshot(result):
 
 def serialize_marriage_catalogue(result):
     return MarriageCatalogueResponse(**dict(result,rules=tuple(asdict(r) for r in result['rules']),
+        additional_profiles=tuple(asdict(p) for p in result['additional_profiles']),
         rule_contracts=tuple(asdict(r) for r in result['rule_contracts']),
         remedy_contracts=tuple(asdict(r) for r in result['remedy_contracts']),
         default_limits=asdict(result['default_limits']),hard_maxima=asdict(result['hard_maxima'])))

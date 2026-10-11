@@ -221,3 +221,17 @@ class HorizonEnclosures:
             raise EnclosureUnavailable('lagna_antipode_selector_rounding_margin_unavailable')
         vector=(-a.sin()*eps.cos()*lat.cos()-lat.sin()*eps.sin(),a.cos()*lat.cos(),D.point(0.))
         return rotate_z(vector,offset)
+
+    def midheaven(self,a,b,*,coarse=False):
+        """Same serving local sidereal angle and clock as the house MC owner."""
+        self.astro.tt(a,b)
+        if self.default_clock is None:
+            self.default_clock=MarriageClockEnclosures(self.astro.reader,self.astro.clock.identity,default_clock=True)
+        u=self._ut1(a,b)
+        tt=self._clock_jet(u,self.default_clock)
+        reader_tt=self._clock_jet(u,self.astro.clock)
+        angles=self.astro.frames.angles(tt,coarse=coarse)
+        offset=self.astro.frames.angles(reader_tt,coarse=coarse)[4]
+        a=_last(u,self.context.longitude,angles)
+        vector=(a.cos()*angles[3].cos(),a.sin(),D.point(0.))
+        return rotate_z(vector,offset)

@@ -46,10 +46,12 @@ class MarriageEvidencePart:
         from .muhurta_dosha import DoshaPhaseSpan
         from .lunar_month import LunarMonthResult
         from .muhurta_marriage_visibility import MarriageApparitionContext
+        from ._muhurta_marriage_longitude_visibility import LongitudeApparitionContext
         types={'solar':MarriageSolarContext,'yoga_span':ShuddhiInterval,
                'karana_span':ShuddhiInterval,'lunar_month':LunarMonthResult,
                'ingress_history':MarriageIngressHistory,'star_history':MarriageStarHistory,
-               'jupiter_apparition':MarriageApparitionContext,'venus_apparition':MarriageApparitionContext}
+               'jupiter_apparition':(MarriageApparitionContext,LongitudeApparitionContext),
+               'venus_apparition':(MarriageApparitionContext,LongitudeApparitionContext)}
         if self.kind in ('phase_spans','yoga_endings'):
             _tuple(self.kind,self.value,DoshaPhaseSpan if self.kind=='phase_spans' else MarriageYogaEnding,64)
         elif not isinstance(self.value,types[self.kind]):
@@ -82,6 +84,28 @@ class MarriageWindowWitness:
             values[kind]=parts[index].value
         return MarriageElectionEvidence(self.jd_ut1,self.planets,self.lagna_sidereal_longitude,
                                          ayanamsa_system=policy.ayanamsa_system,**values)
+
+
+@dataclass(frozen=True, slots=True)
+class VivahaVrindavanaWindowWitness(MarriageWindowWitness):
+    """VV keeps its per-instant MC alongside the unchanged shared parent slots."""
+    midheaven_sidereal_longitude: float | None
+
+    def __post_init__(self):
+        MarriageWindowWitness.__post_init__(self)
+        from .muhurta_marriage import VivahaVrindavanaEvidence
+        VivahaVrindavanaEvidence(self.jd_ut1,self.planets,self.lagna_sidereal_longitude,
+            midheaven_sidereal_longitude=self.midheaven_sidereal_longitude)
+
+    def resolve(self,parts,policy):
+        from .muhurta_marriage import VivahaVrindavanaEvidence
+        from ._muhurta_marriage_tradition_sources import VV
+        from dataclasses import fields
+        if policy.profile!=VV:
+            raise ValueError('VV window witness requires VV policy')
+        base=MarriageWindowWitness.resolve(self,parts,policy)
+        return VivahaVrindavanaEvidence(**{f.name:getattr(base,f.name) for f in fields(base) if f.init},
+            midheaven_sidereal_longitude=self.midheaven_sidereal_longitude)
 
 
 @dataclass(frozen=True, slots=True)
@@ -206,10 +230,13 @@ def admit_window(start,end,latitude,longitude,timezone,policy,personal,limits):
         raise ValueError('marriage window requires start before end')
     if hi-lo>admitted[3].max_range_days:
         raise MarriageSearchBudgetError('range_days',admitted[3].max_range_days,hi-lo,'preflight')
+    from ._muhurta_marriage_tradition_history_dated import admit_history_budget
+    admit_history_budget(policy.profile,admitted[3],(hi-lo)/2)
     return (*admitted,lo,hi)
 
 
-def _candidate_boundaries(context,lo,hi):
+def _candidate_boundaries(context,lo,hi,*,evidence_factory=None,apparition_buffers=True):
+    from ._muhurta_marriage_tradition_sources import VV,KP,buffers
     meter=context.meter
     boundaries=[_point('range_start',lo),_point('range_end',hi)]
     # 108 ordinary physical padas/navamsas and the unequal Abhijit quartiles.
@@ -220,7 +247,9 @@ def _candidate_boundaries(context,lo,hi):
         roots=context.angular(((planet,1),),lo,hi,selected,min(1.,hi-lo),planet+'_discrete')
         boundaries.extend(r.boundary for r in roots)
     if context.lagna((lo+hi)/2) is not None:
-        boundaries.extend(r.boundary for r in context.angular((('Lagna',1),),lo,hi,targets,
+        lagna_targets=tuple(sorted(set(targets+tuple(i*360/216 for i in range(216))+
+            tuple(i*2.5 for i in range(144))+tuple(sign*30+offset for sign in range(12) for offset in (5,10,12,18,20,25))))) if context.policy.profile in (VV,KP) else targets
+        boundaries.extend(r.boundary for r in context.angular((('Lagna',1),),lo,hi,lagna_targets,
             min(1/24,hi-lo),'lagna_discrete'))
     else:
         # Point unavailability is not a full-domain constancy certificate;
@@ -245,7 +274,7 @@ def _candidate_boundaries(context,lo,hi):
         roots,parents,_=context.phase_roots(day)
         boundaries.extend(b for values in roots.values() for b in values)
         boundaries.extend(b for spans in parents.values() for s in spans for b in (s.interval.start,s.interval.end))
-    evidence=context.evidence((lo+hi)/2)
+    evidence=(context.evidence if evidence_factory is None else evidence_factory)((lo+hi)/2)
     # Calendar-owner and Panchanga solvers can enclose the same physical root
     # with different brackets. Retain both; their union owns the uncertainty.
     for _,_,phases,ingresses in context.months:
@@ -264,14 +293,25 @@ def _candidate_boundaries(context,lo,hi):
     for planet,events in context.apparition_events.items():
         for event in events:
             boundaries.append(event.boundary)
-            post,pre=_BUFFERS[(planet,event.side)]
-            shift=post if event.role=='appearance' else -pre
-            boundaries.append(_shift(event.boundary,shift,'availability_waiting_period'))
-    for passage in evidence.star_history.passages:
+            if apparition_buffers:
+                post,pre=(buffers(context.policy.profile,planet,event.side) if context.policy.profile in (VV,KP) else _BUFFERS[(planet,event.side)])
+                shift=post if event.role=='appearance' else -pre
+                boundaries.append(_shift(event.boundary,shift,'availability_waiting_period'))
+    for passage in (() if evidence.star_history is None else evidence.star_history.passages):
         boundaries.extend((passage.entry,passage.exit))
-    for passage in evidence.star_history.moon28_passages:
+    for passage in (() if evidence.star_history is None else evidence.star_history.moon28_passages):
         boundaries.extend((passage.entry,passage.exit))
-    boundaries.extend(b.boundary for b in evidence.star_history.transition_bands)
+    boundaries.extend(b.boundary for b in (() if evidence.star_history is None else evidence.star_history.transition_bands))
+    from ._muhurta_marriage_tradition_history import MarriageTraditionHistory
+    if isinstance(evidence.star_history,MarriageTraditionHistory):
+        extra=evidence.star_history
+        boundaries.extend(e.boundary for e in (*extra.solar_navamsa_entries,*extra.conjunction_events,*extra.declination_events))
+        boundaries.extend(b for e in extra.eclipse_intervals for b in (e.start.boundary,e.end.boundary))
+    if context.policy.profile==VV:
+        boundaries.extend(r.boundary for r in context.angular((('Lagna',1),('Sun',-1)),lo,hi,
+            tuple(i*15. for i in range(24)),min(1/24,hi-lo),'vv_angular_hora'))
+        from ._muhurta_marriage_vv_geometry import boundaries as bhava_boundaries
+        boundaries.extend(bhava_boundaries(context,lo,hi))
     for day in range(floor(lo)-1,ceil(hi)+1):
         solar=context.solar_context(day+.5)
         if solar is not None:
@@ -358,6 +398,10 @@ def _compose(context,start,end,lo,hi,personal,binding):
         assessment=assess_marriage_election(evidence,policy=context.policy,personal=personal)
         witness=MarriageWindowWitness(jd,evidence.planets,evidence.lagna_sidereal_longitude,
             tuple(intern_part(name,getattr(evidence,name)) for name in _PART_NAMES))
+        from .muhurta_marriage import VivahaVrindavanaEvidence
+        if isinstance(evidence,VivahaVrindavanaEvidence):
+            witness=VivahaVrindavanaWindowWitness(witness.jd_ut1,witness.planets,witness.lagna_sidereal_longitude,
+                witness.part_references,evidence.midheaven_sidereal_longitude)
         pending.append((a,b,witness,assessment))
         # Check retained evidence and cells while constructing the response,
         # before accumulating an unbounded serialization workload.

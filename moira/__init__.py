@@ -8,6 +8,25 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 from __future__ import annotations
 
 import sys as _sys
+from .muhurta_election import (
+    ElectionEvidence, ElectionPlanet, ElectionParticipant, ElectionRuleContract,
+    ElectionAssessment, ElectionFinding, ElectionMeasure, ElectionException, ElectionDecision,
+    ElectionSearchBudgetError,
+)
+from .muhurta_business import (
+    BusinessElectionPolicy, BusinessElectionContext, BusinessElectionComparison,
+    assess_business_election, compare_business_elections, business_election_catalogue,
+    business_election_for_datetime, business_election_windows,
+)
+from .muhurta_travel import (
+    TravelElectionPolicy, TravelElectionContext, assess_travel_election,
+    travel_election_catalogue, travel_election_for_datetime, travel_election_windows,
+)
+from .muhurta_vastu import (
+    VastuElectionPolicy, VastuElectionContext, assess_vastu_election,
+    vastu_election_catalogue, vastu_election_for_datetime, vastu_election_windows,
+)
+from ._muhurta_election_dated import ElectionSearchLimits, ElectionSnapshot, ElectionCell, ElectionWindows
 from .muhurta_marriage import (
     MarriageElectionPolicy,
     MarriagePlanet,
@@ -24,6 +43,16 @@ from .muhurta_marriage import (
     MarriageStarHistory,
     MarriageYogaEnding,
     MarriageElectionEvidence,
+    VivahaVrindavanaEvidence,
+    LongitudeVisibilitySample,
+    LongitudeVisibilityEvent,
+    LongitudeApparitionContext,
+    MarriageAngularHistoryEvent,
+    MarriageDeclinationEvent,
+    MarriageShadowSample,
+    MarriageShadowContact,
+    MarriageEclipseInterval,
+    MarriageTraditionHistory,
     MarriageParticipant,
     MarriagePersonalContext,
     MarriageMeasure,
@@ -1430,6 +1459,17 @@ __all__ = [
     "LagnaRestriction",
     "MuhurtaLagnaAssessment",
     "MarriageElectionPolicy",
+    "ElectionEvidence", "ElectionPlanet", "ElectionParticipant", "ElectionRuleContract",
+    "ElectionAssessment", "ElectionFinding", "ElectionMeasure", "ElectionException", "ElectionDecision",
+    "ElectionSearchBudgetError",
+    "VastuElectionPolicy", "VastuElectionContext", "assess_vastu_election",
+    "TravelElectionPolicy", "TravelElectionContext", "assess_travel_election",
+    "travel_election_catalogue", "travel_election_for_datetime", "travel_election_windows",
+    "BusinessElectionPolicy", "BusinessElectionContext", "BusinessElectionComparison",
+    "assess_business_election", "compare_business_elections", "business_election_catalogue",
+    "business_election_for_datetime", "business_election_windows",
+    "vastu_election_catalogue", "vastu_election_for_datetime", "vastu_election_windows",
+    "ElectionSearchLimits", "ElectionSnapshot", "ElectionCell", "ElectionWindows",
     "MarriagePlanet",
     "MarriageExtent",
     "MarriageTimeSpan",
@@ -1444,6 +1484,16 @@ __all__ = [
     "MarriageStarHistory",
     "MarriageYogaEnding",
     "MarriageElectionEvidence",
+    "VivahaVrindavanaEvidence",
+    "LongitudeVisibilitySample",
+    "LongitudeVisibilityEvent",
+    "LongitudeApparitionContext",
+    "MarriageAngularHistoryEvent",
+    "MarriageDeclinationEvent",
+    "MarriageShadowSample",
+    "MarriageShadowContact",
+    "MarriageEclipseInterval",
+    "MarriageTraditionHistory",
     "MarriageParticipant",
     "MarriagePersonalContext",
     "MarriageMeasure",

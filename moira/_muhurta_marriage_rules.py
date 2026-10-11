@@ -199,7 +199,7 @@ def _solar(e):
                     measure('window_end_upper', window.end.upper_jd_ut1, 'JD_UT1')))
 
 
-def _foundations(e, policy, positions):
+def _foundations(e, policy, positions, *, vishanadi_clock='mc_avasthi_scaled_start_fixed_width.v1'):
     if not {'Sun', 'Moon'} <= positions.keys():
         for family in ('nitya_yoga','vishanadi','yamaghanta_yoga','yamaghanta_kala',
                        'nakshatra_gandanta','tithi_gandanta','lagna_gandanta'):
@@ -225,7 +225,7 @@ def _foundations(e, policy, positions):
         phase_spans=e.phase_spans, sunrise_day=None if e.solar is None else e.solar.day,
         sunset=None if e.solar is None else e.solar.sunset,
         policy=MuhurtaDoshaPolicy(vishanadi_profile='mc_vivaha_49_51.v1',
-                                 vishanadi_clock='mc_avasthi_scaled_start_fixed_width.v1',
+                                 vishanadi_clock=vishanadi_clock,
                                  gandanta_profile='mc_vivaha_43_fixed_ghati.v1',parihara_profiles=(),
                                  ayanamsa_system=policy.ayanamsa_system,
                                  solver_tolerance_seconds=policy.solver_tolerance_seconds))

@@ -1,0 +1,280 @@
+{
+  "evidence_class": "Independent transcription of primary scans; no engine output is an oracle",
+  "vv": {
+    "url": "https://archive.org/details/in.ernet.dli.2015.329463",
+    "sha256": "793cc3c454a0c383bb3784886cd19e702d310b67aa39a597748b148da02cdfc0",
+    "loci": {
+      "five_line_pairs": "1.6 diagram PDF17 and17.3 PDF127, visually collated",
+      "yavana_friendship": "3.17 PDF40, author conclusion, visually collated",
+      "ingress_buffer": "8.12 Vasantalakshmi PDF76 explicitly16 ghatis each side, visually collated",
+      "protected_jamitra": "13.12-13 PDF106-107:55th inclusive,54 elapsed, non-cancellable",
+      "hora": "8.8-11 PDF74-76; two definitions and three relief qualifications",
+      "eclipse": "1.21-23 PDF24-25: seven days, six-month outer ceiling, two subsequent Moon traversals",
+      "krantisamya": "1.23 PDF25 and17.3 PDF127: equal declination and owning star"
+    },
+    "five_line_pairs": [
+      [
+        "Swati",
+        "Shatabhisha"
+      ],
+      [
+        "Shravana",
+        "Magha"
+      ],
+      [
+        "Bharani",
+        "Anuradha"
+      ],
+      [
+        "Abhijit",
+        "Rohini"
+      ],
+      [
+        "Punarvasu",
+        "Mula"
+      ],
+      [
+        "UttaraBhadrapada",
+        "Hasta"
+      ],
+      [
+        "UttaraAshadha",
+        "Mrigashira"
+      ],
+      [
+        "Revati",
+        "UttaraPhalguni"
+      ]
+    ],
+    "forward_inclusive_latta": {
+      "Sun": 12,
+      "Saturn": 8,
+      "Mars": 3,
+      "Rahu": 20,
+      "Moon": 7,
+      "Mercury": 22,
+      "Jupiter": 6,
+      "Venus": 24
+    },
+    "visibility_waits": {
+      "Jupiter_east": [
+        10,
+        14
+      ],
+      "Jupiter_west": [
+        10,
+        14
+      ],
+      "Venus_east": [
+        3,
+        10
+      ],
+      "Venus_west": [
+        10,
+        5
+      ]
+    },
+    "human_navamsa_signs": [
+      "Gemini",
+      "Virgo",
+      "Libra",
+      "Sagittarius_first_15_degrees"
+    ],
+    "moon_clearance_traversals": 2,
+    "ingress_fixed_ghatis_each_side": 16,
+    "calendar_specific": [
+      [
+        "Phalguna",
+        "Pisces",
+        "allowed"
+      ],
+      [
+        "Vaisakha",
+        "Aries",
+        "allowed"
+      ],
+      [
+        "Chaitra",
+        "Aries",
+        "prohibited"
+      ],
+      [
+        "Chaitra",
+        "Pisces",
+        "prohibited"
+      ],
+      [
+        "Pausha",
+        "Capricorn",
+        "prohibited"
+      ]
+    ],
+    "hora": {
+      "angular_degrees": 15,
+      "elapsed_ghatis": 2.5,
+      "sequence": [
+        "Sun",
+        "Venus",
+        "Mercury",
+        "Moon",
+        "Saturn",
+        "Jupiter",
+        "Mars"
+      ],
+      "printed_thursday_elapsed_eight_horas_lord": "Mars",
+      "relief": [
+        "majority_benefic_vargas",
+        "benefic_weekday",
+        "night"
+      ]
+    },
+    "eclipse_days_after": 7,
+    "full_jamitra_inclusive_navamsa": 55
+  },
+  "kp": {
+    "url": "https://www.astrojyoti.com/wp-content/uploads/2019/09/Kalaprakasika_text.pdf",
+    "sha256": "d082d5b3b29cb6c054f3cfe8e5ff50dfa6a66220128b52afa485c5a91c10c074",
+    "loci": {
+      "calendar": "XIV PDF116-124",
+      "combustion": "printed44/PDF81 footnote;glossary244/PDF281;general182/PDF219",
+      "gandanta": "II printed12/PDF49",
+      "thyajyam": "XXXIII PDF222-223;223 visually collated",
+      "ekargala": "XXXIII PDF206-207; diagram207 visually collated",
+      "shadaseethimukha": "XXXIII printed170/PDF207: movable5/fixed7/dual9, first60ghati",
+      "ends": "XIV PDF122-123; XXXIII PDF219 last3days of month and lastfortnight of year"
+    },
+    "best_paksha_tithis": [
+      2,
+      3,
+      5,
+      7,
+      10,
+      11,
+      13
+    ],
+    "middle_paksha_tithis": [
+      6,
+      8,
+      12,
+      15
+    ],
+    "dark_first_middle": true,
+    "dark_after_eighth_prohibited": true,
+    "appearance_disappearance_waits": {
+      "Jupiter": [
+        8,
+        15
+      ],
+      "Venus": [
+        7,
+        10
+      ]
+    },
+    "combustion_degrees": {
+      "Jupiter": 11,
+      "Venus_direct": 10,
+      "Venus_retrograde": 8
+    },
+    "eighth_house_favorable": [
+      "Saturn",
+      "Sun",
+      "Mars"
+    ],
+    "fourth_house_moon": "adverse",
+    "star_thyajyam_offsets": [
+      50,
+      24,
+      30,
+      40,
+      14,
+      21,
+      30,
+      20,
+      32,
+      30,
+      20,
+      18,
+      21,
+      20,
+      14,
+      14,
+      10,
+      14,
+      20,
+      24,
+      20,
+      10,
+      10,
+      18,
+      6,
+      24,
+      30
+    ],
+    "shukla_tithi_thyajyam_offsets": [
+      24,
+      12,
+      55,
+      5,
+      54,
+      5,
+      34,
+      10,
+      21,
+      7,
+      29,
+      6,
+      13,
+      21,
+      35
+    ],
+    "weekday_thyajyam_offsets": [
+      30,
+      42,
+      41,
+      31,
+      2,
+      22,
+      20
+    ],
+    "thyajyam_width_fixed_ghatis": 4,
+    "gandanta_star_tithi_fixed_ghatis": 2,
+    "ekargala_partition": 27,
+    "ekargala_day_only": true,
+    "ekargala_printed_example": {
+      "yoga": "Parigha",
+      "head": "Magha",
+      "Sun": "Ashwini",
+      "Moon": "Mula",
+      "detected": true
+    },
+    "ingress_fixed_ghatis_each_side": {
+      "Libra": 60,
+      "Aries_Cancer_Capricorn": 180,
+      "others": 30
+    },
+    "shadaseethimukha": {
+      "movable_solar_navamsa": 5,
+      "fixed_solar_navamsa": 7,
+      "dual_solar_navamsa": 9,
+      "initial_fixed_ghatis": 60
+    }
+  },
+  "classical_varga_adapter": {
+    "source": "Brihat Jataka1.7 and1.9; self-counted D12 and standard Sun/Moon hora/trine Drekkana",
+    "unequal_d30_odd_degrees": [
+      5,
+      5,
+      8,
+      7,
+      5
+    ],
+    "unequal_d30_odd_lords": [
+      "Mars",
+      "Saturn",
+      "Jupiter",
+      "Mercury",
+      "Venus"
+    ],
+    "even_rule": "reverse widths and owners"
+  }
+}

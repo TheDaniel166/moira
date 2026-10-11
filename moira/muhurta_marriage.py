@@ -13,6 +13,10 @@ from .muhurta_dosha import DoshaPhaseSpan, MuhurtaDoshaInputs
 from .lunar_month import LunarMonthResult, LunarMonthSystem
 from .muhurta_marriage_visibility import MarriageApparitionContext
 from ._muhurta_marriage_roundoff import ARITHMETIC_MODEL
+from ._muhurta_marriage_tradition_sources import (VV, KP, VV_PERSONAL, KP_PERSONAL,
+    VV_NAVAMSA, KP_NAVAMSA, VV_REMEDIES, KP_REMEDIES)
+from ._muhurta_marriage_longitude_visibility import (LongitudeApparitionContext,
+    LongitudeVisibilitySample,LongitudeVisibilityEvent)
 
 
 def _tuple(name, value, cls, maximum):
@@ -38,11 +42,11 @@ class MarriageElectionPolicy:
     ritual_anchor: str
     regional_tradition: str
     profile: str = ORDINARY
-    remedies: tuple[str, ...] = ('mc68_own_or_exalted_luminaries', 'mc83_lagna_aspect', 'mc88_weak_afflictors')
+    remedies: tuple[str, ...] | None = None
     godhuli: bool = False
     ayanamsa_system: str = 'Lahiri'
     month_system: LunarMonthSystem = LunarMonthSystem.AMANTA
-    navamsa_profile: str = 'mc_avasthi_vivaha_84_four.v1'
+    navamsa_profile: str | None = None
     solver_tolerance_seconds: float = .1
     nature_profile: str = field(init=False, default='bphs_3_11_verse_phase_same_sign.v1')
     abhijit_pada_convention: str = field(init=False, default='equal_abhijit_subarcs_other_stars_original_padas.v1')
@@ -55,19 +59,34 @@ class MarriageElectionPolicy:
     def __post_init__(self):
         if type(self.ritual_anchor) is not str or not self.ritual_anchor.strip() or len(self.ritual_anchor) > 160:
             raise ValueError('ritual_anchor must be a nonempty label of at most 160 characters')
-        _choice('profile', self.profile, (ORDINARY,))
+        _choice('profile', self.profile, (ORDINARY,VV,KP))
         _choice('regional_tradition', self.regional_tradition, REGIONS)
+        admitted=REMEDIES if self.profile==ORDINARY else VV_REMEDIES if self.profile==VV else KP_REMEDIES
+        if self.remedies is None:
+            object.__setattr__(self,'remedies',REMEDIES[:3] if self.profile==ORDINARY else ())
         _tuple('remedies', self.remedies, str, len(REMEDIES))
-        if len(set(self.remedies)) != len(self.remedies) or any(x not in REMEDIES for x in self.remedies):
-            raise ValueError('remedies must be unique admitted identifiers')
+        if len(set(self.remedies)) != len(self.remedies) or any(x not in admitted for x in self.remedies):
+            raise ValueError('remedies must be unique identifiers admitted by the selected profile')
         if type(self.godhuli) is not bool:
             raise ValueError('godhuli must be boolean')
         # This initial composition admits one consistently shared sidereal basis.
         _choice('ayanamsa_system', self.ayanamsa_system, ('Lahiri',))
         if self.month_system is not LunarMonthSystem.AMANTA:
             raise ValueError('this marriage composition requires the physical amanta lunar-month system')
-        _choice('navamsa_profile', self.navamsa_profile,
-                ('mc_avasthi_vivaha_84_four.v1', 'mc_vivaha_84_optional_pisces.v1'))
+        navamsas=(('mc_avasthi_vivaha_84_four.v1','mc_vivaha_84_optional_pisces.v1') if self.profile==ORDINARY
+                  else (VV_NAVAMSA,) if self.profile==VV else (KP_NAVAMSA,))
+        if self.navamsa_profile is None:
+            object.__setattr__(self,'navamsa_profile',navamsas[0])
+        _choice('navamsa_profile', self.navamsa_profile,navamsas)
+        if self.profile!=ORDINARY:
+            if self.regional_tradition!='all_regions' or self.godhuli:
+                raise ValueError('VV/KP ordinary profiles require all_regions and exclude MC Godhuli')
+            values=(('calendar_precedence','vv10_lunar_over_solar_specific_permissions' if self.profile==VV else 'kp_xiv_specific_over_xxxiii_general'),
+                ('ingress_clock','vv8_12_commentary_sixteen_fixed_ghatis_each_side' if self.profile==VV else 'kp175_fixed_30_60_180_ghatis_each_side'),
+                ('history_occupancy_profile','vv17_nearest_passages_two_complete_moon_traversals.v1' if self.profile==VV else 'kp_xiv_declared_stellar_scope.v1'),
+                ('history_piercing_profile','vv1_and17_whole_star_five_line.v1' if self.profile==VV else 'kp_xiv_declared_stellar_scope.v1'))
+            for key,value in values:
+                object.__setattr__(self,key,value)
         if not .01 <= _number('solver_tolerance_seconds', self.solver_tolerance_seconds) <= 1:
             raise ValueError('solver_tolerance_seconds must be in [.01,1]')
 
@@ -363,8 +382,8 @@ class MarriageElectionEvidence:
     ingress_history: MarriageIngressHistory | None = None
     star_history: MarriageStarHistory | None = None
     yoga_endings: tuple[MarriageYogaEnding, ...] = ()
-    jupiter_apparition: MarriageApparitionContext | None = None
-    venus_apparition: MarriageApparitionContext | None = None
+    jupiter_apparition: MarriageApparitionContext | LongitudeApparitionContext | None = None
+    venus_apparition: MarriageApparitionContext | LongitudeApparitionContext | None = None
     ayanamsa_system: str = 'Lahiri'
     longitude_frame: str = field(init=False, default='apparent_geocentric_true_ecliptic_of_date')
     node_basis: str = field(init=False, default='true_geometric_of_date')
@@ -451,8 +470,30 @@ class MarriageElectionEvidence:
         for planet, name in (('Jupiter', 'jupiter_apparition'), ('Venus', 'venus_apparition')):
             context = getattr(self, name)
             if context is not None:
-                from .muhurta_marriage_visibility import marriage_planet_availability
-                marriage_planet_availability(planet, self.jd_ut1, context)
+                if isinstance(context,LongitudeApparitionContext):
+                    context.validate_epoch(planet,self.jd_ut1)
+                else:
+                    from .muhurta_marriage_visibility import marriage_planet_availability
+                    marriage_planet_availability(planet, self.jd_ut1, context)
+
+
+@dataclass(frozen=True,slots=True)
+class VivahaVrindavanaEvidence(MarriageElectionEvidence):
+    """VV raw MC supplements the shared Ascendant for chapter8 bhava testimony.
+
+    Its quadrant trisectors are house centers. Sandhis bisect neighboring
+    centers. Adverse sign-house testimony survives a favorable bhava change.
+    """
+    midheaven_sidereal_longitude: float | None = None
+
+    def __post_init__(self):
+        MarriageElectionEvidence.__post_init__(self)
+        if self.midheaven_sidereal_longitude is not None:
+            _longitude('midheaven_sidereal_longitude',self.midheaven_sidereal_longitude)
+            if self.lagna_sidereal_longitude is None:
+                raise ValueError('VV bhava geometry requires the matching Ascendant')
+            from ._muhurta_marriage_vv_geometry import bhava_centers
+            bhava_centers(self.lagna_sidereal_longitude,self.midheaven_sidereal_longitude)
 
 
 @dataclass(frozen=True, slots=True)
@@ -493,7 +534,7 @@ class MarriagePersonalContext:
     profile: str = PERSONAL
 
     def __post_init__(self):
-        _choice('personal profile', self.profile, (PERSONAL,))
+        _choice('personal profile', self.profile, (PERSONAL,VV_PERSONAL,KP_PERSONAL))
         _tuple('participants', self.participants, MarriageParticipant, 2)
         if len(self.participants) != 2 or len({p.participant_id for p in self.participants}) != 2 or {p.role for p in self.participants} != {'bride', 'groom'}:
             raise ValueError('personal context requires two distinct identities with bride/groom rule roles')
@@ -631,6 +672,9 @@ class MarriageElectionAssessment:
     def __post_init__(self):
         if not isinstance(self.policy, MarriageElectionPolicy) or not isinstance(self.evidence, MarriageElectionEvidence):
             raise ValueError('assessment requires typed policy and evidence')
+        if self.policy.profile in (VV,KP):
+            from ._muhurta_marriage_tradition_sources import EXCLUSIONS as tradition_exclusions
+            object.__setattr__(self,'exclusions',tradition_exclusions)
         if self.personal is not None and not isinstance(self.personal, MarriagePersonalContext):
             raise ValueError('assessment personal context must be typed')
         for name in ('astronomical_findings', 'personal_findings', 'composition_findings'):
@@ -663,7 +707,23 @@ def assess_marriage_election(evidence, *, policy, personal=None):
         raise ValueError('lunar month system must match selected policy')
     if personal is not None and any(p.ayanamsa_system != policy.ayanamsa_system for p in personal.participants):
         raise ValueError('natal and election evidence must share the selected sidereal basis')
-    from ._muhurta_marriage_rules import evaluate
+    expected=PERSONAL if policy.profile==ORDINARY else VV_PERSONAL if policy.profile==VV else KP_PERSONAL
+    if personal is not None and personal.profile!=expected:
+        raise ValueError('personal profile must belong to the selected ordinary profile')
+    for name in ('jupiter_apparition','venus_apparition'):
+        context=getattr(evidence,name)
+        if context is not None and isinstance(context,LongitudeApparitionContext)!=(policy.profile==KP):
+            raise ValueError('apparition geometry does not belong to the selected marriage profile')
+    if isinstance(evidence,VivahaVrindavanaEvidence) and policy.profile!=VV:
+        raise ValueError('VV bhava evidence cannot be injected into another profile')
+    from ._muhurta_marriage_tradition_history import MarriageTraditionHistory
+    if isinstance(evidence.star_history,MarriageTraditionHistory):
+        if evidence.star_history.tradition_profile!=policy.profile:
+            raise ValueError('additional history must belong to the selected profile')
+    if policy.profile==ORDINARY:
+        from ._muhurta_marriage_rules import evaluate
+    else:
+        from ._muhurta_marriage_traditions import evaluate
     astronomical, personal_findings, composition = evaluate(evidence, policy, personal)
     return MarriageElectionAssessment(policy, evidence, personal,
         astronomical, personal_findings, composition,
@@ -675,10 +735,12 @@ def marriage_election_catalogue():
     """Finite source manifest with explicit selected-profile admission."""
     from ._muhurta_marriage_manifest import marriage_rule_contracts,SUPPORTING_CONTRACTS,SOURCE_RECEIPT,HISTORY_COMPOSITION,REMEDY_CONTRACTS
     from ._muhurta_marriage_search import MarriageSearchLimits,SEARCH_HARD_MAXIMA,MINIMUM_PARENT_HISTORY_DAYS
+    from ._muhurta_marriage_tradition_manifest import profiles
     return {'ordinary_profile': ORDINARY, 'personal_profile': PERSONAL,
             'godhuli_profile': GODHULI, 'admission_status': 'source_scoped_public',
             'rules': RULES, 'remedies': REMEDIES, 'regional_traditions': REGIONS,
-            'exclusions': EXCLUSIONS, 'research_variants': RESEARCH_VARIANTS,
+            'exclusions': EXCLUSIONS, 'research_variants': tuple(x for x in RESEARCH_VARIANTS if x[0]!='kp_marriage'),
+            'additional_profiles':profiles(),
             'rule_contracts':marriage_rule_contracts(),'supporting_contracts':SUPPORTING_CONTRACTS,
             'source_receipt':SOURCE_RECEIPT,'history_composition':HISTORY_COMPOSITION,
             'numerical_arithmetic_model':ARITHMETIC_MODEL,'remedy_contracts':REMEDY_CONTRACTS,
@@ -687,11 +749,19 @@ def marriage_election_catalogue():
             'numerical_epoch_year_domain':(1900,2100)}
 
 
+# These public subclasses require the base vessels above to finish definition.
+from ._muhurta_marriage_tradition_history import (MarriageAngularHistoryEvent,  # noqa: E402
+    MarriageDeclinationEvent,MarriageShadowSample,MarriageShadowContact,
+    MarriageEclipseInterval,MarriageTraditionHistory)
+
 __all__ = ['MarriageElectionPolicy', 'MarriagePlanet', 'MarriageExtent', 'MarriageTimeSpan', 'MarriageSolarContext',
+           'MarriageAngularHistoryEvent','MarriageDeclinationEvent','MarriageShadowSample',
+           'MarriageShadowContact','MarriageEclipseInterval','MarriageTraditionHistory',
            'MarriageIngress', 'MarriageIngressHistory', 'MarriageStarPassage', 'MarriageStarHistory',
            'MarriageHistoricalSkySpan', 'MarriageMoon28Passage',
            'MarriageHistoricalLongitude', 'MarriageHistoricalSkyBand',
-           'MarriageYogaEnding', 'MarriageElectionEvidence', 'MarriageParticipant',
+           'MarriageYogaEnding', 'MarriageElectionEvidence', 'VivahaVrindavanaEvidence', 'MarriageParticipant',
+           'LongitudeVisibilitySample','LongitudeVisibilityEvent','LongitudeApparitionContext',
            'MarriagePersonalContext', 'MarriageMeasure', 'MarriageException', 'MarriageFinding',
            'MarriageDecision', 'MarriageElectionAssessment', 'assess_marriage_election',
            'marriage_election_catalogue']

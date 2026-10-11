@@ -766,7 +766,7 @@ ACTIVITY_MUHURTA_GUIDANCE: dict[str, dict] = {
         ],
         "preferred_varas": [1, 3, 4, 5],  # Monday, Wednesday, Thursday, Friday
         "critical": "4th and 8th bhava shuddhi from Muhurta Lagna is mandatory (no malefics, especially Saturn/Mars in 8th).",
-        "notes": "Uttarayana strongly preferred. Strong emphasis on Vastu alignment and specific Lagna (Taurus, Leo, Aquarius best)."
+        "notes": "Legacy coarse guidance only. Use assess_vastu_election with the foundation purpose for the edition-owned solar/facing, excavation and placement rules; vastu_election_windows certifies bounded dated intervals."
     },
     "house_entry": {  # Grihapravesh
         "good_tithis": [1, 2, 3, 4, 6, 7, 9, 10, 12, 13],  # Shukla Paksha emphasis
@@ -781,7 +781,7 @@ ACTIVITY_MUHURTA_GUIDANCE: dict[str, dict] = {
         ],
         "preferred_varas": [1, 3, 4, 5],
         "critical": "Strong 10th bhava shuddhi from Muhurta Lagna.",
-        "notes": "Often done with family and sacred fire. Moon should be strong."
+        "notes": "Legacy coarse guidance only. Use assess_vastu_election with an explicit entry purpose for source findings, calendar, visibility and resident context; vastu_election_windows certifies bounded dated intervals."
     },
     "travel": {  # Yatra Muhurta
         "good_tithis": [2, 3, 5, 7, 10, 11, 13],  # Generally lighter than marriage
@@ -792,7 +792,7 @@ ACTIVITY_MUHURTA_GUIDANCE: dict[str, dict] = {
         ],
         "avoid_nakshatras": ["Bharani", "Krittika", "Ardra", "Ashlesha", "Jyeshtha", "Mula"],
         "preferred_varas": [1, 3, 4, 5],  # Avoid Tuesday/Saturday in many texts
-        "notes": "Direction and purpose matter greatly. Specific tyajya vara-nakshatra combinations exist in Muhurta Chintamani for travel."
+        "notes": "Legacy coarse guidance only. Use assess_travel_election with a named source profile and departure context; travel_election_windows certifies its bounded dated intervals. KP component profiles do not constitute a complete travel election."
     },
 }
 
@@ -800,7 +800,10 @@ def get_muhurta_guidance_for_activity(activity: str) -> dict | None:
     """Return legacy guidance. Marriage uses absolute zero-based tithi indices.
 
     Marriage guidance is deprecated and cannot determine election eligibility.
-    Other activities retain their existing behavior.
+    Housing and travel tables remain coarse guidance; their notes point to the
+    source-owned assessment and window APIs. This accessor does not certify
+    elections or alter generic sampled-search behavior. Commerce uses the
+    separate assess_business_election API with an explicit actor and purpose.
     """
     if activity.lower() == 'marriage':
         import warnings

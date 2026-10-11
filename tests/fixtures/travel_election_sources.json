@@ -1,0 +1,22 @@
+{
+  "edition": "MC48 Kapileshvara Shastri Maniprabha 1948",
+  "pdf_sha256": "d972964e36fff6311c2fe1be91b0be0943f58f49108451d5e18d7fef05140bde",
+  "best_stars_zero_based": [0,6,16,4,7,26,12,21,22],
+  "middling_stars_zero_based": [11,20,25,23,18,17,10,19,24,3],
+  "direction_star_shula": [17,24,3,11],
+  "direction_weekdays": [[1,6],[4],[0,5],[2,3]],
+  "parigha_relief_stars": [16,12,7,0],
+  "yogini_paksha_tithis_with_new_moon_30": [[1,9],[3,11],[5,13],[4,12],[6,14],[7,15],[2,10],[8,30]],
+  "sunday_hasta_shukla_panchami_example": {"locus":"11.24/PDF291","sum":19,"moduli":[7,8,3],"remainders":[5,3,1]},
+  "vishanadi_rohini_example": {"locus":"Vivaha49-51/PDF218-219","star_duration_ghatis":54,"nominal_offset":40,"nominal_width":4,"offset_ghatis":36,"width_ghatis":3.6},
+  "prior_departure": {"locus":"11.95/PDF325","ordinary_same_stop_nights":5,"global_journey_expiry":false},
+  "rahu_example_conflict": {"locus":"11.14/PDF285","choice":"verse thirteen following stars, occupied star, thirteen preceding stars","printed_example_endpoints_admitted":false},
+  "kp": {
+    "pdf_sha256":"d082d5b3b29cb6c054f3cfe8e5ff50dfa6a66220128b52afa485c5a91c10c074",
+    "weekday_release_locus":"printed148/PDF185",
+    "release_ghatis":[8,22,15,12],
+    "modular_locus":"printed149,151-152/PDF186,188-189",
+    "friday_pushya_panchami_remainders":[4,2,2],
+    "panchakam_shifts":[15,12,10,8,4]
+  }
+}

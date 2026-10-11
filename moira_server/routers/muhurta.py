@@ -58,7 +58,110 @@ from ..serializers.muhurta_marriage import serialize_marriage_catalogue,serializ
 from ..services.muhurta_marriage import compute_marriage_datetime,compute_marriage_windows
 
 
+from ..models.muhurta_vastu import (VastuCatalogueResponse, VastuDirectRequest,
+    VastuAssessmentResponse, VastuDateTimeRequest, VastuSnapshotResponse,
+    VastuWindowsRequest, VastuWindowsResponse)
+from ..serializers.muhurta_election import election_values
+from ..services.muhurta_vastu import compute_vastu_datetime, compute_vastu_windows
+from ..models.muhurta_business import (BusinessCatalogueResponse, BusinessDirectRequest,
+    BusinessAssessmentResponse, BusinessDateTimeRequest, BusinessSnapshotResponse,
+    BusinessWindowsRequest, BusinessWindowsResponse, BusinessComparisonRequest, BusinessComparisonResponse)
+from ..services.muhurta_business import compute_business_datetime, compute_business_windows
+from ..models.muhurta_travel import (TravelCatalogueResponse,TravelDirectRequest,TravelAssessmentResponse,
+    TravelDateTimeRequest,TravelSnapshotResponse,TravelWindowsRequest,TravelWindowsResponse)
+from ..services.muhurta_travel import compute_travel_datetime,compute_travel_windows
+
+
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.get('/travel/catalogue',response_model=TravelCatalogueResponse)
+def travel_catalogue_route() -> TravelCatalogueResponse:
+    """Named source profiles and explicit component coverage."""
+    from moira.muhurta_travel import travel_election_catalogue
+    return TravelCatalogueResponse(**election_values(travel_election_catalogue()))
+
+
+@router.post('/travel/direct',response_model=TravelAssessmentResponse)
+def travel_direct_route(request: TravelDirectRequest) -> TravelAssessmentResponse:
+    """Conditional source assessment for a declared traveller and anchor."""
+    from moira.muhurta_travel import assess_travel_election
+    return TravelAssessmentResponse(**election_values(assess_travel_election(request.evidence.to_engine(),
+        policy=request.policy.to_engine(),context=request.context.to_engine())))
+
+
+@router.post('/travel/datetime',response_model=TravelSnapshotResponse)
+def travel_datetime_route(request: TravelDateTimeRequest,engine: Moira=Depends(get_engine)) -> TravelSnapshotResponse:
+    """Derive only the selected travel evidence with source-bound certificates."""
+    return compute_travel_datetime(engine,request)
+
+
+@router.post('/travel/windows',response_model=TravelWindowsResponse)
+def travel_windows_route(request: TravelWindowsRequest,engine: Moira=Depends(get_engine)) -> TravelWindowsResponse:
+    """Retain strict source edges and certified stable interiors."""
+    return compute_travel_windows(engine,request)
+
+
+@router.get('/business/catalogue', response_model=BusinessCatalogueResponse)
+def business_catalogue_route() -> BusinessCatalogueResponse:
+    """Discover actor-specific commerce selections and exclusions."""
+    from moira.muhurta_business import business_election_catalogue
+    return BusinessCatalogueResponse(**election_values(business_election_catalogue()))
+
+
+@router.post('/business/direct', response_model=BusinessAssessmentResponse)
+def business_direct_route(request: BusinessDirectRequest) -> BusinessAssessmentResponse:
+    """Conditional assessment of buyer, seller or trading-operator timing."""
+    from moira.muhurta_business import assess_business_election
+    return BusinessAssessmentResponse(**election_values(assess_business_election(request.evidence.to_engine(),
+        policy=request.policy.to_engine(),context=request.context.to_engine())))
+
+
+@router.post('/business/compare', response_model=BusinessComparisonResponse)
+def business_compare_route(request: BusinessComparisonRequest) -> BusinessComparisonResponse:
+    """Two actors on the same supplied sky, retaining each decision."""
+    from moira.muhurta_business import compare_business_elections
+    return BusinessComparisonResponse(**election_values(compare_business_elections(request.evidence.to_engine(),
+        buyer_id=request.buyer_id,seller_id=request.seller_id)))
+
+
+@router.post('/business/datetime', response_model=BusinessSnapshotResponse)
+def business_datetime_route(request: BusinessDateTimeRequest, engine: Moira=Depends(get_engine)) -> BusinessSnapshotResponse:
+    """Derive only the selected commerce dependencies."""
+    return compute_business_datetime(engine,request)
+
+
+@router.post('/business/windows', response_model=BusinessWindowsResponse)
+def business_windows_route(request: BusinessWindowsRequest, engine: Moira=Depends(get_engine)) -> BusinessWindowsResponse:
+    """Certified commercial rule cells with retained uncertainty."""
+    return compute_business_windows(engine,request)
+
+
+@router.get('/vastu/catalogue', response_model=VastuCatalogueResponse)
+def vastu_catalogue_route() -> VastuCatalogueResponse:
+    """Selected residential actions, source interpretations and exclusions."""
+    from moira.muhurta_vastu import vastu_election_catalogue
+    return VastuCatalogueResponse(**election_values(vastu_election_catalogue()))
+
+
+@router.post('/vastu/direct', response_model=VastuAssessmentResponse)
+def vastu_direct_route(request: VastuDirectRequest) -> VastuAssessmentResponse:
+    """Conditional assessment from typed caller-owned evidence."""
+    from moira.muhurta_vastu import assess_vastu_election
+    return VastuAssessmentResponse(**election_values(assess_vastu_election(request.evidence.to_engine(),
+        policy=request.policy.to_engine(), context=request.context.to_engine())))
+
+
+@router.post('/vastu/datetime', response_model=VastuSnapshotResponse)
+def vastu_datetime_route(request: VastuDateTimeRequest, engine: Moira=Depends(get_engine)) -> VastuSnapshotResponse:
+    """Reader-derived assessment of a declared residential anchor."""
+    return compute_vastu_datetime(engine, request)
+
+
+@router.post('/vastu/windows', response_model=VastuWindowsResponse)
+def vastu_windows_route(request: VastuWindowsRequest, engine: Moira=Depends(get_engine)) -> VastuWindowsResponse:
+    """Bounded certified cells and explicit transition uncertainty."""
+    return compute_vastu_windows(engine, request)
 
 
 @router.get('/marriage/catalogue',response_model=MarriageCatalogueResponse)
