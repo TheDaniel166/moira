@@ -1,3 +1,10 @@
+"""Live surface invariants plus an immutable historical compatibility floor.
+
+The inventories below preserve previously admitted names, not an exact ceiling
+on new APIs. Current exports are curated by each module's own __all__; additions
+must satisfy the same binding, identity, and callable checks as existing APIs.
+"""
+
 from __future__ import annotations
 
 import inspect
@@ -20,6 +27,13 @@ import moira.sky.time as sky_time
 import moira.sky.visibility as sky_visibility
 import moira.vedic as vedic
 import pytest
+
+from tests.tools.public_api_contract import (
+    compatibility_errors,
+    instance_method_errors,
+    public_method_names,
+    surface_contract_errors,
+)
 
 
 _EXPECTED_ROOT_PUBLIC_NAMES = {
@@ -1856,13 +1870,17 @@ _EXPECTED_MOIRA_METHODS.update({
 })
 
 
-def test_root_public_surface_snapshot_is_exact() -> None:
-    actual = set(moira.__all__)
-    assert actual == _EXPECTED_ROOT_PUBLIC_NAMES, (
-        "moira.__all__ drifted.\n"
-        f"Unexpected additions: {sorted(actual - _EXPECTED_ROOT_PUBLIC_NAMES)}\n"
-        f"Unexpected removals: {sorted(_EXPECTED_ROOT_PUBLIC_NAMES - actual)}"
+# Preserve the original independently enumerated inventories verbatim. Do not
+# regenerate these floors from runtime or append every newly admitted feature.
+_ROOT_COMPATIBILITY_FLOOR = frozenset(_EXPECTED_ROOT_PUBLIC_NAMES)
+_METHOD_COMPATIBILITY_FLOOR = frozenset(_EXPECTED_MOIRA_METHODS)
+
+
+def test_root_public_surface_preserves_compatibility() -> None:
+    errors = surface_contract_errors(
+        moira, required=_ROOT_COMPATIBILITY_FLOOR, upstream=facade,
     )
+    assert not errors, "\n".join(errors)
 
 
 def test_root_surface_is_duplicate_free_and_bound() -> None:
@@ -1928,10 +1946,15 @@ def test_root_star_import_matches_public_surface() -> None:
     namespace: dict[str, object] = {}
     exec("from moira import *", {}, namespace)
 
-    missing = sorted(_EXPECTED_ROOT_PUBLIC_NAMES - set(namespace))
-    extra = sorted(set(namespace) - _EXPECTED_ROOT_PUBLIC_NAMES)
+    declared = set(moira.__all__)
+    missing = sorted(declared - set(namespace))
+    extra = sorted(set(namespace) - declared)
     assert not missing, f"`from moira import *` missed public names: {missing}"
     assert not extra, f"`from moira import *` leaked unexpected names: {extra}"
+    rebound = sorted(
+        name for name in declared if namespace[name] is not getattr(moira, name)
+    )
+    assert not rebound, f"`from moira import *` changed public symbol identity: {rebound}"
 
 
 def test_root_only_surface_snapshot_is_exact() -> None:
@@ -1942,23 +1965,14 @@ def test_root_only_surface_snapshot_is_exact() -> None:
     )
 
 
-def test_moira_public_method_snapshot_is_exact() -> None:
-    actual = {
-        name
-        for name, member in inspect.getmembers(facade.Moira)
-        if not name.startswith("_") and inspect.isfunction(member)
-    }
-    assert actual == _EXPECTED_MOIRA_METHODS, (
-        "Moira() public method surface drifted.\n"
-        f"Unexpected additions: {sorted(actual - _EXPECTED_MOIRA_METHODS)}\n"
-        f"Unexpected removals: {sorted(_EXPECTED_MOIRA_METHODS - actual)}"
+def test_moira_public_methods_preserve_compatibility() -> None:
+    errors = compatibility_errors(
+        _METHOD_COMPATIBILITY_FLOOR, public_method_names(facade.Moira), "Moira()",
     )
+    assert not errors, "\n".join(errors)
 
 
 def test_moira_instance_public_methods_are_callable() -> None:
     engine = facade.Moira()
-
-    non_callable = [
-        name for name in _EXPECTED_MOIRA_METHODS if not callable(getattr(engine, name))
-    ]
-    assert not non_callable, f"Moira instance lost callable methods: {non_callable}"
+    errors = instance_method_errors(engine, required=_METHOD_COMPATIBILITY_FLOOR)
+    assert not errors, "\n".join(errors)

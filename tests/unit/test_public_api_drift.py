@@ -18,11 +18,14 @@ import importlib
 
 import pytest
 
+from tests.tools.public_api_contract import surface_contract_errors
+
 # ---------------------------------------------------------------------------
 # Surface modules under guard
 # ---------------------------------------------------------------------------
 
 _SURFACES = [
+    "moira",
     "moira.essentials",
     "moira.classical",
     "moira.predictive",
@@ -63,6 +66,12 @@ def test_all_names_are_bound(surface) -> None:
     assert not missing, (
         f"{surface.__name__}.__all__ declares unbound names: {missing}"
     )
+
+
+def test_current_declarations_satisfy_additive_surface_contract(surface) -> None:
+    """Check every current declaration, including newly added feature exports."""
+    errors = surface_contract_errors(surface)
+    assert not errors, "\n".join(errors)
 
 
 # ---------------------------------------------------------------------------
