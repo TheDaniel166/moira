@@ -197,6 +197,7 @@ jobs:
             tests/unit/test_comet_identity_catalog.py \
             tests/unit/test_comets.py \
             tests/unit/test_small_body_catalog_builder_manifests.py \
+            tests/unit/test_asteroid_type13_apsidal_audit.py \
             tests/unit/test_small_body_catalog_release.py \
             tests/unit/test_small_body_release_loader_gate.py \
             tests/unit/test_small_body_identity_resolution.py \

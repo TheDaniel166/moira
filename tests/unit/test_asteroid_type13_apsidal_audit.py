@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
+import subprocess
 
 import pytest
 
@@ -28,6 +30,46 @@ def artifact() -> dict:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize("autocrlf", ("false", "true"))
+def test_git_preserves_byte_bound_adaptive_inputs(
+    tmp_path: Path, autocrlf: str,
+) -> None:
+    """Exercise Git's real clean/checkout filters, including POSIX settings."""
+    if shutil.which("git") is None:
+        pytest.skip("Git is required to exercise checkout byte preservation")
+    inputs = {
+        ARTIFACT_PATH.relative_to(ROOT).as_posix(): (
+            "6cee053cb69f68b60a8343079691a1eb319845201a4bf547ff288dc375118008"
+        ),
+        "moira/data/asteroid_type13_adaptive_bodies.json": (
+            "5e46410874fe5edc9a17e54d7b7eed1cf0ef1e060df602ee32adc618c2a9662d"
+        ),
+    }
+
+    def git(*args: str) -> bytes:
+        return subprocess.run(
+            ["git", *args], cwd=tmp_path, check=True, capture_output=True,
+        ).stdout
+
+    git("init", "--quiet")
+    git("config", "core.autocrlf", autocrlf)
+    git("config", "core.safecrlf", "false")
+    shutil.copyfile(ROOT / ".gitattributes", tmp_path / ".gitattributes")
+    for relative, expected in inputs.items():
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / relative, destination)
+        assert _sha256(destination) == expected
+    git("add", ".gitattributes", *inputs)
+    for relative, expected in inputs.items():
+        blob = git("show", f":{relative}")
+        assert hashlib.sha256(blob).hexdigest() == expected
+    checkout = tmp_path / "checkout"
+    git("checkout-index", "--all", f"--prefix={checkout.as_posix()}/")
+    for relative, expected in inputs.items():
+        assert _sha256(checkout / relative) == expected
 
 
 def test_audit_partitions_every_admitted_asteroid(artifact: dict) -> None:
