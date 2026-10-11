@@ -167,7 +167,7 @@ jobs:
       - name: Run public surface and release hardening suites
         run: |
           python -m pytest tests/unit/test_website_docs_bundle_generation.py -q
-          python -m pytest tests/unit/test_public_api_drift.py -q
+          python -m pytest tests/unit/test_public_api_drift.py tests/unit/test_public_api_contract.py -q
           python -m pytest tests/unit/test_public_doctrine_surfaces.py -q
           python -m pytest tests/unit/test_dasha.py -q
           python -m pytest tests/unit/test_dasha_systems.py tests/unit/test_dasha_full_intervals.py tests/unit/test_varga_exact_partition.py tests/unit/test_shadbala_source_repairs.py tests/unit/test_vedic_reader_scan_repairs.py -q
