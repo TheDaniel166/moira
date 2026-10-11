@@ -22,6 +22,11 @@ tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json text eo
 # byte-bound evidence. Preserve their original bytes on every platform.
 tests/fixtures/horizons_asteroid_apsidal_anchored_2026_10_03/* -text
 
+# The adaptive catalog binds the original CRLF audit and roster bytes. Do not
+# normalize these scientific provenance inputs when checking out on POSIX.
+tests/artifacts/oracle/asteroid_type13_apsidal_sampling_audit_2026-09-28.json -text whitespace=cr-at-eol
+moira/data/asteroid_type13_adaptive_bodies.json -text whitespace=cr-at-eol
+
 # Wheel-bundled asteroid catalog is byte-hashed at import/verify time.
 moira/kernels/asteroids_wheel/* text eol=lf
 moira/kernels/asteroids_wheel/*.bsp -text
