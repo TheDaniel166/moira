@@ -6,17 +6,19 @@ Phase 2  Result vessel structure ............................. RULE-01, RULE-03,
 Phase 3  API behaviour + sign validity ....................... RULE-02, RULE-09, RULE-10, RULE-11
 Phase 4  Contradiction sweeps (ritual.sweep_taboo) .......... RULE-03, RULE-04, RULE-05, RULE-09
 Phase 5  Oracle tests (cross-mode + sign-stability) ......... RULE-07 relationship, RULE-02
-Phase 6  No-aspect VOC ....................................... RULE-06
+Phase 6  Controlled no-aspect VOC (no ephemeris) .............. RULE-06
 
 Scan anchor: J2000 + 14 days (~4–5 Moon sign transits). Heavy tests use the
 `voc_scan_windows` session fixture to avoid recomputing the range repeatedly.
 """
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 import moira.void_of_course as _voc_mod
-from moira.constants import SIGNS
+from moira.constants import Body, SIGNS
 from moira.void_of_course import (
     LastAspect,
     MoonConnection,
@@ -30,11 +32,10 @@ from moira.void_of_course import (
 
 # ---------------------------------------------------------------------------
 # Scan range constants — J2000 + 14 days covers ~4–5 Moon sign transits.
-# Used by sweep fixtures.  Widened to 30 days for RULE-06 search.
+# Used by sweep fixtures. RULE-06 uses controlled geometry, not a calendar scan.
 # ---------------------------------------------------------------------------
 _SCAN_START = 2451545.0       # J2000.0
 _SCAN_END   = 2451559.0       # +14 days
-_SCAN_END_WIDE = 2451575.0    # +30 days
 
 
 # ---------------------------------------------------------------------------
@@ -508,36 +509,60 @@ def test_range_windows_ordered_temporal_covenant(voc_scan_windows, ritual):
 # Phase 6 — No-aspect VOC (RULE-06)
 # ============================================================================
 
-def test_no_aspect_voc_last_aspect_is_none(planetary_reader):
+@pytest.mark.parametrize("modern", [False, True], ids=["traditional", "modern"])
+def test_no_aspect_voc_last_aspect_is_none(monkeypatch, jd_j2000, modern):
     """RULE-06: when Moon enters sign already VOC, last_aspect is None.
 
-    Scans 30 days for a no-aspect window.  If found, verifies the structural
-    invariant: querying at jd_voc_start + epsilon returns the same jd_voc_start,
-    proving it is the sign-entry time, not an aspect perfection time.
+    Controlled geometry, not an ephemeris accuracy oracle: the Moon moves
+    from 0 to 30 degrees in two days while all comparison bodies stay at
+    45 degrees. Its relative longitude stays between 315 and 345 degrees,
+    crossing none of the eight major-aspect targets. Only the planetary
+    position provider is replaced; ingress and aspect searches remain real.
     """
-    windows = void_periods_in_range(
-        _SCAN_START,
-        _SCAN_END_WIDE,
-        reader=planetary_reader,
+    controlled_reader = object()
+    jd_entry = jd_j2000  # Synthetic JD (UT) anchor, not the real J2000 sky.
+    jd_exit = jd_entry + 2.0
+    comparison_longitude = 45.0
+    # Frozen ingress solver precision: 1e-5 days, approximately 0.86 seconds.
+    jd_tolerance = 1e-5
+
+    def controlled_planet_at(body, jd, *, reader):
+        assert reader is controlled_reader
+        longitude = (
+            (15.0 * (jd - jd_entry)) % 360.0
+            if body == Body.MOON else comparison_longitude
+        )
+        return SimpleNamespace(longitude=longitude)
+
+    monkeypatch.setattr(_voc_mod, "planet_at", controlled_planet_at)
+
+    for jd_probe in (jd_entry + 0.001, jd_entry + 0.8, jd_exit - 0.001):
+        window = void_of_course_window(
+            jd_probe, reader=controlled_reader, modern=modern,
+        )
+        assert isinstance(window, VoidOfCourseWindow)
+        assert window.last_aspect is None
+        assert window.jd_voc_start == pytest.approx(
+            jd_entry, abs=jd_tolerance, rel=0.0,
+        )
+        assert window.jd_voc_end == pytest.approx(
+            jd_exit, abs=jd_tolerance, rel=0.0,
+        )
+        assert window.duration_hours == pytest.approx(
+            48.0, abs=2.0 * jd_tolerance * 24.0, rel=0.0,
+        )
+        assert (window.moon_sign, window.moon_sign_next) == (SIGNS[0], SIGNS[1])
+
+    # Positive control: at 15 degrees, conjunction perfects one day after
+    # ingress. An always-empty aspect search or unconditional ingress fallback
+    # must fail this same focused test rather than falsely satisfy RULE-06.
+    comparison_longitude = 15.0
+    with_aspect = void_of_course_window(
+        jd_entry + 0.8, reader=controlled_reader, modern=modern,
     )
-    no_aspect = [w for w in windows if w.last_aspect is None]
-
-    if not no_aspect:
-        pytest.skip("no no-aspect VOC window found in 30-day scan — RULE-06 not exercised")
-
-    for w in no_aspect:
-        # Probe just inside the window: the window must be stable
-        jd_probe    = w.jd_voc_start + 0.001
-        window_probe = void_of_course_window(
-            jd_probe,
-            reader=planetary_reader,
-        )
-        assert abs(window_probe.jd_voc_start - w.jd_voc_start) < 1e-5, (
-            f"RULE-06: no-aspect VOC start is unstable at jd_voc_start+0.001\n"
-            f"  original={w.jd_voc_start:.6f}, probed={window_probe.jd_voc_start:.6f}"
-        )
-        assert window_probe.last_aspect is None, (
-            "RULE-06: probing inside a no-aspect window returned last_aspect != None"
-        )
-        # The window must span a non-zero duration (sign transit has positive length)
-        assert w.duration_hours > 0.0, "RULE-06: no-aspect VOC window has zero duration"
+    assert with_aspect.last_aspect is not None
+    assert with_aspect.last_aspect.aspect_name == "Conjunction"
+    assert with_aspect.last_aspect.jd_exact == pytest.approx(
+        jd_entry + 1.0, abs=jd_tolerance, rel=0.0,
+    )
+    assert with_aspect.jd_voc_start == with_aspect.last_aspect.jd_exact
