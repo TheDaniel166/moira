@@ -520,11 +520,9 @@
         "moira/progressed_astrodynes.py",
         "moira_server/routers/astrodynes.py"
       ],
-      "production_user_surface_count": 3,
+      "production_user_surface_count": 1,
       "production_user_surface_ids": [
-        "rest:POST:/v1/astrodynes/chart",
-        "rest:POST:/v1/astrodynes/progressed/chart",
-        "rest:POST:/v1/astrodynes/progressed/search"
+        "rest:POST:/v1/astrodynes/chart"
       ],
       "python_surface_count": 12,
       "rest_surface_count": 13,
@@ -1481,10 +1479,9 @@
         "moira/draconic.py",
         "moira_server/routers/draconic.py"
       ],
-      "production_user_surface_count": 3,
+      "production_user_surface_count": 2,
       "production_user_surface_ids": [
         "rest:POST:/v1/draconic/chart",
-        "rest:POST:/v1/draconic/longitude",
         "rest:POST:/v1/draconic/positions"
       ],
       "python_surface_count": 4,
@@ -1665,10 +1662,8 @@
         "moira_server/routers/electional.py",
         "moira_server/routers/western_electional.py"
       ],
-      "production_user_surface_count": 1,
-      "production_user_surface_ids": [
-        "rest:POST:/v1/electional/western/ramesey-moon-condition"
-      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
       "python_surface_count": 10,
       "rest_surface_count": 16,
       "review_stages": [
@@ -5018,7 +5013,7 @@
         "moira_server/routers/generic_phenomena.py",
         "moira_server/routers/phenomena.py"
       ],
-      "production_user_surface_count": 20,
+      "production_user_surface_count": 18,
       "production_user_surface_ids": [
         "python:moira.facade:conjunctions_in_range",
         "python:moira.facade:heliocentric_conjunctions_in_range",
@@ -5029,8 +5024,6 @@
         "rest:POST:/v1/eclipses/solar/next",
         "rest:POST:/v1/heliacal/planet",
         "rest:POST:/v1/parans/natal",
-        "rest:POST:/v1/parans/natal-angular-contacts",
-        "rest:POST:/v1/rise-set/phenomena",
         "rest:POST:/v1/rise-set/twilight",
         "rest:POST:/v1/solar-condition/events",
         "rest:POST:/v1/solar-condition/instant",
@@ -5693,12 +5686,11 @@
         "moira/progressions.py",
         "moira_server/routers/progressions.py"
       ],
-      "production_user_surface_count": 4,
+      "production_user_surface_count": 3,
       "production_user_surface_ids": [
         "rest:POST:/v1/progressions/arc",
         "rest:POST:/v1/progressions/house-frame",
-        "rest:POST:/v1/progressions/secondary",
-        "rest:POST:/v1/progressions/secondary-declination"
+        "rest:POST:/v1/progressions/secondary"
       ],
       "python_surface_count": 33,
       "rest_surface_count": 17,
@@ -5767,12 +5759,9 @@
         "moira_server/routers/forecasting.py",
         "moira_server/routers/relationship.py"
       ],
-      "production_user_surface_count": 17,
+      "production_user_surface_count": 14,
       "production_user_surface_ids": [
-        "rest:POST:/v1/aspects/declination-motion-witness",
-        "rest:POST:/v1/aspects/from-declinations",
         "rest:POST:/v1/aspects/from-longitudes",
-        "rest:POST:/v1/aspects/moon-connection-flow",
         "rest:POST:/v1/aspects/motion-witness",
         "rest:POST:/v1/composite/chart",
         "rest:POST:/v1/composite/transits",
@@ -7052,14 +7041,11 @@
         "moira/varga.py",
         "moira_server/routers/varga.py"
       ],
-      "production_user_surface_count": 1,
-      "production_user_surface_ids": [
-        "rest:POST:/v1/varga/vimshopaka"
-      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
       "python_surface_count": 12,
       "rest_surface_count": 10,
       "review_stages": [
-        "stage_3_product_use",
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
@@ -7802,7 +7788,7 @@
     "canonical_surface_count": 1210,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
-      "stage_3_product_use": 44,
+      "stage_3_product_use": 43,
       "stage_4_phenomena_relationships": 9,
       "stage_5_remaining_tail": 119
     },
@@ -7816,7 +7802,7 @@
     "families_with_missing_documentation": 26,
     "families_with_missing_tests": 7,
     "family_count": 143,
-    "production_user_surface_count": 182,
+    "production_user_surface_count": 171,
     "reviewed_families": 143,
     "surface_conformance_counts": {
       "conformant": 0,

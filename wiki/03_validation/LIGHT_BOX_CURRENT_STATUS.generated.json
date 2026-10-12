@@ -61,9 +61,9 @@
       "conformant": 0,
       "not_applicable": 0,
       "partial": 7,
-      "unresolved": 175
+      "unresolved": 164
     },
-    "production_user_calculations": 182,
+    "production_user_calculations": 171,
     "replayed_contracts": 9,
     "replayed_contracts_passed_exact_source": 0,
     "replayed_contracts_passed_local": 9,

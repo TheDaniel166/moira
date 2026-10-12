@@ -7,8 +7,8 @@
   "canonical_entries": 1210,
   "minimum_partial": 15,
   "maximum_unresolved": 1195,
-  "production_user_entries": 182,
-  "maximum_production_user_unresolved": 175,
+  "production_user_entries": 171,
+  "maximum_production_user_unresolved": 164,
   "reviewed_families": 143,
   "minimum_replayed_contracts": 9,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review."

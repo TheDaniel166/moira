@@ -15,7 +15,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 
@@ -36,15 +36,24 @@ EXCLUDED_PARTS = {
     ".next",
     ".pytest_cache",
     ".venv",
+    ".worktrees",
     "build",
     "coverage",
+    "design",
     "dist",
+    "dist_package",
     "docs",
     "docs-content",
     "node_modules",
     "scratch",
     "tests",
     "wiki",
+}
+EXCLUDED_SOURCE_FILENAMES = {
+    "changelog.js",
+    "changelog.jsx",
+    "changelog.ts",
+    "changelog.tsx",
 }
 
 
@@ -78,41 +87,134 @@ def _load_inventory() -> dict[str, Any]:
     return value
 
 
-def _git_revision(root: Path) -> str:
+def _run_git(
+    root: Path,
+    *arguments: str,
+    text: bool = True,
+    input_bytes: bytes | None = None,
+) -> str | bytes:
     process = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
+        ["git", *arguments],
         cwd=root,
         check=False,
         capture_output=True,
-        text=True,
+        text=text,
+        input=input_bytes,
     )
-    revision = process.stdout.strip()
-    if process.returncode or re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+    if process.returncode:
+        stderr = process.stderr
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
+        detail = stderr.strip() or "unknown Git error"
+        raise ProductUsageError(
+            f"Git {' '.join(arguments)} failed for {root}: {detail}"
+        )
+    return process.stdout
+
+
+def _git_revision(root: Path) -> str:
+    output = _run_git(root, "rev-parse", "HEAD")
+    assert isinstance(output, str)
+    revision = output.strip()
+    if re.fullmatch(r"[0-9a-f]{40}", revision) is None:
         raise ProductUsageError(f"cannot resolve Git revision for {root}")
     return revision
 
 
-def _source_files(root: Path) -> Iterable[Path]:
-    for path in root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in SOURCE_EXTENSIONS:
-            continue
-        relative = path.relative_to(root)
-        lowered = {part.lower() for part in relative.parts}
-        if lowered & EXCLUDED_PARTS:
-            continue
-        name = path.name.lower()
-        if (
-            ".test." in name
-            or ".spec." in name
-            or name.endswith("_test.py")
-            or name.startswith("test_")
-        ):
-            continue
-        # The website Workspace subtree is a generated copy of MoiraWeb source.
-        parts = tuple(part.lower() for part in relative.parts)
-        if parts[:3] == ("client", "src", "workspace"):
-            continue
-        yield path
+def _is_product_source(relative_path: str) -> bool:
+    relative = PurePosixPath(relative_path)
+    if relative.suffix.lower() not in SOURCE_EXTENSIONS:
+        return False
+    lowered = {part.lower() for part in relative.parts}
+    if lowered & EXCLUDED_PARTS:
+        return False
+    name = relative.name.lower()
+    if name in EXCLUDED_SOURCE_FILENAMES:
+        return False
+    if (
+        ".test." in name
+        or ".spec." in name
+        or name.endswith("_test.py")
+        or name.startswith("test_")
+    ):
+        return False
+    # The website Workspace subtree is a generated copy of MoiraWeb source.
+    parts = tuple(part.lower() for part in relative.parts)
+    return parts[:3] != ("client", "src", "workspace")
+
+
+def _git_source_files(root: Path, revision: str) -> list[tuple[str, str]]:
+    output = _run_git(
+        root,
+        "ls-tree",
+        "-r",
+        "-z",
+        revision,
+        text=False,
+    )
+    assert isinstance(output, bytes)
+    source_files: list[tuple[str, str]] = []
+    try:
+        for record in output.split(b"\0"):
+            if not record:
+                continue
+            metadata, raw_path = record.split(b"\t", 1)
+            object_id = metadata.split()[2].decode("ascii")
+            relative_path = raw_path.decode("utf-8")
+            if _is_product_source(relative_path):
+                source_files.append((relative_path, object_id))
+    except UnicodeDecodeError as exc:
+        raise ProductUsageError(f"non-UTF-8 Git path in {root}") from exc
+    except (IndexError, ValueError) as exc:
+        raise ProductUsageError(f"cannot parse Git tree for {root}") from exc
+    return source_files
+
+
+def _read_git_sources(
+    root: Path,
+    source_files: Sequence[tuple[str, str]],
+) -> Iterable[tuple[str, str]]:
+    if not source_files:
+        return []
+    request = b"".join(
+        object_id.encode("ascii") + b"\n" for _, object_id in source_files
+    )
+    output = _run_git(
+        root,
+        "cat-file",
+        "--batch",
+        text=False,
+        input_bytes=request,
+    )
+    assert isinstance(output, bytes)
+    decoded: list[tuple[str, str]] = []
+    offset = 0
+    for relative_path, expected_object_id in source_files:
+        header_end = output.find(b"\n", offset)
+        if header_end < 0:
+            raise ProductUsageError(f"truncated Git blob header for {relative_path}")
+        header = output[offset:header_end].split()
+        if len(header) != 3 or header[0].decode("ascii") != expected_object_id:
+            raise ProductUsageError(f"unexpected Git blob header for {relative_path}")
+        try:
+            size = int(header[2])
+        except ValueError as exc:
+            raise ProductUsageError(
+                f"invalid Git blob size for {relative_path}"
+            ) from exc
+        content_start = header_end + 1
+        content_end = content_start + size
+        if content_end >= len(output) or output[content_end : content_end + 1] != b"\n":
+            raise ProductUsageError(f"truncated Git blob for {relative_path}")
+        try:
+            text = output[content_start:content_end].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ProductUsageError(
+                f"non-UTF-8 source at {expected_object_id}:{relative_path}"
+            ) from exc
+        decoded.append((relative_path, text))
+        offset = content_end + 1
+    return decoded
 
 
 def _add_callsite(
@@ -214,13 +316,9 @@ def build_snapshot(
     for product, root in roots:
         revision = _git_revision(root)
         scanned = 0
-        for path in _source_files(root):
-            try:
-                text = path.read_text(encoding="utf-8")
-            except UnicodeDecodeError as exc:
-                raise ProductUsageError(f"non-UTF-8 source: {path}") from exc
+        source_files = _git_source_files(root, revision)
+        for relative, text in _read_git_sources(root, source_files):
             scanned += 1
-            relative = path.relative_to(root).as_posix()
             lines = text.splitlines()
             for line_number, line in enumerate(lines, start=1):
                 stripped = line.lstrip()
@@ -239,7 +337,7 @@ def build_snapshot(
                             line=line_number,
                             detection="exact_rest_path_literal",
                         )
-            if path.suffix.lower() == ".py":
+            if PurePosixPath(relative).suffix.lower() == ".py":
                 for surface_id, line_number in _scan_python_imports(
                     text,
                     public_names=python_names,
@@ -258,7 +356,7 @@ def build_snapshot(
                 "product": product,
                 "source_revision": revision,
                 "files_scanned": scanned,
-                "root_record": "Local path deliberately omitted; product name and Git revision are the portable identity.",
+                "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
             }
         )
     inventory_rows = {
@@ -293,10 +391,11 @@ def build_snapshot(
         "audit_date": audit_date,
         "engine_version": inventory["engine_version"],
         "inventory_fingerprint_sha256": inventory["surface_fingerprint_sha256"],
-        "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in non-test, non-documentation, non-generated product source.",
+        "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
         "limitations": [
             "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
             "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",
+            "Each product root is read from its recorded commit; dirty tracked files and untracked files are deliberately excluded.",
             "Generated website Workspace source is excluded so MoiraWeb remains the sole Workspace authoring source.",
         ],
         "roots": sorted(root_records, key=lambda row: row["product"]),

@@ -17,7 +17,7 @@ The Light Box doctrine is preserved. Universal current-release conformance is **
 | Conformant | 0 | 0 |
 | Partial | 15 | 7 |
 | Not applicable | 0 | 0 |
-| Unresolved | 1195 | 175 |
+| Unresolved | 1195 | 164 |
 
 All 143 families have a structural review disposition. 9 bounded local contracts and 0 exact-source contracts passed across 15 calculations; 1195 calculations have no replay contract yet.
 

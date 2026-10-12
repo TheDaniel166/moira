@@ -18999,20 +18999,18 @@
       "canonical_surface_id": "rest:POST:/v1/aspects/declination-motion-witness",
       "domain_group": "relationship",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
         "source_line": 159,
         "source_path": "moira_server/routers/relationship.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
       "review_stage": "stage_2_exemplars",
       "review_state": "reviewed",
@@ -19026,20 +19024,18 @@
       "canonical_surface_id": "rest:POST:/v1/aspects/from-declinations",
       "domain_group": "relationship",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
         "source_line": 144,
         "source_path": "moira_server/routers/relationship.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
       "review_stage": "stage_2_exemplars",
       "review_state": "reviewed",
@@ -19131,20 +19127,18 @@
       "canonical_surface_id": "rest:POST:/v1/aspects/moon-connection-flow",
       "domain_group": "relationship",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
         "source_line": 99,
         "source_path": "moira_server/routers/relationship.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
       "review_stage": "stage_2_exemplars",
       "review_state": "reviewed",
@@ -19169,7 +19163,6 @@
       "product_usage": {
         "matched_surface_count": 1,
         "products": [
-          "website",
           "workspace"
         ],
         "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
@@ -19605,22 +19598,20 @@
       "canonical_surface_id": "rest:POST:/v1/astrodynes/progressed/chart",
       "domain_group": "specialist-and-compositional",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "astrodynes",
       "family_label": "Astrodynes",
       "ownership": {
         "source_line": 119,
         "source_path": "moira_server/routers/astrodynes.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/astrodynes/progressed/chart",
       "surface_kind": "calculation",
@@ -19807,22 +19798,20 @@
       "canonical_surface_id": "rest:POST:/v1/astrodynes/progressed/search",
       "domain_group": "specialist-and-compositional",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "astrodynes",
       "family_label": "Astrodynes",
       "ownership": {
         "source_line": 132,
         "source_path": "moira_server/routers/astrodynes.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/astrodynes/progressed/search",
       "surface_kind": "calculation",
@@ -21103,22 +21092,20 @@
       "canonical_surface_id": "rest:POST:/v1/draconic/longitude",
       "domain_group": "specialist-and-compositional",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "draconic",
       "family_label": "Draconic",
       "ownership": {
         "source_line": 25,
         "source_path": "moira_server/routers/draconic.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/draconic/longitude",
       "surface_kind": "calculation",
@@ -21890,20 +21877,18 @@
       "canonical_surface_id": "rest:POST:/v1/electional/western/ramesey-moon-condition",
       "domain_group": "traditional-western",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "electional",
       "family_label": "Electional",
       "ownership": {
         "source_line": 166,
         "source_path": "moira_server/routers/western_electional.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
       "review_stage": "stage_2_exemplars",
       "review_state": "reviewed",
@@ -26473,22 +26458,20 @@
       "canonical_surface_id": "rest:POST:/v1/parans/natal-angular-contacts",
       "domain_group": "phenomena-and-visibility",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
         "source_line": 752,
         "source_path": "moira_server/routers/phenomena.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_4_phenomena_relationships",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/parans/natal-angular-contacts",
       "surface_kind": "calculation",
@@ -27857,20 +27840,18 @@
       "canonical_surface_id": "rest:POST:/v1/progressions/secondary-declination",
       "domain_group": "predictive-and-time",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "progressions",
       "family_label": "Progressions",
       "ownership": {
         "source_line": 105,
         "source_path": "moira_server/routers/progressions.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
       "review_stage": "stage_2_exemplars",
       "review_state": "reviewed",
@@ -28094,22 +28075,20 @@
       "canonical_surface_id": "rest:POST:/v1/rise-set/phenomena",
       "domain_group": "phenomena-and-visibility",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
         "source_line": 268,
         "source_path": "moira_server/routers/phenomena.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_4_phenomena_relationships",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/rise-set/phenomena",
       "surface_kind": "calculation",
@@ -29869,22 +29848,20 @@
       "canonical_surface_id": "rest:POST:/v1/varga/vimshopaka",
       "domain_group": "vedic-and-electional",
       "entry_role": "canonical",
-      "exposure": "production_user",
+      "exposure": "public_api",
       "family_id": "varga",
       "family_label": "Varga",
       "ownership": {
         "source_line": 75,
         "source_path": "moira_server/routers/varga.py"
       },
-      "priority": "P0",
+      "priority": "P1",
       "product_usage": {
-        "matched_surface_count": 1,
-        "products": [
-          "website"
-        ],
-        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
       },
-      "review_stage": "stage_3_product_use",
+      "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/varga/vimshopaka",
       "surface_kind": "calculation",
@@ -30669,7 +30646,6 @@
       "product_usage": {
         "matched_surface_count": 1,
         "products": [
-          "website",
           "workspace"
         ],
         "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
@@ -30752,15 +30728,15 @@
     "path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json",
     "roots": [
       {
-        "files_scanned": 918,
+        "files_scanned": 905,
         "product": "website",
-        "root_record": "Local path deliberately omitted; product name and Git revision are the portable identity.",
-        "source_revision": "288178e0f67723dcbe7ca92efb6496663b1b074a"
+        "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
+        "source_revision": "89b4366d3e8bb339143dae35a84747d4eaf1c5e9"
       },
       {
-        "files_scanned": 2336,
+        "files_scanned": 576,
         "product": "workspace",
-        "root_record": "Local path deliberately omitted; product name and Git revision are the portable identity.",
+        "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
         "source_revision": "ee199d810708290a3bec838504d552eced38e7f3"
       }
     ]
@@ -30785,13 +30761,13 @@
       "vedic-and-electional": 278
     },
     "canonical_by_exposure": {
-      "production_user": 182,
-      "public_api": 333,
+      "production_user": 171,
+      "public_api": 344,
       "source_only": 695
     },
     "canonical_by_priority": {
-      "P0": 182,
-      "P1": 333,
+      "P0": 171,
+      "P1": 344,
       "P2": 695
     },
     "canonical_by_review_state": {

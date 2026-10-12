@@ -30,8 +30,8 @@ P0 contains only canonical calculations matched by the revision-bound product-us
 
 | Priority | Canonical surfaces |
 |---|---:|
-| `P0` | 182 |
-| `P1` | 333 |
+| `P0` | 171 |
+| `P1` | 344 |
 | `P2` | 695 |
 
 ## Family queue
@@ -68,7 +68,7 @@ P0 contains only canonical calculations matched by the revision-bound product-us
 | `eclipse` | `specialist-and-compositional` | 1 | 1 | 0 | `P2` | `reviewed` |
 | `eclipses` | `phenomena-and-visibility` | 3 | 3 | 0 | `P2` | `reviewed` |
 | `egyptian-bounds` | `traditional-western` | 6 | 0 | 6 | `P1` | `reviewed` |
-| `electional` | `traditional-western` | 26 | 10 | 16 | `P0` | `reviewed` |
+| `electional` | `traditional-western` | 26 | 10 | 16 | `P1` | `reviewed` |
 | `galactic` | `specialist-and-compositional` | 14 | 7 | 7 | `P0` | `reviewed` |
 | `galactic-houses` | `locational` | 7 | 4 | 3 | `P1` | `reviewed` |
 | `gauquelin` | `locational` | 5 | 2 | 3 | `P0` | `reviewed` |
@@ -163,7 +163,7 @@ P0 contains only canonical calculations matched by the revision-bound product-us
 | `upagrahas` | `vedic-and-electional` | 4 | 2 | 2 | `P1` | `reviewed` |
 | `uranian` | `specialist-and-compositional` | 4 | 2 | 2 | `P0` | `reviewed` |
 | `valens-transmissions` | `specialist-and-compositional` | 1 | 1 | 0 | `P2` | `reviewed` |
-| `varga` | `vedic-and-electional` | 22 | 12 | 10 | `P0` | `reviewed` |
+| `varga` | `vedic-and-electional` | 22 | 12 | 10 | `P1` | `reviewed` |
 | `varshaphal` | `vedic-and-electional` | 28 | 19 | 9 | `P1` | `reviewed` |
 | `vedic-dignities` | `vedic-and-electional` | 11 | 4 | 7 | `P0` | `reviewed` |
 | `vedic-profile` | `vedic-and-electional` | 1 | 0 | 1 | `P1` | `reviewed` |
