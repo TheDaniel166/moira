@@ -125,14 +125,17 @@ jobs:
       - name: Check generated Git wiki
         run: python scripts/sync_git_wiki.py --check
 
-      - name: Check tagged website publication bundle
+      - name: Generate and validate current-source website publication candidate
         run: |
-          VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
-            python scripts/build_website_docs_bundle.py --check
-          else
-            echo "v${VERSION} is an untagged release candidate; the version-pinned publication bundle is generated after the immutable release tag exists."
-          fi
+          python scripts/build_website_docs_bundle.py --candidate --output "$RUNNER_TEMP/website-publication/publication.json"
+          python scripts/build_website_docs_bundle.py --candidate --output "$RUNNER_TEMP/website-publication/publication.json" --check
+
+      - name: Retain website publication candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-publication-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/website-publication/publication.json
+          if-no-files-found: error
 
       - name: Run Hellenistic release gates
         run: |

@@ -103,14 +103,31 @@ class PublicationError(ValueError):
     """Raised when the publication contract is internally inconsistent."""
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Verify the committed publication manifest without rewriting it.",
+        help="Verify the selected manifest without rewriting it.",
     )
-    return parser.parse_args()
+    parser.add_argument("--output", type=Path, help="Manifest output or check target.")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--candidate",
+        action="store_true",
+        help="Build current-source CI evidence, including before a version is tagged.",
+    )
+    mode.add_argument(
+        "--release-tag",
+        help="Build release evidence only from the clean, exact matching tag checkout.",
+    )
+    args = parser.parse_args(argv)
+    if args.candidate or args.release_tag is not None:
+        if args.output is None:
+            parser.error("--candidate and --release-tag require an explicit --output")
+        if args.output.resolve() == OUTPUT_PATH.resolve():
+            parser.error("CI/release artifacts must not overwrite website_docs/publication.json")
+    return args
 
 
 def _sha256_bytes(data: bytes) -> str:
@@ -180,15 +197,33 @@ def _git_output(*args: str) -> str:
     return completed.stdout.strip()
 
 
-def _project_facts() -> dict[str, Any]:
+def _tag_commit(tag: str, *, required: bool) -> str | None:
+    """Resolve only a tag, never an identically named development branch."""
+
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}^{{commit}}"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as exc:
+        raise PublicationError(f"cannot resolve release tag {tag}: {exc}") from exc
+    if completed.returncode == 1 and not required:
+        return None
+    commit = completed.stdout.strip()
+    if completed.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise PublicationError(f"release tag {tag} is missing or does not resolve to a commit")
+    return commit
+
+
+def _project_facts(*, require_tag: bool = True) -> dict[str, Any]:
     with (REPO_ROOT / "pyproject.toml").open("rb") as stream:
         project = tomllib.load(stream)["project"]
     version = project["version"]
     _semver(version)
     tag = f"v{version}"
-    commit = _git_output("rev-list", "-n", "1", tag)
-    if not re.fullmatch(r"[0-9a-f]{40}", commit):
-        raise PublicationError(f"{tag} did not resolve to a full commit")
+    commit = _tag_commit(tag, required=require_tag)
 
     classifiers = project.get("classifiers", [])
     supported_python = sorted(
@@ -228,6 +263,33 @@ def _project_facts() -> dict[str, Any]:
             "flagship_full_range_reader": "DE441",
             "small_body_availability": "An installed BSP-backed manifest is required; catalog metadata alone is not an ephemeris.",
         },
+    }
+
+
+def _publication_context(
+    engine_release: dict[str, Any], *, release_tag: str | None
+) -> dict[str, Any]:
+    """Separate current-source evidence from the declared release's identity."""
+
+    source_commit = _git_output("rev-parse", "HEAD^{commit}")
+    source_tree = _git_output("rev-parse", "HEAD^{tree}")
+    if not all(re.fullmatch(r"[0-9a-f]{40}", value) for value in (source_commit, source_tree)):
+        raise PublicationError("publication source must resolve to a full Git commit and tree")
+    dirty = bool(_git_output("status", "--porcelain", "--untracked-files=no"))
+    if release_tag is not None:
+        if release_tag != engine_release["tag"]:
+            raise PublicationError(
+                f"release tag {release_tag!r} does not match {engine_release['tag']!r}"
+            )
+        if source_commit != engine_release["commit"]:
+            raise PublicationError("release publication must be built at the exact release tag commit")
+        if dirty:
+            raise PublicationError("release publication requires a clean tracked worktree")
+    return {
+        "kind": "release" if release_tag is not None else "candidate",
+        "source_commit": source_commit,
+        "source_tree": source_tree,
+        "worktree_dirty": dirty,
     }
 
 
@@ -519,14 +581,18 @@ def _contract_sources() -> list[dict[str, str]]:
     ]
 
 
-def build_manifest() -> dict[str, Any]:
+def build_manifest(
+    *, candidate: bool = False, release_tag: str | None = None
+) -> dict[str, Any]:
+    if candidate and release_tag is not None:
+        raise PublicationError("candidate and release publication modes are mutually exclusive")
     config = _load_json(CONFIG_PATH)
     if config.get("schema_version") != 1:
         raise PublicationError("unsupported publication config schema_version")
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", config.get("last_verified", "")):
         raise PublicationError("last_verified must be an ISO date")
 
-    engine_release = _project_facts()
+    engine_release = _project_facts(require_tag=not candidate)
     manifest: dict[str, Any] = {
         "schema_version": 1,
         "source_repository": "https://github.com/TheDaniel166/moira",
@@ -539,24 +605,27 @@ def build_manifest() -> dict[str, Any]:
         "documents": _documents(config),
         "releases": _releases(config, engine_release["version"]),
     }
+    if candidate or release_tag is not None:
+        manifest["publication"] = _publication_context(engine_release, release_tag=release_tag)
     manifest["manifest_sha256"] = _sha256_bytes(_json_bytes(manifest, pretty=False))
     return manifest
 
 
-def main() -> int:
-    args = _parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = _parse_args(argv)
+    output_path = args.output if args.output is not None else OUTPUT_PATH
     try:
-        manifest = build_manifest()
+        manifest = build_manifest(candidate=args.candidate, release_tag=args.release_tag)
     except (KeyError, OSError, json.JSONDecodeError, PublicationError, TypeError) as exc:
         print(f"Website documentation bundle failed: {exc}", file=sys.stderr)
         return 1
 
     rendered = _json_bytes(manifest, pretty=True)
     if args.check:
-        if not OUTPUT_PATH.is_file():
-            print(f"Missing generated manifest: {OUTPUT_PATH.relative_to(REPO_ROOT)}", file=sys.stderr)
+        if not output_path.is_file():
+            print(f"Missing generated manifest: {output_path}", file=sys.stderr)
             return 1
-        existing = _canonical_text_bytes(OUTPUT_PATH)
+        existing = _canonical_text_bytes(output_path)
         if existing != rendered:
             print(
                 "Website documentation manifest is stale; run "
@@ -571,10 +640,10 @@ def main() -> int:
         )
         return 0
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_bytes(rendered)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(rendered)
     print(
-        f"Wrote {OUTPUT_PATH.relative_to(REPO_ROOT)} for "
+        f"Wrote {output_path} for "
         f"{manifest['engine_release']['tag']} "
         f"({len(manifest['documents'])} documents, {len(manifest['releases'])} releases)."
     )
