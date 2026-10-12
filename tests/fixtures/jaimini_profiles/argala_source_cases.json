@@ -1,0 +1,410 @@
+{
+  "pvr_exercise16": {
+    "source": "W03",
+    "pdf_pages": [
+      122,
+      123
+    ],
+    "printed_pages": [
+      110,
+      111
+    ],
+    "chart": {
+      "basis": "signs",
+      "positions": {
+        "Sun": 1,
+        "Moon": 0,
+        "Mars": 7,
+        "Mercury": 8,
+        "Jupiter": 5,
+        "Venus": 9,
+        "Saturn": 7,
+        "Rahu": 4,
+        "Ketu": 10
+      },
+      "lagna": 7
+    },
+    "positions": [
+      2,
+      4,
+      5,
+      11,
+      12,
+      10,
+      9,
+      3
+    ],
+    "expected": [
+      [
+        [
+          "Mercury"
+        ],
+        [
+          "Ketu"
+        ],
+        [],
+        [
+          "Jupiter"
+        ],
+        [],
+        [
+          "Rahu"
+        ],
+        [],
+        [
+          "Venus"
+        ]
+      ],
+      [
+        [
+          "Venus"
+        ],
+        [],
+        [
+          "Moon"
+        ],
+        [],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Jupiter"
+        ],
+        [
+          "Rahu"
+        ],
+        [
+          "Ketu"
+        ]
+      ],
+      [
+        [
+          "Ketu"
+        ],
+        [
+          "Moon"
+        ],
+        [
+          "Sun"
+        ],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Mercury"
+        ],
+        [],
+        [
+          "Jupiter"
+        ],
+        []
+      ],
+      [
+        [
+          "Venus"
+        ],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [],
+        [
+          "Moon"
+        ],
+        [],
+        [
+          "Sun"
+        ],
+        [],
+        [
+          "Mercury"
+        ]
+      ],
+      [
+        [
+          "Moon"
+        ],
+        [],
+        [],
+        [
+          "Venus"
+        ],
+        [
+          "Ketu"
+        ],
+        [
+          "Mercury"
+        ],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Sun"
+        ]
+      ],
+      [
+        [
+          "Sun"
+        ],
+        [],
+        [
+          "Rahu"
+        ],
+        [
+          "Ketu"
+        ],
+        [],
+        [
+          "Venus"
+        ],
+        [
+          "Mercury"
+        ],
+        []
+      ],
+      [
+        [],
+        [
+          "Rahu"
+        ],
+        [
+          "Jupiter"
+        ],
+        [],
+        [
+          "Moon"
+        ],
+        [
+          "Ketu"
+        ],
+        [
+          "Venus"
+        ],
+        []
+      ],
+      [
+        [],
+        [
+          "Jupiter"
+        ],
+        [],
+        [
+          "Moon"
+        ],
+        [
+          "Sun"
+        ],
+        [],
+        [
+          "Ketu"
+        ],
+        [
+          "Rahu"
+        ]
+      ],
+      [
+        [
+          "Rahu"
+        ],
+        [],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Sun"
+        ],
+        [],
+        [
+          "Moon"
+        ],
+        [],
+        [
+          "Jupiter"
+        ]
+      ],
+      [
+        [
+          "Jupiter"
+        ],
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Mercury"
+        ],
+        [],
+        [],
+        [
+          "Sun"
+        ],
+        [
+          "Moon"
+        ],
+        []
+      ],
+      [
+        [],
+        [
+          "Mercury"
+        ],
+        [
+          "Venus"
+        ],
+        [],
+        [
+          "Rahu"
+        ],
+        [],
+        [
+          "Sun"
+        ],
+        [
+          "Mars",
+          "Saturn"
+        ]
+      ],
+      [
+        [
+          "Mars",
+          "Saturn"
+        ],
+        [
+          "Venus"
+        ],
+        [
+          "Ketu"
+        ],
+        [
+          "Rahu"
+        ],
+        [
+          "Jupiter"
+        ],
+        [],
+        [],
+        [
+          "Mercury"
+        ]
+      ]
+    ]
+  },
+  "bphs_corrected_chart": {
+    "source": "S05",
+    "pdf_pages": [
+      312,
+      482
+    ],
+    "printed_pages": [
+      313,
+      483
+    ],
+    "chart": {
+      "basis": "signs",
+      "positions": {
+        "Sun": 1,
+        "Moon": 2,
+        "Mars": 3,
+        "Mercury": 1,
+        "Jupiter": 10,
+        "Venus": 11,
+        "Saturn": 9,
+        "Rahu": 2,
+        "Ketu": 8
+      },
+      "lagna": 0
+    },
+    "lagna_pairs": [
+      [
+        2,
+        [
+          "Sun",
+          "Mercury"
+        ],
+        [
+          "Venus"
+        ]
+      ],
+      [
+        4,
+        [
+          "Mars"
+        ],
+        [
+          "Saturn"
+        ]
+      ],
+      [
+        11,
+        [
+          "Jupiter"
+        ],
+        [
+          "Moon",
+          "Rahu"
+        ]
+      ]
+    ],
+    "rahu_reference_pair": [
+      2,
+      [
+        "Sun",
+        "Mercury"
+      ],
+      [
+        "Mars"
+      ]
+    ]
+  },
+  "rath_standard_nativity": {
+    "source": "W04",
+    "chart": {
+      "basis": "signs",
+      "positions": {
+        "Sun": 3,
+        "Moon": 10,
+        "Mars": 5,
+        "Mercury": 4,
+        "Jupiter": 11,
+        "Venus": 3,
+        "Saturn": 9,
+        "Rahu": 2,
+        "Ketu": 8
+      },
+      "lagna": 11
+    },
+    "source_winners": {
+      "4": "blocker",
+      "7": "blocker"
+    },
+    "runtime_comparison": "indeterminate",
+    "factor_witnesses": {
+      "4": {
+        "causer": [
+          "Rahu"
+        ],
+        "blocker": [
+          "Ketu"
+        ],
+        "jupiter_aspects_blocker": true,
+        "jupiter_aspects_causer": true
+      },
+      "7": {
+        "causer": [
+          "Mars"
+        ],
+        "blocker": [
+          "Jupiter"
+        ],
+        "blocker_own_sign_bodies": [
+          "Jupiter"
+        ]
+      }
+    },
+    "factor_evidence": "Independent Jaimini dual-sign geometry: Pisces aspects Gemini and Sagittarius. The earlier false causer-aspect assumption was not stated by the source and is rejected; the article winner remains separately recorded."
+  }
+}

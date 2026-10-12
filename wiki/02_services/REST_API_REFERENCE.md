@@ -21,16 +21,26 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 520
-- Registered OpenAPI operations: 520 (GET 46, POST 474)
+- Registered OpenAPI paths: 523
+- Registered OpenAPI operations: 523 (GET 47, POST 476)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 516
+- Versioned `/v1` paths: 519
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+VED-013 adds `GET /v1/jaimini/extended/profiles`,
+`POST /v1/jaimini/extended/chara-dasha/profile`, and
+`POST /v1/jaimini/extended/argala/assessment`. Three Rangacharya recipes and
+three bounded BPHS/PVR/Rath Argala assessments share canonical engine results
+with Python/facade consumers. Strict sign/longitude unions retain input precision;
+explicit references, count grades, directed quarters and unresolved comparison
+reasons survive transport. Legacy Argala receives an additive computation receipt
+and direct-input hardening. See the [profile standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md)
+for executable IDs, required nodes, calendar scope and compatibility.
 
 VED-012 adds `GET /v1/yogas/extended/catalogue` and
 `POST /v1/yogas/extended/evaluate`. Discovery exposes four named profiles,
@@ -3566,9 +3576,12 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |
 | `POST` | `/v1/jaimini/chart/profile` | jaimini | `jaimini_chart_profile_route_v1_jaimini_chart_profile_post` |
 | `POST` | `/v1/jaimini/extended/argala` | jaimini | `argala_route_v1_jaimini_extended_argala_post` |
+| `POST` | `/v1/jaimini/extended/argala/assessment` | jaimini | `argala_assessment_route_v1_jaimini_extended_argala_assessment_post` |
 | `POST` | `/v1/jaimini/extended/arudhas` | jaimini | `arudhas_route_v1_jaimini_extended_arudhas_post` |
 | `POST` | `/v1/jaimini/extended/chara-dasha` | jaimini | `chara_dasha_route_v1_jaimini_extended_chara_dasha_post` |
+| `POST` | `/v1/jaimini/extended/chara-dasha/profile` | jaimini | `chara_profile_route_v1_jaimini_extended_chara_dasha_profile_post` |
 | `POST` | `/v1/jaimini/extended/karakamsa` | jaimini | `karakamsa_route_v1_jaimini_extended_karakamsa_post` |
+| `GET` | `/v1/jaimini/extended/profiles` | jaimini | `jaimini_profiles_route_v1_jaimini_extended_profiles_get` |
 | `POST` | `/v1/jaimini/karakas` | jaimini | `jaimini_karakas_route_v1_jaimini_karakas_post` |
 | `POST` | `/v1/jaimini/karakas/condition` | jaimini | `jaimini_karakas_condition_route_v1_jaimini_karakas_condition_post` |
 | `POST` | `/v1/jaimini/karakas/pair` | jaimini | `jaimini_karakas_pair_route_v1_jaimini_karakas_pair_post` |

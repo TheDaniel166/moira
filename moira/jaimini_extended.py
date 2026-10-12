@@ -73,6 +73,7 @@ __all__ = [
     "ArudhaResult",
     "arudha_padas",
     "ArgalaHouse",
+    "ArgalaComputation",
     "ArgalaResult",
     "argala",
     "Karakamsa",
@@ -348,7 +349,7 @@ def arudha_padas(
 
 
 # ---------------------------------------------------------------------------
-# 3. Argala (JUS 1.1.5-10, Rath/PVR reading)
+# 3. Argala (retained Moira count convention)
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True, slots=True)
@@ -371,12 +372,25 @@ class ArgalaHouse:
 
 
 @dataclass(frozen=True, slots=True)
+class ArgalaComputation:
+    """Identity of the retained seven-occupant, count-only legacy calculation."""
+
+    profile_id: str = field(init=False, default="moira_argala_existing_v1")
+    participant_pool: tuple[str, ...] = field(init=False, default=_SEVEN_PLANETS)
+    obstruction_policy: str = field(init=False, default="strict_causer_count_greater")
+    reversal_policy: str = field(init=False, default="ketu_occupied_reference")
+    special_third_threshold: int = field(init=False, default=2)
+    special_third_role: str = field(init=False, default="coexists_with_raw_blocker_role")
+
+
+@dataclass(frozen=True, slots=True)
 class ArgalaResult:
     """Argala for all twelve signs from the lagna frame."""
 
     lagna_sign: int
     houses: dict[int, ArgalaHouse]
     lineage: str
+    computation: ArgalaComputation | None = None
 
 
 _ARGALA_PAIRS: dict[int, int] = {2: 12, 4: 10, 11: 3, 5: 9}
@@ -392,12 +406,18 @@ def argala(
 
     Primary argala from the 2nd/4th/11th, secondary from the 5th; the
     12th/10th/3rd/9th obstruct respectively; obstruction fails when the
-    obstructors are fewer than the causers (count reading of ``na nyuna
-    vibalasca`` — strength grading belongs to Shadbala); two or more
-    malefics in the 3rd cause argala instead of virodha; a Ketu-occupied
-    reference sign reverses the reckoning (JUS 1.1.8/1.1.10).
+    obstructors are fewer than the causers under the retained Moira count
+    convention. Two or more third-house malefics are also reported in the
+    special field while remaining raw eleventh-pair blockers. Ketu-occupied
+    reference signs reverse. Full source-strength judgment is not assessed;
+    use the separately named VED-013 assessments for source-scoped evidence.
     """
     from .yogas import benefic_malefic_classification
+    from ._jaimini_profile_inputs import legacy_argala_inputs
+
+    sidereal_longitudes, lagna_sidereal_lon, node_longitudes = legacy_argala_inputs(
+        sidereal_longitudes, lagna_sidereal_lon, node_longitudes,
+    )
 
     lagna_sign = _sign(lagna_sidereal_lon)
     classification = benefic_malefic_classification(sidereal_longitudes)
@@ -448,10 +468,11 @@ def argala(
         lagna_sign=lagna_sign,
         houses=houses,
         lineage=(
-            "Rath/PVR reading: primary 2/4/11, secondary 5; virodha "
+            "Retained Moira count convention: primary 2/4/11, secondary 5; virodha "
             "2:12, 4:10, 11:3, 5:9; >=2 malefics in the 3rd cause "
             "argala; Ketu reverses reckoning"
         ),
+        computation=ArgalaComputation(),
     )
 
 

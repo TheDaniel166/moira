@@ -138,6 +138,21 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         "shashtiamsha",
     )
 
+    def list_jaimini_profiles(self):
+        """Discover bounded Jaimini profiles and explicit research-only candidates."""
+        from .jaimini_profile_policy import list_jaimini_profiles
+        return list_jaimini_profiles()
+
+    def evaluate_chara_profile(self, chart, *, profile_id: str, projection=None):
+        """Evaluate source Chara arithmetic with optional explicitly selected clock."""
+        from .chara_profiles import evaluate_chara_profile
+        return evaluate_chara_profile(chart, profile_id=profile_id, projection=projection)
+
+    def assess_argala(self, chart, *, profile_id: str, references):
+        """Assess one source profile without reader access or inferred context."""
+        from .argala_assessment import assess_argala
+        return assess_argala(chart, profile_id=profile_id, references=references)
+
     def yoga_extensions_from_longitudes(self, sidereal_longitudes: dict[str, float],
                                        lagna_sidereal_lon: float, *, profile_ids: tuple[str, ...]):
         """Evaluate selected source yoga profiles; no reader or date calculation."""

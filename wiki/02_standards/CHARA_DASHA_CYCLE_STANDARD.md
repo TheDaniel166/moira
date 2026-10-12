@@ -77,3 +77,13 @@ scope, hostile-input, export and HTTP checks. These distinguish implementation
 invariants from source authority. Full Rao book/complete-cycle collation,
 alternate lineages, other year bases and later cycles remain separate research
 work under VED-013/021. Predictive validity is not established by arithmetic.
+
+## VED-013 additive profiles, 12 October 2026
+
+Three Rangacharya manual recipes now use a separate source-arithmetic operation,
+`evaluate_chara_profile`, and REST `/v1/jaimini/extended/chara-dasha/profile`.
+Their twelve one-cycle rows, zero-year treatment and explicitly optional Moira
+calendar projection do not change the operation governed by this standard.
+No legacy antardasha or cycle rule is imported into those recipes. See the
+[profile standard](JAIMINI_PROFILE_ASSESSMENT_STANDARD.md) for exact selectors,
+source conflicts, capabilities and remaining admission gates.

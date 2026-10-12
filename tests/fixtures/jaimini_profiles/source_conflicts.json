@@ -1,0 +1,60 @@
+[
+  {
+    "id": "C04",
+    "source": "S08",
+    "pdf_pages": [
+      76
+    ],
+    "published_cancer_years": 10,
+    "selected_years": 12,
+    "decision": "Own-sign prose takes precedence; printed value retained."
+  },
+  {
+    "id": "C07",
+    "source": "S05",
+    "pdf_pages": [
+      312,
+      482
+    ],
+    "original_chart_omits": "Rahu",
+    "erratum": "Rahu in Gemini",
+    "decision": "Apply the publisher erratum."
+  },
+  {
+    "id": "C06",
+    "source": "S06",
+    "pdf_pages": [
+      66
+    ],
+    "node_signs": [
+      2,
+      4
+    ],
+    "published_scorpio_years": 6,
+    "duration_candidates": {
+      "Mars": 6,
+      "Ketu": 9
+    },
+    "decision": "Full BPHS Chara remains research_required."
+  },
+  {
+    "id": "PVR2014",
+    "source": "W01",
+    "pdf_pages": [
+      28,
+      39
+    ],
+    "decision": "Direction and seed-priority contradictions remain research_required."
+  },
+  {
+    "id": "C12",
+    "source": "W04",
+    "source_winner": "Ketu/Sagittarius",
+    "independent_rasi_aspect_targets_from_pisces": [
+      "Gemini",
+      "Virgo",
+      "Sagittarius"
+    ],
+    "decision": "Symmetric factor evidence does not select a winner; priority not admitted."
+  }
+]

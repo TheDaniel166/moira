@@ -1,0 +1,57 @@
+[
+  {
+    "id": "S05",
+    "pages": 482,
+    "sha256": "13609f1af89541e070c798b8c70c6bfd74a8b9a71a71388913bf898e9f9ddf3f",
+    "corpus_path": "Classics books\\BPHS-Santhanam-Vol-1.pdf"
+  },
+  {
+    "id": "S06",
+    "pages": 552,
+    "sha256": "ad7172b615568eb812961c71cff352f354c5676b955bc34cfcfdcf431404cd45",
+    "corpus_path": "Classics books\\BPHS-Santhanam-Vol-2.pdf"
+  },
+  {
+    "id": "S07",
+    "pages": 221,
+    "sha256": "1b1441b138093433fa594f49a7b89863bd00c0476f621f804895ec7d8c3cc6b8",
+    "corpus_path": "Classics books\\JaiminiSutrasCompleteEng.pdf"
+  },
+  {
+    "id": "S08",
+    "pages": 89,
+    "sha256": "8290bc9d8a9d5eedd5ac0724f15554c7ff70f276a26103b58cbd7e068ea5a5f8",
+    "corpus_path": "Books by Authors\\Jaimini\\A Manual of Jaimini Astrology_Iranganti Rangacharya 2009.pdf"
+  },
+  {
+    "id": "S12",
+    "pages": 22,
+    "sha256": "720978aab2354307b7cac3e98d0fae0ef90c25db1fa3042891c041cec0a947e5",
+    "corpus_path": "Books by Authors\\Jaimini\\SP-jaminicharadasaknraoBW1.pdf"
+  },
+  {
+    "id": "W01",
+    "url": "https://www.vedicastrologer.org/articles/pp_chara_dasa.pdf",
+    "pages": 46,
+    "sha256": "2a6b1b224fb0f1b2bd7f1f55403f5a6f3c805277f71c5389b1ae8d14afb00fb0"
+  },
+  {
+    "id": "W02",
+    "url": "https://scienceoflight.net/wp-content/uploads/extra/Narayana%20Dasa%20by%20Sanjay%20Rath.pdf",
+    "pages": 206,
+    "sha256": "8ed7732034092828dca800cdc6aa9422c742c498517700c0a0654ec4926d1206"
+  },
+  {
+    "id": "W03",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "pages": 515,
+    "sha256": "1cafa828f34764ed5e85816882df2e8f0bc014c5c57ccdb27169416e117fd4db"
+  },
+  {
+    "id": "W04",
+    "url": "https://srath.com/jyoti%E1%B9%A3a/amateur/argala-planetary-intervention/",
+    "accessed": "2026-10-12",
+    "sha256": null,
+    "identity_scope": "live author page; numerical witnesses frozen separately"
+  }
+]

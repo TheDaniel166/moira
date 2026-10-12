@@ -9,6 +9,15 @@
 This is the Python engine/import reference. The HTTP transport surface is
 documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
 
+VED-013 adds `JaiminiChart`, `ArgalaReference`, `CharaProjection`,
+`list_jaimini_profiles()`, `evaluate_chara_profile()` and `assess_argala()` with
+their immutable evidence vessels to root, facade and `moira.vedic`.
+`Moira` exposes the same three operations without chart-reader dependence.
+The [Jaimini profile standard](JAIMINI_PROFILE_ASSESSMENT_STANDARD.md) defines
+the three Chara and three Argala selectors, source precision, optional clock,
+uncertainty states and legacy compatibility. Research-only catalogue identities
+cannot be passed to the evaluators.
+
 For the Hellenistic surface, use the generated
 [capability matrix](../03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md)
 for current export-tier receipts and the

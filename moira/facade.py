@@ -1105,8 +1105,20 @@ from .avasthas import (
     baladi_avastha, jagradadi_avastha, deeptadi_avastha,
     lajjitadi_avasthas, evaluate_avasthas,
 )
+from ._jaimini_profile_inputs import (
+    JaiminiChart, ArgalaReference, CharaProjection,
+)
+from .jaimini_profile_policy import (
+    JaiminiSource, JaiminiRule, JaiminiConflict, JaiminiProfile, JaiminiProfileCatalogue, list_jaimini_profiles,
+)
+from .chara_profiles import (
+    CharaArithmeticRow, CharaProfileInterval, CharaProfileSchedule, CharaArithmeticResult, evaluate_chara_profile,
+)
+from .argala_assessment import (
+    ArgalaCharacter, ArgalaCountGrade, ArgalaQuarterWitness, ArgalaEligibleBlockers, ArgalaStrengthFactors, ArgalaPairAssessment, ArgalaSpecialThird, ArgalaReferenceAssessment, ArgalaAssessmentResult, assess_argala,
+)
 from .jaimini_extended import (
-    JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse,
+    JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse, ArgalaComputation,
     ArgalaResult, Karakamsa, CharaDashaPeriod, CharaDashaResult, CharaDashaComputation,
     rasi_aspects, rasi_drishti_of, arudha_padas, argala, karakamsa,
     chara_dasha,
@@ -2098,6 +2110,8 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    # VED-013 source-scoped profiles and immutable evidence.
+    'JaiminiChart', 'ArgalaReference', 'CharaProjection', 'JaiminiSource', 'JaiminiRule', 'JaiminiConflict', 'JaiminiProfile', 'JaiminiProfileCatalogue', 'list_jaimini_profiles', 'CharaArithmeticRow', 'CharaProfileInterval', 'CharaProfileSchedule', 'CharaArithmeticResult', 'evaluate_chara_profile', 'ArgalaCharacter', 'ArgalaCountGrade', 'ArgalaQuarterWitness', 'ArgalaEligibleBlockers', 'ArgalaStrengthFactors', 'ArgalaPairAssessment', 'ArgalaSpecialThird', 'ArgalaReferenceAssessment', 'ArgalaAssessmentResult', 'assess_argala', 'ArgalaComputation',
     'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",

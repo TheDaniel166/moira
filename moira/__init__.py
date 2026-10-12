@@ -228,6 +228,14 @@ from .stelliums import (
 )
 from .facade import (
     Chart, MissingEphemerisKernelError, Moira, __author__, __version__,
+    JaiminiChart, ArgalaReference, CharaProjection,
+    JaiminiSource, JaiminiRule, JaiminiConflict, JaiminiProfile,
+    JaiminiProfileCatalogue, list_jaimini_profiles,
+    CharaArithmeticRow, CharaProfileInterval, CharaProfileSchedule,
+    CharaArithmeticResult, evaluate_chara_profile,
+    ArgalaCharacter, ArgalaCountGrade, ArgalaQuarterWitness, ArgalaEligibleBlockers,
+    ArgalaStrengthFactors, ArgalaPairAssessment, ArgalaSpecialThird,
+    ArgalaReferenceAssessment, ArgalaAssessmentResult, assess_argala, ArgalaComputation,
     SayanadiBirthPolicy, SayanadiSunriseBracket, AvasthaBirthResult,
     SayanadiResourceError, SayanadiCoverageError, avasthas_for_datetime,
     NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval, NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
@@ -1479,6 +1487,8 @@ from .mundane import (
 )
 
 __all__ = [
+    # VED-013 source-scoped profiles and immutable evidence.
+    'JaiminiChart', 'ArgalaReference', 'CharaProjection', 'JaiminiSource', 'JaiminiRule', 'JaiminiConflict', 'JaiminiProfile', 'JaiminiProfileCatalogue', 'list_jaimini_profiles', 'CharaArithmeticRow', 'CharaProfileInterval', 'CharaProfileSchedule', 'CharaArithmeticResult', 'evaluate_chara_profile', 'ArgalaCharacter', 'ArgalaCountGrade', 'ArgalaQuarterWitness', 'ArgalaEligibleBlockers', 'ArgalaStrengthFactors', 'ArgalaPairAssessment', 'ArgalaSpecialThird', 'ArgalaReferenceAssessment', 'ArgalaAssessmentResult', 'assess_argala', 'ArgalaComputation',
     'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",

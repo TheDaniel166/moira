@@ -1,0 +1,618 @@
+{
+  "source": "S08",
+  "sequences_pdf_pages": [
+    73,
+    74,
+    75,
+    76
+  ],
+  "sequences": [
+    {
+      "branch": "male",
+      "lagna": 0,
+      "expected_signs": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 1,
+      "expected_signs": [
+        1,
+        8,
+        3,
+        10,
+        5,
+        0,
+        7,
+        2,
+        9,
+        4,
+        11,
+        6
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 2,
+      "expected_signs": [
+        2,
+        6,
+        10,
+        3,
+        7,
+        11,
+        4,
+        8,
+        0,
+        5,
+        9,
+        1
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 3,
+      "expected_signs": [
+        3,
+        2,
+        1,
+        0,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 4,
+      "expected_signs": [
+        4,
+        9,
+        2,
+        7,
+        0,
+        5,
+        10,
+        3,
+        8,
+        1,
+        6,
+        11
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 5,
+      "expected_signs": [
+        5,
+        1,
+        9,
+        4,
+        0,
+        8,
+        3,
+        11,
+        7,
+        2,
+        10,
+        6
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 6,
+      "expected_signs": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 7,
+      "expected_signs": [
+        7,
+        2,
+        9,
+        4,
+        11,
+        6,
+        1,
+        8,
+        3,
+        10,
+        5,
+        0
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 8,
+      "expected_signs": [
+        8,
+        0,
+        4,
+        9,
+        1,
+        5,
+        10,
+        2,
+        6,
+        11,
+        3,
+        7
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 9,
+      "expected_signs": [
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1,
+        0,
+        11,
+        10
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 10,
+      "expected_signs": [
+        10,
+        3,
+        8,
+        1,
+        6,
+        11,
+        4,
+        9,
+        2,
+        7,
+        0,
+        5
+      ]
+    },
+    {
+      "branch": "male",
+      "lagna": 11,
+      "expected_signs": [
+        11,
+        7,
+        3,
+        10,
+        6,
+        2,
+        9,
+        5,
+        1,
+        8,
+        4,
+        0
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 0,
+      "expected_signs": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 1,
+      "expected_signs": [
+        10,
+        5,
+        0,
+        7,
+        2,
+        9,
+        4,
+        11,
+        6,
+        1,
+        8,
+        3
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 2,
+      "expected_signs": [
+        5,
+        9,
+        1,
+        6,
+        10,
+        2,
+        7,
+        11,
+        3,
+        8,
+        0,
+        4
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 3,
+      "expected_signs": [
+        0,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 4,
+      "expected_signs": [
+        7,
+        0,
+        5,
+        10,
+        3,
+        8,
+        1,
+        6,
+        11,
+        4,
+        9,
+        2
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 5,
+      "expected_signs": [
+        2,
+        10,
+        6,
+        1,
+        9,
+        5,
+        0,
+        8,
+        4,
+        11,
+        7,
+        3
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 6,
+      "expected_signs": [
+        9,
+        10,
+        11,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 7,
+      "expected_signs": [
+        4,
+        11,
+        6,
+        1,
+        8,
+        3,
+        10,
+        5,
+        0,
+        7,
+        2,
+        9
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 8,
+      "expected_signs": [
+        11,
+        3,
+        7,
+        0,
+        4,
+        8,
+        1,
+        5,
+        9,
+        2,
+        6,
+        10
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 9,
+      "expected_signs": [
+        6,
+        5,
+        4,
+        3,
+        2,
+        1,
+        0,
+        11,
+        10,
+        9,
+        8,
+        7
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 10,
+      "expected_signs": [
+        1,
+        6,
+        11,
+        4,
+        9,
+        2,
+        7,
+        0,
+        5,
+        10,
+        3,
+        8
+      ]
+    },
+    {
+      "branch": "female",
+      "lagna": 11,
+      "expected_signs": [
+        8,
+        4,
+        0,
+        7,
+        3,
+        11,
+        6,
+        2,
+        10,
+        5,
+        1,
+        9
+      ]
+    }
+  ],
+  "durations": [
+    {
+      "id": "method1_chart1",
+      "recipe": "method1",
+      "chart": {
+        "basis": "signs",
+        "positions": {
+          "Sun": 1,
+          "Moon": 9,
+          "Mars": 2,
+          "Mercury": 1,
+          "Jupiter": 11,
+          "Venus": 2,
+          "Saturn": 7
+        },
+        "lagna": 7
+      },
+      "expected": [
+        [
+          7,
+          7
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "pdf_pages": [
+        71,
+        72
+      ],
+      "evidence": "published_partial"
+    },
+    {
+      "id": "method2_chart1",
+      "recipe": "male",
+      "chart": {
+        "basis": "signs",
+        "positions": {
+          "Sun": 1,
+          "Moon": 9,
+          "Mars": 2,
+          "Mercury": 1,
+          "Jupiter": 11,
+          "Venus": 2,
+          "Saturn": 7
+        },
+        "lagna": 7
+      },
+      "expected": [
+        [
+          7,
+          6
+        ],
+        [
+          2,
+          12
+        ],
+        [
+          9,
+          11
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          1,
+          12
+        ]
+      ],
+      "pdf_pages": [
+        74
+      ],
+      "evidence": "published_partial"
+    },
+    {
+      "id": "female_prose",
+      "recipe": "female",
+      "chart": {
+        "basis": "signs",
+        "positions": {
+          "Sun": 7,
+          "Moon": 3,
+          "Mars": 4,
+          "Mercury": 7,
+          "Jupiter": 1,
+          "Venus": 8,
+          "Saturn": 3
+        },
+        "lagna": 3
+      },
+      "expected": [
+        [
+          0,
+          8
+        ],
+        [
+          11,
+          2
+        ],
+        [
+          10,
+          7
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          3,
+          12
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          1,
+          7
+        ]
+      ],
+      "published_years": [
+        8,
+        2,
+        7,
+        10,
+        7,
+        9,
+        10,
+        2,
+        9,
+        10,
+        7,
+        7
+      ],
+      "pdf_pages": [
+        75,
+        76
+      ],
+      "evidence": "prose_selected_with_conflict_C04"
+    }
+  ]
+}

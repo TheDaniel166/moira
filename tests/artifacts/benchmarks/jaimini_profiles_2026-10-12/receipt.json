@@ -1,0 +1,123 @@
+{
+  "python": "3.14.3",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "scope": "bounded direct arithmetic and reader-free in-process HTTP; performance is not scientific validation",
+  "profiles": [
+    {
+      "profile_id": "rangacharya_2007_method1_classical7_v1",
+      "engine": {
+        "first_ms": 0.6083000007492956,
+        "warm_median_ms": 0.07430000005115289,
+        "warm_max_ms": 0.16450000111944973,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 4.067400001076749,
+        "warm_median_ms": 1.6505500007042428,
+        "warm_max_ms": 2.170699997805059,
+        "repeats": 30
+      },
+      "response_bytes": 4398,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rangacharya_2007_method2_male_classical7_v1",
+      "engine": {
+        "first_ms": 0.09770000178832561,
+        "warm_median_ms": 0.07385000026260968,
+        "warm_max_ms": 0.13359999866224825,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 1.6890999977476895,
+        "warm_median_ms": 1.6869000010046875,
+        "warm_max_ms": 2.14110000160872,
+        "repeats": 30
+      },
+      "response_bytes": 4486,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rangacharya_2007_female_prose_classical7_v1",
+      "engine": {
+        "first_ms": 0.09870000212686136,
+        "warm_median_ms": 0.07734999962849542,
+        "warm_max_ms": 0.10200000178883784,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 1.7478000008850358,
+        "warm_median_ms": 1.6412499990110518,
+        "warm_max_ms": 1.8601999981910922,
+        "repeats": 30
+      },
+      "response_bytes": 4492,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "bphs_santhanam_31_literal_assessment_v1",
+      "engine": {
+        "first_ms": 2.017599999817321,
+        "warm_median_ms": 1.9531999987520976,
+        "warm_max_ms": 2.1267000010993797,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 6.850699999631615,
+        "warm_median_ms": 6.211400001120637,
+        "warm_max_ms": 6.826799999544164,
+        "repeats": 30
+      },
+      "response_bytes": 56973,
+      "pair_summaries": 88,
+      "quarter_pairs": 40
+    },
+    {
+      "profile_id": "pvr_2000_argala_count_first_v1",
+      "engine": {
+        "first_ms": 1.5571000003546942,
+        "warm_median_ms": 1.3614999988931231,
+        "warm_max_ms": 1.6641999973217025,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 5.623400000331458,
+        "warm_median_ms": 5.43649999963236,
+        "warm_max_ms": 6.283199996687472,
+        "repeats": 30
+      },
+      "response_bytes": 50140,
+      "pair_summaries": 88,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rath_argala_article_assessment_v1",
+      "engine": {
+        "first_ms": 3.859800002828706,
+        "warm_median_ms": 3.509699999995064,
+        "warm_max_ms": 3.9257999997062143,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 10.405699998955242,
+        "warm_median_ms": 10.094049999679555,
+        "warm_max_ms": 72.19510000140872,
+        "repeats": 30
+      },
+      "response_bytes": 91215,
+      "pair_summaries": 132,
+      "quarter_pairs": 0
+    }
+  ],
+  "source_sha256": {
+    "moira/chara_profiles.py": "7809b54dd80754006dfacfac51d274e2d0a2b09632bb1e068b93401f4601e9ce",
+    "moira/argala_assessment.py": "18d6221dcbce5c3c10160bf783b958e554b9438c395eaa9aeafb12fe67f730f6",
+    "moira/_jaimini_profile_inputs.py": "63c0812e8cf1eefcffd0f80e1485dba44c0432f84ae75c5753cd2d549c199600",
+    "moira/jaimini_profile_policy.py": "5e7bc12f97a0f8b9b6d76ee7e051070e0da079e8a2149ffb9b624de3c0dc7a2e",
+    "moira_server/services/jaimini_profiles.py": "d3ac4046137f1e73d5f1c993dd6fb88d7f75efc1df3d11c9fb00a05bd6974222",
+    "moira_server/models/jaimini_profiles.py": "4232d5bcf44121b0306602876043485abc96a47b2f358fc89d4e4f7806d7b0b0"
+  }
+}
