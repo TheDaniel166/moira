@@ -207,6 +207,30 @@ def _birth_scope(policy, birth_location):
         raise ValueError("birth_location is required exactly when natal_bav_mode=compute_raw")
 
 
+def _natal_components(natal, birth_location):
+    """Derive fixed natal astronomy and raw BAV once; shared by snapshots/windows."""
+    asc = sidereal_asc = None
+    indices = {p.planet: p.position.rashi_index for p in natal.positions}
+    bhinna = None
+    if birth_location is not None:
+        # Reuse house geometry only, with the same reader-bound natal TT.
+        dpsi, deps = nutation(natal.jd_tt)
+        mean_eps = mean_obliquity(natal.jd_tt)
+        eps = mean_eps + deps
+        lat, lon = birth_location.latitude, birth_location.longitude
+        armc = _local_sidereal_time_at_tt(natal.jd_ut1, natal.jd_tt, lon, dpsi, mean_eps)
+        theta, epsilon, phi = map(math.radians, (armc, eps, lat))
+        x = math.sin(theta) * math.cos(epsilon) + math.tan(phi) * math.sin(epsilon)
+        y = -math.cos(theta)
+        if math.hypot(x, y) < 1e-12:
+            raise ValueError("birth horizon and ecliptic do not define a unique Lagna")
+        asc = _asc_from_armc(armc, eps, lat)
+        sidereal_asc = _longitude(asc - natal.ayanamsa_degrees, "natal Lagna")
+        indices["Lagna"] = min(11, int(sidereal_asc / 30))
+        bhinna = {p: bhinnashtakavarga(p, indices) for p in GOCHARA_PLANETS}
+    return asc, sidereal_asc, indices, bhinna
+
+
 @dataclass(frozen=True, slots=True)
 class GocharaDateResult:
     """Derived natal/transit judgment, retaining every input and raw BAV source."""
@@ -226,25 +250,7 @@ class GocharaDateResult:
             raise TypeError("natal and transit must be GocharaEpoch vessels")
         if any(e.ayanamsa_system != self.policy.ayanamsa_system for e in (self.natal, self.transit)):
             raise ValueError("epoch ayanamsas contradict the composition policy")
-        asc = sidereal_asc = None
-        indices = {p.planet: p.position.rashi_index for p in self.natal.positions}
-        bhinna = None
-        if self.birth_location is not None:
-            # Reuse house geometry only, with the same reader-bound natal TT.
-            dpsi, deps = nutation(self.natal.jd_tt)
-            mean_eps = mean_obliquity(self.natal.jd_tt)
-            eps = mean_eps + deps
-            lat, lon = self.birth_location.latitude, self.birth_location.longitude
-            armc = _local_sidereal_time_at_tt(self.natal.jd_ut1, self.natal.jd_tt, lon, dpsi, mean_eps)
-            theta, epsilon, phi = map(math.radians, (armc, eps, lat))
-            x = math.sin(theta) * math.cos(epsilon) + math.tan(phi) * math.sin(epsilon)
-            y = -math.cos(theta)
-            if math.hypot(x, y) < 1e-12:
-                raise ValueError("birth horizon and ecliptic do not define a unique Lagna")
-            asc = _asc_from_armc(armc, eps, lat)
-            sidereal_asc = _longitude(asc - self.natal.ayanamsa_degrees, "natal Lagna")
-            indices["Lagna"] = min(11, int(sidereal_asc / 30))
-            bhinna = {p: bhinnashtakavarga(p, indices) for p in GOCHARA_PLANETS}
+        asc, sidereal_asc, indices, bhinna = _natal_components(self.natal, self.birth_location)
         snapshot = gochara_from_positions(
             self.natal.positions[1].position.sidereal_longitude,
             {p.planet: p.position.sidereal_longitude for p in self.transit.positions},

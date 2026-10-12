@@ -13,7 +13,9 @@ This standard freezes the bounded snapshot domain. Nodes, counter-Vedha, sign-pa
 VED-017 adds a separately owned [date-derived compositor](GOCHARA_DATE_DERIVED_STANDARD.md).
 It derives complete natal/transit inputs with explicit clock/frame evidence
 and optional same-birth raw BAV, then calls this unchanged judgment core.
-Ingress searches and dated forecast windows remain open.
+The subsequent [bounded Gochar windows standard](GOCHARA_WINDOWS_STANDARD.md)
+admits modern whole-sign transit intervals with explicit numerical uncertainty.
+It calls this judgment core without extending its source profile.
 
 ## Authority and corpus
 

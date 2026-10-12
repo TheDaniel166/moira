@@ -18,6 +18,12 @@ moira/kernels/comets/manifest.json text eol=lf
 # The orbital admission receipt binds this fixture's exact SHA-256 and size.
 tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json text eol=lf
 
+# VED-017 binds the validation specification's byte digest. Preserve retained
+# primary/benchmark evidence across Windows and POSIX publication checkouts.
+tests/fixtures/gochara_windows_validation_spec.json text eol=lf
+tests/artifacts/oracle/gochara_windows_2026-10-11/** -text whitespace=cr-at-eol
+tests/artifacts/benchmarks/gochara_windows_2026-10-11/** -text whitespace=cr-at-eol
+
 # Frozen raw Horizons responses, diagnostic JSON and generator captures are
 # byte-bound evidence. Preserve their original bytes on every platform.
 tests/fixtures/horizons_asteroid_apsidal_anchored_2026_10_03/* -text

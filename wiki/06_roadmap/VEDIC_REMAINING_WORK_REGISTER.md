@@ -1,8 +1,8 @@
 # Vedic remaining work register
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
-**Last reconciled:** 11 October 2026.
-**Baseline:** engine `main`, version 6.9.9. Sections 36–38 retain the source-published adversarial repair checkpoint; sections 39–44 record the selected MC marriage delivery and both published performance passes. Section 45 preserves the four-area research checkpoint. Section 46 records the authorized housing/Vastu, commerce, ordinary travel and additional VV/KP marriage implementation with final local engine/facade/REST acceptance. Twelve of 24 stable feature packages have reached their selected delivery checkpoints; twelve remain open/bounded. Section 47 records source publication of the selected VED-011 package and its four focused-review repairs; release and deployment remain separate.
+**Last reconciled:** 12 October 2026.
+**Baseline:** engine `main`, version 6.9.9. Sections 36–38 retain the source-published adversarial repair checkpoint; sections 39–44 record the selected MC marriage delivery and both published performance passes. Section 45 preserves the four-area research checkpoint. Sections 46–47 record the selected housing/Vastu, commerce, travel and VV/KP marriage implementation and source publication. Section 48 records VED-017's bounded Gochar windows and final local engine/facade/REST acceptance. Thirteen of 24 stable feature packages have reached their selected delivery checkpoints; eleven remain open/bounded. Release and deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -31,10 +31,10 @@ below preserve their distinct admission and remaining-work boundaries.
 
 `P1` closes gaps in existing products; `P2` deepens existing families or provides the next foundational composition; `P3` is a larger separately scoped programme. These are sequencing suggestions, not effort estimates, dates or an instruction to resume paused work. No item must mechanically pass twelve identical phases: use the constitutional gates that apply to its actual object.
 
-There are **24 stable numbered work packages** below: **12 remain open/bounded,
-including bounded VED-023 and the VED-017 window frontier**.
-**VED-001/002/003/004/005/006/007/008/009/010/011/015 reached their selected feature-delivery checkpoints**;
-VED-001/002/003/004/005/006/007/008/009/010/015 are in the engine/wiki source-publication history. The separate repair acceptance in sections 36–37 closes all sixteen adversarial findings, including VED-010's optional Shadbala composition failure; it does not change these feature-delivery counts. VED-011's selected four-area closure adds one locally complete package in section 46.
+There are **24 stable numbered work packages** below: **11 remain open/bounded,
+including bounded VED-023**.
+**VED-001/002/003/004/005/006/007/008/009/010/011/015/017 reached their selected feature-delivery checkpoints**;
+VED-001/002/003/004/005/006/007/008/009/010/011/015 are in the earlier engine/wiki source-publication history; VED-017's authorized publication package is recorded in section 49. The separate repair acceptance in sections 36–37 closes all sixteen adversarial findings, including VED-010's optional Shadbala composition failure; it does not change these feature-delivery counts. VED-017's bounded modern window closure adds one locally complete package in section 48.
 Several contain source-separated subquestions
 rather than a promise to implement every tradition. Five optional candidates
 follow in a separate table. Shared source/REST/validation requirements are not
@@ -82,7 +82,7 @@ contract. VED-010 Lagna-strength composition is locally complete for its named p
 
 | ID | Work still required | Current evidence and boundary | Status / priority |
 | --- | --- | --- | --- |
-| VED-017 | Reader-bound epoch/civil-date composition is locally complete. Remaining: admit bounded dated windows; solve subject and blocker ingresses, retrograde re-entries and intervals where observations/relations change, with boundary and coverage evidence. | The [date-derived standard](../02_standards/GOCHARA_DATE_DERIVED_STANDARD.md) and [validation receipt](../03_validation/GOCHARA_DATE_DERIVED_VALIDATION_2026-10-06.md) own complete seven-body input derivation, separate epoch clocks/ayanamsas, optional same-birth raw Raman-encoded BAV, facade exports and two strict REST routes. `forecast.dated_events` in the [catalogue](../../moira/gochara_policy.py) remains outside snapshot scope. Existing transit search is substrate, not a complete Gochar forecast product. | `COMPOSITION_LOCAL_COMPLETE`; `WINDOWS_OPEN_ENGINE`, P2 |
+| VED-017 | Locally complete for reader-bound epoch/civil-date composition and bounded modern whole-sign windows: all seven subjects/blockers, all twelve ayanamsas, direct/retrograde re-entries, ordinary/baseline Vedha and optional once-derived natal BAV. Certain state, boundary bands and unresolved evidence share a complete partition. | The [window standard](../02_standards/GOCHARA_WINDOWS_STANDARD.md), [completed seven-stage plan](VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md) and [validation receipt](../03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md) record engine/facade/REST parity, 366-day bounds, external astronomy, resource budgets and shared-owner regressions. `forecast.dated_events` admits this window profile; existing snapshot choices are unchanged. Broader source profiles and modifiers remain VED-018/019. | `LOCAL_COMPLETE`; authorized engine/wiki source-publication package in section 49; release/deployment separate |
 | VED-018 | Evaluate additional Gochar corpora, references and nodal participation independently. Collate complete source profiles, baseline/indication tables, subjects, blockers and exemptions; resolve known edition/table discrepancies before exposing an executable choice. | [Catalogue](../../moira/gochara_policy.py) records `profile.brihat_samhita_104`, `reference.alternatives`, the conflicting Phaladeepika/Prasna Marga nodal treatments, `nodes.blocker_participation` and disputed tables. Seven classical bodies and natal Moon remain the only admitted computation profile. | `SOURCE_RESEARCH`, P3 |
 | VED-019 | Evaluate separately sourced Gochar modifier/extension products: Counter-Vedha, source-specific sign-part activation, dignity/aspect and dasha context, ingress-Moon Murthi, and Nakshatra/chakra/Latta systems. Preserve relation types and competing conventions; do not collapse them into one strength score or generic Vedha switch. | [Catalogue](../../moira/gochara_policy.py) records `vedha.counter_vedha`, the two distinct activation treatments, strength-context records, `murthi.ingress_moon` and `nakshatra.chakra_extensions`. Each carries a non-admission limitation. Sarvatobhadra and 27/28-star geometry need their own source object, not an inferred extension of sign-based Vedha. | `SOURCE_RESEARCH`, P3 |
 
@@ -127,7 +127,7 @@ The user authorized lunar-month and festival investigation after VED-015. VED-02
 | Rao Chara second cycle | VED-001 locally closes strict cycle selection and canonical engine/REST receipts; complete-cycle and co-lord authority remains bounded in the owning standard. |
 | D60 named deities | VED-003 locally closes eight-route transport, four selected-edition names, source-only signs and modern/classical-derived full-degree profiles. Each profile has explicit provenance and completed engine/facade/REST/strength validation. Direct classical D60 degree prescription and exact printed planetary pairs remain separately unclaimed; the absence of a direct prescription does not block the derived policy. |
 | Sayanadi | VED-002 locally closes the selected BPHS source recipe, strict standalone/chart/node/birth inputs, inspectable results and curated Python/facade/REST surfaces. Legacy effect prose is explicitly uncertified and unevaluated. |
-| Gochar snapshot and doctrine catalogue | Original engine/public/REST package committed at the baseline. VED-017 epoch/date composition is now locally complete; dated windows and VED-018/019 remain independent admissions. |
+| Gochar snapshot, dated composition and bounded windows | Original snapshot package is source-published. VED-017 now closes the selected epoch/civil-date and modern window engine/facade/REST contract locally; VED-018/019 remain separate admissions. |
 | Daily sunrise-owned Panchanga | VED-015 engine/public/REST is locally complete; its named policy, source and bounded verification are in the linked receipt. No website adoption or deployment is implied. |
 | Unified Vedic exports | The 6 October package added 84 curated `vedic` names and sixteen root Varga names. Their absence is closed; this is not blanket admission of every standalone module helper. |
 | Existing Muhurta, Vedic, Pancha Pakshi and Varshaphal standards/tests | They exist. Additional worked-case coverage and scope corrections are specific follow-through, not "no documentation" or "no tests." |
@@ -148,7 +148,7 @@ not unfinished rules silently included in the supported profiles.
 1. **Close existing product omissions:** VED-001/002/003/005 and their scoped VED-021/022 follow-through are complete and source-published. This first item's selected implementation scope is closed. Operational REST budgets remain a separate scope decision.
 2. **Muhurta composition:** VED-004/006 are complete for the bounded sampled/JD-weekday profile. VED-007 is locally complete for all seven named families, including exact Sun/Moon transitions and sunrise-owned named-day composition. VED-008 is locally complete for the named source assessments and bounded day cells. VED-009 is locally complete for its six detectors and three source-scoped exceptions. VED-010 is source-published for its selected Lagna/Navamsa components; its optional Shadbala composition and subsequent admission defects have passed combined repair acceptance. **VED-011's selected marriage and four-area purpose package are complete locally**; further traditions/purposes and integration into generic scoring/search remain separate scope decisions.
 3. **Daily foundation:** VED-015 is locally complete. Selected special Lagnas and Kalachakra would be separate, newly authorized packages.
-4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-017–019. Pancha Pakshi retains its owning stage-by-stage queue.
+4. **Deepen source-specific families:** selected VED-012/013 and Gochar VED-018/019. VED-017's bounded windows are locally complete. Pancha Pakshi retains its owning stage-by-stage queue.
 
 Every admitted package must state the governing object, edition/lineage and ambiguity policy; input and output ownership; evaluated/omitted/unavailable distinctions; public export identity; explicit bounded request and typed response contracts; reader/resource lifecycle; direct-engine/HTTP parity; hostile and boundary inputs; source-owned fixtures; documentation and completion receipt. New output fields must preserve canonical engine truth rather than rebuilding it in the server. Numerical authority, transport fidelity and predictive claims are different validation questions.
 
@@ -1125,3 +1125,51 @@ tested code and fixtures are unchanged. The final commit identities belong
 to the engine/wiki histories; version 6.9.9, extension boundaries and the
 twelve delivered/twelve open feature count are unchanged. Release tags,
 website/Urania adoption and deployment are outside this publication.
+
+## 48. VED-017 bounded Gochar windows — local completion, 11 October 2026
+
+The user authorized all seven stages of the
+[window implementation plan](VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md).
+The [standard](../02_standards/GOCHARA_WINDOWS_STANDARD.md) and
+[final validation receipt](../03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md)
+record their completion: all seven subject/blocker streams, all twelve
+ayanamsas, direct and retrograde re-entries, complete conservative partitions,
+ordinary/baseline Vedha and optional once-derived raw natal BAV. Epoch/civil
+engine and facade calls, two typed REST calculation routes and resource-free
+capabilities share admission, numerical evidence, errors and exact JSON bytes.
+
+The product admits up to 366 days inside its declared modern UT1/TT/resource
+intersection. Numerical width, contact, ordering and source uncertainty remain
+visible; strict requests reject unresolved results. It never substitutes a
+sampled grid for completeness or erases potential blocker events.
+
+Acceptance accounts for 1,443 distinct tests across the documented runs,
+including all nine shared-owner real-history cases, plus 101 primary Horizons
+comparisons, 48 ERFA cases within the test set, source fixtures and 26 completed
+performance requests. The receipt preserves exact execution scopes, raw
+references, unchanged tolerances, repaired findings and the interrupted-run
+qualification. Annual latency and measured memory are documented rather than
+represented as an interactive performance promise.
+
+The feature count changes to **thirteen delivered / eleven open or bounded**.
+VED-018/019 retain alternative sources, nodes, other references and modifiers;
+they are not missing requirements of this completed window profile. The wider
+VED-021/022 follow-through programmes remain open for future admissions.
+Changes are local and uncommitted/unpushed; version 6.9.9 is unchanged.
+Source publication, release and website/Urania adoption remain separate.
+
+## 49. VED-017 source-publication package — 12 October 2026
+
+The user authorized committing and pushing the complete bounded-window
+implementation, research, documentation and evidence. The
+[publication checkpoint](../03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md#authorized-source-publication-checkpoint--12-october-2026)
+records reconciliation with upstream `7a86b33`, retaining its additive API
+guards and all earlier changes. Exact byte checks preserve the implemented
+runtime and existing evidence. The fresh publication slice passes 803 tests
+with all 29 required DE441 cases executed and no failures or skips.
+
+The generated wiki is published before the engine and its updated gitlink.
+Exact commit identities belong to the two repositories' histories. The
+thirteen-delivered/eleven-open count, source-selected boundaries and version
+6.9.9 are unchanged. Source publication does not admit VED-018/019, release a
+new package, deploy the engine or change website/Urania behavior.

@@ -1,0 +1,618 @@
+{
+  "python": "3.14.3",
+  "system": "True Chitrapaksha",
+  "bav": true,
+  "concurrent_processes": 4,
+  "mode": "synchronous engine requests",
+  "warm_semantics": "same serving reader and process, new request-owned caches",
+  "start_jd_ut1": 2460676.5,
+  "status": "passed",
+  "results": [
+    {
+      "days": 1,
+      "repeat": 0,
+      "wall_seconds": 2.9001631000001,
+      "before": {
+        "working_set_bytes": 89808896,
+        "process_peak_working_set_bytes": 106528768,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1602314240,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 95,
+        "reader_calls": 851,
+        "root_iterations": 35,
+        "subdivisions": 13,
+        "events": 1,
+        "cells": 3,
+        "samples": 2,
+        "evidence": 23
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9338915348052979,
+        "certain_duration_days": 0.999989191070199,
+        "uncertain_duration_days": 1.0808929800987244e-05
+      },
+      "events": 1,
+      "cells": 3,
+      "serialized_bytes": 35082,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=13, misses=36, maxsize=4096, currsize=36)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=43, misses=286, maxsize=8192, currsize=286)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=54, misses=138, maxsize=4096, currsize=138)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=277, misses=192, maxsize=4096, currsize=192)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=49, maxsize=4096, currsize=49)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=22, misses=329, maxsize=8192, currsize=329)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=46, misses=22, maxsize=4096, currsize=22)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=15, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=476, misses=237, maxsize=4096, currsize=237)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=93, misses=86, maxsize=1024, currsize=86)"
+        ]
+      ]
+    },
+    {
+      "days": 1,
+      "repeat": 1,
+      "wall_seconds": 0.633243599999787,
+      "before": {
+        "working_set_bytes": 1597857792,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1602830336,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 95,
+        "reader_calls": 851,
+        "root_iterations": 35,
+        "subdivisions": 13,
+        "events": 1,
+        "cells": 3,
+        "samples": 2,
+        "evidence": 23
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9338915348052979,
+        "certain_duration_days": 0.999989191070199,
+        "uncertain_duration_days": 1.0808929800987244e-05
+      },
+      "events": 1,
+      "cells": 3,
+      "serialized_bytes": 35082,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=13, misses=36, maxsize=4096, currsize=36)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=43, misses=286, maxsize=8192, currsize=286)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=54, misses=138, maxsize=4096, currsize=138)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=277, misses=192, maxsize=4096, currsize=192)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=49, maxsize=4096, currsize=49)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=22, misses=329, maxsize=8192, currsize=329)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=46, misses=22, maxsize=4096, currsize=22)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=15, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=476, misses=237, maxsize=4096, currsize=237)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=93, misses=86, maxsize=1024, currsize=86)"
+        ]
+      ]
+    },
+    {
+      "days": 30,
+      "repeat": 0,
+      "wall_seconds": 16.813919799999894,
+      "before": {
+        "working_set_bytes": 1600888832,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1669672960,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 3494,
+        "reader_calls": 15623,
+        "root_iterations": 1499,
+        "subdivisions": 609,
+        "events": 21,
+        "cells": 39,
+        "samples": 20,
+        "evidence": 919
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9575486183166504,
+        "certain_duration_days": 29.999794389586896,
+        "uncertain_duration_days": 0.00020561041310429573
+      },
+      "events": 19,
+      "cells": 39,
+      "serialized_bytes": 467140,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=439, misses=1518, maxsize=4096, currsize=1494)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=1933, misses=11309, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=2530, misses=5696, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=12106, misses=8226, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=1957, maxsize=4096, currsize=1933)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=811, misses=13242, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=1468, misses=744, maxsize=4096, currsize=744)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=851, misses=1106, maxsize=4096, currsize=1106)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=1106, maxsize=4096, currsize=1106)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=17515, misses=8730, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=3035, misses=808, maxsize=1024, currsize=808)"
+        ]
+      ]
+    },
+    {
+      "days": 30,
+      "repeat": 1,
+      "wall_seconds": 16.144064999999955,
+      "before": {
+        "working_set_bytes": 1664278528,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1669668864,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 3494,
+        "reader_calls": 15623,
+        "root_iterations": 1499,
+        "subdivisions": 609,
+        "events": 21,
+        "cells": 39,
+        "samples": 20,
+        "evidence": 919
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9575486183166504,
+        "certain_duration_days": 29.999794389586896,
+        "uncertain_duration_days": 0.00020561041310429573
+      },
+      "events": 19,
+      "cells": 39,
+      "serialized_bytes": 467140,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=439, misses=1518, maxsize=4096, currsize=1494)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=1933, misses=11309, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=2530, misses=5696, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=12106, misses=8226, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=1957, maxsize=4096, currsize=1933)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=811, misses=13242, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=1468, misses=744, maxsize=4096, currsize=744)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=851, misses=1106, maxsize=4096, currsize=1106)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=1106, maxsize=4096, currsize=1106)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=17515, misses=8730, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=3035, misses=808, maxsize=1024, currsize=808)"
+        ]
+      ]
+    },
+    {
+      "days": 366,
+      "repeat": 0,
+      "wall_seconds": 232.42864230000032,
+      "before": {
+        "working_set_bytes": 1664212992,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1710108672,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 39819,
+        "reader_calls": 208177,
+        "root_iterations": 17300,
+        "subdivisions": 6960,
+        "events": 240,
+        "cells": 419,
+        "samples": 210,
+        "evidence": 10662
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9647101163864136,
+        "certain_duration_days": 365.9977439166978,
+        "uncertain_duration_days": 0.0022560833021998405
+      },
+      "events": 209,
+      "cells": 419,
+      "serialized_bytes": 5129863,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=4666, misses=17509, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=30958, misses=155086, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=43334, misses=74465, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=115930, misses=117799, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=22175, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=8496, misses=186044, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=22692, misses=11404, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=4907, misses=17268, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=440, misses=16828, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=172421, misses=159105, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=25297, misses=17301, maxsize=1024, currsize=1024)"
+        ]
+      ]
+    },
+    {
+      "days": 366,
+      "repeat": 1,
+      "wall_seconds": 272.55621129999963,
+      "before": {
+        "working_set_bytes": 1699278848,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "after": {
+        "working_set_bytes": 1709645824,
+        "process_peak_working_set_bytes": 1754005504,
+        "measurement": "Windows process resident working set; peak cumulative across this process, includes shared kernel pages"
+      },
+      "work": {
+        "evaluations": 39819,
+        "reader_calls": 208177,
+        "root_iterations": 17300,
+        "subdivisions": 6960,
+        "events": 240,
+        "cells": 419,
+        "samples": 210,
+        "evidence": 10662
+      },
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9647101163864136,
+        "certain_duration_days": 365.9977439166978,
+        "uncertain_duration_days": 0.0022560833021998405
+      },
+      "events": 209,
+      "cells": 419,
+      "serialized_bytes": 5129863,
+      "cache_receipts": [
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=4666, misses=17509, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=30958, misses=155086, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=43334, misses=74465, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=115930, misses=117799, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=22175, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=8496, misses=186044, maxsize=8192, currsize=8192)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=22692, misses=11404, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=4907, misses=17268, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=440, misses=16828, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=172421, misses=159105, maxsize=4096, currsize=4096)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=25297, misses=17301, maxsize=1024, currsize=1024)"
+        ]
+      ]
+    }
+  ]
+}

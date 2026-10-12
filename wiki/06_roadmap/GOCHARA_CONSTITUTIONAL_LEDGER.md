@@ -84,3 +84,29 @@ original 28-name core and eleven-name policy owner remain unchanged. The
 [new validation receipt](../03_validation/GOCHARA_DATE_DERIVED_VALIDATION_2026-10-06.md)
 records its separate verification. No new textual school, BAV threshold,
 ingress solver or forecast window follows from this composition admission.
+
+## VED-017 bounded windows, 11 October 2026
+
+The separately authorized seven-stage package adds the
+[whole-sign window standard](../02_standards/GOCHARA_WINDOWS_STANDARD.md) and
+[validation receipt](../03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md).
+Its governing object is a complete seven-participant partition under the same
+Phaladeepika/Sastri doctrine, with all twelve date-policy ayanamsas, optional
+same-birth raw BAV, interval exclusion evidence and explicit uncertainty bands.
+Twenty curated names, two calculation routes and resource-free capabilities
+are additive; the 32-entry doctrine catalogue admits its existing
+`forecast.dated_events` record for this product only.
+
+Common interval, clock/frame, astronomy, isolation, budget and reader-loan
+owners move to private `_event_search` modules with marriage import adapters.
+The focused review repaired angular-lift loss, request-meter bypass through a
+prewarmed owner's cache, and endpoint existence proofs that could drop the
+full interval's uncertainty. It also strengthened nested result invariants and
+exact engine/HTTP JSON accounting. No rule table or scientific tolerance was
+relaxed. Review, numerical-model qualifications, source cases, native-record
+parity, external evidence and actual synchronous performance remain distinct
+in the validation receipt. VED-018/019 are separate source admissions.
+
+This checkpoint concerns local implementation and verification. Source commit,
+push, version release, deployment and website adoption require their separate
+publication steps.

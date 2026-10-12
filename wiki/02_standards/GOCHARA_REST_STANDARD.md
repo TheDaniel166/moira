@@ -2,7 +2,7 @@
 
 Date: 6 October 2026. Status: implemented source contract; local validation receipts belong to the [Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md). Registered source routes do not imply a released package or deployed service.
 
-The [Gochara backend standard](GOCHARA_BACKEND_STANDARD.md) owns judgment doctrine. Transport is a bounded, synchronous, read-only view over the same public engine. Supplied-position routes evaluate caller inputs; the [date-derived compositor](GOCHARA_DATE_DERIVED_STANDARD.md) derives reader-bound astronomical inputs from explicit epochs or aware civil instants. Neither product searches dated windows, blends source schools or turns unadmitted catalogue evidence into executable presets.
+The [Gochara backend standard](GOCHARA_BACKEND_STANDARD.md) owns judgment doctrine. Transport is a bounded, synchronous, read-only view over the same public engine. Supplied-position routes evaluate caller inputs; the [date-derived compositor](GOCHARA_DATE_DERIVED_STANDARD.md) derives reader-bound astronomical inputs from explicit epochs or aware civil instants. The separately admitted [window product](GOCHARA_WINDOWS_STANDARD.md), added 11 October 2026, searches the existing whole-sign doctrine with explicit boundary uncertainty. None blends source schools or turns unadmitted catalogue evidence into executable presets.
 
 | Method | Path | Product |
 | --- | --- | --- |
@@ -10,7 +10,10 @@ The [Gochara backend standard](GOCHARA_BACKEND_STANDARD.md) owns judgment doctri
 | POST | `/v1/gochara/profile` | The same snapshot plus local profiles, reconciled aggregate partitions and observed blocker-to-subject network. |
 | POST | `/v1/gochara/from-epochs` | Complete reader-bound natal/transit composition from two explicit UT1 Julian dates. |
 | POST | `/v1/gochara/from-datetimes` | The same composition from two timezone-aware civil instants. |
-| GET | `/v1/gochara/doctrine-options` | Thirty cited admission records across sixteen topics; optional `topic` filter. |
+| GET | `/v1/gochara/doctrine-options` | Thirty-two cited admission records across sixteen topics; optional `topic` filter. |
+| POST | `/v1/gochara/windows/from-epochs` | Bounded seven-body timeline from natal/start/end UT1 JDs. |
+| POST | `/v1/gochara/windows/from-datetimes` | The same timeline from three aware civil instants. |
+| GET | `/v1/gochara/windows/capabilities` | Resource-free window policies, limits, domain and uncertainty semantics. |
 
 ## Request contract
 
@@ -46,7 +49,7 @@ Typed response fields preserve named source, selected cited choices, supplied po
 
 The canonical snapshot appears once at the profile root. Redundant engine back-references from summary and network nodes are represented by that shared snapshot. Each local profile retains its assessment; each graph edge retains the full source-bound witness. Named model fields read the frozen vessels through Pydantic's attribute mapping; no `__dict__`, recursive internal-layout dump or narrative parsing is used.
 
-Catalogue `topic` values are the sixteen admitted catalogue topics; unsupported filters receive 422. Responses preserve `admitted`, `source_attested_not_admitted`, `disputed_not_admitted`, `research_required` and `outside_snapshot_scope`, together with authority kind, citations and limitations. All five routes are discoverable under the `gochara` tag and `classical-vedic` family through OpenAPI and `/v1/meta/routes`. The catalogue now includes two additional admitted engine-scope records for reader-derived epochs and raw natal BAV composition.
+Catalogue `topic` values are the sixteen admitted catalogue topics; unsupported filters receive 422. Responses preserve `admitted`, `source_attested_not_admitted`, `disputed_not_admitted`, `research_required` and `outside_snapshot_scope`, together with authority kind, citations and limitations. All eight routes are discoverable under the `gochara` tag and `classical-vedic` family through OpenAPI and `/v1/meta/routes`. The catalogue includes admitted engine-scope records for reader-derived epochs and raw natal BAV composition. `forecast.dated_events` now describes the bounded window product; snapshot selected options do not claim a search.
 
 Validation covers all twelve scope combinations; all 36 source-fixture Vedha pairs through HTTP; raw BAV, malformed/unknown inputs, partial/exempt relations and graph reconciliation. No website delivery, release publication, deployed readiness or predictive accuracy claim follows from these tests.
 

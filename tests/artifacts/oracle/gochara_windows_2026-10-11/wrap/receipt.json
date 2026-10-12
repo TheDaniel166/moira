@@ -1,0 +1,313 @@
+{
+  "spec_sha256": "4890efa0598815b151afd7b0f94cd2567331bfaf4971d068691ab5af7bc543b9",
+  "external_requested": true,
+  "results": [
+    {
+      "system": "Lahiri",
+      "planet": "Moon",
+      "start_jd_ut1": 2460326.5,
+      "end_jd_ut1": 2460327.5,
+      "before_sign": 11,
+      "after_sign": 0,
+      "expected_direction": 1,
+      "boundary_degrees": 0.0,
+      "event": {
+        "id": 0,
+        "planet": "Moon",
+        "boundary_degrees": 0.0,
+        "lower_jd_ut1": 2460327.419264936,
+        "upper_jd_ut1": 2460327.4192756964,
+        "kind": "crossing",
+        "direction": 1,
+        "count": 1,
+        "reasons": [],
+        "clipped_start": false,
+        "clipped_end": false,
+        "left_value_bounds": [
+          -9.807937454002723e-05,
+          -5.0560638675863644e-05
+        ],
+        "right_value_bounds": [
+          5.0561635871727965e-05,
+          9.808037173589155e-05
+        ],
+        "rate_bounds": [
+          13.81118499591614,
+          13.815969174193087
+        ],
+        "continuous_branch": true
+      },
+      "elapsed_seconds": 1.0549122000002171,
+      "resources": [
+        [
+          "clock_inputs_sha256",
+          "b6f920e4c52ba2f69ebc74a4f5f3af9b73f1b67fe921ef3af5deaf273e43a3ab"
+        ],
+        [
+          "anchor_record_sha256",
+          "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+        ],
+        [
+          "anchor_record",
+          "None"
+        ],
+        [
+          "clock_identity",
+          "_EphemerisKernelIdentity(summary_label='DE-0441LE-0441', planetary_ephemeris='DE441', lunar_ephemeris='LE441', lunar_tidal_acceleration_arcsec_per_cy2=-25.936)"
+        ],
+        [
+          "effective_clock_start_jd_ut1",
+          "2415020.5000226437"
+        ],
+        [
+          "effective_clock_end_jd_ut1",
+          "2488434.499011232"
+        ],
+        [
+          "arithmetic_model",
+          "outward_binary64_RN_with_libm_at_most_4ulp"
+        ],
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=14, misses=35, maxsize=4096, currsize=35)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=46, misses=268, maxsize=8192, currsize=268)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=53, misses=131, maxsize=4096, currsize=131)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=273, misses=184, maxsize=4096, currsize=184)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=49, maxsize=4096, currsize=49)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=21, misses=314, maxsize=8192, currsize=314)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=81, misses=21, maxsize=4096, currsize=21)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=15, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=34, maxsize=4096, currsize=34)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=209, misses=232, maxsize=4096, currsize=232)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=94, misses=85, maxsize=1024, currsize=85)"
+        ],
+        [
+          "serving_source_sha256",
+          "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+        ]
+      ],
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9297072887420654,
+        "certain_duration_days": 0.9999892394989729,
+        "uncertain_duration_days": 1.0760501027107239e-05
+      },
+      "horizons": {
+        "jd_tt": 2460327.4200709867,
+        "target": "301",
+        "angular_error_arcsec": 0.05051336628743776,
+        "distance_error_km": 0.0003731527249328792,
+        "reference": {
+          "right_ascension": 22.248285808,
+          "declination": 9.759669191,
+          "distance_au": 0.00249816479298
+        }
+      }
+    },
+    {
+      "system": "Lahiri",
+      "planet": "Sun",
+      "start_jd_ut1": 2460413.5,
+      "end_jd_ut1": 2460414.5,
+      "before_sign": 11,
+      "after_sign": 0,
+      "expected_direction": 1,
+      "boundary_degrees": 0.0,
+      "event": {
+        "id": 1,
+        "planet": "Sun",
+        "boundary_degrees": 0.0,
+        "lower_jd_ut1": 2460414.148880095,
+        "upper_jd_ut1": 2460414.148890542,
+        "kind": "crossing",
+        "direction": 1,
+        "count": 1,
+        "reasons": [],
+        "clipped_start": false,
+        "clipped_end": false,
+        "left_value_bounds": [
+          -5.1421576477706914e-06,
+          -5.09642268144304e-06
+        ],
+        "right_value_bounds": [
+          5.095951771697457e-06,
+          5.141686738025108e-06
+        ],
+        "rate_bounds": [
+          0.9790953548130247,
+          0.9809806516720089
+        ],
+        "continuous_branch": true
+      },
+      "elapsed_seconds": 0.6094122999998035,
+      "resources": [
+        [
+          "clock_inputs_sha256",
+          "b6f920e4c52ba2f69ebc74a4f5f3af9b73f1b67fe921ef3af5deaf273e43a3ab"
+        ],
+        [
+          "anchor_record_sha256",
+          "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+        ],
+        [
+          "anchor_record",
+          "None"
+        ],
+        [
+          "clock_identity",
+          "_EphemerisKernelIdentity(summary_label='DE-0441LE-0441', planetary_ephemeris='DE441', lunar_ephemeris='LE441', lunar_tidal_acceleration_arcsec_per_cy2=-25.936)"
+        ],
+        [
+          "effective_clock_start_jd_ut1",
+          "2415020.5000226437"
+        ],
+        [
+          "effective_clock_end_jd_ut1",
+          "2488434.499011232"
+        ],
+        [
+          "arithmetic_model",
+          "outward_binary64_RN_with_libm_at_most_4ulp"
+        ],
+        [
+          "cache:astronomy._apparent",
+          "CacheInfo(hits=21, misses=45, maxsize=4096, currsize=45)"
+        ],
+        [
+          "cache:astronomy._record_arguments",
+          "MemoInfo(hits=46, misses=316, maxsize=8192, currsize=316)"
+        ],
+        [
+          "cache:astronomy._tdb",
+          "MemoInfo(hits=59, misses=160, maxsize=4096, currsize=160)"
+        ],
+        [
+          "cache:astronomy.barycentric",
+          "CacheInfo(hits=352, misses=219, maxsize=4096, currsize=219)"
+        ],
+        [
+          "cache:astronomy.coordinates_tt",
+          "CacheInfo(hits=0, misses=66, maxsize=4096, currsize=66)"
+        ],
+        [
+          "cache:astronomy.pair",
+          "CacheInfo(hits=26, misses=362, maxsize=8192, currsize=362)"
+        ],
+        [
+          "cache:astronomy.solar_xyz_tt",
+          "CacheInfo(hits=0, misses=0, maxsize=4096, currsize=0)"
+        ],
+        [
+          "cache:frames._polynomials",
+          "MemoInfo(hits=112, misses=29, maxsize=4096, currsize=29)"
+        ],
+        [
+          "cache:frames.angles",
+          "MemoInfo(hits=19, misses=47, maxsize=4096, currsize=47)"
+        ],
+        [
+          "cache:frames.offset",
+          "MemoInfo(hits=0, misses=47, maxsize=4096, currsize=47)"
+        ],
+        [
+          "cache:frames.sincos",
+          "MemoInfo(hits=273, misses=321, maxsize=4096, currsize=321)"
+        ],
+        [
+          "cache:clock._base_at",
+          "CacheInfo(hits=0, misses=0, maxsize=256, currsize=0)"
+        ],
+        [
+          "cache:clock.jet",
+          "CacheInfo(hits=120, misses=93, maxsize=1024, currsize=93)"
+        ],
+        [
+          "serving_source_sha256",
+          "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+        ]
+      ],
+      "coverage": {
+        "participants": [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn"
+        ],
+        "domain_accounted": true,
+        "exclusion_certified": true,
+        "events_resolved": true,
+        "doctrine_profile": "phaladeepika_26_sastri_1950_seven_classical",
+        "unresolved_regions": 0,
+        "maximum_band_width_seconds": 0.9543299674987793,
+        "certain_duration_days": 0.9999785078689456,
+        "uncertain_duration_days": 2.1492131054401398e-05
+      },
+      "horizons": {
+        "jd_tt": 2460414.1496862634,
+        "target": "10",
+        "angular_error_arcsec": 0.05047412985462678,
+        "distance_error_km": 8.475780487060547e-05,
+        "reference": {
+          "right_ascension": 22.403166851,
+          "declination": 9.382385141,
+          "distance_au": 1.00287815692379
+        }
+      }
+    }
+  ],
+  "status": "passed"
+}

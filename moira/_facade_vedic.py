@@ -22,6 +22,7 @@ _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
+_gochara_windows = importlib.import_module("moira.gochara_windows")
 _avasthas = importlib.import_module("moira.avasthas")
 _sayanadi_dated = importlib.import_module("moira.sayanadi_dated")
 _named_muhurta = importlib.import_module("moira.named_muhurta")
@@ -465,6 +466,34 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             natal_dt, transit_dt, birth_location=birth_location,
             policy=policy, reader=self._reader,
         )
+
+    def gochara_windows(self, natal_jd_ut1, start_jd_ut1, end_jd_ut1, *,
+                        birth_location=None, policy=None, search_policy=None, subjects=None):
+        """Bounded seven-body sidereal windows using this engine's reader."""
+        _gochara_windows._admit(natal_jd_ut1, start_jd_ut1, end_jd_ut1, birth_location,
+            _gochara_dated.DEFAULT_GOCHARA_DATE_POLICY if policy is None else policy,
+            _gochara_windows.GocharaWindowSearchPolicy() if search_policy is None else search_policy,
+            subjects)
+        try:
+            reader = self._reader
+        except MissingEphemerisKernelError as exc:
+            raise _gochara_dated.GocharaResourceError("this Moira instance has no Gochar planetary reader") from exc
+        return _gochara_windows.gochara_windows(
+            natal_jd_ut1, start_jd_ut1, end_jd_ut1, birth_location=birth_location,
+            policy=policy, search_policy=search_policy, subjects=subjects, reader=reader)
+
+    def gochara_windows_for_datetimes(self, natal_dt, start_dt, end_dt, *,
+                                     birth_location=None, policy=None, search_policy=None, subjects=None):
+        """Three aware civil instants, each converted once to UT1."""
+        values = (natal_dt, start_dt, end_dt)
+        result = self.gochara_windows(*_gochara_windows._civil_epochs(values),
+            birth_location=birth_location, policy=policy, search_policy=search_policy, subjects=subjects)
+        return _gochara_windows._civil_receipt(result, values)
+
+    @staticmethod
+    def gochara_window_capabilities():
+        """Discover bounded Gochar window policy without acquiring a kernel."""
+        return _gochara_windows.gochara_window_capabilities()
 
     def daily_panchanga(self, local_date: date, latitude: float, longitude: float,
                         *, timezone: str, policy=None):

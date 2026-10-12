@@ -1,0 +1,674 @@
+[
+  {
+    "system": "Lahiri",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460316.5,
+    "end_jd_ut1": 2460317.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Sun",
+    "start_jd_ut1": 2460323.5,
+    "end_jd_ut1": 2460324.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Venus",
+    "start_jd_ut1": 2460327.5,
+    "end_jd_ut1": 2460328.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mars",
+    "start_jd_ut1": 2460345.5,
+    "end_jd_ut1": 2460346.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460431.5,
+    "end_jd_ut1": 2460432.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460763.5,
+    "end_jd_ut1": 2460764.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460317.5,
+    "end_jd_ut1": 2460318.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Sun",
+    "start_jd_ut1": 2460324.5,
+    "end_jd_ut1": 2460325.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Venus",
+    "start_jd_ut1": 2460328.5,
+    "end_jd_ut1": 2460329.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Mars",
+    "start_jd_ut1": 2460346.5,
+    "end_jd_ut1": 2460347.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460435.5,
+    "end_jd_ut1": 2460436.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Fagan-Bradley",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460771.5,
+    "end_jd_ut1": 2460772.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460316.5,
+    "end_jd_ut1": 2460317.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Sun",
+    "start_jd_ut1": 2460323.5,
+    "end_jd_ut1": 2460324.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Venus",
+    "start_jd_ut1": 2460327.5,
+    "end_jd_ut1": 2460328.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Mars",
+    "start_jd_ut1": 2460345.5,
+    "end_jd_ut1": 2460346.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460430.5,
+    "end_jd_ut1": 2460431.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Krishnamurti",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460762.5,
+    "end_jd_ut1": 2460763.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Raman",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Raman",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460313.5,
+    "end_jd_ut1": 2460314.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Raman",
+    "planet": "Sun",
+    "start_jd_ut1": 2460322.5,
+    "end_jd_ut1": 2460323.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Raman",
+    "planet": "Venus",
+    "start_jd_ut1": 2460326.5,
+    "end_jd_ut1": 2460327.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Raman",
+    "planet": "Mars",
+    "start_jd_ut1": 2460343.5,
+    "end_jd_ut1": 2460344.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Raman",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460425.5,
+    "end_jd_ut1": 2460426.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Raman",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460751.5,
+    "end_jd_ut1": 2460752.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460314.5,
+    "end_jd_ut1": 2460315.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Sun",
+    "start_jd_ut1": 2460322.5,
+    "end_jd_ut1": 2460323.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Venus",
+    "start_jd_ut1": 2460326.5,
+    "end_jd_ut1": 2460327.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Mars",
+    "start_jd_ut1": 2460343.5,
+    "end_jd_ut1": 2460344.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460425.5,
+    "end_jd_ut1": 2460426.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Yukteshwar",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460752.5,
+    "end_jd_ut1": 2460753.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Mars",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460321.5,
+    "end_jd_ut1": 2460322.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Sun",
+    "start_jd_ut1": 2460328.5,
+    "end_jd_ut1": 2460329.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Venus",
+    "start_jd_ut1": 2460331.5,
+    "end_jd_ut1": 2460332.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460450.5,
+    "end_jd_ut1": 2460451.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Djwhal Khul",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460804.5,
+    "end_jd_ut1": 2460805.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460316.5,
+    "end_jd_ut1": 2460317.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Sun",
+    "start_jd_ut1": 2460323.5,
+    "end_jd_ut1": 2460324.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Venus",
+    "start_jd_ut1": 2460327.5,
+    "end_jd_ut1": 2460328.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Mars",
+    "start_jd_ut1": 2460345.5,
+    "end_jd_ut1": 2460346.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460431.5,
+    "end_jd_ut1": 2460432.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "True Chitrapaksha",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460763.5,
+    "end_jd_ut1": 2460764.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "De Luce",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "De Luce",
+    "planet": "Mars",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "De Luce",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460321.5,
+    "end_jd_ut1": 2460322.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "De Luce",
+    "planet": "Sun",
+    "start_jd_ut1": 2460327.5,
+    "end_jd_ut1": 2460328.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "De Luce",
+    "planet": "Venus",
+    "start_jd_ut1": 2460330.5,
+    "end_jd_ut1": 2460331.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "De Luce",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460448.5,
+    "end_jd_ut1": 2460449.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "De Luce",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460799.5,
+    "end_jd_ut1": 2460800.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460317.5,
+    "end_jd_ut1": 2460318.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Sun",
+    "start_jd_ut1": 2460324.5,
+    "end_jd_ut1": 2460325.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Venus",
+    "start_jd_ut1": 2460328.5,
+    "end_jd_ut1": 2460329.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Mars",
+    "start_jd_ut1": 2460346.5,
+    "end_jd_ut1": 2460347.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460435.5,
+    "end_jd_ut1": 2460436.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "Aldebaran (15 Tau)",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460771.5,
+    "end_jd_ut1": 2460772.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "True Revati",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "True Revati",
+    "planet": "Sun",
+    "start_jd_ut1": 2460320.5,
+    "end_jd_ut1": 2460321.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Revati",
+    "planet": "Venus",
+    "start_jd_ut1": 2460324.5,
+    "end_jd_ut1": 2460325.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Revati",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460338.5,
+    "end_jd_ut1": 2460339.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Revati",
+    "planet": "Mars",
+    "start_jd_ut1": 2460340.5,
+    "end_jd_ut1": 2460341.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Revati",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460414.5,
+    "end_jd_ut1": 2460415.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "True Revati",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460732.5,
+    "end_jd_ut1": 2460733.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460314.5,
+    "end_jd_ut1": 2460315.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Sun",
+    "start_jd_ut1": 2460322.5,
+    "end_jd_ut1": 2460323.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Venus",
+    "start_jd_ut1": 2460326.5,
+    "end_jd_ut1": 2460327.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Mars",
+    "start_jd_ut1": 2460344.5,
+    "end_jd_ut1": 2460345.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460426.5,
+    "end_jd_ut1": 2460427.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "True Pushya",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460754.5,
+    "end_jd_ut1": 2460755.5,
+    "before_sign": 10,
+    "after_sign": 11
+  },
+  {
+    "system": "True Mula",
+    "planet": "Moon",
+    "start_jd_ut1": 2460311.5,
+    "end_jd_ut1": 2460312.5,
+    "before_sign": 4,
+    "after_sign": 5
+  },
+  {
+    "system": "True Mula",
+    "planet": "Mercury",
+    "start_jd_ut1": 2460317.5,
+    "end_jd_ut1": 2460318.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Mula",
+    "planet": "Sun",
+    "start_jd_ut1": 2460324.5,
+    "end_jd_ut1": 2460325.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Mula",
+    "planet": "Venus",
+    "start_jd_ut1": 2460328.5,
+    "end_jd_ut1": 2460329.5,
+    "before_sign": 7,
+    "after_sign": 8
+  },
+  {
+    "system": "True Mula",
+    "planet": "Mars",
+    "start_jd_ut1": 2460346.5,
+    "end_jd_ut1": 2460347.5,
+    "before_sign": 8,
+    "after_sign": 9
+  },
+  {
+    "system": "True Mula",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2460434.5,
+    "end_jd_ut1": 2460435.5,
+    "before_sign": 0,
+    "after_sign": 1
+  },
+  {
+    "system": "True Mula",
+    "planet": "Saturn",
+    "start_jd_ut1": 2460769.5,
+    "end_jd_ut1": 2460770.5,
+    "before_sign": 10,
+    "after_sign": 11
+  }
+]

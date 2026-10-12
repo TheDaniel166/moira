@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 515
-- Registered OpenAPI operations: 515 (GET 44, POST 471)
+- Registered OpenAPI paths: 518
+- Registered OpenAPI operations: 518 (GET 45, POST 473)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 511
+- Versioned `/v1` paths: 514
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3504,6 +3504,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/gochara/from-datetimes` | gochara | `datetimes_route_v1_gochara_from_datetimes_post` |
 | `POST` | `/v1/gochara/from-epochs` | gochara | `epochs_route_v1_gochara_from_epochs_post` |
 | `POST` | `/v1/gochara/profile` | gochara | `profile_route_v1_gochara_profile_post` |
+| `GET` | `/v1/gochara/windows/capabilities` | gochara | `window_capabilities_route_v1_gochara_windows_capabilities_get` |
+| `POST` | `/v1/gochara/windows/from-datetimes` | gochara | `window_datetimes_route_v1_gochara_windows_from_datetimes_post` |
+| `POST` | `/v1/gochara/windows/from-epochs` | gochara | `window_epochs_route_v1_gochara_windows_from_epochs_post` |
 | `POST` | `/v1/harmograms/intensity-spectrum` | harmograms | `harmogram_intensity_spectrum_route_v1_harmograms_intensity_spectrum_post` |
 | `POST` | `/v1/harmograms/projection` | harmograms | `harmogram_projection_route_v1_harmograms_projection_post` |
 | `POST` | `/v1/harmograms/trace` | harmograms | `harmogram_trace_route_v1_harmograms_trace_post` |

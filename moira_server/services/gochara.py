@@ -29,6 +29,16 @@ def compute_gochara_date(engine: Moira, request: GocharaEpochRequest | GocharaDa
                             policy=policy, birth_location=location)
 
 
+def compute_gochara_windows(engine, request):
+    """Validated epochs are already converted once by the shared time owner."""
+    from ..models.gochara_windows import GocharaWindowDatetimeRequest
+    from moira.gochara_windows import _civil_receipt
+    result = engine.gochara_windows(*request._epochs, **request.engine_options())
+    if isinstance(request, GocharaWindowDatetimeRequest):
+        result = _civil_receipt(result, (request.natal_dt, request.start_dt, request.end_dt))
+    return result
+
+
 def compute_gochara_snapshot(request: GocharaSnapshotRequest) -> GocharaResult:
     """Bind supplied positions and raw BAV without deriving astronomy."""
     bhinna = None if request.raw_bav is None else {

@@ -23,3 +23,9 @@ def serialize_gochara_profile(profile: GocharaSubsystemProfile) -> GocharaSubsys
 def serialize_gochara_date(result: GocharaDateResult) -> GocharaDateResponse:
     """Transport canonical clocks, inputs, raw natal BAV and judgments."""
     return GocharaDateResponse.model_validate(result)
+
+
+def serialize_gochara_windows(result):
+    """One canonical engine wire representation, validated against OpenAPI."""
+    from ..models.gochara_windows import GocharaWindowResultResponse
+    return GocharaWindowResultResponse.model_validate(result.to_dict())

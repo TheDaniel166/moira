@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-11",
+  "python": "3.14.3",
+  "planetary_resource": "DE441",
+  "evidence": "Five individually completed passing pytest progress records in collection order. The combined command was deliberately interrupted after its sixth passed test (the next file phase-carryover point) to avoid repeating profiles already executing in independent processes. The combined process did not have a clean exit.",
+  "cases": [
+    {
+      "nodeid": "tests/integration/test_muhurta_marriage_ephemeris.py::test_real_http_windows_full_profile_witnesses_and_reader_lifetime",
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/integration/test_muhurta_marriage_ephemeris.py::test_real_http_high_latitude_snapshot_retains_unavailable_rules",
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/integration/test_muhurta_marriage_ephemeris.py::test_real_resource_budget_failure_is_deterministic_and_restores_reader[28.6-2048]",
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/integration/test_muhurta_marriage_ephemeris.py::test_real_resource_budget_failure_is_deterministic_and_restores_reader[70.0-2048]",
+      "outcome": "passed"
+    },
+    {
+      "nodeid": "tests/integration/test_muhurta_marriage_ephemeris.py::test_real_resource_budget_failure_is_deterministic_and_restores_reader[0.0-4096]",
+      "outcome": "passed"
+    }
+  ]
+}

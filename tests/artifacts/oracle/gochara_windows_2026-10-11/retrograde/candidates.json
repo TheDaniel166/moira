@@ -1,0 +1,152 @@
+[
+  {
+    "system": "Lahiri",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2458937.5,
+    "end_jd_ut1": 2458938.5,
+    "before_sign": 8,
+    "after_sign": 9,
+    "expected_direction": 1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2459029.5,
+    "end_jd_ut1": 2459030.5,
+    "before_sign": 9,
+    "after_sign": 8,
+    "expected_direction": -1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Jupiter",
+    "start_jd_ut1": 2459173.5,
+    "end_jd_ut1": 2459174.5,
+    "before_sign": 8,
+    "after_sign": 9,
+    "expected_direction": 1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mars",
+    "start_jd_ut1": 2459077.5,
+    "end_jd_ut1": 2459078.5,
+    "before_sign": 11,
+    "after_sign": 0,
+    "expected_direction": 1,
+    "boundary_degrees": 0
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mars",
+    "start_jd_ut1": 2459126.5,
+    "end_jd_ut1": 2459127.5,
+    "before_sign": 0,
+    "after_sign": 11,
+    "expected_direction": -1,
+    "boundary_degrees": 0
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mars",
+    "start_jd_ut1": 2459207.5,
+    "end_jd_ut1": 2459208.5,
+    "before_sign": 11,
+    "after_sign": 0,
+    "expected_direction": 1,
+    "boundary_degrees": 0
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mercury",
+    "start_jd_ut1": 2459239.5,
+    "end_jd_ut1": 2459240.5,
+    "before_sign": 9,
+    "after_sign": 10,
+    "expected_direction": 1,
+    "boundary_degrees": 300
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mercury",
+    "start_jd_ut1": 2459249.5,
+    "end_jd_ut1": 2459250.5,
+    "before_sign": 10,
+    "after_sign": 9,
+    "expected_direction": -1,
+    "boundary_degrees": 300
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Mercury",
+    "start_jd_ut1": 2459284.5,
+    "end_jd_ut1": 2459285.5,
+    "before_sign": 9,
+    "after_sign": 10,
+    "expected_direction": 1,
+    "boundary_degrees": 300
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Venus",
+    "start_jd_ut1": 2459556.5,
+    "end_jd_ut1": 2459557.5,
+    "before_sign": 8,
+    "after_sign": 9,
+    "expected_direction": 1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Venus",
+    "start_jd_ut1": 2459578.5,
+    "end_jd_ut1": 2459579.5,
+    "before_sign": 9,
+    "after_sign": 8,
+    "expected_direction": -1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Venus",
+    "start_jd_ut1": 2459637.5,
+    "end_jd_ut1": 2459638.5,
+    "before_sign": 8,
+    "after_sign": 9,
+    "expected_direction": 1,
+    "boundary_degrees": 270
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Saturn",
+    "start_jd_ut1": 2459698.5,
+    "end_jd_ut1": 2459699.5,
+    "before_sign": 9,
+    "after_sign": 10,
+    "expected_direction": 1,
+    "boundary_degrees": 300
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Saturn",
+    "start_jd_ut1": 2459772.5,
+    "end_jd_ut1": 2459773.5,
+    "before_sign": 10,
+    "after_sign": 9,
+    "expected_direction": -1,
+    "boundary_degrees": 300
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Saturn",
+    "start_jd_ut1": 2459961.5,
+    "end_jd_ut1": 2459962.5,
+    "before_sign": 9,
+    "after_sign": 10,
+    "expected_direction": 1,
+    "boundary_degrees": 300
+  }
+]

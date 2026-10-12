@@ -38,6 +38,7 @@ from moira import (
 
 from .config import ServerConfigurationError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
+from moira.gochara_windows import GocharaWindowBudgetError, GocharaWindowDomainError, GocharaWindowUnresolvedError
 from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
 from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
 from moira.sade_sati import SadeSatiBudgetError
@@ -411,6 +412,27 @@ def register_exception_handlers(app: FastAPI) -> None:
             category="ephemeris_coverage", request_id=getattr(request.state, "request_id", None),
         ))
 
+    @app.exception_handler(GocharaWindowBudgetError)
+    async def handle_gochara_window_budget(request: Request, exc: GocharaWindowBudgetError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="gochara_window_budget_exceeded", message=str(exc), category="search_budget",
+            request_id=getattr(request.state, "request_id", None),
+            details={"limit_kind": exc.limit_kind, "limit": exc.limit, "count": exc.count, "stage": exc.stage}))
+
+    @app.exception_handler(GocharaWindowDomainError)
+    async def handle_gochara_window_domain(request: Request, exc: GocharaWindowDomainError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="gochara_window_outside_certified_domain", message=str(exc), category="certified_domain",
+            request_id=getattr(request.state, "request_id", None),
+            details={"dependency": exc.dependency, "lower_jd_ut1": exc.lower, "upper_exclusive_jd_ut1": exc.upper}))
+
+    @app.exception_handler(GocharaWindowUnresolvedError)
+    async def handle_gochara_window_unresolved(request: Request, exc: GocharaWindowUnresolvedError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="gochara_window_unresolved", message=str(exc), category="search_resolution",
+            request_id=getattr(request.state, "request_id", None),
+            details={"reasons": exc.reasons, "count": exc.count, "maximum_width_seconds": exc.maximum_width_seconds}))
+
     @app.exception_handler(MarriageSearchBudgetError)
     async def handle_marriage_budget(request: Request, exc: MarriageSearchBudgetError) -> JSONResponse:
         request_id = getattr(request.state, 'request_id', str(uuid4()))
@@ -446,6 +468,10 @@ def register_exception_handlers(app: FastAPI) -> None:
             cause=errors[0].get('ctx',{}).get('error')
             if isinstance(cause,MarriageSearchBudgetError):
                 return await handle_marriage_budget(request,cause)
+            if isinstance(cause,GocharaWindowBudgetError):
+                return await handle_gochara_window_budget(request,cause)
+            if isinstance(cause,GocharaWindowDomainError):
+                return await handle_gochara_window_domain(request,cause)
         request_id = getattr(request.state, "request_id", str(uuid4()))
         details = {
             ".".join(str(part) for part in error["loc"]): error["msg"]

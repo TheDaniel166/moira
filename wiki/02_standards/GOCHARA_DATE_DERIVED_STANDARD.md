@@ -146,7 +146,11 @@ allowed as a retrospective comparison; no forecast interpretation is inferred.
 `POST /v1/gochara/from-epochs` and `POST /v1/gochara/from-datetimes` expose the
 same startup-bound facade and typed result. The
 [REST standard](GOCHARA_REST_STANDARD.md) defines their request and failure
-contracts. Five Gochar routes are discoverable under `classical-vedic`.
+contracts. Eight Gochar routes are now discoverable under `classical-vedic`,
+including the separately owned [bounded window product](GOCHARA_WINDOWS_STANDARD.md)
+added on 11 October 2026. The two snapshot payloads and their policy meanings
+remain unchanged. The private natal builder is shared so window composition
+derives its fixed natal/BAV context once per request.
 
 The [validation receipt](../03_validation/GOCHARA_DATE_DERIVED_VALIDATION_2026-10-06.md)
 records the executed source-fixture, clock/oracle, reader-isolation, raw BAV,

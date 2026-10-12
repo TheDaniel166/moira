@@ -1,0 +1,33 @@
+{
+  "schema": "moira.gochara.windows.validation_spec.v1",
+  "date": "2026-10-11",
+  "evidence_classes": ["analytic_completeness", "classical_source_fixture", "serving_model_containment", "primary_astronomy_comparison"],
+  "event_corpus": {
+    "systems": "all twelve named Moira systems",
+    "bodies": ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"],
+    "required_combinations": 84,
+    "candidate_search_start_jd_ut1": 2460310.5,
+    "candidate_search_days": 1461,
+    "candidate_method": "daily serving point scan selects fixtures only; it supplies no completeness certificate",
+    "validation": "new interval engine must retain and classify the selected crossing; independent Horizons quantities compare astronomy at its midpoint"
+  },
+  "horizons": {
+    "authority": "NASA/JPL Horizons observer quantities 2 and 20",
+    "origin": "geocentric 500@399",
+    "timescale": "TT exact Julian date",
+    "targets": {"Sun": "10", "Moon": "301", "Mars": "4", "Mercury": "199", "Jupiter": "5", "Venus": "299", "Saturn": "6"},
+    "angular_threshold_arcsec": 0.35,
+    "distance_threshold_km": 0.1,
+    "threshold_basis": "unchanged existing test_horizons_planet_apparent.py authority envelope",
+    "frame_difference": "Moira IAU 2006/2000A true equator/equinox of date versus Horizons EOP-corrected IAU 1976/1980 observer frame",
+    "timing_claim": "none; solver width is not an external timing tolerance"
+  },
+  "frames_and_anchors": {
+    "authority": "ERFA/SOFA pnm06a, nut06a, obl06, p06e and pmsafe using sovereign source records",
+    "anchor_threshold_degrees": 0.0004,
+    "anchor_threshold_basis": "unchanged existing test_stars_erfa_reference.py anchor envelope; model differences are retained",
+    "polynomial_threshold_degrees": 0.00000001,
+    "epochs_tt": [2415022.5, 2451545.0, 2460967.0, 2488432.5],
+    "required_live_anchors": ["Spica", "Aldebaran", "Revati", "Asellus Australis", "Shaula"]
+  }
+}

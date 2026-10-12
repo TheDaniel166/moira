@@ -1994,3 +1994,9 @@ __all__ = [
     "SothicRisingResponse",
     "SothicYearOutcomeResponse",
 ]
+
+# Window response schemas follow their canonical frozen engine vessels.
+from . import gochara_windows as _gochara_window_models
+for _name in _gochara_window_models.__all__:
+    globals()[_name] = getattr(_gochara_window_models, _name)
+__all__ += _gochara_window_models.__all__

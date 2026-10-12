@@ -1,0 +1,22 @@
+[
+  {
+    "system": "Lahiri",
+    "planet": "Moon",
+    "start_jd_ut1": 2460326.5,
+    "end_jd_ut1": 2460327.5,
+    "before_sign": 11,
+    "after_sign": 0,
+    "expected_direction": 1,
+    "boundary_degrees": 0.0
+  },
+  {
+    "system": "Lahiri",
+    "planet": "Sun",
+    "start_jd_ut1": 2460413.5,
+    "end_jd_ut1": 2460414.5,
+    "before_sign": 11,
+    "after_sign": 0,
+    "expected_direction": 1,
+    "boundary_degrees": 0.0
+  }
+]

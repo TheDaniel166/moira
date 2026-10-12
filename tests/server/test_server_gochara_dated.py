@@ -135,7 +135,7 @@ def test_contracts_are_discoverable_and_models_curated(surface):
                  "GocharaBirthLocationRequest", "GocharaDateResponse", "GocharaEpochResponse"):
         assert schema["components"]["schemas"][name]["additionalProperties"] is False
     routes = client.get("/v1/meta/routes?tag=gochara").json()
-    assert routes["count"] == 5
+    assert routes["count"] == 8
     assert all(route["family"] == "classical-vedic" for route in routes["routes"])
     catalogue = client.get("/v1/gochara/doctrine-options?topic=astronomy").json()["options"]
     assert {o["id"] for o in catalogue} == {"astronomy.caller_sidereal", "astronomy.reader_epochs"}
