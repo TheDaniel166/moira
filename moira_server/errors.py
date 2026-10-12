@@ -45,6 +45,10 @@ from moira.sade_sati import SadeSatiBudgetError
 from moira.muhurta_marriage_dated import MarriageSearchBudgetError
 from moira.muhurta_election import ElectionSearchBudgetError
 from moira.shadbala_context import ShadbalaContextError
+from moira.kalachakra import (
+    KalachakraProjectionError, KalachakraCoverageError,
+    KalachakraResourceError, KalachakraInvariantError,
+)
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -370,6 +374,34 @@ _LUNAR_ORIENTATION_ERROR_POLICIES = (
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
+
+    def kalachakra_handler(status, code, category, message):
+        async def handle(request, exc):
+            request_id = getattr(request.state, "request_id", str(uuid4()))
+            if status == 500:
+                _LOGGER.exception("Kalachakra invariant failure [request_id=%s]", request_id,
+                    exc_info=(type(exc), exc, exc.__traceback__))
+            details = None
+            if type(exc) is KalachakraProjectionError:
+                path = exc.path
+                details = {"reason": "unrepresentable_positive_interval"}
+                if type(path) is tuple and 1 <= len(path) <= 2 and all(type(i) is int and 0 <= i <= 8 for i in path):
+                    details["path"] = "/".join(str(i) for i in path)
+            return JSONResponse(status_code=status, content=_error_body(
+                error_code=code, message=message, category=category, request_id=request_id, details=details))
+        return handle
+
+    for error, status, code, category, message in (
+        (KalachakraProjectionError, 422, "kalachakra_projection_unrepresentable", "input_validation",
+         "Positive source intervals cannot be represented at the requested calendar origin."),
+        (KalachakraCoverageError, 422, "kalachakra_epoch_out_of_coverage", "resource_coverage",
+         "The birth epoch is outside serving ephemeris coverage."),
+        (KalachakraResourceError, 503, "kalachakra_resource_unavailable", "kernel_readiness",
+         "A required Kalachakra ephemeris, lunar clock identity or live anchor is unavailable."),
+        (KalachakraInvariantError, 500, "kalachakra_internal_invariant", "internal_error",
+         "An internal Kalachakra result failed validation."),
+    ):
+        app.add_exception_handler(error, kalachakra_handler(status, code, category, message))
 
     @app.exception_handler(SadeSatiBudgetError)
     async def handle_sade_budget(request: Request, exc: SadeSatiBudgetError) -> JSONResponse:

@@ -1,7 +1,7 @@
 # Moira API Reference
 
 **Document revision:** 2.3.0
-**Engine baseline:** 6.9.9
+**Engine baseline:** 6.10.0
 **Last verified:** 2026-09-26
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
@@ -358,7 +358,10 @@ strict name/ghati context, optional chart evaluation and reader-bound
 previous-sunrise birth composition through root/facade/`vedic`. See the
 [Sayanadi standard](SAYANADI_ADMISSION_STANDARD.md) for source variants,
 inspectable trace, unavailable clocks and conditional-prose provenance.
-Special Lagnas and Kalachakra remain separate admissions. Daily sunrise-owned Panchanga has its separately
+Special Lagnas remain a separate admission. Kalachakra now has a named
+Santhanam/BPHS profile with exact source years, bounded MD/AD trees and five
+REST operations; see the [Kalachakra API](../02_services/KALACHAKRA_DASHA_API.md).
+Daily sunrise-owned Panchanga has its separately
 admitted policy and [standard](DAILY_PANCHANGA_STANDARD.md). See the
 [Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
 for the completed package and the

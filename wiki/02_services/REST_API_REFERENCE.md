@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 523
-- Registered OpenAPI operations: 523 (GET 47, POST 476)
+- Registered OpenAPI paths: 528
+- Registered OpenAPI operations: 528 (GET 48, POST 480)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 519
+- Versioned `/v1` paths: 524
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3444,6 +3444,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/dasha/alternate/yogini/chart/sequence` | alternate-dashas | `yogini_chart_sequence_route_v1_dasha_alternate_yogini_chart_sequence_post` |
 | `POST` | `/v1/dasha/alternate/yogini/profile` | alternate-dashas | `yogini_profile_route_v1_dasha_alternate_yogini_profile_post` |
 | `POST` | `/v1/dasha/alternate/yogini/sequence` | alternate-dashas | `yogini_sequence_route_v1_dasha_alternate_yogini_sequence_post` |
+| `POST` | `/v1/dasha/kalachakra/chart/current` | kalachakra-dasha | `chart_current_v1_dasha_kalachakra_chart_current_post` |
+| `POST` | `/v1/dasha/kalachakra/chart/sequence` | kalachakra-dasha | `chart_sequence_v1_dasha_kalachakra_chart_sequence_post` |
+| `POST` | `/v1/dasha/kalachakra/current` | kalachakra-dasha | `current_v1_dasha_kalachakra_current_post` |
+| `GET` | `/v1/dasha/kalachakra/profiles` | kalachakra-dasha | `profiles_v1_dasha_kalachakra_profiles_get` |
+| `POST` | `/v1/dasha/kalachakra/sequence` | kalachakra-dasha | `sequence_v1_dasha_kalachakra_sequence_post` |
 | `POST` | `/v1/dasha/vimshottari/balance` | dasha | `dasha_balance_route_v1_dasha_vimshottari_balance_post` |
 | `POST` | `/v1/dasha/vimshottari/current` | dasha | `dasha_current_route_v1_dasha_vimshottari_current_post` |
 | `POST` | `/v1/dasha/vimshottari/lord-pair` | dasha | `dasha_lord_pair_route_v1_dasha_vimshottari_lord_pair_post` |

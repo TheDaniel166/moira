@@ -1,0 +1,52 @@
+{
+  "evidence": "Independent transcription and rational derivation from the inspected witnesses; never generated from runtime constants.",
+  "sources": {
+    "L01": {"title": "BPHS, Santhanam, volume 2", "sha256": "ad7172b615568eb812961c71cff352f354c5676b955bc34cfcfdcf431404cd45", "coordinates": "PDF 49-54 / printed 539-544, 46.84/93-100; PDF 310 / printed 800, chapter 64"},
+    "L02": {"title": "PVR Narasimha Rao, Vedic Astrology, 2000", "sha256": "2971851a3cda30929cf5b1ec56b88902bd4a141c8d5479599573ddf1c5f78242", "coordinates": "PDF 301-309 / printed 289-297, Tables 43-48, Examples 95-97; PDF 321-322 / printed 309-310, Exercise 34"},
+    "L09": {"title": "Jataka Parijata, Sastri, volume 3", "sha256": "e77f6300e66b5056cb85d42e617c0c33f3b1fbf1a5d614863fac912a8ce023fd", "coordinates": "PDF 294-298 / printed 1000-1004, commentary after 17.105 and 107-111"}
+  },
+  "signs": "Ar Ta Ge Cn Le Vi Li Sc Sg Cp Aq Pi",
+  "weights": [7,16,9,21,5,9,16,7,10,4,4,10],
+  "groups": {"S1": [1,3,7,9,13,15,19,21,25,27], "S2": [2,8,14,20,26], "A1": [4,10,16,22], "A2": [5,6,11,12,17,18,23,24]},
+  "rows": [
+    ["S1",1,"Ar Ta Ge Cn Le Vi Li Sc Sg",100,"Ar","Sg"],
+    ["S1",2,"Cp Aq Pi Sc Li Vi Cn Le Ge",85,"Cp","Ge"],
+    ["S1",3,"Ta Ar Pi Aq Cp Sg Ar Ta Ge",83,"Ta","Ge"],
+    ["S1",4,"Cn Le Vi Li Sc Sg Cp Aq Pi",86,"Cn","Pi"],
+    ["S2",1,"Sc Li Vi Cn Le Ge Ta Ar Pi",100,"Sc","Pi"],
+    ["S2",2,"Aq Cp Sg Ar Ta Ge Cn Le Vi",85,"Aq","Vi"],
+    ["S2",3,"Li Sc Sg Cp Aq Pi Sc Li Vi",83,"Li","Vi"],
+    ["S2",4,"Cn Le Ge Ta Ar Pi Aq Cp Sg",86,"Cn","Sg"],
+    ["A1",1,"Sg Cp Aq Pi Ar Ta Ge Le Cn",86,"Cn","Sg"],
+    ["A1",2,"Vi Li Sc Pi Aq Cp Sg Sc Li",83,"Li","Vi"],
+    ["A1",3,"Vi Le Cn Ge Ta Ar Sg Cp Aq",85,"Aq","Vi"],
+    ["A1",4,"Pi Ar Ta Ge Le Cn Vi Li Sc",100,"Sc","Pi"],
+    ["A2",1,"Pi Aq Cp Sg Sc Li Vi Le Cn",86,"Cn","Pi"],
+    ["A2",2,"Ge Ta Ar Sg Cp Aq Pi Ar Ta",83,"Ta","Ge"],
+    ["A2",3,"Ge Le Cn Vi Li Sc Pi Aq Cp",85,"Cp","Ge"],
+    ["A2",4,"Sg Sc Li Vi Le Cn Ge Ta Ar",100,"Ar","Sg"]
+  ],
+  "rings": ["Ar Ta Ge Cn Le Vi Li Sc Sg Cp Aq Pi Sc Li Vi Cn Le Ge Ta Ar Pi Aq Cp Sg", "Sg Cp Aq Pi Ar Ta Ge Le Cn Vi Li Sc Pi Aq Cp Sg Sc Li Vi Le Cn Ge Ta Ar"],
+  "balances": [
+    {"id":"bphs_46_93", "source":"L01", "dms":[34,50,0], "group":"S1", "pada":3, "position":4, "sign":"Cp", "elapsed_row":"747/20", "balance":"73/20", "coverage":"1653/20", "natal_row_remaining":"913/20", "sequence":"Cp Sg Ar Ta Ge Ta Ar Pi Aq", "printed":"3 years 7 months 24 days; nine MDs", "evidence_class":"printed_balance_and_sequence"},
+    {"id":"jp_row_school", "source":"L09", "dms":[284,29,39], "group":"A1", "pada":2, "position":2, "sign":"Sc", "elapsed_row":"115619/4000", "balance":"12381/4000", "competing_balance":"2607/250", "competing_sign":"Li", "printed":"Row school about three years; pada school 10.43 years remaining", "evidence_class":"exact_derivation_from_rounded_published_pair"},
+    {"id":"pvr95_shared_balance", "source":"L02", "dms":[45,50,0], "group":"A1", "pada":2, "position":7, "sign":"Sc", "elapsed_row":"249/4", "balance":"19/4", "printed":"Second Scorpio, 4.75 years remaining", "evidence_class":"shared_seed_only_not_AD_oracle"},
+    {"id":"pvr96_shared_balance", "source":"L02", "dms":[93,0,0], "group":"S1", "pada":4, "position":8, "sign":"Pi", "elapsed_row":"387/5", "balance":"43/5", "printed":"Pisces 8.6 years, then the next subgroup", "evidence_class":"shared_seed_only_not_continuation_oracle"},
+    {"id":"pvr_ex34_shared_balance", "source":"L02", "dms":[305,50,0], "group":"A2", "pada":4, "position":6, "sign":"Ge", "elapsed_row":"75", "balance":"2", "printed_sequence":"Ge Ta Ar Sg Cp Aq Pi Ar Ta Ge", "evidence_class":"shared_seed_plus_complete_competing_ten_entry_witness"}
+  ],
+  "antardashas": [
+    {"source":"L01", "row":"S1/1", "parent_position":0, "child_ordinal":0, "years":"49/100", "traditional":[0,5,26,24]},
+    {"source":"L01", "row":"S1/1", "parent_position":1, "child_ordinal":0, "years":"64/25", "traditional":[2,6,21,36]}
+  ],
+  "comparators": {
+    "rao_bphs_input_continuation":"Cp Sg Ar Ta Ge Cn Le Vi Li",
+    "rao_taurus_AD":"256/97",
+    "rao_ex97_leo_AD":"25/86",
+    "rao_ex95_active_AD_sign":"Le",
+    "rao_ex95_active_AD_balance":"17/50",
+    "jp_later_leo_ADs":"Pi Ar Ta Ge Le Cn Vi Li Sc",
+    "fixed_15_time_balance":"9/4",
+    "actual_quarter_time_balance":"5403/3571"
+  },
+  "corrections": ["KC-01","KC-02","KC-03","KC-04","KC-05","KC-06","KC-07","KC-08","KC-09","KC-10","KC-11","KC-12","KC-13","KC-14"]
+}

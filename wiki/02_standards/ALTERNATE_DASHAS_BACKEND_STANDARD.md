@@ -12,9 +12,10 @@ It preserves Ashtottari and Yogini sequence truth, year-basis policy, ayanamsa
 policy, nested sub-period arithmetic, local period profiles, and sequence
 profiles.
 
-This document reflects current implementation truth. It does not expand the
-engine beyond Ashtottari and Yogini, and it does not claim that Kalachakra,
-Chara Dasha, or other alternate systems are implemented.
+This document governs Ashtottari and Yogini only. The separately owned
+[Kalachakra profile](KALACHAKRA_DASHA_STANDARD.md) and
+[Chara profiles](JAIMINI_PROFILE_ASSESSMENT_STANDARD.md) use their own sign-period
+contracts; they are not selectors in this eight-lord subsystem.
 
 ---
 

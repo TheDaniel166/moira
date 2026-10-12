@@ -2,6 +2,7 @@
 
 from .ashtakavarga import router as ashtakavarga_router
 from .alternate_dashas import router as alternate_dashas_router
+from .kalachakra import router as kalachakra_router
 from .antiscia import router as antiscia_router
 from .astrocartography import router as astrocartography_router
 from .astrodynes import router as astrodynes_router
@@ -86,6 +87,7 @@ from .western_profile import router as western_profile_router
 from .western_electional import router as western_electional_router
 
 __all__ = [
+    "kalachakra_router",
     "ashtakavarga_router",
     "alternate_dashas_router",
     "antiscia_router",

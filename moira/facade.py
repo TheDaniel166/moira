@@ -3348,7 +3348,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.9.9"
+__version__ = "6.10.0"
 __author__  = "Moira contributors"
 
 
@@ -3474,3 +3474,67 @@ class Moira(
     SpecialTopicsFacadeMixin,
 ):
     """Primary engine facade with deferred planetary kernel readiness."""
+
+# VED-014 source-owned Kalachakra public surface.
+from .kalachakra import (
+    KalachakraSource,
+    KalachakraRule,
+    KalachakraConflict,
+    KalachakraProfile,
+    KalachakraCatalogue,
+    KalachakraInputError,
+    KalachakraProjectionError,
+    KalachakraCoverageError,
+    KalachakraResourceError,
+    KalachakraInvariantError,
+    KalachakraEpoch,
+    KalachakraSeed,
+    KalachakraProjection,
+    KalachakraSourceSpan,
+    KalachakraDateSpan,
+    KalachakraAstronomy,
+    KalachakraProvenance,
+    KalachakraBirth,
+    KalachakraPeriod,
+    KalachakraTransition,
+    KalachakraProjectionReceipt,
+    KalachakraSequence,
+    KalachakraActivePeriod,
+    KalachakraCurrent,
+    kalachakra_profiles,
+    kalachakra_sequence,
+    kalachakra_for_datetime,
+    project_kalachakra_sequence,
+    current_kalachakra_periods,
+)
+__all__ += [
+    'KalachakraSource',
+    'KalachakraRule',
+    'KalachakraConflict',
+    'KalachakraProfile',
+    'KalachakraCatalogue',
+    'KalachakraInputError',
+    'KalachakraProjectionError',
+    'KalachakraCoverageError',
+    'KalachakraResourceError',
+    'KalachakraInvariantError',
+    'KalachakraEpoch',
+    'KalachakraSeed',
+    'KalachakraProjection',
+    'KalachakraSourceSpan',
+    'KalachakraDateSpan',
+    'KalachakraAstronomy',
+    'KalachakraProvenance',
+    'KalachakraBirth',
+    'KalachakraPeriod',
+    'KalachakraTransition',
+    'KalachakraProjectionReceipt',
+    'KalachakraSequence',
+    'KalachakraActivePeriod',
+    'KalachakraCurrent',
+    'kalachakra_profiles',
+    'kalachakra_sequence',
+    'kalachakra_for_datetime',
+    'project_kalachakra_sequence',
+    'current_kalachakra_periods',
+]

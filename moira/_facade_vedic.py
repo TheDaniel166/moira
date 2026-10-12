@@ -143,6 +143,43 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         from .jaimini_profile_policy import list_jaimini_profiles
         return list_jaimini_profiles()
 
+    def kalachakra_profiles(self):
+        """Discover the bounded Santhanam/BPHS profile without reading a kernel."""
+        from .kalachakra import kalachakra_profiles
+        return kalachakra_profiles()
+
+    def kalachakra_sequence(self, seed, *, profile_id, levels=2, birth_epoch=None, projection=None):
+        """Calculate a supplied seed, binding this reader only for tropical input."""
+        from .kalachakra import kalachakra_sequence
+        from ._kalachakra_types import admit, KalachakraInputError
+        admit(profile_id, levels, seed, birth_epoch, projection)
+        if seed is None:
+            raise KalachakraInputError("seed must be KalachakraSeed")
+        reader = self._reader if seed.basis == "tropical" else None
+        return kalachakra_sequence(seed, profile_id=profile_id, levels=levels,
+            birth_epoch=birth_epoch, projection=projection, reader=reader)
+
+    def kalachakra_for_datetime(self, birth_dt, *, profile_id, ayanamsa_system, levels=2, projection=None):
+        """Derive one lunar seed using this engine's reader after input admission."""
+        from .kalachakra import kalachakra_for_datetime
+        from ._kalachakra_types import admit, named_ayanamsa, astronomical_epoch, KalachakraEpoch
+        epoch = KalachakraEpoch("datetime", birth_dt)
+        admit(profile_id, levels, birth_epoch=epoch, projection=projection)
+        named_ayanamsa(ayanamsa_system)
+        astronomical_epoch(epoch)
+        return kalachakra_for_datetime(birth_dt, profile_id=profile_id,
+            ayanamsa_system=ayanamsa_system, levels=levels, projection=projection, reader=self._reader)
+
+    def project_kalachakra_sequence(self, sequence, *, birth_epoch, year_basis):
+        """Project validated source years without kernel access or an implicit clock."""
+        from .kalachakra import project_kalachakra_sequence
+        return project_kalachakra_sequence(sequence, birth_epoch=birth_epoch, year_basis=year_basis)
+
+    def current_kalachakra_periods(self, schedule, query_epoch):
+        """Find a bounded active line from an existing validated projection."""
+        from .kalachakra import current_kalachakra_periods
+        return current_kalachakra_periods(schedule, query_epoch)
+
     def evaluate_chara_profile(self, chart, *, profile_id: str, projection=None):
         """Evaluate source Chara arithmetic with optional explicitly selected clock."""
         from .chara_profiles import evaluate_chara_profile

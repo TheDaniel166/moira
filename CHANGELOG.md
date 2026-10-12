@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.0] - 2026-10-12
+
 ### Added
 - **Bounded Chara cycles (VED-001)**: strict one/two-cycle engine and REST
   selection with canonical cycle, lord-mode, fixed-year and epoch receipts.
@@ -50,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   derives from the seven natal signs and birth Lagna using the existing Raman
   table encoding. New `/v1/gochara/from-epochs` and `/from-datetimes` routes
   enforce strict inputs and distinguish coverage from unavailable resources.
-  Live star anchors fail explicitly when unavailable; dated windows remain open.
+  Live star anchors fail explicitly when unavailable. Bounded modern whole-sign
+  windows now include retrograde re-entry, Vedha and optional natal BAV.
 
 ### Fixed
 - **D60 transport and source names**: all eight placement routes preserve
@@ -75,6 +78,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Rashtriya Panchang 1948 SE solar ingresses pass the original one-minute
   comparison. Polynomial ayanamsas and their derived engine/REST results
   receive the correction, including larger changes at historical epochs.
+
+### Further delivered Vedic scope
+- Sunrise-owned daily Panchanga and bounded lunar-month context; seven named
+  Muhurta window families, Panchanga Shuddhi, selected dosha/Parihara and
+  Lagna/Navamsa components across engine, facade and REST.
+- Source-selected marriage, housing/Vastu, travel and business elections,
+  additional named marriage traditions and two exact-computation reuse passes.
+- Strict Sayanadi admission and birth composition; 21 selected yoga extensions;
+  three Rangacharya Chara recipes and three source-separated Argala assessments.
+- Named Santhanam/BPHS Kalachakra with exact source arithmetic, nine MDs,
+  optional full-parent ADs, explicit clocks, date composition, bounded active
+  lookup and five REST operations. Competing traditions remain explicit.
+- Source, reader, timescale, strict-input and generated-result repairs across
+  the delivered Vedic API. Internal Kalachakra indexing defects now retain
+  internal-error classification rather than becoming missing-resource errors.
+- Packaged small-body provenance follows external catalog `2026.10.10.1`;
+  the historical apsidal audit remains bound to its archived original manifest.
+- Release documentation separates exact-tag publication from dirty candidates.
+  Vedic feature development pauses at the selected VED-014 checkpoint;
+  unfinished natal-discovery and light-box work is excluded.
 
 ## [6.9.9] - 2026-09-29
 
