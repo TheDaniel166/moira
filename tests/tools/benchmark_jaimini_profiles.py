@@ -74,6 +74,7 @@ def run(repeats=30):
         "moira/chara_profiles.py",
         "moira/argala_assessment.py",
         "moira/_jaimini_profile_inputs.py",
+        "moira/_jaimini_profile_results.py",
         "moira/jaimini_profile_policy.py",
         "moira_server/services/jaimini_profiles.py",
         "moira_server/models/jaimini_profiles.py",

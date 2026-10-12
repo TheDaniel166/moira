@@ -384,3 +384,73 @@ def test_engine_transport_defects_are_http_500(client, monkeypatch, is_chara, de
             json=chara_request() if is_chara else argala_request(),
         )
     assert response.status_code == 500
+
+
+@pytest.mark.parametrize("error_type", [ValueError, TypeError, KeyError])
+@pytest.mark.parametrize("module,vessel,route", [
+    ("moira.chara_profiles", "CharaArithmeticRow", CROUTE),
+    ("moira.chara_profiles", "CharaArithmeticResult", CROUTE),
+    ("moira.chara_profiles", "CharaProfileInterval", CROUTE),
+    ("moira.chara_profiles", "CharaProfileSchedule", CROUTE),
+    ("moira.argala_assessment", "ArgalaCharacter", AROUTE),
+    ("moira.argala_assessment", "ArgalaPairAssessment", AROUTE),
+    ("moira.argala_assessment", "ArgalaAssessmentResult", AROUTE),
+])
+def test_result_constructor_failures_are_http_500(
+    client, monkeypatch, error_type, module, vessel, route,
+):
+    def broken_result(self):
+        raise error_type("injected internal evidence failure")
+
+    monkeypatch.setattr(getattr(importlib.import_module(module), vessel), "__post_init__", broken_result)
+    request = chara_request() if route == CROUTE else argala_request()
+    if route == CROUTE:
+        request["projection"] = {
+            "epoch_jd": 2451545.0,
+            "projection_id": "moira_fixed_365_25_day_projection_v1",
+        }
+    with TestClient(client.app, raise_server_exceptions=False) as http:
+        response = http.post(route, json=request)
+    assert response.status_code == 500, response.text
+    assert "injected" not in response.text
+
+
+@pytest.mark.parametrize("defect", ["chara_direction", "chara_count", "argala_effect", "argala_degree"])
+def test_contradictory_engine_evidence_never_serializes_over_http(client, monkeypatch, defect):
+    import moira_server.services.jaimini_profiles as services
+
+    is_chara = defect.startswith("chara")
+    request = chara_request() if is_chara else argala_request()
+    if is_chara:
+        result = evaluate_chara_profile(JaiminiChart(**request["chart"]), profile_id=request["profile_id"])
+        target, name, value = (
+            (result, "sequence_direction", -result.sequence_direction)
+            if defect == "chara_direction"
+            else (result.rows[0], "inclusive_count", result.rows[0].inclusive_count % 12 + 1)
+        )
+        object.__setattr__(target, name, value)
+    else:
+        request["chart"] = {
+            "basis": "sidereal_longitudes", "lagna": 0.0,
+            "positions": dict.fromkeys(request["chart"]["positions"], 95.0)
+            | {"Venus": 31.0, "Sun": 355.0, "Ketu": 215.0},
+        }
+        request["references"] = [{"kind": "lagna"}]
+        result = assess_argala(
+            JaiminiChart(**request["chart"]), profile_id=request["profile_id"],
+            references=(ArgalaReference("lagna"),),
+        )
+        pair = result.references[0].pairs[0]
+        if defect == "argala_effect":
+            object.__setattr__(pair, "effect_state", "unobstructed")
+            object.__setattr__(pair, "reason_codes", ())
+            object.__setattr__(pair, "strength_comparison", "not_required")
+        else:
+            object.__setattr__(pair.quarter_pairs[0], "causer_degree", 4.0)
+    monkeypatch.setattr(
+        services, "evaluate_chara_profile" if is_chara else "assess_argala",
+        lambda *args, **kwargs: result,
+    )
+    with TestClient(client.app, raise_server_exceptions=False) as http:
+        response = http.post(CROUTE if is_chara else AROUTE, json=request)
+    assert response.status_code == 500, response.text

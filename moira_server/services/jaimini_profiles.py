@@ -3,6 +3,7 @@
 from dataclasses import asdict
 
 from moira._jaimini_profile_inputs import ArgalaReference, CharaProjection, JaiminiChart
+from moira._jaimini_profile_results import JaiminiInvariantError
 from moira.argala_assessment import ArgalaAssessmentResult, assess_argala
 from moira.chara_profiles import CharaArithmeticResult, evaluate_chara_profile
 from moira.jaimini_profile_policy import list_jaimini_profiles
@@ -21,28 +22,28 @@ def jaimini_profile_catalogue() -> JaiminiCatalogueResponse:
 
 def serialize_chara_profile(result: CharaArithmeticResult) -> CharaProfileResponse:
     if type(result) is not CharaArithmeticResult:
-        raise RuntimeError("typed engine Chara arithmetic result required")
+        raise JaiminiInvariantError("typed engine Chara arithmetic result required")
     try:
         result.__post_init__()
-    except (ValueError, TypeError) as exc:
-        raise RuntimeError("invalid engine Chara result invariant") from exc
+    except (ValueError, TypeError, KeyError) as exc:
+        raise JaiminiInvariantError("invalid engine Chara result invariant") from exc
     data = asdict(result)
     data["chart"]["positions"] = dict(result.chart.positions)
     try:
         return CharaProfileResponse.model_validate(data)
-    except (ValueError, TypeError) as exc:
-        raise RuntimeError("invalid engine Chara response contract") from exc
+    except (ValueError, TypeError, KeyError) as exc:
+        raise JaiminiInvariantError("invalid engine Chara response contract") from exc
 
 
 def serialize_argala_assessment(
     result: ArgalaAssessmentResult,
 ) -> ArgalaAssessmentResponse:
     if type(result) is not ArgalaAssessmentResult:
-        raise RuntimeError("typed engine Argala assessment result required")
+        raise JaiminiInvariantError("typed engine Argala assessment result required")
     try:
         result.__post_init__()
-    except (ValueError, TypeError) as exc:
-        raise RuntimeError("invalid engine Argala result invariant") from exc
+    except (ValueError, TypeError, KeyError) as exc:
+        raise JaiminiInvariantError("invalid engine Argala result invariant") from exc
     data = asdict(result)
     data["chart"]["positions"] = dict(result.chart.positions)
     for ref, row in zip(result.references, data["references"]):
@@ -52,8 +53,8 @@ def serialize_argala_assessment(
             )
     try:
         return ArgalaAssessmentResponse.model_validate(data)
-    except (ValueError, TypeError) as exc:
-        raise RuntimeError("invalid engine Argala response contract") from exc
+    except (ValueError, TypeError, KeyError) as exc:
+        raise JaiminiInvariantError("invalid engine Argala response contract") from exc
 
 
 def compute_chara_profile(request: CharaProfileRequest) -> CharaProfileResponse:

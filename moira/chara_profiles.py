@@ -16,6 +16,7 @@ from ._jaimini_profile_inputs import (
     finite_number,
     strict_int,
 )
+from ._jaimini_profile_results import result_invariants
 from .jaimini_extended import _RASI_LORDS, _SAVYA_SIGNS
 from .jaimini_profile_policy import CHARA_IDS, VERSION, JaiminiProfile, admit_profile
 from .vedic_dignities import EXALTATION_SIGN
@@ -160,7 +161,11 @@ class CharaArithmeticResult:
         ):
             raise ValueError("one direction and twelve arithmetic rows required")
         cursor = 0
-        signs, _ = chart_signs(self.chart)
+        signs, lagna = chart_signs(self.chart)
+        recipe = CHARA_IDS.index(self.profile.profile_id)
+        seed, direction, sequence = _sequence(recipe, lagna)
+        if (self.seed_sign, self.sequence_direction) != (seed, direction):
+            raise ValueError("Chara seed or direction disagrees with profile and Lagna")
         for i, row in enumerate(self.rows):
             if type(row) is not CharaArithmeticRow:
                 raise ValueError("invalid arithmetic row")
@@ -173,6 +178,16 @@ class CharaArithmeticResult:
                 raise ValueError("invalid row order, cumulative years or source rule")
             if row.lord != _RASI_LORDS[row.sign] or row.lord_sign != signs[row.lord]:
                 raise ValueError("duration lord evidence disagrees with chart")
+            if row.sign != sequence[i]:
+                raise ValueError("Chara sequence disagrees with selected profile")
+            if (
+                row.count_direction,
+                row.inclusive_count,
+                row.base_years,
+                row.exception,
+                row.dignity_adjustment,
+            ) != _duration(recipe, row.sign, row.lord_sign):
+                raise ValueError("Chara duration derivation disagrees with selected profile")
             cursor = row.end_year
         strict_int(self.total_years, 0, 144, "total_years")
         if (
@@ -204,18 +219,8 @@ class CharaArithmeticResult:
                     )
 
 
-def evaluate_chara_profile(
-    chart: JaiminiChart, *, profile_id: str, projection: CharaProjection | None = None
-) -> CharaArithmeticResult:
-    """Evaluate one explicit manual recipe; sign precision never invents degrees."""
-    profile = admit_profile(profile_id, "chara")
-    chart = admit_chart(chart, CLASSICAL)
-    if projection is not None:
-        if type(projection) is not CharaProjection:
-            raise ValueError("projection must be a CharaProjection")
-        projection = CharaProjection(projection.epoch_jd, projection.projection_id)
-    signs, lagna = chart_signs(chart)
-    recipe = CHARA_IDS.index(profile_id)
+def _sequence(recipe, lagna):
+    """Derive the selected manual's seed, direction and complete sign sequence."""
     parity = 1 if lagna % 2 == 0 else -1
     seed = (lagna + 3 * parity) % 12 if recipe == 2 else lagna
     direction = (
@@ -228,33 +233,46 @@ def evaluate_chara_profile(
     else:
         offsets = (0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11)
     sequence = tuple((seed + direction * i) % 12 for i in offsets)
+    return seed, direction, sequence
+
+
+def _duration(recipe, sign, lord_sign):
+    """Derive count, exception and dignity evidence from one admitted recipe."""
+    if recipe == 0:
+        count_dir = 1 if sign in _SAVYA_SIGNS else -1
+        count = (count_dir * (lord_sign - sign)) % 12 + 1
+    else:
+        parity_sign = lord_sign if recipe == 1 else sign
+        count_dir = 1 if parity_sign % 2 == 0 else -1
+        count = (count_dir * (sign - lord_sign)) % 12 + 1
+    exception, adjustment = "none", 0
+    if lord_sign == sign:
+        base, exception = 12, "own_sign_twelve"
+    elif recipe == 2 and (lord_sign - sign) % 12 == 6:
+        base, exception = 10, "opposite_sign_ten"
+    else:
+        base = count if recipe == 1 else count - 1
+        if recipe == 0:
+            exalt = EXALTATION_SIGN[_RASI_LORDS[sign]]
+            adjustment = (
+                1
+                if lord_sign == exalt
+                else -1
+                if lord_sign == (exalt + 6) % 12
+                else 0
+            )
+    return count_dir, count, base, exception, adjustment
+
+
+def _arithmetic_rows(signs, sequence, recipe, rule_id):
+    """Construct the twelve rows from the admitted recipe's duration derivation."""
     cursor, rows = 0, []
     for ordinal, sign in enumerate(sequence):
         lord = _RASI_LORDS[sign]
         lord_sign = signs[lord]
-        if recipe == 0:
-            count_dir = 1 if sign in _SAVYA_SIGNS else -1
-            count = (count_dir * (lord_sign - sign)) % 12 + 1
-        else:
-            parity_sign = lord_sign if recipe == 1 else sign
-            count_dir = 1 if parity_sign % 2 == 0 else -1
-            count = (count_dir * (sign - lord_sign)) % 12 + 1
-        exception, adjustment = "none", 0
-        if lord_sign == sign:
-            base, exception = 12, "own_sign_twelve"
-        elif recipe == 2 and (lord_sign - sign) % 12 == 6:
-            base, exception = 10, "opposite_sign_ten"
-        else:
-            base = count if recipe == 1 else count - 1
-            if recipe == 0:
-                exalt = EXALTATION_SIGN[lord]
-                adjustment = (
-                    1
-                    if lord_sign == exalt
-                    else -1
-                    if lord_sign == (exalt + 6) % 12
-                    else 0
-                )
+        count_dir, count, base, exception, adjustment = _duration(
+            recipe, sign, lord_sign
+        )
         years = base + adjustment
         rows.append(
             CharaArithmeticRow(
@@ -270,29 +288,58 @@ def evaluate_chara_profile(
                 years,
                 cursor,
                 cursor + years,
-                profile.rule_ids[0],
+                rule_id,
             )
         )
         cursor += years
-    rows = tuple(rows)
-    if projection is None:
-        schedule = CharaProfileSchedule("not_requested", None, (), ())
-    else:
-        intervals = tuple(
-            CharaProfileInterval(
-                r.ordinal,
-                projection.epoch_jd + r.start_year * 365.25,
-                projection.epoch_jd + r.end_year * 365.25,
-            )
-            for r in rows
-            if r.years
+    return tuple(rows), cursor
+
+
+def evaluate_chara_profile(
+    chart: JaiminiChart, *, profile_id: str, projection: CharaProjection | None = None
+) -> CharaArithmeticResult:
+    """Evaluate one explicit manual recipe; sign precision never invents degrees."""
+    profile = admit_profile(profile_id, "chara")
+    chart = admit_chart(chart, CLASSICAL)
+    if projection is not None:
+        if type(projection) is not CharaProjection:
+            raise ValueError("projection must be a CharaProjection")
+        projection = CharaProjection(projection.epoch_jd, projection.projection_id)
+    with result_invariants("Chara"):
+        signs, lagna = chart_signs(chart)
+        recipe = CHARA_IDS.index(profile_id)
+        seed, direction, sequence = _sequence(recipe, lagna)
+        rows, total = _arithmetic_rows(signs, sequence, recipe, profile.rule_ids[0])
+        # Validate arithmetic before using it to admit a caller's calendar epoch.
+        arithmetic = CharaArithmeticResult(
+            chart, profile, seed, direction, rows, total,
+            CharaProfileSchedule("not_requested", None, (), ()),
         )
+    if projection is None:
+        return arithmetic
+    endpoints = tuple(
+        (
+            r.ordinal,
+            projection.epoch_jd + r.start_year * 365.25,
+            projection.epoch_jd + r.end_year * 365.25,
+        )
+        for r in rows
+        if r.years
+    )
+    # Representability is an input-domain restriction, not an internal failure.
+    for _, start, end in endpoints:
+        finite_number(start, "projected epoch start")
+        finite_number(end, "projected epoch end")
+        if not start < end:
+            raise ValueError("epoch cannot represent positive ordered Chara intervals")
+    with result_invariants("Chara"):
+        intervals = tuple(CharaProfileInterval(*e) for e in endpoints)
         schedule = CharaProfileSchedule(
             "projected",
             projection,
             intervals,
             tuple(r.ordinal for r in rows if not r.years),
         )
-    return CharaArithmeticResult(
-        chart, profile, seed, direction, rows, cursor, schedule
-    )
+        return CharaArithmeticResult(
+            chart, profile, seed, direction, rows, total, schedule
+        )

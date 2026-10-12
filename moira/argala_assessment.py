@@ -20,6 +20,7 @@ from ._jaimini_profile_inputs import (
     finite_number,
     strict_int,
 )
+from ._jaimini_profile_results import result_invariants
 from .jaimini_extended import _RASI_LORDS, rasi_drishti_of
 from .jaimini_profile_policy import (
     ARGALA_IDS,
@@ -428,6 +429,12 @@ class ArgalaAssessmentResult:
             else _PAIRS
         )
         signs, lagna = chart_signs(self.chart)
+        kind = ARGALA_IDS.index(self.profile.profile_id)
+        if self.characters != _characters(self.chart, signs):
+            raise ValueError("character evidence disagrees with chart and component")
+        states = {c.body: c.state for c in self.characters}
+        positions = dict(self.chart.positions)
+        occupants = {s: tuple(p for p in NINE if signs[p] == s) for s in range(12)}
         for ref in self.references:
             expected_sign = (
                 lagna
@@ -478,10 +485,35 @@ class ArgalaAssessmentResult:
                     raise ValueError(
                         "quarter assessment disagrees with source or precision"
                     )
-                if (len(pair.strength_factors) == 2) != (
-                    self.profile.profile_id == ARGALA_IDS[2]
+                for q in pair.quarter_pairs:
+                    if (
+                        q.causer_degree != positions[q.causer] % 30
+                        or q.blocker_degree != positions[q.blocker] % 30
+                    ):
+                        raise ValueError("quarter degrees disagree with input chart")
+                if (
+                    pair.causer_character != _group(pair.causers, states)
+                    or pair.blocker_character != _group(pair.blockers, states)
                 ):
-                    raise ValueError("strength factors belong to the Rath assessment")
+                    raise ValueError("group character disagrees with body evidence")
+                effect, reasons = _effect(
+                    kind, pair.causers, pair.blockers,
+                    pair.quarter_status, pair.quarter_pairs,
+                )
+                if (
+                    pair.effect_state != effect
+                    or pair.reason_codes != reasons
+                    or pair.strength_comparison
+                    != ("indeterminate" if reasons else "not_required")
+                ):
+                    raise ValueError("effect evidence disagrees with selected profile")
+                if pair.strength_factors != _strength_factors(
+                    kind, pair.causer_sign, pair.blocker_sign, signs, occupants
+                ):
+                    raise ValueError("strength factors disagree with chart or profile")
+            third = occupants[(ref.reference_sign + ref.direction * 2) % 12]
+            if ref.special_third != _special_third(kind, third, states):
+                raise ValueError("special-third evidence disagrees with chart or profile")
 
 
 def _characters(chart, signs):
@@ -548,6 +580,50 @@ def _effect(kind, causers, blockers, quarter_status, quarters):
     return "indeterminate", ("multioccupant_quarter_composition_unestablished",)
 
 
+def _strength_factors(kind, causer_sign, blocker_sign, signs, occupants):
+    """Derive Rath's bounded factors without assigning a comparison priority."""
+    if kind != 2:
+        return ()
+    return tuple(
+        ArgalaStrengthFactors(
+            side,
+            sign,
+            tuple(
+                p for p in occupants[sign]
+                if p in CLASSICAL and _RASI_LORDS[sign] == p
+            ),
+            sign in rasi_drishti_of(signs["Jupiter"]),
+        )
+        for side, sign in (("causer", causer_sign), ("blocker", blocker_sign))
+    )
+
+
+def _special_third(kind, third, states):
+    """Derive the selected threshold and preserve uncertain character bounds."""
+    known = tuple(p for p in third if states[p] == "malefic")
+    unknown = tuple(p for p in third if states[p] == "indeterminate")
+    low, high = len(known), len(known) + len(unknown)
+    state = (
+        "not_assessed"
+        if kind != 0
+        else "present"
+        if low >= 3
+        else "absent"
+        if high < 3
+        else "indeterminate"
+    )
+    reason = {
+        "not_assessed": "special_third_threshold_not_admitted",
+        "present": "three_malefics",
+        "absent": "fewer_than_three_possible",
+        "indeterminate": "character_unresolved",
+    }[state]
+    return ArgalaSpecialThird(
+        state, third, known, unknown, low, high, reason,
+        "favourable_special_intervention" if state == "present" else None,
+    )
+
+
 def assess_argala(
     chart: JaiminiChart, *, profile_id: str, references: tuple[ArgalaReference, ...]
 ) -> ArgalaAssessmentResult:
@@ -555,8 +631,14 @@ def assess_argala(
     profile = admit_profile(profile_id, "argala")
     chart = admit_chart(chart, NINE)
     references = admit_references(references)
+    with result_invariants("Argala"):
+        return _assess_admitted(chart, profile, references)
+
+
+def _assess_admitted(chart, profile, references):
+    """Build result evidence only after caller-owned inputs have been admitted."""
     signs, lagna = chart_signs(chart)
-    kind = ARGALA_IDS.index(profile_id)
+    kind = ARGALA_IDS.index(profile.profile_id)
     characters = _characters(chart, signs)
     states = {c.body: c.state for c in characters}
     positions = dict(chart.positions)
@@ -628,23 +710,7 @@ def assess_argala(
                         )
                         for c in causers
                     )
-            factors = (
-                ()
-                if kind != 2
-                else tuple(
-                    ArgalaStrengthFactors(
-                        side,
-                        sign,
-                        tuple(
-                            p
-                            for p in occupants[sign]
-                            if p in CLASSICAL and _RASI_LORDS[sign] == p
-                        ),
-                        sign in rasi_drishti_of(signs["Jupiter"]),
-                    )
-                    for side, sign in (("causer", cs), ("blocker", bs))
-                )
-            )
+            factors = _strength_factors(kind, cs, bs, signs, occupants)
             effect, reasons = _effect(kind, causers, blockers, qstatus, quarters)
             assessments.append(
                 ArgalaPairAssessment(
@@ -668,34 +734,7 @@ def assess_argala(
                 )
             )
         third = occupants[(ref_sign + direction * 2) % 12]
-        known = tuple(p for p in third if states[p] == "malefic")
-        unknown = tuple(p for p in third if states[p] == "indeterminate")
-        low, high = len(known), len(known) + len(unknown)
-        state = (
-            "not_assessed"
-            if kind != 0
-            else "present"
-            if low >= 3
-            else "absent"
-            if high < 3
-            else "indeterminate"
-        )
-        special_reason = {
-            "not_assessed": "special_third_threshold_not_admitted",
-            "present": "three_malefics",
-            "absent": "fewer_than_three_possible",
-            "indeterminate": "character_unresolved",
-        }[state]
-        special = ArgalaSpecialThird(
-            state,
-            third,
-            known,
-            unknown,
-            low,
-            high,
-            special_reason,
-            "favourable_special_intervention" if state == "present" else None,
-        )
+        special = _special_third(kind, third, states)
         results.append(
             ArgalaReferenceAssessment(
                 reference, ref_sign, direction, reason, tuple(assessments), special

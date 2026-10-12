@@ -52,6 +52,11 @@ half-open and reference their arithmetic row; zero rows remain in arithmetic
 and are listed as unscheduled. Nonrepresentable positive spans fail.
 No antardashas, node co-lords or second cycle are admitted for these recipes.
 
+Result validation binds the seed and complete sequence to the selected recipe
+and Lagna. Each row's count direction, inclusive count, base years, exception
+and dignity adjustment must follow that recipe and the actual lord placement;
+consistent totals alone do not establish a valid derivation.
+
 ## Argala profiles and component separation
 
 `assess_argala(chart, profile_id=..., references=...)` preserves formation,
@@ -92,6 +97,13 @@ or Rangacharya's contextual Venus treatment. BPHS's special-third result
 coexists with the raw third-house blocker role and preserves its distinct
 source-described favourable effect.
 
+Whole-result validation binds character reasons, group character, exact
+within-sign quarter degrees, effect/reason/comparison state, special-third
+occupants and bounds, and Rath factors to the admitted chart and profile.
+Only Rath carries strength factors, exactly one for each side. A locally valid
+quarter witness with a degree different from the chart is rejected even when
+it stays inside the same quarter.
+
 ## REST and compatibility
 
 `GET /v1/jaimini/extended/profiles` exposes discovery.
@@ -102,6 +114,16 @@ requires its explicit ID in JSON. Requests forbid unknown fields, custom scores,
 unsupported cycles/antardashas and research-only selectors. Models expose bounded
 identities and uncertainty through OpenAPI. HTTP invalid inputs return 422;
 corrupt result invariants are internal failures, not client validation failures.
+
+After input admission, evaluator construction failures and serializer contract
+failures raise `JaiminiInvariantError`, a `RuntimeError` subclass owned by
+`moira._jaimini_profile_results`; REST returns HTTP 500 without exposing the
+internal evidence error. Input admission and nonrepresentable caller epochs
+retain `ValueError`/HTTP 422. Manual invalid result construction continues to
+raise `ValueError`; the evaluator boundary distinguishes engine-produced
+contradictions from those caller-created objects. Serialization revalidates
+the complete result, so bypassing frozen constructors does not bypass transport
+validation. This adds no source rule, selector or response field.
 
 Module, root, Vedic namespace, facade methods and REST use the same owners.
 Serialization adds derived counts but recomputes no source decision. All source

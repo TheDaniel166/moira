@@ -73,7 +73,7 @@ contract. VED-010 Lagna-strength composition is locally complete for its named p
 | ID | Work still required | Current evidence and admission gate | Status / priority |
 | --- | --- | --- | --- |
 | VED-012 | Locally complete for the selected 21 source entries: separate JP 7.14 and Raman no. 252 Navamsa profiles, fourteen BPHS wealth rules and five selected royal entries. Legacy admission, missing-motion evidence and applied-policy transport repairs are also complete. BPHS 39.35 needs source resolution of aspect targets/type; broader chapter-specific and unidentified Raman source leads remain separate extensions. | [Standard](../02_standards/YOGA_EXTENSION_STANDARD.md), [executed plan](VEDIC_YOGA_EXTENSION_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/YOGA_EXTENSION_VALIDATION_2026-10-12.md): 573 passing selected tests, 44 independent source cases across all public/HTTP paths, 144-chart regression and bounded resource-free cost. See sections 51-52 for closure and source publication; the former global docstring findings are resolved. | `LOCAL_COMPLETE`; authorized engine/wiki source-publication package in section 52; release/deployment separate |
-| VED-013 | Locally complete for three Rangacharya Chara recipes, separate optional calendar projection and BPHS/PVR/Rath Argala assessments. Existing Chara and valid legacy Argala arithmetic are preserved; direct-input and lineage/receipt repairs are complete. Full BPHS/PVR Chara, Narayana, Yogada and general Argala strength retain explicit admission gates. | [Source packet](VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md), [standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md), [executed seven-stage plan](VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md): 847 distinct passing selected tests, independent printed tables and boundary arithmetic, all public/HTTP surfaces and bounded cost. Source conflicts remain visible. See sections 54–55. | `LOCAL_COMPLETE` for the selected six profiles; authorized engine/wiki source-publication package in section 55; release/deployment separate |
+| VED-013 | Locally complete for three Rangacharya Chara recipes, separate optional calendar projection and BPHS/PVR/Rath Argala assessments. Existing Chara and valid legacy Argala arithmetic are preserved; direct-input and lineage/receipt repairs are complete. Full BPHS/PVR Chara, Narayana, Yogada and general Argala strength retain explicit admission gates. | [Source packet](VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md), [standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md), [executed seven-stage plan](VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md): 951 passing selected tests after three adversarial repairs, independent printed tables and boundary arithmetic, all public/HTTP surfaces and bounded cost. Source conflicts remain visible. See sections 54–57. | `LOCAL_COMPLETE` for the selected six profiles; original engine/wiki publication in section 55; validated repair publication in section 57; release/deployment separate |
 | VED-014 | Research and admit one explicitly named Kalachakra Dasha profile before expanding variants: Savya/Apasavya traversal, Nakshatra/pada-to-sign mapping, cycle length, birth balance, year basis and nested periods. Create independent source fixtures and typed lineage-bearing vessels before bounded REST design. | [dasha_systems](../../moira/dasha_systems.py) provides Ashtottari and Yogini; [alternate-dasha standard](../02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md) excludes Kalachakra. The [original roadmap](vedic_jyotish_completion.md) is a source lead, not an executable definition. | `SOURCE_RESEARCH`, P3 |
 | VED-015 | Completed local daily contract: local date/zone/location, sunrise-owned Vara, retained sunrise/sunset crossings, solved angular limb endings, repeated/skipped sunrise evidence, half-open coverage, and unavailable solar states. | [Daily engine](../../moira/daily_panchanga.py), curated root/facade/Vedic exports and `POST /v1/panchanga/day`; [source/policy/validation standard](../02_standards/DAILY_PANCHANGA_STANDARD.md). Three named sunrise conventions and existing ayanamsa choices are explicit. Lunar months/festivals remain separate scope. | `LOCAL_COMPLETE`; engine/wiki source published, release/deployment separate |
 | VED-016 | Source and admit special Lagnas as distinct products, beginning with selected Bhava/Hora/Ghati Lagna traditions. Define sunrise/elapsed-time ownership, units, sidereal frame and lineage differences; provide typed results and transport provenance. | No first-class Bhava/Hora/Ghati Lagna implementation was found in the inspected engine/server tree. Ordinary chart Lagna, vargas and Pancha Pakshi clock inputs do not supply these definitions. | `SOURCE_RESEARCH`, P3 |
@@ -141,7 +141,11 @@ Three Chara recipes, three bounded Argala assessments, legacy admission/receipt
 repairs and equally capable Python/facade/REST surfaces are implemented and
 validated. General strength comparison and the five named research candidates
 remain separate admission work. VED-013's authorized source-publication package
-is recorded in section 55.
+is recorded in section 55. Section 56 records the subsequent locally validated
+result-integrity and HTTP error-classification repairs; section 57 records
+their authorized source-publication package. The next numbered open item is
+VED-014, a source-research package for one named Kalachakra Dasha profile.
+Its research and implementation have not been started by this publication.
 VED-012's selected 21-entry package retains its section-52 source-publication
 checkpoint; BPHS 39.35 and broader additions remain research records. VED-011's
 four-area purpose package and VED-017's bounded Gochar windows retain their
@@ -1339,3 +1343,46 @@ gitlink. Concurrent light-box and natal-discovery work is excluded. The selected
 delivery count remains fifteen of 24, with nine open-or-bounded packages.
 Version remains 6.9.9; this is source publication, not a release or deployment.
 The subsequent adversarial review remains a separate evidence checkpoint.
+
+## 56. VED-013 adversarial repairs - 12 October 2026
+
+The authorized review of published `573570b` identified three repairable
+defects, now fixed locally: Chara result witnesses were not fully bound to
+their selected recipe; Argala verdicts and derived evidence could contradict
+the chart; and constructor invariant failures could be reported as HTTP 422.
+The [repair receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md#adversarial-repair-closure---12-october-2026)
+records stronger whole-result validation and the post-admission internal-error
+boundary shared by engine construction and serialization. Client mistakes
+retain 422; corrupt engine evidence produces 500.
+
+Acceptance passes **951 tests with zero failures/errors/skips**, including
+36,288 independently checked Chara duration rows, 2,640 Argala comparison
+cases, real server lifecycle and existing legacy/source/boundary tests. The
+six fixture files and all admitted source policies remain unchanged. Updated
+cost measurements and documentation guards pass with the stated concurrent
+server-edit boundary. The standard and generated wiki are reconciled locally.
+
+The stable count remains fifteen delivered / nine open-or-bounded. The five
+VED-013 research candidates retain their admission gates. These repairs are
+not yet committed or pushed; the section-55 publication remains the last
+published VED-013 checkpoint. Concurrent natal-discovery/light-box work is
+preserved. Version remains 6.9.9; no release or deployment is included.
+
+## 57. VED-013 repair publication and next numbered item - 12 October 2026
+
+The user authorized commit/push of all three section-56 repairs. The
+[publication receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md#authorized-repair-publication---12-october-2026)
+records unchanged source hashes against the 951-test acceptance, passing
+documentation/identity/inventory guards and the strictly scoped manifest.
+Generated wiki publication comes first; the containing engine commit records
+its exact gitlink. Concurrent natal-discovery/light-box work is excluded.
+This supersedes section 56's unpublished status without changing feature
+counts: fifteen delivered / nine open-or-bounded, version 6.9.9.
+
+**VED-014 - Kalachakra Dasha** is the next numbered open feature. Its first
+step is source research online and in the local classical library for one
+identified edition/lineage: Savya/Apasavya traversal, Nakshatra/pada-to-sign
+tables, cycles, birth balance, year basis and nested periods. Source conflicts
+and independent worked fixtures must precede an engine/public/REST plan.
+Software comparisons can help detect differences but do not replace textual
+authority. This publication does not start or authorize that new package.
