@@ -130,8 +130,9 @@ are retained only as completion receipts. They are not current work items.
   - **Part 4 (Analytical and Invariant Validation)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day internal analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence. This is internal mathematical validation, not an external house-speed authority comparison.
   - Validated by 90 automated tests in [`tests/unit/test_house_dynamics_oracle.py`](tests/unit/test_house_dynamics_oracle.py), 28 tests in [`tests/unit/test_house_dynamics.py`](tests/unit/test_house_dynamics.py), and 4 server contract tests in [`tests/server/test_server_house_dynamics_routes.py`](tests/server/test_server_house_dynamics_routes.py).
 
-### Frontier 9: Current Small-Body Orbital Catalog Admission
-- **Status**: **COMPLETED & VERIFIED** (September 28, 2026)
+### Frontier 9: Historical Small-Body Orbital Catalog Admission
+- **Historical status**: **COMPLETED & VERIFIED** (September 28, 2026)
+- **Current release (October 12)**: both rebuilt catalogs `2026.10.10.1` are published and active; see [the release closure](../03_validation/SMALL_BODY_CATALOG_RELEASE_2026_10_10_1.md). The September receipt below remains bound to its original releases and target solutions, not relabelled as a new geometric-node oracle sweep.
 - **Anchors**: [`tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`](../../tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json), [`tests/integration/test_orbital_elements_full_catalog.py`](../../tests/integration/test_orbital_elements_full_catalog.py), [`tests/integration/test_geometric_nodes_full_catalog.py`](../../tests/integration/test_geometric_nodes_full_catalog.py)
 - **Scope & Delivery**:
   - Rebound active engine guidance and exhaustive gates to `moira-asteroids@2026.09.18.1` (11,223 bodies / 449 shards) while retaining `moira-comets@2026.07.28.1` (497 bodies / 20 shards).
@@ -210,28 +211,23 @@ eference_place as the required, geometrically rigorous default.
 
 ### 1. Small-body apsidal-passage accuracy
 
-- **Status**: Exhaustive asteroid repair scope and candidate comet policy
-  validated; release rebuilds and admission remain active.
-- **Detail**: The element and geometric-node catalog admission is complete.
-  Six asteroid/comet apsidal-passage timing comparisons still lack a reviewed
-  release-bound acceptance decision and therefore remain `NOT RUN`. Current
-  gate language lives in
-  [VALIDATION_ASTRONOMY.md](../03_validation/VALIDATION_ASTRONOMY.md).
-  The September 28 authority probe traced the large Halley/Encke residuals to
-  the comet catalog's uniform 30-day Type-13 sampling, not the event solver.
-  The builder now aligns its base with the asteroid catalog's 10-day/7-node
-  policy and uses NAIF Type-13's admitted unequal-time capability for daily
-  nodes around both radial extrema, fetched in Horizons requests bounded to 32
-  Julian years. A two-comet end-to-end candidate passes
-  all three frozen events under the unchanged gates. No new immutable
-  497-comet release has yet been built or admitted.
-  The companion asteroid audit now partitions every one of the 11,223 admitted
-  identities. Same-span 10-day/5-day Horizons comparisons at every detected
-  radial extremum identify exactly 59 failing bodies in 40 release shards;
-  all shared source nodes agree exactly. A worst-case elliptic sweep gives the
-  remaining 11,097 bodies an 863.97x margin inside the distance gate. This
-  closes discovery and sizing, not release admission: those 40 shards still
-  require a new immutable build and release-bound rerun.
+- **Status**: **REBUILT, PUBLISHED & ACTIVE** (October 12, 2026).
+- **Detail**: Both sealed catalogs are `2026.10.10.1`. The asteroid release
+  repairs the 59-body/40-shard audit roster and reuses 409 unchanged shards
+  after full server-hash verification. All 497 comets use certified adaptive
+  apsidal sampling, with bounded Horizons refinement queries and explicit
+  target-solution receipts. The final freshness census checked all 497 comet
+  solutions, refreshed 38 bodies and preserved 459 trajectory segments exactly.
+  Sealed-release integration checks all 11,720 bodies for native
+  state/element, identity, coverage and provenance invariants, four asteroid
+  element holdouts, six asteroid apsidal events and three current-solution
+  Halley/Encke events under the unchanged `8.64-second` / `1e-9 AU` gates.
+  The public manifests, downloads, runtime identities and health were verified;
+  previous catalogs remain available for rollback and historical downloads.
+  This is selected external-oracle event coverage, not a blanket all-body,
+  all-epoch accuracy guarantee. The historical September admission and fixtures
+  remain unchanged. See [the release closure](../03_validation/SMALL_BODY_CATALOG_RELEASE_2026_10_10_1.md)
+  and [VALIDATION_ASTRONOMY.md](../03_validation/VALIDATION_ASTRONOMY.md).
 
 ---
 

@@ -324,13 +324,14 @@ J2000-ecliptic elements at the identical TDB instant.
 The Stage 2 passage fixture independently scans official geometric Horizons
 VECTORS in exact TDB, refines radial-velocity crossings, and records exact
 event/witness response hashes. Ten DE441 planet/system cases pass `1e-4 day`
-and `1e-9 AU` gates. The installed asteroid and comet manifests lack a
-reviewed Stage 2 passage-accuracy admission and exact target-solution binding;
-their six authority comparisons are therefore `NOT RUN` pending governed
-catalog validation admission, not accepted with wider tolerances.
+and `1e-9 AU` gates. At the September 28 checkpoint, the installed asteroid
+and comet manifests lacked a reviewed Stage 2 passage-accuracy admission;
+their six authority comparisons were `NOT RUN`, not accepted with wider
+tolerances. That historical fixture is not silently rebound to new catalogs
+or new Horizons target solutions.
 
 The packaged 25-body wheel catalog remains a fallback implementation test, not
-proof of the full release inventory. The current release-host validation passes
+proof of the full release inventory. The September 28 release-host validation passed
 the inventory gate for all 11,223 bodies in
 `moira-asteroids@2026.09.18.1` and all 497 bodies in
 `moira-comets@2026.07.28.1` (11,720 total). A separate governed admission binds
@@ -339,8 +340,18 @@ catalog holdout and Moira's pre-existing live osculating-element product gates.
 All six direct element comparisons and all six geometric-node authority
 comparisons run and pass; the isolated live-primary drift gate passes 17/17.
 Small-body element/node catalog validation is therefore closed for these exact
-releases. Stage 2 apsidal-passage timing remains a separately declared
-validation frontier and is not implied by this admission.
+historical releases. Stage 2 apsidal-passage timing was a separate validation
+frontier and was not implied by this admission.
+
+Both rebuilt catalogs `2026.10.10.1` were published and activated on October
+12, 2026. Their final integration checks all 11,720 admitted bodies for
+native state/element and release-identity invariants, four frozen asteroid
+element holdouts, six anchored asteroid apsidal events and three anchored
+current-solution Halley/Encke events. The unchanged event gates are `8.64 s`
+and `1e-9 AU`. This is selected external-oracle coverage, not an independent
+all-body/all-epoch accuracy guarantee or a newly rerun historical geometric-node
+sweep. Exact manifest identities, adaptive policies and public evidence are
+recorded in [the release closure](../03_validation/SMALL_BODY_CATALOG_RELEASE_2026_10_10_1.md).
 
 The implementation worktree's compatibility captures use the same DE441,
 comet-release, and packaged-wheel hashes as baseline commit

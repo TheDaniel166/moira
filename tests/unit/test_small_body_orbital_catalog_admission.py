@@ -1,4 +1,8 @@
-"""Governance for the current small-body orbital catalog admission."""
+"""Governance for the historical September small-body orbital admission.
+
+Its exact manifests remain frozen separately from current packaged resources;
+publication of a successor must not rewrite the original authority receipt.
+"""
 
 from __future__ import annotations
 
@@ -71,10 +75,12 @@ def test_admission_binds_exact_sealed_release_manifests() -> None:
     }
     expected = {
         ("moira-asteroids", "2026.09.18.1"): (
-            ROOT / "moira" / "kernels" / "asteroids" / "manifest.json"
+            ROOT / "tests" / "fixtures" / "small_body_release_manifests"
+            / "asteroids-2026.09.18.1.json"
         ),
         ("moira-comets", "2026.07.28.1"): (
-            ROOT / "moira" / "kernels" / "comets" / "manifest.json"
+            ROOT / "tests" / "fixtures" / "small_body_release_manifests"
+            / "comets-2026.07.28.1.json"
         ),
     }
 

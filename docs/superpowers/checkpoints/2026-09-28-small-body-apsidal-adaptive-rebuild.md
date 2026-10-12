@@ -893,3 +893,42 @@ The full-suite and pre-publication boundaries below remain applicable.
   Existing validation views remain hardlinks, not immutable release copies.
 - Apart from the requested local alignment merge, repair changes remain
   uncommitted. Nothing was pushed, tagged, installed or published.
+
+## October 12, 2026 — publication and source follow-up
+
+This dated checkpoint supersedes the earlier pre-publication boundaries above;
+the earlier receipts and scientific fixtures remain historical and unchanged.
+
+- Both sealed catalogs `2026.10.10.1` were published and activated at
+  `2026-10-12T16:14:02Z`, then independently live-verified at `16:21:47Z`.
+  Production is healthy; DE440/DE441 bindings and the unrelated Jupiter result
+  were preserved. Previous catalogs remain available for rollback. No ephemeris
+  files were deleted.
+- The final October 11 solution census checked all 497 comets. Thirty-eight
+  bodies were refreshed and 459 trajectory segments remained byte-identical.
+  The final sealed integration passed all 11,720 native body checks, four
+  asteroid element holdouts, six asteroid apsidal events and three
+  current-solution Halley/Encke events under unchanged gates.
+- The public ephemerides page was updated and promoted from the verified
+  staged artifact, preserving historical downloads. This is separate from
+  engine/PyPI release identity; no new engine wheel was published.
+- The engine source follow-up imports the two exact sealed metadata-only
+  manifests and their already-generated identity receipts. Canonical identity
+  registries, comet aliases, the frozen website publication snapshot and the
+  September 28 historical admission receipt are unchanged. Exact historical
+  manifests are archived for that historical admission rather than rebinding
+  its oracle claims to a newer release/target solution.
+- Current missing-resource guidance, inventory targets, provenance and release
+  descriptions now identify `2026.10.10.1`. Scientific thresholds and native
+  algorithms are unchanged. Source changes remain local until a scoped
+  commit/push is authorized. Unrelated Vedic/natal/lightbox edits are excluded.
+- This follow-up uses byte-identity, partition, syntax and documentation
+  preflight checks only; it does not repeat the numerical/oracle campaigns,
+  full local suites or server publication. Server SSD cleanup is read-only
+  inventory at this stage, not deletion authorization.
+
+Portable release facts and limitations are recorded in
+[the catalog release closure](../../../wiki/03_validation/SMALL_BODY_CATALOG_RELEASE_2026_10_10_1.md).
+Local publication evidence is retained under
+`C:/dev/outputs/small-body-catalog-cutover-20261012`; source-follow-up and SSD
+audit receipts are under `C:/dev/outputs/small-body-source-alignment-20261012`.

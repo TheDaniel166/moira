@@ -39,7 +39,7 @@
     "unique_naif_id_count": 497
   },
   "catalog_id": "moira-comets",
-  "catalog_version": "2026.07.28.1",
+  "catalog_version": "2026.10.10.1",
   "identity_policy": {
     "alias_scope": "comet_family_only",
     "alias_source": "release-bound Moira compatibility alias catalog",
@@ -55,7 +55,7 @@
     "alias_catalog_release_path": "identity/comet_catalog_aliases.json",
     "alias_catalog_sha256": "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b",
     "comet_master": "comet_master.json",
-    "comet_master_sha256": "78dc12291bf8b3e1a7eab844666632ccffd98b3f362c2d2a1442e9a8714d33f6",
+    "comet_master_sha256": "fdda28fdee4d2efb8448f0b7d3d3060b7a2a02f8c104408570e0fd2207386bd3",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
     "query_policy": {
       "center": "500@10",
@@ -65,15 +65,39 @@
       "object_data": false,
       "output_units": "KM-S",
       "reference_plane": "FRAME",
+      "sampling": {
+        "base_step_days": 10,
+        "certification": {
+          "distance_absolute_km": 0.1495978707,
+          "event_time_absolute_seconds": 8.64,
+          "failure_action": "halve_refinement_step_or_reject_body",
+          "witness_step_ratio": 0.5
+        },
+        "horizons_tlist_limit": 10000,
+        "initial_refinement_step_days": 1.0,
+        "integration_coherence": "every_exact_request_includes_coverage_endpoints",
+        "minimum_refinement_step_days": 0.0078125,
+        "mode": "certified_adaptive_radial_extrema",
+        "policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+        "refined_extrema": [
+          "PERICENTER",
+          "APOCENTER"
+        ],
+        "refinement_padding_days": 4.0,
+        "refinement_request_max_span_days": 11688.0,
+        "reserved_integration_anchor_epochs": 2,
+        "time_tags": "nonuniform",
+        "window_size": 7
+      },
       "time_digits": "FRACSEC",
       "timescale": "JDTDB",
       "vector_table": 2
     },
     "release_manifest": "manifest.json",
-    "release_manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+    "release_manifest_sha256": "2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671",
     "release_source": "MOIRA NUMBERED PERIODIC COMET CATALOG (JPL Horizons)",
-    "release_source_revision": "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50",
-    "released_utc": "2026-07-28T12:47:17Z",
+    "release_source_revision": "e4e9a72e115e972438d3bb07d48388fcf8c440dd",
+    "released_utc": "2026-10-11T12:18:24Z",
     "trajectory_source": "JPL Horizons VECTORS"
   }
 }

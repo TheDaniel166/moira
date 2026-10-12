@@ -50,7 +50,7 @@ WHEEL_BODY_IDS = tuple(
     for body_id in shard["bodies"]
 )
 ADMITTED_ASTEROID_RELEASES = {
-    "moira-asteroids": "2026.09.18.1",
+    "moira-asteroids": "2026.10.10.1",
     WHEEL_MANIFEST["catalog_id"]: WHEEL_MANIFEST["catalog_version"],
 }
 

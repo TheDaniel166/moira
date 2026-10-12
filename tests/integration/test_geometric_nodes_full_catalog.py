@@ -17,8 +17,8 @@ from moira.planetary_nodes import _geometric_node_computation
 from moira.small_body_catalog_release import verify_release
 
 
-FULL_ASTEROID_ID = ("moira-asteroids", "2026.09.18.1")
-FULL_COMET_ID = ("moira-comets", "2026.07.28.1")
+FULL_ASTEROID_ID = ("moira-asteroids", "2026.10.10.1")
+FULL_COMET_ID = ("moira-comets", "2026.10.10.1")
 REQUIRED_RELEASES = (FULL_ASTEROID_ID, FULL_COMET_ID)
 
 

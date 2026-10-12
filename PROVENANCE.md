@@ -268,16 +268,16 @@ packaging plus a notice that preserves JPL Horizons provenance without implying
 NASA, JPL, or Caltech endorsement.
 
 The bundled asteroid identity registry is bound to catalog
-`moira-asteroids`, version `2026.09.18.1`, through
+`moira-asteroids`, version `2026.10.10.1`, through
 `moira/data/asteroid_catalog_naif.metadata.json`. That receipt identifies
-11,223 canonical names, the 449-shard 10-day/7-node external release, source
+11,223 canonical names, the 449-shard adaptive external release, source
 revision, admitted-target and unified-ledger hashes, and manifest SHA-256
-`1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e`.
+`3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d`.
 The wheel contains this identity registry, receipt, and metadata-only manifest,
 not the external BSP shards; known identity therefore remains distinct from
 installed position capability.
 
-The 10-day/7-node asteroid release is not universally admitted for the much
+The historical 10-day/7-node asteroid release was not universally admitted for the much
 stricter apsidal-passage distance product. The exhaustive September 28 audit
 partitions all 11,223 admitted asteroid identities: 126 bodies with current
 JPL SBDB perihelion distance below 1.3 AU receive paired, same-span 10-day and
@@ -292,8 +292,12 @@ radial residual is `0.000173152 km`, an `863.97x` margin inside the gate. The
 governed results and exact repair roster are retained in
 `tests/artifacts/oracle/asteroid_type13_apsidal_sampling_audit_2026-09-28.json`.
 This is a complete apsidal-sampling partition, not a general all-epoch
-close-encounter position admission. The immutable asteroid release remains
-unchanged until the 40 affected shards are rebuilt and separately admitted.
+close-encounter position admission. Release `2026.10.10.1` rebuilds the 40
+affected shards for those 59 bodies with certified nonuniform refinement near
+perihelion and aphelion. The other 409 shards are byte-identical and were
+server-hash-verified before hard-link reuse. The ten-day/seven-node base remains;
+local refinement starts at one day and is halved as needed to an allowed
+1.5-hour floor. The floor is a policy limit, not the spacing everywhere.
 
 The numbered-periodic-comet identity registry is derived from one verified
 release rather than maintained as an independent handwritten name table.
@@ -304,18 +308,30 @@ stellar, calculated-point, or other namespaces. The packaged
 `moira/data/comet_catalog_naif.metadata.json` binds the canonical registry and
 alias policy to the exact release manifest, master ledger, Horizons query
 policy, source revision, and SHA-256 identities. That receipt names catalog
-version `2026.07.28.1`: 497 comets in 20 shards under a 30-day/5-node sampling
-policy, with manifest SHA-256
-`31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1`.
-That immutable release remains the active comet resource. The current catalog
-builder has a separately measured successor policy for a future version: it
-aligns the comet base with the asteroid catalog's 10-day/7-node policy and
-inserts exact daily, nonuniform Type-13 nodes around every detected
-radial-distance extremum, with each Horizons refinement request bounded to 32
-Julian years. This candidate policy corrects the frozen
-Halley/Encke apsidal events under the unchanged Stage 2 gates, but it is not a
-published or admitted catalog until all 497 comets are rebuilt and the sealed
-release passes its release-bound validation.
+version `2026.10.10.1`: 497 comets in 20 shards under the ten-day/seven-node base
+with certified adaptive sampling for all trajectories and manifest SHA-256
+`2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671`.
+Its policy `moira-comet-type13-apsidal-adaptive-v5` inserts nonuniform Type-13
+nodes around radial-distance extrema, starting with one-day local refinement
+and halving as needed to an allowed 11.25-minute floor. Each Horizons
+refinement request is bounded to 32 Julian years with coverage-endpoint
+integration anchors. The final freshness census checked all 497 source
+solutions, refreshed 38 bodies and preserved 459 trajectory segments exactly.
+Comet states remain apparition-sensitive; the rebuilt sampling does not remove
+upstream nongravitational-model or remote-apparition limitations.
+
+Both rebuilt catalogs were published and activated on October 12, 2026.
+They passed sealed-file/native-loader integration for all 11,720 identities;
+selected independent apsidal comparisons cover six asteroid events and three
+current-solution Halley/Encke events. Adaptive internal convergence uses the
+unchanged `1e-9 AU` (0.1495978707 km) and `0.0001 day` (8.64 seconds) gates.
+These checks are not an independent all-body/all-epoch JPL accuracy guarantee.
+The September asteroid and July comet releases remain historical downloads;
+their exact manifests are retained under
+`tests/fixtures/small_body_release_manifests/` for historical admission checks.
+Current public downloads and evidence are discoverable at
+https://moira-astro.com/ephemerides. Catalog release identity is independent of
+the installed engine/PyPI version; this data release does not change that pin.
 The metadata-only asteroid and comet manifests retained in the wheel are
 byte-identical to these immutable release receipts and remain excluded from
 automatic reader discovery until a referenced BSP shard is installed.

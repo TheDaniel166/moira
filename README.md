@@ -73,8 +73,9 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   four, named Centaurs including Chiron, named TNOs, and selected others) as
   one Type-13 shard, so Chiron and the locked roster compute after `pip install`
   plus a planetary kernel. The full optional external catalog of 11,223
-  selected asteroids remains release `2026.09.18.1` (449 Type-13 SPK shards
-  from JPL Horizons, 10-day / 7-node sampling, manifest-discovered under any
+  selected asteroids is release `2026.10.10.1` (449 Type-13 SPK shards
+  from JPL Horizons, a 10-day / 7-node base with certified adaptive apsidal
+  sampling for 59 audited bodies, manifest-discovered under any
   kernel search root). The wheel also carries the matching 11,223-body
   canonical identity registry (names only, no positional vectors). This
   positional product is distinct from the bundled Proper25/PDS
@@ -83,8 +84,9 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   through `daf_writer` for numbered minor planets available from the selected
   source.
 - **Numbered periodic comets** — 497 comets (1P/Halley through 516P) in
-  immutable external release `2026.07.28.1`, generated from JPL Horizons as
-  20 sharded Type-13 kernels with manifest-declared coverage, canonical
+  immutable external release `2026.10.10.1`, generated from JPL Horizons as
+  20 sharded Type-13 kernels with certified adaptive apsidal sampling for
+  all 497 bodies, manifest-declared coverage, canonical
   numbered designations (`"1P/Halley"`), and curated family-scoped short
   aliases. Dedicated comet surfaces accept those aliases directly; unified
   position/chart surfaces require a canonical designation or an explicit
@@ -456,8 +458,8 @@ named bodies (including Chiron) as one Type-13 shard under
 that roster is position-capable without a separate small-body download.
 
 The full unified asteroid catalog (11,223 bodies as 449 Type-13 shards in
-release `2026.09.18.1`) and the numbered periodic comet catalog (497 comets as
-20 shards in release `2026.07.28.1`) are too large to ship inside the wheel and
+release `2026.10.10.1`) and the numbered periodic comet catalog (497 comets as
+20 shards in release `2026.10.10.1`) are too large to ship inside the wheel and
 are distributed separately. `moira-download-kernels` still does not fetch the
 11,223-body catalog. Generic JPL files (`asteroids.bsp`, `sb441-n373s.bsp`)
 do not substitute for either Moira catalog.
@@ -527,9 +529,9 @@ caller-managed loading where the relevant API admits it.
 | Deep-sky coordinate-anchor catalog | Moira selection; SIMBAD coordinates and identities; NASA Exoplanet Archive host confirmation | Yes | 60 non-Solar-System anchors; extended-object centers are not physical point masses; per-artifact SHA-256 and source receipt included |
 | Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 11,223 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
 | Wheel asteroid ephemeris | JPL Horizons (Moira Type-13 packaging) | Yes | Catalog `moira-asteroids-wheel` `2026.08.14.1`; 25 named bodies including Chiron; one Type-13 shard |
-| Full position-capable asteroid ephemeris | JPL Horizons | No | 11,223 selected asteroids; 449 Type-13 shards in release `2026.09.18.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered; not fetched by `moira-download-kernels` |
+| Full position-capable asteroid ephemeris | JPL Horizons | No | 11,223 selected asteroids; 449 Type-13 shards in release `2026.10.10.1`; adaptive apsidal sampling for 59 audited bodies; [public archive](https://moira-astro.com/ephemerides), manifest-discovered; not fetched by `moira-download-kernels` |
 | Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
-| Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.07.28.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
+| Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.10.10.1`; adaptive apsidal sampling for all admitted bodies; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 
 ---
 
