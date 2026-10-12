@@ -68,6 +68,41 @@
       "evidence_classes": ["invariant", "regression"]
     },
     {
+      "surface_id": "rest:POST:/v1/aspects/from-longitudes",
+      "contract_kind": "position_aspect_analysis",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/synastry/overlay",
+      "contract_kind": "relationship_overlay_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/synastry/overlays",
+      "contract_kind": "relationship_overlay_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/composite/chart",
+      "contract_kind": "relationship_chart_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/davison/chart",
+      "contract_kind": "relationship_chart_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/composite/transits",
+      "contract_kind": "relationship_transit_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/davison/transits",
+      "contract_kind": "relationship_transit_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
       "surface_id": "rest:POST:/v1/progressions/secondary/reduction",
       "contract_kind": "reduction_vessel",
       "evidence_classes": ["doctrine_source", "invariant", "regression"]

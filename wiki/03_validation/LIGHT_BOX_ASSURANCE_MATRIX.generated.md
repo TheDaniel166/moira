@@ -4,11 +4,11 @@
 
 - Engine version: `6.9.9`
 - Inventory fingerprint: `63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a`
-- Receipt source revision: `7489e6acf450764a81ee654ebc2ccb1e28581e1e`
+- Receipt source revision: `f0561f1c7bb959947d4dbe717f3577044a2d5f89`
 - Receipt artifact status: `local_unreleased_worktree`
 - Canonical surfaces: 1210
-- Surfaces with replay contracts: 15
-- Surfaces without replay contracts: 1195
+- Surfaces with replay contracts: 22
+- Surfaces without replay contracts: 1188
 
 ## Boundary
 
@@ -22,13 +22,13 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 |---|---:|---:|---:|---:|
 | `authority` | 1 | 0 | 0 | 1209 |
 | `corroboration` | 0 | 0 | 0 | 1210 |
-| `invariant` | 15 | 0 | 0 | 1195 |
+| `invariant` | 22 | 0 | 0 | 1188 |
 | `doctrine_source` | 5 | 0 | 0 | 1205 |
-| `regression` | 15 | 0 | 0 | 1195 |
+| `regression` | 22 | 0 | 0 | 1188 |
 | `native_parity` | 0 | 0 | 0 | 1210 |
 | `harness` | 0 | 0 | 0 | 1210 |
 | `performance` | 0 | 0 | 0 | 1210 |
-| `release` | 15 | 0 | 0 | 1195 |
+| `release` | 22 | 0 | 0 | 1188 |
 
 ## Replayed contracts
 
@@ -43,6 +43,10 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 | `LB-EXEMPLAR-PRIMARY-DIRECTIONS` | 1 | `doctrine_source,invariant,regression,release` | 46 | `passed` | `local_unreleased_worktree` |
 | `LB-EXEMPLAR-PROGRESSIONS` | 1 | `doctrine_source,invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
 | `LB-EXEMPLAR-WESTERN-ELECTIONAL` | 1 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
+| `LB-RELATIONSHIP-DERIVED-CHART-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
+| `LB-RELATIONSHIP-OVERLAY-TRUTH` | 2 | `invariant,regression,release` | 1 | `passed` | `local_unreleased_worktree` |
+| `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 10 | `passed` | `local_unreleased_worktree` |
+| `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
 
 ## Release interpretation
 

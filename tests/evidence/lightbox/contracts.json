@@ -76,6 +76,57 @@
       "exclusions": ["No claim is made for relationship operations that do not use this witness vessel."]
     },
     {
+      "claim_id": "LB-RELATIONSHIP-POSITION-ASPECTS",
+      "surface_ids": ["rest:POST:/v1/aspects/from-longitudes"],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_aspects_from_longitudes.py"],
+      "minimum_tests": 10,
+      "claim_scope": "The position-only aspect route retains its typed normalization, aspect policy, node exclusion, count, and no-motion truth contract.",
+      "exclusions": ["The replay does not infer an epoch, ephemeris origin, motion classification, or external numerical authority for caller-supplied longitudes."]
+    },
+    {
+      "claim_id": "LB-RELATIONSHIP-OVERLAY-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/synastry/overlay",
+        "rest:POST:/v1/synastry/overlays"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_relationship_routes.py::test_lightbox_overlay_routes_expose_existing_house_frame_truth"
+      ],
+      "minimum_tests": 1,
+      "claim_scope": "Directional and mutual overlay routes retain labels, node policy, point count, and requested/effective target-house-frame truth beside their placements.",
+      "exclusions": ["The replay does not establish interpretive judgement, universal house-system accuracy, or authority beyond the existing chart and house computations."]
+    },
+    {
+      "claim_id": "LB-RELATIONSHIP-DERIVED-CHART-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/composite/chart",
+        "rest:POST:/v1/davison/chart"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_relationship_routes.py::test_lightbox_derived_chart_routes_expose_existing_construction_truth"
+      ],
+      "minimum_tests": 2,
+      "claim_scope": "Composite and Davison chart routes retain method-specific construction truth and nested position-only aspect truth.",
+      "exclusions": ["The replay does not resolve historical doctrine, external numerical residuals, or methods outside the tested reference-place and midpoint-location variants."]
+    },
+    {
+      "claim_id": "LB-RELATIONSHIP-TRANSIT-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/composite/transits",
+        "rest:POST:/v1/davison/transits"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_forecasting_routes.py::test_relationship_transit_routes_return_static_target_receipts"
+      ],
+      "minimum_tests": 2,
+      "claim_scope": "Composite and Davison transit routes retain immutable target-set identity, construction truth, bounded search policy, event source, and count receipts.",
+      "exclusions": ["The replay does not establish an external transit authority residual, moving-target search, orb-window timing, or interpretive ranking."]
+    },
+    {
       "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
       "surface_ids": ["rest:POST:/v1/progressions/secondary/reduction"],
       "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],

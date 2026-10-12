@@ -5723,8 +5723,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 1,
-        "unresolved": 41
+        "partial": 8,
+        "unresolved": 34
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7807,8 +7807,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 15,
-      "unresolved": 1195
+      "partial": 22,
+      "unresolved": 1188
     }
   }
 }

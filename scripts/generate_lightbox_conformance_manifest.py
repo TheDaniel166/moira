@@ -291,6 +291,150 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "position_aspect_analysis": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The response preserves normalized caller-supplied longitudes, aspect policy, node exclusions, counts, and the explicit absence of motion inference.",
+        "stage_label": "Position-only aspect analysis",
+        "operation": "Validate and normalize supplied longitudes, apply the named aspect policy, and return events beside the exact computation truth used.",
+        "semantic_values": {
+            "inputs": [
+                "A bounded typed map of named ecliptic longitudes and explicit aspect-policy controls is exposed by OpenAPI."
+            ],
+            "units": [
+                "Longitudes, separations, aspect angles, orbs, and allowed orbs are degrees."
+            ],
+            "reference_frame": [
+                "The response identifies caller-supplied ecliptic longitudes without inventing an epoch-specific frame."
+            ],
+            "origin": [
+                "The caller-supplied positions are the sole positional origin; no ephemeris lookup is implied."
+            ],
+            "timescale": [
+                "No epoch or time evolution is evaluated; motion semantics are returned as not computed without speeds."
+            ],
+            "corrections": [
+                "No positional correction is inferred beyond longitude normalization and the returned node exclusion list."
+            ],
+            "policies_defaults": [
+                "Tier, orb factor, node inclusion, normalized positions, and aspect count are returned in computation truth."
+            ],
+            "fallbacks": [
+                "The route has no ephemeris or frame fallback; excluded nodes are named explicitly."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects insufficient, non-finite, coercive, or unowned inputs before engine execution."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "relationship_overlay_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "Each directional overlay embeds labels, node policy, point count, target house-system identity, effective system, and fallback state.",
+        "stage_label": "Directional house-overlay truth",
+        "operation": "Build the source chart and target house frame, assign each admitted point to a house, and return the house-frame truth with placements.",
+        "semantic_values": {
+            "inputs": [
+                "Two typed relationship parties, direction, labels, and node policy are exposed by OpenAPI."
+            ],
+            "units": [
+                "Placement and cusp longitudes are degrees; house assignments are numbered one through twelve."
+            ],
+            "reference_frame": [
+                "The target house frame is identified by requested and effective house systems."
+            ],
+            "origin": [
+                "Source-chart points are placed into the explicitly labeled target party's houses."
+            ],
+            "timescale": [
+                "Each party's typed birth epoch governs its chart or house frame; no shared epoch is inferred."
+            ],
+            "corrections": [
+                "No correction is inferred beyond the chart and house computations represented by the response."
+            ],
+            "policies_defaults": [
+                "Direction, labels, node inclusion, point count, and target house systems are explicit."
+            ],
+            "fallbacks": [
+                "Target-house fallback is returned as an explicit boolean with the effective system."
+            ],
+            "refusal_behavior": [
+                "Unknown target birth time and invalid direction states are explicit transport errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "relationship_chart_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The derived relationship chart carries its construction method, epoch or midpoint truth, house-frame policy, and a nested position-only aspect analysis.",
+        "stage_label": "Derived relationship-chart truth",
+        "operation": "Construct the selected composite or Davison chart, preserve method-specific computation truth, and analyze the derived longitudes under explicit aspect policy.",
+        "semantic_values": {
+            "inputs": [
+                "Two typed relationship parties plus method, house, node, tier, and orb policy are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates use days; coordinates and chart/aspect angles use degrees."
+            ],
+            "reference_frame": [
+                "House-frame inclusion and source/effective house-system identity are returned where defined."
+            ],
+            "origin": [
+                "The response distinguishes composite reference-place construction from the selected Davison midpoint construction."
+            ],
+            "timescale": [
+                "Composite mean Julian day or Davison raw and used Julian days are returned by the method-specific truth vessel."
+            ],
+            "corrections": [
+                "Davison correction application and corrected target MC are explicit; no unreported correction is admitted."
+            ],
+            "policies_defaults": [
+                "Construction method, house policy, aspect tier, orb factor, and node inclusion are carried by the response."
+            ],
+            "fallbacks": [
+                "House-system fallback remains limited to the nested house and construction truth actually returned."
+            ],
+            "refusal_behavior": [
+                "Unsupported methods, conflicting house policy, missing birth time, and invalid aspect policy are explicit errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "relationship_transit_search_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The transit search embeds immutable derived-chart identity, construction truth, target-set identity, search policy, event source, counts, and interpretation scope.",
+        "stage_label": "Relationship transit-search receipt",
+        "operation": "Construct and identify the static relationship chart, materialize bounded targets, execute canonical transit searches, and return search truth beside events.",
+        "semantic_values": {
+            "inputs": [
+                "Typed relationship-chart construction, moving bodies, targets, interval, direction, motion, and solver policy are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates and step/tolerance values use days; longitudes and aspect geometry use degrees."
+            ],
+            "reference_frame": [
+                "The target identity names the relationship-chart reference frame and static geometry hash."
+            ],
+            "origin": [
+                "Targets are bound to one identified composite or Davison chart and its returned construction truth."
+            ],
+            "timescale": [
+                "The target epoch, search interval, direction, and search-motion policy are returned explicitly."
+            ],
+            "corrections": [
+                "No moving-target or orb-window correction is inferred; target motion and orb-window policy are named."
+            ],
+            "policies_defaults": [
+                "Tier, aspect names, step policy, solver tolerance, call count, event source, and interpretation scope are returned."
+            ],
+            "fallbacks": [
+                "Automatic per-body stepping is named as policy; no silent chart or target fallback is admitted."
+            ],
+            "refusal_behavior": [
+                "Server search budgets, unavailable requested nodes, invalid intervals, and unbounded inputs fail before solver execution."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

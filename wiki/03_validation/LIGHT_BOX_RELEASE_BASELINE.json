@@ -5,11 +5,11 @@
   "engine_version": "6.9.9",
   "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
   "canonical_entries": 1210,
-  "minimum_partial": 15,
-  "maximum_unresolved": 1195,
+  "minimum_partial": 22,
+  "maximum_unresolved": 1188,
   "production_user_entries": 171,
-  "maximum_production_user_unresolved": 164,
+  "maximum_production_user_unresolved": 157,
   "reviewed_families": 143,
-  "minimum_replayed_contracts": 9,
+  "minimum_replayed_contracts": 13,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review."
 }

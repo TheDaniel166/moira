@@ -28,9 +28,9 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | Per-surface conformance | Canonical surfaces |
 |---|---:|
 | `conformant` | 0 |
-| `partial` | 15 |
+| `partial` | 22 |
 | `not_applicable` | 0 |
-| `unresolved` | 1195 |
+| `unresolved` | 1188 |
 
 ## Reviewed queue
 
@@ -140,7 +140,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `progressed-astrodynes-chart` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `progressed-astrodynes-search` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 2 | 0 |
 | `progressions` | `predictive-and-time` | `partial` | `stage_2_exemplars` | 50 | 3 | 1 | 49 | 0 | 0 |
-| `relationship` | `relationship` | `mixed` | `stage_2_exemplars` | 42 | 14 | 1 | 41 | 0 | 0 |
+| `relationship` | `relationship` | `mixed` | `stage_2_exemplars` | 42 | 14 | 8 | 34 | 0 | 0 |
 | `rise-set` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 2 | 0 | 0 | 2 | 1 | 0 |
 | `sade-sati` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 4 | 0 | 0 | 4 | 0 | 0 |
 | `sayanadi-dated` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |

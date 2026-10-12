@@ -9,6 +9,16 @@ import sys
 
 REPO_ROOT = Path(__file__).parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "replay_lightbox_receipts.py"
+R1B_RELATIONSHIP_SURFACES = {
+    "rest:POST:/v1/aspects/from-longitudes",
+    "rest:POST:/v1/aspects/motion-witness",
+    "rest:POST:/v1/composite/chart",
+    "rest:POST:/v1/composite/transits",
+    "rest:POST:/v1/davison/chart",
+    "rest:POST:/v1/davison/transits",
+    "rest:POST:/v1/synastry/overlay",
+    "rest:POST:/v1/synastry/overlays",
+}
 
 
 def _module():
@@ -43,6 +53,27 @@ def test_passed_count_uses_terminal_pytest_summary() -> None:
     assert replay._passed_count("1 passed\nthen 7 passed in 2.00s") == 7
     assert replay._passed_count("............... [100%]\npolicy receipt") == 15
     assert replay._passed_count("2 failed") == 0
+
+
+def test_r1b_relationship_surfaces_have_bounded_replay_contracts() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_surface = {
+        surface_id: contract
+        for contract in contracts["contracts"]
+        for surface_id in contract["surface_ids"]
+    }
+
+    assert R1B_RELATIONSHIP_SURFACES <= set(by_surface)
+    for surface_id in R1B_RELATIONSHIP_SURFACES:
+        contract = by_surface[surface_id]
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["pytest_targets"]
+        assert contract["minimum_tests"] >= 1
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
 
 
 def test_contract_hash_is_order_stable() -> None:

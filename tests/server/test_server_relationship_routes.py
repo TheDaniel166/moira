@@ -243,6 +243,98 @@ def test_davison_variants_embed_aspects(
 
 
 @pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("path", "method"),
+    [
+        ("/v1/composite/chart", "reference_place"),
+        ("/v1/davison/chart", "midpoint_location"),
+    ],
+)
+def test_lightbox_derived_chart_routes_expose_existing_construction_truth(
+    client_with_engine: TestClient,
+    path: str,
+    method: str,
+) -> None:
+    response = client_with_engine.post(
+        path,
+        json={**_pair_payload(), "method": method},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    aspect_truth = body["aspects"]["computation_truth"]
+    assert aspect_truth["position_semantics"] == (
+        "caller_supplied_ecliptic_longitudes"
+    )
+    assert aspect_truth["motion_semantics"] == "not_computed_without_speeds"
+    assert aspect_truth["aspect_count"] == len(body["aspects"]["events"])
+
+    if path == "/v1/composite/chart":
+        truth = body["computation_truth"]
+        assert truth["method"] == method
+        assert truth["jd_mean"] == pytest.approx(body["jd_mean"])
+        assert truth["includes_house_frame"] is True
+        assert truth["house_system"]
+        assert truth["source_house_system"]
+        assert truth["source_effective_house_system"]
+    else:
+        truth = body["info"]["computation_truth"]
+        assert truth["method"] == method
+        assert truth["raw_midpoint_jd"] == pytest.approx(
+            body["info"]["jd_midpoint"]
+        )
+        assert truth["used_jd"] == pytest.approx(body["info"]["jd_midpoint"])
+        assert truth["latitude_midpoint"] == pytest.approx(
+            body["info"]["latitude_midpoint"]
+        )
+        assert truth["longitude_midpoint"] == pytest.approx(
+            body["info"]["longitude_midpoint"]
+        )
+        assert truth["house_system"] == body["houses"]["system"]
+        assert truth["correction_applied"] is False
+
+
+@pytest.mark.requires_ephemeris
+def test_lightbox_overlay_routes_expose_existing_house_frame_truth(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        **_pair_payload(),
+        "first_label": "Ada",
+        "second_label": "Grace",
+        "include_nodes": False,
+    }
+    directional_response = client_with_engine.post(
+        "/v1/synastry/overlay",
+        json={**payload, "direction": "first_in_second"},
+    )
+    mutual_response = client_with_engine.post(
+        "/v1/synastry/overlays",
+        json=payload,
+    )
+
+    assert directional_response.status_code == 200
+    assert mutual_response.status_code == 200
+    directional = directional_response.json()
+    mutual = mutual_response.json()
+
+    def assert_truth(overlay: dict[str, object]) -> None:
+        truth = overlay["computation_truth"]
+        assert isinstance(truth, dict)
+        assert truth["source_label"] == overlay["source_label"]
+        assert truth["target_label"] == overlay["target_label"]
+        assert truth["include_nodes"] is False
+        assert truth["point_count"] == len(overlay["placements"])
+        assert truth["target_house_system"]
+        assert truth["target_effective_house_system"]
+        assert isinstance(truth["target_has_fallback"], bool)
+
+    assert_truth(directional)
+    assert_truth(mutual["first_in_second"])
+    assert_truth(mutual["second_in_first"])
+
+
+@pytest.mark.requires_ephemeris
 def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: TestClient, moira_engine) -> None:
     pair = _pair_payload()
     dt_a = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
