@@ -7,8 +7,29 @@ on:
       - main
 
 jobs:
+  docstring-preflight:
+    name: Engine Docstring Preflight
+    runs-on: ubuntu-latest
+
+    env:
+      MOIRA_NO_DOWNLOAD: "1"
+      MOIRA_TEST_MODE: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Check all engine docstrings before native builds
+        run: python tests/unit/test_docstring_governance.py
+
   python-310-server-compatibility:
     name: Python 3.10 Server Compatibility Gate
+    needs: docstring-preflight
     runs-on: ubuntu-latest
 
     env:
@@ -86,6 +107,7 @@ jobs:
 
   release-hardening:
     name: Release Hardening Gate
+    needs: docstring-preflight
     runs-on: ubuntu-latest
 
     env:
@@ -109,6 +131,9 @@ jobs:
 
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev,server]"
+
+      - name: Run docstring checker self-tests without repeating the corpus scan
+        run: python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q
 
       - name: Check release-facing doc consistency
         run: python scripts/check_doc_consistency.py
@@ -195,7 +220,6 @@ jobs:
             tests/unit/test_aspects.py \
             tests/unit/test_patterns.py \
             tests/unit/test_api_surface_adversarial_audit.py \
-            tests/unit/test_docstring_governance.py \
             tests/unit/test_asteroid_identity_catalog.py \
             tests/unit/test_comet_identity_catalog.py \
             tests/unit/test_comets.py \

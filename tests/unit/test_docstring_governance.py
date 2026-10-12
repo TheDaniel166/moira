@@ -1,6 +1,6 @@
 """
 Moira — test_docstring_governance.py
-Compliance checker and self-tests for the HermitiCalc Docstring Governance Standard.
+Compliance checker and self-tests for Moira's AGENTS.md docstring contracts.
 
 Boundary: owns static analysis of moira/ docstrings via AST. Delegates nothing.
 Does not import any moira module at test time.
@@ -8,18 +8,24 @@ Does not import any moira module at test time.
 Public surface:
     test_module_docstrings, test_class_docstring_structure,
     test_machine_contract_validity,
-    check_module_docstrings, check_class_docstrings, check_machine_contracts
+    check_module_docstrings, check_class_docstrings, check_machine_contracts, main
+
+Direct execution is a stdlib-only static preflight. It reports all module,
+class, and machine-contract violations without invoking pytest or Moira.
 
 Import-time side effects: None
 
 External dependency assumptions:
-    - stdlib only: ast, json, re, pathlib
+    - stdlib only for the checker and command-line preflight
     - pytest for test discovery and assertion
+    - PyYAML only inside the workflow-wiring self-test
 """
 
+import argparse
 import ast
 import json
 import re
+import sys
 from pathlib import Path
 from typing import NamedTuple
 
@@ -44,6 +50,10 @@ REQUIRED_MC_KEYS = {
 }
 
 VALID_RISK_VALUES = {"low", "medium", "high", "critical"}
+CONCURRENCY_PROFILES = {
+    "pure_computation": "safe_read_only",
+    "request_local": "forbidden",
+}
 
 MC_PATTERN = re.compile(
     r"\[MACHINE_CONTRACT v1\](.*?)\[/MACHINE_CONTRACT\]",
@@ -289,7 +299,12 @@ def check_machine_contracts(path: Path) -> list[Violation]:
         docstring = ast.get_docstring(node) or ""
         match = MC_PATTERN.search(docstring)
         if not match:
-            continue  # absence already caught by check_class_docstrings
+            if "[MACHINE_CONTRACT" in docstring:
+                violations.append(Violation(
+                    file=str(path), entity=node.name, rule="MC-001",
+                    detail="MACHINE_CONTRACT must contain a closed v1 JSON block.",
+                ))
+            continue  # complete absence already caught by check_class_docstrings
         json_text = match.group(1).strip()
         rel = str(path)
         try:
@@ -302,6 +317,12 @@ def check_machine_contracts(path: Path) -> list[Violation]:
                 detail=f"MACHINE_CONTRACT JSON is malformed: {exc}",
             ))
             continue
+        if not isinstance(contract, dict):
+            violations.append(Violation(
+                file=rel, entity=node.name, rule="MC-001",
+                detail="MACHINE_CONTRACT JSON must be an object.",
+            ))
+            continue
         # MC-002: required keys
         missing = REQUIRED_MC_KEYS - set(contract.keys())
         if missing:
@@ -312,7 +333,7 @@ def check_machine_contracts(path: Path) -> list[Violation]:
                 detail=f"MACHINE_CONTRACT missing required keys: {sorted(missing)}",
             ))
         # MC-003: risk value
-        if contract.get("risk") not in VALID_RISK_VALUES:
+        if contract.get("risk") not in tuple(VALID_RISK_VALUES):
             violations.append(Violation(
                 file=rel,
                 entity=node.name,
@@ -327,24 +348,70 @@ def check_machine_contracts(path: Path) -> list[Violation]:
                 rule="MC-004",
                 detail=f"id must start with 'moira.', got: {contract.get('id')!r}",
             ))
-        # MC-005: concurrency.thread
+        # MC-005/006: explicit, paired concurrency profiles; never allow a
+        # request-local actor to claim cross-thread read-only safety.
         conc = contract.get("concurrency", {})
-        if conc.get("thread") != "pure_computation":
+        if not isinstance(conc, dict):
+            violations.append(Violation(
+                file=rel, entity=node.name, rule="MC-005",
+                detail="concurrency must be an object declaring a supported profile.",
+            ))
+            continue
+        thread = conc.get("thread")
+        if thread not in tuple(CONCURRENCY_PROFILES):
             violations.append(Violation(
                 file=rel,
                 entity=node.name,
                 rule="MC-005",
-                detail=f"concurrency.thread must be 'pure_computation', got: {conc.get('thread')!r}",
+                detail=f"concurrency.thread must be one of {sorted(CONCURRENCY_PROFILES)}, got: {thread!r}",
             ))
-        # MC-006: concurrency.cross_thread_calls
-        if conc.get("cross_thread_calls") != "safe_read_only":
-            violations.append(Violation(
-                file=rel,
-                entity=node.name,
-                rule="MC-006",
-                detail=f"concurrency.cross_thread_calls must be 'safe_read_only', got: {conc.get('cross_thread_calls')!r}",
-            ))
+        else:
+            expected = CONCURRENCY_PROFILES[thread]
+            if conc.get("cross_thread_calls") != expected:
+                violations.append(Violation(
+                    file=rel,
+                    entity=node.name,
+                    rule="MC-006",
+                    detail=f"concurrency.cross_thread_calls must be {expected!r} for {thread!r}, got: {conc.get('cross_thread_calls')!r}",
+                ))
+        # MC-007: request confinement is meaningful only with named mutable
+        # state ownership and an explicit prohibition on off-owner mutation.
+        if thread == "request_local":
+            state = contract.get("state", {})
+            owners = state.get("owners") if isinstance(state, dict) else None
+            if (not isinstance(state, dict) or state.get("mutable") is not True
+                    or not isinstance(owners, list) or not owners
+                    or not all(isinstance(owner, str) and owner.strip() for owner in owners)
+                    or conc.get("owner_thread_only_mutation") is not True):
+                violations.append(Violation(
+                    file=rel, entity=node.name, rule="MC-007",
+                    detail="request_local requires mutable state, named nonempty owners, and owner_thread_only_mutation: true.",
+                ))
     return violations
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the existing checkers without engine imports or test dependencies."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("paths", nargs="*", type=Path,
+                        help="Python files to check; default: the entire moira/ tree")
+    args = parser.parse_args(argv)
+    paths = args.paths or sorted(MOIRA_ROOT.rglob("*.py"))
+    if not paths:
+        parser.error("no engine Python files found; refusing an empty preflight")
+    for path in paths:
+        if path.suffix != ".py" or not path.is_file():
+            parser.error(f"expected an existing Python file: {path}")
+
+    violations: list[Violation] = []
+    for path in paths:
+        for checker in (check_module_docstrings, check_class_docstrings, check_machine_contracts):
+            violations.extend(checker(path))
+    if violations:
+        print(_format_violations(violations), file=sys.stderr)
+        return 1
+    print(f"Engine docstring preflight passed: {len(paths)} Python files checked.")
+    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -548,3 +615,200 @@ def test_checker_wrong_thread_produces_mc005(tmp_path: Path) -> None:
     violations = check_machine_contracts(path)
     assert any(v.rule == "MC-005" for v in violations)
     assert any("main_qt" in v.detail for v in violations if v.rule == "MC-005")
+
+
+def _synthetic_contract() -> dict:
+    """Return an independent contract object from the established fixture."""
+    return json.loads(MC_PATTERN.search(_COMPLIANT_CLASS_BODY).group(1))
+
+
+def _source_with_contract(contract: object) -> str:
+    """Replace only the fixture's JSON block, retaining its class markers."""
+    block = "[MACHINE_CONTRACT v1]\n" + json.dumps(contract) + "\n[/MACHINE_CONTRACT]"
+    body = MC_PATTERN.sub(lambda _: block, _COMPLIANT_CLASS_BODY)
+    return f'"""Module docstring."""\n\nclass SyntheticClass:\n{body}\n'
+
+
+def _request_local_contract() -> dict:
+    contract = _synthetic_contract()
+    contract["state"] = {"mutable": True, "owners": ["one request"]}
+    contract["concurrency"] = {
+        "thread": "request_local",
+        "cross_thread_calls": "forbidden",
+        "owner_thread_only_mutation": True,
+    }
+    return contract
+
+
+def test_checker_request_local_contract_passes(tmp_path: Path) -> None:
+    """Honest request confinement does not need a false shared-safety claim."""
+    path = _write_tmp(tmp_path, _source_with_contract(_request_local_contract()))
+    assert check_class_docstrings(path) == []
+    assert check_machine_contracts(path) == []
+
+
+def test_checker_existing_computation_profile_still_passes(tmp_path: Path) -> None:
+    """The established computation/read-only profile remains accepted."""
+    path = _write_tmp(tmp_path, _source_with_contract(_synthetic_contract()))
+    assert check_class_docstrings(path) == []
+    assert check_machine_contracts(path) == []
+
+
+def test_checker_concurrency_profiles_cannot_be_mixed(tmp_path: Path) -> None:
+    """Both profiles retain a mandatory, matching cross-thread policy."""
+    for thread, cross_thread in (("request_local", "safe_read_only"),
+                                 ("pure_computation", "forbidden")):
+        contract = _request_local_contract()
+        contract["concurrency"].update(thread=thread, cross_thread_calls=cross_thread)
+        path = _write_tmp(tmp_path, _source_with_contract(contract))
+        assert any(v.rule == "MC-006" for v in check_machine_contracts(path))
+
+
+def test_checker_request_local_requires_owned_mutation(tmp_path: Path) -> None:
+    """Unowned, immutable, or off-owner state is not request confinement."""
+    for state in (None, {}, {"mutable": False, "owners": ["one request"]},
+                  {"mutable": True, "owners": []},
+                  {"mutable": True, "owners": [""]},
+                  {"mutable": True, "owners": [123]},
+                  {"mutable": True, "owners": "one request"}):
+        contract = _request_local_contract()
+        contract["state"] = state
+        path = _write_tmp(tmp_path, _source_with_contract(contract))
+        assert any(v.rule == "MC-007" for v in check_machine_contracts(path))
+    contract = _request_local_contract()
+    contract["concurrency"].pop("owner_thread_only_mutation")
+    path = _write_tmp(tmp_path, _source_with_contract(contract))
+    assert any(v.rule == "MC-007" for v in check_machine_contracts(path))
+
+
+def test_checker_all_class_markers_remain_required(tmp_path: Path) -> None:
+    """The new profile never exempts actors from any of the six markers."""
+    body = _COMPLIANT_CLASS_BODY.replace("    pass", "    def run(self):\n        return 1")
+    for marker in REQUIRED_CLASS_MARKERS:
+        source = f'"""Module."""\nclass Actor:\n{body.replace(marker, "REMOVED", 1)}'
+        path = _write_tmp(tmp_path, source)
+        assert any(v.rule == "CLS-001" and repr(marker) in v.detail
+                   for v in check_class_docstrings(path))
+
+
+def test_checker_unclosed_contract_is_rejected(tmp_path: Path) -> None:
+    source = _source_with_contract(_synthetic_contract()).replace("[/MACHINE_CONTRACT]", "")
+    path = _write_tmp(tmp_path, source)
+    assert any(v.rule == "MC-001" for v in check_machine_contracts(path))
+
+
+def test_checker_non_object_json_is_rejected(tmp_path: Path) -> None:
+    for contract in (None, [], "not an object", 42):
+        path = _write_tmp(tmp_path, _source_with_contract(contract))
+        assert any(v.rule == "MC-001" for v in check_machine_contracts(path))
+
+
+def test_checker_malformed_concurrency_is_rejected(tmp_path: Path) -> None:
+    for concurrency in (None, [], "not a profile", {"thread": []}):
+        contract = _synthetic_contract()
+        contract["concurrency"] = concurrency
+        path = _write_tmp(tmp_path, _source_with_contract(contract))
+        assert any(v.rule == "MC-005" for v in check_machine_contracts(path))
+
+
+def test_preflight_reports_all_rule_families(tmp_path: Path, capsys) -> None:
+    """One preflight exposes concurrent omissions, not only the first file."""
+    missing = _write_tmp(tmp_path, "class Actor:\n    def run(self): pass\n", "missing.py")
+    contract = _synthetic_contract()
+    contract["risk"] = "extreme"
+    invalid = _write_tmp(tmp_path, _source_with_contract(contract), "invalid.py")
+    assert main([str(missing), str(invalid)]) == 1
+    errors = capsys.readouterr().err
+    assert all(rule in errors for rule in ("MOD-001", "CLS-001", "MC-003"))
+    assert str(missing) in errors and str(invalid) in errors
+
+
+def test_preflight_default_checks_whole_tree(tmp_path: Path, monkeypatch, capsys) -> None:
+    _write_tmp(tmp_path, '"""Valid module."""\n', "valid.py")
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    missing = _write_tmp(nested, "x = 1\n", "missing.py")
+    monkeypatch.setitem(main.__globals__, "MOIRA_ROOT", tmp_path)
+    assert main([]) == 1
+    assert str(missing) in capsys.readouterr().err
+
+
+def test_preflight_invalid_or_empty_scope_fails_closed(tmp_path: Path, monkeypatch) -> None:
+    import pytest
+
+    monkeypatch.setitem(main.__globals__, "MOIRA_ROOT", tmp_path)
+    for paths in ([], [str(tmp_path / "absent.py")], [str(tmp_path)]):
+        with pytest.raises(SystemExit) as exc:
+            main(paths)
+        assert exc.value.code == 2
+
+
+def test_preflight_parse_error_is_a_failure(tmp_path: Path, capsys) -> None:
+    path = _write_tmp(tmp_path, "def broken(\n")
+    assert main([str(path)]) == 1
+    assert "PARSE-001" in capsys.readouterr().err
+
+
+def test_preflight_cli_is_stdlib_only_and_read_only(tmp_path: Path) -> None:
+    """A -S child has no site packages, engine import, or resource prerequisite."""
+    import subprocess
+
+    path = _write_tmp(tmp_path, _source_with_contract(_request_local_contract()))
+    before = path.read_bytes()
+    code = (
+        "import runpy, sys; checker = runpy.run_path(sys.argv[1]); "
+        "result = checker['main'](sys.argv[2:]); "
+        "assert not any(n == 'moira' or n.startswith('moira.') for n in sys.modules); "
+        "assert 'pytest' not in sys.modules and 'yaml' not in sys.modules; sys.exit(result)"
+    )
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", code, str(Path(__file__).resolve()), str(path)],
+        cwd=tmp_path, capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "1 Python files checked" in result.stdout
+    assert path.read_bytes() == before
+
+
+def test_preflight_cli_exit_status(tmp_path: Path) -> None:
+    """The actual script entrypoint, not only main(), must fail on violations."""
+    import subprocess
+
+    path = _write_tmp(tmp_path, "x = 1\n")
+    before = path.read_bytes()
+    result = subprocess.run(
+        [sys.executable, "-S", str(Path(__file__).resolve()), str(path)],
+        cwd=tmp_path, capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == 1
+    assert "MOD-001" in result.stderr
+    assert path.read_bytes() == before
+
+
+def test_preflight_ci_blocks_builds_and_does_not_repeat_scan() -> None:
+    """Both builds wait for the dependency-free corpus scan; self-tests remain."""
+    import yaml
+
+    root = Path(__file__).resolve().parents[2]
+    workflow = yaml.safe_load((root / ".github/workflows/release-hardening.yml").read_text(encoding="utf-8"))
+    jobs = workflow["jobs"]
+    preflight = jobs["docstring-preflight"]
+    commands = [step["run"] for step in preflight["steps"] if "run" in step]
+    assert commands == ["python tests/unit/test_docstring_governance.py"]
+    assert not preflight.get("continue-on-error")
+    assert all(not step.get("continue-on-error") and "if" not in step for step in preflight["steps"])
+    for job_name in ("release-hardening", "python-310-server-compatibility"):
+        assert jobs[job_name]["needs"] == "docstring-preflight"
+        assert "if" not in jobs[job_name]
+    self_tests = [step["run"] for step in jobs["release-hardening"]["steps"]
+                  if "test_docstring_governance.py" in step.get("run", "")]
+    assert self_tests == [
+        'python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q'
+    ]
+    instructions = (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert all(marker in instructions for marker in REQUIRED_CLASS_MARKERS)
+    assert "tests\\unit\\test_docstring_governance.py" in instructions
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -53,7 +53,46 @@ def _propagate(record, tt):
 
 
 class SiderealFrames(FrameEnclosures):
-    """Named frame policy; mutation/caches remain owned by a single request."""
+    """RITE: Request-bound sidereal frame enclosures
+
+    THEOREM: The named ayanamsa policy selects either a propagated live-star
+    anchor or the admitted precession, nutation, and secular-offset model.
+
+    RITE OF PURPOSE:
+        Extend FrameEnclosures with the requested sidereal offset; do not
+        substitute a frozen offset or sampled speed for an interval enclosure.
+
+    LAW OF OPERATION:
+        Resolve the named anchor at construction when the policy requires one.
+        Propagate that record using the serving star-owner inputs, or use the
+        named ayanamsa tables, and return an angular differential in radians.
+        Inherited frame tables, memoization, and work accounting remain owned
+        by one request. An instance is not a cross-thread shared service.
+
+    Canon: Moira sidereal policy, serving fixed-star propagation, and
+        _event_search.frames.FrameEnclosures; not an external accuracy receipt.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._gochara_window_astronomy.SiderealFrames",
+      "risk": "high",
+      "api": {"frozen": [], "internal": ["__init__", "offset", "angles"]},
+      "state": {"mutable": true, "owners": ["one Gochar window request"]},
+      "effects": {"signals_emitted": [], "io": ["serving star records and frame tables"]},
+      "concurrency": {
+        "thread": "request_local",
+        "cross_thread_calls": "forbidden",
+        "owner_thread_only_mutation": true
+      },
+      "failures": {
+        "policy": "propagate resource, enclosure, lookup and work-budget failures; ambiguous or nonfinite live-anchor propagation raises GocharaResourceError"
+      },
+      "succession": {"stance": "internal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["frame or anchor doctrine"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
     def __init__(self, meter, system):
         self.system = system
         self.anchor = _STAR_ANCHORED.get(system)
@@ -83,7 +122,57 @@ class SiderealFrames(FrameEnclosures):
 
 
 class GocharaWindowAstronomy:
-    """Reader-bound interval context with frozen clock and anchor identities."""
+    """RITE: Reader-bound Gochar window astronomy
+
+    THEOREM: Serving apparent-place and sidereal-frame differentials are
+    composed with the declared clock to enclose longitude and its UT1 rate.
+
+    RITE OF PURPOSE:
+        Bind one search interval to its reader, policy, work meter, clock
+        identity, and anchor evidence; expose signals and resource receipts
+        without selecting transit windows or interpreting their astrology.
+
+    LAW OF OPERATION:
+        Require declared planetary, lunar, and tidal clock identities. Compute
+        usable UT1 endpoints inside the admitted clock's rounded TT domain.
+        Reject intervals outside that intersection. Resource assertions compare
+        current clock inputs, serving identity, and any live anchor with the
+        captured identities. Receipts run that assertion before reporting
+        hashes and cache evidence. Reader access, caches, and accounting belong
+        to this request; neither the instance nor its reader is made thread-safe
+        by this wrapper. No resource ownership transfers.
+
+    Canon: Moira serving-reader time binding, AstronomyEnclosures,
+        MarriageClockEnclosures, and SiderealFrames; receipts are resource
+        identity evidence, not independent astronomical validation.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._gochara_window_astronomy.GocharaWindowAstronomy",
+      "risk": "high",
+      "api": {
+        "frozen": [],
+        "internal": ["__init__", "_clock_signature", "assert_resources", "longitude", "signal", "receipts"]
+      },
+      "state": {"mutable": true, "owners": ["one Gochar window request"]},
+      "effects": {
+        "signals_emitted": [],
+        "io": ["borrowed ephemeris reader, clock/EOP tables, and serving star records"]
+      },
+      "concurrency": {
+        "thread": "request_local",
+        "cross_thread_calls": "forbidden",
+        "owner_thread_only_mutation": true
+      },
+      "failures": {
+        "policy": "raise GocharaResourceError for missing or changed identities, GocharaWindowDomainError for clock-domain exclusion; propagate serving reader, enclosure and work-budget failures"
+      },
+      "succession": {"stance": "internal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["clock, frame, enclosure or resource doctrine"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
     def __init__(self, reader, meter, policy, start, end):
         self.reader, self.meter, self.policy = reader, meter, policy
         self.epoch = lru_cache(maxsize=4096)(lambda t: _bind_ephemeris_time(t, reader))

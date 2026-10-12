@@ -256,6 +256,14 @@ Product-specific validation examples:
     # Release-facing documentation guard
     .\.venv\Scripts\python.exe scripts\check_doc_consistency.py
 
+    # Fast, stdlib-only engine docstring preflight (no engine import or pytest)
+    .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py
+
+The docstring preflight also accepts explicit Python file paths for a focused
+authoring check. With no paths, it checks the entire `moira/` tree and reports
+all violations together. CI runs that full scan before native builds; checker
+self-tests run separately, not as a second corpus scan.
+
 Ruff is configured for Python 3.10-compatible correctness checks (`E4`, `E7`,
 `E9`, and `F`). The repository-wide result is currently an audit baseline, not
 a green acceptance gate; report remaining pre-existing debt explicitly and do
@@ -687,6 +695,33 @@ alignment than the executable path and validation support.
 When implementation truth changes materially, update the minimum necessary
 public, doctrinal, architecture, and validation-facing documentation. The
 Completion Receipt is defined once in Part III.
+
+#### Engine docstring contracts
+
+The executable schema and actor/vessel classification live in
+`tests/unit/test_docstring_governance.py`. Read them before adding or changing
+classes under `moira/`; this requirement applies to internal helpers too.
+
+- Every module needs a nonempty module docstring. Passive vessels need a basic
+  class docstring. Actors, and any class declaring a machine contract, require
+  one class docstring containing `RITE:`, `THEOREM:`, `RITE OF PURPOSE:`,
+  `LAW OF OPERATION:`, `Canon:`, and a closed `[MACHINE_CONTRACT v1]` JSON block.
+  Consecutive string expressions are not one docstring.
+- Contract keys are `scope`, `id`, `risk`, `api`, `state`, `effects`,
+  `concurrency`, `failures`, `succession`, and `agent`. IDs begin with `moira.`;
+  risk is `low`, `medium`, `high`, or `critical`. Describe actual dependencies,
+  state ownership, effects, failure behavior, and provenance, not boilerplate.
+- The established computation contract uses `thread: pure_computation` and
+  `cross_thread_calls: safe_read_only`; it never grants concurrent mutation.
+  Request-confined actors instead use `thread: request_local`,
+  `cross_thread_calls: forbidden`, and `owner_thread_only_mutation: true`,
+  with `state.mutable: true` and named nonempty `state.owners`. Do not claim
+  shared-instance safety for mutable request-owned caches or counters.
+- Before handing off, committing, or pushing engine class changes, run the
+  fast preflight once. If the user restricts local verification, obey that
+  restriction and explicitly report the unverified gate; never imply green CI
+  from reading this file. Do not bypass the checker or update scientific
+  evidence to absorb a documentation failure.
 
 ---
 
