@@ -32,9 +32,9 @@ def test_matrix_preserves_every_surface_and_every_evidence_class() -> None:
     matrix = generator.build_matrix(contracts, receipts, manifest)
     assert generator.validate_matrix(matrix, manifest) == []
     assert matrix["summary"]["canonical_surfaces"] == 1210
-    assert matrix["summary"]["surfaces_with_contracts"] == 22
-    assert matrix["summary"]["surfaces_without_contracts"] == 1188
-    assert matrix["summary"]["contracts"] == 13
+    assert matrix["summary"]["surfaces_with_contracts"] == 28
+    assert matrix["summary"]["surfaces_without_contracts"] == 1182
+    assert matrix["summary"]["contracts"] == 16
     assert matrix["summary"]["contracts_failed"] == 0
     for row in matrix["surfaces"]:
         assert set(row["evidence"]) == set(generator.EVIDENCE_CLASSES)
@@ -48,9 +48,9 @@ def test_matrix_does_not_promote_local_receipts_to_release_evidence() -> None:
         generator._load(generator.MANIFEST_PATH),
     )
     assert matrix["receipt_artifact_status"] == "local_unreleased_worktree"
-    assert matrix["summary"]["evidence_classes"]["release"]["passed_local"] == 22
+    assert matrix["summary"]["evidence_classes"]["release"]["passed_local"] == 28
     assert matrix["summary"]["evidence_classes"]["release"]["passed_exact_source"] == 0
-    assert matrix["summary"]["evidence_classes"]["release"]["not_run"] == 1188
+    assert matrix["summary"]["evidence_classes"]["release"]["not_run"] == 1182
 
 
 def test_generated_matrix_is_current_and_deterministic() -> None:

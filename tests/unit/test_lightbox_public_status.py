@@ -37,7 +37,7 @@ def test_current_status_preserves_doctrine_and_refuses_universal_claim() -> None
     assert status["universal_current_conformance_supported"] is False
     assert status["publication_disposition"] == "local_unreleased_status"
     assert status["summary"]["canonical_calculations"] == 1210
-    assert status["summary"]["unresolved"] == 1188
+    assert status["summary"]["unresolved"] == 1182
     claims = {row["claim"]: row["status"] for row in status["claim_dispositions"]}
     assert claims["Every Calculation is Benchmarked."] == "unsupported"
 

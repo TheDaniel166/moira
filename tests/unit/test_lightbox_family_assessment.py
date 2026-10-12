@@ -77,7 +77,16 @@ def test_stage_four_and_five_are_not_empty(assessment) -> None:
 def test_major_gap_and_mixed_families_remain_explicit(assessment) -> None:
     by_id = {row["family_id"]: row for row in assessment["families"]}
     assert by_id["phenomena"]["assessment_status"] == "major_gap"
-    assert by_id["relationship"]["assessment_status"] == "mixed"
+    relationship = by_id["relationship"]
+    assert relationship["assessment_status"] == "mixed"
+    assert relationship["canonical_surface_count"] == 42
+    assert relationship["production_user_surface_count"] == 14
+    assert relationship["conformance_counts"] == {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 14,
+        "unresolved": 28,
+    }
     assert by_id["ashtakavarga"]["assessment_status"] == "major_gap"
     assert by_id["positions-frame"]["assessment_status"] == "strong_exemplar"
 

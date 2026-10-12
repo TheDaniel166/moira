@@ -3903,7 +3903,7 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+  "inventory_fingerprint_sha256": "2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",

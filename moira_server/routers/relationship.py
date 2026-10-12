@@ -59,14 +59,17 @@ from ..serializers.relationship import (
     serialize_midpoint,
     serialize_midpoint_cluster,
     serialize_midpoint_hit,
+    serialize_midpoint_search_truth,
     serialize_midpoint_weight,
     serialize_moon_connection_flow,
     serialize_mutual_overlay,
     serialize_pattern_chart_condition_profile,
     serialize_pattern_coherence,
     serialize_pattern_network,
+    serialize_pattern_search_truth,
     serialize_synastry_contact,
     serialize_synastry_overlay,
+    serialize_synastry_search_truth,
 )
 from ..services.relationship import (
     compute_aspect_motion_witness,
@@ -173,12 +176,28 @@ def declination_aspect_motion_witness_route(
 
 @router.post("/synastry/aspects", response_model=SynastryAspectSearchResponse)
 def synastry_aspects_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> SynastryAspectSearchResponse:
-    return SynastryAspectSearchResponse(events=[serialize_aspect(item) for item in compute_synastry_aspects(engine, request)])
+    aspects = compute_synastry_aspects(engine, request)
+    return SynastryAspectSearchResponse(
+        events=[serialize_aspect(item) for item in aspects],
+        computation_truth=serialize_synastry_search_truth(
+            request,
+            engine_entrypoint="synastry_aspects",
+            event_count=len(aspects),
+        ),
+    )
 
 
 @router.post("/synastry/contacts", response_model=SynastryContactSearchResponse)
 def synastry_contacts_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> SynastryContactSearchResponse:
-    return SynastryContactSearchResponse(events=[serialize_synastry_contact(item) for item in compute_synastry_contacts(engine, request)])
+    contacts = compute_synastry_contacts(engine, request)
+    return SynastryContactSearchResponse(
+        events=[serialize_synastry_contact(item) for item in contacts],
+        computation_truth=serialize_synastry_search_truth(
+            request,
+            engine_entrypoint="synastry_contacts",
+            event_count=len(contacts),
+        ),
+    )
 
 
 @router.post("/synastry/overlay", response_model=SynastryHouseOverlayResponse)
@@ -210,11 +229,16 @@ def chart_shape_route(request: SingleChartAnalysisRequest, engine: Moira = Depen
 
 @router.post("/patterns/find", response_model=PatternSearchResponse)
 def patterns_route(request: PatternRequest, engine: Moira = Depends(get_engine)) -> PatternSearchResponse:
+    patterns_with_coherence = compute_patterns_with_coherence(engine, request)
     return PatternSearchResponse(
         events=[
             serialize_aspect_pattern(pattern, coherence=coherence)
-            for pattern, coherence in compute_patterns_with_coherence(engine, request)
-        ]
+            for pattern, coherence in patterns_with_coherence
+        ],
+        computation_truth=serialize_pattern_search_truth(
+            request,
+            pattern_count=len(patterns_with_coherence),
+        ),
     )
 
 
@@ -242,7 +266,15 @@ def pattern_network_route(request: PatternRequest, engine: Moira = Depends(get_e
 
 @router.post("/midpoints/calculate", response_model=MidpointSearchResponse)
 def midpoints_route(request: MidpointRequest, engine: Moira = Depends(get_engine)) -> MidpointSearchResponse:
-    return MidpointSearchResponse(events=[serialize_midpoint(item) for item in compute_midpoints(engine, request)])
+    midpoints = compute_midpoints(engine, request)
+    return MidpointSearchResponse(
+        events=[serialize_midpoint(item) for item in midpoints],
+        computation_truth=serialize_midpoint_search_truth(
+            request,
+            engine_entrypoint="calculate_midpoints",
+            event_count=len(midpoints),
+        ),
+    )
 
 
 @router.post("/midpoints/to-point", response_model=MidpointHitSearchResponse)
@@ -253,12 +285,28 @@ def midpoints_to_point_route(request: MidpointToPointRequest, engine: Moira = De
 @router.post("/midpoints/pictures", response_model=PlanetaryPictureSearchResponse)
 def midpoint_pictures_route(request: PlanetaryPictureRequest, engine: Moira = Depends(get_engine)) -> PlanetaryPictureSearchResponse:
     from ..serializers.relationship import serialize_planetary_picture
-    return PlanetaryPictureSearchResponse(events=[serialize_planetary_picture(item) for item in compute_planetary_pictures(engine, request)])
+    pictures = compute_planetary_pictures(engine, request)
+    return PlanetaryPictureSearchResponse(
+        events=[serialize_planetary_picture(item) for item in pictures],
+        computation_truth=serialize_midpoint_search_truth(
+            request,
+            engine_entrypoint="planetary_pictures",
+            event_count=len(pictures),
+        ),
+    )
 
 
 @router.post("/midpoints/weighting", response_model=MidpointWeightSearchResponse)
 def midpoint_weighting_route(request: MidpointWeightRequest, engine: Moira = Depends(get_engine)) -> MidpointWeightSearchResponse:
-    return MidpointWeightSearchResponse(events=[serialize_midpoint_weight(item) for item in compute_midpoint_weighting(engine, request)])
+    weights = compute_midpoint_weighting(engine, request)
+    return MidpointWeightSearchResponse(
+        events=[serialize_midpoint_weight(item) for item in weights],
+        computation_truth=serialize_midpoint_search_truth(
+            request,
+            engine_entrypoint="midpoint_weighting",
+            event_count=len(weights),
+        ),
+    )
 
 
 @router.post("/midpoints/clusters", response_model=MidpointClusterSearchResponse)

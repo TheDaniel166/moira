@@ -3,13 +3,13 @@
   "baseline_date": "2026-10-12",
   "source_parent_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
   "engine_version": "6.9.9",
-  "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+  "inventory_fingerprint_sha256": "2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d",
   "canonical_entries": 1210,
-  "minimum_partial": 22,
-  "maximum_unresolved": 1188,
+  "minimum_partial": 28,
+  "maximum_unresolved": 1182,
   "production_user_entries": 171,
-  "maximum_production_user_unresolved": 157,
+  "maximum_production_user_unresolved": 151,
   "reviewed_families": 143,
-  "minimum_replayed_contracts": 13,
+  "minimum_replayed_contracts": 16,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review."
 }

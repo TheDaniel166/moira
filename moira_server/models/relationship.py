@@ -693,12 +693,36 @@ class SynastryContactResponse(_StrictModel):
     condition_profile: SynastryConditionProfileResponse | None = None
 
 
+class SynastrySearchComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.synastry"] = "moira.synastry"
+    engine_entrypoint: Literal["synastry_aspects", "synastry_contacts"]
+    position_source: Literal["independent_chart_longitudes"] = (
+        "independent_chart_longitudes"
+    )
+    source_label: str
+    target_label: str
+    tier: Literal[0, 1, 2]
+    orb_factor: float
+    include_nodes: bool
+    custom_orbs: Literal[False] = False
+    node_variant_policy: Literal[
+        "true_node_and_true_lilith_only_when_nodes_included"
+    ] = "true_node_and_true_lilith_only_when_nodes_included"
+    motion_semantics: Literal[
+        "cross_chart_aspects_do_not_classify_applying_or_separating"
+    ] = "cross_chart_aspects_do_not_classify_applying_or_separating"
+    ordering: Literal["orb_ascending"] = "orb_ascending"
+    event_count: int = Field(ge=0)
+
+
 class SynastryAspectSearchResponse(_StrictModel):
     events: list[AspectDataResponse]
+    computation_truth: SynastrySearchComputationTruthResponse
 
 
 class SynastryContactSearchResponse(_StrictModel):
     events: list[SynastryContactResponse]
+    computation_truth: SynastrySearchComputationTruthResponse
 
 
 class SynastryRelationListResponse(_StrictModel):
@@ -1050,8 +1074,27 @@ class AspectPatternResponse(_StrictModel):
     coherence: PatternCoherenceResponse | None = None
 
 
+class PatternSearchComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.patterns"] = "moira.patterns"
+    engine_entrypoint: Literal["find_all_patterns"] = "find_all_patterns"
+    position_source: Literal["chart_longitudes"] = "chart_longitudes"
+    motion_source: Literal["chart_longitude_rates_for_coherence"] = (
+        "chart_longitude_rates_for_coherence"
+    )
+    include_nodes: bool
+    orb_factor: float
+    selection_mode: Literal["all_registered_patterns", "explicit_pattern_names"]
+    requested_patterns: list[str]
+    dominant_only: bool
+    ordering: Literal["pattern_name_then_body_names"] = (
+        "pattern_name_then_body_names"
+    )
+    pattern_count: int = Field(ge=0)
+
+
 class PatternSearchResponse(_StrictModel):
     events: list[AspectPatternResponse]
+    computation_truth: PatternSearchComputationTruthResponse
 
 
 class PatternCoherenceSearchResponse(_StrictModel):
@@ -1130,8 +1173,39 @@ class MidpointResponse(_StrictModel):
     sign_degree: float
 
 
+class MidpointSearchComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.midpoints"] = "moira.midpoints"
+    engine_entrypoint: Literal[
+        "calculate_midpoints",
+        "planetary_pictures",
+        "midpoint_weighting",
+    ]
+    position_source: Literal["chart_longitudes"] = "chart_longitudes"
+    midpoint_geometry: Literal["shorter_arc_midpoint"] = "shorter_arc_midpoint"
+    planet_set: Literal["classic", "modern", "extended"]
+    include_nodes: bool
+    orb: float | None = None
+    dial: float | None = None
+    dial_semantics: Literal["not_applicable", "longitude_modulo_dial_size"]
+    focus_policy: Literal[
+        "not_applicable",
+        "focus_excluded_from_generating_pair",
+    ]
+    score_semantics: Literal[
+        "not_applicable",
+        "planetary_picture_count_per_focus",
+    ]
+    ordering: Literal[
+        "filtered_chart_pair_order",
+        "orb_ascending",
+        "score_descending_then_planet_name",
+    ]
+    event_count: int = Field(ge=0)
+
+
 class MidpointSearchResponse(_StrictModel):
     events: list[MidpointResponse]
+    computation_truth: MidpointSearchComputationTruthResponse
 
 
 class MidpointToPointRequest(MidpointRequest):
@@ -1159,6 +1233,7 @@ class PlanetaryPictureResponse(_StrictModel):
 
 class PlanetaryPictureSearchResponse(_StrictModel):
     events: list[PlanetaryPictureResponse]
+    computation_truth: MidpointSearchComputationTruthResponse
 
 
 class MidpointWeightResponse(_StrictModel):
@@ -1169,6 +1244,7 @@ class MidpointWeightResponse(_StrictModel):
 
 class MidpointWeightSearchResponse(_StrictModel):
     events: list[MidpointWeightResponse]
+    computation_truth: MidpointSearchComputationTruthResponse
 
 
 class MidpointClusterResponse(_StrictModel):
@@ -1229,6 +1305,7 @@ __all__ = [
     "MidpointHitSearchResponse",
     "MidpointRequest",
     "MidpointResponse",
+    "MidpointSearchComputationTruthResponse",
     "MidpointSearchResponse",
     "MidpointToPointRequest",
     "MidpointWeightRequest",
@@ -1248,6 +1325,7 @@ __all__ = [
     "PatternConditionNetworkProfileResponse",
     "PatternRequest",
     "PatternRequiredAspectLedgerResponse",
+    "PatternSearchComputationTruthResponse",
     "PatternSearchResponse",
     "PlanetaryPictureRequest",
     "PlanetaryPictureResponse",
@@ -1262,4 +1340,5 @@ __all__ = [
     "SynastryDirectionalOverlayRequest",
     "SynastryPairRequest",
     "SynastryRelationListResponse",
+    "SynastrySearchComputationTruthResponse",
 ]

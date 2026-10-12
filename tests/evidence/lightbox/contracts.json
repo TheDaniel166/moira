@@ -127,6 +127,46 @@
       "exclusions": ["The replay does not establish an external transit authority residual, moving-target search, orb-window timing, or interpretive ranking."]
     },
     {
+      "claim_id": "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/synastry/aspects",
+        "rest:POST:/v1/synastry/contacts"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_relationship_routes.py::test_lightbox_synastry_routes_expose_effective_search_truth"
+      ],
+      "minimum_tests": 2,
+      "claim_scope": "Synastry aspect and contact routes retain effective labels, aspect policy, node-variant policy, cross-chart motion limits, ordering, and event-count truth even when results are empty.",
+      "exclusions": ["The replay does not establish interpretive judgement, a shared relationship epoch, applying or separating motion, or an external numerical authority comparison."]
+    },
+    {
+      "claim_id": "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/midpoints/calculate",
+        "rest:POST:/v1/midpoints/pictures",
+        "rest:POST:/v1/midpoints/weighting"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_relationship_routes.py::test_lightbox_midpoint_routes_expose_governing_policy_truth"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "Production midpoint routes retain chart-position source, shorter-arc geometry, planet-set and node policy, dial/focus/score semantics, ordering, and result counts.",
+      "exclusions": ["The replay does not establish historical doctrine authority, interpretive meaning, or an external numerical comparison for midpoint or dial products."]
+    },
+    {
+      "claim_id": "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH",
+      "surface_ids": ["rest:POST:/v1/patterns/find"],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_relationship_routes.py::test_lightbox_pattern_route_exposes_selection_truth"
+      ],
+      "minimum_tests": 1,
+      "claim_scope": "The production pattern route retains chart input sources, node and orb policy, detector selection, dominance filtering, ordering, structured result evidence, and result count.",
+      "exclusions": ["The replay does not establish complete historical pattern doctrine, predictive efficacy, or an external numerical authority comparison."]
+    },
+    {
       "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
       "surface_ids": ["rest:POST:/v1/progressions/secondary/reduction"],
       "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],

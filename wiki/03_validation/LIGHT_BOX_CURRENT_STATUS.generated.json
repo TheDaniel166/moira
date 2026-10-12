@@ -28,9 +28,9 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.9.9",
-  "evidence_source_revision": "f0561f1c7bb959947d4dbe717f3577044a2d5f89",
+  "evidence_source_revision": "86e58b9ac16efb6b839b69f9c135935a9f6e7a66",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+  "inventory_fingerprint_sha256": "2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Local passed contracts cover 15 calculations and do not generalize to their entire families.",
@@ -56,21 +56,21 @@
       "unresolved": 0
     },
     "not_applicable": 0,
-    "partial": 22,
+    "partial": 28,
     "production_user_by_status": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 14,
-      "unresolved": 157
+      "partial": 20,
+      "unresolved": 151
     },
     "production_user_calculations": 171,
-    "replayed_contracts": 13,
+    "replayed_contracts": 16,
     "replayed_contracts_passed_exact_source": 0,
-    "replayed_contracts_passed_local": 13,
+    "replayed_contracts_passed_local": 16,
     "reviewed_families": 143,
-    "surfaces_with_replay_contracts": 22,
-    "surfaces_without_replay_contracts": 1188,
-    "unresolved": 1188
+    "surfaces_with_replay_contracts": 28,
+    "surfaces_without_replay_contracts": 1182,
+    "unresolved": 1182
   },
   "universal_current_conformance_supported": false
 }

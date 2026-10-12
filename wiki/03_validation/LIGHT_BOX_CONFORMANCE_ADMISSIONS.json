@@ -103,6 +103,36 @@
       "evidence_classes": ["invariant", "regression"]
     },
     {
+      "surface_id": "rest:POST:/v1/synastry/aspects",
+      "contract_kind": "relationship_aspect_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/synastry/contacts",
+      "contract_kind": "relationship_aspect_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/midpoints/calculate",
+      "contract_kind": "midpoint_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/midpoints/pictures",
+      "contract_kind": "midpoint_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/midpoints/weighting",
+      "contract_kind": "midpoint_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/patterns/find",
+      "contract_kind": "pattern_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
       "surface_id": "rest:POST:/v1/progressions/secondary/reduction",
       "contract_kind": "reduction_vessel",
       "evidence_classes": ["doctrine_source", "invariant", "regression"]

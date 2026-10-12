@@ -19,6 +19,14 @@ R1B_RELATIONSHIP_SURFACES = {
     "rest:POST:/v1/synastry/overlay",
     "rest:POST:/v1/synastry/overlays",
 }
+R1C_RELATIONSHIP_SURFACES = {
+    "rest:POST:/v1/midpoints/calculate",
+    "rest:POST:/v1/midpoints/pictures",
+    "rest:POST:/v1/midpoints/weighting",
+    "rest:POST:/v1/patterns/find",
+    "rest:POST:/v1/synastry/aspects",
+    "rest:POST:/v1/synastry/contacts",
+}
 
 
 def _module():
@@ -66,6 +74,27 @@ def test_r1b_relationship_surfaces_have_bounded_replay_contracts() -> None:
 
     assert R1B_RELATIONSHIP_SURFACES <= set(by_surface)
     for surface_id in R1B_RELATIONSHIP_SURFACES:
+        contract = by_surface[surface_id]
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["pytest_targets"]
+        assert contract["minimum_tests"] >= 1
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
+def test_r1c_relationship_surfaces_have_bounded_replay_contracts() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_surface = {
+        surface_id: contract
+        for contract in contracts["contracts"]
+        for surface_id in contract["surface_ids"]
+    }
+
+    assert R1C_RELATIONSHIP_SURFACES <= set(by_surface)
+    for surface_id in R1C_RELATIONSHIP_SURFACES:
         contract = by_surface[surface_id]
         assert {"invariant", "regression", "release"} <= set(
             contract["evidence_classes"]

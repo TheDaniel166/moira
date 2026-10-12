@@ -435,6 +435,114 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "relationship_aspect_search_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The cross-chart search returns its effective labels, aspect policy, node-variant policy, motion limit, ordering, and event count beside the events.",
+        "stage_label": "Cross-chart aspect-search truth",
+        "operation": "Build two independent charts, apply the effective inter-chart aspect policy, and return the bounded search truth beside aspects or enriched contacts.",
+        "semantic_values": {
+            "inputs": [
+                "Two typed relationship parties, labels, tier, orb factor, and node policy are exposed by OpenAPI."
+            ],
+            "units": [
+                "Chart and aspect longitudes, separations, angles, and orbs are degrees."
+            ],
+            "reference_frame": [
+                "The response identifies independent chart longitudes without inventing a shared relationship-chart frame."
+            ],
+            "origin": [
+                "Source and target parties remain directionally labeled in computation truth; enriched contacts retain the labels per event."
+            ],
+            "timescale": [
+                "Each chart retains its own birth epoch; no shared motion epoch is inferred."
+            ],
+            "corrections": [
+                "No cross-chart motion correction is inferred; applying and separating remain unclassified without a shared time basis."
+            ],
+            "policies_defaults": [
+                "Effective tier, orb factor, node inclusion, node-variant policy, custom-orb status, ordering, and event count are returned."
+            ],
+            "fallbacks": [
+                "No hidden aspect-policy or chart fallback is admitted by this contract."
+            ],
+            "refusal_behavior": [
+                "Typed request validation and engine policy validation bound invalid parties, labels, tiers, orb factors, and node inputs."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "pattern_search_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The pattern search returns chart-position and motion sources, node and orb policy, selection mode, requested names, dominance policy, ordering, and count beside structured pattern evidence.",
+        "stage_label": "Aspect-pattern search truth",
+        "operation": "Build one chart context, select the requested registered detectors, detect and optionally dominance-filter patterns, evaluate coherence, and return search truth beside results.",
+        "semantic_values": {
+            "inputs": [
+                "A typed chart plus node, orb, pattern-selection, and dominance controls are exposed by OpenAPI."
+            ],
+            "units": [
+                "Pattern longitudes, aspect angles, orb ledgers, and coherence reference orbs use degrees where named."
+            ],
+            "reference_frame": [
+                "Positions and rates come from one chart context; no relationship-chart frame is inferred."
+            ],
+            "origin": [
+                "The response names chart longitudes and chart longitude rates as the detection and coherence inputs."
+            ],
+            "timescale": [
+                "The chart epoch supplies the position and instantaneous rate context; no event search is performed."
+            ],
+            "corrections": [
+                "No pattern correction is inferred beyond the returned detector, contribution, and coherence vessels."
+            ],
+            "policies_defaults": [
+                "Node inclusion, orb factor, all-versus-explicit selection, requested names, dominance filtering, ordering, and result count are returned."
+            ],
+            "fallbacks": [
+                "An empty result remains inspectable through the search truth; no substitute pattern is synthesized."
+            ],
+            "refusal_behavior": [
+                "Typed request and engine registry validation reject invalid chart, policy, or pattern-name inputs."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "midpoint_search_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The midpoint routes return their position source, shorter-arc geometry, planet-set and node policy, dial/focus/score semantics, ordering, and event count beside results.",
+        "stage_label": "Midpoint and dial-search truth",
+        "operation": "Build chart longitudes, filter the named planet set, compute shorter-arc midpoints, and apply any requested dial, focus, orb, and count-ranking policy.",
+        "semantic_values": {
+            "inputs": [
+                "A typed chart, named planet set, node policy, and applicable orb and dial controls are exposed by OpenAPI."
+            ],
+            "units": [
+                "Ecliptic longitudes, midpoint positions, dials, and orbs are degrees; weighting scores are counts."
+            ],
+            "reference_frame": [
+                "The response identifies chart longitudes as the positional source and the selected dial projection where applicable."
+            ],
+            "origin": [
+                "Each midpoint retains its contributing pair; pictures retain focus and generating pair; weights retain their picture ledger."
+            ],
+            "timescale": [
+                "The chart epoch supplies the positions; midpoint and dial operations do not advance time."
+            ],
+            "corrections": [
+                "No correction is inferred beyond shorter-arc midpoint geometry and the named dial projection."
+            ],
+            "policies_defaults": [
+                "Planet set, node inclusion, orb, dial, focus exclusion, score meaning, ordering, and result count are returned where applicable."
+            ],
+            "fallbacks": [
+                "Unsupported planet sets or dials are errors; an empty picture result is returned without a synthesized fallback."
+            ],
+            "refusal_behavior": [
+                "Typed request validation and midpoint engine validation bound nested node policy, planet-set, orb, and dial inputs."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

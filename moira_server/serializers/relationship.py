@@ -43,6 +43,7 @@ from moira.synastry import (
     MutualHouseOverlay,
     SynastryAspectClassification,
     SynastryAspectContact,
+    SynastryAspectPolicy,
     SynastryAspectTruth,
     SynastryChartConditionProfile,
     SynastryConditionNetworkEdge,
@@ -81,6 +82,8 @@ from ..models.relationship import (
     MidpointClusterResponse,
     MidpointHitResponse,
     MidpointResponse,
+    MidpointSearchComputationTruthResponse,
+    MidpointRequest,
     MidpointWeightResponse,
     MoonAspectEventResponse,
     MoonConnectionFlowAnalysisResponse,
@@ -101,6 +104,8 @@ from ..models.relationship import (
     PatternConditionProfileResponse,
     PatternDetectionTruthResponse,
     PatternRequiredAspectLedgerResponse,
+    PatternRequest,
+    PatternSearchComputationTruthResponse,
     PlanetaryPictureResponse,
     SynastryAspectClassificationResponse,
     SynastryAspectTruthResponse,
@@ -114,6 +119,8 @@ from ..models.relationship import (
     SynastryOverlayClassificationResponse,
     SynastryOverlayTruthResponse,
     SynastryRelationResponse,
+    SynastryPairRequest,
+    SynastrySearchComputationTruthResponse,
 )
 from .chart import serialize_chart, serialize_houses
 
@@ -422,6 +429,34 @@ def serialize_synastry_contact(contact: SynastryAspectContact) -> SynastryContac
             if contact.condition_profile is not None
             else None
         ),
+    )
+
+
+def serialize_synastry_search_truth(
+    request: SynastryPairRequest,
+    *,
+    engine_entrypoint: str,
+    event_count: int,
+) -> SynastrySearchComputationTruthResponse:
+    """Expose the effective cross-chart aspect policy even for empty results."""
+
+    defaults = SynastryAspectPolicy()
+    return SynastrySearchComputationTruthResponse(
+        engine_entrypoint=engine_entrypoint,
+        source_label=request.first_label,
+        target_label=request.second_label,
+        tier=defaults.tier if request.tier is None else request.tier,
+        orb_factor=(
+            defaults.orb_factor
+            if request.orb_factor is None
+            else request.orb_factor
+        ),
+        include_nodes=(
+            defaults.include_nodes
+            if request.include_nodes is None
+            else request.include_nodes
+        ),
+        event_count=event_count,
     )
 
 
@@ -811,6 +846,27 @@ def serialize_aspect_pattern(
     )
 
 
+def serialize_pattern_search_truth(
+    request: PatternRequest,
+    *,
+    pattern_count: int,
+) -> PatternSearchComputationTruthResponse:
+    """Expose pattern selection and coherence inputs beside the result list."""
+
+    return PatternSearchComputationTruthResponse(
+        include_nodes=request.include_nodes,
+        orb_factor=request.orb_factor,
+        selection_mode=(
+            "all_registered_patterns"
+            if request.include is None
+            else "explicit_pattern_names"
+        ),
+        requested_patterns=[] if request.include is None else list(request.include),
+        dominant_only=request.dominant_only,
+        pattern_count=pattern_count,
+    )
+
+
 def serialize_pattern_chart_condition_profile(
     profile: PatternChartConditionProfile,
 ) -> PatternChartConditionProfileResponse:
@@ -872,6 +928,48 @@ def serialize_midpoint(midpoint: Midpoint) -> MidpointResponse:
     )
 
 
+def serialize_midpoint_search_truth(
+    request: MidpointRequest,
+    *,
+    engine_entrypoint: str,
+    event_count: int,
+) -> MidpointSearchComputationTruthResponse:
+    """Expose the selected midpoint, dial, ordering, and score policy."""
+
+    policy = {
+        "calculate_midpoints": {
+            "dial_semantics": "not_applicable",
+            "focus_policy": "not_applicable",
+            "score_semantics": "not_applicable",
+            "ordering": "filtered_chart_pair_order",
+        },
+        "planetary_pictures": {
+            "dial_semantics": "longitude_modulo_dial_size",
+            "focus_policy": "focus_excluded_from_generating_pair",
+            "score_semantics": "not_applicable",
+            "ordering": "orb_ascending",
+        },
+        "midpoint_weighting": {
+            "dial_semantics": "longitude_modulo_dial_size",
+            "focus_policy": "focus_excluded_from_generating_pair",
+            "score_semantics": "planetary_picture_count_per_focus",
+            "ordering": "score_descending_then_planet_name",
+        },
+    }.get(engine_entrypoint)
+    if policy is None:
+        raise ValueError(f"unsupported midpoint truth entrypoint: {engine_entrypoint}")
+
+    return MidpointSearchComputationTruthResponse(
+        engine_entrypoint=engine_entrypoint,
+        planet_set=request.planet_set,
+        include_nodes=request.include_nodes,
+        orb=getattr(request, "orb", None),
+        dial=getattr(request, "dial", None),
+        event_count=event_count,
+        **policy,
+    )
+
+
 def serialize_midpoint_hit(item: tuple[Midpoint, float]) -> MidpointHitResponse:
     midpoint, orb = item
     return MidpointHitResponse(midpoint=serialize_midpoint(midpoint), orb=orb)
@@ -919,6 +1017,7 @@ __all__ = [
     "serialize_midpoint",
     "serialize_midpoint_cluster",
     "serialize_midpoint_hit",
+    "serialize_midpoint_search_truth",
     "serialize_midpoint_weight",
     "serialize_moon_connection_flow",
     "serialize_moon_connection_flow_vessel",
@@ -927,7 +1026,9 @@ __all__ = [
     "serialize_pattern_coherence",
     "serialize_pattern_network",
     "serialize_pattern_required_aspect_ledger",
+    "serialize_pattern_search_truth",
     "serialize_synastry_chart_condition_profile",
     "serialize_synastry_contact",
+    "serialize_synastry_search_truth",
     "serialize_synastry_network",
 ]

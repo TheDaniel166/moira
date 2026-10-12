@@ -335,6 +335,182 @@ def test_lightbox_overlay_routes_expose_existing_house_frame_truth(
 
 
 @pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("path", "entrypoint"),
+    [
+        ("/v1/synastry/aspects", "synastry_aspects"),
+        ("/v1/synastry/contacts", "synastry_contacts"),
+    ],
+)
+def test_lightbox_synastry_routes_expose_effective_search_truth(
+    client_with_engine: TestClient,
+    path: str,
+    entrypoint: str,
+) -> None:
+    response = client_with_engine.post(
+        path,
+        json={
+            **_pair_payload(),
+            "first_label": "source",
+            "second_label": "target",
+            "tier": 1,
+            "orb_factor": 1.25,
+            "include_nodes": False,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    truth = body["computation_truth"]
+    assert truth == {
+        "source_module": "moira.synastry",
+        "engine_entrypoint": entrypoint,
+        "position_source": "independent_chart_longitudes",
+        "source_label": "source",
+        "target_label": "target",
+        "tier": 1,
+        "orb_factor": 1.25,
+        "include_nodes": False,
+        "custom_orbs": False,
+        "node_variant_policy": (
+            "true_node_and_true_lilith_only_when_nodes_included"
+        ),
+        "motion_semantics": (
+            "cross_chart_aspects_do_not_classify_applying_or_separating"
+        ),
+        "ordering": "orb_ascending",
+        "event_count": len(body["events"]),
+    }
+    if path.endswith("/contacts"):
+        assert all(event["truth"]["tier"] == 1 for event in body["events"])
+        assert all(
+            event["truth"]["source_label"] == "source"
+            and event["truth"]["target_label"] == "target"
+            for event in body["events"]
+        )
+    else:
+        assert all(event["applying"] is None for event in body["events"])
+        assert {
+            event["motion_state"] for event in body["events"]
+        } <= {"exact", "indeterminate"}
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("path", "entrypoint", "extra", "ordering"),
+    [
+        (
+            "/v1/midpoints/calculate",
+            "calculate_midpoints",
+            {},
+            "filtered_chart_pair_order",
+        ),
+        (
+            "/v1/midpoints/pictures",
+            "planetary_pictures",
+            {"orb": 0.75, "dial": 90.0},
+            "orb_ascending",
+        ),
+        (
+            "/v1/midpoints/weighting",
+            "midpoint_weighting",
+            {"orb": 0.75, "dial": 90.0},
+            "score_descending_then_planet_name",
+        ),
+    ],
+)
+def test_lightbox_midpoint_routes_expose_governing_policy_truth(
+    client_with_engine: TestClient,
+    path: str,
+    entrypoint: str,
+    extra: dict[str, float],
+    ordering: str,
+) -> None:
+    response = client_with_engine.post(
+        path,
+        json={
+            "chart": _pair_payload()["first"],
+            "planet_set": "modern",
+            "include_nodes": False,
+            **extra,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    truth = body["computation_truth"]
+    assert truth["source_module"] == "moira.midpoints"
+    assert truth["engine_entrypoint"] == entrypoint
+    assert truth["position_source"] == "chart_longitudes"
+    assert truth["midpoint_geometry"] == "shorter_arc_midpoint"
+    assert truth["planet_set"] == "modern"
+    assert truth["include_nodes"] is False
+    assert truth["ordering"] == ordering
+    assert truth["event_count"] == len(body["events"])
+
+    if path.endswith("/calculate"):
+        assert truth["orb"] is None
+        assert truth["dial"] is None
+        assert truth["dial_semantics"] == "not_applicable"
+        assert truth["focus_policy"] == "not_applicable"
+        assert truth["score_semantics"] == "not_applicable"
+    else:
+        assert truth["orb"] == 0.75
+        assert truth["dial"] == 90.0
+        assert truth["dial_semantics"] == "longitude_modulo_dial_size"
+        assert truth["focus_policy"] == "focus_excluded_from_generating_pair"
+        if path.endswith("/weighting"):
+            assert truth["score_semantics"] == (
+                "planetary_picture_count_per_focus"
+            )
+            assert all(
+                event["score"] == len(event["pictures"])
+                for event in body["events"]
+            )
+        else:
+            assert truth["score_semantics"] == "not_applicable"
+            assert all(event["dial"] == 90.0 for event in body["events"])
+            assert all(event["orb"] <= 0.75 for event in body["events"])
+
+
+@pytest.mark.requires_ephemeris
+def test_lightbox_pattern_route_exposes_selection_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/patterns/find",
+        json={
+            "chart": _pair_payload()["first"],
+            "include_nodes": False,
+            "orb_factor": 0.8,
+            "include": ["T-Square", "Grand Trine"],
+            "dominant_only": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    truth = body["computation_truth"]
+    assert truth == {
+        "source_module": "moira.patterns",
+        "engine_entrypoint": "find_all_patterns",
+        "position_source": "chart_longitudes",
+        "motion_source": "chart_longitude_rates_for_coherence",
+        "include_nodes": False,
+        "orb_factor": 0.8,
+        "selection_mode": "explicit_pattern_names",
+        "requested_patterns": ["T-Square", "Grand Trine"],
+        "dominant_only": True,
+        "ordering": "pattern_name_then_body_names",
+        "pattern_count": len(body["events"]),
+    }
+    assert {event["name"] for event in body["events"]} <= {
+        "T-Square",
+        "Grand Trine",
+    }
+
+
+@pytest.mark.requires_ephemeris
 def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: TestClient, moira_engine) -> None:
     pair = _pair_payload()
     dt_a = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
