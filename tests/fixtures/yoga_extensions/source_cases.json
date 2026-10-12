@@ -1,0 +1,789 @@
+{
+  "schema_version": 1,
+  "authority": "VEDIC_YOGA_EXTENSION_SOURCE_RESEARCH_2026-10-12.md; manually derived clause geometries, not evaluator output",
+  "published_chart122": {
+    "source": "B. V. Raman, Three Hundred Important Combinations, Chart 122, printed 248 / PDF 258",
+    "sha256": "3d511f6237659d72ea590324fcc7c41c4403d2ac9266715872315b3d930646cc",
+    "d1_signs": {
+      "Sun": 6,
+      "Moon": 5,
+      "Mars": 3,
+      "Mercury": 6,
+      "Jupiter": 10,
+      "Venus": 7,
+      "Saturn": 2,
+      "Lagna": 9
+    },
+    "d9_signs": {
+      "Sun": 0,
+      "Moon": 3,
+      "Mars": 9,
+      "Mercury": 6,
+      "Jupiter": 2,
+      "Venus": 4,
+      "Saturn": 1,
+      "Lagna": 9
+    },
+    "representative_longitudes": {
+      "Sun": 201.0,
+      "Moon": 171.0,
+      "Mars": 111.0,
+      "Mercury": 181.0,
+      "Jupiter": 328.0,
+      "Venus": 214.0,
+      "Saturn": 84.0,
+      "Lagna": 271.0
+    },
+    "limitation": "Representative interior degrees are synthetic, not published degrees or an ephemeris reconstruction."
+  },
+  "cases": [
+    {
+      "case_id": "jp_movable_lagna_positive",
+      "profile_id": "jp_sastri_7_14_v1",
+      "rule_id": "jp.7.14",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 15.0,
+        "Mars": 4.0,
+        "Mercury": 333.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "jp_movable_lagna_negative",
+      "profile_id": "jp_sastri_7_14_v1",
+      "rule_id": "jp.7.14",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 65.0,
+        "Mars": 4.0,
+        "Mercury": 333.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "jp_movable_lagna_lord_d9_positive",
+      "profile_id": "jp_sastri_7_14_v1",
+      "rule_id": "jp.7.14",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 333.0,
+        "Jupiter": 245.0,
+        "Venus": 181.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "jp_movable_lagna_lord_d9_negative",
+      "profile_id": "jp_sastri_7_14_v1",
+      "rule_id": "jp.7.14",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 333.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raman_252_chart122_adapter_positive",
+      "profile_id": "raman_300_252_all_debilitated_v1",
+      "rule_id": "raman.252",
+      "lagna": 271.0,
+      "longitudes": {
+        "Sun": 201.0,
+        "Moon": 171.0,
+        "Mars": 111.0,
+        "Mercury": 181.0,
+        "Jupiter": 328.0,
+        "Venus": 214.0,
+        "Saturn": 84.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raman_252_chart122_adapter_negative",
+      "profile_id": "raman_300_252_all_debilitated_v1",
+      "rule_id": "raman.252",
+      "lagna": 271.0,
+      "longitudes": {
+        "Sun": 201.0,
+        "Moon": 171.0,
+        "Mars": 115.0,
+        "Mercury": 181.0,
+        "Jupiter": 328.0,
+        "Venus": 214.0,
+        "Saturn": 84.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_2_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.2",
+      "lagna": 65.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 5.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_2_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.2",
+      "lagna": 65.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 35.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_3_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.3",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 335.0,
+        "Mars": 335.0,
+        "Mercury": 155.0,
+        "Jupiter": 335.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_3_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.3",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 305.0,
+        "Mars": 335.0,
+        "Mercury": 155.0,
+        "Jupiter": 335.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_4_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.4",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 305.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 305.0,
+        "Venus": 185.0,
+        "Saturn": 305.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_4_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.4",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 305.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 305.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_5_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.5",
+      "lagna": 155.0,
+      "longitudes": {
+        "Sun": 95.0,
+        "Moon": 95.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_5_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.5",
+      "lagna": 155.0,
+      "longitudes": {
+        "Sun": 95.0,
+        "Moon": 125.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_6_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.6",
+      "lagna": 125.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 65.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_6_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.6",
+      "lagna": 125.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 95.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_7_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.7",
+      "lagna": 95.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 215.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 35.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_7_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.7",
+      "lagna": 95.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 215.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 65.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_8_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.8",
+      "lagna": 335.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 95.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_8_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.8",
+      "lagna": 335.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 95.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 245.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_9_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.9",
+      "lagna": 125.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 45.0,
+        "Mars": 125.0,
+        "Mercury": 160.0,
+        "Jupiter": 125.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_9_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.9",
+      "lagna": 125.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 45.0,
+        "Mars": 155.0,
+        "Mercury": 160.0,
+        "Jupiter": 125.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_10_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.10",
+      "lagna": 95.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 95.0,
+        "Mars": 20.0,
+        "Mercury": 95.0,
+        "Jupiter": 95.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_10_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.10",
+      "lagna": 95.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 95.0,
+        "Mars": 20.0,
+        "Mercury": 125.0,
+        "Jupiter": 95.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_11_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.11",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 5.0,
+        "Mercury": 5.0,
+        "Jupiter": 245.0,
+        "Venus": 5.0,
+        "Saturn": 5.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_11_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.11",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 5.0,
+        "Mercury": 35.0,
+        "Jupiter": 245.0,
+        "Venus": 5.0,
+        "Saturn": 5.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_12_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.12",
+      "lagna": 65.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 65.0,
+        "Jupiter": 65.0,
+        "Venus": 185.0,
+        "Saturn": 65.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_12_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.12",
+      "lagna": 65.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 65.0,
+        "Jupiter": 65.0,
+        "Venus": 185.0,
+        "Saturn": 95.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_13_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.13",
+      "lagna": 245.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 245.0,
+        "Mercury": 245.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_13_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.13",
+      "lagna": 245.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 245.0,
+        "Mercury": 275.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_14_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.14",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 35.0,
+        "Jupiter": 245.0,
+        "Venus": 35.0,
+        "Saturn": 35.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_14_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.14",
+      "lagna": 35.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 35.0,
+        "Jupiter": 245.0,
+        "Venus": 35.0,
+        "Saturn": 65.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_15_positive",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.15",
+      "lagna": 275.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 275.0,
+        "Mercury": 160.0,
+        "Jupiter": 275.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "wealth_15_negative",
+      "profile_id": "bphs_santhanam_41_2_15_v1",
+      "rule_id": "bphs.41.15",
+      "lagna": 275.0,
+      "longitudes": {
+        "Sun": 10.0,
+        "Moon": 45.0,
+        "Mars": 305.0,
+        "Mercury": 160.0,
+        "Jupiter": 275.0,
+        "Venus": 185.0,
+        "Saturn": 275.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_33_34_positive",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.33-34",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 125.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_33_34_negative",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.33-34",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 335.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_36_positive",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.36",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 245.0,
+        "Moon": 245.0,
+        "Mars": 245.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 245.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_36_negative",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.36",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 245.0,
+        "Moon": 215.0,
+        "Mars": 245.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 245.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_37_positive",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.37",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 125.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_37_negative",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.37",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 125.0,
+        "Moon": 65.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_38_positive",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.38",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 5.0,
+        "Moon": 45.0,
+        "Mars": 5.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_38_negative",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.38",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 5.0,
+        "Moon": 45.0,
+        "Mars": 35.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 185.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_39_positive",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.39",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 5.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 245.0,
+        "Saturn": 280.0
+      },
+      "expected": "formed",
+      "evidence_class": "independent_clause_geometry"
+    },
+    {
+      "case_id": "raja_39_negative",
+      "profile_id": "bphs_santhanam_39_selected_v1",
+      "rule_id": "bphs.39.39",
+      "lagna": 5.0,
+      "longitudes": {
+        "Sun": 5.0,
+        "Moon": 45.0,
+        "Mars": 20.0,
+        "Mercury": 160.0,
+        "Jupiter": 245.0,
+        "Venus": 275.0,
+        "Saturn": 280.0
+      },
+      "expected": "not_formed",
+      "evidence_class": "independent_clause_geometry"
+    }
+  ]
+}

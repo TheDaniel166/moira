@@ -18,7 +18,9 @@ A yoga is a named classical rule.  Its evaluation yields:
 
   * ``conditions``    — the formation clauses, each with observed truth;
   * ``cancellations`` — the bhanga clauses, likewise evaluated;
-  * ``formed``        — all formation clauses hold;
+  * ``formed``        — the named rule's AND/OR formation condition holds;
+  * ``formation_state`` — formed, not_formed, or indeterminate when required
+                          motion evidence is absent and no OR branch passes;
   * ``cancelled``     — formed, but a bhanga clause holds;
   * ``present``       — formed, not cancelled, not precedence-suppressed;
   * ``suppressed_by`` — the doctrine-level precedence suppressor, if any
@@ -40,6 +42,11 @@ Ambiguity policy (declared before implementation)
 * Participants: the seven classical planets.  Rahu/Ketu participate only
   where a specific rule names them (none in this engine's families).
 * All longitudes are sidereal; conversion is the caller's responsibility.
+* Public inputs require exactly seven classical bodies, finite numeric
+  longitudes/speeds and a typed policy. Legacy finite angles are normalized.
+  Omitted motion is ``not_evaluated``, not an observed direct-motion fact.
+* Source-defined Navamsa/wealth/Raja extensions are separately selected via
+  ``moira.yoga_extensions``; no extension profile changes these defaults.
 
 Tradition and sources
 ---------------------
@@ -60,6 +67,8 @@ Import-time side effects: None
 """
 
 from dataclasses import dataclass
+
+from ._yoga_inputs import longitudes as _admit_longitudes, number as _admit_number, speeds as _admit_speeds
 
 __all__ = [
     "YogaPolicy",
@@ -142,6 +151,12 @@ class YogaPolicy:
     viparita_mode: str = 'phaladeepika'
 
     def __post_init__(self) -> None:
+        if type(self.budhaditya_combustion_cancel) is not bool:
+            raise ValueError("budhaditya_combustion_cancel must be a boolean")
+        for field in ('moon_benefic_mode', 'mercury_benefic_mode',
+                      'mahapurusha_reference', 'gajakesari_mode', 'viparita_mode'):
+            if type(getattr(self, field)) is not str:
+                raise ValueError(f"{field} must be a named string policy")
         if self.moon_benefic_mode not in ('paksha', 'always_benefic'):
             raise ValueError(
                 f"moon_benefic_mode must be 'paksha' or 'always_benefic', "
@@ -188,11 +203,26 @@ class YogaCondition:
         Whether the chart satisfies it.
     observed : str
         What was actually found in the chart (the evidence).
+    evaluation_state : str
+        Satisfied, not_satisfied, or not_evaluated for unavailable evidence.
     """
 
     description: str
     satisfied: bool
     observed: str
+    evaluation_state: str | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.satisfied) is not bool:
+            raise ValueError('condition satisfied must be a boolean')
+        state = self.evaluation_state
+        if state is None:
+            state = 'satisfied' if self.satisfied else 'not_satisfied'
+            object.__setattr__(self, 'evaluation_state', state)
+        if state not in ('satisfied', 'not_satisfied', 'not_evaluated'):
+            raise ValueError('unknown condition evaluation_state')
+        if self.satisfied != (state == 'satisfied'):
+            raise ValueError('condition truth and evaluation_state disagree')
 
 
 @dataclass(frozen=True, slots=True)
@@ -208,7 +238,9 @@ class YogaResult:
         ``'pancha_mahapurusha'`` | ``'chandra'`` | ``'surya'`` |
         ``'nabhasa'`` | ``'raja'`` | ``'dhana'``.
     formed : bool
-        All formation conditions satisfied.
+        The named source rule's AND/OR formation predicate is satisfied.
+    formation_state : str
+        Formed, not_formed, or indeterminate; the last retains missing evidence.
     cancelled : bool
         Formed, but at least one cancellation clause holds.
     present : bool
@@ -242,8 +274,19 @@ class YogaResult:
     source: str = ''
     suppressed_by: str | None = None
     notes: str = ''
+    formation_state: str | None = None
 
     def __post_init__(self) -> None:
+        if any(type(v) is not bool for v in (self.formed, self.cancelled, self.present)):
+            raise ValueError('yoga truth fields must be booleans')
+        state = self.formation_state
+        if state is None:
+            state = 'formed' if self.formed else 'not_formed'
+            object.__setattr__(self, 'formation_state', state)
+        if state not in ('formed', 'not_formed', 'indeterminate') or self.formed != (state == 'formed'):
+            raise ValueError('formation_state and formed disagree')
+        if state == 'indeterminate' and not any(c.evaluation_state == 'not_evaluated' for c in self.conditions):
+            raise ValueError('indeterminate formation requires unevaluated evidence')
         if self.present and not self.formed:
             raise ValueError(
                 f"YogaResult {self.name!r}: present requires formed"
@@ -322,7 +365,7 @@ def _sign_aspects(aspecting: str, from_sign: int, to_sign: int) -> bool:
     return dist in _FULL_ASPECT_DISTANCES.get(aspecting, frozenset())
 
 
-def benefic_malefic_classification(
+def _benefic_malefic_classification(
     sidereal_longitudes: dict[str, float],
     policy: YogaPolicy | None = None,
 ) -> dict[str, str]:
@@ -407,7 +450,7 @@ _MAHAPURUSHA_SOURCE = (
 )
 
 
-def pancha_mahapurusha_yogas(
+def _pancha_mahapurusha_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -586,7 +629,7 @@ def _describe_houses(occupied: frozenset[int]) -> str:
     return "{" + ", ".join(f"H{h}" for h in sorted(occupied)) + "}"
 
 
-def nabhasa_yogas(
+def _nabhasa_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -697,7 +740,7 @@ def nabhasa_yogas(
         ))
 
     # --- Akriti (exact-set house patterns) ---
-    classification = benefic_malefic_classification(sidereal_longitudes, policy)
+    classification = _benefic_malefic_classification(sidereal_longitudes, policy)
     for name, variants, citation in _AKRITI_PATTERNS:
         matched = next((v for v in variants if occupied == v), None)
         if name in ('Vajra', 'Yava'):
@@ -875,7 +918,7 @@ _SUNAPHA_PLANETS: tuple[str, ...] = (
 _JUPITER_COMBUSTION_ORB_DEG = 11.0
 
 
-def chandra_yogas(
+def _chandra_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -932,7 +975,7 @@ def chandra_yogas(
                 ),
             )
             # Benefic association: conjunct or aspected by another benefic.
-            classification = benefic_malefic_classification(
+            classification = _benefic_malefic_classification(
                 sidereal_longitudes, policy,
             )
             associates = []
@@ -1264,7 +1307,7 @@ def chandra_yogas(
 # not form these.
 # ---------------------------------------------------------------------------
 
-def surya_yogas(
+def _surya_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -1277,7 +1320,7 @@ def surya_yogas(
     if 'Sun' not in sidereal_longitudes:
         return ()
     sun_sign = _sign(sidereal_longitudes['Sun'])
-    classification = benefic_malefic_classification(sidereal_longitudes, policy)
+    classification = _benefic_malefic_classification(sidereal_longitudes, policy)
 
     second = [
         p for p in _SUNAPHA_PLANETS
@@ -1451,7 +1494,7 @@ def _sambandha(
     return None
 
 
-def raja_yogas(
+def _raja_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -1463,7 +1506,7 @@ def raja_yogas(
     (PD 6.37; UK IV.3), Viparita Harsha/Sarala/Vimala (policy-selected
     formulation), and Neecha Bhanga Raja (PD 7.26-30) per debilitated
     planet.  ``planet_speeds`` (deg/day, signed) enables the PD 7.3 / UK
-    II.6 retrograde clause; omitted, that clause reads unevaluated-false.
+    II.6 retrograde clause; omitted, that clause reads not_evaluated (the legacy satisfied flag remains false).
     """
     from .vedic_dignities import vedic_dignity
 
@@ -1809,6 +1852,8 @@ def raja_yogas(
                     "unevaluated without them."
                 ),
                 satisfied=bool(retrograde),
+                evaluation_state=('satisfied' if retrograde else 'not_satisfied')
+                if planet_speeds is not None and planet in planet_speeds else 'not_evaluated',
                 observed=(
                     f"speed: {planet_speeds.get(planet):+.4f} deg/day"
                     if planet_speeds is not None
@@ -1820,6 +1865,8 @@ def raja_yogas(
         formed = any(r.satisfied for r in rules)
         results.append(YogaResult(
             name=f'Neecha Bhanga ({planet})',
+            formation_state=('formed' if formed else 'indeterminate'
+                             if any(c.evaluation_state == 'not_evaluated' for c in rules) else 'not_formed'),
             family='raja',
             formed=formed,
             cancelled=False,
@@ -1827,7 +1874,7 @@ def raja_yogas(
             conditions=rules,
             participants=(planet,) if formed else (),
             source="Phaladeepika 7.26-30, 7.3; Uttara Kalamrita II.6; "
-                   "Jataka Parijata 7.14 (navamsa rule, not implemented)",
+                   "Jataka Parijata 7.14 is separately available via jp_sastri_7_14_v1",
             notes=(
                 "Any single satisfied rule grants the yoga (PD treats "
                 "7.26-30 directly as raja yogas). PD names kendra only — "
@@ -1849,7 +1896,7 @@ def raja_yogas(
 # Phaladeepika 6.21 (Lakshmi), 6.32-34 (Parivartana classification).
 # ---------------------------------------------------------------------------
 
-def dhana_yogas(
+def _dhana_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -2076,7 +2123,7 @@ def dhana_yogas(
 # Top-level evaluator
 # ---------------------------------------------------------------------------
 
-def evaluate_yogas(
+def _evaluate_yogas(
     sidereal_longitudes: dict[str, float],
     lagna_sidereal_lon: float,
     policy: YogaPolicy | None = None,
@@ -2104,13 +2151,13 @@ def evaluate_yogas(
     """
     policy = policy or YogaPolicy()
     yogas = (
-        pancha_mahapurusha_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
-        + chandra_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
-        + surya_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
-        + nabhasa_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
-        + raja_yogas(sidereal_longitudes, lagna_sidereal_lon, policy,
+        _pancha_mahapurusha_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
+        + _chandra_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
+        + _surya_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
+        + _nabhasa_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
+        + _raja_yogas(sidereal_longitudes, lagna_sidereal_lon, policy,
                      planet_speeds)
-        + dhana_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
+        + _dhana_yogas(sidereal_longitudes, lagna_sidereal_lon, policy)
     )
     return YogaChartResult(
         lagna_sign_index=_sign(lagna_sidereal_lon),
@@ -2118,3 +2165,78 @@ def evaluate_yogas(
         yogas=yogas,
         present_names=tuple(y.name for y in yogas if y.present),
     )
+
+
+# Public admission adapters. Internal aggregate/family composition above uses the
+# admitted implementations, so one request validates each input map once.
+def _admit_policy(policy):
+    if policy is None:
+        return YogaPolicy()
+    if type(policy) is not YogaPolicy:
+        raise ValueError('policy must be a YogaPolicy')
+    policy.__post_init__()
+    return policy
+
+
+def benefic_malefic_classification(sidereal_longitudes: dict[str, float],
+                                    policy: YogaPolicy | None = None) -> dict[str, str]:
+    """Classify a complete seven-body sidereal chart under the selected policy."""
+    return _benefic_malefic_classification(_admit_longitudes(sidereal_longitudes), _admit_policy(policy))
+
+
+def _admit_family(function, sidereal_longitudes, lagna_sidereal_lon, policy):
+    return function(_admit_longitudes(sidereal_longitudes),
+                    _admit_number(lagna_sidereal_lon, 'lagna_sidereal_lon'), _admit_policy(policy))
+
+
+def pancha_mahapurusha_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                         policy: YogaPolicy | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate Pancha Mahapurusha for a complete seven-body sidereal chart."""
+    return _admit_family(_pancha_mahapurusha_yogas, sidereal_longitudes, lagna_sidereal_lon, policy)
+
+
+def chandra_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                         policy: YogaPolicy | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate the Chandra family for a complete seven-body sidereal chart."""
+    return _admit_family(_chandra_yogas, sidereal_longitudes, lagna_sidereal_lon, policy)
+
+
+def surya_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                         policy: YogaPolicy | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate the Surya family for a complete seven-body sidereal chart."""
+    return _admit_family(_surya_yogas, sidereal_longitudes, lagna_sidereal_lon, policy)
+
+
+def nabhasa_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                         policy: YogaPolicy | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate Nabhasa formation and precedence for a complete sidereal chart."""
+    return _admit_family(_nabhasa_yogas, sidereal_longitudes, lagna_sidereal_lon, policy)
+
+
+def dhana_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                         policy: YogaPolicy | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate the legacy Dhana family for a complete seven-body sidereal chart."""
+    return _admit_family(_dhana_yogas, sidereal_longitudes, lagna_sidereal_lon, policy)
+
+
+def raja_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                   policy: YogaPolicy | None = None,
+                   planet_speeds: dict[str, float] | None = None) -> tuple[YogaResult, ...]:
+    """Evaluate legacy Raja rules; missing motion evidence remains explicit."""
+    return _raja_yogas(_admit_longitudes(sidereal_longitudes),
+                      _admit_number(lagna_sidereal_lon, 'lagna_sidereal_lon'),
+                      _admit_policy(policy), _admit_speeds(planet_speeds))
+
+
+def evaluate_yogas(sidereal_longitudes: dict[str, float], lagna_sidereal_lon: float,
+                   policy: YogaPolicy | None = None,
+                   planet_speeds: dict[str, float] | None = None) -> YogaChartResult:
+    """Evaluate the six legacy families with strict shared input admission.
+
+    Longitudes are finite sidereal degrees, normalized by the legacy sign owner.
+    Speeds are optional finite signed daily motions for known classical bodies.
+    Extension profiles are selected separately with evaluate_yoga_extensions.
+    """
+    return _evaluate_yogas(_admit_longitudes(sidereal_longitudes),
+                          _admit_number(lagna_sidereal_lon, 'lagna_sidereal_lon'),
+                          _admit_policy(policy), _admit_speeds(planet_speeds))

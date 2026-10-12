@@ -138,6 +138,13 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         "shashtiamsha",
     )
 
+    def yoga_extensions_from_longitudes(self, sidereal_longitudes: dict[str, float],
+                                       lagna_sidereal_lon: float, *, profile_ids: tuple[str, ...]):
+        """Evaluate selected source yoga profiles; no reader or date calculation."""
+        from .yoga_extensions import evaluate_yoga_extensions
+        return evaluate_yoga_extensions(sidereal_longitudes, lagna_sidereal_lon,
+                                        profile_ids=profile_ids)
+
     def _sidereal_longitudes_from_chart(
         self,
         chart,

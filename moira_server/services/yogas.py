@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from moira.yogas import YogaPolicy, YogaResult, evaluate_yogas
 
 from ..models.yogas import (
@@ -30,6 +32,7 @@ def _serialize_yoga(result: YogaResult) -> YogaResultResponse:
         name=result.name,
         family=result.family,
         formed=result.formed,
+        formation_state=result.formation_state,
         cancelled=result.cancelled,
         present=result.present,
         conditions=tuple(
@@ -37,6 +40,7 @@ def _serialize_yoga(result: YogaResult) -> YogaResultResponse:
                 description=c.description,
                 satisfied=c.satisfied,
                 observed=c.observed,
+                evaluation_state=c.evaluation_state,
             )
             for c in result.conditions
         ),
@@ -45,6 +49,7 @@ def _serialize_yoga(result: YogaResult) -> YogaResultResponse:
                 description=c.description,
                 satisfied=c.satisfied,
                 observed=c.observed,
+                evaluation_state=c.evaluation_state,
             )
             for c in result.cancellations
         ),
@@ -58,6 +63,7 @@ def _serialize_yoga(result: YogaResult) -> YogaResultResponse:
 
 def compute_yogas(request: YogaEvaluateRequest) -> YogaChartResponse:
     """Evaluate every yoga family; optionally include unformed proof objects."""
+    request = YogaEvaluateRequest.model_validate(request.model_dump())
     result = evaluate_yogas(
         request.sidereal_longitudes,
         request.lagna_sidereal_lon,
@@ -66,10 +72,11 @@ def compute_yogas(request: YogaEvaluateRequest) -> YogaChartResponse:
     )
     yogas = result.yogas if request.include_absent else tuple(
         y for y in result.yogas
-        if y.present or y.formed  # formed-but-cancelled/suppressed stay visible
+        if y.present or y.formed or y.formation_state == 'indeterminate'
     )
     return YogaChartResponse(
         lagna_sign_index=result.lagna_sign_index,
+        policy=asdict(result.policy),
         present_names=result.present_names,
         evaluated_count=len(result.yogas),
         yogas=tuple(_serialize_yoga(y) for y in yogas),

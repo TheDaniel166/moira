@@ -321,6 +321,17 @@ from moira.vedic import *   # includes everything from essentials, plus the full
 
 A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 
+Source-defined yoga extensions expose `list_yoga_extension_rules()` and
+`evaluate_yoga_extensions(sidereal_longitudes, lagna_sidereal_lon, *, profile_ids)`.
+The required selection admits four named profiles containing 21 rules; the
+catalogue also records non-executable BPHS 39.35. Inputs are seven canonical
+sidereal D1 longitudes and Lagna in `[0,360)`. The same immutable objects are
+curated at root/facade/`vedic`, with
+`Moira.yoga_extensions_from_longitudes` as the direct-input facade. See the
+[yoga extension standard](YOGA_EXTENSION_STANDARD.md) for exact source
+interpretations, proof states, examples, and the additive legacy evidence
+and strict-admission migration notes.
+
 The unified surface also includes the already-curated yoga, avastha, extended
 Jaimini, Muhurta, upagraha and Sade Sati families; Vimshopaka/Vargottama,
 Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara

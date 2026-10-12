@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Literal
 
-from pydantic import field_validator
+from pydantic import StrictBool, field_validator
 
 from .common import _StrictModel
 from ._vedic_inputs import ClassicalPlanet, FiniteNumber
@@ -23,7 +23,7 @@ class YogaPolicyRequest(_StrictModel):
     mercury_benefic_mode: Literal["conditional", "always_benefic"] = "conditional"
     mahapurusha_reference: Literal["lagna", "lagna_or_moon"] = "lagna"
     gajakesari_mode: Literal["parashara", "common"] = "parashara"
-    budhaditya_combustion_cancel: bool = False
+    budhaditya_combustion_cancel: StrictBool = False
     viparita_mode: Literal[
         "phaladeepika", "uttara_kalamrita", "raman"
     ] = "phaladeepika"
@@ -36,7 +36,7 @@ class YogaEvaluateRequest(_StrictModel):
     lagna_sidereal_lon: FiniteNumber
     planet_speeds: dict[ClassicalPlanet, FiniteNumber] | None = None
     policy: YogaPolicyRequest | None = None
-    include_absent: bool = False
+    include_absent: StrictBool = False
 
     @field_validator("sidereal_longitudes")
     @classmethod
@@ -64,12 +64,14 @@ class YogaConditionResponse(_StrictModel):
     description: str
     satisfied: bool
     observed: str
+    evaluation_state: Literal['satisfied', 'not_satisfied', 'not_evaluated']
 
 
 class YogaResultResponse(_StrictModel):
     name: str
     family: str
     formed: bool
+    formation_state: Literal['formed', 'not_formed', 'indeterminate']
     cancelled: bool
     present: bool
     conditions: tuple[YogaConditionResponse, ...]
@@ -85,6 +87,7 @@ class YogaChartResponse(_StrictModel):
     """Full yoga evaluation — every proof object, or presents only."""
 
     lagna_sign_index: int
+    policy: YogaPolicyRequest
     present_names: tuple[str, ...]
     evaluated_count: int
     yogas: tuple[YogaResultResponse, ...]

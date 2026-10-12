@@ -162,6 +162,17 @@ jobs:
           path: ${{ runner.temp }}/website-publication/publication.json
           if-no-files-found: error
 
+      - name: Run source-defined yoga engine and REST gates
+        run: |
+          python -m pytest \
+            tests/unit/test_yoga_extensions.py \
+            tests/unit/test_yoga_extension_admission.py \
+            tests/unit/test_yogas.py \
+            tests/unit/test_varga_exact_partition.py \
+            tests/server/test_server_yoga_extensions.py \
+            tests/server/test_vedic_direct_input_hardening.py \
+            -q
+
       - name: Run Hellenistic release gates
         run: |
           python -m pytest \

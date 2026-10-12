@@ -1089,6 +1089,12 @@ from .yogas import (
     pancha_mahapurusha_yogas, chandra_yogas, surya_yogas,
     nabhasa_yogas, raja_yogas, dhana_yogas, evaluate_yogas,
 )
+from .yoga_extension_policy import (
+    YogaExtensionSource, YogaExtensionRule, YogaExtensionProfile, YogaExtensionPolicy, YogaExtensionCatalogue, list_yoga_extension_rules,
+)
+from .yoga_extensions import (
+    YogaExtensionPosition, YogaExtensionClause, YogaExtensionBranch, YogaExtensionQualification, YogaExtensionResult, YogaExtensionChartResult, evaluate_yoga_extensions,
+)
 from .upagrahas import (
     UpagrahaPolicy, SunBasedUpagrahas, KalavelaUpagraha, KalavelaResult,
     sun_based_upagrahas, kalavela_upagrahas,
@@ -2092,6 +2098,7 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",
     "LagnaRuleEvidence",

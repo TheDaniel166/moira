@@ -231,6 +231,11 @@ from .facade import (
     SayanadiBirthPolicy, SayanadiSunriseBracket, AvasthaBirthResult,
     SayanadiResourceError, SayanadiCoverageError, avasthas_for_datetime,
     NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval, NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
+    YogaExtensionSource, YogaExtensionRule, YogaExtensionProfile,
+    YogaExtensionPolicy, YogaExtensionCatalogue, list_yoga_extension_rules,
+    YogaExtensionPosition, YogaExtensionClause, YogaExtensionBranch,
+    YogaExtensionQualification, YogaExtensionResult, YogaExtensionChartResult,
+    evaluate_yoga_extensions,
 )
 from .houses import (
     HouseBoundaryCurvePoint,
@@ -564,6 +569,7 @@ from .yogas import (
     dhana_yogas,
     evaluate_yogas,
 )
+
 from .upagrahas import (
     UpagrahaPolicy,
     SunBasedUpagrahas,
@@ -1473,6 +1479,7 @@ from .mundane import (
 )
 
 __all__ = [
+    'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",
     "LagnaRuleEvidence",

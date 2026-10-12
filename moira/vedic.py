@@ -489,6 +489,12 @@ from .yogas import (
     dhana_yogas,
     evaluate_yogas,
 )
+from .yoga_extension_policy import (
+    YogaExtensionSource, YogaExtensionRule, YogaExtensionProfile, YogaExtensionPolicy, YogaExtensionCatalogue, list_yoga_extension_rules,
+)
+from .yoga_extensions import (
+    YogaExtensionPosition, YogaExtensionClause, YogaExtensionBranch, YogaExtensionQualification, YogaExtensionResult, YogaExtensionChartResult, evaluate_yoga_extensions,
+)
 
 # Existing curated avasthas products.
 from .avasthas import (
@@ -720,6 +726,7 @@ from .sade_sati import (
 )
 
 _VEDIC_OWN: list[str] = [
+    'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",
     "LagnaRuleEvidence",
