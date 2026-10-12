@@ -1,0 +1,81 @@
+{
+  "schema_version": "moira.lightbox-conformance-admissions/v1",
+  "boundary": "These are structural partial admissions, not numerical or release conformance certificates. Each entry is admitted only for the inspectability and semantic fields named by its reviewed contract kind; residual and exact-release verification remain unresolved.",
+  "entries": [
+    {
+      "surface_id": "rest:POST:/v1/chart/reduction",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/houses/reduction",
+      "contract_kind": "policy_reduction_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/planet/reduction",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/sky/reduction",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/frame/heliocentric",
+      "contract_kind": "embedded_frame_receipt",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/frame/planetocentric",
+      "contract_kind": "embedded_frame_receipt",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/frame/ssb",
+      "contract_kind": "embedded_frame_receipt",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/frame/received-light",
+      "contract_kind": "embedded_frame_receipt",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/orbits/elements",
+      "contract_kind": "embedded_orbital_receipt",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock",
+      "contract_kind": "doctrine_profile",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/electional/western/judgement",
+      "contract_kind": "doctrine_profile",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/hellenistic/chart-profile",
+      "contract_kind": "doctrine_profile",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/aspects/motion-witness",
+      "contract_kind": "motion_witness",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/progressions/secondary/reduction",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/primary-directions/profile/reduction",
+      "contract_kind": "policy_reduction_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    }
+  ]
+}

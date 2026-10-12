@@ -1,0 +1,97 @@
+{
+  "schema_version": "moira.lightbox-evidence-contracts/v1",
+  "boundary": "These contracts replay bounded structural, invariant, doctrine/source, regression, authority-adjacent, and exact-source-candidate evidence for admitted exemplars. Release evidence is admitted only when the replay is bound to a clean exact source revision; it is not package-publication or deployment evidence and does not establish any claim outside the named surfaces.",
+  "contracts": [
+    {
+      "claim_id": "LB-EXEMPLAR-CORE-REDUCTIONS",
+      "surface_ids": [
+        "rest:POST:/v1/chart/reduction",
+        "rest:POST:/v1/houses/reduction",
+        "rest:POST:/v1/positions/planet/reduction",
+        "rest:POST:/v1/positions/sky/reduction"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_chart_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "Typed chart, house, planet-position, and sky-position reduction vessels retain their tested response contracts.",
+      "exclusions": ["No external-authority numerical residual is inferred from transport tests."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-FRAME-POSITIONS",
+      "surface_ids": [
+        "rest:POST:/v1/positions/frame/heliocentric",
+        "rest:POST:/v1/positions/frame/planetocentric",
+        "rest:POST:/v1/positions/frame/received-light",
+        "rest:POST:/v1/positions/frame/ssb"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_frame_positions_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "Frame-specific response envelopes retain request/time/frame/bounds/validation/provenance contracts.",
+      "exclusions": ["The receipt does not promote regression coverage to an external astronomical authority comparison."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-ORBITAL-ELEMENTS",
+      "surface_ids": ["rest:POST:/v1/orbits/elements"],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_orbits_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The orbital-elements envelope retains governed time conversion, frame, gravity, state-source, threshold, and provenance fields.",
+      "exclusions": ["This replay does not replace the underlying authority fixtures or claim coverage beyond the route tests."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-PANCHA-PAKSHI",
+      "surface_ids": ["rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_pancha_pakshi_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The admitted fixed-clock schedule route retains its typed doctrine-bound materialization contract.",
+      "exclusions": ["The receipt is not a universal Pancha Pakshi tradition or historical-source claim."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-WESTERN-ELECTIONAL",
+      "surface_ids": ["rest:POST:/v1/electional/western/judgement"],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_western_electional_judgement_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The western electional judgement route retains tested structured doctrine, components, and limitation states.",
+      "exclusions": ["The receipt does not establish source completeness beyond the named doctrine packet and tests."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-HELLENISTIC-PROFILE",
+      "surface_ids": ["rest:POST:/v1/hellenistic/chart-profile"],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_hellenistic_profile.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The Hellenistic chart profile retains its tested typed composition and source-bound fields.",
+      "exclusions": ["The receipt does not convert the profile into a numerical astronomy benchmark."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-ASPECT-MOTION",
+      "surface_ids": ["rest:POST:/v1/aspects/motion-witness"],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_aspect_motion_witness.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The route returns the signed motion witness used by its applying/separating classification contract.",
+      "exclusions": ["No claim is made for relationship operations that do not use this witness vessel."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
+      "surface_ids": ["rest:POST:/v1/progressions/secondary/reduction"],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_server_phase8_progression_routes.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The secondary-progression reduction route retains its tested computation-time and reduction response contract.",
+      "exclusions": ["No broader progression-family or external-authority residual claim is inferred."]
+    },
+    {
+      "claim_id": "LB-EXEMPLAR-PRIMARY-DIRECTIONS",
+      "surface_ids": ["rest:POST:/v1/primary-directions/profile/reduction"],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": ["tests/server/test_primary_directions_transport_contract.py"],
+      "minimum_tests": 1,
+      "claim_scope": "The primary-directions profile reduction retains its tested method, policy, and transport-contract distinctions.",
+      "exclusions": ["The receipt does not resolve every primary-direction method or external historical authority question."]
+    }
+  ]
+}

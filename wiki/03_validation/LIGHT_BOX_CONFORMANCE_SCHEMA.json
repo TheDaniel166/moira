@@ -1,0 +1,539 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moira-astro.com/schemas/light-box-conformance-manifest-v1.json",
+  "title": "Moira Light Box conformance manifest",
+  "description": "Release-bound conformance dispositions for every calculation surface admitted by the generated Light Box inventory. Unresolved is a valid visible state, never an implicit pass.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "inventory_schema_version",
+    "classification_version",
+    "engine_version",
+    "inventory_fingerprint_sha256",
+    "generated_by",
+    "inventory_path",
+    "scope_rule",
+    "limitations",
+    "summary",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "moira.lightbox-conformance-manifest/v1"
+    },
+    "inventory_schema_version": {
+      "const": "moira.lightbox-calculation-inventory/v1"
+    },
+    "classification_version": {
+      "const": "moira.lightbox-surface-classification/v1"
+    },
+    "engine_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inventory_fingerprint_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "generated_by": {
+      "const": "scripts/generate_lightbox_conformance_manifest.py"
+    },
+    "inventory_path": {
+      "const": "wiki/03_validation/LIGHT_BOX_CALCULATION_INVENTORY.generated.json"
+    },
+    "scope_rule": {
+      "type": "string",
+      "minLength": 1
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "target", "label", "version_identity"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "source",
+            "documentation",
+            "test",
+            "authority",
+            "comparator",
+            "corpus",
+            "receipt",
+            "endpoint"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version_identity": {
+          "type": ["string", "null"],
+          "minLength": 1
+        }
+      }
+    },
+    "reference_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposition", "values", "references", "notes"],
+      "properties": {
+        "disposition": {
+          "enum": ["documented", "partial", "not_applicable", "unresolved"]
+        },
+        "values": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "references": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage_id",
+        "label",
+        "operation",
+        "inputs",
+        "outputs",
+        "corrections",
+        "references"
+      ],
+      "properties": {
+        "stage_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "corrections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "references": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "stage_derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "inspectability_mode",
+        "derivation_summary",
+        "stages",
+        "references"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": ["documented", "partial", "not_applicable", "unresolved"]
+        },
+        "inspectability_mode": {
+          "enum": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+            "source_only",
+            "not_applicable",
+            "unresolved"
+          ]
+        },
+        "derivation_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stage"
+          }
+        },
+        "references": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputs",
+        "units",
+        "reference_frame",
+        "origin",
+        "timescale",
+        "corrections",
+        "policies_defaults",
+        "fallbacks",
+        "refusal_behavior"
+      ],
+      "properties": {
+        "inputs": {"$ref": "#/$defs/disclosure"},
+        "units": {"$ref": "#/$defs/disclosure"},
+        "reference_frame": {"$ref": "#/$defs/disclosure"},
+        "origin": {"$ref": "#/$defs/disclosure"},
+        "timescale": {"$ref": "#/$defs/disclosure"},
+        "corrections": {"$ref": "#/$defs/disclosure"},
+        "policies_defaults": {"$ref": "#/$defs/disclosure"},
+        "fallbacks": {"$ref": "#/$defs/disclosure"},
+        "refusal_behavior": {"$ref": "#/$defs/disclosure"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "classes",
+        "authority_comparator",
+        "corpus",
+        "metric",
+        "tolerance_or_invariant",
+        "observed_result",
+        "exclusions",
+        "receipts",
+        "notes"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": ["verified", "partial", "not_applicable", "unresolved"]
+        },
+        "classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "authority",
+              "corroboration",
+              "invariant",
+              "doctrine_source",
+              "regression",
+              "native_parity",
+              "harness",
+              "performance",
+              "release",
+              "not_applicable",
+              "unresolved"
+            ]
+          }
+        },
+        "authority_comparator": {"$ref": "#/$defs/disclosure"},
+        "corpus": {"$ref": "#/$defs/disclosure"},
+        "metric": {"$ref": "#/$defs/disclosure"},
+        "tolerance_or_invariant": {"$ref": "#/$defs/disclosure"},
+        "observed_result": {"$ref": "#/$defs/disclosure"},
+        "exclusions": {"$ref": "#/$defs/disclosure"},
+        "receipts": {"$ref": "#/$defs/reference_list"},
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "residual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "metric",
+        "unit",
+        "observed_result",
+        "tolerance_or_invariant",
+        "rationale",
+        "receipt_references"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "numeric",
+            "invariant",
+            "doctrine_source",
+            "regression_parity",
+            "not_applicable",
+            "unresolved"
+          ]
+        },
+        "metric": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "unit": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "observed_result": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "tolerance_or_invariant": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "receipt_references": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "release_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_version",
+        "inventory_fingerprint_sha256",
+        "source_revision",
+        "verification_status",
+        "last_verified_on",
+        "receipt_references"
+      ],
+      "properties": {
+        "engine_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inventory_fingerprint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_revision": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "verification_status": {
+          "enum": ["verified", "historical", "not_verified", "unresolved"]
+        },
+        "last_verified_on": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "receipt_references": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "public_exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposition", "modes", "references", "notes"],
+      "properties": {
+        "disposition": {
+          "enum": ["verified", "partial", "not_applicable", "unresolved"]
+        },
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "embedded_result",
+              "paired_reduction_endpoint",
+              "generated_documentation",
+              "source_only",
+              "not_applicable",
+              "unresolved"
+            ]
+          }
+        },
+        "references": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_path", "source_line"],
+      "properties": {
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_line": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surface_id",
+        "canonical_surface_id",
+        "entry_role",
+        "surface_kind",
+        "ownership",
+        "conformance_status",
+        "stage_derivation",
+        "semantics",
+        "evidence",
+        "residual",
+        "release_identity",
+        "public_exposure",
+        "notes"
+      ],
+      "properties": {
+        "surface_id": {
+          "type": "string",
+          "pattern": "^(python:moira\\.facade:[A-Za-z_][A-Za-z0-9_]*|rest:(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|TRACE):/.*)$"
+        },
+        "canonical_surface_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_role": {
+          "enum": ["canonical", "alias"]
+        },
+        "surface_kind": {
+          "enum": ["calculation", "composition_profile", "transport_adapter"]
+        },
+        "ownership": {"$ref": "#/$defs/ownership"},
+        "conformance_status": {
+          "enum": ["conformant", "partial", "not_applicable", "unresolved"]
+        },
+        "stage_derivation": {"$ref": "#/$defs/stage_derivation"},
+        "semantics": {"$ref": "#/$defs/semantics"},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "residual": {"$ref": "#/$defs/residual"},
+        "release_identity": {"$ref": "#/$defs/release_identity"},
+        "public_exposure": {"$ref": "#/$defs/public_exposure"},
+        "notes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "status_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["conformant", "partial", "not_applicable", "unresolved"],
+      "properties": {
+        "conformant": {"type": "integer", "minimum": 0},
+        "partial": {"type": "integer", "minimum": 0},
+        "not_applicable": {"type": "integer", "minimum": 0},
+        "unresolved": {"type": "integer", "minimum": 0}
+      }
+    },
+    "residual_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "numeric",
+        "invariant",
+        "doctrine_source",
+        "regression_parity",
+        "not_applicable",
+        "unresolved"
+      ],
+      "properties": {
+        "numeric": {"type": "integer", "minimum": 0},
+        "invariant": {"type": "integer", "minimum": 0},
+        "doctrine_source": {"type": "integer", "minimum": 0},
+        "regression_parity": {"type": "integer", "minimum": 0},
+        "not_applicable": {"type": "integer", "minimum": 0},
+        "unresolved": {"type": "integer", "minimum": 0}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries_total",
+        "canonical_entries",
+        "alias_entries",
+        "canonical_by_status",
+        "all_entries_by_status",
+        "canonical_by_residual_disposition"
+      ],
+      "properties": {
+        "entries_total": {"type": "integer", "minimum": 1},
+        "canonical_entries": {"type": "integer", "minimum": 1},
+        "alias_entries": {"type": "integer", "minimum": 0},
+        "canonical_by_status": {"$ref": "#/$defs/status_counts"},
+        "all_entries_by_status": {"$ref": "#/$defs/status_counts"},
+        "canonical_by_residual_disposition": {
+          "$ref": "#/$defs/residual_counts"
+        }
+      }
+    }
+  }
+}

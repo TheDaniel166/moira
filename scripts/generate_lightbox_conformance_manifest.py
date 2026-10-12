@@ -1,0 +1,1150 @@
+"""Generate and validate the Light Box conformance manifest baseline.
+
+LB-WP1 defines the evidence contract without admitting evidence.  Every
+calculation surface discovered by LB-WP0 receives an explicit unresolved row;
+later work packages may replace those dispositions only with reviewed,
+release-bound evidence.
+"""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import re
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+INVENTORY_PATH = (
+    REPO_ROOT
+    / "wiki"
+    / "03_validation"
+    / "LIGHT_BOX_CALCULATION_INVENTORY.generated.json"
+)
+SCHEMA_PATH = REPO_ROOT / "wiki" / "03_validation" / "LIGHT_BOX_CONFORMANCE_SCHEMA.json"
+ADMISSIONS_PATH = (
+    REPO_ROOT / "wiki" / "03_validation" / "LIGHT_BOX_CONFORMANCE_ADMISSIONS.json"
+)
+MANIFEST_PATH = (
+    REPO_ROOT
+    / "wiki"
+    / "03_validation"
+    / "LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json"
+)
+MARKDOWN_PATH = (
+    REPO_ROOT / "wiki" / "03_validation" / "LIGHT_BOX_CONFORMANCE_MANIFEST.generated.md"
+)
+INVENTORY_GENERATOR_PATH = (
+    REPO_ROOT / "scripts" / "generate_lightbox_calculation_inventory.py"
+)
+GENERATOR_PATH = "scripts/generate_lightbox_conformance_manifest.py"
+SCHEMA_VERSION = "moira.lightbox-conformance-manifest/v1"
+
+CONFORMANCE_STATUSES = (
+    "conformant",
+    "partial",
+    "not_applicable",
+    "unresolved",
+)
+RESIDUAL_DISPOSITIONS = (
+    "numeric",
+    "invariant",
+    "doctrine_source",
+    "regression_parity",
+    "not_applicable",
+    "unresolved",
+)
+SEMANTIC_FIELDS = (
+    "inputs",
+    "units",
+    "reference_frame",
+    "origin",
+    "timescale",
+    "corrections",
+    "policies_defaults",
+    "fallbacks",
+    "refusal_behavior",
+)
+EVIDENCE_DISCLOSURES = (
+    "authority_comparator",
+    "corpus",
+    "metric",
+    "tolerance_or_invariant",
+    "observed_result",
+    "exclusions",
+)
+
+ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
+    "reduction_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The response embeds a typed reduction vessel with explicit pipeline or stage truth beside the final result.",
+        "stage_label": "Typed reduction response",
+        "operation": "Normalize the request, execute the governed calculation, and serialize the returned reduction truth with the result.",
+        "semantic_values": {
+            "inputs": ["Typed request schema is exposed by OpenAPI."],
+            "units": [
+                "Named response fields carry their domain units; this admission does not generalize unnamed fields."
+            ],
+            "reference_frame": [
+                "The reduction vessel exposes the applied frame where the calculation defines one."
+            ],
+            "origin": [
+                "The reduction vessel exposes the applied center or observer context where applicable."
+            ],
+            "timescale": [
+                "The reduction vessel exposes normalized time and UT/TT values where applicable."
+            ],
+            "corrections": [
+                "Applied correction flags or stage sequence are returned by the reduction vessel."
+            ],
+            "policies_defaults": [
+                "Typed request defaults are visible in OpenAPI; runtime selections are carried by the reduction result where defined."
+            ],
+            "fallbacks": [
+                "Only fallbacks explicitly carried by the response are admitted."
+            ],
+            "refusal_behavior": [
+                "Typed request validation and documented transport errors bound invalid requests."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+        ],
+    },
+    "policy_reduction_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The response embeds a typed reduction vessel with governing policy, applied choices, and computation-path truth.",
+        "stage_label": "Policy-aware reduction response",
+        "operation": "Resolve the typed policy, execute the calculation, and return requested/applied policy with reduction truth.",
+        "semantic_values": {
+            "inputs": ["Typed request schema is exposed by OpenAPI."],
+            "units": [
+                "Named response fields carry their domain units; no unnamed unit is inferred."
+            ],
+            "reference_frame": [
+                "Frame semantics remain limited to the response and linked standard."
+            ],
+            "origin": [
+                "Origin or observer semantics remain limited to the response and linked standard."
+            ],
+            "timescale": [
+                "Time normalization is returned where this calculation is time-dependent."
+            ],
+            "corrections": [
+                "Only corrections present in the reduction vessel are admitted."
+            ],
+            "policies_defaults": [
+                "Requested and applied policy are explicit in the typed reduction contract."
+            ],
+            "fallbacks": [
+                "Fallback state and reason are explicit where the governed policy permits fallback."
+            ],
+            "refusal_behavior": [
+                "Typed validation or an explicit unsupported-policy error bounds refusal behavior."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+        ],
+    },
+    "embedded_frame_receipt": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The result embeds request, time, frame, bounds, validation, provenance, correction-model, and stage-sequence vessels.",
+        "stage_label": "Frame-specific position receipt",
+        "operation": "Normalize time and bodies, compute in the named center/frame, validate invariants, and return provenance plus stage sequence.",
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware datetime and a bounded unique body list are typed and validated."
+            ],
+            "units": [
+                "Angles are degrees; distances are kilometres and AU; time deltas are seconds or days where named."
+            ],
+            "reference_frame": ["true_of_date_ecliptic"],
+            "origin": [
+                "The response names Sun, Solar System barycenter, Earth, or requested planet center."
+            ],
+            "timescale": [
+                "Requested UTC datetime, normalized UTC, JD UT, JD TT, and delta-T are returned."
+            ],
+            "corrections": [
+                "Correction model and light-time/apparent/geometric flags are returned."
+            ],
+            "policies_defaults": [
+                "Maximum body count and normalized request echo are returned."
+            ],
+            "fallbacks": ["No unreported frame fallback is admitted by this contract."],
+            "refusal_behavior": [
+                "Invalid datetime/body lists and non-finite output values are rejected by typed validators."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "embedded_orbital_receipt": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The orbital result embeds time conversion, gravity, frame construction, state-source identity, thresholds, and a stage sequence.",
+        "stage_label": "Orbital-elements evidence envelope",
+        "operation": "Validate body and epoch, bind UT1/TT/TDB, construct the governed state/frame, reduce osculating elements, and return provenance.",
+        "semantic_values": {
+            "inputs": [
+                "A finite UT1 Julian date and admitted body identifier are typed and validated."
+            ],
+            "units": [
+                "Distances use AU or kilometres, angles use degrees, rates name their time denominator, and gravity uses km^3/s^2."
+            ],
+            "reference_frame": [
+                "The response names center, fixed J2000 ecliptic orientation, frame construction routine, and models."
+            ],
+            "origin": [
+                "The response names center-relative state-vector provenance and kernel route legs."
+            ],
+            "timescale": [
+                "UT1 input, TT/TDB evaluation, delta-T, TT-TDB conversion policy, version, and source hash are returned."
+            ],
+            "corrections": [
+                "Apparent and light-time corrections are explicitly marked not applied for osculating elements."
+            ],
+            "policies_defaults": [
+                "Gravity rule, component constants, singularity thresholds, and admitted interval are returned."
+            ],
+            "fallbacks": [
+                "Unavailable/singular element cases are governed by explicit threshold policy rather than an inferred value."
+            ],
+            "refusal_behavior": [
+                "Non-finite epochs, empty bodies, unsupported bodies, and unavailable kernel routes are explicit errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "doctrine_profile": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The typed profile carries source/doctrine composition and limitation state, while linked standards own the fuller derivation.",
+        "stage_label": "Doctrine-bound profile assembly",
+        "operation": "Validate inputs, apply the named doctrine/profile policy, and return structured components, omissions, and provenance where defined.",
+        "semantic_values": {
+            "inputs": ["Typed request schema is exposed by OpenAPI."],
+            "units": [
+                "Units are admitted only where named by the response or linked standard."
+            ],
+            "reference_frame": [
+                "Astronomical frame claims remain limited to nested calculation vessels."
+            ],
+            "origin": [
+                "Source tradition and calculation origin are separated where the result contract exposes them."
+            ],
+            "timescale": [
+                "Time semantics remain limited to the typed request and linked standard."
+            ],
+            "corrections": [
+                "No correction is inferred beyond nested calculation truth."
+            ],
+            "policies_defaults": [
+                "The governing doctrine/profile policy is explicit in source and linked standards."
+            ],
+            "fallbacks": [
+                "Omissions or unavailable states are preserved rather than silently synthesized."
+            ],
+            "refusal_behavior": [
+                "Typed validation and explicit unavailable states bound refusal behavior."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "motion_witness": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The response is itself a signed motion witness that exposes the directional basis for the classification.",
+        "stage_label": "Signed aspect-motion witness",
+        "operation": "Evaluate signed longitudinal separation over the governed time step and return the witness used by the applying/separating classification.",
+        "semantic_values": {
+            "inputs": ["Typed aspect-motion request is exposed by OpenAPI."],
+            "units": [
+                "Angular quantities and the witness time step use the units named by the response."
+            ],
+            "reference_frame": [
+                "Reference-frame scope is limited to the linked signed-motion standard and calculation inputs."
+            ],
+            "origin": [
+                "Both participating longitudes and their signed relation form the witness origin."
+            ],
+            "timescale": [
+                "The witness carries the comparison-time basis defined by the route contract."
+            ],
+            "corrections": [
+                "No correction is inferred beyond the input longitudes and returned witness."
+            ],
+            "policies_defaults": [
+                "Applying/separating policy is governed by the signed-motion validation document."
+            ],
+            "fallbacks": [
+                "Unavailable motion evidence is not silently classified by this admission."
+            ],
+            "refusal_behavior": [
+                "Typed request validation bounds invalid aspect-motion inputs."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+}
+
+
+class LightBoxConformanceError(RuntimeError):
+    """Raised when inventory, schema, or manifest truth is inconsistent."""
+
+
+def _relative(path: Path) -> str:
+    return path.resolve().relative_to(REPO_ROOT).as_posix()
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LightBoxConformanceError(f"cannot load JSON: {_relative(path)}") from exc
+    if not isinstance(value, dict):
+        raise LightBoxConformanceError(
+            f"JSON root must be an object: {_relative(path)}"
+        )
+    return value
+
+
+def _load_inventory_generator():
+    spec = importlib.util.spec_from_file_location(
+        "generate_lightbox_calculation_inventory",
+        INVENTORY_GENERATOR_PATH,
+    )
+    if spec is None or spec.loader is None:
+        raise LightBoxConformanceError("cannot load LB-WP0 inventory generator")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_current_inventory() -> dict[str, Any]:
+    """Load the committed inventory and prove it matches current source truth."""
+    committed = _load_json(INVENTORY_PATH)
+    generator = _load_inventory_generator()
+    current = generator.build_inventory()
+    if committed != current:
+        raise LightBoxConformanceError(
+            "LB-WP0 calculation inventory is stale; regenerate it before LB-WP1"
+        )
+    return committed
+
+
+def _json_type_matches(value: Any, expected: str) -> bool:
+    if expected == "object":
+        return isinstance(value, dict)
+    if expected == "array":
+        return isinstance(value, list)
+    if expected == "string":
+        return isinstance(value, str)
+    if expected == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if expected == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if expected == "boolean":
+        return isinstance(value, bool)
+    if expected == "null":
+        return value is None
+    raise LightBoxConformanceError(f"unsupported JSON Schema type: {expected}")
+
+
+def _resolve_schema_ref(root: Mapping[str, Any], reference: str) -> Mapping[str, Any]:
+    if not reference.startswith("#/"):
+        raise LightBoxConformanceError(
+            f"only local schema refs are supported: {reference}"
+        )
+    value: Any = root
+    for raw_part in reference[2:].split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(value, dict) or part not in value:
+            raise LightBoxConformanceError(f"unresolvable schema ref: {reference}")
+        value = value[part]
+    if not isinstance(value, dict):
+        raise LightBoxConformanceError(f"schema ref is not an object: {reference}")
+    return value
+
+
+def validate_json_schema_instance(
+    instance: Any,
+    schema: Mapping[str, Any],
+) -> list[str]:
+    """Validate the strict JSON Schema subset used by the WP1 contract."""
+    errors: list[str] = []
+
+    def walk(value: Any, rule: Mapping[str, Any], path: str) -> None:
+        if "$ref" in rule:
+            walk(value, _resolve_schema_ref(schema, str(rule["$ref"])), path)
+            return
+
+        if "const" in rule and value != rule["const"]:
+            errors.append(f"{path}: expected constant {rule['const']!r}")
+        if "enum" in rule and value not in rule["enum"]:
+            errors.append(f"{path}: value {value!r} is outside the admitted enum")
+
+        expected = rule.get("type")
+        if expected is not None:
+            expected_types = [expected] if isinstance(expected, str) else list(expected)
+            if not any(_json_type_matches(value, item) for item in expected_types):
+                errors.append(
+                    f"{path}: expected type {expected_types}, got {type(value).__name__}"
+                )
+                return
+
+        if isinstance(value, dict):
+            required = rule.get("required", [])
+            for name in required:
+                if name not in value:
+                    errors.append(f"{path}: missing required field {name!r}")
+            properties = rule.get("properties", {})
+            if rule.get("additionalProperties") is False:
+                for name in value:
+                    if name not in properties:
+                        errors.append(f"{path}: unexpected field {name!r}")
+            for name, child_rule in properties.items():
+                if name in value:
+                    walk(value[name], child_rule, f"{path}.{name}")
+
+        if isinstance(value, list):
+            minimum = rule.get("minItems")
+            if isinstance(minimum, int) and len(value) < minimum:
+                errors.append(f"{path}: requires at least {minimum} item(s)")
+            if rule.get("uniqueItems"):
+                serialized = [
+                    json.dumps(item, sort_keys=True, ensure_ascii=False)
+                    for item in value
+                ]
+                if len(serialized) != len(set(serialized)):
+                    errors.append(f"{path}: items must be unique")
+            item_rule = rule.get("items")
+            if isinstance(item_rule, dict):
+                for index, item in enumerate(value):
+                    walk(item, item_rule, f"{path}[{index}]")
+
+        if isinstance(value, str):
+            minimum = rule.get("minLength")
+            if isinstance(minimum, int) and len(value) < minimum:
+                errors.append(f"{path}: string is shorter than {minimum}")
+            pattern = rule.get("pattern")
+            if isinstance(pattern, str) and re.fullmatch(pattern, value) is None:
+                errors.append(f"{path}: string does not match {pattern!r}")
+
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            minimum = rule.get("minimum")
+            if isinstance(minimum, (int, float)) and value < minimum:
+                errors.append(f"{path}: value is less than {minimum}")
+
+    walk(instance, schema, "$")
+    return errors
+
+
+def _reference(
+    kind: str,
+    target: str,
+    label: str,
+    version_identity: str | None,
+) -> dict[str, Any]:
+    return {
+        "kind": kind,
+        "target": target,
+        "label": label,
+        "version_identity": version_identity,
+    }
+
+
+def _unresolved_disclosure(field_label: str) -> dict[str, Any]:
+    return {
+        "disposition": "unresolved",
+        "values": [],
+        "references": [],
+        "notes": f"{field_label} has not yet been assessed under the WP1 contract.",
+    }
+
+
+def _unresolved_entry(
+    row: Mapping[str, Any],
+    *,
+    engine_version: str,
+    inventory_fingerprint: str,
+) -> dict[str, Any]:
+    surface_id = str(row["surface_id"])
+    canonical_id = str(row["canonical_id"])
+    source_path = str(row["source_path"])
+    source_line = int(row["source_line"])
+    source_reference = _reference(
+        "source",
+        f"{source_path}#L{source_line}",
+        "WP0 ownership pointer; presence is not conformance evidence.",
+        engine_version,
+    )
+    return {
+        "surface_id": surface_id,
+        "canonical_surface_id": canonical_id,
+        "entry_role": "alias" if row["alias_of"] is not None else "canonical",
+        "surface_kind": str(row["surface_kind"]),
+        "ownership": {
+            "source_path": source_path,
+            "source_line": source_line,
+        },
+        "conformance_status": "unresolved",
+        "stage_derivation": {
+            "disposition": "unresolved",
+            "inspectability_mode": "unresolved",
+            "derivation_summary": (
+                "Stage and derivation inspectability have not yet been reviewed under "
+                "the WP1 contract."
+            ),
+            "stages": [],
+            "references": [source_reference],
+        },
+        "semantics": {
+            name: _unresolved_disclosure(name.replace("_", " ").capitalize())
+            for name in SEMANTIC_FIELDS
+        },
+        "evidence": {
+            "disposition": "unresolved",
+            "classes": ["unresolved"],
+            **{
+                name: _unresolved_disclosure(name.replace("_", " ").capitalize())
+                for name in EVIDENCE_DISCLOSURES
+            },
+            "receipts": [],
+            "notes": "No evidence class or release-bound receipt is admitted in WP1.",
+        },
+        "residual": {
+            "disposition": "unresolved",
+            "metric": None,
+            "unit": None,
+            "observed_result": None,
+            "tolerance_or_invariant": None,
+            "rationale": (
+                "WP1 does not assume that this surface requires a numeric residual; "
+                "the reviewed disposition remains unresolved."
+            ),
+            "receipt_references": [],
+        },
+        "release_identity": {
+            "engine_version": engine_version,
+            "inventory_fingerprint_sha256": inventory_fingerprint,
+            "source_revision": None,
+            "verification_status": "unresolved",
+            "last_verified_on": None,
+            "receipt_references": [],
+        },
+        "public_exposure": {
+            "disposition": "unresolved",
+            "modes": ["unresolved"],
+            "references": [],
+            "notes": (
+                "Embedded, paired-endpoint, generated-documentation, or source-only "
+                "exposure has not yet been reviewed."
+            ),
+        },
+        "notes": [
+            "Unresolved is visible and is not a pass, partial pass, or failure.",
+        ],
+    }
+
+
+def _inventory_references(
+    row: Mapping[str, Any],
+    *,
+    engine_version: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    source = _reference(
+        "source",
+        f"{row['source_path']}#L{row['source_line']}",
+        "Owning public transport source for this structural admission.",
+        engine_version,
+    )
+    documents = [
+        _reference(
+            "documentation",
+            str(path),
+            "Inventory-linked documentation reviewed as a semantic lead; scope is limited to its text.",
+            engine_version,
+        )
+        for path in row.get("documentation_paths", [])
+    ]
+    tests = [
+        _reference(
+            "test",
+            str(path),
+            "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+            engine_version,
+        )
+        for path in row.get("test_paths", [])
+    ]
+    return documents, tests, source
+
+
+def _admitted_entry(
+    row: Mapping[str, Any],
+    admission: Mapping[str, Any],
+    *,
+    engine_version: str,
+    inventory_fingerprint: str,
+) -> dict[str, Any]:
+    entry = _unresolved_entry(
+        row,
+        engine_version=engine_version,
+        inventory_fingerprint=inventory_fingerprint,
+    )
+    contract_kind = str(admission["contract_kind"])
+    template = ADMISSION_CONTRACTS[contract_kind]
+    documents, tests, source = _inventory_references(
+        row,
+        engine_version=engine_version,
+    )
+    semantic_references = [source, *documents]
+    evidence_classes = [str(value) for value in admission["evidence_classes"]]
+    entry["conformance_status"] = "partial"
+    entry["stage_derivation"] = {
+        "disposition": "documented",
+        "inspectability_mode": template["inspectability_mode"],
+        "derivation_summary": template["summary"],
+        "stages": [
+            {
+                "stage_id": contract_kind.replace("_", "-"),
+                "label": template["stage_label"],
+                "operation": template["operation"],
+                "inputs": [str(row.get("request_schema", "typed request"))],
+                "outputs": [str(row.get("response_schema", "typed response"))],
+                "corrections": [
+                    "Only corrections explicitly carried by the response or linked standard are admitted."
+                ],
+                "references": semantic_references,
+            }
+        ],
+        "references": semantic_references,
+    }
+    entry["semantics"] = {
+        name: {
+            "disposition": "partial",
+            "values": list(template["semantic_values"][name]),
+            "references": semantic_references,
+            "notes": (
+                "Structurally reviewed for this admitted exemplar. A partial disposition "
+                "does not generalize beyond the named route, response fields, and references."
+            ),
+        }
+        for name in SEMANTIC_FIELDS
+    }
+    entry["evidence"] = {
+        "disposition": "partial",
+        "classes": evidence_classes,
+        "authority_comparator": _unresolved_disclosure("Authority comparator"),
+        "corpus": _unresolved_disclosure("Release-bound corpus"),
+        "metric": _unresolved_disclosure("Release-bound metric"),
+        "tolerance_or_invariant": {
+            "disposition": "partial",
+            "values": [
+                "Typed response invariants and doctrine/source constraints are exercised by the linked test sources."
+            ],
+            "references": [*tests, *documents],
+            "notes": "These are candidate evidence sources, not a replayed exact-release receipt.",
+        },
+        "observed_result": _unresolved_disclosure("Release-bound observed result"),
+        "exclusions": {
+            "disposition": "documented",
+            "values": [
+                "No external-authority accuracy result, universal family coverage, or current-release numerical residual is claimed by this structural admission."
+            ],
+            "references": [source],
+            "notes": "The admission is deliberately narrower than full Light Box conformance.",
+        },
+        "receipts": [],
+        "notes": (
+            "Existing test and documentation sources support structural review, but no "
+            "replayed exact-release receipt has yet been admitted."
+        ),
+    }
+    entry["residual"] = {
+        "disposition": "unresolved",
+        "metric": None,
+        "unit": None,
+        "observed_result": None,
+        "tolerance_or_invariant": None,
+        "rationale": (
+            "A structural exemplar does not establish the appropriate residual class or "
+            "an observed exact-release result. No numeric residual is invented."
+        ),
+        "receipt_references": [],
+    }
+    entry["release_identity"] = {
+        "engine_version": engine_version,
+        "inventory_fingerprint_sha256": inventory_fingerprint,
+        "source_revision": None,
+        "verification_status": "not_verified",
+        "last_verified_on": None,
+        "receipt_references": [],
+    }
+    entry["public_exposure"] = {
+        "disposition": "partial",
+        "modes": list(template["public_modes"]),
+        "references": semantic_references,
+        "notes": (
+            "The named source and response vessel establish current-source exposure. "
+            "Exact released-artifact identity remains unverified."
+        ),
+    }
+    entry["notes"] = [
+        f"Stage 2 structural exemplar admitted through {contract_kind!r}.",
+        "Partial is not conformant; residual, authority/corpus, and exact release identity remain unresolved.",
+    ]
+    return entry
+
+
+def load_admissions(inventory: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    payload = _load_json(ADMISSIONS_PATH)
+    if payload.get("schema_version") != "moira.lightbox-conformance-admissions/v1":
+        raise LightBoxConformanceError("unsupported Light Box admissions schema")
+    entries = payload.get("entries")
+    if not isinstance(entries, list):
+        raise LightBoxConformanceError("Light Box admissions entries must be an array")
+    inventory_rows = {
+        str(row["surface_id"]): row
+        for collection in ("python_exports", "rest_operations")
+        for row in inventory[collection]
+        if row["in_lightbox_calculation_scope"]
+    }
+    result: dict[str, Mapping[str, Any]] = {}
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise LightBoxConformanceError(f"admission {index} must be an object")
+        surface_id = str(entry.get("surface_id", ""))
+        if surface_id in result:
+            raise LightBoxConformanceError(f"duplicate admission: {surface_id}")
+        row = inventory_rows.get(surface_id)
+        if row is None:
+            raise LightBoxConformanceError(
+                f"admission is outside current inventory: {surface_id}"
+            )
+        if row["alias_of"] is not None:
+            raise LightBoxConformanceError(
+                f"admission must name a canonical surface: {surface_id}"
+            )
+        contract_kind = str(entry.get("contract_kind", ""))
+        if contract_kind not in ADMISSION_CONTRACTS:
+            raise LightBoxConformanceError(
+                f"unsupported admission contract {contract_kind!r}: {surface_id}"
+            )
+        classes = entry.get("evidence_classes")
+        if not isinstance(classes, list) or not classes or "unresolved" in classes:
+            raise LightBoxConformanceError(
+                f"admission needs bounded evidence classes: {surface_id}"
+            )
+        if not row.get("documentation_paths") or not row.get("test_paths"):
+            raise LightBoxConformanceError(
+                f"structural exemplar lacks inventory documentation/test leads: {surface_id}"
+            )
+        result[surface_id] = entry
+    return result
+
+
+def _complete_counter(
+    values: Sequence[str], vocabulary: Sequence[str]
+) -> dict[str, int]:
+    counts = Counter(values)
+    return {name: counts.get(name, 0) for name in vocabulary}
+
+
+def _summary(entries: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    canonical = [row for row in entries if row["entry_role"] == "canonical"]
+    return {
+        "entries_total": len(entries),
+        "canonical_entries": len(canonical),
+        "alias_entries": len(entries) - len(canonical),
+        "canonical_by_status": _complete_counter(
+            [str(row["conformance_status"]) for row in canonical],
+            CONFORMANCE_STATUSES,
+        ),
+        "all_entries_by_status": _complete_counter(
+            [str(row["conformance_status"]) for row in entries],
+            CONFORMANCE_STATUSES,
+        ),
+        "canonical_by_residual_disposition": _complete_counter(
+            [str(row["residual"]["disposition"]) for row in canonical],
+            RESIDUAL_DISPOSITIONS,
+        ),
+    }
+
+
+def build_manifest(inventory: Mapping[str, Any]) -> dict[str, Any]:
+    engine_version = str(inventory["engine_version"])
+    fingerprint = str(inventory["surface_fingerprint_sha256"])
+    admitted_rows = [
+        row
+        for collection in ("python_exports", "rest_operations")
+        for row in inventory[collection]
+        if row["in_lightbox_calculation_scope"]
+    ]
+    admissions = load_admissions(inventory)
+    entries = []
+    for row in admitted_rows:
+        admission = admissions.get(str(row["surface_id"]))
+        if admission is None:
+            entry = _unresolved_entry(
+                row,
+                engine_version=engine_version,
+                inventory_fingerprint=fingerprint,
+            )
+        else:
+            entry = _admitted_entry(
+                row,
+                admission,
+                engine_version=engine_version,
+                inventory_fingerprint=fingerprint,
+            )
+        entries.append(entry)
+    entries.sort(key=lambda row: row["surface_id"])
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "inventory_schema_version": str(inventory["schema_version"]),
+        "classification_version": str(inventory["classification_version"]),
+        "engine_version": engine_version,
+        "inventory_fingerprint_sha256": fingerprint,
+        "generated_by": GENERATOR_PATH,
+        "inventory_path": _relative(INVENTORY_PATH),
+        "scope_rule": (
+            "Every LB-WP0 in-scope surface appears exactly once. Alias rows remain "
+            "visible but only canonical rows contribute to conformance totals."
+        ),
+        "limitations": [
+            "The schema baseline admits no calculation as conformant; bounded structural exemplars may be partial only.",
+            "A source pointer establishes ownership only, not stage transparency, numerical validation, or documentation sufficiency.",
+            "Unresolved is an explicit visible state and must never be aggregated as conformant, partial, or not applicable.",
+            "A partial structural admission is not an exact-release verification and cannot supply a missing residual, authority, or corpus result.",
+        ],
+        "summary": _summary(entries),
+        "entries": entries,
+    }
+
+
+def _nonempty(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def validate_manifest_semantics(
+    manifest: Mapping[str, Any],
+    inventory: Mapping[str, Any],
+) -> list[str]:
+    """Apply cross-field and inventory invariants beyond structural schema."""
+    errors: list[str] = []
+    inventory_rows = {
+        str(row["surface_id"]): row
+        for collection in ("python_exports", "rest_operations")
+        for row in inventory[collection]
+        if row["in_lightbox_calculation_scope"]
+    }
+    entries = manifest.get("entries", [])
+    if not isinstance(entries, list):
+        return ["$.entries: must be an array before semantic validation"]
+
+    entry_ids = [str(row.get("surface_id")) for row in entries if isinstance(row, dict)]
+    if len(entry_ids) != len(set(entry_ids)):
+        errors.append("$.entries: duplicate surface IDs")
+    missing = sorted(set(inventory_rows) - set(entry_ids))
+    unexpected = sorted(set(entry_ids) - set(inventory_rows))
+    if missing:
+        errors.append(f"$.entries: missing in-scope inventory IDs: {missing[:5]}")
+    if unexpected:
+        errors.append(
+            f"$.entries: contains non-admitted inventory IDs: {unexpected[:5]}"
+        )
+
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            continue
+        path = f"$.entries[{index}]"
+        surface_id = str(entry.get("surface_id"))
+        source = inventory_rows.get(surface_id)
+        if source is None:
+            continue
+        expected_role = "alias" if source["alias_of"] is not None else "canonical"
+        comparisons = {
+            "canonical_surface_id": source["canonical_id"],
+            "entry_role": expected_role,
+            "surface_kind": source["surface_kind"],
+        }
+        for field, expected in comparisons.items():
+            if entry.get(field) != expected:
+                errors.append(f"{path}.{field}: does not match LB-WP0 inventory")
+        ownership = entry.get("ownership", {})
+        if isinstance(ownership, dict) and (
+            ownership.get("source_path") != source["source_path"]
+            or ownership.get("source_line") != source["source_line"]
+        ):
+            errors.append(f"{path}.ownership: does not match LB-WP0 inventory")
+
+        release = entry.get("release_identity", {})
+        if isinstance(release, dict):
+            if release.get("engine_version") != manifest.get("engine_version"):
+                errors.append(f"{path}.release_identity.engine_version: manifest drift")
+            if release.get("inventory_fingerprint_sha256") != manifest.get(
+                "inventory_fingerprint_sha256"
+            ):
+                errors.append(
+                    f"{path}.release_identity.inventory_fingerprint_sha256: manifest drift"
+                )
+            if release.get("verification_status") == "verified":
+                if not _nonempty(release.get("source_revision")):
+                    errors.append(
+                        f"{path}.release_identity: verified row needs revision"
+                    )
+                if not _nonempty(release.get("last_verified_on")):
+                    errors.append(f"{path}.release_identity: verified row needs date")
+                if not release.get("receipt_references"):
+                    errors.append(
+                        f"{path}.release_identity: verified row needs receipt"
+                    )
+
+        residual = entry.get("residual", {})
+        if isinstance(residual, dict):
+            disposition = residual.get("disposition")
+            resolved = {"numeric", "invariant", "doctrine_source", "regression_parity"}
+            if disposition in resolved:
+                required = ("metric", "observed_result", "tolerance_or_invariant")
+                if any(not _nonempty(residual.get(field)) for field in required):
+                    errors.append(
+                        f"{path}.residual: resolved disposition lacks measurement"
+                    )
+                if disposition == "numeric" and not _nonempty(residual.get("unit")):
+                    errors.append(f"{path}.residual: numeric disposition needs unit")
+                if not residual.get("receipt_references"):
+                    errors.append(
+                        f"{path}.residual: resolved disposition needs receipt"
+                    )
+
+        evidence = entry.get("evidence", {})
+        if isinstance(evidence, dict):
+            disposition = evidence.get("disposition")
+            classes = evidence.get("classes")
+            if disposition == "unresolved" and classes != ["unresolved"]:
+                errors.append(
+                    f"{path}.evidence: unresolved must be explicit and exclusive"
+                )
+            if disposition == "not_applicable" and classes != ["not_applicable"]:
+                errors.append(
+                    f"{path}.evidence: not_applicable must be explicit and exclusive"
+                )
+            if disposition == "verified" and not evidence.get("receipts"):
+                errors.append(f"{path}.evidence: verified evidence needs a receipt")
+
+        exposure = entry.get("public_exposure", {})
+        if isinstance(exposure, dict):
+            disposition = exposure.get("disposition")
+            modes = exposure.get("modes")
+            if disposition == "unresolved" and modes != ["unresolved"]:
+                errors.append(f"{path}.public_exposure: unresolved must be explicit")
+            if disposition == "not_applicable" and modes != ["not_applicable"]:
+                errors.append(
+                    f"{path}.public_exposure: not_applicable must be explicit"
+                )
+
+        status = entry.get("conformance_status")
+        if status == "conformant":
+            unresolved_markers = (
+                entry.get("stage_derivation", {}).get("disposition") == "unresolved",
+                entry.get("evidence", {}).get("disposition") == "unresolved",
+                entry.get("residual", {}).get("disposition") == "unresolved",
+                entry.get("release_identity", {}).get("verification_status")
+                != "verified",
+                entry.get("public_exposure", {}).get("disposition") == "unresolved",
+            )
+            if any(unresolved_markers):
+                errors.append(f"{path}: conformant row contains unresolved evidence")
+
+    expected_summary = _summary(entries)
+    if manifest.get("summary") != expected_summary:
+        errors.append("$.summary: does not match entry-derived counts")
+    if manifest.get("engine_version") != inventory.get("engine_version"):
+        errors.append("$.engine_version: does not match LB-WP0 inventory")
+    if manifest.get("inventory_fingerprint_sha256") != inventory.get(
+        "surface_fingerprint_sha256"
+    ):
+        errors.append("$.inventory_fingerprint_sha256: does not match LB-WP0 inventory")
+    return errors
+
+
+def validate_manifest(
+    manifest: Mapping[str, Any],
+    inventory: Mapping[str, Any],
+    schema: Mapping[str, Any],
+) -> list[str]:
+    return validate_json_schema_instance(
+        manifest, schema
+    ) + validate_manifest_semantics(
+        manifest,
+        inventory,
+    )
+
+
+def render_json(manifest: Mapping[str, Any]) -> str:
+    return json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+
+
+def _escape(value: Any) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
+
+
+def render_markdown(manifest: Mapping[str, Any]) -> str:
+    summary = manifest["summary"]
+    status = summary["canonical_by_status"]
+    residual = summary["canonical_by_residual_disposition"]
+    lines = [
+        "# Light Box Conformance Manifest",
+        "",
+        f"> Generated by `{GENERATOR_PATH}`. Do not edit by hand.",
+        "",
+        f"- Schema: `{manifest['schema_version']}`",
+        f"- Engine version: `{manifest['engine_version']}`",
+        f"- Inventory fingerprint: `{manifest['inventory_fingerprint_sha256']}`",
+        f"- Canonical schema: `{_relative(SCHEMA_PATH)}`",
+        "",
+        "## Boundary",
+        "",
+        "This LB-WP1 artifact defines the evidence fields required for every admitted calculation. It does **not** certify a calculation. Every row begins `unresolved`; later work must admit evidence row by row. A source pointer proves ownership only.",
+        "",
+        "Aliases remain visible but do not inflate the canonical denominator. Numeric residuals are required only when `numeric` is the reviewed disposition; categorical techniques can use invariant, doctrine/source, regression/parity, or not-applicable dispositions with explicit rationale and receipts.",
+        "",
+        "## Current status",
+        "",
+        "| Measure | Count |",
+        "|---|---:|",
+        f"| All entries | {summary['entries_total']} |",
+        f"| Canonical entries | {summary['canonical_entries']} |",
+        f"| Alias entries | {summary['alias_entries']} |",
+        f"| Canonical conformant | {status['conformant']} |",
+        f"| Canonical partial | {status['partial']} |",
+        f"| Canonical not applicable | {status['not_applicable']} |",
+        f"| Canonical unresolved | {status['unresolved']} |",
+        "",
+        "### Residual dispositions (canonical entries)",
+        "",
+        "| Disposition | Count |",
+        "|---|---:|",
+    ]
+    for name in RESIDUAL_DISPOSITIONS:
+        lines.append(f"| `{name}` | {residual[name]} |")
+
+    lines.extend(
+        [
+            "",
+            "## Required per-surface contract",
+            "",
+            "Each entry must record:",
+            "",
+            "- stage/derivation disposition, inspectability mode, ordered stages, and references;",
+            "- inputs, units, reference frame, origin, timescale, corrections, policies/defaults, fallbacks, and refusal behavior;",
+            "- evidence class, authority/comparator, corpus, metric, tolerance/invariant, observed result, exclusions, and receipts;",
+            "- residual disposition and any applicable measurement, unit, tolerance/invariant, rationale, and receipt;",
+            "- engine/inventory identity, source revision, verification status/date, and release receipts; and",
+            "- public exposure through embedded results, paired reduction endpoints, generated documentation, source-only access, or an explicit unresolved/N/A disposition.",
+            "",
+            "The schema rejects missing required fields and unknown fields. Cross-field validation additionally prevents a `conformant` row from retaining unresolved core evidence and requires release identity plus receipts for verified rows.",
+            "",
+            "## Entries",
+            "",
+            "| Surface ID | Role | Kind | Status | Inspectability | Residual | Exposure | Release | Owner |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+    )
+    for entry in manifest["entries"]:
+        owner = entry["ownership"]
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    f"`{_escape(entry['surface_id'])}`",
+                    f"`{entry['entry_role']}`",
+                    f"`{entry['surface_kind']}`",
+                    f"`{entry['conformance_status']}`",
+                    f"`{entry['stage_derivation']['inspectability_mode']}`",
+                    f"`{entry['residual']['disposition']}`",
+                    f"`{','.join(entry['public_exposure']['modes'])}`",
+                    f"`{entry['release_identity']['verification_status']}`",
+                    f"`{owner['source_path']}:{owner['source_line']}`",
+                )
+            )
+            + " |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Next Light Box layer",
+            "",
+            "LB-WP2 must admit the strongest existing exemplars against this exact contract. Until a row receives reviewed, release-bound evidence, `unresolved` remains the truthful status.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _write_atomic(path: Path, content: str) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(content, encoding="utf-8", newline="\n")
+    temporary.replace(path)
+
+
+def _check_file(path: Path, expected: str) -> bool:
+    return path.is_file() and path.read_text(encoding="utf-8") == expected
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail when the generated conformance artifacts are stale",
+    )
+    args = parser.parse_args()
+
+    try:
+        inventory = load_current_inventory()
+        schema = _load_json(SCHEMA_PATH)
+        manifest = build_manifest(inventory)
+        errors = validate_manifest(manifest, inventory, schema)
+        if errors:
+            raise LightBoxConformanceError(
+                "manifest validation failed:\n- " + "\n- ".join(errors[:25])
+            )
+        json_text = render_json(manifest)
+        markdown_text = render_markdown(manifest)
+        if args.check:
+            stale = [
+                _relative(path)
+                for path, expected in (
+                    (MANIFEST_PATH, json_text),
+                    (MARKDOWN_PATH, markdown_text),
+                )
+                if not _check_file(path, expected)
+            ]
+            if stale:
+                raise LightBoxConformanceError(
+                    "Light Box conformance manifest is stale: " + ", ".join(stale)
+                )
+            print("Light Box conformance schema and manifest are current.")
+            return 0
+
+        _write_atomic(MANIFEST_PATH, json_text)
+        _write_atomic(MARKDOWN_PATH, markdown_text)
+        print(f"Generated {_relative(MANIFEST_PATH)}.")
+        print(f"Generated {_relative(MARKDOWN_PATH)}.")
+        return 0
+    except LightBoxConformanceError as exc:
+        print(f"Light Box conformance generation failed: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

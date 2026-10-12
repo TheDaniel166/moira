@@ -1,0 +1,76 @@
+{
+  "artifact_status": "local_unreleased_worktree",
+  "claim_dispositions": [
+    {
+      "claim": "Transparency is the Primary Metric of Accuracy.",
+      "class": "design_doctrine",
+      "notes": "The canonical doctrine remains unchanged.",
+      "status": "preserved"
+    },
+    {
+      "claim": "Every calculation stage is inspectable, every reduction step is documented, and every residual is explained.",
+      "class": "universal_current_capability",
+      "notes": "Use the generated counts and per-surface manifest; unresolved rows are visible and block a universal current-release claim.",
+      "status": "not_yet_supported"
+    },
+    {
+      "claim": "Every Calculation is Benchmarked.",
+      "class": "universal_validation_claim",
+      "notes": "The assurance matrix intentionally contains not-run cells and multiple evidence classes.",
+      "status": "unsupported"
+    },
+    {
+      "claim": "Every subsystem is validated against physical oracles.",
+      "class": "universal_evidence_claim",
+      "notes": "Doctrine/source, invariant, regression, native-parity, harness, performance, authority, and release evidence are distinct.",
+      "status": "unsupported"
+    }
+  ],
+  "doctrine_text_changed": false,
+  "engine_version": "6.9.9",
+  "evidence_source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+  "generated_by": "scripts/generate_lightbox_public_status.py",
+  "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+  "limitations": [
+    "This source-tree status is not a production deployment receipt.",
+    "Local passed contracts cover 15 calculations and do not generalize to their entire families.",
+    "All 1210 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
+  ],
+  "links": {
+    "assurance_matrix": "wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.json",
+    "family_assessment": "wiki/03_validation/LIGHT_BOX_FAMILY_ASSESSMENT.generated.json",
+    "family_register": "wiki/03_validation/LIGHT_BOX_FAMILY_REGISTER.generated.json",
+    "manifest": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json",
+    "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
+  },
+  "publication_disposition": "local_unreleased_status",
+  "schema_version": "moira.lightbox-current-status/v1",
+  "summary": {
+    "canonical_calculations": 1210,
+    "conformant": 0,
+    "family_dispositions": {
+      "major_gap": 11,
+      "mixed": 3,
+      "partial": 125,
+      "strong_exemplar": 4,
+      "unresolved": 0
+    },
+    "not_applicable": 0,
+    "partial": 15,
+    "production_user_by_status": {
+      "conformant": 0,
+      "not_applicable": 0,
+      "partial": 7,
+      "unresolved": 175
+    },
+    "production_user_calculations": 182,
+    "replayed_contracts": 9,
+    "replayed_contracts_passed_exact_source": 0,
+    "replayed_contracts_passed_local": 9,
+    "reviewed_families": 143,
+    "surfaces_with_replay_contracts": 15,
+    "surfaces_without_replay_contracts": 1195,
+    "unresolved": 1195
+  },
+  "universal_current_conformance_supported": false
+}

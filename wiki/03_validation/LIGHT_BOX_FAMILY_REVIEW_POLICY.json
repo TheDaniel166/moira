@@ -1,0 +1,64 @@
+{
+  "schema_version": "moira.lightbox-family-review-policy/v1",
+  "review_date": "2026-10-12",
+  "review_boundary": "Structural family review against the GAP-007 audit, current inventory ownership, documentation leads, test leads, response contracts, and product usage. Reviewed does not mean conformant, numerically validated, or release verified.",
+  "status_definitions": {
+    "strong_exemplar": "The family contains an existing response or receipt pattern that materially demonstrates the doctrine, but exact-release and per-surface conformance may remain incomplete.",
+    "partial": "Meaningful source, documentation, test, or response evidence exists, but at least one required Light Box field remains incomplete or unmapped.",
+    "mixed": "Evidence and inspectability vary materially among calculations in the family.",
+    "major_gap": "The family is implemented, but its public stage, evidence, residual, or documentation mapping is materially incomplete.",
+    "unresolved": "The review could not establish a reliable family disposition."
+  },
+  "stage_2_families": [
+    "chart",
+    "electional",
+    "hellenistic-profile",
+    "houses",
+    "orbits",
+    "pancha-pakshi",
+    "positions",
+    "positions-frame",
+    "primary-directions",
+    "progressions",
+    "relationship"
+  ],
+  "strong_exemplar_families": [
+    "electional",
+    "orbits",
+    "pancha-pakshi",
+    "positions-frame"
+  ],
+  "mixed_families": [
+    "aspects",
+    "composite",
+    "davison",
+    "patterns",
+    "relationship"
+  ],
+  "major_gap_families": [
+    "ashtakavarga",
+    "eclipses",
+    "heliacal",
+    "jaimini",
+    "occultations",
+    "panchanga",
+    "phenomena",
+    "rise-set",
+    "shadbala",
+    "timelords",
+    "varga"
+  ],
+  "default_status": "partial",
+  "priority_order": [
+    "stage_2_exemplars",
+    "stage_3_product_use",
+    "stage_4_phenomena_relationships",
+    "stage_5_remaining_tail"
+  ],
+  "sources": [
+    "wiki/03_validation/LIGHT_BOX_CALCULATION_INVENTORY.generated.json",
+    "wiki/03_validation/LIGHT_BOX_CONFORMANCE_ADMISSIONS.json",
+    "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json",
+    "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
+  ]
+}

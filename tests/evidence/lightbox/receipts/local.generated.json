@@ -1,0 +1,486 @@
+{
+  "artifact_status": "local_unreleased_worktree",
+  "contracts_path": "tests/evidence/lightbox/contracts.json",
+  "contracts_sha256": "67b12cd8bf3ede239dbe56cf7772bcbf42e361a095ca9eae3b021b92a03878bf",
+  "engine_version": "6.9.9",
+  "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+  "receipts": [
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-ASPECT-MOTION",
+      "claim_scope": "The route returns the signed motion witness used by its applying/separating classification contract.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_aspect_motion_witness.py",
+        "-q"
+      ],
+      "contract_sha256": "a324c0d801b3493cd8a094f3e77d8a421b1a7b73a9fa0cf6523ff5b129fa2155",
+      "duration_seconds": 25.112,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "No claim is made for relationship operations that do not use this witness vessel."
+      ],
+      "executed_at_utc": "2026-10-12T13:09:16.405708Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "29aa387ae4928b87103169612b65963270737eef4cde776901ccb5f327687dfc",
+      "output_tail": [
+        "...............                                                          [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "============================ Moira: slowest tests =============================",
+        "    6.469s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_openapi_is_fully_typed",
+        "    0.005s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_exposes_signed_wraparound_truth",
+        "    0.003s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload3]",
+        "    0.003s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload4]",
+        "    0.003s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_preserves_exact_truth_without_speeds"
+      ],
+      "passed_tests": 15,
+      "python_version": "3.14.3",
+      "receipt_id": "fdf2ac1cfea35498deea3e725023821116e494d0323bd0e4ffb9af37dee61cb7",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/aspects/motion-witness"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-CORE-REDUCTIONS",
+      "claim_scope": "Typed chart, house, planet-position, and sky-position reduction vessels retain their tested response contracts.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_chart_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "16a72ceef83910bb368820757bb43e5b09db7b98cb7c3a83960a58548aeea98c",
+      "duration_seconds": 69.621,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "No external-authority numerical residual is inferred from transport tests."
+      ],
+      "executed_at_utc": "2026-10-12T13:10:26.026969Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "0fe483d62bb5daa0f7ab352223ee1858a489fe383aace1d8173d465e2f895ff7",
+      "output_tail": [
+        ".......................                                                  [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "  Planetary resource: receipts=27, run=27, skip=0, failure=0, content_probes=1, identities=DE441",
+        "  Supplemental small-body resource: receipts=1, run=1, skip=0, failure=0, terminal=1, manifests=3, shards=470, bodies=11720, identities=moira-asteroids-wheel@2026.08.14.1:c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22,moira-asteroids@2026.09.18.1:1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e,moira-comets@2026.07.28.1:31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+        "============================ Moira: slowest tests =============================",
+        "    2.410s  tests/server/test_server_chart_routes.py::test_chart_route_matches_engine_selected_truth",
+        "    1.795s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_admits_small_bodies",
+        "    1.530s  tests/server/test_server_chart_routes.py::test_planet_position_route_preserves_topocentric_truth",
+        "    0.028s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_exposes_pipeline_truth",
+        "    0.009s  tests/server/test_server_chart_routes.py::test_planet_position_routes_admit_small_bodies"
+      ],
+      "passed_tests": 23,
+      "python_version": "3.14.3",
+      "receipt_id": "b9dabe8eab59e482a8c650af2ecce63446025e35cf2ccc1e73773088b4290f14",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/chart/reduction",
+        "rest:POST:/v1/houses/reduction",
+        "rest:POST:/v1/positions/planet/reduction",
+        "rest:POST:/v1/positions/sky/reduction"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-FRAME-POSITIONS",
+      "claim_scope": "Frame-specific response envelopes retain request/time/frame/bounds/validation/provenance contracts.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_frame_positions_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "7dedc67b22a2e7176c8e50cd3e08a283e95a120b7b6159d3a44f019659b2ecb5",
+      "duration_seconds": 23.947,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "The receipt does not promote regression coverage to an external astronomical authority comparison."
+      ],
+      "executed_at_utc": "2026-10-12T13:10:49.973936Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "b37f4e69f53eb62d7b8b1b6ead227e625f5c2c23b4bbb8c519d17bad25334992",
+      "output_tail": [
+        ".............                                                            [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "  Planetary resource: receipts=16, run=16, skip=0, failure=0, content_probes=1, identities=DE441",
+        "============================ Moira: slowest tests =============================",
+        "    0.780s  tests/server/test_server_frame_positions_routes.py::test_frame_ssb_route_includes_sun_and_matches_facade",
+        "    0.514s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_matches_facade_for_explicit_bodies",
+        "    0.374s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_supports_default_bodies",
+        "    0.021s  tests/server/test_server_frame_positions_routes.py::test_frame_received_light_route_matches_facade_for_outer_planet",
+        "    0.004s  tests/server/test_server_frame_positions_routes.py::test_frame_planetocentric_route_matches_facade"
+      ],
+      "passed_tests": 13,
+      "python_version": "3.14.3",
+      "receipt_id": "e8860cab9f29b0e93adfe6f82ee4d3162191ab5770d7ffd395f3adb2453f585b",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/positions/frame/heliocentric",
+        "rest:POST:/v1/positions/frame/planetocentric",
+        "rest:POST:/v1/positions/frame/received-light",
+        "rest:POST:/v1/positions/frame/ssb"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-HELLENISTIC-PROFILE",
+      "claim_scope": "The Hellenistic chart profile retains its tested typed composition and source-bound fields.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_hellenistic_profile.py",
+        "-q"
+      ],
+      "contract_sha256": "92e6dea44f64cf2158a3a9ebd49c3acda5d7c8bcdde71b6509ae8716febc726c",
+      "duration_seconds": 54.587,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "The receipt does not convert the profile into a numerical astronomy benchmark."
+      ],
+      "executed_at_utc": "2026-10-12T13:11:44.561116Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "30de99aa03e34d4e442144142f73b0b34b03e7cd3a294c2089a9cc0c2366188c",
+      "output_tail": [
+        "......                                                                   [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
+        "============================ Moira: slowest tests =============================",
+        "   31.093s  tests/server/test_server_hellenistic_profile.py::test_request_validation_rejects_ambiguous_or_closed_exclusion_inputs",
+        "    6.525s  tests/server/test_server_hellenistic_profile.py::test_openapi_profile_graph_is_typed_score_free_with_closed_exclusions",
+        "    2.020s  tests/server/test_server_hellenistic_profile.py::test_route_matches_engine_service_and_preserves_profile_boundaries",
+        "    0.031s  tests/server/test_server_hellenistic_profile.py::test_profile_route_can_enable_optional_overlays",
+        "    0.000s  tests/server/test_server_hellenistic_profile.py::test_service_separates_planetary_and_observer_geometry"
+      ],
+      "passed_tests": 6,
+      "python_version": "3.14.3",
+      "receipt_id": "4e1348dc9f2dd636ce0b465af246172d235aeb80829d8986d1e195fa037a8ea7",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/hellenistic/chart-profile"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-ORBITAL-ELEMENTS",
+      "claim_scope": "The orbital-elements envelope retains governed time conversion, frame, gravity, state-source, threshold, and provenance fields.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_orbits_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "712b7658410fea74f6a72db53a34a842680895f379ea84b0f46f98b2f344fd95",
+      "duration_seconds": 27.085,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "authority",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "This replay does not replace the underlying authority fixtures or claim coverage beyond the route tests."
+      ],
+      "executed_at_utc": "2026-10-12T13:12:11.646580Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "3e5ef54de79b87f35960cbc963b08c5604d3536b7a1c053797384b6b1ba04201",
+      "output_tail": [
+        "...............                                                          [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "============================ Moira: slowest tests =============================",
+        "    6.321s  tests/server/test_server_orbits_routes.py::test_orbit_class_batch_openapi_limit_matches_shared_server_limit",
+        "    0.018s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_invalid_inputs[payload0-not an orbital target]",
+        "    0.011s  tests/server/test_server_orbits_routes.py::test_orbit_class_route_returns_sbdb_classification",
+        "    0.008s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_extra_fields",
+        "    0.008s  tests/server/test_server_orbits_routes.py::test_orbits_get_is_not_admitted"
+      ],
+      "passed_tests": 15,
+      "python_version": "3.14.3",
+      "receipt_id": "b67422520bcb322e366c73f93dc921a2a7d4140d731383e02544fe10445aa492",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/orbits/elements"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-PANCHA-PAKSHI",
+      "claim_scope": "The admitted fixed-clock schedule route retains its typed doctrine-bound materialization contract.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_pancha_pakshi_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "73e2ae715c6e13fb07ae2633cf0af1dcc1ca2c69d5b0779404e0793adaaead82",
+      "duration_seconds": 29.652,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "The receipt is not a universal Pancha Pakshi tradition or historical-source claim."
+      ],
+      "executed_at_utc": "2026-10-12T13:12:41.299122Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "01237a1665bbe325e4ad6befde1aba9b32fc531f0627ddc667b66b24d60fd990",
+      "output_tail": [
+        "..................                                                       [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "============================ Moira: slowest tests =============================",
+        "    7.924s  tests/server/test_server_pancha_pakshi_routes.py::test_pancha_pakshi_openapi_is_strict_typed_and_source_scoped",
+        "    0.038s  tests/server/test_server_pancha_pakshi_routes.py::test_profiles_and_profile_info_expose_source_scope_without_a_default",
+        "    0.027s  tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_current_cell_route_rejects_implicit_or_mixed_policy",
+        "    0.018s  tests/server/test_server_pancha_pakshi_routes.py::test_fixed_clock_materialization_route_rejects_implicit_or_scaling_policy",
+        "    0.012s  tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_route_rejects_implicit_or_mixed_timing_policy"
+      ],
+      "passed_tests": 18,
+      "python_version": "3.14.3",
+      "receipt_id": "974bf6f9193c0e0a54bc28846e79f3683c3a39c259be5528d578a39c85e0b47b",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-PRIMARY-DIRECTIONS",
+      "claim_scope": "The primary-directions profile reduction retains its tested method, policy, and transport-contract distinctions.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_primary_directions_transport_contract.py",
+        "-q"
+      ],
+      "contract_sha256": "95687f842b96b80dea76ea369c920617a1f65a3634e85ee7eacaa09190e29508",
+      "duration_seconds": 12.734,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "The receipt does not resolve every primary-direction method or external historical authority question."
+      ],
+      "executed_at_utc": "2026-10-12T13:12:54.032864Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "533ada3fa1e52f968c8f690925561b0d735ccce48006eed6c2af6b8896fa69c4",
+      "output_tail": [
+        "..............................................                           [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "============================ Moira: slowest tests =============================",
+        "    0.169s  tests/server/test_primary_directions_transport_contract.py::test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded",
+        "    0.031s  tests/server/test_primary_directions_transport_contract.py::test_advanced_search_inputs_convert_to_exact_engine_vessels",
+        "    0.012s  tests/server/test_primary_directions_transport_contract.py::test_natal_and_direction_coordinates_are_distinct_and_greenwich_is_preserved",
+        "    0.010s  tests/server/test_primary_directions_transport_contract.py::test_submitted_arcs_are_bounded_and_cannot_hide_conversion_fallbacks",
+        "    0.007s  tests/server/test_primary_directions_transport_contract.py::test_every_canonical_engine_preset_is_transport_resolvable"
+      ],
+      "passed_tests": 46,
+      "python_version": "3.14.3",
+      "receipt_id": "5b75ea0d8a199d6f147c27e155f1ce83e1ddb8552cf9bcfeb70402d7a0675b7c",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/primary-directions/profile/reduction"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
+      "claim_scope": "The secondary-progression reduction route retains its tested computation-time and reduction response contract.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_phase8_progression_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "31017c33d75f2a3baf31067bf4632764f7955e4f3689ce31d9346f7ec981fb2a",
+      "duration_seconds": 19.941,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "No broader progression-family or external-authority residual claim is inferred."
+      ],
+      "executed_at_utc": "2026-10-12T13:13:13.974259Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "b1bd5d2aa7900db58d6d5cebc3ec704dfbc0e4089084e12e50c0d6acaf79e3be",
+      "output_tail": [
+        ".............                                                            [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "  Planetary resource: receipts=16, run=16, skip=0, failure=0, content_probes=1, identities=DE441",
+        "============================ Moira: slowest tests =============================",
+        "    2.147s  tests/server/test_server_phase8_progression_routes.py::test_secondary_progression_route_matches_engine",
+        "    0.005s  tests/server/test_server_phase8_progression_routes.py::test_progression_network_route_distinct_techniques",
+        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_converse_secondary_progression_route_matches_engine",
+        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_secondary_declination_route_matches_engine",
+        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_progression_profile_route_matches_engine"
+      ],
+      "passed_tests": 13,
+      "python_version": "3.14.3",
+      "receipt_id": "96d61b79d3eb0e795c099f7a4134e38f6cdd766434ac1772629aecb1a037c0cf",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/progressions/secondary/reduction"
+      ],
+      "working_tree_clean": false
+    },
+    {
+      "artifact_status": "local_unreleased_worktree",
+      "claim_id": "LB-EXEMPLAR-WESTERN-ELECTIONAL",
+      "claim_scope": "The western electional judgement route retains tested structured doctrine, components, and limitation states.",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/server/test_server_western_electional_judgement_routes.py",
+        "-q"
+      ],
+      "contract_sha256": "09a29a4211d200e01828a2fafc159f258388f49360ca8d4adcaff6aa47c3dd28",
+      "duration_seconds": 82.418,
+      "engine_version": "6.9.9",
+      "evidence_classes": [
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "exclusions": [
+        "The receipt does not establish source completeness beyond the named doctrine packet and tests."
+      ],
+      "executed_at_utc": "2026-10-12T13:14:36.392268Z",
+      "exit_code": 0,
+      "inventory_fingerprint_sha256": "63943c2c0dd786b2fabb9eb638d3d336be2fc9c57572d8cc23805c4448735a9a",
+      "minimum_tests": 1,
+      "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
+      "output_sha256": "26a80fe3e603d8880073bf6fd0326181c8e1ffd9c6545d563daca820583f447f",
+      "output_tail": [
+        ".....                                                                    [100%]",
+        "======================== Moira: harness policy receipt ========================",
+        "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
+        "  Network: default=deny, loopback=marked-only, external=disabled",
+        "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
+        "============================ Moira: slowest tests =============================",
+        "   38.568s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_round_trips_complete_sahl_composition",
+        "   12.943s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_dorotheus_flow_construction",
+        "   12.474s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_the_named_land_travel_sign_nature_policy",
+        "    5.611s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_openapi_names_full_request_and_response",
+        "    0.610s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_request_rejects_cross_doctrine_and_hidden_score"
+      ],
+      "passed_tests": 5,
+      "python_version": "3.14.3",
+      "receipt_id": "49c217b3b3b4f84f7e15beb24aa56105576741aa8356747b49b67000947b8cb6",
+      "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+      "status": "passed",
+      "surface_ids": [
+        "rest:POST:/v1/electional/western/judgement"
+      ],
+      "working_tree_clean": false
+    }
+  ],
+  "schema_version": "moira.lightbox-evidence-receipts/v1",
+  "source_revision": "7489e6acf450764a81ee654ebc2ccb1e28581e1e",
+  "summary": {
+    "contracts_run": 9,
+    "failed": 0,
+    "passed": 9,
+    "tests_passed": 154
+  },
+  "working_tree_clean": false
+}
