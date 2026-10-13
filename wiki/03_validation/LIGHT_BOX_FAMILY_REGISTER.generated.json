@@ -567,7 +567,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 647,
+        "source_line": 968,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -579,6 +579,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:all_nakshatras_at",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.sidereal",
+      "canonical_surface_id": "python:moira.facade:all_nakshatras_at_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "sidereal",
+      "family_label": "Sidereal",
+      "ownership": {
+        "source_line": 993,
+        "source_path": "moira/sidereal.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:all_nakshatras_at_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -2077,7 +2102,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 356,
+        "source_line": 531,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P0",
@@ -2091,6 +2116,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:ayanamsa",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.sidereal",
+      "canonical_surface_id": "python:moira.facade:ayanamsa_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "sidereal",
+      "family_label": "Sidereal",
+      "ownership": {
+        "source_line": 576,
+        "source_path": "moira/sidereal.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:ayanamsa_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -3497,7 +3547,7 @@
       "family_id": "chart-shape",
       "family_label": "Chart Shape",
       "ownership": {
-        "source_line": 830,
+        "source_line": 1070,
         "source_path": "moira/chart_shape.py"
       },
       "priority": "P0",
@@ -3511,6 +3561,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:classify_chart_shape",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.chart_shape",
+      "canonical_surface_id": "python:moira.facade:classify_chart_shape_with_truth",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "chart-shape",
+      "family_label": "Chart Shape",
+      "ownership": {
+        "source_line": 898,
+        "source_path": "moira/chart_shape.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:classify_chart_shape_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -11977,7 +12052,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 625,
+        "source_line": 905,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -11989,6 +12064,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:nakshatra_of",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.sidereal",
+      "canonical_surface_id": "python:moira.facade:nakshatra_of_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "sidereal",
+      "family_label": "Sidereal",
+      "ownership": {
+        "source_line": 951,
+        "source_path": "moira/sidereal.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:nakshatra_of_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -15835,7 +15935,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 434,
+        "source_line": 649,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -15847,6 +15947,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:sidereal_to_tropical",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.sidereal",
+      "canonical_surface_id": "python:moira.facade:sidereal_to_tropical_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "sidereal",
+      "family_label": "Sidereal",
+      "ownership": {
+        "source_line": 670,
+        "source_path": "moira/sidereal.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:sidereal_to_tropical_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -17539,7 +17664,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 415,
+        "source_line": 603,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -17551,6 +17676,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:tropical_to_sidereal",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.sidereal",
+      "canonical_surface_id": "python:moira.facade:tropical_to_sidereal_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "sidereal",
+      "family_label": "Sidereal",
+      "ownership": {
+        "source_line": 624,
+        "source_path": "moira/sidereal.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:tropical_to_sidereal_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -30985,7 +31135,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
+  "inventory_fingerprint_sha256": "50c7f1d7c89235f93d6424a474f67767dd8592b8848d3eb27e835c67ee9eccf8",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31003,16 +31153,16 @@
     "path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json",
     "roots": [
       {
-        "files_scanned": 905,
+        "files_scanned": 943,
         "product": "website",
         "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
-        "source_revision": "89b4366d3e8bb339143dae35a84747d4eaf1c5e9"
+        "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
       },
       {
-        "files_scanned": 576,
+        "files_scanned": 583,
         "product": "workspace",
         "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
-        "source_revision": "ee199d810708290a3bec838504d552eced38e7f3"
+        "source_revision": "04dd54cc867fa154c0701d73e8b69f0a00755496"
       }
     ]
   },
@@ -31026,33 +31176,33 @@
   "summary": {
     "alias_entries": 4,
     "canonical_by_domain_group": {
-      "astronomy-and-chart-core": 127,
+      "astronomy-and-chart-core": 132,
       "locational": 58,
       "phenomena-and-visibility": 123,
       "predictive-and-time": 163,
       "relationship": 42,
-      "specialist-and-compositional": 302,
+      "specialist-and-compositional": 303,
       "traditional-western": 128,
       "vedic-and-electional": 278
     },
     "canonical_by_exposure": {
       "production_user": 171,
       "public_api": 344,
-      "source_only": 706
+      "source_only": 712
     },
     "canonical_by_priority": {
       "P0": 171,
       "P1": 344,
-      "P2": 706
+      "P2": 712
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1221,
+      "reviewed": 1227,
       "seeded": 0
     },
-    "canonical_entries": 1221,
+    "canonical_entries": 1227,
     "cross_transport_families": 53,
-    "entries_total": 1225,
+    "entries_total": 1231,
     "family_count": 143
   }
 }

@@ -947,6 +947,35 @@ class SingleChartAnalysisRequest(_StrictModel):
         return self
 
 
+class ChartShapeGapTruthResponse(_StrictModel):
+    from_body: str
+    to_body: str
+    gap_deg: float
+    boundary_aspect_orb_deg: float
+    group_separating: bool
+
+
+class ChartShapeDetectorTruthResponse(_StrictModel):
+    detector: str
+    matched: bool
+
+
+class ChartShapeComputationTruthResponse(_StrictModel):
+    input_frame: str
+    input_source: str
+    normalized_longitudes: dict[str, float]
+    circular_order: list[str]
+    gaps: list[ChartShapeGapTruthResponse]
+    detector_attempts: list[ChartShapeDetectorTruthResponse]
+    selected_detector: str
+    selected_reason: str
+    canonical_body_set: list[str]
+    body_count: int
+    classification_policy: str
+    borderline_policy: str
+    interpretation: str
+
+
 class ChartShapeResponse(_StrictModel):
     shape: str
     occupied_arc: float
@@ -955,6 +984,7 @@ class ChartShapeResponse(_StrictModel):
     handle_planet: str | None = None
     handle_bodies: list[str] = Field(default_factory=list)
     clusters: list[list[str]]
+    computation_truth: ChartShapeComputationTruthResponse
 
 
 class PatternRequest(_StrictModel):
@@ -1293,6 +1323,9 @@ __all__ = [
     "DeclinationAspectsFromDeclinationsRequest",
     "DeclinationAspectsFromDeclinationsResponse",
     "AspectPatternResponse",
+    "ChartShapeGapTruthResponse",
+    "ChartShapeDetectorTruthResponse",
+    "ChartShapeComputationTruthResponse",
     "ChartShapeResponse",
     "CompositeChartRequest",
     "CompositeChartResponse",

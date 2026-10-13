@@ -137,6 +137,9 @@ User-defined ayanamsa payloads are not admitted in Stage 1.
 - `ayanamsa_deg`
 - `value_range`: `[0, 360)`
 - `provenance`
+- `computation_truth`: UT-to-TT binding, normalized and unwrapped values,
+  effective polynomial or live-star path, component terms, anchor identity,
+  and explicit fallback state/reason
 
 `SiderealConversionResponse`:
 
@@ -149,6 +152,8 @@ User-defined ayanamsa payloads are not admitted in Stage 1.
 - `ayanamsa_deg`
 - `longitude_range`: `[0, 360)`
 - `provenance`
+- `computation_truth`: normalized input, output, source/target frames, and the
+  single ayanamsa resolution used by the conversion
 
 `NakshatraPositionResponse`:
 
@@ -164,6 +169,8 @@ User-defined ayanamsa payloads are not admitted in Stage 1.
 - `degrees_in`
 - `degrees_remaining`
 - `sidereal_longitude_deg`
+- `computation_truth`: tropical/sidereal longitudes, assigned half-open sector,
+  boundary policy, and the effective ayanamsa resolution
 
 `NakshatraPositionEnvelopeResponse`:
 
@@ -196,9 +203,11 @@ Service functions:
 
 Service responsibilities:
 
-- call existing `moira.sidereal` functions
+- call the additive truth-bearing `moira.sidereal` functions while preserving
+  the established scalar/result APIs for Python callers
 - serialize engine result vessels without altering their meaning
-- compute `ayanamsa_deg` once for conversion responses and expose it
+- resolve the ayanamsa exactly once for conversion and bulk Nakshatra responses
+  and expose the same bound truth used by the returned result
 - compute `degrees_remaining = NAKSHATRA_SPAN - degrees_in`
 - preserve 0-based and 1-based Nakshatra indexing
 - attach explicit provenance and stage sequence
@@ -268,6 +277,9 @@ The routes must reject through the standard `422` validation envelope:
 Star-anchored true ayanamsa fallback behavior remains owned by
 `moira.sidereal.ayanamsa`. The REST layer must not repair missing catalog
 truth by substituting another ayanamsa system.
+
+Successful fallback is not silent: computation truth identifies the requested
+anchor, the effective polynomial fallback path, and a bounded reason code.
 
 ---
 

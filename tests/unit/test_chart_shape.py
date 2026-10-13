@@ -15,6 +15,8 @@ Scope
 No ephemeris kernel is required; all tests work with synthetic planet dicts.
 """
 
+import math
+
 import pytest
 import moira
 import moira.chart_shape as _cs_module
@@ -22,6 +24,7 @@ from moira.chart_shape import (
     ChartShapeType,
     ChartShape,
     classify_chart_shape,
+    classify_chart_shape_with_truth,
 )
 
 
@@ -86,7 +89,16 @@ _SPLASH = {
 # ---------------------------------------------------------------------------
 
 class TestPublicAPIResolution:
-    _PUBLIC_NAMES = ["ChartShapeType", "ChartShape", "classify_chart_shape"]
+    _PUBLIC_NAMES = [
+        "ChartShapeType",
+        "ChartShape",
+        "ChartShapeGapTruth",
+        "ChartShapeDetectorTruth",
+        "ChartShapeComputationTruth",
+        "ChartShapeWithTruth",
+        "classify_chart_shape",
+        "classify_chart_shape_with_truth",
+    ]
 
     def test_all_names_on_moira_package(self):
         for name in self._PUBLIC_NAMES:
@@ -670,3 +682,44 @@ class TestChartShapeInvariants:
             handle_planet=None,
             clusters=(frozenset({"Sun", "Moon", "Mercury"}),),
         )
+
+
+class TestCalculationTruthAndFiniteBoundary:
+    @pytest.mark.parametrize("invalid", [math.nan, math.inf, -math.inf])
+    def test_public_classifier_rejects_nonfinite_longitude(self, invalid: float):
+        positions = dict(_BUNDLE)
+        positions["Sun"] = invalid
+
+        with pytest.raises(ValueError, match="finite"):
+            classify_chart_shape(positions)
+
+    @pytest.mark.parametrize("invalid", [math.nan, math.inf, -math.inf])
+    def test_result_vessel_rejects_nonfinite_metrics(self, invalid: float):
+        with pytest.raises(ValueError, match="finite"):
+            ChartShape(
+                shape=ChartShapeType.SPLASH,
+                occupied_arc=invalid,
+                largest_gap=360.0,
+                leading_planet=None,
+                handle_planet=None,
+                clusters=(frozenset(_BUNDLE),),
+            )
+
+    def test_truth_discloses_normalized_inputs_gaps_and_selected_detector(self):
+        positions = dict(_BUCKET)
+        positions["Sun"] = 360.0
+
+        resolved = classify_chart_shape_with_truth(
+            positions,
+            input_frame="test_frame",
+            input_source="test_fixture",
+        )
+
+        assert resolved.result == classify_chart_shape(positions)
+        assert dict(resolved.truth.normalized_longitudes)["Sun"] == 0.0
+        assert set(resolved.truth.circular_order) == set(_BUCKET)
+        assert len(resolved.truth.gaps) == 10
+        assert resolved.truth.detector_attempts[-1].matched is True
+        assert resolved.truth.selected_detector == "bucket_one_nine"
+        assert resolved.truth.input_frame == "test_frame"
+        assert resolved.truth.input_source == "test_fixture"

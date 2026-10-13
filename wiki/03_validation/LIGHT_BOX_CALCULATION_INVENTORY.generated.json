@@ -2237,7 +2237,7 @@
       "owner_qualname": "Ayanamsa",
       "owner_resolution": "runtime-object",
       "public_name": "Ayanamsa",
-      "source_line": 124,
+      "source_line": 193,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:Ayanamsa",
       "surface_kind": "excluded_type",
@@ -2269,6 +2269,25 @@
         "tests/unit/test_swiss_ephemeris_migration_guide.py",
         "tests/unit/test_vedic_facade.py"
       ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:AyanamsaComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "AyanamsaComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "AyanamsaComputationTruth",
+      "source_line": 149,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:AyanamsaComputationTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
     },
     {
       "alias_of": null,
@@ -2664,6 +2683,7 @@
         "tests/server/test_server_nodes_routes.py",
         "tests/server/test_server_occultation_path_topology.py",
         "tests/server/test_server_phase_routes.py",
+        "tests/server/test_server_relationship_routes.py",
         "tests/server/test_server_sidereal_routes.py",
         "tests/server/test_server_uranian_routes.py",
         "tests/stress/test_resource_binding_audit.py",
@@ -3027,7 +3047,7 @@
       "owner_qualname": "COMET_NAIF",
       "owner_resolution": "facade-import-fallback",
       "public_name": "COMET_NAIF",
-      "source_line": 983,
+      "source_line": 1003,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:COMET_NAIF",
       "surface_kind": "excluded_value",
@@ -3432,7 +3452,7 @@
       "owner_qualname": "Chart",
       "owner_resolution": "runtime-object",
       "public_name": "Chart",
-      "source_line": 3371,
+      "source_line": 3407,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Chart",
       "surface_kind": "excluded_type",
@@ -3592,9 +3612,72 @@
       "owner_qualname": "ChartShape",
       "owner_resolution": "runtime-object",
       "public_name": "ChartShape",
-      "source_line": 365,
+      "source_line": 372,
       "source_path": "moira/chart_shape.py",
       "surface_id": "python:moira.facade:ChartShape",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_chart_shape.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ChartShapeComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.chart_shape",
+      "owner_qualname": "ChartShapeComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ChartShapeComputationTruth",
+      "source_line": 534,
+      "source_path": "moira/chart_shape.py",
+      "surface_id": "python:moira.facade:ChartShapeComputationTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_chart_shape.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ChartShapeDetectorTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.chart_shape",
+      "owner_qualname": "ChartShapeDetectorTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ChartShapeDetectorTruth",
+      "source_line": 526,
+      "source_path": "moira/chart_shape.py",
+      "surface_id": "python:moira.facade:ChartShapeDetectorTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_chart_shape.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ChartShapeGapTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.chart_shape",
+      "owner_qualname": "ChartShapeGapTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ChartShapeGapTruth",
+      "source_line": 515,
+      "source_path": "moira/chart_shape.py",
+      "surface_id": "python:moira.facade:ChartShapeGapTruth",
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/unit/test_chart_shape.py"
@@ -3616,9 +3699,30 @@
       "owner_qualname": "ChartShapeType",
       "owner_resolution": "runtime-object",
       "public_name": "ChartShapeType",
-      "source_line": 315,
+      "source_line": 322,
       "source_path": "moira/chart_shape.py",
       "surface_id": "python:moira.facade:ChartShapeType",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_chart_shape.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ChartShapeWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.chart_shape",
+      "owner_qualname": "ChartShapeWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ChartShapeWithTruth",
+      "source_line": 553,
+      "source_path": "moira/chart_shape.py",
+      "surface_id": "python:moira.facade:ChartShapeWithTruth",
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/unit/test_chart_shape.py"
@@ -19187,7 +19291,7 @@
       "owner_qualname": "Moira",
       "owner_resolution": "runtime-object",
       "public_name": "Moira",
-      "source_line": 3476,
+      "source_line": 3512,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Moira",
       "surface_kind": "excluded_type",
@@ -20656,6 +20760,44 @@
     },
     {
       "alias_of": null,
+      "canonical_id": "python:moira.facade:NakshatraCollectionWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "NakshatraCollectionWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "NakshatraCollectionWithTruth",
+      "source_line": 880,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:NakshatraCollectionWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:NakshatraComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "NakshatraComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "NakshatraComputationTruth",
+      "source_line": 855,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:NakshatraComputationTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
       "canonical_id": "python:moira.facade:NakshatraPosition",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -20675,7 +20817,7 @@
       "owner_qualname": "NakshatraPosition",
       "owner_resolution": "runtime-object",
       "public_name": "NakshatraPosition",
-      "source_line": 523,
+      "source_line": 769,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:NakshatraPosition",
       "surface_kind": "excluded_type",
@@ -20683,6 +20825,25 @@
         "tests/unit/test_muhurta.py",
         "tests/unit/test_sidereal.py"
       ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:NakshatraWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "NakshatraWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "NakshatraWithTruth",
+      "source_line": 872,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:NakshatraWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
     },
     {
       "alias_of": null,
@@ -31553,6 +31714,25 @@
     },
     {
       "alias_of": null,
+      "canonical_id": "python:moira.facade:SiderealLongitudeConversionTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "SiderealLongitudeConversionTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "SiderealLongitudeConversionTruth",
+      "source_line": 176,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:SiderealLongitudeConversionTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
       "canonical_id": "python:moira.facade:SignStrengthProfile",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -35785,12 +35965,13 @@
       "owner_qualname": "UserDefinedAyanamsa",
       "owner_resolution": "runtime-object",
       "public_name": "UserDefinedAyanamsa",
-      "source_line": 72,
+      "source_line": 89,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:UserDefinedAyanamsa",
       "surface_kind": "excluded_type",
       "test_paths": [
-        "tests/unit/test_decanates.py"
+        "tests/unit/test_decanates.py",
+        "tests/unit/test_sidereal.py"
       ]
     },
     {
@@ -38533,7 +38714,7 @@
       "owner_qualname": "__author__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__author__",
-      "source_line": 3364,
+      "source_line": 3400,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__author__",
       "surface_kind": "excluded_value",
@@ -38564,7 +38745,7 @@
       "owner_qualname": "__version__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__version__",
-      "source_line": 3363,
+      "source_line": 3399,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__version__",
       "surface_kind": "excluded_value",
@@ -39153,7 +39334,7 @@
       "owner_qualname": "all_nakshatras_at",
       "owner_resolution": "runtime-object",
       "public_name": "all_nakshatras_at",
-      "source_line": 647,
+      "source_line": 968,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:all_nakshatras_at",
       "surface_kind": "calculation",
@@ -39161,6 +39342,27 @@
         "tests/server/test_server_sidereal_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_facade_clock_boundaries.py",
+        "tests/unit/test_sidereal.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:all_nakshatras_at_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "all_nakshatras_at_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "all_nakshatras_at_with_truth",
+      "source_line": 993,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:all_nakshatras_at_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
         "tests/unit/test_sidereal.py"
       ]
     },
@@ -41055,7 +41257,7 @@
       "owner_qualname": "ayanamsa",
       "owner_resolution": "runtime-object",
       "public_name": "ayanamsa",
-      "source_line": 356,
+      "source_line": 531,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:ayanamsa",
       "surface_kind": "calculation",
@@ -41095,6 +41297,28 @@
         "tests/unit/test_stelliums.py",
         "tests/unit/test_varshaphal.py",
         "tests/unit/test_vedic_facade.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ayanamsa_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "ayanamsa_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ayanamsa_with_truth",
+      "source_line": 576,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:ayanamsa_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/server/test_server_sidereal_routes.py",
+        "tests/unit/test_sidereal.py"
       ]
     },
     {
@@ -42664,12 +42888,33 @@
       "owner_qualname": "classify_chart_shape",
       "owner_resolution": "runtime-object",
       "public_name": "classify_chart_shape",
-      "source_line": 830,
+      "source_line": 1070,
       "source_path": "moira/chart_shape.py",
       "surface_id": "python:moira.facade:classify_chart_shape",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/server/test_server_relationship_routes.py",
+        "tests/unit/test_chart_shape.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:classify_chart_shape_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.chart_shape",
+      "owner_qualname": "classify_chart_shape_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "classify_chart_shape_with_truth",
+      "source_line": 898,
+      "source_path": "moira/chart_shape.py",
+      "surface_id": "python:moira.facade:classify_chart_shape_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
         "tests/unit/test_chart_shape.py"
       ]
     },
@@ -50808,7 +51053,7 @@
       "owner_qualname": "list_ayanamsa_systems",
       "owner_resolution": "runtime-object",
       "public_name": "list_ayanamsa_systems",
-      "source_line": 451,
+      "source_line": 693,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:list_ayanamsa_systems",
       "surface_kind": "reference_query",
@@ -52577,7 +52822,7 @@
       "owner_qualname": "nakshatra_of",
       "owner_resolution": "runtime-object",
       "public_name": "nakshatra_of",
-      "source_line": 625,
+      "source_line": 905,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:nakshatra_of",
       "surface_kind": "calculation",
@@ -52589,6 +52834,27 @@
         "tests/unit/test_sidereal.py",
         "tests/unit/test_sidereal_nakshatra_boundaries.py",
         "tests/unit/test_varshaphal.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:nakshatra_of_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "nakshatra_of_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "nakshatra_of_with_truth",
+      "source_line": 951,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:nakshatra_of_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_sidereal.py"
       ]
     },
     {
@@ -57055,7 +57321,7 @@
       "owner_qualname": "sidereal_to_tropical",
       "owner_resolution": "runtime-object",
       "public_name": "sidereal_to_tropical",
-      "source_line": 434,
+      "source_line": 649,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:sidereal_to_tropical",
       "surface_kind": "calculation",
@@ -57067,6 +57333,27 @@
         "tests/unit/test_sidereal.py",
         "tests/unit/test_sidereal_nakshatra_boundaries.py",
         "tests/unit/test_vedic_facade.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:sidereal_to_tropical_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "sidereal_to_tropical_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "sidereal_to_tropical_with_truth",
+      "source_line": 670,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:sidereal_to_tropical_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_sidereal.py"
       ]
     },
     {
@@ -58905,7 +59192,7 @@
       "owner_qualname": "tropical_to_sidereal",
       "owner_resolution": "runtime-object",
       "public_name": "tropical_to_sidereal",
-      "source_line": 415,
+      "source_line": 603,
       "source_path": "moira/sidereal.py",
       "surface_id": "python:moira.facade:tropical_to_sidereal",
       "surface_kind": "calculation",
@@ -58939,6 +59226,27 @@
         "tests/unit/test_transits.py",
         "tests/unit/test_varshaphal.py",
         "tests/unit/test_vedic_facade.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:tropical_to_sidereal_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.sidereal",
+      "owner_qualname": "tropical_to_sidereal_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "tropical_to_sidereal_with_truth",
+      "source_line": 624,
+      "source_path": "moira/sidereal.py",
+      "surface_id": "python:moira.facade:tropical_to_sidereal_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_sidereal.py"
       ]
     },
     {
@@ -76686,30 +76994,30 @@
   "schema_version": "moira.lightbox-calculation-inventory/v1",
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
-    "python_surface_ids_sha256": "debfb4a8854a9dcd2e9d8d169ecfc0bb4e6d160202526a4dc07f2a2a6b4e0c95",
+    "python_surface_ids_sha256": "0e7c7157e60ddca132e1dc80b50f52502b31478a439b7c90fea46f52d77617ee",
     "rest_surface_ids_sha256": "c8fcb2388ea85f38ea0897cc62a1294c121cddf11ffeafb9c5c124aeea667be2"
   },
   "summary": {
     "python_aliases": 2,
     "python_by_export_kind": {
       "class": 29,
-      "dataclass": 1043,
+      "dataclass": 1052,
       "enum": 244,
       "exception": 38,
-      "function": 790,
+      "function": 796,
       "value": 154
     },
     "python_by_surface_kind": {
-      "calculation": 671,
+      "calculation": 677,
       "composition_profile": 81,
-      "excluded_type": 1354,
+      "excluded_type": 1363,
       "excluded_value": 154,
       "reference_query": 26,
       "validation_helper": 12
     },
-    "python_exports": 2298,
-    "python_in_scope": 752,
-    "python_in_scope_without_documentation_mentions": 66,
+    "python_exports": 2313,
+    "python_in_scope": 758,
+    "python_in_scope_without_documentation_mentions": 72,
     "python_in_scope_without_test_mentions": 9,
     "rest_aliases": 3,
     "rest_by_surface_kind": {
@@ -76724,5 +77032,5 @@
     "rest_in_scope_without_test_mentions": 3,
     "rest_operations": 518
   },
-  "surface_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701"
+  "surface_fingerprint_sha256": "50c7f1d7c89235f93d6424a474f67767dd8592b8848d3eb27e835c67ee9eccf8"
 }

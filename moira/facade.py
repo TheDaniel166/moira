@@ -403,7 +403,27 @@ from .declination_aspects import (
     DeclinationMotionState,
     declination_aspect_motion_witness,
 )
-from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, UserDefinedAyanamsa, list_ayanamsa_systems
+from .sidereal import (
+    Ayanamsa,
+    AyanamsaComputationTruth,
+    NakshatraCollectionWithTruth,
+    NakshatraComputationTruth,
+    NakshatraPosition,
+    NakshatraWithTruth,
+    SiderealLongitudeConversionTruth,
+    UserDefinedAyanamsa,
+    all_nakshatras_at,
+    all_nakshatras_at_with_truth,
+    ayanamsa,
+    ayanamsa_with_truth,
+    list_ayanamsa_systems,
+    nakshatra_of,
+    nakshatra_of_with_truth,
+    sidereal_to_tropical,
+    sidereal_to_tropical_with_truth,
+    tropical_to_sidereal,
+    tropical_to_sidereal_with_truth,
+)
 from .heliacal import (
     HeliacalEventKind, VisibilityModel, HeliacalPolicy,
     PlanetHeliacalEvent,
@@ -1037,7 +1057,6 @@ from .dignities import (
     halb_required_hemisphere, is_in_hayz, is_in_sect,
     SectStateKind, SectTruth, SectClassification,
 )
-from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
 from .antiscia import AntisciaAspect, find_antiscia, antiscia_to_point
 from .profections import (
     LeapDayAnniversaryPolicy,
@@ -1331,7 +1350,16 @@ from .patterns import (
     find_hard_wedges, find_dominant_triangles,
     find_grand_quintiles, find_quintile_triangles, find_septile_triangles,
 )
-from .chart_shape import ChartShapeType, ChartShape, classify_chart_shape
+from .chart_shape import (
+    ChartShape,
+    ChartShapeComputationTruth,
+    ChartShapeDetectorTruth,
+    ChartShapeGapTruth,
+    ChartShapeType,
+    ChartShapeWithTruth,
+    classify_chart_shape,
+    classify_chart_shape_with_truth,
+)
 from .phenomena import (
     PhenomenonEvent, OrbitalResonance, greatest_elongation, perihelion, aphelion,
     next_moon_phase, moon_phases_in_range,
@@ -2327,7 +2355,11 @@ __all__ = [
     "atmospheric_refraction", "atmospheric_refraction_extended",
     "equation_of_time",
     "angular_distance", "normalize_degrees",
-    "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical", "list_ayanamsa_systems",
+    "AyanamsaComputationTruth", "SiderealLongitudeConversionTruth",
+    "ayanamsa", "ayanamsa_with_truth",
+    "tropical_to_sidereal", "tropical_to_sidereal_with_truth",
+    "sidereal_to_tropical", "sidereal_to_tropical_with_truth",
+    "list_ayanamsa_systems",
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY", "TRADITIONAL_MOIETY_ORBS",
@@ -2725,7 +2757,9 @@ __all__ = [
     "sect_light", "is_day_chart", "almuten_figuris", "almuten_of_degree", "find_phasis",
     "halb_required_hemisphere", "is_in_hayz", "is_in_sect",
     # Nakshatras
-    "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
+    "NakshatraPosition", "NakshatraComputationTruth", "NakshatraWithTruth",
+    "NakshatraCollectionWithTruth", "nakshatra_of", "nakshatra_of_with_truth",
+    "all_nakshatras_at", "all_nakshatras_at_with_truth",
     # Antiscia
     "AntisciaAspect", "find_antiscia", "antiscia_to_point",
     # Profections
@@ -2931,7 +2965,9 @@ __all__ = [
     "find_hard_wedges", "find_dominant_triangles",
     "find_grand_quintiles", "find_quintile_triangles", "find_septile_triangles",
     # Chart shape (Jones temperament types)
-    "ChartShapeType", "ChartShape", "classify_chart_shape",
+    "ChartShapeType", "ChartShape", "ChartShapeGapTruth",
+    "ChartShapeDetectorTruth", "ChartShapeComputationTruth", "ChartShapeWithTruth",
+    "classify_chart_shape", "classify_chart_shape_with_truth",
     # Planetary phenomena
     "PhenomenonEvent", "OrbitalResonance", "greatest_elongation", "perihelion", "aphelion",
     "next_moon_phase", "moon_phases_in_range",

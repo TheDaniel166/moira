@@ -174,6 +174,54 @@ class SiderealUtilityProvenanceResponse(_StrictModel):
     stage_sequence: list[str]
 
 
+class AyanamsaComputationTruthResponse(_StrictModel):
+    jd_ut: float | None
+    jd_tt: float
+    ayanamsa_system: str
+    system_kind: str
+    requested_mode: str
+    effective_path: str
+    ayanamsa_unwrapped_deg: float
+    ayanamsa_deg: float
+    reference_value_j2000_deg: float | None
+    precession_longitude_deg: float | None
+    drift_correction_deg: float | None
+    nutation_longitude_deg: float | None
+    anchor_star: str | None
+    anchor_target_sidereal_longitude_deg: float | None
+    anchor_tropical_longitude_deg: float | None
+    anchor_source_mode: str | None
+    fallback_applied: bool
+    fallback_reason: str | None
+    input_timescale: str
+    computation_timescale: str
+    output_normalization: str
+
+
+class SiderealLongitudeConversionTruthResponse(_StrictModel):
+    direction: str
+    input_longitude_deg: float
+    normalized_input_longitude_deg: float
+    output_longitude_deg: float
+    source_frame: str
+    target_frame: str
+    ayanamsa: AyanamsaComputationTruthResponse
+
+
+class NakshatraComputationTruthResponse(_StrictModel):
+    tropical_longitude_deg: float
+    normalized_tropical_longitude_deg: float
+    sidereal_longitude_deg: float
+    nakshatra_index: int
+    sector_start_longitude_deg: float
+    sector_end_longitude_deg: float
+    pada: int
+    ayanamsa: AyanamsaComputationTruthResponse
+    taxonomy: str
+    sector_boundary_policy: str
+    interpretation: str
+
+
 class AyanamsaSystemResponse(_StrictModel):
     system: str
     reference_value_j2000_deg: float
@@ -195,6 +243,7 @@ class SiderealAyanamsaResponse(_StrictModel):
     ayanamsa_deg: float
     value_range: list[float | str]
     provenance: SiderealUtilityProvenanceResponse
+    computation_truth: AyanamsaComputationTruthResponse
 
 
 class SiderealConversionResponse(_StrictModel):
@@ -207,6 +256,7 @@ class SiderealConversionResponse(_StrictModel):
     ayanamsa_deg: float
     longitude_range: list[float | str]
     provenance: SiderealUtilityProvenanceResponse
+    computation_truth: SiderealLongitudeConversionTruthResponse
 
 
 class SiderealNakshatraPositionResponse(_StrictModel):
@@ -222,6 +272,7 @@ class SiderealNakshatraPositionResponse(_StrictModel):
     degrees_in: float
     degrees_remaining: float
     sidereal_longitude_deg: float
+    computation_truth: NakshatraComputationTruthResponse
 
 
 class SiderealNakshatraPositionEnvelopeResponse(_StrictModel):

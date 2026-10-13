@@ -3,6 +3,7 @@
     {
       "date": "1.1.2000",
       "id": "j2000_ut0",
+      "jd_ut": 2451544.5,
       "systems": {
         "Aldebaran (15 Tau)": {
           "mean": {
@@ -413,6 +414,7 @@
     {
       "date": "16.3.1625",
       "id": "1625_03_16_ut12",
+      "jd_ut": 2314654.0,
       "systems": {
         "Aldebaran (15 Tau)": {
           "mean": {

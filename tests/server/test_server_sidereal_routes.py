@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 import pytest
 
+import moira.sidereal as sidereal_module
 from moira.constants import J2000
 from moira.sidereal import (
     Ayanamsa,
@@ -79,6 +80,31 @@ def test_ayanamsa_value_route_matches_engine(client: TestClient) -> None:
     assert body["value_range"] == [0.0, "360_exclusive"]
     assert body["provenance"]["engine_entrypoint"] == "ayanamsa"
     assert body["provenance"]["star_anchor_policy"] == "engine_owned_for_true_star_anchored_systems"
+    truth = body["computation_truth"]
+    assert truth["jd_ut"] == J2000
+    assert truth["jd_tt"] > J2000
+    assert truth["effective_path"] == "polynomial_reference_plus_precession_plus_drift"
+    assert truth["ayanamsa_deg"] == pytest.approx(body["ayanamsa_deg"])
+    assert truth["fallback_applied"] is False
+
+
+def test_ayanamsa_route_normalizes_declared_output_range_at_ancient_epoch(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/sidereal/ayanamsa",
+        json={
+            "jd_ut": 0.0,
+            "ayanamsa_system": Ayanamsa.LAHIRI,
+            "mode": "mean",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert 0.0 <= body["ayanamsa_deg"] < 360.0
+    assert body["computation_truth"]["ayanamsa_unwrapped_deg"] < 0.0
+    assert body["computation_truth"]["ayanamsa_deg"] == body["ayanamsa_deg"]
 
 
 @pytest.mark.parametrize(
@@ -116,6 +142,10 @@ def test_sidereal_conversion_route_matches_engine(
     assert body["longitude_range"] == [0.0, "360_exclusive"]
     assert body["provenance"]["engine_entrypoint"] == expected_entrypoint
     assert body["provenance"]["conversion_direction"] == direction
+    truth = body["computation_truth"]
+    assert truth["direction"] == direction
+    assert truth["output_longitude_deg"] == pytest.approx(body["output_longitude_deg"])
+    assert truth["ayanamsa"]["ayanamsa_deg"] == pytest.approx(body["ayanamsa_deg"])
 
 
 def test_sidereal_conversion_round_trip(client: TestClient) -> None:
@@ -147,6 +177,33 @@ def test_sidereal_conversion_round_trip(client: TestClient) -> None:
     assert second.json()["output_longitude_deg"] == pytest.approx(tropical)
 
 
+def test_sidereal_conversion_route_resolves_ayanamsa_once(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = sidereal_module.ayanamsa_with_truth
+    calls: list[tuple[float, object, str]] = []
+
+    def witnessed(jd, system=Ayanamsa.LAHIRI, mode="true"):
+        calls.append((jd, system, mode))
+        return original(jd, system, mode)
+
+    monkeypatch.setattr(sidereal_module, "ayanamsa_with_truth", witnessed)
+    response = client.post(
+        "/v1/sidereal/convert",
+        json={
+            "longitude_deg": 123.456,
+            "jd_ut": J2000,
+            "direction": "tropical_to_sidereal",
+            "ayanamsa_system": Ayanamsa.LAHIRI,
+            "mode": "true",
+        },
+    )
+
+    assert response.status_code == 200
+    assert calls == [(J2000, Ayanamsa.LAHIRI, "true")]
+
+
 def test_nakshatra_position_route_matches_engine(client: TestClient) -> None:
     tropical_longitude = 37.5
     expected = nakshatra_of(tropical_longitude, J2000, Ayanamsa.LAHIRI)
@@ -173,6 +230,12 @@ def test_nakshatra_position_route_matches_engine(client: TestClient) -> None:
     assert position["sidereal_longitude_deg"] == pytest.approx(expected.sidereal_lon)
     assert body["provenance"]["taxonomy"] == "twenty_seven_equal_nakshatras"
     assert body["provenance"]["panchanga_judgement"] == "not_returned"
+    truth = position["computation_truth"]
+    assert truth["nakshatra_index"] == position["nakshatra_index"]
+    assert truth["sidereal_longitude_deg"] == pytest.approx(
+        position["sidereal_longitude_deg"]
+    )
+    assert truth["ayanamsa"]["requested_mode"] == "true"
 
 
 def test_nakshatra_bulk_route_matches_engine(client: TestClient) -> None:
@@ -195,6 +258,9 @@ def test_nakshatra_bulk_route_matches_engine(client: TestClient) -> None:
     assert by_name["Moon"]["nakshatra"] == expected["Moon"].nakshatra
     assert by_name["Moon"]["degrees_in"] == pytest.approx(expected["Moon"].degrees_in)
     assert by_name["Mars"]["nakshatra_lord"] == expected["Mars"].nakshatra_lord
+    assert by_name["Moon"]["computation_truth"]["ayanamsa"] == (
+        by_name["Mars"]["computation_truth"]["ayanamsa"]
+    )
     assert body["provenance"]["engine_entrypoint"] == "all_nakshatras_at"
 
 

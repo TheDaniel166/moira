@@ -14,7 +14,7 @@ from moira.declination_aspects import (
     DeclinationAspectMotionWitness,
 )
 from moira.aspect_events import MoonAspectEvent, MoonConnectionFlow
-from moira.chart_shape import ChartShape
+from moira.chart_shape import ChartShapeWithTruth
 from moira.houses import HousePlacement
 from moira.midpoints import Midpoint, MidpointCluster, MidpointWeight, PlanetaryPicture
 from moira.patterns import (
@@ -70,6 +70,9 @@ from ..models.relationship import (
     DeclinationAspectResponse,
     DeclinationAspectsFromDeclinationsResponse,
     AspectPatternResponse,
+    ChartShapeComputationTruthResponse,
+    ChartShapeDetectorTruthResponse,
+    ChartShapeGapTruthResponse,
     ChartShapeResponse,
     CompositeChartResponse,
     CompositeClassificationResponse,
@@ -683,7 +686,9 @@ def serialize_synastry_network(
     )
 
 
-def serialize_chart_shape(shape: ChartShape) -> ChartShapeResponse:
+def serialize_chart_shape(resolved: ChartShapeWithTruth) -> ChartShapeResponse:
+    shape = resolved.result
+    truth = resolved.truth
     return ChartShapeResponse(
         shape=shape.shape.value,
         occupied_arc=shape.occupied_arc,
@@ -692,6 +697,36 @@ def serialize_chart_shape(shape: ChartShape) -> ChartShapeResponse:
         handle_planet=shape.handle_planet,
         handle_bodies=sorted(shape.handle_bodies),
         clusters=[sorted(cluster) for cluster in shape.clusters],
+        computation_truth=ChartShapeComputationTruthResponse(
+            input_frame=truth.input_frame,
+            input_source=truth.input_source,
+            normalized_longitudes=dict(truth.normalized_longitudes),
+            circular_order=list(truth.circular_order),
+            gaps=[
+                ChartShapeGapTruthResponse(
+                    from_body=gap.from_body,
+                    to_body=gap.to_body,
+                    gap_deg=gap.gap_deg,
+                    boundary_aspect_orb_deg=gap.boundary_aspect_orb_deg,
+                    group_separating=gap.group_separating,
+                )
+                for gap in truth.gaps
+            ],
+            detector_attempts=[
+                ChartShapeDetectorTruthResponse(
+                    detector=attempt.detector,
+                    matched=attempt.matched,
+                )
+                for attempt in truth.detector_attempts
+            ],
+            selected_detector=truth.selected_detector,
+            selected_reason=truth.selected_reason,
+            canonical_body_set=list(truth.canonical_body_set),
+            body_count=truth.body_count,
+            classification_policy=truth.classification_policy,
+            borderline_policy=truth.borderline_policy,
+            interpretation=truth.interpretation,
+        ),
     )
 
 

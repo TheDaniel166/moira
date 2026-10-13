@@ -703,13 +703,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 1,
+      "canonical_surface_count": 2,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 1
+        "unresolved": 2
       },
       "documentation_leads": [
         "wiki/02_standards/API_REFERENCE.md",
@@ -719,7 +719,9 @@
       "family_id": "chart-shape",
       "family_label": "Chart Shape",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
-      "missing_documentation_surface_ids": [],
+      "missing_documentation_surface_ids": [
+        "python:moira.facade:classify_chart_shape_with_truth"
+      ],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/chart_shape.py"
@@ -728,10 +730,11 @@
       "production_user_surface_ids": [
         "python:moira.facade:classify_chart_shape"
       ],
-      "python_surface_count": 1,
+      "python_surface_count": 2,
       "rest_surface_count": 0,
       "review_stages": [
-        "stage_3_product_use"
+        "stage_3_product_use",
+        "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
@@ -6088,13 +6091,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 9,
+      "canonical_surface_count": 14,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 9
+        "unresolved": 14
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6203,7 +6206,13 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
-      "missing_documentation_surface_ids": [],
+      "missing_documentation_surface_ids": [
+        "python:moira.facade:all_nakshatras_at_with_truth",
+        "python:moira.facade:ayanamsa_with_truth",
+        "python:moira.facade:nakshatra_of_with_truth",
+        "python:moira.facade:sidereal_to_tropical_with_truth",
+        "python:moira.facade:tropical_to_sidereal_with_truth"
+      ],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/sidereal.py",
@@ -6215,7 +6224,7 @@
         "rest:POST:/v1/nakshatra/position",
         "rest:POST:/v1/sidereal/ayanamsa"
       ],
-      "python_surface_count": 5,
+      "python_surface_count": 10,
       "rest_surface_count": 4,
       "review_stages": [
         "stage_3_product_use",
@@ -7783,7 +7792,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
+  "inventory_fingerprint_sha256": "50c7f1d7c89235f93d6424a474f67767dd8592b8848d3eb27e835c67ee9eccf8",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7795,12 +7804,12 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1221,
+    "canonical_surface_count": 1227,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 119
+      "stage_5_remaining_tail": 120
     },
     "families_by_status": {
       "major_gap": 11,
@@ -7809,7 +7818,7 @@
       "strong_exemplar": 4,
       "unresolved": 0
     },
-    "families_with_missing_documentation": 26,
+    "families_with_missing_documentation": 28,
     "families_with_missing_tests": 7,
     "family_count": 143,
     "production_user_surface_count": 171,
@@ -7818,7 +7827,7 @@
       "conformant": 0,
       "not_applicable": 0,
       "partial": 51,
-      "unresolved": 1170
+      "unresolved": 1176
     }
   }
 }

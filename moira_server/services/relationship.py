@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from moira import Moira
-from moira.chart_shape import classify_chart_shape
+from moira.chart_shape import classify_chart_shape_with_truth
 from moira.midpoints import (
     calculate_midpoints,
     midpoint_clusters,
@@ -398,7 +398,11 @@ def _positions_for_analysis(engine: Moira, request: RelationshipPartyRequest, in
 
 
 def compute_chart_shape(engine: Moira, request: SingleChartAnalysisRequest):
-    return classify_chart_shape(_positions_for_analysis(engine, request.chart, request.include_nodes))
+    return classify_chart_shape_with_truth(
+        _positions_for_analysis(engine, request.chart, request.include_nodes),
+        input_frame="true_ecliptic_and_equinox_of_date",
+        input_source="computed_natal_chart_planets",
+    )
 
 
 def _find_patterns_for_positions(request: PatternRequest, positions: dict[str, float]):

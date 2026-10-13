@@ -268,6 +268,7 @@ Public surface
 ``ChartShapeType``       — enum of the seven Jones pattern names.
 ``ChartShape``           — frozen result vessel.
 ``classify_chart_shape`` — single entry point; positions -> ChartShape.
+``classify_chart_shape_with_truth`` — additive result plus normalized evidence.
 """
 
 from __future__ import annotations
@@ -275,6 +276,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
+import math
 
 from .constants import Body
 from .coordinates import normalize_degrees, angular_distance
@@ -283,7 +285,12 @@ from .coordinates import normalize_degrees, angular_distance
 __all__ = [
     "ChartShapeType",
     "ChartShape",
+    "ChartShapeGapTruth",
+    "ChartShapeDetectorTruth",
+    "ChartShapeComputationTruth",
+    "ChartShapeWithTruth",
     "classify_chart_shape",
+    "classify_chart_shape_with_truth",
 ]
 
 
@@ -437,6 +444,11 @@ class ChartShape:
     handle_bodies:   frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
+        if not math.isfinite(self.occupied_arc) or not math.isfinite(self.largest_gap):
+            raise ValueError(
+                "ChartShape invariant violated: occupied_arc and largest_gap "
+                "must be finite"
+            )
         if abs(self.occupied_arc + self.largest_gap - 360.0) > 1e-9:
             raise ValueError(
                 f"ChartShape invariant violated: "
@@ -500,19 +512,75 @@ class ChartShape:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ChartShapeGapTruth:
+    """One clockwise gap and its Jones group-separation decision."""
+
+    from_body: str
+    to_body: str
+    gap_deg: float
+    boundary_aspect_orb_deg: float
+    group_separating: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ChartShapeDetectorTruth:
+    """One detector in the frozen first-match classification sequence."""
+
+    detector: str
+    matched: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ChartShapeComputationTruth:
+    """Normalized inputs, gap evidence, and the effective Jones rule path."""
+
+    input_frame: str
+    input_source: str
+    normalized_longitudes: tuple[tuple[str, float], ...]
+    circular_order: tuple[str, ...]
+    gaps: tuple[ChartShapeGapTruth, ...]
+    detector_attempts: tuple[ChartShapeDetectorTruth, ...]
+    selected_detector: str
+    selected_reason: str
+    canonical_body_set: tuple[str, ...]
+    body_count: int = 10
+    classification_policy: str = "first_match_in_frozen_jones_priority_order"
+    borderline_policy: str = "splash_is_deterministic_residual"
+    interpretation: str = "none_geometric_classification_only"
+
+
+@dataclass(frozen=True, slots=True)
+class ChartShapeWithTruth:
+    """Backward-compatible ChartShape paired with calculation evidence."""
+
+    result: ChartShape
+    truth: ChartShapeComputationTruth
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _sorted_longitudes(positions: dict[str, float]) -> list[tuple[float, str]]:
+def _sorted_longitudes(positions: Mapping[str, float]) -> list[tuple[float, str]]:
     """
     Return (longitude, name) pairs sorted by normalised longitude ascending
     (i.e., clockwise from 0 degrees).
     """
-    return sorted(
-        ((normalize_degrees(lon), name) for name, lon in positions.items()),
-        key=lambda x: x[0],
-    )
+    normalized: list[tuple[float, str]] = []
+    for name, raw_longitude in positions.items():
+        try:
+            longitude = float(raw_longitude)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"classify_chart_shape longitude for {name!r} must be numeric and finite"
+            ) from exc
+        if not math.isfinite(longitude):
+            raise ValueError(
+                f"classify_chart_shape longitude for {name!r} must be finite"
+            )
+        normalized.append((normalize_degrees(longitude), name))
+    return sorted(normalized, key=lambda item: item[0])
 
 
 def _compute_gaps(sorted_lons: list[tuple[float, str]]) -> list[tuple[float, int, int]]:
@@ -827,7 +895,12 @@ def _detect_splash(
 # Public entry point
 # ---------------------------------------------------------------------------
 
-def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
+def classify_chart_shape_with_truth(
+    positions: Mapping[str, float],
+    *,
+    input_frame: str = "caller_supplied_ecliptic_longitudes",
+    input_source: str = "caller_mapping",
+) -> ChartShapeWithTruth:
     """
     Classify the whole-chart Jones temperament type for the given planet set.
 
@@ -839,7 +912,7 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
 
     Returns
     -------
-    ChartShape — the classified pattern and its derived metrics.
+    ChartShapeWithTruth — the classified pattern plus normalized evidence.
 
     Detection order
     ---------------
@@ -853,7 +926,8 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
 
     Raises
     ------
-    ValueError if positions is not exactly the canonical Jones body set.
+    ValueError if positions is not exactly the canonical Jones body set or if
+    any supplied longitude is non-numeric or non-finite.
     """
     supplied_bodies = frozenset(positions)
     if supplied_bodies != _JONES_BODIES:
@@ -870,18 +944,75 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
     largest_gap   = max(g for g, _, _ in gaps)
     occupied_arc  = 360.0 - largest_gap
     separating_gaps = _group_separating_gaps(sorted_lons, gaps)
+    detector_attempts: list[ChartShapeDetectorTruth] = []
+
+    def complete(
+        shape: ChartShape,
+        detector: str,
+        reason: str,
+    ) -> ChartShapeWithTruth:
+        gap_truth = tuple(
+            ChartShapeGapTruth(
+                from_body=sorted_lons[from_index][1],
+                to_body=sorted_lons[to_index][1],
+                gap_deg=gap_degrees,
+                boundary_aspect_orb_deg=_jones_aspect_orb(
+                    sorted_lons[from_index][1],
+                    sorted_lons[to_index][1],
+                ),
+                group_separating=_is_group_separating_gap(
+                    (gap_degrees, from_index, to_index),
+                    sorted_lons,
+                ),
+            )
+            for gap_degrees, from_index, to_index in gaps
+        )
+        normalized_by_name = tuple(
+            sorted((name, longitude) for longitude, name in sorted_lons)
+        )
+        return ChartShapeWithTruth(
+            result=shape,
+            truth=ChartShapeComputationTruth(
+                input_frame=input_frame,
+                input_source=input_source,
+                normalized_longitudes=normalized_by_name,
+                circular_order=tuple(name for _, name in sorted_lons),
+                gaps=gap_truth,
+                detector_attempts=tuple(detector_attempts),
+                selected_detector=detector,
+                selected_reason=reason,
+                canonical_body_set=tuple(sorted(_JONES_BODIES)),
+            ),
+        )
 
     result = _detect_bundle(sorted_lons, largest_gap, occupied_arc)
+    detector_attempts.append(ChartShapeDetectorTruth("bundle_span", result is not None))
     if result:
-        return result
+        return complete(
+            result,
+            "bundle_span",
+            "occupied_arc_at_or_below_120_degrees",
+        )
 
     result = _detect_bowl(sorted_lons, gaps, largest_gap, occupied_arc)
+    detector_attempts.append(ChartShapeDetectorTruth("bowl_span", result is not None))
     if result:
-        return result
+        return complete(
+            result,
+            "bowl_span",
+            "all_ten_bodies_within_one_180_degree_hemisphere",
+        )
 
     result = _detect_bucket(sorted_lons)
+    detector_attempts.append(
+        ChartShapeDetectorTruth("bucket_one_nine", result is not None)
+    )
     if result:
-        return result
+        return complete(
+            result,
+            "bucket_one_nine",
+            "one_handle_opposite_a_nine_body_bowl_core",
+        )
 
     result = _detect_seesaw(
         sorted_lons,
@@ -889,12 +1020,26 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
         largest_gap,
         occupied_arc,
     )
+    detector_attempts.append(
+        ChartShapeDetectorTruth("seesaw_two_groups", result is not None)
+    )
     if result:
-        return result
+        return complete(
+            result,
+            "seesaw_two_groups",
+            "exactly_two_jones_separated_groups_with_two_or_more_bodies",
+        )
 
     result = _detect_splay(sorted_lons, separating_gaps, largest_gap)
+    detector_attempts.append(
+        ChartShapeDetectorTruth("splay_three_groups", result is not None)
+    )
     if result:
-        return result
+        return complete(
+            result,
+            "splay_three_groups",
+            "exactly_three_jones_separated_groups",
+        )
 
     result = _detect_locomotive(
         sorted_lons,
@@ -903,7 +1048,26 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
         largest_gap,
         occupied_arc,
     )
+    detector_attempts.append(
+        ChartShapeDetectorTruth("locomotive_trine_gap", result is not None)
+    )
     if result:
-        return result
+        return complete(
+            result,
+            "locomotive_trine_gap",
+            "single_jones_separating_gap_within_boundary_body_trine_orb",
+        )
 
-    return _detect_splash(sorted_lons, largest_gap)
+    result = _detect_splash(sorted_lons, largest_gap)
+    detector_attempts.append(ChartShapeDetectorTruth("splash_residual", True))
+    return complete(
+        result,
+        "splash_residual",
+        "no_higher_priority_jones_structure_matched",
+    )
+
+
+def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
+    """Classify a Jones chart shape using the established result-only API."""
+
+    return classify_chart_shape_with_truth(positions).result

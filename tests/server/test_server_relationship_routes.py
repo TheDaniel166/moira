@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from moira.chart_shape import classify_chart_shape
+from moira.constants import Body
 from moira.midpoints import calculate_midpoints, midpoint_clusters, midpoint_weighting, midpoints_to_point, planetary_pictures
 from moira.patterns import find_all_patterns, pattern_chart_condition_profile, pattern_condition_network_profile
 from moira.synastry import (
@@ -676,7 +677,15 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     assert syn_network_response.status_code == 404
 
     assert shape_response.status_code == 200
-    assert shape_response.json()["shape"] == direct_shape.shape.value
+    shape_body = shape_response.json()
+    assert shape_body["shape"] == direct_shape.shape.value
+    shape_truth = shape_body["computation_truth"]
+    assert shape_truth["input_frame"] == "true_ecliptic_and_equinox_of_date"
+    assert shape_truth["input_source"] == "computed_natal_chart_planets"
+    assert set(shape_truth["normalized_longitudes"]) == set(Body.ALL_PLANETS)
+    assert len(shape_truth["gaps"]) == 10
+    assert shape_truth["detector_attempts"][-1]["matched"] is True
+    assert shape_truth["interpretation"] == "none_geometric_classification_only"
 
     assert pattern_response.status_code == 200
     assert len(pattern_response.json()["events"]) == len(direct_patterns)

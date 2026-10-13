@@ -52,6 +52,7 @@ def _cases(data: dict, mode: str) -> list[pytest.ParamSpec]:
             params.append(
                 pytest.param(
                     system,
+                    case["jd_ut"],
                     ref["jd_tt"],
                     ref["ayanamsa_deg"],
                     system_data["sid_mode"],
@@ -76,17 +77,21 @@ def test_fixture_covers_all_supported_moira_systems() -> None:
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    ("system", "jd_tt", "expected", "sid_mode", "case_id"),
+    ("system", "jd_ut", "reference_jd_tt", "expected", "sid_mode", "case_id"),
     MEAN_CASES,
 )
 def test_mean_ayanamsa_matches_offline_swetest_references(
     system: str,
-    jd_tt: float,
+    jd_ut: float,
+    reference_jd_tt: float,
     expected: float,
     sid_mode: int,
     case_id: str,
 ) -> None:
-    actual = ayanamsa(jd_tt, system, mode="mean")
+    # Swiss Ephemeris URLs identify UT input.  The fixture retains its reported
+    # TT epoch as evidence, but the public Moira surface must receive UT once.
+    assert reference_jd_tt > jd_ut
+    actual = ayanamsa(jd_ut, system, mode="mean")
     diff = _angular_diff(actual, expected)
     # Star-anchored systems also carry model-basis polynomial drift in mean mode.
     threshold = STAR_ANCHORED_THRESHOLD_DEG if system in _STAR_ANCHORED_SYSTEMS else PASS_THRESHOLD_DEG
@@ -100,17 +105,19 @@ def test_mean_ayanamsa_matches_offline_swetest_references(
 
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    ("system", "jd_tt", "expected", "sid_mode", "case_id"),
+    ("system", "jd_ut", "reference_jd_tt", "expected", "sid_mode", "case_id"),
     TRUE_CASES,
 )
 def test_true_ayanamsa_matches_offline_swetest_references(
     system: str,
-    jd_tt: float,
+    jd_ut: float,
+    reference_jd_tt: float,
     expected: float,
     sid_mode: int,
     case_id: str,
 ) -> None:
-    actual = ayanamsa(jd_tt, system, mode="true")
+    assert reference_jd_tt > jd_ut
+    actual = ayanamsa(jd_ut, system, mode="true")
     diff = _angular_diff(actual, expected)
     threshold = STAR_ANCHORED_THRESHOLD_DEG if system in _STAR_ANCHORED_SYSTEMS else PASS_THRESHOLD_DEG
 

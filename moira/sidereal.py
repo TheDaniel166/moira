@@ -35,14 +35,9 @@ back to polynomial approximation if the catalog is absent.
 
 Public surface
 --------------
-``Ayanamsa``               — Warden of ayanamsa system name constants.
-``NakshatraPosition``      — vessel for a body's nakshatra position.
-``ayanamsa``               — compute ayanamsa value for a JD and system.
-``tropical_to_sidereal``   — convert tropical longitude to sidereal.
-``sidereal_to_tropical``   — convert sidereal longitude to tropical.
-``list_ayanamsa_systems``  — return all systems with their J2000 values.
-``nakshatra_of``           — compute nakshatra position for a longitude.
-``all_nakshatras_at``      — compute nakshatras for a full position dict.
+The established scalar/result APIs remain unchanged.  Additive ``*_with_truth``
+entry points disclose clock binding, ayanamsa resolution, conversion, and
+nakshatra-sector evidence without changing those legacy return types.
 """
 
 from __future__ import annotations
@@ -56,14 +51,36 @@ from .obliquity import nutation
 __all__ = [
     "Ayanamsa",
     "UserDefinedAyanamsa",
+    "AyanamsaComputationTruth",
+    "SiderealLongitudeConversionTruth",
     "NakshatraPosition",
+    "NakshatraComputationTruth",
+    "NakshatraWithTruth",
+    "NakshatraCollectionWithTruth",
     "ayanamsa",
+    "ayanamsa_with_truth",
     "tropical_to_sidereal",
+    "tropical_to_sidereal_with_truth",
     "sidereal_to_tropical",
+    "sidereal_to_tropical_with_truth",
     "list_ayanamsa_systems",
     "nakshatra_of",
+    "nakshatra_of_with_truth",
     "all_nakshatras_at",
+    "all_nakshatras_at_with_truth",
 ]
+
+
+def _require_finite(name: str, value: float) -> float:
+    """Return one finite numeric input or fail at the owning boundary."""
+
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be numeric and finite") from exc
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite, got {value!r}")
+    return result
 
 # ---------------------------------------------------------------------------
 # User-defined ayanamsa  (Phase 3 — Defer.Doctrine; ayanamsa expansion)
@@ -115,6 +132,58 @@ class UserDefinedAyanamsa:
     """
     reference_value_j2000: float
     drift_per_century:     float = 0.0
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "reference_value_j2000",
+            _require_finite("reference_value_j2000", self.reference_value_j2000),
+        )
+        object.__setattr__(
+            self,
+            "drift_per_century",
+            _require_finite("drift_per_century", self.drift_per_century),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class AyanamsaComputationTruth:
+    """Inspectable clock, model, component, anchor, and fallback identity."""
+
+    jd_ut: float | None
+    jd_tt: float
+    ayanamsa_system: str
+    system_kind: str
+    requested_mode: str
+    effective_path: str
+    ayanamsa_unwrapped_deg: float
+    ayanamsa_deg: float
+    reference_value_j2000_deg: float | None
+    precession_longitude_deg: float | None
+    drift_correction_deg: float | None
+    nutation_longitude_deg: float | None
+    anchor_star: str | None
+    anchor_target_sidereal_longitude_deg: float | None
+    anchor_tropical_longitude_deg: float | None
+    anchor_source_mode: str | None
+    fallback_applied: bool
+    fallback_reason: str | None
+    input_timescale: str = "UT"
+    computation_timescale: str = "TT"
+    output_normalization: str = "degrees_modulo_360"
+
+
+@dataclass(frozen=True, slots=True)
+class SiderealLongitudeConversionTruth:
+    """One longitude conversion bound to exactly one ayanamsa resolution."""
+
+    direction: str
+    input_longitude_deg: float
+    normalized_input_longitude_deg: float
+    output_longitude_deg: float
+    source_frame: str
+    target_frame: str
+    ayanamsa: AyanamsaComputationTruth
 
 
 # ---------------------------------------------------------------------------
@@ -295,18 +364,149 @@ def _star_anchored_ayanamsa_at_tt(system: str, jd_tt: float) -> float:
     All other failures (kernel errors, numerical exceptions, etc.) propagate
     to the caller rather than being silently swallowed.
     """
-    from .stars import star_at
-    star_name, target_sid = _STAR_ANCHORED[system]
+    return _ayanamsa_truth_at_tt(
+        jd_tt,
+        system,
+        "true",
+    ).ayanamsa_unwrapped_deg
 
-    try:
-        star = star_at(star_name, jd_tt)
-        return (star.longitude - target_sid) % 360.0
-    except (LookupError, FileNotFoundError):
-        # Star not in catalog or registry absent — fall back to polynomial
-        base = _AYANAMSA_AT_J2000[system]
-        extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
-        dpsi_deg, _ = nutation(jd_tt)
-        return base + general_precession_in_longitude(jd_tt) + extra_drift + dpsi_deg
+
+def _ayanamsa_truth_at_tt(
+    jd_tt: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+    *,
+    jd_ut: float | None = None,
+) -> AyanamsaComputationTruth:
+    """Resolve one ayanamsa at TT and retain every effective model term."""
+
+    jd_tt = _require_finite("jd_tt", jd_tt)
+    if jd_ut is not None:
+        jd_ut = _require_finite("jd_ut", jd_ut)
+    if mode not in ("mean", "true"):
+        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
+
+    if isinstance(system, UserDefinedAyanamsa):
+        system_name = "UserDefinedAyanamsa"
+        reference = system.reference_value_j2000
+        precession = general_precession_in_longitude(jd_tt)
+        drift = system.drift_per_century * centuries_from_j2000(jd_tt)
+        nutation_longitude = None
+        if mode == "true":
+            nutation_longitude, _ = nutation(jd_tt)
+        value = reference + precession + drift + (nutation_longitude or 0.0)
+        return AyanamsaComputationTruth(
+            jd_ut=jd_ut,
+            jd_tt=jd_tt,
+            ayanamsa_system=system_name,
+            system_kind="user_defined",
+            requested_mode=mode,
+            effective_path=(
+                "user_defined_reference_plus_precession_plus_drift_plus_nutation"
+                if mode == "true"
+                else "user_defined_reference_plus_precession_plus_drift"
+            ),
+            ayanamsa_unwrapped_deg=value,
+            ayanamsa_deg=value % 360.0,
+            reference_value_j2000_deg=reference,
+            precession_longitude_deg=precession,
+            drift_correction_deg=drift,
+            nutation_longitude_deg=nutation_longitude,
+            anchor_star=None,
+            anchor_target_sidereal_longitude_deg=None,
+            anchor_tropical_longitude_deg=None,
+            anchor_source_mode=None,
+            fallback_applied=False,
+            fallback_reason=None,
+        )
+
+    if system not in _AYANAMSA_AT_J2000:
+        raise ValueError(
+            f"Unknown ayanamsa system '{system}'. "
+            f"Choose from: {list(_AYANAMSA_AT_J2000)}"
+        )
+
+    anchor = _STAR_ANCHORED.get(system)
+    if mode == "true" and anchor is not None:
+        from .stars import star_at
+
+        star_name, target_sidereal = anchor
+        try:
+            star = star_at(star_name, jd_tt)
+        except LookupError:
+            fallback_reason = "anchor_star_not_found"
+        except FileNotFoundError:
+            fallback_reason = "star_registry_unavailable"
+        else:
+            value = (star.longitude - target_sidereal) % 360.0
+            star_truth = star.computation_truth
+            return AyanamsaComputationTruth(
+                jd_ut=jd_ut,
+                jd_tt=jd_tt,
+                ayanamsa_system=system,
+                system_kind="built_in_star_anchored",
+                requested_mode=mode,
+                effective_path="live_star_anchor",
+                ayanamsa_unwrapped_deg=value,
+                ayanamsa_deg=value,
+                reference_value_j2000_deg=None,
+                precession_longitude_deg=None,
+                drift_correction_deg=None,
+                nutation_longitude_deg=None,
+                anchor_star=star_name,
+                anchor_target_sidereal_longitude_deg=target_sidereal,
+                anchor_tropical_longitude_deg=star.longitude,
+                anchor_source_mode=(
+                    star_truth.source_mode if star_truth is not None else star.source
+                ),
+                fallback_applied=False,
+                fallback_reason=None,
+            )
+    else:
+        fallback_reason = None
+
+    reference = _AYANAMSA_AT_J2000[system]
+    precession = general_precession_in_longitude(jd_tt)
+    drift = (
+        _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0)
+        * centuries_from_j2000(jd_tt)
+    )
+    nutation_longitude = None
+    if mode == "true":
+        nutation_longitude, _ = nutation(jd_tt)
+    value = reference + precession + drift + (nutation_longitude or 0.0)
+    fallback_applied = fallback_reason is not None
+    star_name, target_sidereal = anchor if anchor is not None else (None, None)
+    return AyanamsaComputationTruth(
+        jd_ut=jd_ut,
+        jd_tt=jd_tt,
+        ayanamsa_system=system,
+        system_kind=(
+            "built_in_star_anchored" if anchor is not None else "built_in_polynomial"
+        ),
+        requested_mode=mode,
+        effective_path=(
+            "polynomial_fallback_reference_plus_precession_plus_drift_plus_nutation"
+            if fallback_applied
+            else (
+                "polynomial_reference_plus_precession_plus_drift_plus_nutation"
+                if mode == "true"
+                else "polynomial_reference_plus_precession_plus_drift"
+            )
+        ),
+        ayanamsa_unwrapped_deg=value,
+        ayanamsa_deg=value % 360.0,
+        reference_value_j2000_deg=reference,
+        precession_longitude_deg=precession,
+        drift_correction_deg=drift,
+        nutation_longitude_deg=nutation_longitude,
+        anchor_star=star_name,
+        anchor_target_sidereal_longitude_deg=target_sidereal,
+        anchor_tropical_longitude_deg=None,
+        anchor_source_mode=None,
+        fallback_applied=fallback_applied,
+        fallback_reason=fallback_reason,
+    )
 
 
 def _ayanamsa_at_tt(
@@ -321,36 +521,11 @@ def _ayanamsa_at_tt(
     conversion. Public callers continue to use :func:`ayanamsa`, whose input
     contract remains UT.
     """
-    if mode not in ("mean", "true"):
-        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
-
-    if isinstance(system, UserDefinedAyanamsa):
-        precession = general_precession_in_longitude(jd_tt)
-        T = centuries_from_j2000(jd_tt)
-        base = system.reference_value_j2000 + precession + system.drift_per_century * T
-        if mode == "true":
-            dpsi_deg, _ = nutation(jd_tt)
-            return base + dpsi_deg
-        return base
-
-    if system not in _AYANAMSA_AT_J2000:
-        raise ValueError(
-            f"Unknown ayanamsa system '{system}'. "
-            f"Choose from: {list(_AYANAMSA_AT_J2000)}"
-        )
-
-    if mode == "true" and system in _STAR_ANCHORED:
-        return _star_anchored_ayanamsa_at_tt(system, jd_tt)
-
-    base = _AYANAMSA_AT_J2000[system]
-    precession = general_precession_in_longitude(jd_tt)
-    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
-
-    if mode == "mean":
-        return base + precession + extra_drift
-
-    dpsi_deg, _ = nutation(jd_tt)
-    return base + precession + extra_drift + dpsi_deg
+    return _ayanamsa_truth_at_tt(
+        jd_tt,
+        system,
+        mode,
+    ).ayanamsa_unwrapped_deg
 
 
 def ayanamsa(
@@ -395,10 +570,21 @@ def ayanamsa(
     origin is the March 1956 Lahiri convention; this implementation does not
     impose an exact 1956 apparent-star longitude at every evaluation.
     """
+    return ayanamsa_with_truth(jd, system, mode).ayanamsa_unwrapped_deg
+
+
+def ayanamsa_with_truth(
+    jd: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> AyanamsaComputationTruth:
+    """Compute one ayanamsa and expose the effective clock/model branch."""
+
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
-    jd_tt = ut_to_tt(jd)
-    return _ayanamsa_at_tt(jd_tt, system, mode)
+    jd_ut = _require_finite("jd", jd)
+    jd_tt = ut_to_tt(jd_ut)
+    return _ayanamsa_truth_at_tt(jd_tt, system, mode, jd_ut=jd_ut)
 
 
 def _tropical_to_sidereal_at_tt(
@@ -408,6 +594,8 @@ def _tropical_to_sidereal_at_tt(
     mode: str = "true",
 ) -> float:
     """Convert a tropical longitude using an epoch already expressed in TT."""
+    tropical_longitude = _require_finite("tropical_longitude", tropical_longitude)
+    jd_tt = _require_finite("jd_tt", jd_tt)
     ayan = _ayanamsa_at_tt(jd_tt, system, mode)
     return (tropical_longitude - ayan) % 360.0
 
@@ -415,7 +603,7 @@ def _tropical_to_sidereal_at_tt(
 def tropical_to_sidereal(
     tropical_longitude: float,
     jd: float,
-    system: str = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """
@@ -425,16 +613,43 @@ def tropical_to_sidereal(
     -------
     Sidereal longitude in degrees [0, 360)
     """
-    if mode not in ("mean", "true"):
-        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
-    jd_tt = ut_to_tt(jd)
-    return _tropical_to_sidereal_at_tt(tropical_longitude, jd_tt, system, mode)
+    return tropical_to_sidereal_with_truth(
+        tropical_longitude,
+        jd,
+        system,
+        mode,
+    ).output_longitude_deg
+
+
+def tropical_to_sidereal_with_truth(
+    tropical_longitude: float,
+    jd: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> SiderealLongitudeConversionTruth:
+    """Convert tropical longitude with one inspectable ayanamsa resolution."""
+
+    longitude = _require_finite("tropical_longitude", tropical_longitude)
+    ayanamsa_truth = ayanamsa_with_truth(jd, system, mode)
+    normalized_input = longitude % 360.0
+    # Preserve the established scalar operation order exactly; the normalized
+    # terms are disclosed separately rather than substituted into arithmetic.
+    output = (longitude - ayanamsa_truth.ayanamsa_unwrapped_deg) % 360.0
+    return SiderealLongitudeConversionTruth(
+        direction="tropical_to_sidereal",
+        input_longitude_deg=longitude,
+        normalized_input_longitude_deg=normalized_input,
+        output_longitude_deg=output,
+        source_frame="tropical_ecliptic_longitude",
+        target_frame="sidereal_ecliptic_longitude",
+        ayanamsa=ayanamsa_truth,
+    )
 
 
 def sidereal_to_tropical(
     sidereal_longitude: float,
     jd: float,
-    system: str = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """
@@ -444,8 +659,35 @@ def sidereal_to_tropical(
     -------
     Tropical longitude in degrees [0, 360)
     """
-    ayan = ayanamsa(jd, system, mode)
-    return (sidereal_longitude + ayan) % 360.0
+    return sidereal_to_tropical_with_truth(
+        sidereal_longitude,
+        jd,
+        system,
+        mode,
+    ).output_longitude_deg
+
+
+def sidereal_to_tropical_with_truth(
+    sidereal_longitude: float,
+    jd: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> SiderealLongitudeConversionTruth:
+    """Convert sidereal longitude with one inspectable ayanamsa resolution."""
+
+    longitude = _require_finite("sidereal_longitude", sidereal_longitude)
+    ayanamsa_truth = ayanamsa_with_truth(jd, system, mode)
+    normalized_input = longitude % 360.0
+    output = (longitude + ayanamsa_truth.ayanamsa_unwrapped_deg) % 360.0
+    return SiderealLongitudeConversionTruth(
+        direction="sidereal_to_tropical",
+        input_longitude_deg=longitude,
+        normalized_input_longitude_deg=normalized_input,
+        output_longitude_deg=output,
+        source_frame="sidereal_ecliptic_longitude",
+        target_frame="tropical_ecliptic_longitude",
+        ayanamsa=ayanamsa_truth,
+    )
 
 
 def list_ayanamsa_systems() -> dict[str, float]:
@@ -500,6 +742,10 @@ def _nakshatra_sector(sidereal_longitude: float) -> tuple[float, int, float]:
 
     Returns ``(normalized_longitude, zero_based_index, degrees_in_sector)``.
     """
+    sidereal_longitude = _require_finite(
+        "sidereal_longitude",
+        sidereal_longitude,
+    )
     sid_lon = sidereal_longitude % 360.0
 
     # A negative value infinitesimally below zero can round its positive
@@ -520,7 +766,7 @@ def _nakshatra_sector(sidereal_longitude: float) -> tuple[float, int, float]:
     return sid_lon, idx, sid_lon - left_boundary
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class NakshatraPosition:
     """
     RITE: The Nakshatra Vessel — a body's place in the lunar mansion of the sky.
@@ -606,6 +852,40 @@ class NakshatraPosition:
                 f"[sidereal {self.sidereal_lon:.4f}°]")
 
 
+@dataclass(frozen=True, slots=True)
+class NakshatraComputationTruth:
+    """Inspectable longitude conversion and half-open sector assignment."""
+
+    tropical_longitude_deg: float
+    normalized_tropical_longitude_deg: float
+    sidereal_longitude_deg: float
+    nakshatra_index: int
+    sector_start_longitude_deg: float
+    sector_end_longitude_deg: float
+    pada: int
+    ayanamsa: AyanamsaComputationTruth
+    taxonomy: str = "twenty_seven_equal_nakshatras"
+    sector_boundary_policy: str = "half_open_with_one_predecessor_ulp_recovery"
+    interpretation: str = "none_mechanical_position_only"
+
+
+@dataclass(frozen=True, slots=True)
+class NakshatraWithTruth:
+    """Backward-compatible nakshatra vessel paired with computation truth."""
+
+    result: NakshatraPosition
+    truth: NakshatraComputationTruth
+
+
+@dataclass(frozen=True, slots=True)
+class NakshatraCollectionWithTruth:
+    """A bounded position map sharing one ayanamsa resolution."""
+
+    results: dict[str, NakshatraPosition]
+    truths: dict[str, NakshatraComputationTruth]
+    ayanamsa: AyanamsaComputationTruth
+
+
 def _nakshatra_position_from_sidereal(
     sidereal_longitude: float,
 ) -> NakshatraPosition:
@@ -640,8 +920,49 @@ def nakshatra_of(
     -------
     NakshatraPosition dataclass
     """
-    sid_lon = tropical_to_sidereal(tropical_longitude, jd, system=ayanamsa_system)
-    return _nakshatra_position_from_sidereal(sid_lon)
+    return nakshatra_of_with_truth(
+        tropical_longitude,
+        jd,
+        ayanamsa_system,
+    ).result
+
+
+def _nakshatra_truth_from_conversion(
+    tropical_longitude: float,
+    conversion: SiderealLongitudeConversionTruth,
+) -> NakshatraWithTruth:
+    position = _nakshatra_position_from_sidereal(conversion.output_longitude_deg)
+    sector_start = position.nakshatra_index * NAKSHATRA_SPAN
+    return NakshatraWithTruth(
+        result=position,
+        truth=NakshatraComputationTruth(
+            tropical_longitude_deg=tropical_longitude,
+            normalized_tropical_longitude_deg=(tropical_longitude % 360.0),
+            sidereal_longitude_deg=position.sidereal_lon,
+            nakshatra_index=position.nakshatra_index,
+            sector_start_longitude_deg=sector_start,
+            sector_end_longitude_deg=sector_start + NAKSHATRA_SPAN,
+            pada=position.pada,
+            ayanamsa=conversion.ayanamsa,
+        ),
+    )
+
+
+def nakshatra_of_with_truth(
+    tropical_longitude: float,
+    jd: float,
+    ayanamsa_system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+) -> NakshatraWithTruth:
+    """Return a nakshatra position with its effective sidereal reduction."""
+
+    longitude = _require_finite("tropical_longitude", tropical_longitude)
+    conversion = tropical_to_sidereal_with_truth(
+        longitude,
+        jd,
+        system=ayanamsa_system,
+        mode="true",
+    )
+    return _nakshatra_truth_from_conversion(longitude, conversion)
 
 
 def all_nakshatras_at(
@@ -662,8 +983,44 @@ def all_nakshatras_at(
     -------
     Dict of body name → NakshatraPosition
     """
-    return {
-        name: nakshatra_of(lon, jd, ayanamsa_system)
-        for name, lon in positions.items()
-    }
+    return all_nakshatras_at_with_truth(
+        positions,
+        jd,
+        ayanamsa_system,
+    ).results
+
+
+def all_nakshatras_at_with_truth(
+    positions: dict[str, float],
+    jd: float,
+    ayanamsa_system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+) -> NakshatraCollectionWithTruth:
+    """Compute a position map while resolving its ayanamsa exactly once."""
+
+    ayanamsa_truth = ayanamsa_with_truth(jd, ayanamsa_system, "true")
+    results: dict[str, NakshatraPosition] = {}
+    truths: dict[str, NakshatraComputationTruth] = {}
+    for name, raw_longitude in positions.items():
+        longitude = _require_finite(f"positions[{name!r}]", raw_longitude)
+        normalized_input = longitude % 360.0
+        sidereal_longitude = (
+            longitude - ayanamsa_truth.ayanamsa_unwrapped_deg
+        ) % 360.0
+        conversion = SiderealLongitudeConversionTruth(
+            direction="tropical_to_sidereal",
+            input_longitude_deg=longitude,
+            normalized_input_longitude_deg=normalized_input,
+            output_longitude_deg=sidereal_longitude,
+            source_frame="tropical_ecliptic_longitude",
+            target_frame="sidereal_ecliptic_longitude",
+            ayanamsa=ayanamsa_truth,
+        )
+        resolved = _nakshatra_truth_from_conversion(longitude, conversion)
+        results[name] = resolved.result
+        truths[name] = resolved.truth
+    return NakshatraCollectionWithTruth(
+        results=results,
+        truths=truths,
+        ayanamsa=ayanamsa_truth,
+    )
 

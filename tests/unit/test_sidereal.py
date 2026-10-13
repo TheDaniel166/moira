@@ -16,12 +16,18 @@ Coverage areas
 9. Reference accuracy — Lahiri at J2000 matches expected external benchmark range
 """
 
+from dataclasses import FrozenInstanceError
+import math
+
 import pytest
 import moira
 import moira.sidereal as sidereal_module
 from moira.sidereal import (
-    Ayanamsa, ayanamsa, tropical_to_sidereal, sidereal_to_tropical,
-    nakshatra_of, all_nakshatras_at, list_ayanamsa_systems,
+    Ayanamsa, UserDefinedAyanamsa, ayanamsa, ayanamsa_with_truth,
+    tropical_to_sidereal, tropical_to_sidereal_with_truth,
+    sidereal_to_tropical, sidereal_to_tropical_with_truth,
+    nakshatra_of, nakshatra_of_with_truth,
+    all_nakshatras_at, all_nakshatras_at_with_truth, list_ayanamsa_systems,
     NAKSHATRA_NAMES, NAKSHATRA_LORDS, NAKSHATRA_SPAN, PADA_SPAN,
     _STAR_ANCHORED, _AYANAMSA_AT_J2000,
 )
@@ -354,3 +360,109 @@ class TestPublicApiWiring:
     def test_all_nakshatras_at_accessible_via_moira(self):
         results = moira.all_nakshatras_at({"Sun": 100.0}, J2000)
         assert "Sun" in results
+
+
+class TestSiderealCalculationTruthAndFiniteBoundary:
+    @pytest.mark.parametrize("invalid", [math.nan, math.inf, -math.inf])
+    def test_public_numeric_boundaries_reject_nonfinite_values(self, invalid: float):
+        with pytest.raises(ValueError, match="finite"):
+            ayanamsa(invalid)
+        with pytest.raises(ValueError, match="finite"):
+            tropical_to_sidereal(invalid, J2000)
+        with pytest.raises(ValueError, match="finite"):
+            sidereal_to_tropical(invalid, J2000)
+        with pytest.raises(ValueError, match="finite"):
+            nakshatra_of(invalid, J2000)
+
+    @pytest.mark.parametrize("field", ["reference_value_j2000", "drift_per_century"])
+    def test_user_defined_ayanamsa_rejects_nonfinite_terms(self, field: str):
+        kwargs = {"reference_value_j2000": 24.0, "drift_per_century": 0.0}
+        kwargs[field] = math.nan
+        with pytest.raises(ValueError, match="finite"):
+            UserDefinedAyanamsa(**kwargs)
+
+    def test_polynomial_truth_reconciles_components_and_normalization(self):
+        truth = ayanamsa_with_truth(J2000, Ayanamsa.LAHIRI, "true")
+
+        assert truth.effective_path == (
+            "polynomial_reference_plus_precession_plus_drift_plus_nutation"
+        )
+        assert truth.ayanamsa_unwrapped_deg == pytest.approx(
+            truth.reference_value_j2000_deg
+            + truth.precession_longitude_deg
+            + truth.drift_correction_deg
+            + truth.nutation_longitude_deg
+        )
+        assert truth.ayanamsa_deg == pytest.approx(
+            truth.ayanamsa_unwrapped_deg % 360.0
+        )
+        assert truth.jd_tt == pytest.approx(ut_to_tt(J2000))
+
+    def test_star_anchor_truth_discloses_effective_anchor(self):
+        truth = ayanamsa_with_truth(
+            J2000,
+            Ayanamsa.TRUE_CHITRAPAKSHA,
+            "true",
+        )
+
+        assert truth.effective_path == "live_star_anchor"
+        assert truth.anchor_star == "Spica"
+        assert truth.anchor_target_sidereal_longitude_deg == 180.0
+        assert truth.anchor_tropical_longitude_deg is not None
+        assert truth.anchor_source_mode is not None
+        assert truth.fallback_applied is False
+
+    def test_star_anchor_fallback_is_explicit(self, monkeypatch):
+        def missing_star(_name: str, _jd_tt: float):
+            raise KeyError("not present")
+
+        monkeypatch.setattr("moira.stars.star_at", missing_star)
+        truth = ayanamsa_with_truth(
+            J2000,
+            Ayanamsa.TRUE_CHITRAPAKSHA,
+            "true",
+        )
+
+        assert truth.fallback_applied is True
+        assert truth.fallback_reason == "anchor_star_not_found"
+        assert truth.effective_path.startswith("polynomial_fallback_")
+        assert truth.anchor_tropical_longitude_deg is None
+
+    def test_conversion_truth_is_backward_compatible(self):
+        forward = tropical_to_sidereal_with_truth(123.456, J2000)
+        reverse = sidereal_to_tropical_with_truth(
+            forward.output_longitude_deg,
+            J2000,
+        )
+
+        assert forward.output_longitude_deg == pytest.approx(
+            tropical_to_sidereal(123.456, J2000)
+        )
+        assert reverse.output_longitude_deg == pytest.approx(123.456)
+        assert forward.ayanamsa.jd_ut == J2000
+
+    def test_bulk_nakshatra_truth_resolves_ayanamsa_once(self, monkeypatch):
+        original = sidereal_module.ayanamsa_with_truth
+        calls: list[tuple[float, object, str]] = []
+
+        def witnessed(jd, system=Ayanamsa.LAHIRI, mode="true"):
+            calls.append((jd, system, mode))
+            return original(jd, system, mode)
+
+        monkeypatch.setattr(sidereal_module, "ayanamsa_with_truth", witnessed)
+        resolved = all_nakshatras_at_with_truth(
+            {"Moon": 37.5, "Mars": 91.25},
+            J2000,
+        )
+
+        assert len(calls) == 1
+        assert set(resolved.results) == {"Moon", "Mars"}
+        assert resolved.truths["Moon"].ayanamsa is resolved.ayanamsa
+
+    def test_nakshatra_result_and_truth_are_immutable(self):
+        resolved = nakshatra_of_with_truth(37.5, J2000)
+
+        with pytest.raises(FrozenInstanceError):
+            resolved.result.pada = 4
+        with pytest.raises(FrozenInstanceError):
+            resolved.truth.nakshatra_index = 3
