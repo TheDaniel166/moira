@@ -17,6 +17,9 @@ Import-time side effects: None.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Mapping
+
 from ._strenum import StrEnum
 from math import isfinite
 
@@ -54,6 +57,7 @@ __all__ = [
     "ParticipatingRulerPolicy",
     "HalbHayzDoctrine",
     "MercurySectModel",
+    "SOLAR_CONDITION_THRESHOLDS_DEG",
     # Policy dataclasses
     "EssentialDignityPolicy",
     "DignityScoringPolicy",
@@ -111,6 +115,17 @@ __all__ = [
     "AccidentalDignityTruth",
     "PlanetaryDignity",
 ]
+
+# One doctrine-owned source for the exclusive classical solar-proximity bands.
+# Computational modules and transports derive their thresholds from this map;
+# they must not restate the numbers independently.
+SOLAR_CONDITION_THRESHOLDS_DEG: Mapping[str, float] = MappingProxyType(
+    {
+        "cazimi": 17.0 / 60.0,
+        "combust": 8.5,
+        "under_sunbeams": 17.0,
+    }
+)
 
 # ---------------------------------------------------------------------------
 # Classic 7 and ordering constant (used internally and by the service layer)

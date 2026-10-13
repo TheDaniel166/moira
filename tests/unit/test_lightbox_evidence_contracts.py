@@ -67,6 +67,10 @@ R2B_KERNEL_SURFACES = {
         "true_lilith_with_truth",
     )
 }
+R3B_SOLAR_CONDITION_SURFACES = {
+    "rest:POST:/v1/solar-condition/instant",
+    "rest:POST:/v1/solar-condition/events",
+}
 
 
 def _module():
@@ -202,6 +206,32 @@ def test_r2a_chart_wheel_surface_has_a_bounded_replay_contract() -> None:
         assert contract["minimum_tests"] == 7
         assert contract["claim_scope"]
         assert contract["exclusions"]
+
+
+def test_r3b_solar_condition_surfaces_have_a_bounded_replay_contract() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_surface = {
+        surface_id: contract
+        for contract in contracts["contracts"]
+        for surface_id in contract["surface_ids"]
+    }
+
+    assert R3B_SOLAR_CONDITION_SURFACES <= set(by_surface)
+    for surface_id in R3B_SOLAR_CONDITION_SURFACES:
+        contract = by_surface[surface_id]
+        assert set(contract["evidence_classes"]) == {
+            "doctrine_source",
+            "invariant",
+            "regression",
+            "release",
+        }
+        assert len(contract["pytest_targets"]) == 5
+        assert contract["minimum_tests"] == 5
+        assert "8.5 degrees" in contract["claim_scope"]
+        assert "not an independent astronomical authority residual" in contract[
+            "exclusions"
+        ][0]
 
 
 def test_contract_hash_is_order_stable() -> None:

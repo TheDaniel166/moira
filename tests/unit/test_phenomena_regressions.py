@@ -186,7 +186,19 @@ def test_proximity_scan_returns_only_crossings_inside_exact_range(monkeypatch) -
     assert [event.is_ingress for event in events] == [True, False]
 
 
-def test_cazimi_event_search_uses_exact_shared_threshold(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    ("condition", "expected_threshold"),
+    [
+        ("cazimi", 17.0 / 60.0),
+        ("combust", 8.5),
+        ("under_sunbeams", 17.0),
+    ],
+)
+def test_solar_condition_event_search_uses_exact_shared_threshold(
+    monkeypatch,
+    condition: str,
+    expected_threshold: float,
+) -> None:
     captured: list[float] = []
 
     def fake_proximity(_body1, _body2, _start, _end, threshold, _reader):
@@ -196,6 +208,6 @@ def test_cazimi_event_search_uses_exact_shared_threshold(monkeypatch) -> None:
     monkeypatch.setattr(phenomena, "proximity_events_in_range", fake_proximity)
 
     assert phenomena.solar_condition_events_in_range(
-        Body.MERCURY, 0.0, 1.0, condition="cazimi", reader=object(),
+        Body.MERCURY, 0.0, 1.0, condition=condition, reader=object(),
     ) == []
-    assert captured == [17.0 / 60.0]
+    assert captured == [expected_threshold]

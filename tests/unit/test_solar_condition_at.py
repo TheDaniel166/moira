@@ -12,14 +12,18 @@ from __future__ import annotations
 import pytest
 
 import moira
-from moira.phenomena import solar_condition_at
-from moira.dignities_types import SolarConditionKind, SolarConditionTruth
+from moira.phenomena import solar_condition_at, solar_condition_events_in_range
+from moira.dignities_types import (
+    SOLAR_CONDITION_THRESHOLDS_DEG,
+    SolarConditionTruth,
+)
 
 # J2000.0 — 2000-01-01 12:00 TT ≈ 2000-01-01 12:00 UTC (≈ 64 s difference, irrelevant here)
 _J2000 = 2451545.0
 
 # 2024-04-08 12:00 UTC — Mercury was ≈3–4° from Sun (combust) during the solar eclipse period
 _JD_MERCURY_COMBUST = 2460408.0
+_JD_MERCURY_COMBUST_INGRESS = 2460407.2708437033
 
 
 # ============================================================================
@@ -33,6 +37,14 @@ def test_solar_condition_at_in_module_all():
 def test_solar_condition_at_importable_from_moira():
     from moira import solar_condition_at as f
     assert callable(f)
+
+
+def test_classical_solar_condition_thresholds_have_one_authoritative_policy():
+    assert dict(SOLAR_CONDITION_THRESHOLDS_DEG) == {
+        "cazimi": pytest.approx(17.0 / 60.0),
+        "combust": 8.5,
+        "under_sunbeams": 17.0,
+    }
 
 
 # ============================================================================
@@ -137,6 +149,23 @@ def test_mercury_combust_during_eclipse_period(moira_engine):
     assert result.present is True
     assert result.condition in ("cazimi", "combust")
     assert result.distance_from_sun < 8.0
+
+
+@pytest.mark.requires_ephemeris
+def test_mercury_combust_ingress_uses_authoritative_8_5_degree_boundary(moira_engine):
+    events = solar_condition_events_in_range(
+        "Mercury",
+        2460407.0,
+        2460407.5,
+        condition="combust",
+        reader=moira_engine._reader,
+    )
+
+    assert len(events) == 1
+    event = events[0]
+    assert event.is_ingress is True
+    assert event.threshold_deg == -SOLAR_CONDITION_THRESHOLDS_DEG["combust"]
+    assert event.jd_ut == pytest.approx(_JD_MERCURY_COMBUST_INGRESS, abs=1e-6)
 
 
 @pytest.mark.requires_ephemeris

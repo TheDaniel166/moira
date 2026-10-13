@@ -256,6 +256,16 @@
       "surface_id": "rest:POST:/v1/website/chart-wheel/packet",
       "contract_kind": "chart_wheel_packet_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/solar-condition/instant",
+      "contract_kind": "solar_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/solar-condition/events",
+      "contract_kind": "solar_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
     }
   ]
 }

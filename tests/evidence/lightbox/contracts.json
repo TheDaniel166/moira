@@ -264,6 +264,26 @@
       "exclusions": [
         "The replay is not an independent JPL Horizons residual, does not revalidate the DE441 bytes or native SPK parser beyond the separately admitted resource receipt, and makes no claim outside the kernel coverage, sampled bodies, epochs, frames, or rate conventions."
       ]
+    },
+    {
+      "claim_id": "LB-SOLAR-CONDITION-BOUNDARY-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/solar-condition/instant",
+        "rest:POST:/v1/solar-condition/events"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_solar_condition_at.py::test_classical_solar_condition_thresholds_have_one_authoritative_policy",
+        "tests/unit/test_solar_condition_at.py::test_mercury_combust_ingress_uses_authoritative_8_5_degree_boundary",
+        "tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_instant_route_returns_truth_and_thresholds",
+        "tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_events_route_returns_condition_crossings",
+        "tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_events_route_reports_actual_combust_boundary"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The solar-condition routes retain one shared classical threshold policy, expose the exact effective thresholds in provenance, and serialize the signed and absolute boundary reported by the engine for each returned crossing. The actual DE441 Mercury ingress regression fixes the combust boundary at 8.5 degrees for the sampled epoch.",
+      "exclusions": [
+        "The replay is a bounded doctrine-and-engine consistency check, not an independent astronomical authority residual, a claim that every astrological tradition uses these thresholds, or evidence of interpretive efficacy."
+      ]
     }
   ]
 }

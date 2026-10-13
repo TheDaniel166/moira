@@ -76,13 +76,6 @@ ADMITTED_SOLAR_CONDITIONS = (
     "under_sunbeams",
 )
 
-SOLAR_CONDITION_THRESHOLDS_DEG = {
-    "cazimi": 17.0 / 60.0,
-    "combust": 8.0,
-    "under_sunbeams": 17.0,
-}
-
-
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

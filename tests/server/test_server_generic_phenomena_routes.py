@@ -256,6 +256,8 @@ def test_solar_condition_instant_route_returns_truth_and_thresholds(
         "distance_unit": "degrees",
     }
     assert body["provenance"]["thresholds_deg"]["cazimi"] == pytest.approx(17.0 / 60.0)
+    assert body["provenance"]["thresholds_deg"]["combust"] == 8.5
+    assert body["provenance"]["thresholds_deg"]["under_sunbeams"] == 17.0
     assert body["provenance"]["luminary_policy"] == "Sun and Moon return absent truth"
     assert calls == [("Mercury", 2451545.0, ANY)]
     assert calls[0][2] is not None
@@ -281,7 +283,7 @@ def test_solar_condition_events_route_returns_condition_crossings(
                 body1="Sun",
                 body2=body,
                 jd_ut=2451549.0,
-                threshold_deg=-8.0,
+                threshold_deg=-8.5,
                 body1_longitude=280.0,
                 body2_longitude=288.0,
                 body2_latitude=-0.2,
@@ -311,11 +313,39 @@ def test_solar_condition_events_route_returns_condition_crossings(
     assert body["total"] == 1
     assert body["events"][0]["body1"] == "Sun"
     assert body["events"][0]["body2"] == "Venus"
-    assert body["events"][0]["threshold_deg"] == -8.0
-    assert body["events"][0]["threshold_abs_deg"] == 8.0
+    assert body["events"][0]["threshold_deg"] == -8.5
+    assert body["events"][0]["threshold_abs_deg"] == 8.5
+    assert body["provenance"]["thresholds_deg"]["combust"] == 8.5
     assert body["provenance"]["product_kind"] == "classical_solar_condition_threshold_crossings"
     assert calls == [("Venus", 2451545.0, 2451605.0, "combust", ANY)]
     assert calls[0][4] is not None
+
+
+@pytest.mark.requires_ephemeris
+def test_solar_condition_events_route_reports_actual_combust_boundary(
+    moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    with TestClient(app) as engine_client:
+        response = engine_client.post(
+            "/v1/solar-condition/events",
+            json={
+                "body": "Mercury",
+                "jd_start": 2460407.0,
+                "jd_end": 2460407.5,
+                "condition": "combust",
+            },
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 1
+    assert body["events"][0]["jd_ut"] == pytest.approx(2460407.2708437033, abs=1e-6)
+    assert body["events"][0]["threshold_deg"] == -8.5
+    assert body["events"][0]["threshold_abs_deg"] == 8.5
+    assert body["provenance"]["thresholds_deg"]["combust"] == 8.5
 
 
 @pytest.mark.parametrize(

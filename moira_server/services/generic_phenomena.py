@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from moira import Moira
+from moira.dignities_types import SOLAR_CONDITION_THRESHOLDS_DEG
 from moira.julian import datetime_from_jd
 from moira.phenomena import (
     PhenomenonEvent,
@@ -38,7 +39,6 @@ from ..models.generic_phenomena import (
     SolarConditionInstantEnvelopeResponse,
     SolarConditionInstantRequest,
     SolarConditionTruthResponse,
-    SOLAR_CONDITION_THRESHOLDS_DEG,
     default_orbital_event_kinds,
 )
 
@@ -278,7 +278,7 @@ def compute_solar_condition_instant(
             reader_owner=_reader_owner(reader),
             product_kind="classical_solar_condition_truth",
             event_taxonomy="instant_classical_solar_proximity_band",
-            thresholds_deg=SOLAR_CONDITION_THRESHOLDS_DEG,
+            thresholds_deg=dict(SOLAR_CONDITION_THRESHOLDS_DEG),
             luminary_policy="Sun and Moon return absent truth",
             dignity_interpretation="not_returned",
             recommendation_language="not_returned",
@@ -298,7 +298,6 @@ def compute_solar_condition_events(
     request: SolarConditionEventsRequest,
 ) -> SolarConditionEventsEnvelopeResponse:
     reader = _get_reader(engine)
-    threshold = SOLAR_CONDITION_THRESHOLDS_DEG[request.condition]
     events = solar_condition_events_in_range(
         request.body,
         request.jd_start,
@@ -307,7 +306,7 @@ def compute_solar_condition_events(
         reader=reader,
     )
     serialized = [
-        _serialize_proximity_event(event, threshold_abs_deg=threshold)
+        _serialize_proximity_event(event)
         for event in events
     ]
     return SolarConditionEventsEnvelopeResponse(
@@ -319,7 +318,7 @@ def compute_solar_condition_events(
             reader_owner=_reader_owner(reader),
             product_kind="classical_solar_condition_threshold_crossings",
             event_taxonomy="solar_condition_ingress_egress_events",
-            thresholds_deg=SOLAR_CONDITION_THRESHOLDS_DEG,
+            thresholds_deg=dict(SOLAR_CONDITION_THRESHOLDS_DEG),
             luminary_policy="Sun and Moon are not admitted for event search",
             dignity_interpretation="not_returned",
             recommendation_language="not_returned",

@@ -794,7 +794,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 4414,
+        "source_line": 4415,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -819,7 +819,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3973,
+        "source_line": 3974,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2356,7 +2356,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 689,
+        "source_line": 690,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2656,7 +2656,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3512,
+        "source_line": 3513,
         "source_path": "moira/dignities.py"
       },
       "priority": "P0",
@@ -2683,7 +2683,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3533,
+        "source_line": 3534,
         "source_path": "moira/dignities.py"
       },
       "priority": "P0",
@@ -2710,7 +2710,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3491,
+        "source_line": 3492,
         "source_path": "moira/dignities.py"
       },
       "priority": "P0",
@@ -2737,7 +2737,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3399,
+        "source_line": 3400,
         "source_path": "moira/dignities.py"
       },
       "priority": "P0",
@@ -2764,7 +2764,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3437,
+        "source_line": 3438,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2789,7 +2789,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3455,
+        "source_line": 3456,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2814,7 +2814,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3446,
+        "source_line": 3447,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2839,7 +2839,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3464,
+        "source_line": 3465,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -2864,7 +2864,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3473,
+        "source_line": 3474,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -3143,7 +3143,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3428,
+        "source_line": 3429,
         "source_path": "moira/dignities.py"
       },
       "priority": "P0",
@@ -3776,7 +3776,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3482,
+        "source_line": 3483,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -7761,7 +7761,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 4558,
+        "source_line": 4559,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -9065,7 +9065,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 417,
+        "source_line": 418,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -9944,7 +9944,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 920,
+        "source_line": 921,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -9969,7 +9969,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3585,
+        "source_line": 3586,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -10019,7 +10019,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 511,
+        "source_line": 512,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -10044,7 +10044,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 443,
+        "source_line": 444,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -10069,7 +10069,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 506,
+        "source_line": 507,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -10094,7 +10094,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 382,
+        "source_line": 383,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -11952,7 +11952,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 4485,
+        "source_line": 4486,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -12852,7 +12852,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 651,
+        "source_line": 652,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -14381,7 +14381,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 596,
+        "source_line": 597,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -15785,7 +15785,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 3558,
+        "source_line": 3559,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -16160,7 +16160,7 @@
       "family_id": "dignities",
       "family_label": "Dignities",
       "ownership": {
-        "source_line": 561,
+        "source_line": 562,
         "source_path": "moira/dignities.py"
       },
       "priority": "P2",
@@ -31135,7 +31135,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "50c7f1d7c89235f93d6424a474f67767dd8592b8848d3eb27e835c67ee9eccf8",
+  "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

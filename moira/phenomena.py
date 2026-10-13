@@ -44,7 +44,7 @@ from datetime import datetime
 from fractions import Fraction
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
-from .dignities_types import SolarConditionTruth
+from .dignities_types import SOLAR_CONDITION_THRESHOLDS_DEG, SolarConditionTruth
 from .julian import CalendarDateTime, _ut1_to_utc, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at, planet_relative_to
@@ -1268,9 +1268,9 @@ def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
 # ---------------------------------------------------------------------------
 
 # One threshold doctrine is shared by event searches and point-in-time truth.
-_CAZIMI_DEG = 17.0 / 60.0
-_COMBUST_DEG = 8.5  # Lilly: within 8°30′ of the Sun; same as moira.dignities
-_SUNBEAMS_DEG = 17.0
+_CAZIMI_DEG = SOLAR_CONDITION_THRESHOLDS_DEG["cazimi"]
+_COMBUST_DEG = SOLAR_CONDITION_THRESHOLDS_DEG["combust"]
+_SUNBEAMS_DEG = SOLAR_CONDITION_THRESHOLDS_DEG["under_sunbeams"]
 _MAX_PROXIMITY_THRESHOLD_DEG = 30.0
 _SCORE_CAZIMI = 5
 _SCORE_COMBUST = -5

@@ -4950,8 +4950,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 66
+        "partial": 2,
+        "unresolved": 64
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7792,7 +7792,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "50c7f1d7c89235f93d6424a474f67767dd8592b8848d3eb27e835c67ee9eccf8",
+  "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7826,8 +7826,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 51,
-      "unresolved": 1176
+      "partial": 53,
+      "unresolved": 1174
     }
   }
 }

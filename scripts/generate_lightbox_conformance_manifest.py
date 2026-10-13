@@ -403,6 +403,42 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "solar_condition_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The instant and event-search routes expose one shared classical solar-proximity threshold policy and preserve the engine-reported crossing boundary in each event.",
+        "stage_label": "Solar-condition boundary truth",
+        "operation": "Classify a body's instantaneous angular separation from the Sun or search a bounded interval for ingress and egress across the selected classical threshold.",
+        "semantic_values": {
+            "inputs": [
+                "A typed body and Julian date, or a typed body, bounded Julian-date interval, and admitted solar condition are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates use days; angular separations and signed and absolute event thresholds use degrees."
+            ],
+            "reference_frame": [
+                "The routes use the engine-returned ecliptic longitudes for the body and Sun under the bound planetary reader; the transport does not invent an additional frame claim."
+            ],
+            "origin": [
+                "Solar angular separation is measured from the Sun; event signs retain ingress or egress direction while the absolute boundary is also returned."
+            ],
+            "timescale": [
+                "The requested Julian dates are interpreted by the existing engine entrypoints and are not silently replaced by another epoch."
+            ],
+            "corrections": [
+                "No additional transport correction is applied; the response preserves the engine's solar-condition truth or crossing event."
+            ],
+            "policies_defaults": [
+                "Cazimi, combustion, and under-sunbeams thresholds come from one immutable doctrine-owned map and are repeated in response provenance."
+            ],
+            "fallbacks": [
+                "No threshold fallback is admitted; the routes report the bound reader owner and return the effective shared threshold policy."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects non-finite dates, unsupported event bodies or conditions, reversed windows, and searches longer than the admitted span."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
     "relationship_overlay_vessel": {
         "inspectability_mode": "embedded_result",
         "summary": "Each directional overlay embeds labels, node policy, point count, target house-system identity, effective system, and fallback state.",
