@@ -13,7 +13,8 @@ Verifies that:
 from __future__ import annotations
 
 import pytest
-from moira.houses import calculate_houses, HouseCusps
+from moira.essentials import calculate_houses as public_calculate_houses
+from moira.houses import calculate_houses, HouseCusps, HousePolicy
 from moira.constants import HouseSystem
 
 # ---------------------------------------------------------------------------
@@ -45,6 +46,32 @@ def _solar_anchor(system, request):
     if system in (HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN):
         return request.getfixturevalue("natal_chart").planets["Sun"].longitude
     return None
+
+
+def test_public_calculate_houses_contract_preserves_governing_truth() -> None:
+    """The package-level front door returns the full HouseCusps truth vessel."""
+
+    policy = HousePolicy.strict()
+    result = public_calculate_houses(
+        _JD_J2000,
+        _LAT_NORMAL,
+        _LON,
+        HouseSystem.PLACIDUS,
+        policy=policy,
+        include_boundary_geometry=True,
+    )
+
+    assert public_calculate_houses is calculate_houses
+    assert isinstance(result, HouseCusps)
+    assert result.system == HouseSystem.PLACIDUS
+    assert result.effective_system == HouseSystem.PLACIDUS
+    assert result.fallback is False
+    assert result.fallback_reason is None
+    assert result.policy == policy
+    assert result.classification is not None
+    assert result.boundary_geometry is not None
+    assert result.boundary_geometry.effective_system == result.effective_system
+    assert len(result.boundary_geometry.boundaries) == 12
 
 
 # ---------------------------------------------------------------------------

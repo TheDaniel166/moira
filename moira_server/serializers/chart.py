@@ -13,6 +13,7 @@ from ..models.chart import (
     ChartReductionResponse,
     ChartReductionTruthResponse,
     ChartResponse,
+    ChartWithComputationTruthResponse,
     CuspSpeedResponse,
     HouseBoundaryCurvePointResponse,
     HouseBoundaryGeometryResponse,
@@ -24,6 +25,7 @@ from ..models.chart import (
     HousesReductionTruthResponse,
     HouseSystemClassificationResponse,
     HousesResponse,
+    HousesWithComputationTruthResponse,
     NodePositionResponse,
     PolarAdmissibilityResponse,
     PolarHouseWindowResponse,
@@ -91,49 +93,70 @@ def serialize_chart_with_reduction(
 
     return ChartReductionResponse(
         result=serialize_chart(chart),
-        reduction=ChartReductionTruthResponse(
-            engine_surface="Moira.chart",
-            source_vessel="Chart",
-            requested_datetime=reduction.requested_datetime,
-            normalized_datetime_utc=reduction.normalized_datetime_utc,
-            jd_ut=reduction.jd_ut,
-            jd_ut1=reduction.jd_ut1,
-            jd_tt=reduction.jd_tt,
-            delta_t_seconds=reduction.delta_t_seconds,
-            obliquity_deg=reduction.obliquity_deg,
-            requested_bodies=reduction.requested_bodies,
-            returned_bodies=reduction.returned_bodies,
-            include_nodes_requested=reduction.include_nodes_requested,
-            include_nodes_returned=reduction.include_nodes_returned,
-            topocentric_requested=reduction.topocentric_requested,
-            observer=_serialize_observer_context(reduction.observer),
-            stage_sequence=reduction.stage_sequence,
-            planet_reductions={
-                name: ChartPlanetReductionSummaryResponse(
-                    source_vessel=summary.source_vessel,
-                    selection_surface=summary.selection_surface,
-                    apparent=summary.apparent,
-                    aberration=summary.aberration,
-                    grav_deflection=summary.grav_deflection,
-                    nutation=summary.nutation,
-                    frame=summary.frame,
-                    center=summary.center,
-                    topocentric_applied=summary.topocentric_applied,
-                    stage_sequence=summary.stage_sequence,
-                )
-                for name, summary in reduction.planet_reductions.items()
-            },
-            node_reductions={
-                name: ChartNodeReductionSummaryResponse(
-                    source_vessel=summary.source_vessel,
-                    source_surface=summary.source_surface,
-                    nutation=summary.nutation,
-                    frame=summary.frame,
-                    stage_sequence=summary.stage_sequence,
-                )
-                for name, summary in reduction.node_reductions.items()
-            },
-        ),
+        reduction=_serialize_chart_reduction_truth(reduction),
+    )
+
+
+def serialize_chart_with_computation_truth(
+    chart: Chart,
+    reduction: ChartReductionContext,
+) -> ChartWithComputationTruthResponse:
+    """Add computation truth to the ordinary chart response shape."""
+
+    result = serialize_chart(chart)
+    return ChartWithComputationTruthResponse(
+        **result.model_dump(),
+        computation_truth=_serialize_chart_reduction_truth(reduction),
+    )
+
+
+def _serialize_chart_reduction_truth(
+    reduction: ChartReductionContext,
+) -> ChartReductionTruthResponse:
+    return ChartReductionTruthResponse(
+        engine_surface="Moira.chart",
+        source_vessel="Chart",
+        requested_datetime=reduction.requested_datetime,
+        normalized_datetime_utc=reduction.normalized_datetime_utc,
+        jd_ut=reduction.jd_ut,
+        jd_ut1=reduction.jd_ut1,
+        jd_tt=reduction.jd_tt,
+        delta_t_seconds=reduction.delta_t_seconds,
+        obliquity_deg=reduction.obliquity_deg,
+        time_unknown_requested=reduction.time_unknown_requested,
+        requested_bodies=reduction.requested_bodies,
+        effective_bodies=reduction.returned_bodies,
+        returned_bodies=reduction.returned_bodies,
+        include_nodes_requested=reduction.include_nodes_requested,
+        include_nodes_returned=reduction.include_nodes_returned,
+        topocentric_requested=reduction.topocentric_requested,
+        observer=_serialize_observer_context(reduction.observer),
+        stage_sequence=reduction.stage_sequence,
+        planet_reductions={
+            name: ChartPlanetReductionSummaryResponse(
+                source_vessel=summary.source_vessel,
+                selection_surface=summary.selection_surface,
+                apparent=summary.apparent,
+                aberration=summary.aberration,
+                grav_deflection=summary.grav_deflection,
+                nutation=summary.nutation,
+                frame=summary.frame,
+                center=summary.center,
+                topocentric_applied=summary.topocentric_applied,
+                stage_sequence=summary.stage_sequence,
+            )
+            for name, summary in reduction.planet_reductions.items()
+        },
+        node_reductions={
+            name: ChartNodeReductionSummaryResponse(
+                source_vessel=summary.source_vessel,
+                source_surface=summary.source_surface,
+                nutation=summary.nutation,
+                frame=summary.frame,
+                stage_sequence=summary.stage_sequence,
+            )
+            for name, summary in reduction.node_reductions.items()
+        },
     )
 
 
@@ -218,10 +241,28 @@ def serialize_houses_with_reduction(
     reduction: HousesReductionContext,
 ) -> HousesReductionResponse:
     """Serialize houses result with its reduction doctrine truth."""
-    # Reuse the compact serializer for the result (it already includes the policy echo)
-    result = serialize_houses(houses)
+    return HousesReductionResponse(
+        result=serialize_houses(houses),
+        reduction=_serialize_houses_reduction_truth(reduction),
+    )
 
-    # Build nested classification if present in context
+
+def serialize_houses_with_computation_truth(
+    houses: HouseCusps,
+    reduction: HousesReductionContext,
+) -> HousesWithComputationTruthResponse:
+    """Add computation truth to the ordinary houses response shape."""
+
+    result = serialize_houses(houses)
+    return HousesWithComputationTruthResponse(
+        **result.model_dump(),
+        computation_truth=_serialize_houses_reduction_truth(reduction),
+    )
+
+
+def _serialize_houses_reduction_truth(
+    reduction: HousesReductionContext,
+) -> HousesReductionTruthResponse:
     classification = None
     if reduction.classification_family is not None:
         classification = HouseSystemClassificationResponse(
@@ -239,24 +280,22 @@ def serialize_houses_with_reduction(
             polar_fallback=reduction.requested_policy_polar_fallback,
         )
 
-    return HousesReductionResponse(
-        result=result,
-        reduction=HousesReductionTruthResponse(
-            engine_surface="Moira.houses",
-            source_vessel="HouseCusps",
-            requested_datetime=reduction.requested_datetime,
-            normalized_jd_ut=reduction.normalized_jd_ut,
-            requested_system=reduction.requested_system,
-            effective_system=reduction.effective_system,
-            requested_policy=requested_policy,
-            applied_policy=HousePolicyResponse(
-                unknown_system=reduction.applied_policy_unknown_system,
-                polar_fallback=reduction.applied_policy_polar_fallback,
-            ),
-            fallback=reduction.fallback,
-            fallback_reason=reduction.fallback_reason,
-            classification=classification,
+    return HousesReductionTruthResponse(
+        engine_surface="Moira.houses",
+        source_vessel="HouseCusps",
+        requested_datetime=reduction.requested_datetime,
+        normalized_jd_ut=reduction.normalized_jd_ut,
+        time_unknown_requested=reduction.time_unknown_requested,
+        requested_system=reduction.requested_system,
+        effective_system=reduction.effective_system,
+        requested_policy=requested_policy,
+        applied_policy=HousePolicyResponse(
+            unknown_system=reduction.applied_policy_unknown_system,
+            polar_fallback=reduction.applied_policy_polar_fallback,
         ),
+        fallback=reduction.fallback,
+        fallback_reason=reduction.fallback_reason,
+        classification=classification,
     )
 
 

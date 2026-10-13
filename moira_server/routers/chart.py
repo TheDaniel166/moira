@@ -12,33 +12,31 @@ from ..models.chart import (
     AnalyticalHouseDynamicsResponse,
     ChartReductionResponse,
     ChartRequest,
-    ChartResponse,
+    ChartWithComputationTruthResponse,
     HouseDynamicsFromArmcRequest,
     HouseDynamicsRequest,
     HouseDynamicsResponse,
     HousesReductionResponse,
     HousesRequest,
-    HousesResponse,
+    HousesWithComputationTruthResponse,
     PolarAdmissibilityRequest,
     PolarAdmissibilityResponse,
 )
 from ..serializers.chart import (
     serialize_analytical_house_dynamics,
-    serialize_chart,
+    serialize_chart_with_computation_truth,
     serialize_chart_with_reduction,
     serialize_house_dynamics,
-    serialize_houses,
+    serialize_houses_with_computation_truth,
     serialize_houses_with_reduction,
     serialize_polar_admissibility,
 )
 from ..services.chart import (
     UnsupportedPolarHouseSystemError,
     compute_analytical_house_dynamics,
-    compute_chart,
     compute_chart_with_reduction,
     compute_house_dynamics,
     compute_house_dynamics_from_armc,
-    compute_houses,
     compute_houses_with_reduction,
     compute_polar_admissibility,
 )
@@ -52,20 +50,24 @@ def _get_cache(request: Request) -> ChartLRUCache | None:
     return getattr(request.app.state, "chart_cache", None)
 
 
-@router.post("/chart", response_model=ChartResponse)
+@router.post("/chart", response_model=ChartWithComputationTruthResponse)
 def chart_route(
     request: ChartRequest,
     http_request: Request,
     engine: Moira = Depends(get_engine),
-) -> ChartResponse:
-    """Serialize a canonical chart result for transport."""
+) -> ChartWithComputationTruthResponse:
+    """Serialize a canonical chart result with additive computation truth."""
+
+    def compute_response() -> ChartWithComputationTruthResponse:
+        chart, reduction = compute_chart_with_reduction(engine, request)
+        return serialize_chart_with_computation_truth(chart, reduction)
 
     return cached_response(
         _get_cache(http_request),
         "v1:chart",
         request,
         engine,
-        lambda: serialize_chart(compute_chart(engine, request)),
+        compute_response,
     )
 
 
@@ -90,14 +92,15 @@ def chart_reduction_route(
     )
 
 
-@router.post("/houses", response_model=HousesResponse)
+@router.post("/houses", response_model=HousesWithComputationTruthResponse)
 def houses_route(
     request: HousesRequest,
     engine: Moira = Depends(get_engine),
-) -> HousesResponse:
-    """Serialize a canonical houses result for transport."""
+) -> HousesWithComputationTruthResponse:
+    """Serialize a canonical houses result with additive computation truth."""
 
-    return serialize_houses(compute_houses(engine, request))
+    houses, reduction = compute_houses_with_reduction(engine, request)
+    return serialize_houses_with_computation_truth(houses, reduction)
 
 
 @router.post("/houses/reduction", response_model=HousesReductionResponse)

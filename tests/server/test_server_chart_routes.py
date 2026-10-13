@@ -70,6 +70,54 @@ def _local_sidereal_time_for(jd_utc: float, longitude: float) -> float:
     return local_sidereal_time(jd_ut1, longitude, dpsi_deg, obliquity_deg)
 
 
+def test_plain_position_and_chart_openapi_contracts_are_additive() -> None:
+    openapi = create_app(ServerConfig(docs_enabled=False)).openapi()
+    schemas = openapi["components"]["schemas"]
+
+    expected = {
+        "/v1/chart": (
+            "ChartWithComputationTruthResponse",
+            {"jd_ut", "planets", "computation_truth"},
+        ),
+        "/v1/houses": (
+            "HousesWithComputationTruthResponse",
+            {"system", "cusps", "computation_truth"},
+        ),
+        "/v1/positions/planet": (
+            "PlanetPositionWithComputationTruthResponse",
+            {
+            "name",
+            "longitude",
+            "computation_truth",
+            },
+        ),
+        "/v1/positions/sky": (
+            "SkyPositionWithComputationTruthResponse",
+            {
+            "name",
+            "altitude",
+            "computation_truth",
+            },
+        ),
+    }
+    for path, (schema_name, required_properties) in expected.items():
+        response_schema = openapi["paths"][path]["post"]["responses"]["200"]["content"][
+            "application/json"
+        ]["schema"]
+        assert response_schema["$ref"].endswith(f"/{schema_name}")
+        properties = schemas[schema_name]["properties"]
+        assert required_properties <= properties.keys()
+        assert "result" not in properties
+        assert "reduction" not in properties
+
+    planet_truth = schemas["PlanetCorrectionTruthResponse"]["properties"]
+    assert "aberration_requested" in planet_truth
+    assert "aberration_applied" in planet_truth
+    sky_truth = schemas["SkyEnvironmentTruthResponse"]["properties"]
+    assert "pressure_mbar_requested" in sky_truth
+    assert "pressure_mbar_applied" in sky_truth
+
+
 @pytest.mark.requires_ephemeris
 def test_chart_route_matches_engine_selected_truth(client_with_engine: TestClient, moira_engine) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
@@ -92,6 +140,12 @@ def test_chart_route_matches_engine_selected_truth(client_with_engine: TestClien
     assert body["planets"]["Sun"]["longitude"] == pytest.approx(direct.planets["Sun"].longitude)
     assert body["planets"]["Moon"]["speed"] == pytest.approx(direct.planets["Moon"].speed)
     assert body["nodes"]["True Node"]["longitude"] == pytest.approx(direct.nodes["True Node"].longitude)
+    truth = body["computation_truth"]
+    assert truth["engine_surface"] == "Moira.chart"
+    assert truth["time_unknown_requested"] is False
+    assert truth["requested_bodies"] == ["Sun", "Moon"]
+    assert truth["effective_bodies"] == ["Sun", "Moon"]
+    assert truth["returned_bodies"] == ["Sun", "Moon"]
 
 
 @pytest.mark.requires_ephemeris
@@ -130,6 +184,7 @@ def test_chart_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["engine_surface"] == "Moira.chart"
     assert body["reduction"]["source_vessel"] == "Chart"
     assert body["reduction"]["requested_bodies"] == ["Sun", "Moon"]
+    assert body["reduction"]["effective_bodies"] == ["Sun", "Moon"]
     assert body["reduction"]["returned_bodies"] == ["Sun", "Moon"]
     assert body["reduction"]["include_nodes_requested"] is True
     assert body["reduction"]["include_nodes_returned"] is True
@@ -181,7 +236,9 @@ def test_chart_reduction_preserves_unknown_time_default_request_truth(
 
     assert response.status_code == 200
     body = response.json()
+    assert body["reduction"]["time_unknown_requested"] is True
     assert body["reduction"]["requested_bodies"] is None
+    assert body["reduction"]["effective_bodies"] == body["reduction"]["returned_bodies"]
     assert body["reduction"]["returned_bodies"] == [
         "Sun",
         "Mercury",
@@ -249,6 +306,10 @@ def test_planet_position_route_matches_engine_selected_truth(
     assert body["latitude"] == pytest.approx(direct.latitude)
     assert body["speed"] == pytest.approx(direct.speed)
     assert body["retrograde"] is direct.retrograde
+    truth = body["computation_truth"]
+    assert truth["engine_surface"] == "Moira.planet_at"
+    assert truth["correction_truth"]["apparent_requested"] is True
+    assert truth["correction_truth"]["apparent_applied"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -353,6 +414,46 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["aberration"] is True
     assert body["reduction"]["grav_deflection"] is True
     assert body["reduction"]["nutation"] is True
+    correction_truth = body["reduction"]["correction_truth"]
+    assert correction_truth["apparent_requested"] is True
+    assert correction_truth["apparent_applied"] is True
+    assert correction_truth["light_time_applied"] is True
+    assert correction_truth["topocentric_requested"] is True
+    assert correction_truth["topocentric_applied"] is True
+
+
+@pytest.mark.requires_ephemeris
+def test_planet_truth_distinguishes_requested_from_applied_corrections(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "body": "Mars",
+        "apparent": False,
+        "aberration": True,
+        "grav_deflection": True,
+        "nutation": True,
+    }
+    plain = client_with_engine.post("/v1/positions/planet", json=payload)
+    reduction = client_with_engine.post("/v1/positions/planet/reduction", json=payload)
+
+    assert plain.status_code == 200
+    assert reduction.status_code == 200
+    plain_truth = plain.json()["computation_truth"]
+    reduction_truth = reduction.json()["reduction"]
+    assert plain_truth == reduction_truth
+    assert reduction_truth["aberration"] is True
+    assert reduction_truth["grav_deflection"] is True
+    correction_truth = reduction_truth["correction_truth"]
+    assert correction_truth["apparent_requested"] is False
+    assert correction_truth["apparent_applied"] is False
+    assert correction_truth["light_time_applied"] is False
+    assert correction_truth["aberration_requested"] is True
+    assert correction_truth["aberration_applied"] is False
+    assert correction_truth["grav_deflection_requested"] is True
+    assert correction_truth["grav_deflection_applied"] is False
+    assert correction_truth["nutation_requested"] is True
+    assert correction_truth["nutation_applied"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -430,6 +531,10 @@ def test_sky_position_route_matches_engine_selected_truth(
     assert body["declination"] == pytest.approx(direct.declination)
     assert body["azimuth"] == pytest.approx(direct.azimuth)
     assert body["altitude"] == pytest.approx(direct.altitude)
+    truth = body["computation_truth"]
+    assert truth["engine_surface"] == "Moira.sky_position"
+    assert truth["apparent"] is True
+    assert truth["correction_truth"]["apparent_pipeline_applied"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -474,6 +579,59 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["pressure_mbar"] == 1013.25
     assert body["reduction"]["temperature_c"] == 10.0
     assert body["reduction"]["relative_humidity"] == 0.0
+    correction_truth = body["reduction"]["correction_truth"]
+    assert correction_truth["apparent_pipeline_applied"] is True
+    assert correction_truth["light_time_applied"] is True
+    assert correction_truth["refraction_requested"] is True
+    assert correction_truth["refraction_applied"] is True
+    environment_truth = body["reduction"]["environment_truth"]
+    assert environment_truth["pressure_mbar_requested"] == 1013.25
+    assert environment_truth["pressure_mbar_applied"] == 1013.25
+
+
+@pytest.mark.requires_ephemeris
+def test_sky_truth_keeps_apparent_pipeline_distinct_from_optional_corrections(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "body": "Sun",
+        "latitude": 51.5,
+        "longitude": -0.1,
+        "aberration": False,
+        "grav_deflection": True,
+        "nutation": False,
+        "refraction": False,
+        "pressure_mbar": 900.0,
+        "temperature_c": 3.0,
+        "relative_humidity": 0.75,
+    }
+    plain = client_with_engine.post("/v1/positions/sky", json=payload)
+    reduction = client_with_engine.post("/v1/positions/sky/reduction", json=payload)
+
+    assert plain.status_code == 200
+    assert reduction.status_code == 200
+    plain_truth = plain.json()["computation_truth"]
+    reduction_truth = reduction.json()["reduction"]
+    assert plain_truth == reduction_truth
+    assert reduction_truth["apparent"] is True
+    correction_truth = reduction_truth["correction_truth"]
+    assert correction_truth["apparent_pipeline_applied"] is True
+    assert correction_truth["light_time_applied"] is True
+    assert correction_truth["aberration_requested"] is False
+    assert correction_truth["aberration_applied"] is False
+    assert correction_truth["grav_deflection_requested"] is True
+    assert correction_truth["grav_deflection_applied"] is False
+    assert correction_truth["nutation_requested"] is False
+    assert correction_truth["nutation_applied"] is False
+    assert correction_truth["topocentric_applied"] is True
+    assert correction_truth["refraction_requested"] is False
+    assert correction_truth["refraction_applied"] is False
+    environment_truth = reduction_truth["environment_truth"]
+    assert environment_truth["pressure_mbar_requested"] == 900.0
+    assert environment_truth["pressure_mbar_applied"] is None
+    assert environment_truth["temperature_c_applied"] is None
+    assert environment_truth["relative_humidity_applied"] is None
 
 
 @pytest.mark.parametrize(
@@ -629,6 +787,11 @@ def test_houses_route_matches_engine_selected_truth(client_with_engine: TestClie
     assert body["asc"] == pytest.approx(direct.asc)
     assert body["mc"] == pytest.approx(direct.mc)
     assert body["cusps"][0] == pytest.approx(direct.cusps[0])
+    truth = body["computation_truth"]
+    assert truth["engine_surface"] == "Moira.houses"
+    assert truth["time_unknown_requested"] is False
+    assert truth["effective_system"] == direct.effective_system
+    assert truth["applied_policy"] == body["policy"]
 
 
 @pytest.mark.requires_ephemeris

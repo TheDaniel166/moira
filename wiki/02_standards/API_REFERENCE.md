@@ -1318,7 +1318,7 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `calculate_houses(jd_ut, latitude, longitude, system=HouseSystem.PLACIDUS, *, policy=None, ayanamsa_offset=None)` | `HouseCusps` | Compute house cusps and angles under explicit house policy when supplied |
+| `calculate_houses(jd_ut, latitude, longitude, system=HouseSystem.PLACIDUS, *, policy=None, sun_longitude=None, ayanamsa_offset=None, include_boundary_geometry=False)` | `HouseCusps` | Compute house cusps and angles while preserving requested/effective system, fallback, classification, applied policy, and optional boundary geometry truth |
 | `assign_house(longitude, cusps)` | `HousePlacement` | Find which house a longitude falls in |
 | `describe_boundary(longitude, cusps, orb=2.0)` | `HouseBoundaryProfile` | Proximity to house cusp boundaries |
 | `describe_angularity(longitude, cusps, orb=5.0)` | `HouseAngularity` | Angular/succedent/cadent classification |

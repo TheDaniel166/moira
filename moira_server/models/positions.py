@@ -78,6 +78,22 @@ class PlanetReductionStageResponse(_StrictModel):
     ref_pos: float | None = None
 
 
+class PlanetCorrectionTruthResponse(_StrictModel):
+    """Requested correction controls and the stages actually applied."""
+
+    apparent_requested: bool
+    apparent_applied: bool
+    light_time_applied: bool
+    aberration_requested: bool
+    aberration_applied: bool
+    grav_deflection_requested: bool
+    grav_deflection_applied: bool
+    nutation_requested: bool
+    nutation_applied: bool
+    topocentric_requested: bool
+    topocentric_applied: bool
+
+
 class PlanetPositionReductionTruthResponse(PositionPipelineTruthResponse):
     selection_surface: str
     include_nodes: bool
@@ -94,6 +110,13 @@ class PlanetPositionReductionTruthResponse(PositionPipelineTruthResponse):
     total_delta_arcsec: float | None = None
     stage_longitudes: dict[str, float] | None = None
     geocentric_longitude: float | None = None
+    correction_truth: PlanetCorrectionTruthResponse
+
+
+class PlanetPositionWithComputationTruthResponse(PlanetPositionResponse):
+    """Backward-compatible planet payload with additive computation truth."""
+
+    computation_truth: PlanetPositionReductionTruthResponse
 
 
 class PlanetPositionReductionResponse(_StrictModel):
@@ -131,6 +154,33 @@ class SkyPositionResponse(_StrictModel):
     distance: float
 
 
+class SkyCorrectionTruthResponse(_StrictModel):
+    """Fixed sky-pipeline stages and requested/applied correction controls."""
+
+    apparent_pipeline_applied: bool
+    light_time_applied: bool
+    aberration_requested: bool
+    aberration_applied: bool
+    grav_deflection_requested: bool
+    grav_deflection_applied: bool
+    nutation_requested: bool
+    nutation_applied: bool
+    topocentric_applied: bool
+    refraction_requested: bool
+    refraction_applied: bool
+
+
+class SkyEnvironmentTruthResponse(_StrictModel):
+    """Requested observing environment and values used by refraction."""
+
+    pressure_mbar_requested: float
+    pressure_mbar_applied: float | None = None
+    temperature_c_requested: float
+    temperature_c_applied: float | None = None
+    relative_humidity_requested: float
+    relative_humidity_applied: float | None = None
+
+
 class SkyPositionReductionTruthResponse(PositionPipelineTruthResponse):
     apparent: bool
     aberration: bool
@@ -142,6 +192,14 @@ class SkyPositionReductionTruthResponse(PositionPipelineTruthResponse):
     relative_humidity: float
     obliquity_deg: float
     coordinate_frames: list[str]
+    correction_truth: SkyCorrectionTruthResponse
+    environment_truth: SkyEnvironmentTruthResponse
+
+
+class SkyPositionWithComputationTruthResponse(SkyPositionResponse):
+    """Backward-compatible sky payload with additive computation truth."""
+
+    computation_truth: SkyPositionReductionTruthResponse
 
 
 class SkyPositionReductionResponse(_StrictModel):
@@ -153,6 +211,8 @@ __all__ = [
     "PlanetPositionRequest",
     "PlanetPositionResponse",
     "PlanetPositionReductionResponse",
+    "PlanetPositionWithComputationTruthResponse",
+    "PlanetCorrectionTruthResponse",
     "PlanetReductionStageResponse",
     "PlanetPositionReductionTruthResponse",
     "PositionObserverContextResponse",
@@ -161,4 +221,7 @@ __all__ = [
     "SkyPositionResponse",
     "SkyPositionReductionResponse",
     "SkyPositionReductionTruthResponse",
+    "SkyPositionWithComputationTruthResponse",
+    "SkyCorrectionTruthResponse",
+    "SkyEnvironmentTruthResponse",
 ]

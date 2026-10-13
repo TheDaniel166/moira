@@ -5,14 +5,19 @@ from __future__ import annotations
 from moira import PlanetData, SkyPosition
 
 from ..models.positions import (
+    PlanetCorrectionTruthResponse,
     PlanetPositionReductionResponse,
     PlanetPositionReductionTruthResponse,
     PlanetPositionResponse,
+    PlanetPositionWithComputationTruthResponse,
     PlanetReductionStageResponse,
     PositionObserverContextResponse,
+    SkyCorrectionTruthResponse,
+    SkyEnvironmentTruthResponse,
     SkyPositionReductionResponse,
     SkyPositionReductionTruthResponse,
     SkyPositionResponse,
+    SkyPositionWithComputationTruthResponse,
 )
 from ..services.positions import PlanetPositionReductionContext, SkyPositionReductionContext
 
@@ -83,38 +88,97 @@ def serialize_planet_with_reduction(
 
     return PlanetPositionReductionResponse(
         result=serialize_planet(planet),
-        reduction=PlanetPositionReductionTruthResponse(
-            engine_surface="Moira.planet_at",
-            source_vessel="PlanetData",
-            requested_datetime=reduction.requested_datetime,
-            normalized_datetime_utc=reduction.normalized_datetime_utc,
-            jd_ut=reduction.jd_ut,
-            jd_tt=reduction.jd_tt,
-            delta_t_seconds=reduction.delta_t_seconds,
-            body=planet.name,
-            observer=_serialize_observer_context(reduction.observer),
-            stage_sequence=reduction.stage_sequence,
-            selection_surface="planet_at",
-            include_nodes=False,
-            apparent=reduction.apparent,
-            aberration=reduction.aberration,
-            grav_deflection=reduction.grav_deflection,
-            nutation=reduction.nutation,
-            frame="ecliptic",
-            center="geocentric",
-            obliquity_deg=reduction.obliquity_deg,
+        reduction=_serialize_planet_reduction_truth(planet, reduction),
+    )
+
+
+def serialize_planet_with_computation_truth(
+    planet: PlanetData,
+    reduction: PlanetPositionReductionContext,
+) -> PlanetPositionWithComputationTruthResponse:
+    """Add computation truth to the ordinary planet response shape."""
+
+    result = serialize_planet(planet)
+    return PlanetPositionWithComputationTruthResponse(
+        **result.model_dump(),
+        computation_truth=_serialize_planet_reduction_truth(planet, reduction),
+    )
+
+
+def _stage_enabled(reduction: PlanetPositionReductionContext, name: str, fallback: bool) -> bool:
+    if reduction.breakdown is None:
+        return fallback
+    for stage in reduction.breakdown.stages:
+        if stage.name == name:
+            return stage.enabled
+    return fallback
+
+
+def _serialize_planet_reduction_truth(
+    planet: PlanetData,
+    reduction: PlanetPositionReductionContext,
+) -> PlanetPositionReductionTruthResponse:
+    apparent_applied = _stage_enabled(
+        reduction,
+        "Light-time iteration",
+        reduction.apparent,
+    )
+    return PlanetPositionReductionTruthResponse(
+        engine_surface="Moira.planet_at",
+        source_vessel="PlanetData",
+        requested_datetime=reduction.requested_datetime,
+        normalized_datetime_utc=reduction.normalized_datetime_utc,
+        jd_ut=reduction.jd_ut,
+        jd_tt=reduction.jd_tt,
+        delta_t_seconds=reduction.delta_t_seconds,
+        body=planet.name,
+        observer=_serialize_observer_context(reduction.observer),
+        stage_sequence=reduction.stage_sequence,
+        selection_surface="planet_at",
+        include_nodes=False,
+        apparent=reduction.apparent,
+        aberration=reduction.aberration,
+        grav_deflection=reduction.grav_deflection,
+        nutation=reduction.nutation,
+        frame="ecliptic",
+        center="geocentric",
+        obliquity_deg=reduction.obliquity_deg,
+        topocentric_requested=reduction.topocentric_requested,
+        topocentric_applied=reduction.topocentric_applied,
+        stages=_serialize_planet_reduction_stages(reduction.breakdown),
+        total_delta_arcsec=(
+            reduction.breakdown.total_delta_arcsec if reduction.breakdown is not None else None
+        ),
+        stage_longitudes=(
+            dict(reduction.breakdown.stage_longitudes) if reduction.breakdown is not None else None
+        ),
+        geocentric_longitude=(
+            reduction.breakdown.geocentric_longitude if reduction.breakdown is not None else None
+        ),
+        correction_truth=PlanetCorrectionTruthResponse(
+            apparent_requested=reduction.apparent,
+            apparent_applied=apparent_applied,
+            light_time_applied=apparent_applied,
+            aberration_requested=reduction.aberration,
+            aberration_applied=_stage_enabled(
+                reduction,
+                "Annual aberration",
+                reduction.apparent and reduction.aberration,
+            ),
+            grav_deflection_requested=reduction.grav_deflection,
+            grav_deflection_applied=_stage_enabled(
+                reduction,
+                "Gravitational deflection",
+                reduction.apparent and reduction.grav_deflection,
+            ),
+            nutation_requested=reduction.nutation,
+            nutation_applied=_stage_enabled(
+                reduction,
+                "IAU 2000A nutation",
+                reduction.nutation,
+            ),
             topocentric_requested=reduction.topocentric_requested,
             topocentric_applied=reduction.topocentric_applied,
-            stages=_serialize_planet_reduction_stages(reduction.breakdown),
-            total_delta_arcsec=(
-                reduction.breakdown.total_delta_arcsec if reduction.breakdown is not None else None
-            ),
-            stage_longitudes=(
-                dict(reduction.breakdown.stage_longitudes) if reduction.breakdown is not None else None
-            ),
-            geocentric_longitude=(
-                reduction.breakdown.geocentric_longitude if reduction.breakdown is not None else None
-            ),
         ),
     )
 
@@ -127,26 +191,73 @@ def serialize_sky_position_with_reduction(
 
     return SkyPositionReductionResponse(
         result=serialize_sky_position(position),
-        reduction=SkyPositionReductionTruthResponse(
-            engine_surface="Moira.sky_position",
-            source_vessel="SkyPosition",
-            requested_datetime=reduction.requested_datetime,
-            normalized_datetime_utc=reduction.normalized_datetime_utc,
-            jd_ut=reduction.jd_ut,
-            jd_tt=reduction.jd_tt,
-            delta_t_seconds=reduction.delta_t_seconds,
-            body=position.name,
-            observer=_serialize_observer_context(reduction.observer),
-            stage_sequence=reduction.stage_sequence,
-            apparent=reduction.aberration,  # note: for sky the 'apparent' in truth aligns to the first corrections
-            aberration=reduction.aberration,
-            grav_deflection=reduction.grav_deflection,
-            nutation=reduction.nutation,
-            refraction=reduction.refraction,
-            pressure_mbar=reduction.pressure_mbar,
-            temperature_c=reduction.temperature_c,
-            relative_humidity=reduction.relative_humidity,
-            obliquity_deg=reduction.obliquity_deg,
-            coordinate_frames=["equatorial", "horizontal"],
+        reduction=_serialize_sky_reduction_truth(position, reduction),
+    )
+
+
+def serialize_sky_position_with_computation_truth(
+    position: SkyPosition,
+    reduction: SkyPositionReductionContext,
+) -> SkyPositionWithComputationTruthResponse:
+    """Add computation truth to the ordinary sky-position response shape."""
+
+    result = serialize_sky_position(position)
+    return SkyPositionWithComputationTruthResponse(
+        **result.model_dump(),
+        computation_truth=_serialize_sky_reduction_truth(position, reduction),
+    )
+
+
+def _serialize_sky_reduction_truth(
+    position: SkyPosition,
+    reduction: SkyPositionReductionContext,
+) -> SkyPositionReductionTruthResponse:
+    grav_deflection_applied = reduction.grav_deflection and position.name not in {
+        "Sun",
+        "Moon",
+    }
+    return SkyPositionReductionTruthResponse(
+        engine_surface="Moira.sky_position",
+        source_vessel="SkyPosition",
+        requested_datetime=reduction.requested_datetime,
+        normalized_datetime_utc=reduction.normalized_datetime_utc,
+        jd_ut=reduction.jd_ut,
+        jd_tt=reduction.jd_tt,
+        delta_t_seconds=reduction.delta_t_seconds,
+        body=position.name,
+        observer=_serialize_observer_context(reduction.observer),
+        stage_sequence=reduction.stage_sequence,
+        apparent=True,
+        aberration=reduction.aberration,
+        grav_deflection=reduction.grav_deflection,
+        nutation=reduction.nutation,
+        refraction=reduction.refraction,
+        pressure_mbar=reduction.pressure_mbar,
+        temperature_c=reduction.temperature_c,
+        relative_humidity=reduction.relative_humidity,
+        obliquity_deg=reduction.obliquity_deg,
+        coordinate_frames=["equatorial", "horizontal"],
+        correction_truth=SkyCorrectionTruthResponse(
+            apparent_pipeline_applied=True,
+            light_time_applied=True,
+            aberration_requested=reduction.aberration,
+            aberration_applied=reduction.aberration,
+            grav_deflection_requested=reduction.grav_deflection,
+            grav_deflection_applied=grav_deflection_applied,
+            nutation_requested=reduction.nutation,
+            nutation_applied=reduction.nutation,
+            topocentric_applied=True,
+            refraction_requested=reduction.refraction,
+            refraction_applied=reduction.refraction,
+        ),
+        environment_truth=SkyEnvironmentTruthResponse(
+            pressure_mbar_requested=reduction.pressure_mbar,
+            pressure_mbar_applied=(reduction.pressure_mbar if reduction.refraction else None),
+            temperature_c_requested=reduction.temperature_c,
+            temperature_c_applied=(reduction.temperature_c if reduction.refraction else None),
+            relative_humidity_requested=reduction.relative_humidity,
+            relative_humidity_applied=(
+                reduction.relative_humidity if reduction.refraction else None
+            ),
         ),
     )

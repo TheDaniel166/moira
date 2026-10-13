@@ -118,7 +118,9 @@ class ChartReductionTruthResponse(_StrictModel):
     jd_tt: float
     delta_t_seconds: float
     obliquity_deg: float
+    time_unknown_requested: bool
     requested_bodies: list[str] | None = None
+    effective_bodies: list[str]
     returned_bodies: list[str]
     include_nodes_requested: bool
     include_nodes_returned: bool
@@ -127,6 +129,12 @@ class ChartReductionTruthResponse(_StrictModel):
     stage_sequence: list[str]
     planet_reductions: dict[str, ChartPlanetReductionSummaryResponse]
     node_reductions: dict[str, ChartNodeReductionSummaryResponse]
+
+
+class ChartWithComputationTruthResponse(ChartResponse):
+    """Backward-compatible chart payload with additive computation truth."""
+
+    computation_truth: ChartReductionTruthResponse
 
 
 class ChartReductionResponse(_StrictModel):
@@ -363,6 +371,7 @@ class HousesReductionTruthResponse(_StrictModel):
     source_vessel: str
     requested_datetime: str
     normalized_jd_ut: float
+    time_unknown_requested: bool
     requested_system: str | None
     effective_system: str
     requested_policy: HousePolicyResponse | None = None
@@ -370,6 +379,12 @@ class HousesReductionTruthResponse(_StrictModel):
     fallback: bool
     fallback_reason: str | None = None
     classification: HouseSystemClassificationResponse | None = None
+
+
+class HousesWithComputationTruthResponse(HousesResponse):
+    """Backward-compatible houses payload with additive computation truth."""
+
+    computation_truth: HousesReductionTruthResponse
 
 
 class HousesReductionResponse(_StrictModel):
@@ -498,6 +513,7 @@ __all__ = [
     "ChartPlanetReductionSummaryResponse",
     "ChartReductionResponse",
     "ChartReductionTruthResponse",
+    "ChartWithComputationTruthResponse",
     "ChartRequest",
     "ChartResponse",
     "ChartNodeReductionSummaryResponse",
@@ -514,6 +530,7 @@ __all__ = [
     "HouseSystemClassificationResponse",
     "HousesReductionResponse",
     "HousesReductionTruthResponse",
+    "HousesWithComputationTruthResponse",
     "HousesRequest",
     "HousesResponse",
     "NodePositionResponse",

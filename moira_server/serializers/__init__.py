@@ -40,9 +40,11 @@ from .astrocartography import (
 from .chart import (
     serialize_analytical_house_dynamics,
     serialize_chart,
+    serialize_chart_with_computation_truth,
     serialize_chart_with_reduction,
     serialize_house_dynamics,
     serialize_houses,
+    serialize_houses_with_computation_truth,
     serialize_houses_with_reduction,
     serialize_node,
     serialize_polar_admissibility,
@@ -268,8 +270,10 @@ from .varga import (
 )
 from .positions import (
     serialize_planet,
+    serialize_planet_with_computation_truth,
     serialize_planet_with_reduction,
     serialize_sky_position,
+    serialize_sky_position_with_computation_truth,
     serialize_sky_position_with_reduction,
 )
 from .primary_directions import (
@@ -390,6 +394,7 @@ __all__ = [
     "serialize_bhinnashtakavarga_result",
     "serialize_chart_batch_with_reduction_item",
     "serialize_chart",
+    "serialize_chart_with_computation_truth",
     "serialize_chart_with_reduction",
     "serialize_close_approach",
     "serialize_eclipse_data",
@@ -399,6 +404,7 @@ __all__ = [
     "serialize_general_visibility_event",
     "serialize_house_dynamics",
     "serialize_houses",
+    "serialize_houses_with_computation_truth",
     "serialize_houses_with_reduction",
     "serialize_ingress_event",
     "serialize_last_aspect",
@@ -421,6 +427,7 @@ __all__ = [
     "serialize_paran_crossing",
     "serialize_paran_strength",
     "serialize_planet",
+    "serialize_planet_with_computation_truth",
     "serialize_planet_with_reduction",
     "serialize_aspect",
     "serialize_aspect_motion_witness",
@@ -626,6 +633,7 @@ __all__ = [
     "serialize_profile",
     "serialize_profile_with_reduction",
     "serialize_sky_position",
+    "serialize_sky_position_with_computation_truth",
     "serialize_sky_position_with_reduction",
     "serialize_solar_body_circumstances",
     "serialize_solar_eclipse_footprint",

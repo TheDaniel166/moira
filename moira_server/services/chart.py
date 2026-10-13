@@ -148,6 +148,7 @@ class ChartReductionContext:
     jd_tt: float
     delta_t_seconds: float
     obliquity_deg: float
+    time_unknown_requested: bool
     requested_bodies: list[str] | None
     returned_bodies: list[str]
     include_nodes_requested: bool
@@ -224,6 +225,7 @@ def compute_chart_with_reduction(
         jd_tt=jd_tt,
         delta_t_seconds=chart.delta_t,
         obliquity_deg=chart.obliquity,
+        time_unknown_requested=request.time_unknown,
         requested_bodies=(list(request.bodies) if request.bodies is not None else None),
         returned_bodies=list(chart.planets.keys()),
         include_nodes_requested=request.include_nodes,
@@ -257,6 +259,7 @@ class HousesReductionContext:
     """
     requested_datetime: str
     normalized_jd_ut: float
+    time_unknown_requested: bool
     requested_system: str | None
     effective_system: str
     applied_policy_unknown_system: UnknownSystemPolicy
@@ -341,6 +344,7 @@ def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
     reduction = HousesReductionContext(
         requested_datetime=request.dt.isoformat(),
         normalized_jd_ut=jd_ut,
+        time_unknown_requested=request.time_unknown,
         requested_system=request.system,
         effective_system=houses.effective_system,
         applied_policy_unknown_system=(pol.unknown_system if pol is not None else UnknownSystemPolicy.FALLBACK_TO_PLACIDUS),
