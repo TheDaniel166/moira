@@ -30,6 +30,43 @@ R1C_RELATIONSHIP_SURFACES = {
 R2A_CHART_WHEEL_SURFACES = {
     "rest:POST:/v1/website/chart-wheel/packet",
 }
+R2B_TIME_SURFACES = {
+    f"python:moira.facade:{name}"
+    for name in (
+        "jd_from_datetime",
+        "jd_from_datetime_with_truth",
+        "datetime_from_jd",
+        "datetime_from_jd_with_truth",
+        "delta_t_from_jd",
+        "delta_t_from_jd_with_truth",
+        "utc_to_ut1",
+        "utc_to_ut1_with_truth",
+        "utc_to_tt",
+        "utc_to_tt_with_truth",
+        "local_sidereal_time",
+        "local_sidereal_time_with_truth",
+    )
+}
+R2B_FRAME_SURFACES = {
+    f"python:moira.facade:{name}"
+    for name in (
+        "ecliptic_to_equatorial",
+        "ecliptic_to_equatorial_with_truth",
+        "equatorial_to_horizontal",
+        "equatorial_to_horizontal_with_truth",
+        "true_obliquity",
+        "true_obliquity_with_truth",
+    )
+}
+R2B_KERNEL_SURFACES = {
+    f"python:moira.facade:{name}"
+    for name in (
+        "planet_relative_to",
+        "planet_relative_to_with_truth",
+        "true_lilith",
+        "true_lilith_with_truth",
+    )
+}
 
 
 def _module():
@@ -64,6 +101,44 @@ def test_passed_count_uses_terminal_pytest_summary() -> None:
     assert replay._passed_count("1 passed\nthen 7 passed in 2.00s") == 7
     assert replay._passed_count("............... [100%]\npolicy receipt") == 15
     assert replay._passed_count("2 failed") == 0
+
+
+def test_r2b_foundation_truth_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    time = by_id["LB-FOUNDATION-TIME-TRUTH"]
+    assert set(time["surface_ids"]) == R2B_TIME_SURFACES
+    assert set(time["evidence_classes"]) == {
+        "authority",
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert time["minimum_tests"] == 17
+    assert "future Delta-T scenario" in time["exclusions"][0]
+
+    frame = by_id["LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"]
+    assert set(frame["surface_ids"]) == R2B_FRAME_SURFACES
+    assert set(frame["evidence_classes"]) == {
+        "authority",
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert frame["minimum_tests"] == 14
+    assert "refraction" in frame["exclusions"][0]
+
+    kernel = by_id["LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"]
+    assert set(kernel["surface_ids"]) == R2B_KERNEL_SURFACES
+    assert set(kernel["evidence_classes"]) == {
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert kernel["minimum_tests"] == 6
+    assert "not an independent JPL Horizons residual" in kernel["exclusions"][0]
 
 
 def test_r1b_relationship_surfaces_have_bounded_replay_contracts() -> None:

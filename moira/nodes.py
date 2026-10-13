@@ -9,7 +9,9 @@ coordinate transforms to coordinates, and time conversion to julian. Does
 not own house calculations, aspect detection, or any display formatting.
 
 Public surface:
-    NodeData, mean_node(), true_node(), mean_lilith(), true_lilith(),
+    NodeData, TrueLilithReductionTruth, TrueLilithWithTruth,
+    mean_node(), true_node(), mean_lilith(), true_lilith(),
+    true_lilith_with_truth(),
     next_moon_node_crossing()
 
 Import-time side effects: None
@@ -30,6 +32,9 @@ __all__ = [
     "true_node",
     "mean_lilith",
     "true_lilith",
+    "TrueLilithReductionTruth",
+    "TrueLilithWithTruth",
+    "true_lilith_with_truth",
     "next_moon_node_crossing",
     "NodesAndApsides",
     "nodes_and_apsides_at",
@@ -38,7 +43,7 @@ from dataclasses import dataclass, field
 
 from .constants import DEG2RAD, RAD2DEG, sign_of
 from .julian import centuries_from_j2000, ut_to_tt
-from ._ephemeris_time import _ut1_to_ephemeris_tt
+from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .nutation_2000a import _fundamental_args
 from .obliquity import mean_obliquity, nutation as _nutation
@@ -46,6 +51,7 @@ from .spk_reader import get_active_reader, KernelReader, MissingKernelError
 
 # Same half-span as moira.planets._LONGITUDE_RATE_STEP_DAYS. Do not import planets.
 _LONGITUDE_RATE_STEP_DAYS = 2.0e-3
+_EARTH_MOON_GM_KM3_S2 = 403503.236
 
 
 def _circular_longitude_rate(before: float, after: float, span_days: float) -> float:
@@ -135,6 +141,43 @@ class NodeData:
         d = int(self.sign_degree)
         m = int((self.sign_degree - d) * 60)
         return f"{self.name}: {d}°{m:02d}′ {self.sign} {self.sign_symbol}  ({self.longitude:.4f}°)"
+
+
+@dataclass(slots=True, frozen=True)
+class TrueLilithReductionTruth:
+    """Complete numerical and source identity for one osculating-apogee result."""
+
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    delta_t_retarget_mode: str
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    kernel_identity: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    lunar_tidal_acceleration_arcsec_per_cy2: float | None
+    gravitational_parameter_km3_s2: float
+    speed_sample_half_span_days: float
+    gravitational_parameter_source: str = "DE441_Earth_plus_Moon_GM_constants"
+    center: str = "Earth_geocenter"
+    frame: str = "true_ecliptic_and_equinox_of_date"
+    method: str = "osculating_lunar_apogee_from_eccentricity_vector"
+    speed_method: str = "centered_circular_finite_difference_in_TT"
+    corrections_applied: tuple[str, ...] = (
+        "IAU_2006_precession",
+        "IAU_2000A_nutation",
+    )
+
+
+@dataclass(slots=True, frozen=True)
+class TrueLilithWithTruth:
+    """Backward-compatible NodeData paired with its inspectable reduction truth."""
+
+    result: NodeData
+    truth: TrueLilithReductionTruth
 
 
 # ---------------------------------------------------------------------------
@@ -404,7 +447,7 @@ def true_lilith(
     Returns:
         NodeData vessel with name="True Lilith", tropical longitude in
         degrees [0, 360), and speed equal to the circular finite-difference
-        of that true-of-date longitude over a 0.002-day TT span. The rate
+        of that true-of-date longitude at a ±0.002-day TT half-span. The rate
         is the geometry of the osculating apogee and can be large or
         retrograde.
 
@@ -418,16 +461,47 @@ def true_lilith(
         None. The SpkReader kernel file is opened lazily on first call if
         reader is None, but that side effect belongs to get_reader().
     """
-    reader = _require_reader(reader)
-    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
-    lon = _true_lilith_longitude(reader, jd_tt)
+    return true_lilith_with_truth(jd_ut, reader=reader).result
+
+
+def true_lilith_with_truth(
+    jd_ut: float,
+    reader: KernelReader | None = None,
+) -> TrueLilithWithTruth:
+    """Return True Lilith with kernel, clock, frame, method, and rate truth."""
+
+    resolved_reader = _require_reader(reader)
+    bound = _bind_ephemeris_time(jd_ut, resolved_reader)
+    lon = _true_lilith_longitude(resolved_reader, bound.epoch_tt)
     step = _LONGITUDE_RATE_STEP_DAYS
     speed = _circular_longitude_rate(
-        _true_lilith_longitude(reader, jd_tt - step),
-        _true_lilith_longitude(reader, jd_tt + step),
+        _true_lilith_longitude(resolved_reader, bound.epoch_tt - step),
+        _true_lilith_longitude(resolved_reader, bound.epoch_tt + step),
         2.0 * step,
     )
-    return NodeData(name="True Lilith", longitude=lon, speed=speed)
+    result = NodeData(name="True Lilith", longitude=lon, speed=speed)
+    identity = bound.identity
+    return TrueLilithWithTruth(
+        result=result,
+        truth=TrueLilithReductionTruth(
+            jd_ut1=bound.jd_ut1,
+            jd_tt=bound.epoch_tt,
+            jd_tdb=bound.epoch_tdb,
+            delta_t_seconds=bound.delta_t_seconds,
+            delta_t_source_product=bound.raw_delta_t.source_product,
+            delta_t_retarget_mode=bound.raw_delta_t.retarget_mode,
+            delta_t_correction_seconds=bound.delta_t_correction_seconds,
+            tdb_minus_tt_seconds=bound.tdb_minus_tt_seconds,
+            kernel_identity=identity.summary_label,
+            planetary_ephemeris=identity.planetary_ephemeris,
+            lunar_ephemeris=identity.lunar_ephemeris,
+            lunar_tidal_acceleration_arcsec_per_cy2=(
+                identity.lunar_tidal_acceleration_arcsec_per_cy2
+            ),
+            gravitational_parameter_km3_s2=_EARTH_MOON_GM_KM3_S2,
+            speed_sample_half_span_days=step,
+        ),
+    )
 
 
 def _true_lilith_longitude(reader: KernelReader, jd_tt: float) -> float:
@@ -438,7 +512,7 @@ def _true_lilith_longitude(reader: KernelReader, jd_tt: float) -> float:
 
     # Earth-Moon mass ratio and GMs for DE441
     # GMe = 398600.435, GMm = 4902.801
-    mu = 403503.236 # km^3 / s^2
+    mu = _EARTH_MOON_GM_KM3_S2  # km^3 / s^2
 
     # Get state vector (pos, vel) of Moon relative to Earth (km, km/day)
     # Convert velocity to km/s for mu (km^3/s^2)

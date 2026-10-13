@@ -10,7 +10,8 @@ values to nutation_2000a.py and the P03 polynomial to precession.py. Does
 not own coordinate transforms, house calculations, or any display formatting.
 
 Public surface:
-    mean_obliquity, nutation, true_obliquity
+    ObliquityTruth, mean_obliquity, nutation, true_obliquity,
+    true_obliquity_with_truth
 
 Import-time side effects: None
 
@@ -20,8 +21,31 @@ External dependency assumptions:
 
 from __future__ import annotations
 
+import math
+from dataclasses import dataclass
+
 from .nutation_2000a import nutation_2000a as _nutation_2000a
 from .precession import mean_obliquity_p03 as _mean_obliquity_p03
+
+
+@dataclass(frozen=True, slots=True)
+class ObliquityTruth:
+    """Inspectable components and standards behind one true-obliquity value."""
+
+    jd_tt: float
+    mean_obliquity_deg: float
+    nutation_in_obliquity_deg: float
+    true_obliquity_deg: float
+    input_timescale: str = "TT"
+    mean_model: str = "IAU_2006_P03"
+    nutation_model: str = "IAU_2000A_adjusted_for_IAU_2006"
+
+
+def _require_finite_jd_tt(jd: float) -> float:
+    value = float(jd)
+    if not math.isfinite(value):
+        raise ValueError(f"jd_tt must be finite, got {jd!r}")
+    return value
 
 # ---------------------------------------------------------------------------
 # Mean obliquity — IAU 2006 P03 (Capitaine, Wallace & Chapront 2003)
@@ -88,11 +112,23 @@ def true_obliquity(jd: float) -> float:
         True obliquity of the ecliptic in degrees (mean obliquity + Δε).
 
     Raises:
-        No exceptions raised; delegates to mean_obliquity and nutation.
+        ValueError: If ``jd`` is not finite.
 
     Side effects:
         None.
     """
-    eps0 = mean_obliquity(jd)
-    _, deps = nutation(jd)
-    return eps0 + deps
+    return true_obliquity_with_truth(jd).true_obliquity_deg
+
+
+def true_obliquity_with_truth(jd: float) -> ObliquityTruth:
+    """Return true obliquity with its TT scale, components, and model identity."""
+
+    jd_tt = _require_finite_jd_tt(jd)
+    eps0 = mean_obliquity(jd_tt)
+    _, deps = nutation(jd_tt)
+    return ObliquityTruth(
+        jd_tt=jd_tt,
+        mean_obliquity_deg=eps0,
+        nutation_in_obliquity_deg=deps,
+        true_obliquity_deg=eps0 + deps,
+    )

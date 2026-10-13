@@ -25,12 +25,12 @@ all_planets_at(jd_ut)
 sun_longitude(jd_ut)
     Solar ecliptic longitude in degrees (geocentric, true-of-date).
 
-planet_relative_to(body, jd_ut, reference)
-    Ecliptic position of ``body`` as measured from ``reference`` body.
+planet_relative_to(body, center_body, jd_ut)
+    Ecliptic position of ``body`` as measured from ``center_body``.
 
-next_heliocentric_transit(body, jd_start, longitude)
+next_heliocentric_transit(body, target_lon, jd_start)
     Next epoch at which the body's heliocentric longitude equals
-    ``longitude`` (useful for ingress / egress computations).
+    ``target_lon`` (useful for ingress / egress computations).
 
 Heliocentric positions
 -----------------------

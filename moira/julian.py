@@ -14,15 +14,23 @@ coordinate transforms, house calculations, or any display formatting.
 
 Public surface:
     CalendarDateTime, DeltaTPolicy,
+    DateTimeToJulianTruth, JulianToDateTimeTruth,
+    DeltaTTidalBasisTruth, DeltaTTruth, UtcToUt1Truth, UtcToTtTruth,
+    LocalSiderealTimeTruth,
     format_calendar_utc, format_jd_utc,
-    julian_day, calendar_from_jd, jd_from_datetime,
+    julian_day, calendar_from_jd,
+    jd_from_datetime, jd_from_datetime_with_truth,
     decimal_year, decimal_year_from_jd,
-    calendar_datetime_from_jd, safe_datetime_from_jd, datetime_from_jd,
+    calendar_datetime_from_jd, safe_datetime_from_jd,
+    datetime_from_jd, datetime_from_jd_with_truth,
     centuries_from_j2000,
-    delta_t, delta_t_from_jd, delta_t_nasa_canon,
+    delta_t, delta_t_from_jd, delta_t_from_jd_with_truth, delta_t_nasa_canon,
     ut_to_tt, ut_to_tt_nasa_canon, tt_to_ut, tt_to_ut_nasa_canon,
+    utc_to_ut1, utc_to_ut1_with_truth, utc_to_tt, utc_to_tt_with_truth,
     tt_to_tdb,
-    greenwich_mean_sidereal_time, apparent_sidereal_time, apparent_sidereal_time_at, local_sidereal_time
+    greenwich_mean_sidereal_time, apparent_sidereal_time,
+    apparent_sidereal_time_at, local_sidereal_time,
+    local_sidereal_time_with_truth
 
 Import-time side effects:
     Reads ``moira/data/delta_t_hpiers_2016.txt`` once at module load to
@@ -453,6 +461,105 @@ class CalendarDateTime:
         return f"{self.hour:02d}:{self.minute:02d}:{self.second:02d}"
 
 
+@dataclass(frozen=True, slots=True)
+class DateTimeToJulianTruth:
+    """Inspectable civil-datetime to UTC-coded Julian-date conversion."""
+
+    input_datetime: datetime
+    normalized_datetime_utc: datetime
+    jd_utc: float
+    source_scale: str = "civil_datetime_with_explicit_offset"
+    target_scale: str = "UTC_coded_civil_JD"
+    scale_conversion_applied: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class JulianToDateTimeTruth:
+    """Inspectable calendar decomposition of one caller-labelled Julian date."""
+
+    jd: float
+    input_scale: str
+    calendar_datetime: datetime
+    calendar: str = "proleptic_Gregorian"
+    python_timezone_container: str = "datetime.timezone.utc_label_only"
+    scale_conversion_applied: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class DeltaTTidalBasisTruth:
+    """Public representation of one source-owned Delta-T tidal-basis term."""
+
+    source_product: str
+    epoch_year: float
+    source_ndot_arcsec_per_cy2: float
+    coefficient: float
+
+
+@dataclass(frozen=True, slots=True)
+class DeltaTTruth:
+    """Inspectable Delta-T result with source and tidal-basis policy."""
+
+    jd_ut1: float
+    seconds: float
+    source_product: str
+    retarget_mode: str
+    tidal_terms: tuple[DeltaTTidalBasisTruth, ...]
+    input_timescale: str = "UT1"
+    output_quantity: str = "TT_minus_UT1_seconds"
+
+
+@dataclass(frozen=True, slots=True)
+class UtcToUt1Truth:
+    """Inspectable UTC-to-UT1 conversion and its selected data branch."""
+
+    jd_utc: float
+    jd_ut1: float
+    dut1_seconds: float
+    source_mode: str
+    admitted_eop_applied: bool
+    historical_proxy_applied: bool
+    delta_t_source_product: str | None
+    source_scale: str = "UTC"
+    target_scale: str = "UT1"
+
+
+@dataclass(frozen=True, slots=True)
+class UtcToTtTruth:
+    """Inspectable UTC-to-TT conversion and its civil-clock policy."""
+
+    jd_utc: float
+    jd_ut1: float
+    jd_tt: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    conversion_mode: str
+    tai_minus_utc_seconds: float | None
+    delta_t_applied_to_tt_conversion: bool
+    source_scale: str = "UTC"
+    target_scale: str = "TT"
+
+
+@dataclass(frozen=True, slots=True)
+class LocalSiderealTimeTruth:
+    """Explicit mean/apparent local sidereal-time reduction."""
+
+    jd_ut1: float
+    jd_tt: float
+    longitude_deg_east: float
+    requested_mode: str
+    effective_mode: str
+    local_sidereal_time_deg: float
+    greenwich_mean_sidereal_time_deg: float
+    equation_of_equinoxes_deg: float
+    nutation_longitude_deg: float | None
+    equation_of_equinoxes_obliquity_deg: float | None
+    nutation_source: str
+    input_timescale: str = "UT1"
+    equinox_terms_timescale: str = "TT"
+    mean_sidereal_model: str = "IAU_2006_ERA_plus_equinox_precession"
+    equation_of_equinoxes_model: str = "IAU_2000A_with_IERS_2010_complementary_terms"
+
+
 def format_calendar_utc(
     cal: CalendarDateTime,
     *,
@@ -604,6 +711,18 @@ def jd_from_datetime(dt: datetime) -> float:
 
     hour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0 + dt.microsecond / 3_600_000_000.0
     return julian_day(dt.year, dt.month, dt.day, hour)
+
+
+def jd_from_datetime_with_truth(dt: datetime) -> DateTimeToJulianTruth:
+    """Return the legacy UTC-coded JD together with its civil-time conversion truth."""
+
+    jd_utc = jd_from_datetime(dt)
+    normalized = dt.astimezone(timezone.utc)
+    return DateTimeToJulianTruth(
+        input_datetime=dt,
+        normalized_datetime_utc=normalized,
+        jd_utc=jd_utc,
+    )
 
 
 def decimal_year(year: int, month: int = 1) -> float:
@@ -758,6 +877,24 @@ def datetime_from_jd(jd: float) -> datetime:
             "use calendar_datetime_from_jd() for BCE/year-0 support."
         )
     return dt
+
+
+def datetime_from_jd_with_truth(
+    jd: float,
+    *,
+    input_scale: str = "unspecified_JD",
+) -> JulianToDateTimeTruth:
+    """Decompose a JD while disclosing that no time-scale conversion occurs."""
+
+    scale = str(input_scale).strip()
+    if not scale:
+        raise ValueError("input_scale must be a non-empty label")
+    value = float(jd)
+    return JulianToDateTimeTruth(
+        jd=value,
+        input_scale=scale,
+        calendar_datetime=datetime_from_jd(value),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1332,6 +1469,28 @@ def delta_t_from_jd(jd_ut: float) -> float:
         None.
     """
     return _resolve_delta_t_for_ut1(jd_ut).seconds
+
+
+def delta_t_from_jd_with_truth(jd_ut: float) -> DeltaTTruth:
+    """Return Delta-T with the exact selected source product and basis policy."""
+
+    value = float(jd_ut)
+    resolved = _resolve_delta_t_for_ut1(value)
+    return DeltaTTruth(
+        jd_ut1=value,
+        seconds=resolved.seconds,
+        source_product=resolved.source_product,
+        retarget_mode=resolved.retarget_mode,
+        tidal_terms=tuple(
+            DeltaTTidalBasisTruth(
+                source_product=term.source_product,
+                epoch_year=term.epoch_year,
+                source_ndot_arcsec_per_cy2=term.source_ndot,
+                coefficient=term.coefficient,
+            )
+            for term in resolved.tidal_terms
+        ),
+    )
 
 
 def delta_t_nasa_canon(year: float) -> float:
@@ -2150,6 +2309,83 @@ def utc_to_ut1(jd_utc: float) -> float:
     return tt_to_ut(utc_to_tt(jd_utc))
 
 
+def utc_to_ut1_with_truth(jd_utc: float) -> UtcToUt1Truth:
+    """Convert UTC to UT1 and disclose the admitted/proxy/model branch used."""
+
+    value = float(jd_utc)
+    _require_representable_time_jd("jd_utc", value)
+    admitted_dut1 = EOPRegistry._dut1_optional(value)
+    result = utc_to_ut1(value)
+    atomic_boundary = LEAP_SECONDS[0][0]
+    handoff_start = atomic_boundary - _UTC_ATOMIC_HANDOFF_WINDOW_DAYS
+
+    if admitted_dut1 is not None:
+        source_mode = "iers_eop_admitted_dut1"
+        admitted_eop_applied = True
+        historical_proxy_applied = False
+        dut1_seconds = admitted_dut1
+    elif value <= handoff_start:
+        source_mode = "historical_civil_jd_as_ut1_proxy"
+        admitted_eop_applied = False
+        historical_proxy_applied = True
+        dut1_seconds = 0.0
+    elif value < atomic_boundary:
+        source_mode = "historical_proxy_to_atomic_smooth_handoff"
+        admitted_eop_applied = False
+        historical_proxy_applied = True
+        dut1_seconds = (result - value) * 86400.0
+    else:
+        source_mode = "atomic_utc_with_delta_t_model_outside_eop"
+        admitted_eop_applied = False
+        historical_proxy_applied = False
+        dut1_seconds = (result - value) * 86400.0
+
+    delta_source = None
+    if source_mode != "historical_civil_jd_as_ut1_proxy":
+        delta_source = _resolve_delta_t_for_ut1(result).source_product
+    return UtcToUt1Truth(
+        jd_utc=value,
+        jd_ut1=result,
+        dut1_seconds=dut1_seconds,
+        source_mode=source_mode,
+        admitted_eop_applied=admitted_eop_applied,
+        historical_proxy_applied=historical_proxy_applied,
+        delta_t_source_product=delta_source,
+    )
+
+
+def utc_to_tt_with_truth(jd_utc: float) -> UtcToTtTruth:
+    """Convert UTC to TT and disclose the atomic or historical policy branch."""
+
+    value = float(jd_utc)
+    _require_representable_time_jd("jd_utc", value)
+    ut1_truth = utc_to_ut1_with_truth(value)
+    delta_truth = delta_t_from_jd_with_truth(ut1_truth.jd_ut1)
+    result = utc_to_tt(value)
+    if ut1_truth.source_mode == "historical_proxy_to_atomic_smooth_handoff":
+        conversion_mode = "historical_proxy_to_atomic_handoff_plus_Delta_T"
+        atomic_offset = None
+        delta_t_applied = True
+    elif value < LEAP_SECONDS[0][0]:
+        conversion_mode = "historical_civil_UT1_proxy_plus_Delta_T"
+        atomic_offset = None
+        delta_t_applied = True
+    else:
+        conversion_mode = "atomic_UTC_to_TAI_to_TT"
+        atomic_offset = tai_minus_utc(value)
+        delta_t_applied = False
+    return UtcToTtTruth(
+        jd_utc=value,
+        jd_ut1=ut1_truth.jd_ut1,
+        jd_tt=result,
+        delta_t_seconds=delta_truth.seconds,
+        delta_t_source_product=delta_truth.source_product,
+        conversion_mode=conversion_mode,
+        tai_minus_utc_seconds=atomic_offset,
+        delta_t_applied_to_tt_conversion=delta_t_applied,
+    )
+
+
 def _ut1_to_utc(jd_ut1: float) -> float:
     """Convert a UT1 JD to the corresponding civil UTC-coded JD.
 
@@ -2745,13 +2981,11 @@ def local_sidereal_time(jd_ut: float, longitude: float,
         jd_ut:              Julian Day Number in UT1.
         longitude:          Observer's geographic east longitude in degrees.
         nutation_longitude: Δψ in degrees (default 0.0 → mean sidereal time).
-        obliquity:          True obliquity in degrees.  Defaults to the
-                            J2000.0 value (23.4392911°).  External callers
-                            should pass the date-appropriate true obliquity
-                            (from ``moira.obliquity.true_obliquity``) to
-                            avoid a silent precision regression of up to
-                            ~0.013° over 50 years from J2000.  Internal
-                            callers in ``planets.py`` pass the correct value.
+        obliquity:          Obliquity used by the equation of the equinoxes.
+                            The J2000 compatibility default is irrelevant
+                            while ``nutation_longitude`` is zero. Use
+                            :func:`local_sidereal_time_with_truth` for a
+                            self-contained, explicit mean/apparent reduction.
 
     Returns:
         LAST in degrees, normalised to [0, 360).
@@ -2759,5 +2993,101 @@ def local_sidereal_time(jd_ut: float, longitude: float,
     Side effects:
         None.
     """
+    _require_representable_time_jd("jd_ut", jd_ut)
+    _require_finite("longitude", longitude)
+    _require_finite("nutation_longitude", nutation_longitude)
+    _require_finite("obliquity", obliquity)
     gast = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)
     return (gast + longitude) % 360.0
+
+
+def local_sidereal_time_with_truth(
+    jd_ut: float,
+    longitude: float,
+    *,
+    mode: str = "apparent",
+    nutation_longitude: float | None = None,
+    obliquity: float | None = None,
+) -> LocalSiderealTimeTruth:
+    """Return explicit LMST or LAST with the complete UT1/TT reduction truth.
+
+    The legacy :func:`local_sidereal_time` keeps its historical defaults.
+    This additive surface defaults to a self-contained apparent reduction and
+    derives missing equinox terms from the supplied UT1 epoch.
+    """
+
+    jd_ut1 = float(jd_ut)
+    longitude_deg = float(longitude)
+    _require_representable_time_jd("jd_ut", jd_ut1)
+    _require_finite("longitude", longitude_deg)
+    selected_mode = str(mode).strip().lower()
+    if selected_mode not in {"mean", "apparent"}:
+        raise ValueError("mode must be 'mean' or 'apparent'")
+
+    jd_tt = ut_to_tt(jd_ut1)
+    gmst = _greenwich_mean_sidereal_time_at_tt(jd_ut1, jd_tt)
+    if selected_mode == "mean":
+        if nutation_longitude is not None or obliquity is not None:
+            raise ValueError(
+                "mean sidereal time does not accept nutation_longitude or obliquity"
+            )
+        result = (gmst + longitude_deg) % 360.0
+        return LocalSiderealTimeTruth(
+            jd_ut1=jd_ut1,
+            jd_tt=jd_tt,
+            longitude_deg_east=longitude_deg,
+            requested_mode=selected_mode,
+            effective_mode="mean",
+            local_sidereal_time_deg=result,
+            greenwich_mean_sidereal_time_deg=gmst,
+            equation_of_equinoxes_deg=0.0,
+            nutation_longitude_deg=None,
+            equation_of_equinoxes_obliquity_deg=None,
+            nutation_source="not_applied",
+        )
+
+    from .obliquity import mean_obliquity as _mean_obliquity, nutation as _nutation
+
+    derived_nutation = nutation_longitude is None
+    derived_obliquity = obliquity is None
+    if derived_nutation:
+        dpsi, _deps = _nutation(jd_tt)
+    else:
+        dpsi = float(nutation_longitude)
+        _require_finite("nutation_longitude", dpsi)
+    if derived_obliquity:
+        equation_obliquity = _mean_obliquity(jd_tt)
+    else:
+        equation_obliquity = float(obliquity)
+        _require_finite("obliquity", equation_obliquity)
+
+    result = _local_sidereal_time_at_tt(
+        jd_ut1,
+        jd_tt,
+        longitude_deg,
+        dpsi,
+        equation_obliquity,
+    )
+    equation_of_equinoxes = (
+        dpsi * math.cos(math.radians(equation_obliquity))
+        + _gast_complementary_terms(jd_tt)
+    )
+    if derived_nutation and derived_obliquity:
+        source = "derived_IAU_2000A_and_IAU_2006"
+    elif not derived_nutation and not derived_obliquity:
+        source = "caller_supplied"
+    else:
+        source = "mixed_caller_and_derived"
+    return LocalSiderealTimeTruth(
+        jd_ut1=jd_ut1,
+        jd_tt=jd_tt,
+        longitude_deg_east=longitude_deg,
+        requested_mode=selected_mode,
+        effective_mode="apparent",
+        local_sidereal_time_deg=result,
+        greenwich_mean_sidereal_time_deg=gmst,
+        equation_of_equinoxes_deg=equation_of_equinoxes,
+        nutation_longitude_deg=dpsi,
+        equation_of_equinoxes_obliquity_deg=equation_obliquity,
+        nutation_source=source,
+    )

@@ -200,6 +200,70 @@
       "minimum_tests": 7,
       "claim_scope": "The website chart-wheel packet retains immutable point coordinates, deterministic visible-label separation, explicit impossible-density disclosure, node override truth, house policy, orientation source, aspect policy, and label-placement provenance.",
       "exclusions": ["The replay does not establish renderer typography, pixel collision freedom at a particular viewport, interpretive meaning, or external astronomical authority beyond the underlying admitted chart and house paths."]
+    },
+    {
+      "claim_id": "LB-FOUNDATION-TIME-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:jd_from_datetime",
+        "python:moira.facade:jd_from_datetime_with_truth",
+        "python:moira.facade:datetime_from_jd",
+        "python:moira.facade:datetime_from_jd_with_truth",
+        "python:moira.facade:delta_t_from_jd",
+        "python:moira.facade:delta_t_from_jd_with_truth",
+        "python:moira.facade:utc_to_ut1",
+        "python:moira.facade:utc_to_ut1_with_truth",
+        "python:moira.facade:utc_to_tt",
+        "python:moira.facade:utc_to_tt_with_truth",
+        "python:moira.facade:local_sidereal_time",
+        "python:moira.facade:local_sidereal_time_with_truth"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence"
+      ],
+      "minimum_tests": 17,
+      "claim_scope": "The additive time truth surfaces retain legacy results while naming civil normalization, caller-labelled calendar decomposition, admitted Delta-T source branches, UTC-to-UT1/TT policy, and mean/apparent sidereal semantics. ERFA/SOFA comparisons cover three modern civil/atomic epochs and five J1500-J2100 apparent-sidereal epochs at the stated test tolerances.",
+      "exclusions": [
+        "The replay does not validate bundled DUT1 or historical Delta-T values against a separately acquired IERS/HMNAO corpus, does not make the future Delta-T scenario predictive, and does not claim pre-1972 civil UTC authority beyond Moira's disclosed proxy/handoff policy."
+      ]
+    },
+    {
+      "claim_id": "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:ecliptic_to_equatorial",
+        "python:moira.facade:ecliptic_to_equatorial_with_truth",
+        "python:moira.facade:equatorial_to_horizontal",
+        "python:moira.facade:equatorial_to_horizontal_with_truth",
+        "python:moira.facade:true_obliquity",
+        "python:moira.facade:true_obliquity_with_truth"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence"
+      ],
+      "minimum_tests": 14,
+      "claim_scope": "The additive frame truth surfaces retain legacy coordinate/obliquity results, match ERFA/SOFA for five true-obliquity epochs and three ordinary horizontal reductions, preserve independent unit-vector rotation invariants, and expose undefined azimuth at sampled zenith, nadir, and geographic-pole singularities.",
+      "exclusions": [
+        "The replay does not infer an epoch or celestial frame not supplied by the caller, does not include refraction or polar motion, and does not make body-ephemeris accuracy claims."
+      ]
+    },
+    {
+      "claim_id": "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:planet_relative_to",
+        "python:moira.facade:planet_relative_to_with_truth",
+        "python:moira.facade:true_lilith",
+        "python:moira.facade:true_lilith_with_truth"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "Against the locally admitted DE441 resource, the additive kernel truth surfaces retain legacy results while naming center, clock, kernel identity, true-of-date frame, correction exclusions, method, gravity, and rate sampling. Direct NAIF-route vector subtraction is checked for three center/body cases and the lunar osculating-apogee eccentricity-vector invariant for two epochs.",
+      "exclusions": [
+        "The replay is not an independent JPL Horizons residual, does not revalidate the DE441 bytes or native SPK parser beyond the separately admitted resource receipt, and makes no claim outside the kernel coverage, sampled bodies, epochs, frames, or rate conventions."
+      ]
     }
   ]
 }

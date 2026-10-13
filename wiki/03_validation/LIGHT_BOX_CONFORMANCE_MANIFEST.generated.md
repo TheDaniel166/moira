@@ -4,7 +4,7 @@
 
 - Schema: `moira.lightbox-conformance-manifest/v1`
 - Engine version: `6.9.9`
-- Inventory fingerprint: `f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0`
+- Inventory fingerprint: `ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701`
 - Canonical schema: `wiki/03_validation/LIGHT_BOX_CONFORMANCE_SCHEMA.json`
 
 ## Boundary
@@ -17,13 +17,13 @@ Aliases remain visible but do not inflate the canonical denominator. Numeric res
 
 | Measure | Count |
 |---|---:|
-| All entries | 1214 |
-| Canonical entries | 1210 |
+| All entries | 1225 |
+| Canonical entries | 1221 |
 | Alias entries | 4 |
 | Canonical conformant | 0 |
-| Canonical partial | 29 |
+| Canonical partial | 51 |
 | Canonical not applicable | 0 |
-| Canonical unresolved | 1181 |
+| Canonical unresolved | 1170 |
 
 ### Residual dispositions (canonical entries)
 
@@ -34,7 +34,7 @@ Aliases remain visible but do not inflate the canonical denominator. Numeric res
 | `doctrine_source` | 0 |
 | `regression_parity` | 0 |
 | `not_applicable` | 0 |
-| `unresolved` | 1210 |
+| `unresolved` | 1221 |
 
 ## Required per-surface contract
 
@@ -71,7 +71,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:all_deep_sky_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/deep_sky.py:353` |
 | `python:moira.facade:all_galactic_positions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:550` |
 | `python:moira.facade:all_gauquelin_sectors` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/gauquelin.py:467` |
-| `python:moira.facade:all_heliocentric_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3753` |
+| `python:moira.facade:all_heliocentric_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3798` |
 | `python:moira.facade:all_lunar_occultations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/occultations.py:4501` |
 | `python:moira.facade:all_mansions_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/manazil.py:444` |
 | `python:moira.facade:all_mansions_at_sidereal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/manazil.py:470` |
@@ -95,13 +95,13 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:analyze_paran_field_structure` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/parans.py:1852` |
 | `python:moira.facade:analyze_stelliums` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stelliums.py:550` |
 | `python:moira.facade:angular_diameter` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phase.py:206` |
-| `python:moira.facade:angular_distance` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:461` |
+| `python:moira.facade:angular_distance` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:587` |
 | `python:moira.facade:angular_separation_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/multiple_stars.py:428` |
 | `python:moira.facade:annual_profection` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/profections.py:1129` |
 | `python:moira.facade:antiscia_to_point` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/antiscia.py:300` |
 | `python:moira.facade:antiscion` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/midpoints.py:794` |
 | `python:moira.facade:aphelion` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:532` |
-| `python:moira.facade:apparent_sidereal_time_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2699` |
+| `python:moira.facade:apparent_sidereal_time_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2935` |
 | `python:moira.facade:apsidal_passages` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/orbits.py:2163` |
 | `python:moira.facade:argala` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/jaimini_extended.py:385` |
 | `python:moira.facade:arudha_padas` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/jaimini_extended.py:284` |
@@ -132,8 +132,8 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:astrodynes_summary` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/astrodynes.py:1841` |
 | `python:moira.facade:atmakaraka` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/jaimini.py:660` |
 | `python:moira.facade:atmospheric_extinction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:3206` |
-| `python:moira.facade:atmospheric_refraction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:639` |
-| `python:moira.facade:atmospheric_refraction_extended` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:678` |
+| `python:moira.facade:atmospheric_refraction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:765` |
+| `python:moira.facade:atmospheric_refraction_extended` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:804` |
 | `python:moira.facade:avasthas_for_datetime` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sayanadi_dated.py:188` |
 | `python:moira.facade:ayanamsa` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sidereal.py:356` |
 | `python:moira.facade:baladi_avastha` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/avasthas.py:631` |
@@ -177,8 +177,8 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:calculate_midpoints` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/midpoints.py:544` |
 | `python:moira.facade:calculate_receptions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dignities.py:3428` |
 | `python:moira.facade:calculate_varga` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:388` |
-| `python:moira.facade:calendar_datetime_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:655` |
-| `python:moira.facade:calendar_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:529` |
+| `python:moira.facade:calendar_datetime_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:774` |
+| `python:moira.facade:calendar_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:636` |
 | `python:moira.facade:castor_separation_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/multiple_stars.py:1334` |
 | `python:moira.facade:catalog_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/variable_stars.py:1394` |
 | `python:moira.facade:chaldean_face` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/decanates.py:255` |
@@ -225,7 +225,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:converse_tertiary_progression` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressions.py:2320` |
 | `python:moira.facade:cosmic_reference_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cosmic_references.py:428` |
 | `python:moira.facade:cosmic_reference_definition` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cosmic_references.py:404` |
-| `python:moira.facade:cotrans_sp` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:547` |
+| `python:moira.facade:cotrans_sp` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:673` |
 | `python:moira.facade:current_dasha` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dasha.py:1095` |
 | `python:moira.facade:current_decennials` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/timelords.py:1914` |
 | `python:moira.facade:current_firdaria` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/timelords.py:916` |
@@ -242,7 +242,8 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:dasha_sequence_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dasha.py:694` |
 | `python:moira.facade:dashamansa` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:423` |
 | `python:moira.facade:dated_aspect_from_major_relation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressed_astrodynes.py:1715` |
-| `python:moira.facade:datetime_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:733` |
+| `python:moira.facade:datetime_from_jd` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:852` |
+| `python:moira.facade:datetime_from_jd_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:882` |
 | `python:moira.facade:davison_chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/synastry.py:3108` |
 | `python:moira.facade:davison_chart_corrected` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/synastry.py:3353` |
 | `python:moira.facade:davison_chart_reference_place` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/synastry.py:3272` |
@@ -260,10 +261,11 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:deep_sky_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/deep_sky.py:311` |
 | `python:moira.facade:deep_sky_object` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/deep_sky.py:241` |
 | `python:moira.facade:deeptadi_avastha` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/avasthas.py:721` |
-| `python:moira.facade:delta_t` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:1221` |
+| `python:moira.facade:delta_t` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:1358` |
 | `python:moira.facade:delta_t_breakdown` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/delta_t_physical.py:681` |
 | `python:moira.facade:delta_t_distribution` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/delta_t_physical.py:731` |
-| `python:moira.facade:delta_t_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:1312` |
+| `python:moira.facade:delta_t_from_jd` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:1449` |
+| `python:moira.facade:delta_t_from_jd_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:1474` |
 | `python:moira.facade:derive_shadbala_context` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/shadbala_context.py:171` |
 | `python:moira.facade:derived_houses` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/houses.py:1256` |
 | `python:moira.facade:describe_angularity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/houses.py:4562` |
@@ -295,12 +297,14 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:dwadashamsa` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:427` |
 | `python:moira.facade:dynamic_intensity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/huber.py:529` |
 | `python:moira.facade:eclipse_receipt_from_event` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/mundane.py:3591` |
-| `python:moira.facade:ecliptic_to_equatorial` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:356` |
+| `python:moira.facade:ecliptic_to_equatorial` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/coordinates.py:461` |
+| `python:moira.facade:ecliptic_to_equatorial_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/coordinates.py:477` |
 | `python:moira.facade:ecliptic_to_galactic` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:251` |
 | `python:moira.facade:egyptian_civil_date` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sothic.py:1315` |
-| `python:moira.facade:equation_of_time` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:743` |
+| `python:moira.facade:equation_of_time` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:869` |
 | `python:moira.facade:equatorial_to_galactic` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:195` |
-| `python:moira.facade:equatorial_to_horizontal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:306` |
+| `python:moira.facade:equatorial_to_horizontal` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/coordinates.py:362` |
+| `python:moira.facade:equatorial_to_horizontal_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/coordinates.py:392` |
 | `python:moira.facade:evaluate_accessory_progressed_relation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressed_astrodynes.py:1363` |
 | `python:moira.facade:evaluate_avasthas` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/avasthas.py:1128` |
 | `python:moira.facade:evaluate_dorotheus_construction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/_western_electional_construction.py:450` |
@@ -379,7 +383,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:fixed_star_astrocartography` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/astrocartography.py:380` |
 | `python:moira.facade:fixed_star_astrocartography_from_chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/astrocartography.py:466` |
 | `python:moira.facade:fixed_star_equatorial_subject` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/astrocartography.py:322` |
-| `python:moira.facade:format_jd_utc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:471` |
+| `python:moira.facade:format_jd_utc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:578` |
 | `python:moira.facade:galactic_position_of` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:510` |
 | `python:moira.facade:galactic_reference_points` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:460` |
 | `python:moira.facade:galactic_to_ecliptic` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:285` |
@@ -402,7 +406,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:gochara_windows_for_datetimes` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/gochara_windows.py:614` |
 | `python:moira.facade:great_conjunctions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1357` |
 | `python:moira.facade:greatest_elongation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:382` |
-| `python:moira.facade:greenwich_mean_sidereal_time` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:2561` |
+| `python:moira.facade:greenwich_mean_sidereal_time` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:2797` |
 | `python:moira.facade:group_decennials` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/timelords.py:2079` |
 | `python:moira.facade:group_firdaria` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/timelords.py:760` |
 | `python:moira.facade:group_releasing` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/timelords.py:2646` |
@@ -420,13 +424,13 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:heliacal_setting` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stars.py:1204` |
 | `python:moira.facade:heliacal_setting_event` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stars.py:1348` |
 | `python:moira.facade:heliocentric_conjunctions_in_range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1149` |
-| `python:moira.facade:heliocentric_planet_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3685` |
+| `python:moira.facade:heliocentric_planet_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3730` |
 | `python:moira.facade:hellenistic_chart_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/hellenistic.py:1819` |
 | `python:moira.facade:hellenistic_superiority_truth` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/aspects.py:736` |
 | `python:moira.facade:hora_lord_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/shadbala.py:880` |
 | `python:moira.facade:horary_evidence_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/horary.py:2148` |
 | `python:moira.facade:horizon_crossing_availability` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/rise_set.py:612` |
-| `python:moira.facade:horizontal_to_equatorial` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:479` |
+| `python:moira.facade:horizontal_to_equatorial` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:605` |
 | `python:moira.facade:house_dynamics_from_armc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/houses.py:5823` |
 | `python:moira.facade:house_frame_condition_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressions.py:3606` |
 | `python:moira.facade:house_frame_relation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressions.py:3592` |
@@ -434,8 +438,8 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:house_zones` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/huber.py:361` |
 | `python:moira.facade:houses_from_armc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/houses.py:5051` |
 | `python:moira.facade:hunt_hellenistic_offices` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/hellenistic_offices.py:486` |
-| `python:moira.facade:icrf_to_ecliptic` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:175` |
-| `python:moira.facade:icrf_to_equatorial` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:287` |
+| `python:moira.facade:icrf_to_ecliptic` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:231` |
+| `python:moira.facade:icrf_to_equatorial` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:343` |
 | `python:moira.facade:ingress_condition_profiles` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2767` |
 | `python:moira.facade:ingress_relations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2755` |
 | `python:moira.facade:integrate_progressed_influence` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressed_astrodynes_search.py:691` |
@@ -456,8 +460,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:jagradadi_avastha` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/avasthas.py:673` |
 | `python:moira.facade:jaimini_chart_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/jaimini.py:723` |
 | `python:moira.facade:jaimini_karakas` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/jaimini.py:566` |
-| `python:moira.facade:jd_from_datetime` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:575` |
-| `python:moira.facade:julian_day` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:488` |
+| `python:moira.facade:jd_from_datetime` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:682` |
+| `python:moira.facade:jd_from_datetime_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:716` |
+| `python:moira.facade:julian_day` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dispatch.py:595` |
 | `python:moira.facade:jupiter_saturn_sequence_from_series` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/mundane.py:3702` |
 | `python:moira.facade:kakshya_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/ashtakavarga.py:1114` |
 | `python:moira.facade:kala_bala` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/shadbala.py:1034` |
@@ -472,7 +477,8 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:last_new_moon` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2660` |
 | `python:moira.facade:lifetime_returns` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1253` |
 | `python:moira.facade:lilly_perfection_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/classical_perfection.py:553` |
-| `python:moira.facade:local_sidereal_time` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2734` |
+| `python:moira.facade:local_sidereal_time` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:2970` |
+| `python:moira.facade:local_sidereal_time_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:3004` |
 | `python:moira.facade:local_space_from_chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/local_space.py:284` |
 | `python:moira.facade:local_space_positions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/local_space.py:180` |
 | `python:moira.facade:lunar_ecliptic_direction_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/lunar_direction.py:275` |
@@ -494,7 +500,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:marriage_planet_availability` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/muhurta_marriage_visibility.py:217` |
 | `python:moira.facade:marriage_time_degrees` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/muhurta_marriage_visibility.py:50` |
 | `python:moira.facade:maxima_in_range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/variable_stars.py:974` |
-| `python:moira.facade:mean_obliquity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/obliquity.py:30` |
+| `python:moira.facade:mean_obliquity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/obliquity.py:54` |
 | `python:moira.facade:midpoint_clusters` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/midpoints.py:1058` |
 | `python:moira.facade:midpoint_tree` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/midpoints.py:729` |
 | `python:moira.facade:midpoint_weighting` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/midpoints.py:937` |
@@ -534,23 +540,23 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:navamsa` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:415` |
 | `python:moira.facade:next_conjunction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:920` |
 | `python:moira.facade:next_heliocentric_conjunction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1100` |
-| `python:moira.facade:next_heliocentric_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3968` |
+| `python:moira.facade:next_heliocentric_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:4053` |
 | `python:moira.facade:next_ingress` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:1954` |
 | `python:moira.facade:next_ingress_into` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2000` |
 | `python:moira.facade:next_maximum` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/variable_stars.py:921` |
 | `python:moira.facade:next_minimum` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/variable_stars.py:889` |
 | `python:moira.facade:next_moon_connection` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/void_of_course.py:871` |
-| `python:moira.facade:next_moon_node_crossing` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:493` |
+| `python:moira.facade:next_moon_node_crossing` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:567` |
 | `python:moira.facade:next_moon_phase` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:651` |
 | `python:moira.facade:next_nasa_lunar_eclipse` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/compat/nasa/eclipse.py:259` |
 | `python:moira.facade:next_solar_eclipse_at_location` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/eclipse.py:7847` |
 | `python:moira.facade:next_station` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:243` |
 | `python:moira.facade:next_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:1566` |
 | `python:moira.facade:next_void_of_course` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/void_of_course.py:956` |
-| `python:moira.facade:nodes_and_apsides_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:634` |
+| `python:moira.facade:nodes_and_apsides_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:708` |
 | `python:moira.facade:normal_progressed_horoscope` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/progressed_astrodynes.py:929` |
-| `python:moira.facade:normalize_degrees` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:453` |
-| `python:moira.facade:nutation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/obliquity.py:54` |
+| `python:moira.facade:normalize_degrees` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/coordinates.py:579` |
+| `python:moira.facade:nutation` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/obliquity.py:78` |
 | `python:moira.facade:orbit_class` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/orbits.py:3093` |
 | `python:moira.facade:orbit_classes_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/orbits.py:3148` |
 | `python:moira.facade:orbital_elements_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/orbits.py:2424` |
@@ -601,8 +607,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:planet_heliacal_setting` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:8643` |
 | `python:moira.facade:planet_morning_last` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:8800` |
 | `python:moira.facade:planet_phenomena_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1215` |
-| `python:moira.facade:planet_reduction_breakdown_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:2482` |
-| `python:moira.facade:planet_relative_to` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3872` |
+| `python:moira.facade:planet_reduction_breakdown_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:2527` |
+| `python:moira.facade:planet_relative_to` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:3917` |
+| `python:moira.facade:planet_relative_to_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:4009` |
 | `python:moira.facade:planet_return` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2193` |
 | `python:moira.facade:planet_time_series` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/batch.py:723` |
 | `python:moira.facade:planetary_age_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1451` |
@@ -657,7 +664,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:return_series` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1113` |
 | `python:moira.facade:sade_sati_status` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sade_sati.py:234` |
 | `python:moira.facade:sade_sati_windows` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sade_sati.py:287` |
-| `python:moira.facade:safe_datetime_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:700` |
+| `python:moira.facade:safe_datetime_from_jd` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:819` |
 | `python:moira.facade:sahl_matter_profile_at` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/_western_electional_sahl_matter.py:1361` |
 | `python:moira.facade:sahl_moon_condition_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/western_electional.py:2352` |
 | `python:moira.facade:sample_paran_field` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/parans.py:1356` |
@@ -745,14 +752,18 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:triplicity_decan` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/decanates.py:303` |
 | `python:moira.facade:triplicity_score` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/triplicity.py:320` |
 | `python:moira.facade:tropical_to_sidereal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sidereal.py:415` |
-| `python:moira.facade:true_lilith` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:382` |
-| `python:moira.facade:true_obliquity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/obliquity.py:79` |
+| `python:moira.facade:true_lilith` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/nodes.py:425` |
+| `python:moira.facade:true_lilith_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/nodes.py:467` |
+| `python:moira.facade:true_obliquity` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/obliquity.py:103` |
+| `python:moira.facade:true_obliquity_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/obliquity.py:123` |
 | `python:moira.facade:twelfth_part_of` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/twelfth_parts.py:75` |
 | `python:moira.facade:twilight_times` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/rise_set.py:936` |
 | `python:moira.facade:uranian_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/uranian.py:367` |
-| `python:moira.facade:ut_to_tt` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2198` |
-| `python:moira.facade:utc_to_tt` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:1649` |
-| `python:moira.facade:utc_to_ut1` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2115` |
+| `python:moira.facade:ut_to_tt` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/julian.py:2434` |
+| `python:moira.facade:utc_to_tt` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:1808` |
+| `python:moira.facade:utc_to_tt_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:2357` |
+| `python:moira.facade:utc_to_ut1` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:2274` |
+| `python:moira.facade:utc_to_ut1_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:2312` |
 | `python:moira.facade:valens_transmission_graph` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/valens_transmissions.py:104` |
 | `python:moira.facade:varga_sign_index` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:808` |
 | `python:moira.facade:vargottama_planets` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:1043` |

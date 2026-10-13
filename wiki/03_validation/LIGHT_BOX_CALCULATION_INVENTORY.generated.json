@@ -2635,6 +2635,7 @@
         "tests/integration/test_occultation_polar_topology_horizons_reference.py",
         "tests/integration/test_occultations_external_reference.py",
         "tests/integration/test_oracle_hostile_semantic_audit.py",
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_sahl_electional_de441.py",
         "tests/integration/test_topocentric_multi_path_horizons_anchor.py",
         "tests/integration/test_vimshottari_external_reference.py",
@@ -2750,6 +2751,7 @@
         "tests/unit/test_primary_directions_neo_converse.py",
         "tests/unit/test_primary_directions_ptolemy_mundane_aspects.py",
         "tests/unit/test_progressed_synastry.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_rule_engine_validation.py",
         "tests/unit/test_sahl_electional.py",
@@ -3025,7 +3027,7 @@
       "owner_qualname": "COMET_NAIF",
       "owner_resolution": "facade-import-fallback",
       "public_name": "COMET_NAIF",
-      "source_line": 963,
+      "source_line": 983,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:COMET_NAIF",
       "surface_kind": "excluded_value",
@@ -3160,7 +3162,7 @@
       "owner_qualname": "CalendarDateTime",
       "owner_resolution": "runtime-object",
       "public_name": "CalendarDateTime",
-      "source_line": 356,
+      "source_line": 364,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:CalendarDateTime",
       "surface_kind": "excluded_type",
@@ -3188,7 +3190,7 @@
       "owner_qualname": "CartesianPosition",
       "owner_resolution": "runtime-object",
       "public_name": "CartesianPosition",
-      "source_line": 393,
+      "source_line": 438,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:CartesianPosition",
       "surface_kind": "excluded_type",
@@ -3430,7 +3432,7 @@
       "owner_qualname": "Chart",
       "owner_resolution": "runtime-object",
       "public_name": "Chart",
-      "source_line": 3338,
+      "source_line": 3371,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Chart",
       "surface_kind": "excluded_type",
@@ -5474,6 +5476,29 @@
     },
     {
       "alias_of": null,
+      "canonical_id": "python:moira.facade:DateTimeToJulianTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "DateTimeToJulianTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "DateTimeToJulianTruth",
+      "source_line": 464,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:DateTimeToJulianTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
       "canonical_id": "python:moira.facade:DavisonChart",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -6275,7 +6300,7 @@
       "owner_qualname": "DeltaTPolicy",
       "owner_resolution": "runtime-object",
       "public_name": "DeltaTPolicy",
-      "source_line": 1466,
+      "source_line": 1625,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:DeltaTPolicy",
       "surface_kind": "excluded_type",
@@ -6295,6 +6320,48 @@
         "tests/unit/test_public_doctrine_surfaces.py",
         "tests/unit/test_swiss_ephemeris_migration_guide.py",
         "tests/unit/test_topocentric_multi_path_consistency.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:DeltaTTidalBasisTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "DeltaTTidalBasisTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "DeltaTTidalBasisTruth",
+      "source_line": 488,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:DeltaTTidalBasisTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:DeltaTTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "DeltaTTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "DeltaTTruth",
+      "source_line": 498,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:DeltaTTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -9458,6 +9525,29 @@
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/unit/test_electional.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:EquatorialCoordinatesTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.coordinates",
+      "owner_qualname": "EquatorialCoordinatesTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "EquatorialCoordinatesTruth",
+      "source_line": 96,
+      "source_path": "moira/coordinates.py",
+      "surface_id": "python:moira.facade:EquatorialCoordinatesTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -12696,7 +12786,7 @@
       "owner_qualname": "HeliocentricData",
       "owner_resolution": "runtime-object",
       "public_name": "HeliocentricData",
-      "source_line": 304,
+      "source_line": 349,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:HeliocentricData",
       "surface_kind": "excluded_type",
@@ -13669,6 +13759,29 @@
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
         "tests/unit/test_hellenistic_contract_parity.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:HorizontalCoordinatesTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.coordinates",
+      "owner_qualname": "HorizontalCoordinatesTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "HorizontalCoordinatesTruth",
+      "source_line": 79,
+      "source_path": "moira/coordinates.py",
+      "surface_id": "python:moira.facade:HorizontalCoordinatesTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -14691,6 +14804,29 @@
     },
     {
       "alias_of": null,
+      "canonical_id": "python:moira.facade:JulianToDateTimeTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "JulianToDateTimeTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "JulianToDateTimeTruth",
+      "source_line": 476,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:JulianToDateTimeTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
       "canonical_id": "python:moira.facade:KAKSHYA_LORDS",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public constant or immutable value; not an executable calculation",
@@ -15537,6 +15673,29 @@
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/server/test_eclipse_serialization_clock.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:LocalSiderealTimeTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "LocalSiderealTimeTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "LocalSiderealTimeTruth",
+      "source_line": 542,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:LocalSiderealTimeTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -19028,7 +19187,7 @@
       "owner_qualname": "Moira",
       "owner_resolution": "runtime-object",
       "public_name": "Moira",
-      "source_line": 3443,
+      "source_line": 3476,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Moira",
       "surface_kind": "excluded_type",
@@ -20733,7 +20892,7 @@
       "owner_qualname": "NodeData",
       "owner_resolution": "runtime-object",
       "public_name": "NodeData",
-      "source_line": 66,
+      "source_line": 72,
       "source_path": "moira/nodes.py",
       "surface_id": "python:moira.facade:NodeData",
       "surface_kind": "excluded_type",
@@ -20762,7 +20921,7 @@
       "owner_qualname": "NodesAndApsides",
       "owner_resolution": "runtime-object",
       "public_name": "NodesAndApsides",
-      "source_line": 597,
+      "source_line": 671,
       "source_path": "moira/nodes.py",
       "surface_id": "python:moira.facade:NodesAndApsides",
       "surface_kind": "excluded_type",
@@ -20794,6 +20953,29 @@
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_vedic_dignities.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ObliquityTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.obliquity",
+      "owner_qualname": "ObliquityTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ObliquityTruth",
+      "source_line": 31,
+      "source_path": "moira/obliquity.py",
+      "surface_id": "python:moira.facade:ObliquityTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -26284,7 +26466,7 @@
       "owner_qualname": "PlanetData",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetData",
-      "source_line": 114,
+      "source_line": 119,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:PlanetData",
       "surface_kind": "excluded_type",
@@ -26404,7 +26586,7 @@
       "owner_qualname": "PlanetReductionBreakdown",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetReductionBreakdown",
-      "source_line": 648,
+      "source_line": 693,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:PlanetReductionBreakdown",
       "surface_kind": "excluded_type",
@@ -26429,12 +26611,56 @@
       "owner_qualname": "PlanetReductionStage",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetReductionStage",
-      "source_line": 636,
+      "source_line": 681,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:PlanetReductionStage",
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:PlanetRelativeReductionTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.planets",
+      "owner_qualname": "PlanetRelativeReductionTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "PlanetRelativeReductionTruth",
+      "source_line": 230,
+      "source_path": "moira/planets.py",
+      "surface_id": "python:moira.facade:PlanetRelativeReductionTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:PlanetRelativeWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.planets",
+      "owner_qualname": "PlanetRelativeWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "PlanetRelativeWithTruth",
+      "source_line": 262,
+      "source_path": "moira/planets.py",
+      "surface_id": "python:moira.facade:PlanetRelativeWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -31373,7 +31599,7 @@
       "owner_qualname": "SkyPosition",
       "owner_resolution": "runtime-object",
       "public_name": "SkyPosition",
-      "source_line": 225,
+      "source_line": 270,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:SkyPosition",
       "surface_kind": "excluded_type",
@@ -35155,6 +35381,50 @@
     },
     {
       "alias_of": null,
+      "canonical_id": "python:moira.facade:TrueLilithReductionTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.nodes",
+      "owner_qualname": "TrueLilithReductionTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "TrueLilithReductionTruth",
+      "source_line": 146,
+      "source_path": "moira/nodes.py",
+      "surface_id": "python:moira.facade:TrueLilithReductionTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:TrueLilithWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.nodes",
+      "owner_qualname": "TrueLilithWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "TrueLilithWithTruth",
+      "source_line": 175,
+      "source_path": "moira/nodes.py",
+      "surface_id": "python:moira.facade:TrueLilithWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
       "canonical_id": "python:moira.facade:TruthEvaluationStatus",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -35521,6 +35791,52 @@
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/unit/test_decanates.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:UtcToTtTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "UtcToTtTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "UtcToTtTruth",
+      "source_line": 526,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:UtcToTtTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:UtcToUt1Truth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.julian",
+      "owner_qualname": "UtcToUt1Truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "UtcToUt1Truth",
+      "source_line": 511,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:UtcToUt1Truth",
+      "surface_kind": "excluded_type",
+      "test_paths": [
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -38217,7 +38533,7 @@
       "owner_qualname": "__author__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__author__",
-      "source_line": 3331,
+      "source_line": 3364,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__author__",
       "surface_kind": "excluded_value",
@@ -38248,7 +38564,7 @@
       "owner_qualname": "__version__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__version__",
-      "source_line": 3330,
+      "source_line": 3363,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__version__",
       "surface_kind": "excluded_value",
@@ -38739,7 +39055,7 @@
       "owner_qualname": "all_heliocentric_at",
       "owner_resolution": "runtime-object",
       "public_name": "all_heliocentric_at",
-      "source_line": 3753,
+      "source_line": 3798,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:all_heliocentric_at",
       "surface_kind": "calculation",
@@ -39377,7 +39693,7 @@
       "owner_qualname": "angular_distance",
       "owner_resolution": "runtime-object",
       "public_name": "angular_distance",
-      "source_line": 461,
+      "source_line": 587,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:angular_distance",
       "surface_kind": "calculation",
@@ -39594,7 +39910,7 @@
       "owner_qualname": "apparent_sidereal_time_at",
       "owner_resolution": "runtime-object",
       "public_name": "apparent_sidereal_time_at",
-      "source_line": 2699,
+      "source_line": 2935,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:apparent_sidereal_time_at",
       "surface_kind": "calculation",
@@ -40501,7 +40817,7 @@
       "owner_qualname": "atmospheric_refraction",
       "owner_resolution": "runtime-object",
       "public_name": "atmospheric_refraction",
-      "source_line": 639,
+      "source_line": 765,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:atmospheric_refraction",
       "surface_kind": "calculation",
@@ -40537,7 +40853,7 @@
       "owner_qualname": "atmospheric_refraction_extended",
       "owner_resolution": "runtime-object",
       "public_name": "atmospheric_refraction_extended",
-      "source_line": 678,
+      "source_line": 804,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:atmospheric_refraction_extended",
       "surface_kind": "calculation",
@@ -41970,7 +42286,7 @@
       "owner_qualname": "calendar_datetime_from_jd",
       "owner_resolution": "runtime-object",
       "public_name": "calendar_datetime_from_jd",
-      "source_line": 655,
+      "source_line": 774,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:calendar_datetime_from_jd",
       "surface_kind": "calculation",
@@ -42008,7 +42324,7 @@
       "owner_qualname": "calendar_from_jd",
       "owner_resolution": "runtime-object",
       "public_name": "calendar_from_jd",
-      "source_line": 529,
+      "source_line": 636,
       "source_path": "moira/dispatch.py",
       "surface_id": "python:moira.facade:calendar_from_jd",
       "surface_kind": "calculation",
@@ -43277,7 +43593,7 @@
       "owner_qualname": "cotrans_sp",
       "owner_resolution": "runtime-object",
       "public_name": "cotrans_sp",
-      "source_line": 547,
+      "source_line": 673,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:cotrans_sp",
       "surface_kind": "calculation",
@@ -43775,7 +44091,7 @@
       "owner_qualname": "datetime_from_jd",
       "owner_resolution": "runtime-object",
       "public_name": "datetime_from_jd",
-      "source_line": 733,
+      "source_line": 852,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:datetime_from_jd",
       "surface_kind": "calculation",
@@ -43798,7 +44114,32 @@
         "tests/unit/test_lunar_occultation_contacts.py",
         "tests/unit/test_moira_bce_time_support.py",
         "tests/unit/test_moira_synastry.py",
-        "tests/unit/test_polar_chart_public_gauntlet.py"
+        "tests/unit/test_polar_chart_public_gauntlet.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:datetime_from_jd_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "datetime_from_jd_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "datetime_from_jd_with_truth",
+      "source_line": 882,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:datetime_from_jd_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -44290,7 +44631,7 @@
       "owner_qualname": "delta_t",
       "owner_resolution": "runtime-object",
       "public_name": "delta_t",
-      "source_line": 1221,
+      "source_line": 1358,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:delta_t",
       "surface_kind": "calculation",
@@ -44388,14 +44729,39 @@
       "owner_qualname": "delta_t_from_jd",
       "owner_resolution": "runtime-object",
       "public_name": "delta_t_from_jd",
-      "source_line": 1312,
+      "source_line": 1449,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:delta_t_from_jd",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_adversarial_singularities.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
-        "tests/unit/test_julian_delta_t.py"
+        "tests/unit/test_julian_delta_t.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:delta_t_from_jd_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "delta_t_from_jd_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "delta_t_from_jd_with_truth",
+      "source_line": 1474,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:delta_t_from_jd_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -45249,7 +45615,7 @@
       "owner_qualname": "ecliptic_to_equatorial",
       "owner_resolution": "runtime-object",
       "public_name": "ecliptic_to_equatorial",
-      "source_line": 356,
+      "source_line": 461,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:ecliptic_to_equatorial",
       "surface_kind": "calculation",
@@ -45268,8 +45634,33 @@
         "tests/unit/test_low_level_helpers.py",
         "tests/unit/test_moira_progressions.py",
         "tests/unit/test_occultation_geometry.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_topocentric_multi_path_consistency.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ecliptic_to_equatorial_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.coordinates",
+      "owner_qualname": "ecliptic_to_equatorial_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ecliptic_to_equatorial_with_truth",
+      "source_line": 477,
+      "source_path": "moira/coordinates.py",
+      "surface_id": "python:moira.facade:ecliptic_to_equatorial_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -45347,7 +45738,7 @@
       "owner_qualname": "equation_of_time",
       "owner_resolution": "runtime-object",
       "public_name": "equation_of_time",
-      "source_line": 743,
+      "source_line": 869,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:equation_of_time",
       "surface_kind": "calculation",
@@ -45407,12 +45798,37 @@
       "owner_qualname": "equatorial_to_horizontal",
       "owner_resolution": "runtime-object",
       "public_name": "equatorial_to_horizontal",
-      "source_line": 306,
+      "source_line": 362,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:equatorial_to_horizontal",
       "surface_kind": "calculation",
       "test_paths": [
-        "tests/unit/test_low_level_helpers.py"
+        "tests/unit/test_low_level_helpers.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:equatorial_to_horizontal_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.coordinates",
+      "owner_qualname": "equatorial_to_horizontal_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "equatorial_to_horizontal_with_truth",
+      "source_line": 392,
+      "source_path": "moira/coordinates.py",
+      "surface_id": "python:moira.facade:equatorial_to_horizontal_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -47512,7 +47928,7 @@
       "owner_qualname": "format_jd_utc",
       "owner_resolution": "runtime-object",
       "public_name": "format_jd_utc",
-      "source_line": 471,
+      "source_line": 578,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:format_jd_utc",
       "surface_kind": "calculation",
@@ -48166,7 +48582,7 @@
       "owner_qualname": "greenwich_mean_sidereal_time",
       "owner_resolution": "runtime-object",
       "public_name": "greenwich_mean_sidereal_time",
-      "source_line": 2561,
+      "source_line": 2797,
       "source_path": "moira/dispatch.py",
       "surface_id": "python:moira.facade:greenwich_mean_sidereal_time",
       "surface_kind": "calculation",
@@ -48672,7 +49088,7 @@
       "owner_qualname": "heliocentric_planet_at",
       "owner_resolution": "runtime-object",
       "public_name": "heliocentric_planet_at",
-      "source_line": 3685,
+      "source_line": 3730,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:heliocentric_planet_at",
       "surface_kind": "calculation",
@@ -48844,7 +49260,7 @@
       "owner_qualname": "horizontal_to_equatorial",
       "owner_resolution": "runtime-object",
       "public_name": "horizontal_to_equatorial",
-      "source_line": 479,
+      "source_line": 605,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:horizontal_to_equatorial",
       "surface_kind": "calculation",
@@ -49091,7 +49507,7 @@
       "owner_qualname": "icrf_to_ecliptic",
       "owner_resolution": "runtime-object",
       "public_name": "icrf_to_ecliptic",
-      "source_line": 175,
+      "source_line": 231,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:icrf_to_ecliptic",
       "surface_kind": "calculation",
@@ -49117,7 +49533,7 @@
       "owner_qualname": "icrf_to_equatorial",
       "owner_resolution": "runtime-object",
       "public_name": "icrf_to_equatorial",
-      "source_line": 287,
+      "source_line": 343,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:icrf_to_equatorial",
       "surface_kind": "calculation",
@@ -49750,7 +50166,7 @@
       "owner_qualname": "jd_from_datetime",
       "owner_resolution": "runtime-object",
       "public_name": "jd_from_datetime",
-      "source_line": 575,
+      "source_line": 682,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:jd_from_datetime",
       "surface_kind": "calculation",
@@ -49822,10 +50238,35 @@
         "tests/unit/test_pancha_pakshi_solar_proportional_current_cell.py",
         "tests/unit/test_pancha_pakshi_solar_proportional_materialization.py",
         "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_swiss_ephemeris_migration_guide.py",
         "tests/unit/test_transits.py",
         "tests/unit/test_varshaphal.py",
         "tests/unit/test_vedic_second_pass_repairs.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:jd_from_datetime_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "jd_from_datetime_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "jd_from_datetime_with_truth",
+      "source_line": 716,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:jd_from_datetime_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -49852,7 +50293,7 @@
       "owner_qualname": "julian_day",
       "owner_resolution": "runtime-object",
       "public_name": "julian_day",
-      "source_line": 488,
+      "source_line": 595,
       "source_path": "moira/dispatch.py",
       "surface_id": "python:moira.facade:julian_day",
       "surface_kind": "calculation",
@@ -50670,7 +51111,7 @@
       "owner_qualname": "local_sidereal_time",
       "owner_resolution": "runtime-object",
       "public_name": "local_sidereal_time",
-      "source_line": 2734,
+      "source_line": 2970,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:local_sidereal_time",
       "surface_kind": "calculation",
@@ -50693,9 +51134,34 @@
         "tests/unit/test_lunar_limb_event_profile.py",
         "tests/unit/test_physics_layer.py",
         "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_topocentric_jitter.py",
         "tests/unit/test_topocentric_multi_path_consistency.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:local_sidereal_time_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "local_sidereal_time_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "local_sidereal_time_with_truth",
+      "source_line": 3004,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:local_sidereal_time_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -51309,7 +51775,7 @@
       "owner_qualname": "mean_obliquity",
       "owner_resolution": "runtime-object",
       "public_name": "mean_obliquity",
-      "source_line": 30,
+      "source_line": 54,
       "source_path": "moira/obliquity.py",
       "surface_id": "python:moira.facade:mean_obliquity",
       "surface_kind": "calculation",
@@ -52423,7 +52889,7 @@
       "owner_qualname": "next_heliocentric_transit",
       "owner_resolution": "runtime-object",
       "public_name": "next_heliocentric_transit",
-      "source_line": 3968,
+      "source_line": 4053,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:next_heliocentric_transit",
       "surface_kind": "calculation",
@@ -52585,7 +53051,7 @@
       "owner_qualname": "next_moon_node_crossing",
       "owner_resolution": "runtime-object",
       "public_name": "next_moon_node_crossing",
-      "source_line": 493,
+      "source_line": 567,
       "source_path": "moira/nodes.py",
       "surface_id": "python:moira.facade:next_moon_node_crossing",
       "surface_kind": "calculation",
@@ -52772,7 +53238,7 @@
       "owner_qualname": "nodes_and_apsides_at",
       "owner_resolution": "runtime-object",
       "public_name": "nodes_and_apsides_at",
-      "source_line": 634,
+      "source_line": 708,
       "source_path": "moira/nodes.py",
       "surface_id": "python:moira.facade:nodes_and_apsides_at",
       "surface_kind": "calculation",
@@ -52828,7 +53294,7 @@
       "owner_qualname": "normalize_degrees",
       "owner_resolution": "runtime-object",
       "public_name": "normalize_degrees",
-      "source_line": 453,
+      "source_line": 579,
       "source_path": "moira/coordinates.py",
       "surface_id": "python:moira.facade:normalize_degrees",
       "surface_kind": "calculation",
@@ -52926,7 +53392,7 @@
       "owner_qualname": "nutation",
       "owner_resolution": "runtime-object",
       "public_name": "nutation",
-      "source_line": 54,
+      "source_line": 78,
       "source_path": "moira/obliquity.py",
       "surface_id": "python:moira.facade:nutation",
       "surface_kind": "calculation",
@@ -54523,7 +54989,7 @@
       "owner_qualname": "planet_reduction_breakdown_at",
       "owner_resolution": "runtime-object",
       "public_name": "planet_reduction_breakdown_at",
-      "source_line": 2482,
+      "source_line": 2527,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:planet_reduction_breakdown_at",
       "surface_kind": "calculation",
@@ -54557,13 +55023,38 @@
       "owner_qualname": "planet_relative_to",
       "owner_resolution": "runtime-object",
       "public_name": "planet_relative_to",
-      "source_line": 3872,
+      "source_line": 3917,
       "source_path": "moira/planets.py",
       "surface_id": "python:moira.facade:planet_relative_to",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/oracle/test_oracle_validation.py",
-        "tests/unit/test_phase2_helpers.py"
+        "tests/unit/test_phase2_helpers.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:planet_relative_to_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.planets",
+      "owner_qualname": "planet_relative_to_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "planet_relative_to_with_truth",
+      "source_line": 4009,
+      "source_path": "moira/planets.py",
+      "surface_id": "python:moira.facade:planet_relative_to_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -56002,7 +56493,7 @@
       "owner_qualname": "safe_datetime_from_jd",
       "owner_resolution": "runtime-object",
       "public_name": "safe_datetime_from_jd",
-      "source_line": 700,
+      "source_line": 819,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:safe_datetime_from_jd",
       "surface_kind": "calculation",
@@ -58476,7 +58967,7 @@
       "owner_qualname": "true_lilith",
       "owner_resolution": "runtime-object",
       "public_name": "true_lilith",
-      "source_line": 382,
+      "source_line": 425,
       "source_path": "moira/nodes.py",
       "surface_id": "python:moira.facade:true_lilith",
       "surface_kind": "calculation",
@@ -58484,7 +58975,32 @@
         "tests/integration/test_true_lilith_speed.py",
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
-        "tests/unit/test_doctrine_alignment.py"
+        "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:true_lilith_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.nodes",
+      "owner_qualname": "true_lilith_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "true_lilith_with_truth",
+      "source_line": 467,
+      "source_path": "moira/nodes.py",
+      "surface_id": "python:moira.facade:true_lilith_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -58508,7 +59024,7 @@
       "owner_qualname": "true_obliquity",
       "owner_resolution": "runtime-object",
       "public_name": "true_obliquity",
-      "source_line": 79,
+      "source_line": 103,
       "source_path": "moira/obliquity.py",
       "surface_id": "python:moira.facade:true_obliquity",
       "surface_kind": "calculation",
@@ -58518,6 +59034,7 @@
         "tests/integration/test_houses_external_reference.py",
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_oracle_hostile_semantic_audit.py",
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/server/test_server_chart_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/unit/test_astrocartography.py",
@@ -58554,8 +59071,33 @@
         "tests/unit/test_planetary_frame_contracts.py",
         "tests/unit/test_planets_architecture_invariants.py",
         "tests/unit/test_polar_house_breadth_gauntlet.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_vertex_oracle.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:true_obliquity_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.obliquity",
+      "owner_qualname": "true_obliquity_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "true_obliquity_with_truth",
+      "source_line": 123,
+      "source_path": "moira/obliquity.py",
+      "surface_id": "python:moira.facade:true_obliquity_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -58670,7 +59212,7 @@
       "owner_qualname": "ut_to_tt",
       "owner_resolution": "runtime-object",
       "public_name": "ut_to_tt",
-      "source_line": 2198,
+      "source_line": 2434,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:ut_to_tt",
       "surface_kind": "calculation",
@@ -58747,7 +59289,7 @@
       "owner_qualname": "utc_to_tt",
       "owner_resolution": "runtime-object",
       "public_name": "utc_to_tt",
-      "source_line": 1649,
+      "source_line": 1808,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:utc_to_tt",
       "surface_kind": "calculation",
@@ -58769,7 +59311,32 @@
         "tests/unit/test_julian_delta_t.py",
         "tests/unit/test_local_space.py",
         "tests/unit/test_moira_synastry.py",
-        "tests/unit/test_planetary_frame_contracts.py"
+        "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_r2b_additive_truth.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:utc_to_tt_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "utc_to_tt_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "utc_to_tt_with_truth",
+      "source_line": 2357,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:utc_to_tt_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -58790,7 +59357,7 @@
       "owner_qualname": "utc_to_ut1",
       "owner_resolution": "runtime-object",
       "public_name": "utc_to_ut1",
-      "source_line": 2115,
+      "source_line": 2274,
       "source_path": "moira/julian.py",
       "surface_id": "python:moira.facade:utc_to_ut1",
       "surface_kind": "calculation",
@@ -58840,9 +59407,34 @@
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_pancha_pakshi_astronomical_paksha.py",
         "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_varshaphal.py",
         "tests/unit/test_vedic_facade.py",
         "tests/unit/test_vedic_second_pass_repairs.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:utc_to_ut1_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.julian",
+      "owner_qualname": "utc_to_ut1_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "utc_to_ut1_with_truth",
+      "source_line": 2312,
+      "source_path": "moira/julian.py",
+      "surface_id": "python:moira.facade:utc_to_ut1_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/integration/test_r2b_truth_evidence.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
@@ -76094,29 +76686,29 @@
   "schema_version": "moira.lightbox-calculation-inventory/v1",
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
-    "python_surface_ids_sha256": "bd28fd907815e4924dd4fb999c4f28566ad7d11650a66f344e6d23f4c79efe12",
+    "python_surface_ids_sha256": "debfb4a8854a9dcd2e9d8d169ecfc0bb4e6d160202526a4dc07f2a2a6b4e0c95",
     "rest_surface_ids_sha256": "c8fcb2388ea85f38ea0897cc62a1294c121cddf11ffeafb9c5c124aeea667be2"
   },
   "summary": {
     "python_aliases": 2,
     "python_by_export_kind": {
       "class": 29,
-      "dataclass": 1029,
+      "dataclass": 1043,
       "enum": 244,
       "exception": 38,
-      "function": 779,
+      "function": 790,
       "value": 154
     },
     "python_by_surface_kind": {
-      "calculation": 660,
+      "calculation": 671,
       "composition_profile": 81,
-      "excluded_type": 1340,
+      "excluded_type": 1354,
       "excluded_value": 154,
       "reference_query": 26,
       "validation_helper": 12
     },
-    "python_exports": 2273,
-    "python_in_scope": 741,
+    "python_exports": 2298,
+    "python_in_scope": 752,
     "python_in_scope_without_documentation_mentions": 66,
     "python_in_scope_without_test_mentions": 9,
     "rest_aliases": 3,
@@ -76132,5 +76724,5 @@
     "rest_in_scope_without_test_mentions": 3,
     "rest_operations": 518
   },
-  "surface_fingerprint_sha256": "f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0"
+  "surface_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701"
 }

@@ -467,7 +467,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3753,
+        "source_line": 3798,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -1069,7 +1069,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 461,
+        "source_line": 587,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -1219,7 +1219,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2699,
+        "source_line": 2935,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -2002,7 +2002,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 639,
+        "source_line": 765,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -2027,7 +2027,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 678,
+        "source_line": 804,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -3145,7 +3145,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 655,
+        "source_line": 774,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -3170,7 +3170,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 529,
+        "source_line": 636,
         "source_path": "moira/dispatch.py"
       },
       "priority": "P2",
@@ -4353,7 +4353,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 547,
+        "source_line": 673,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -4778,7 +4778,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 733,
+        "source_line": 852,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -4792,6 +4792,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:datetime_from_jd",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:datetime_from_jd_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 882,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:datetime_from_jd_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -5230,7 +5255,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1221,
+        "source_line": 1358,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -5305,7 +5330,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1312,
+        "source_line": 1449,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -5319,6 +5344,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:delta_t_from_jd",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:delta_t_from_jd_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 1474,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:delta_t_from_jd_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -6107,7 +6157,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 356,
+        "source_line": 461,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P0",
@@ -6121,6 +6171,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:ecliptic_to_equatorial",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.coordinates",
+      "canonical_surface_id": "python:moira.facade:ecliptic_to_equatorial_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "coordinates",
+      "family_label": "Coordinates",
+      "ownership": {
+        "source_line": 477,
+        "source_path": "moira/coordinates.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:ecliptic_to_equatorial_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -6184,7 +6259,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 743,
+        "source_line": 869,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -6234,7 +6309,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 306,
+        "source_line": 362,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P0",
@@ -6248,6 +6323,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:equatorial_to_horizontal",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.coordinates",
+      "canonical_surface_id": "python:moira.facade:equatorial_to_horizontal_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "coordinates",
+      "family_label": "Coordinates",
+      "ownership": {
+        "source_line": 392,
+        "source_path": "moira/coordinates.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:equatorial_to_horizontal_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -8211,7 +8311,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 471,
+        "source_line": 578,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -8790,7 +8890,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2561,
+        "source_line": 2797,
         "source_path": "moira/dispatch.py"
       },
       "priority": "P2",
@@ -9244,7 +9344,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3685,
+        "source_line": 3730,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -9394,7 +9494,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 479,
+        "source_line": 605,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -9594,7 +9694,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 175,
+        "source_line": 231,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -9619,7 +9719,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 287,
+        "source_line": 343,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -10144,7 +10244,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 575,
+        "source_line": 682,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -10164,6 +10264,31 @@
     {
       "assessment_status": "partial",
       "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:jd_from_datetime_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 716,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:jd_from_datetime_with_truth",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
       "canonical_surface_id": "python:moira.facade:julian_day",
       "domain_group": "astronomy-and-chart-core",
       "entry_role": "canonical",
@@ -10171,7 +10296,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 488,
+        "source_line": 595,
         "source_path": "moira/dispatch.py"
       },
       "priority": "P2",
@@ -10550,7 +10675,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2734,
+        "source_line": 2970,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -10564,6 +10689,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:local_sidereal_time",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:local_sidereal_time_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 3004,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:local_sidereal_time_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -11102,7 +11252,7 @@
       "family_id": "obliquity",
       "family_label": "Obliquity",
       "ownership": {
-        "source_line": 30,
+        "source_line": 54,
         "source_path": "moira/obliquity.py"
       },
       "priority": "P2",
@@ -12102,7 +12252,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3968,
+        "source_line": 4053,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -12252,7 +12402,7 @@
       "family_id": "nodes",
       "family_label": "Nodes",
       "ownership": {
-        "source_line": 493,
+        "source_line": 567,
         "source_path": "moira/nodes.py"
       },
       "priority": "P2",
@@ -12427,7 +12577,7 @@
       "family_id": "nodes",
       "family_label": "Nodes",
       "ownership": {
-        "source_line": 634,
+        "source_line": 708,
         "source_path": "moira/nodes.py"
       },
       "priority": "P2",
@@ -12477,7 +12627,7 @@
       "family_id": "coordinates",
       "family_label": "Coordinates",
       "ownership": {
-        "source_line": 453,
+        "source_line": 579,
         "source_path": "moira/coordinates.py"
       },
       "priority": "P2",
@@ -12502,7 +12652,7 @@
       "family_id": "obliquity",
       "family_label": "Obliquity",
       "ownership": {
-        "source_line": 54,
+        "source_line": 78,
         "source_path": "moira/obliquity.py"
       },
       "priority": "P2",
@@ -13777,7 +13927,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 2482,
+        "source_line": 2527,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -13802,7 +13952,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3872,
+        "source_line": 3917,
         "source_path": "moira/planets.py"
       },
       "priority": "P0",
@@ -13816,6 +13966,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:planet_relative_to",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.planets",
+      "canonical_surface_id": "python:moira.facade:planet_relative_to_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "planets",
+      "family_label": "Planets",
+      "ownership": {
+        "source_line": 4009,
+        "source_path": "moira/planets.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:planet_relative_to_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -15185,7 +15360,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 700,
+        "source_line": 819,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -17389,7 +17564,7 @@
       "family_id": "nodes",
       "family_label": "Nodes",
       "ownership": {
-        "source_line": 382,
+        "source_line": 425,
         "source_path": "moira/nodes.py"
       },
       "priority": "P0",
@@ -17408,6 +17583,31 @@
     },
     {
       "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.nodes",
+      "canonical_surface_id": "python:moira.facade:true_lilith_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "nodes",
+      "family_label": "Nodes",
+      "ownership": {
+        "source_line": 467,
+        "source_path": "moira/nodes.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:true_lilith_with_truth",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
       "assignment_basis": "python owner module moira.obliquity",
       "canonical_surface_id": "python:moira.facade:true_obliquity",
       "domain_group": "astronomy-and-chart-core",
@@ -17416,7 +17616,7 @@
       "family_id": "obliquity",
       "family_label": "Obliquity",
       "ownership": {
-        "source_line": 79,
+        "source_line": 103,
         "source_path": "moira/obliquity.py"
       },
       "priority": "P0",
@@ -17430,6 +17630,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:true_obliquity",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.obliquity",
+      "canonical_surface_id": "python:moira.facade:true_obliquity_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "obliquity",
+      "family_label": "Obliquity",
+      "ownership": {
+        "source_line": 123,
+        "source_path": "moira/obliquity.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:true_obliquity_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -17520,7 +17745,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2198,
+        "source_line": 2434,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -17545,7 +17770,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1649,
+        "source_line": 1808,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -17565,6 +17790,31 @@
     {
       "assessment_status": "partial",
       "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:utc_to_tt_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 2357,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:utc_to_tt_with_truth",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
       "canonical_surface_id": "python:moira.facade:utc_to_ut1",
       "domain_group": "astronomy-and-chart-core",
       "entry_role": "canonical",
@@ -17572,7 +17822,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2115,
+        "source_line": 2274,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -17586,6 +17836,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:utc_to_ut1",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.julian",
+      "canonical_surface_id": "python:moira.facade:utc_to_ut1_with_truth",
+      "domain_group": "astronomy-and-chart-core",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "julian",
+      "family_label": "Julian",
+      "ownership": {
+        "source_line": 2312,
+        "source_path": "moira/julian.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:utc_to_ut1_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -30710,7 +30985,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0",
+  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -30724,7 +30999,7 @@
     "P2": "Python-facade calculation without an independently confirmed production-user call path."
   },
   "product_usage_snapshot": {
-    "audit_date": "2026-10-12",
+    "audit_date": "2026-10-13",
     "path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json",
     "roots": [
       {
@@ -30751,7 +31026,7 @@
   "summary": {
     "alias_entries": 4,
     "canonical_by_domain_group": {
-      "astronomy-and-chart-core": 116,
+      "astronomy-and-chart-core": 127,
       "locational": 58,
       "phenomena-and-visibility": 123,
       "predictive-and-time": 163,
@@ -30763,21 +31038,21 @@
     "canonical_by_exposure": {
       "production_user": 171,
       "public_api": 344,
-      "source_only": 695
+      "source_only": 706
     },
     "canonical_by_priority": {
       "P0": 171,
       "P1": 344,
-      "P2": 695
+      "P2": 706
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1210,
+      "reviewed": 1221,
       "seeded": 0
     },
-    "canonical_entries": 1210,
+    "canonical_entries": 1221,
     "cross_transport_families": 53,
-    "entries_total": 1214,
+    "entries_total": 1225,
     "family_count": 143
   }
 }

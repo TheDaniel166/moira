@@ -190,11 +190,17 @@ from ._facade_special import SpecialTopicsFacadeMixin
 from ._facade_spatial import SpatialFacadeMixin
 from ._facade_vedic import VedicFacadeMixin
 from .julian import (
-    CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
-    jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
-    greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
-    ut_to_tt, utc_to_tt, utc_to_ut1,
-    delta_t_from_jd, apparent_sidereal_time_at,
+    CalendarDateTime, DateTimeToJulianTruth, JulianToDateTimeTruth,
+    DeltaTTidalBasisTruth, DeltaTTruth, UtcToUt1Truth, UtcToTtTruth,
+    LocalSiderealTimeTruth, DeltaTPolicy,
+    julian_day, calendar_from_jd, calendar_datetime_from_jd,
+    jd_from_datetime, jd_from_datetime_with_truth,
+    datetime_from_jd, datetime_from_jd_with_truth,
+    format_jd_utc, safe_datetime_from_jd,
+    greenwich_mean_sidereal_time, local_sidereal_time,
+    local_sidereal_time_with_truth, delta_t,
+    ut_to_tt, utc_to_tt, utc_to_tt_with_truth, utc_to_ut1, utc_to_ut1_with_truth,
+    delta_t_from_jd, delta_t_from_jd_with_truth, apparent_sidereal_time_at,
 )
 from .delta_t_physical import (
     DeltaTBreakdown,
@@ -202,10 +208,19 @@ from .delta_t_physical import (
     delta_t_breakdown,
     delta_t_distribution,
 )
-from .obliquity import mean_obliquity, true_obliquity, nutation
+from .obliquity import (
+    ObliquityTruth,
+    mean_obliquity,
+    true_obliquity,
+    true_obliquity_with_truth,
+    nutation,
+)
 from .coordinates import (
-    icrf_to_ecliptic, icrf_to_equatorial, ecliptic_to_equatorial,
-    equatorial_to_horizontal, horizontal_to_equatorial,
+    EquatorialCoordinatesTruth, HorizontalCoordinatesTruth,
+    icrf_to_ecliptic, icrf_to_equatorial,
+    ecliptic_to_equatorial, ecliptic_to_equatorial_with_truth,
+    equatorial_to_horizontal, equatorial_to_horizontal_with_truth,
+    horizontal_to_equatorial,
     cotrans_sp,
     atmospheric_refraction, atmospheric_refraction_extended,
     equation_of_time,
@@ -220,12 +235,17 @@ from .spk_reader import (
 )
 from .planets import (
     PlanetData, PlanetReductionBreakdown, PlanetReductionStage,
+    PlanetRelativeReductionTruth, PlanetRelativeWithTruth,
     SkyPosition, CartesianPosition,
     planet_reduction_breakdown_at,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
-    planet_relative_to, next_heliocentric_transit,
+    planet_relative_to, planet_relative_to_with_truth, next_heliocentric_transit,
 )
-from .nodes import mean_node, true_node, mean_lilith, true_lilith, NodeData, next_moon_node_crossing, NodesAndApsides, nodes_and_apsides_at
+from .nodes import (
+    NodeData, TrueLilithReductionTruth, TrueLilithWithTruth,
+    mean_node, true_node, mean_lilith, true_lilith, true_lilith_with_truth,
+    next_moon_node_crossing, NodesAndApsides, nodes_and_apsides_at,
+)
 from .houses import (
     HouseSystemFamily,
     HouseSystemCuspBasis,
@@ -2222,8 +2242,10 @@ __all__ = [
     "LunarOrientationSource", "lunar_orientation_at",
     "Body", "HouseSystem", "Ayanamsa",
     "PlanetData", "PlanetReductionBreakdown", "PlanetReductionStage",
+    "PlanetRelativeReductionTruth", "PlanetRelativeWithTruth",
     "planet_reduction_breakdown_at",
-    "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
+    "SkyPosition", "CartesianPosition", "NodeData",
+    "TrueLilithReductionTruth", "TrueLilithWithTruth", "AspectData",
     "NodesAndApsides", "nodes_and_apsides_at",
     # Houses backend public surface
     "HouseSystemFamily", "HouseSystemCuspBasis",
@@ -2278,18 +2300,29 @@ __all__ = [
     "NasaLunarEclipseContacts", "NasaLunarEclipseEvent",
     "next_nasa_lunar_eclipse", "previous_nasa_lunar_eclipse",
     "translate_lunar_eclipse_event",
-    "CalendarDateTime", "DeltaTPolicy", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
-    "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
-    "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
-    "ut_to_tt", "utc_to_tt", "utc_to_ut1",
-    "delta_t_from_jd", "apparent_sidereal_time_at",
+    "CalendarDateTime", "DateTimeToJulianTruth", "JulianToDateTimeTruth",
+    "DeltaTTidalBasisTruth", "DeltaTTruth", "UtcToUt1Truth", "UtcToTtTruth",
+    "LocalSiderealTimeTruth", "DeltaTPolicy",
+    "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
+    "jd_from_datetime", "jd_from_datetime_with_truth",
+    "datetime_from_jd", "datetime_from_jd_with_truth",
+    "format_jd_utc", "safe_datetime_from_jd",
+    "greenwich_mean_sidereal_time", "local_sidereal_time",
+    "local_sidereal_time_with_truth", "delta_t",
+    "ut_to_tt", "utc_to_tt", "utc_to_tt_with_truth",
+    "utc_to_ut1", "utc_to_ut1_with_truth",
+    "delta_t_from_jd", "delta_t_from_jd_with_truth", "apparent_sidereal_time_at",
     "DeltaTBreakdown", "DeltaTDistribution",
     "delta_t_breakdown", "delta_t_distribution",
     # Obliquity & nutation
-    "mean_obliquity", "true_obliquity", "nutation",
+    "ObliquityTruth", "mean_obliquity", "true_obliquity",
+    "true_obliquity_with_truth", "nutation",
     # Coordinate utilities
-    "icrf_to_ecliptic", "icrf_to_equatorial", "ecliptic_to_equatorial",
-    "equatorial_to_horizontal", "horizontal_to_equatorial",
+    "EquatorialCoordinatesTruth", "HorizontalCoordinatesTruth",
+    "icrf_to_ecliptic", "icrf_to_equatorial",
+    "ecliptic_to_equatorial", "ecliptic_to_equatorial_with_truth",
+    "equatorial_to_horizontal", "equatorial_to_horizontal_with_truth",
+    "horizontal_to_equatorial",
     "cotrans_sp",
     "atmospheric_refraction", "atmospheric_refraction_extended",
     "equation_of_time",
@@ -2599,9 +2632,9 @@ __all__ = [
     "ReceivedLightPosition", "RECEIVED_LIGHT_BODIES",
     "received_light_at", "all_received_light_at",
     # Phase 2 specialist helpers
-    "planet_relative_to", "next_heliocentric_transit",
+    "planet_relative_to", "planet_relative_to_with_truth", "next_heliocentric_transit",
     "next_moon_node_crossing",
-    "true_lilith",
+    "true_lilith", "true_lilith_with_truth",
     "houses_from_armc", "body_house_position",
     # Phase 3 design vessels
     "UserDefinedAyanamsa",

@@ -10,10 +10,12 @@ coordinate transforms to coordinates, and TT/LST support to julian. Does not
 own houses, aspects, or presentation formatting.
 
 Public surface:
-    PlanetData, SkyPosition, HeliocentricData, CartesianPosition,
+    PlanetData, PlanetRelativeReductionTruth, PlanetRelativeWithTruth,
+    SkyPosition, HeliocentricData, CartesianPosition,
     planet_at(), sky_position_at(), all_planets_at(),
     heliocentric_planet_at(), all_heliocentric_at(), sun_longitude(),
-    planet_relative_to(), next_heliocentric_transit()
+    planet_relative_to(), planet_relative_to_with_truth(),
+    next_heliocentric_transit()
 
     DeltaTPolicy is threaded through planet_at(), sky_position_at(), and
     all_planets_at() via delta_t_policy=.
@@ -69,7 +71,7 @@ from .coordinates import (
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import local_sidereal_time, DeltaTPolicy, tt_to_tdb
-from ._ephemeris_time import _ut1_to_ephemeris_tt
+from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelReader, SpkReader,
     MissingKernelError, OutOfRangeError,
@@ -102,7 +104,10 @@ __all__ = [
     "heliocentric_planet_at",
     "all_heliocentric_at",
     "sun_longitude",
+    "PlanetRelativeReductionTruth",
+    "PlanetRelativeWithTruth",
     "planet_relative_to",
+    "planet_relative_to_with_truth",
     "next_heliocentric_transit",
     "approx_year",
 ]
@@ -220,6 +225,46 @@ class PlanetData:
         deg, m, s = self.longitude_dms
         return (f"{self.name}: {deg}°{m:02d}′{s:04.1f}″ {self.sign} {self.sign_symbol}"
                 f"  ({self.longitude:.4f}°) {r}  Δ={self.speed:+.4f}°/d")
+
+
+@dataclass(slots=True, frozen=True)
+class PlanetRelativeReductionTruth:
+    """Complete center, frame, correction, clock, and source identity."""
+
+    body: str
+    center_body: str
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    delta_t_retarget_mode: str
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    kernel_identity: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    speed_sample_half_span_days: float
+    source_vector_frame: str = "ICRF_barycentric"
+    result_frame: str = "true_ecliptic_and_equinox_of_date"
+    position_mode: str = "geometric"
+    distance_semantics: str = "body_to_center_separation_km"
+    light_time_applied: bool = False
+    aberration_applied: bool = False
+    gravitational_deflection_applied: bool = False
+    precession_applied: bool = True
+    nutation_applied: bool = True
+    topocentric_applied: bool = False
+    speed_method: str = "centered_circular_finite_difference"
+    speed_sample_timescale: str = "UT1"
+
+
+@dataclass(slots=True, frozen=True)
+class PlanetRelativeWithTruth:
+    """Backward-compatible PlanetData paired with its relative-position truth."""
+
+    result: PlanetData
+    truth: PlanetRelativeReductionTruth
 
 
 @dataclass(slots=True, frozen=True)
@@ -3958,6 +4003,46 @@ def planet_relative_to(
         distance=dist,
         speed=raw_speed,
         retrograde=(raw_speed < 0.0),
+    )
+
+
+def planet_relative_to_with_truth(
+    body: str,
+    center_body: str,
+    jd_ut: float,
+    reader: KernelReader | None = None,
+    _vector_cache: _VectorCache | None = None,
+) -> PlanetRelativeWithTruth:
+    """Return a relative position with its center and full reduction identity."""
+
+    resolved_reader = get_reader() if reader is None else reader
+    result = planet_relative_to(
+        body,
+        center_body,
+        jd_ut,
+        reader=resolved_reader,
+        _vector_cache=_vector_cache,
+    )
+    bound = _bind_ephemeris_time(jd_ut, resolved_reader)
+    identity = bound.identity
+    return PlanetRelativeWithTruth(
+        result=result,
+        truth=PlanetRelativeReductionTruth(
+            body=body,
+            center_body=center_body,
+            jd_ut1=bound.jd_ut1,
+            jd_tt=bound.epoch_tt,
+            jd_tdb=bound.epoch_tdb,
+            delta_t_seconds=bound.delta_t_seconds,
+            delta_t_source_product=bound.raw_delta_t.source_product,
+            delta_t_retarget_mode=bound.raw_delta_t.retarget_mode,
+            delta_t_correction_seconds=bound.delta_t_correction_seconds,
+            tdb_minus_tt_seconds=bound.tdb_minus_tt_seconds,
+            kernel_identity=identity.summary_label,
+            planetary_ephemeris=identity.planetary_ephemeris,
+            lunar_ephemeris=identity.lunar_ephemeris,
+            speed_sample_half_span_days=0.5,
+        ),
     )
 
 

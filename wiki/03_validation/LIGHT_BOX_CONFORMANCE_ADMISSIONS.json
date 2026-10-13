@@ -3,6 +3,116 @@
   "boundary": "These are structural partial admissions, not numerical or release conformance certificates. Each entry is admitted only for the inspectability and semantic fields named by its reviewed contract kind; residual and exact-release verification remain unresolved.",
   "entries": [
     {
+      "surface_id": "python:moira.facade:datetime_from_jd",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:datetime_from_jd_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:delta_t_from_jd",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:delta_t_from_jd_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:ecliptic_to_equatorial",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:ecliptic_to_equatorial_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:equatorial_to_horizontal",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:equatorial_to_horizontal_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:jd_from_datetime",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:jd_from_datetime_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:local_sidereal_time",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:local_sidereal_time_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:planet_relative_to",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:planet_relative_to_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:true_lilith",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:true_lilith_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:true_obliquity",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:true_obliquity_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:utc_to_tt",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:utc_to_tt_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:utc_to_ut1",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:utc_to_ut1_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
       "surface_id": "rest:POST:/v1/chart/reduction",
       "contract_kind": "reduction_vessel",
       "evidence_classes": ["invariant", "regression"]

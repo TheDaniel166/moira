@@ -28,13 +28,13 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.9.9",
-  "evidence_source_revision": "86e58b9ac16efb6b839b69f9c135935a9f6e7a66",
+  "evidence_source_revision": "a0f81f94d3627a4b4a1753734bb4ce2bba0be23b",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d",
+  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
-    "Local passed contracts cover 15 calculations and do not generalize to their entire families.",
-    "All 1210 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
+    "Bounded replay contracts cover 51 calculations and do not generalize to their entire families.",
+    "All 1221 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
   ],
   "links": {
     "assurance_matrix": "wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.json",
@@ -46,7 +46,7 @@
   "publication_disposition": "local_unreleased_status",
   "schema_version": "moira.lightbox-current-status/v1",
   "summary": {
-    "canonical_calculations": 1210,
+    "canonical_calculations": 1221,
     "conformant": 0,
     "family_dispositions": {
       "major_gap": 11,
@@ -56,21 +56,21 @@
       "unresolved": 0
     },
     "not_applicable": 0,
-    "partial": 28,
+    "partial": 51,
     "production_user_by_status": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 20,
-      "unresolved": 151
+      "partial": 32,
+      "unresolved": 139
     },
     "production_user_calculations": 171,
-    "replayed_contracts": 16,
+    "replayed_contracts": 20,
     "replayed_contracts_passed_exact_source": 0,
-    "replayed_contracts_passed_local": 16,
+    "replayed_contracts_passed_local": 20,
     "reviewed_families": 143,
-    "surfaces_with_replay_contracts": 28,
-    "surfaces_without_replay_contracts": 1182,
-    "unresolved": 1182
+    "surfaces_with_replay_contracts": 51,
+    "surfaces_without_replay_contracts": 1170,
+    "unresolved": 1170
   },
   "universal_current_conformance_supported": false
 }

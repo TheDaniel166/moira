@@ -117,6 +117,46 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
             "generated_documentation",
         ],
     },
+    "source_truth_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The public Python result pairs the legacy calculation value with a typed vessel that exposes the governing source, scale, frame, center, correction, or singularity facts applicable to that calculation.",
+        "stage_label": "Additive public-Python truth vessel",
+        "operation": "Validate the public inputs, execute the existing calculation path, and return its result beside explicitly named reduction truth without changing the legacy API.",
+        "semantic_values": {
+            "inputs": [
+                "The public Python signature and typed truth vessel define the admitted inputs and result fields."
+            ],
+            "units": [
+                "Each numeric truth field carries a unit-bearing name or a documented result-vessel unit; no unnamed unit is inferred."
+            ],
+            "reference_frame": [
+                "Frame identity is explicit where the calculation transforms coordinates; time-only calculations do not acquire an invented spatial frame."
+            ],
+            "origin": [
+                "Center, observer, or civil-time origin is explicit where applicable to the calculation."
+            ],
+            "timescale": [
+                "Input, intermediate, and output time scales are named where the calculation depends on an epoch."
+            ],
+            "corrections": [
+                "Applied models, corrections, and deliberately omitted corrections are carried where applicable."
+            ],
+            "policies_defaults": [
+                "Compatibility defaults remain on the legacy surface; the additive truth surface names its effective mode and policy."
+            ],
+            "fallbacks": [
+                "Only source branches, conventions, or unavailable states explicitly present in the truth vessel are admitted."
+            ],
+            "refusal_behavior": [
+                "Invalid finite-domain, scale-label, singular-geometry, center, or resource inputs follow the owning public function's explicit error contract."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "source_only",
+            "generated_documentation",
+        ],
+    },
     "policy_reduction_vessel": {
         "inspectability_mode": "embedded_result",
         "summary": "The response embeds a typed reduction vessel with governing policy, applied choices, and computation-path truth.",

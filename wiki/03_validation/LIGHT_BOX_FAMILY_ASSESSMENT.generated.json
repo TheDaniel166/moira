@@ -879,13 +879,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 11,
+      "canonical_surface_count": 13,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 11
+        "partial": 4,
+        "unresolved": 9
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md",
@@ -924,7 +924,7 @@
         "python:moira.facade:ecliptic_to_equatorial",
         "python:moira.facade:equatorial_to_horizontal"
       ],
-      "python_surface_count": 11,
+      "python_surface_count": 13,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_3_product_use",
@@ -938,6 +938,7 @@
         "tests/integration/test_eclipse_lunar_contacts_nasa_reference.py",
         "tests/integration/test_horizons_planet_apparent.py",
         "tests/integration/test_occultation_polar_topology_horizons_reference.py",
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/server/test_server_astrocartography_routes.py",
         "tests/server/test_server_draconic_routes.py",
@@ -961,6 +962,7 @@
         "tests/unit/test_moira_progressions.py",
         "tests/unit/test_occultation_geometry.py",
         "tests/unit/test_planets_architecture_invariants.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_topocentric_multi_path_consistency.py"
       ]
@@ -2910,13 +2912,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 15,
+      "canonical_surface_count": 21,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 15
+        "partial": 12,
+        "unresolved": 9
       },
       "documentation_leads": [
         "PROVENANCE.md",
@@ -2981,7 +2983,7 @@
         "python:moira.facade:utc_to_tt",
         "python:moira.facade:utc_to_ut1"
       ],
-      "python_surface_count": 15,
+      "python_surface_count": 21,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_3_product_use",
@@ -3022,6 +3024,7 @@
         "tests/integration/test_physical_visibility_phase7_broad_oracle.py",
         "tests/integration/test_polar_motion_erfa.py",
         "tests/integration/test_progressions_external_reference.py",
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_rise_set_published_reference.py",
         "tests/integration/test_solar_eclipse_global_adversarial.py",
         "tests/integration/test_solar_eclipse_global_reference.py",
@@ -3153,6 +3156,7 @@
         "tests/unit/test_preservation_property_docstring_governance.py",
         "tests/unit/test_primary_direction_special_target_authority.py",
         "tests/unit/test_primary_directions_midpoints.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_reader_bound_sidereal_time.py",
         "tests/unit/test_relationship_forecasting.py",
         "tests/unit/test_rise_set.py",
@@ -4204,13 +4208,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 6,
+      "canonical_surface_count": 7,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 6
+        "partial": 2,
+        "unresolved": 5
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -4248,7 +4252,7 @@
       "production_user_surface_ids": [
         "python:moira.facade:true_lilith"
       ],
-      "python_surface_count": 3,
+      "python_surface_count": 4,
       "rest_surface_count": 3,
       "review_stages": [
         "stage_3_product_use",
@@ -4256,6 +4260,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_true_lilith_speed.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/server/test_server_nodes_routes.py",
@@ -4263,18 +4268,19 @@
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
         "tests/unit/test_doctrine_alignment.py",
-        "tests/unit/test_phase2_helpers.py"
+        "tests/unit/test_phase2_helpers.py",
+        "tests/unit/test_r2b_additive_truth.py"
       ]
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 3,
+      "canonical_surface_count": 4,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 3
+        "partial": 2,
+        "unresolved": 2
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -4368,7 +4374,7 @@
       "production_user_surface_ids": [
         "python:moira.facade:true_obliquity"
       ],
-      "python_surface_count": 3,
+      "python_surface_count": 4,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_3_product_use",
@@ -4382,6 +4388,7 @@
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_mean_node_frame_consistency.py",
         "tests/integration/test_oracle_hostile_semantic_audit.py",
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_true_lilith_speed.py",
         "tests/integration/test_true_node_frame_consistency.py",
         "tests/server/test_server_chart_routes.py",
@@ -4433,6 +4440,7 @@
         "tests/unit/test_planetary_frame_contracts.py",
         "tests/unit/test_planets_architecture_invariants.py",
         "tests/unit/test_polar_house_breadth_gauntlet.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_reader_bound_sidereal_time.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_sidereal.py",
@@ -5224,13 +5232,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 5,
+      "canonical_surface_count": 6,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 5
+        "partial": 2,
+        "unresolved": 4
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5266,7 +5274,7 @@
       "production_user_surface_ids": [
         "python:moira.facade:planet_relative_to"
       ],
-      "python_surface_count": 5,
+      "python_surface_count": 6,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_3_product_use",
@@ -5274,11 +5282,13 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_r2b_truth_evidence.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_phase2_helpers.py",
         "tests/unit/test_planetary_frame_contracts.py",
         "tests/unit/test_planetocentric.py",
+        "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_ssb.py"
       ]
     },
@@ -7773,7 +7783,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0",
+  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7785,7 +7795,7 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1210,
+    "canonical_surface_count": 1221,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
@@ -7807,8 +7817,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 29,
-      "unresolved": 1181
+      "partial": 51,
+      "unresolved": 1170
     }
   }
 }

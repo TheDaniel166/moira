@@ -907,11 +907,21 @@ family-local name rules.
 
 ### Lunar nodes
 
+```python
+from moira.facade import (
+    mean_node, true_node, mean_lilith, true_lilith,
+    TrueLilithReductionTruth, TrueLilithWithTruth,
+    true_lilith_with_truth,
+)
+```
+
 | Function | Returns | Description |
 |---|---|---|
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) lunar node; speed is the differentiated true-of-date longitude, not the mean-node rate |
 | `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar node; true equinox of date by default, raw mean equinox with `nutation=False` |
 | `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar apogee (F+Ω−l+180°); true equinox of date by default, raw mean equinox with `nutation=False` |
+| `true_lilith(jd_ut, reader=None)` | `NodeData` | True Lilith (osculating lunar apogee); compatibility result only |
+| `true_lilith_with_truth(jd_ut, reader=None)` | `TrueLilithWithTruth` | The same `NodeData` plus UT1/TT/TDB, Delta-T branch, DE/LE identity, lunar tidal basis, gravitational parameter, frame, method, corrections, and finite-difference half-span |
 
 ### Nodes & apsides bundle
 
@@ -1043,7 +1053,9 @@ does not have an ordinary rise/set pair at the selected horizon.
 ```python
 from moira.facade import (
     icrf_to_ecliptic, icrf_to_equatorial, ecliptic_to_equatorial,
-    equatorial_to_horizontal, horizontal_to_equatorial,
+    ecliptic_to_equatorial_with_truth,
+    equatorial_to_horizontal, equatorial_to_horizontal_with_truth,
+    horizontal_to_equatorial,
     cotrans_sp,
     atmospheric_refraction, atmospheric_refraction_extended,
     equation_of_time,
@@ -1054,7 +1066,9 @@ from moira.facade import (
 | Function | Signature | Description |
 |---|---|---|
 | `ecliptic_to_equatorial` | `(lon, lat, obliquity) -> (ra, dec)` | Ecliptic -> equatorial (degrees) |
-| `equatorial_to_horizontal` | `(ha, dec, lat) -> (az, alt)` | Hour angle/Dec -> azimuth/altitude |
+| `ecliptic_to_equatorial_with_truth` | `(lon, lat, obliquity) -> EquatorialCoordinatesTruth` | Same transform with explicit caller-epoch source and target frames |
+| `equatorial_to_horizontal` | `(ra, dec, lst, lat) -> (az, alt)` | Equatorial -> azimuth/altitude; rejects non-finite coordinates and latitudes/declinations outside `[-90, 90]` |
+| `equatorial_to_horizontal_with_truth` | `(ra, dec, lst, lat) -> HorizontalCoordinatesTruth` | Same transform with hour angle, frame/convention identity, and an `azimuth_defined` singularity flag |
 | `horizontal_to_equatorial` | `(azimuth_deg, altitude_deg, lst_deg, lat_deg) -> (ra, dec)` | Horizontal coordinates -> equatorial coordinates |
 | `cotrans_sp` | `(lon, lat, dist, lon_speed, lat_speed, dist_speed, obliquity) -> tuple[...]` | Simultaneous spherical coordinate and speed transformation |
 | `atmospheric_refraction` | `(altitude_deg, *, pressure_mbar=..., temperature_c=...) -> float` | Standard apparent-altitude refraction correction (degrees) |
@@ -1089,7 +1103,9 @@ t = twilight_times(jd, latitude=51.5, longitude=-0.1)
 
 ```python
 from moira.facade import (
-    planet_relative_to, next_heliocentric_transit,
+    PlanetRelativeReductionTruth, PlanetRelativeWithTruth,
+    planet_relative_to, planet_relative_to_with_truth,
+    next_heliocentric_transit,
     PlanetPhenomena, planet_phenomena_at,
     OrbitalCenter, OrbitalFrame, OrbitShape, ApsidalDirection,
     ApsidalPassageStatus, OsculatingElements, ApsidalPassages,
@@ -1101,6 +1117,7 @@ from moira.facade import (
 | Function | Returns | Description |
 |---|---|---|
 | `planet_relative_to(body, center_body, jd_ut, reader=None)` | `PlanetData` | Body position relative to another physical center body |
+| `planet_relative_to_with_truth(body, center_body, jd_ut, reader=None)` | `PlanetRelativeWithTruth` | The same `PlanetData` plus explicit body/center, UT1/TT/TDB, DE/LE identity, frame, geometric-correction policy, distance semantics, and speed sampling truth |
 | `next_heliocentric_transit(body, target_lon, jd_start, reader=None, max_days=400.0)` | `float` | Next heliocentric longitude crossing of a target longitude |
 | `planet_phenomena_at(body, jd_ut)` | `PlanetPhenomena` | Instantaneous elongation/phase-style observational summary for one body |
 | `osculating_elements(body, jd_ut, *, center, frame, reader=None)` | `OsculatingElements` | Strict source-receipted conic at one UT1 epoch; SPK state is evaluated in TDB and frame models in TT |
@@ -4699,9 +4716,16 @@ All position computation delegates to `moira.stars.star_at` — the constellatio
 
 ```python
 from moira.facade import (
-    jd_from_datetime, datetime_from_jd, julian_day, calendar_from_jd,
+    DateTimeToJulianTruth, JulianToDateTimeTruth,
+    DeltaTTruth, UtcToUt1Truth, UtcToTtTruth, LocalSiderealTimeTruth,
+    jd_from_datetime, jd_from_datetime_with_truth,
+    datetime_from_jd, datetime_from_jd_with_truth,
+    julian_day, calendar_from_jd,
     calendar_datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
-    greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
+    greenwich_mean_sidereal_time,
+    local_sidereal_time, local_sidereal_time_with_truth,
+    delta_t, delta_t_from_jd, delta_t_from_jd_with_truth,
+    utc_to_ut1, utc_to_ut1_with_truth, utc_to_tt, utc_to_tt_with_truth,
     CalendarDateTime,
 )
 ```
@@ -4709,15 +4733,26 @@ from moira.facade import (
 | Function | Signature | Description |
 |---|---|---|
 | `jd_from_datetime` | `(dt: datetime) → float` | timezone-aware datetime → UTC-coded civil JD; naïve datetimes raise `ValueError` |
+| `jd_from_datetime_with_truth` | `(dt: datetime) → DateTimeToJulianTruth` | Same value plus the input datetime, normalized UTC datetime, and explicit civil/UTC-coded scale labels |
 | `datetime_from_jd` | `(jd: float) → datetime` | UTC-coded civil JD → UTC datetime |
+| `datetime_from_jd_with_truth` | `(jd, *, input_scale="unspecified_JD") → JulianToDateTimeTruth` | Same decomposition with the caller's scale label and an explicit declaration that no scale conversion occurred |
 | `julian_day` | `(year, month, day, hour=0.0) → float` | Calendar date → JD |
 | `calendar_from_jd` | `(jd: float) → CalendarDateTime` | JD → BCE-safe calendar breakdown |
 | `calendar_datetime_from_jd` | `(jd: float) → CalendarDateTime` | Alias for `calendar_from_jd` |
 | `format_jd_utc` | `(jd: float) → str` | Human-readable UTC string |
 | `safe_datetime_from_jd` | `(jd: float) → datetime \| None` | Returns None for out-of-range JDs |
 | `greenwich_mean_sidereal_time` | `(jd_ut: float) → float` | GMST in degrees |
-| `local_sidereal_time` | `(jd_ut, longitude, dpsi=None, obliq=None) → float` | LAST in degrees |
+| `local_sidereal_time` | `(jd_ut, longitude, nutation_longitude=0.0, obliquity=23.4392911) → float` | Compatibility surface; its defaults return local mean sidereal time, while supplied equinox terms produce local apparent sidereal time |
+| `local_sidereal_time_with_truth` | `(jd_ut, longitude, *, mode="apparent", nutation_longitude=None, obliquity=None) → LocalSiderealTimeTruth` | Explicit mean/apparent reduction; apparent mode derives IAU 2000A nutation and IAU 2006 mean obliquity on TT when terms are omitted |
 | `delta_t` | `(year: float) → float` | ΔT in seconds for a decimal year |
+| `delta_t_from_jd_with_truth` | `(jd_ut1: float) → DeltaTTruth` | ΔT plus the selected source product, retarget mode, and source-owned tidal-basis terms |
+| `utc_to_ut1_with_truth` | `(jd_utc: float) → UtcToUt1Truth` | UT1 plus the admitted EOP, historical proxy/handoff, or outer model branch used |
+| `utc_to_tt_with_truth` | `(jd_utc: float) → UtcToTtTruth` | TT plus atomic or historical conversion policy and Delta-T source identity |
+
+The `*_with_truth` functions are additive. Existing float/tuple/result APIs
+retain their signatures and valid-input return shapes. The new vessels expose
+the time-scale, frame, source, center, correction, and singularity facts that
+the compatibility results cannot carry.
 
 ### `CalendarDateTime` fields
 
@@ -4749,7 +4784,10 @@ print(cal2.is_bce, cal2.year)   # True, -68 (astronomical year numbering)
 ### Obliquity & nutation
 
 ```python
-from moira.facade import mean_obliquity, true_obliquity, nutation
+from moira.facade import (
+    ObliquityTruth,
+    mean_obliquity, true_obliquity, true_obliquity_with_truth, nutation,
+)
 
 # All take jd_tt (Terrestrial Time)
 from moira.facade import jd_from_datetime
@@ -4759,6 +4797,7 @@ jd_tt = utc_to_tt(jd_utc)
 
 obl_mean = mean_obliquity(jd_tt)         # degrees
 obl_true = true_obliquity(jd_tt)         # degrees (mean + nutation correction)
+obl_truth = true_obliquity_with_truth(jd_tt)  # components + IAU model identity
 dpsi, deps = nutation(jd_tt)             # nutation in longitude and obliquity (arcsec)
 ```
 
@@ -4908,7 +4947,7 @@ relation so a positive leap second is not smeared across the preceding day.
 | `greenwich_mean_sidereal_time` | `(jd_ut: float) → float` | GMST in degrees |
 | `apparent_sidereal_time` | `(jd_ut: float) → float` | GAST in degrees |
 | `apparent_sidereal_time_at` | `(jd_ut, dpsi, obliq) → float` | GAST with supplied nutation terms |
-| `local_sidereal_time` | `(jd_ut, longitude, dpsi=None, obliq=None) → float` | LAST in degrees |
+| `local_sidereal_time` | `(jd_ut, longitude, nutation_longitude=0.0, obliquity=23.4392911) → float` | Compatibility surface: LMST with default terms, LAST when explicit equinox terms are supplied |
 
 **ΔT — standard**
 
@@ -5104,7 +5143,7 @@ from moira.sky.bodies import (
 | `sky_position_at(body, jd_ut, observer_lat, observer_lon, observer_elev_m=0.0, reader=None)` | `SkyPosition` | Topocentric apparent RA/Dec + alt/az |
 | `all_planets_at(jd_ut, bodies=None, reader=None)` | `dict[str, PlanetData]` | All planets at one epoch |
 | `sun_longitude(jd_ut, reader=None)` | `float` | Solar ecliptic longitude (geocentric, true-of-date) |
-| `planet_relative_to(body, jd_ut, reference)` | `PlanetData` | Body position measured from reference body |
+| `planet_relative_to(body, center_body, jd_ut, reader=None)` | `PlanetData` | Geometric body position measured from an explicit center body |
 | `next_heliocentric_transit(body, jd_start, longitude)` | `float` | Next JD when body's heliocentric longitude equals target |
 | `heliocentric_planet_at(body, jd_ut, reader=None)` | `HeliocentricData` | Heliocentric ecliptic position |
 | `all_heliocentric_at(jd_ut, bodies=None, reader=None)` | `dict[str, HeliocentricData]` | All planets heliocentrically |

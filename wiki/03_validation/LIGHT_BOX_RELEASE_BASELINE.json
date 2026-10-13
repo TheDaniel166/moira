@@ -1,15 +1,15 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v1",
   "baseline_date": "2026-10-13",
-  "source_parent_revision": "369ab0b02e7fb1affad2ba88ec79f497d0cad152",
+  "source_parent_revision": "a0f81f94d3627a4b4a1753734bb4ce2bba0be23b",
   "engine_version": "6.9.9",
-  "inventory_fingerprint_sha256": "f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0",
-  "canonical_entries": 1210,
-  "minimum_partial": 29,
-  "maximum_unresolved": 1181,
+  "inventory_fingerprint_sha256": "ff4f708a3b0dda22427591f186659c5f5f276137fd58800f31fe11bdf5b10701",
+  "canonical_entries": 1221,
+  "minimum_partial": 51,
+  "maximum_unresolved": 1170,
   "production_user_entries": 171,
-  "maximum_production_user_unresolved": 150,
+  "maximum_production_user_unresolved": 139,
   "reviewed_families": 143,
-  "minimum_replayed_contracts": 17,
+  "minimum_replayed_contracts": 20,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review."
 }
