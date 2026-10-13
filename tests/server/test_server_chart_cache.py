@@ -208,6 +208,30 @@ class TestChartCacheKeyBuilder:
         )
         assert k1 != k2
 
+    def test_subrounded_observer_coords_produce_different_keys(self) -> None:
+        k1 = ChartLRUCache.make_chart_key(
+            "2000-01-01T12:00:00+00:00", None, True, 40.71281, -74.0060, 10.0
+        )
+        k2 = ChartLRUCache.make_chart_key(
+            "2000-01-01T12:00:00+00:00", None, True, 40.71284, -74.0060, 10.0
+        )
+        assert k1 != k2
+
+    def test_time_unknown_flag_affects_key(self) -> None:
+        known = ChartLRUCache.make_chart_key(
+            "2000-01-01T12:00:00+00:00", None, True, None, None, 0.0
+        )
+        unknown = ChartLRUCache.make_chart_key(
+            "2000-01-01T12:00:00+00:00",
+            None,
+            True,
+            None,
+            None,
+            0.0,
+            time_unknown=True,
+        )
+        assert known != unknown
+
     def test_none_bodies_vs_explicit_all_bodies_differ(self) -> None:
         # None means "all bodies" but explicit list should still differ from None
         k_none = ChartLRUCache.make_chart_key(
@@ -316,3 +340,54 @@ def test_different_datetimes_are_cached_independently(
     lon_a = r_a.json()["planets"]["Sun"]["longitude"]
     lon_b = r_b.json()["planets"]["Sun"]["longitude"]
     assert abs(lon_a - lon_b) > 0.01
+
+
+@pytest.mark.requires_ephemeris
+def test_known_and_unknown_time_defaults_are_cached_independently(
+    client_with_cache: TestClient,
+) -> None:
+    dt = "2000-01-01T12:00:00+00:00"
+
+    known = client_with_cache.post("/v1/chart", json={"dt": dt})
+    unknown = client_with_cache.post(
+        "/v1/chart",
+        json={"dt": dt, "time_unknown": True},
+    )
+
+    assert known.status_code == 200
+    assert unknown.status_code == 200
+    assert "Moon" in known.json()["planets"]
+    assert "Moon" not in unknown.json()["planets"]
+    assert client_with_cache.app.state.chart_cache.misses == 2
+    assert client_with_cache.app.state.chart_cache.hits == 0
+
+
+@pytest.mark.requires_ephemeris
+def test_distinct_topocentric_coordinates_do_not_share_a_cached_chart(
+    client_with_cache: TestClient,
+) -> None:
+    base = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "bodies": ["Moon"],
+        "include_nodes": False,
+        "observer_lon": -74.0060,
+        "observer_elev_m": 10.0,
+    }
+
+    first = client_with_cache.post(
+        "/v1/chart",
+        json={**base, "observer_lat": 40.71281},
+    )
+    second = client_with_cache.post(
+        "/v1/chart",
+        json={**base, "observer_lat": 40.71284},
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert (
+        first.json()["planets"]["Moon"]["latitude"]
+        != second.json()["planets"]["Moon"]["latitude"]
+    )
+    assert client_with_cache.app.state.chart_cache.misses == 2
+    assert client_with_cache.app.state.chart_cache.hits == 0

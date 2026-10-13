@@ -12,8 +12,8 @@ class _StrictModel(BaseModel):
 
 
 class ChartWheelHousesRequest(_StrictModel):
-    latitude: float
-    longitude: float
+    latitude: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
     system: str | None = None
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class _StrictModel(BaseModel):
@@ -14,9 +14,19 @@ class _StrictModel(BaseModel):
 class PlanetPositionRequest(_StrictModel):
     dt: datetime
     body: str
-    observer_lat: float | None = None
-    observer_lon: float | None = None
-    observer_elev_m: float = 0.0
+    observer_lat: float | None = Field(
+        default=None,
+        ge=-90.0,
+        le=90.0,
+        allow_inf_nan=False,
+    )
+    observer_lon: float | None = Field(
+        default=None,
+        ge=-180.0,
+        le=180.0,
+        allow_inf_nan=False,
+    )
+    observer_elev_m: float = Field(default=0.0, allow_inf_nan=False)
     # Independent correction controls (to support partial pipelines in reduction truth,
     # addressing the chart-mediated limitation and deeper policy toggles).
     apparent: bool = True
@@ -94,17 +104,22 @@ class PlanetPositionReductionResponse(_StrictModel):
 class SkyPositionRequest(_StrictModel):
     dt: datetime
     body: str
-    latitude: float
-    longitude: float
-    elevation_m: float = 0.0
+    latitude: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+    elevation_m: float = Field(default=0.0, allow_inf_nan=False)
     # Independent correction and environment controls for sky pipeline.
     aberration: bool = True
     grav_deflection: bool = True
     nutation: bool = True
     refraction: bool = True
-    pressure_mbar: float = 1013.25
-    temperature_c: float = 10.0
-    relative_humidity: float = 0.0
+    pressure_mbar: float = Field(default=1013.25, gt=0.0, allow_inf_nan=False)
+    temperature_c: float = Field(default=10.0, gt=-273.0, allow_inf_nan=False)
+    relative_humidity: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        allow_inf_nan=False,
+    )
 
 
 class SkyPositionResponse(_StrictModel):

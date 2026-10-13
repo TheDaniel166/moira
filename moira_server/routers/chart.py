@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from moira import Moira
 
-from ..cache import ChartLRUCache
+from ..cache import ChartLRUCache, cached_response
 from ..dependencies import get_engine
 from ..models.chart import (
     AnalyticalHouseDynamicsRequest,
@@ -60,24 +60,13 @@ def chart_route(
 ) -> ChartResponse:
     """Serialize a canonical chart result for transport."""
 
-    cache = _get_cache(http_request)
-    if cache is not None:
-        key = ChartLRUCache.make_chart_key(
-            request.dt.isoformat(),
-            request.bodies,
-            request.include_nodes,
-            request.observer_lat,
-            request.observer_lon,
-            request.observer_elev_m,
-        )
-        cached = cache.get(key + "|chart")
-        if cached is not None:
-            return cached
-        result = serialize_chart(compute_chart(engine, request))
-        cache.set(key + "|chart", result)
-        return result
-
-    return serialize_chart(compute_chart(engine, request))
+    return cached_response(
+        _get_cache(http_request),
+        "v1:chart",
+        request,
+        engine,
+        lambda: serialize_chart(compute_chart(engine, request)),
+    )
 
 
 @router.post("/chart/reduction", response_model=ChartReductionResponse)
@@ -88,26 +77,17 @@ def chart_reduction_route(
 ) -> ChartReductionResponse:
     """Serialize a chart together with its reduction truth."""
 
-    cache = _get_cache(http_request)
-    if cache is not None:
-        key = ChartLRUCache.make_chart_key(
-            request.dt.isoformat(),
-            request.bodies,
-            request.include_nodes,
-            request.observer_lat,
-            request.observer_lon,
-            request.observer_elev_m,
-        )
-        cached = cache.get(key + "|reduction")
-        if cached is not None:
-            return cached
+    def compute_response() -> ChartReductionResponse:
         chart, reduction = compute_chart_with_reduction(engine, request)
-        result = serialize_chart_with_reduction(chart, reduction)
-        cache.set(key + "|reduction", result)
-        return result
+        return serialize_chart_with_reduction(chart, reduction)
 
-    chart, reduction = compute_chart_with_reduction(engine, request)
-    return serialize_chart_with_reduction(chart, reduction)
+    return cached_response(
+        _get_cache(http_request),
+        "v1:chart:reduction",
+        request,
+        engine,
+        compute_response,
+    )
 
 
 @router.post("/houses", response_model=HousesResponse)

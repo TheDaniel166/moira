@@ -168,6 +168,35 @@ def test_chart_reduction_route_exposes_pipeline_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_chart_reduction_preserves_unknown_time_default_request_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/chart/reduction",
+        json={
+            "dt": "2000-01-01T12:00:00+00:00",
+            "time_unknown": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["reduction"]["requested_bodies"] is None
+    assert body["reduction"]["returned_bodies"] == [
+        "Sun",
+        "Mercury",
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptune",
+        "Pluto",
+    ]
+    assert "Moon" not in body["result"]["planets"]
+
+
+@pytest.mark.requires_ephemeris
 def test_chart_reduction_route_admits_small_bodies(
     client_with_small_body_engine: TestClient,
     borrowed_small_body_moira_engine,
@@ -445,6 +474,83 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["pressure_mbar"] == 1013.25
     assert body["reduction"]["temperature_c"] == 10.0
     assert body["reduction"]["relative_humidity"] == 0.0
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("latitude", -90.0001),
+        ("latitude", 90.0001),
+        ("longitude", -180.0001),
+        ("longitude", 180.0001),
+        ("elevation_m", "Infinity"),
+        ("pressure_mbar", 0.0),
+        ("pressure_mbar", -1.0),
+        ("temperature_c", -273.0),
+        ("relative_humidity", -0.001),
+        ("relative_humidity", 1.001),
+    ],
+)
+def test_sky_position_routes_reject_invalid_observer_environment(
+    client_with_engine: TestClient,
+    field: str,
+    value: float | str,
+) -> None:
+    payload = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "body": "Sun",
+        "latitude": 0.0,
+        "longitude": 0.0,
+        field: value,
+    }
+
+    for route in ("/v1/positions/sky", "/v1/positions/sky/reduction"):
+        response = client_with_engine.post(route, json=payload)
+        assert response.status_code == 422
+        assert response.json()["error_code"] == "validation_error"
+
+
+@pytest.mark.parametrize(
+    ("route", "payload"),
+    [
+        (
+            "/v1/chart",
+            {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "observer_lat": 0.0,
+                "observer_lon": 180.0001,
+            },
+        ),
+        (
+            "/v1/positions/planet",
+            {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "body": "Sun",
+                "observer_lat": 90.0001,
+                "observer_lon": 0.0,
+            },
+        ),
+        (
+            "/v1/positions/planet/reduction",
+            {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "body": "Sun",
+                "observer_lat": 0.0,
+                "observer_lon": 0.0,
+                "observer_elev_m": "Infinity",
+            },
+        ),
+    ],
+)
+def test_chart_and_planet_routes_reject_invalid_observer_coordinates(
+    client_with_engine: TestClient,
+    route: str,
+    payload: dict[str, object],
+) -> None:
+    response = client_with_engine.post(route, json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "validation_error"
 
 
 @pytest.mark.requires_ephemeris

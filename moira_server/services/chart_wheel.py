@@ -308,6 +308,7 @@ def compute_chart_wheel_packet(
             engine,
             HousesRequest(
                 dt=request.chart.dt,
+                time_unknown=request.chart.time_unknown,
                 latitude=request.houses.latitude,
                 longitude=request.houses.longitude,
                 system=request.houses.system,

@@ -196,3 +196,57 @@ def test_chart_wheel_packet_rejects_invalid_config_errors(
 
     assert response.status_code == 422
     assert "unknown_orientation" in response.json()["message"]
+
+
+def test_chart_wheel_packet_rejects_houses_for_unknown_time(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/website/chart-wheel/packet",
+        json={
+            "chart": {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "time_unknown": True,
+                "bodies": ["Sun", "Mercury"],
+            },
+            "houses": {
+                "latitude": 51.5,
+                "longitude": -0.1,
+            },
+            "config": {
+                "orientation": "ascendant_left",
+            },
+        },
+    )
+
+    assert response.status_code == 422
+    assert "Houses cannot be computed for unknown birth times" in response.json()["message"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("latitude", 90.0001),
+        ("longitude", 180.0001),
+        ("latitude", "Infinity"),
+    ],
+)
+def test_chart_wheel_packet_rejects_invalid_house_coordinates(
+    client_with_engine: TestClient,
+    field: str,
+    value: float | str,
+) -> None:
+    houses = {"latitude": 0.0, "longitude": 0.0, field: value}
+    response = client_with_engine.post(
+        "/v1/website/chart-wheel/packet",
+        json={
+            "chart": {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "bodies": ["Sun"],
+            },
+            "houses": houses,
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "validation_error"

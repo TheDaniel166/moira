@@ -71,19 +71,20 @@ def require_supported_chart_bodies(
 
 
 def build_chart_context(engine: Moira, request: ChartRequest):
+    bodies = request.bodies
     if getattr(request, "time_unknown", False):
-        if request.bodies is not None and "Moon" in request.bodies:
+        if bodies is not None and "Moon" in bodies:
             raise ValueError("Moon cannot be computed for unknown birth times")
-        if request.bodies is None:
+        if bodies is None:
             # Omit Moon from defaults
-            request.bodies = ["Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+            bodies = ["Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
         if request.observer_lat is not None or request.observer_lon is not None:
             raise ValueError("Angles and houses cannot be computed for unknown birth times")
     require_aware_datetime(request.dt)
-    require_supported_chart_bodies(request.bodies)
+    require_supported_chart_bodies(bodies)
     return engine.chart(
         request.dt,
-        bodies=request.bodies,
+        bodies=bodies,
         include_nodes=request.include_nodes,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,

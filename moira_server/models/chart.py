@@ -50,9 +50,19 @@ class ChartRequest(_StrictModel):
     time_unknown: bool = False
     bodies: list[str] | None = None
     include_nodes: bool = True
-    observer_lat: float | None = None
-    observer_lon: float | None = None
-    observer_elev_m: float = 0.0
+    observer_lat: float | None = Field(
+        default=None,
+        ge=-90.0,
+        le=90.0,
+        allow_inf_nan=False,
+    )
+    observer_lon: float | None = Field(
+        default=None,
+        ge=-180.0,
+        le=180.0,
+        allow_inf_nan=False,
+    )
+    observer_elev_m: float = Field(default=0.0, allow_inf_nan=False)
 
 
 class CalendarDateTimeResponse(_StrictModel):
@@ -137,8 +147,8 @@ class HousePolicyRequest(_StrictModel):
 class HousesRequest(_StrictModel):
     dt: datetime
     time_unknown: bool = False
-    latitude: float = Field(ge=-90.0, le=90.0)
-    longitude: float = Field(ge=-180.0, le=180.0)
+    latitude: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
     system: str | None = None
     policy: HousePolicyRequest | None = None
     include_boundary_geometry: bool = False

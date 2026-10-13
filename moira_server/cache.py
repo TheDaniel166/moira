@@ -230,7 +230,11 @@ class ResponseLRUCache:
 
 
 class ChartLRUCache(ResponseLRUCache):
-    """Backward-compatible chart cache with its established key contract."""
+    """Bounded chart cache retaining the legacy chart-key helper.
+
+    REST routes use ``make_request_key`` so validated request state and the
+    active engine resources both participate in cache identity.
+    """
 
     def __init__(self, maxsize: int = _DEFAULT_CHART_MAX_SIZE) -> None:
         super().__init__(maxsize=maxsize)
@@ -243,12 +247,17 @@ class ChartLRUCache(ResponseLRUCache):
         observer_lat: float | None,
         observer_lon: float | None,
         observer_elev_m: float,
+        *,
+        time_unknown: bool = False,
     ) -> str:
         bodies_part = ",".join(sorted(bodies)) if bodies is not None else "__all__"
-        lat_part = f"{observer_lat:.4f}" if observer_lat is not None else "none"
-        lon_part = f"{observer_lon:.4f}" if observer_lon is not None else "none"
-        elev_part = str(round(observer_elev_m))
-        return f"{dt_iso}|{bodies_part}|{include_nodes}|{lat_part}|{lon_part}|{elev_part}"
+        lat_part = repr(observer_lat) if observer_lat is not None else "none"
+        lon_part = repr(observer_lon) if observer_lon is not None else "none"
+        elev_part = repr(observer_elev_m)
+        return (
+            f"{dt_iso}|{bodies_part}|{include_nodes}|{lat_part}|{lon_part}|"
+            f"{elev_part}|time_unknown={time_unknown}"
+        )
 
 
 def cached_response(
