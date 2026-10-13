@@ -27,6 +27,9 @@ R1C_RELATIONSHIP_SURFACES = {
     "rest:POST:/v1/synastry/aspects",
     "rest:POST:/v1/synastry/contacts",
 }
+R2A_CHART_WHEEL_SURFACES = {
+    "rest:POST:/v1/website/chart-wheel/packet",
+}
 
 
 def _module():
@@ -101,6 +104,27 @@ def test_r1c_relationship_surfaces_have_bounded_replay_contracts() -> None:
         )
         assert contract["pytest_targets"]
         assert contract["minimum_tests"] >= 1
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
+def test_r2a_chart_wheel_surface_has_a_bounded_replay_contract() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_surface = {
+        surface_id: contract
+        for contract in contracts["contracts"]
+        for surface_id in contract["surface_ids"]
+    }
+
+    assert R2A_CHART_WHEEL_SURFACES <= set(by_surface)
+    for surface_id in R2A_CHART_WHEEL_SURFACES:
+        contract = by_surface[surface_id]
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert len(contract["pytest_targets"]) == 7
+        assert contract["minimum_tests"] == 7
         assert contract["claim_scope"]
         assert contract["exclusions"]
 

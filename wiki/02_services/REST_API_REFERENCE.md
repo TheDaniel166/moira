@@ -2381,6 +2381,25 @@ reduced from UTC to UT1 before astronomical computation.
 | POST | `/v1/website/chart-wheel/validate` | `chart_wheel_validate_route` |
 | POST | `/v1/website/chart-wheel/packet` | `chart_wheel_packet_route` |
 
+### Chart-Wheel Packet Truth
+
+`POST /v1/website/chart-wheel/packet` preserves the calculated longitude,
+wheel angle, and point coordinate for every returned body. Display-label
+placement is separate: each point reports `label_angle_deg`,
+`label_position`, and signed `label_displacement_deg`. The deterministic
+circular placement policy applies `min_label_separation_deg` without changing
+the underlying point. If the requested separation cannot fit the number of
+visible labels around 360 degrees, the packet uses the largest geometrically
+possible separation, emits `label_separation_reduced`, and records both the
+requested and effective constraints.
+
+The additive `computation_truth` object records the chart request's node
+selection, the chart-wheel configuration override and effective node state,
+requested and effective house-system policy, orientation source and anchor,
+aspect tier/orb policy, and the label-placement algorithm and displacement
+summary. Existing chart, house, zodiac, point, aspect, collision-group, and
+configuration fields retain their prior shapes.
+
 ### Fixed-Star REST Admission Boundary
 
 The admitted fixed-star REST surface is the bounded synchronous

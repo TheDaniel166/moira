@@ -4,7 +4,7 @@
 
 - Schema: `moira.lightbox-conformance-manifest/v1`
 - Engine version: `6.9.9`
-- Inventory fingerprint: `2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d`
+- Inventory fingerprint: `f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0`
 - Canonical schema: `wiki/03_validation/LIGHT_BOX_CONFORMANCE_SCHEMA.json`
 
 ## Boundary
@@ -21,9 +21,9 @@ Aliases remain visible but do not inflate the canonical denominator. Numeric res
 | Canonical entries | 1210 |
 | Alias entries | 4 |
 | Canonical conformant | 0 |
-| Canonical partial | 28 |
+| Canonical partial | 29 |
 | Canonical not applicable | 0 |
-| Canonical unresolved | 1182 |
+| Canonical unresolved | 1181 |
 
 ### Residual dispositions (canonical entries)
 
@@ -852,9 +852,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/batch/progressions/reduction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/batch.py:173` |
 | `rest:POST:/v1/batch/returns` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/batch.py:103` |
 | `rest:POST:/v1/batch/transits` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/batch.py:83` |
-| `rest:POST:/v1/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:55` |
+| `rest:POST:/v1/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:53` |
 | `rest:POST:/v1/chart-shape/classify` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/relationship.py:225` |
-| `rest:POST:/v1/chart/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/chart.py:83` |
+| `rest:POST:/v1/chart/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/chart.py:74` |
 | `rest:POST:/v1/comets/bulk` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/comets.py:32` |
 | `rest:POST:/v1/comets/position` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/comets.py:24` |
 | `rest:POST:/v1/composite/chart` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/relationship.py:213` |
@@ -974,12 +974,12 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/hellenistic/transmissions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/hellenistic_systems.py:36` |
 | `rest:POST:/v1/hellenistic/twelfth-parts` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/hellenistic_atoms.py:25` |
 | `rest:POST:/v1/horary/evidence-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/horary.py:21` |
-| `rest:POST:/v1/houses` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:113` |
-| `rest:POST:/v1/houses/dynamics` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:133` |
-| `rest:POST:/v1/houses/dynamics/analytical` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:152` |
-| `rest:POST:/v1/houses/dynamics/armc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:143` |
-| `rest:POST:/v1/houses/polar-admissibility` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:166` |
-| `rest:POST:/v1/houses/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/chart.py:123` |
+| `rest:POST:/v1/houses` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:95` |
+| `rest:POST:/v1/houses/dynamics` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:116` |
+| `rest:POST:/v1/houses/dynamics/analytical` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:135` |
+| `rest:POST:/v1/houses/dynamics/armc` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:126` |
+| `rest:POST:/v1/houses/polar-admissibility` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart.py:149` |
+| `rest:POST:/v1/houses/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/chart.py:106` |
 | `rest:POST:/v1/huber/age-point` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/huber.py:50` |
 | `rest:POST:/v1/huber/age-point-contacts` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/huber.py:74` |
 | `rest:POST:/v1/huber/chart-intensity-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/huber.py:66` |
@@ -1127,9 +1127,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/positions/frame/planetocentric` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/frame_positions.py:41` |
 | `rest:POST:/v1/positions/frame/received-light` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/frame_positions.py:61` |
 | `rest:POST:/v1/positions/frame/ssb` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/frame_positions.py:51` |
-| `rest:POST:/v1/positions/planet` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/positions.py:35` |
-| `rest:POST:/v1/positions/planet/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/positions.py:45` |
-| `rest:POST:/v1/positions/sky` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/positions.py:56` |
+| `rest:POST:/v1/positions/planet` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/positions.py:33` |
+| `rest:POST:/v1/positions/planet/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/positions.py:44` |
+| `rest:POST:/v1/positions/sky` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/positions.py:55` |
 | `rest:POST:/v1/positions/sky/reduction` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,paired_reduction_endpoint,generated_documentation` | `not_verified` | `moira_server/routers/positions.py:66` |
 | `rest:POST:/v1/primary-directions/arcs` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/primary_directions.py:61` |
 | `rest:POST:/v1/primary-directions/arcs/reduction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/primary_directions.py:73` |
@@ -1262,7 +1262,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/void-of-course/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:235` |
 | `rest:POST:/v1/void-of-course/range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:255` |
 | `rest:POST:/v1/void-of-course/window` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:227` |
-| `rest:POST:/v1/website/chart-wheel/packet` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart_wheel.py:43` |
+| `rest:POST:/v1/website/chart-wheel/packet` | `canonical` | `transport_adapter` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/chart_wheel.py:43` |
 | `rest:POST:/v1/website/chart-wheel/validate` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart_wheel.py:34` |
 | `rest:POST:/v1/website/parans/packet` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/paran_packet.py:17` |
 | `rest:POST:/v1/western/chart-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/western_profile.py:20` |

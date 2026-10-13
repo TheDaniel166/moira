@@ -12,13 +12,19 @@ from moira.houses import HouseCusps, assign_house
 from ..models.chart import HousesRequest
 from ..models.chart_wheel import (
     ChartWheelAspectPrimitiveResponse,
+    ChartWheelAspectPolicyTruthResponse,
     ChartWheelCollisionGroupResponse,
+    ChartWheelComputationTruthResponse,
     ChartWheelConfig,
     ChartWheelConfigValidationResponse,
     ChartWheelConfigWarningResponse,
     ChartWheelCoordinateResponse,
+    ChartWheelHousePolicyTruthResponse,
     ChartWheelHouseCuspPrimitiveResponse,
     ChartWheelHouseSectorPrimitiveResponse,
+    ChartWheelLabelPlacementTruthResponse,
+    ChartWheelNodeSelectionTruthResponse,
+    ChartWheelOrientationTruthResponse,
     ChartWheelPacketRequest,
     ChartWheelPacketResponse,
     ChartWheelPointPrimitiveResponse,
@@ -170,6 +176,130 @@ def _xy(angle_deg: float, radius: float) -> ChartWheelCoordinateResponse:
 
 def _angular_distance(a: float, b: float) -> float:
     return abs((_norm(a - b + 180.0)) - 180.0)
+
+
+def _signed_angular_delta(value: float, origin: float) -> float:
+    return (_norm(value - origin + 180.0)) - 180.0
+
+
+def _minimum_circular_separation(angles: list[float]) -> float | None:
+    if len(angles) < 2:
+        return None
+    ordered = sorted(_norm(angle) for angle in angles)
+    gaps = [
+        ordered[index + 1] - ordered[index]
+        for index in range(len(ordered) - 1)
+    ]
+    gaps.append(ordered[0] + 360.0 - ordered[-1])
+    return min(gaps)
+
+
+def _layout_label_angles(
+    points: list[tuple[str, float, int]],
+    requested_separation: float,
+) -> tuple[dict[str, float], str, float, float | None, bool]:
+    """Lay out labels on a circle without changing their source point angles."""
+
+    if not points:
+        return {}, "identity", 0.0, None, True
+
+    ordered = sorted(
+        ((key, _norm(angle), priority) for key, angle, priority in points),
+        key=lambda item: (item[1], -item[2], item[0].casefold(), item[0]),
+    )
+    if len(ordered) == 1 or requested_separation <= 0.0:
+        angles = {key: angle for key, angle, _ in ordered}
+        achieved = _minimum_circular_separation(list(angles.values()))
+        return angles, "identity", requested_separation, achieved, True
+
+    effective_separation = min(requested_separation, 360.0 / len(ordered))
+    tolerance = 1.0e-10
+    candidates: list[
+        tuple[float, tuple[str, ...], dict[str, float]]
+    ] = []
+
+    for cut_index in range(len(ordered)):
+        start_index = (cut_index + 1) % len(ordered)
+        rotated = ordered[start_index:] + ordered[:start_index]
+        unwrapped: list[tuple[str, float, int]] = []
+        previous_angle: float | None = None
+        for key, angle, priority in rotated:
+            unwrapped_angle = angle
+            if previous_angle is not None:
+                while unwrapped_angle < previous_angle - tolerance:
+                    unwrapped_angle += 360.0
+                if unwrapped_angle < previous_angle:
+                    unwrapped_angle = previous_angle
+            unwrapped.append((key, unwrapped_angle, priority))
+            previous_angle = unwrapped_angle
+
+        packed_angles = [unwrapped[0][1]]
+        for _, true_angle, _ in unwrapped[1:]:
+            packed_angles.append(
+                max(true_angle, packed_angles[-1] + effective_separation)
+            )
+
+        if packed_angles[-1] - packed_angles[0] > (
+            360.0 - effective_separation + tolerance
+        ):
+            continue
+
+        weights = [max(priority, 1) for _, _, priority in unwrapped]
+        displacements = [
+            packed_angle - true_angle
+            for packed_angle, (_, true_angle, _) in zip(packed_angles, unwrapped)
+        ]
+        translation = -sum(
+            weight * displacement
+            for weight, displacement in zip(weights, displacements)
+        ) / sum(weights)
+        translated_angles = [angle + translation for angle in packed_angles]
+        cost = sum(
+            weight * (angle + translation - true_angle) ** 2
+            for weight, angle, (_, true_angle, _) in zip(
+                weights,
+                packed_angles,
+                unwrapped,
+            )
+        )
+        candidates.append(
+            (
+                cost,
+                tuple(key for key, _, _ in unwrapped),
+                {
+                    key: _norm(label_angle)
+                    for (key, _, _), label_angle in zip(
+                        unwrapped,
+                        translated_angles,
+                    )
+                },
+            )
+        )
+
+    if candidates:
+        _, _, label_angles = min(
+            candidates,
+            key=lambda candidate: (candidate[0], candidate[1]),
+        )
+    else:
+        # The effective separation is geometrically feasible by construction.
+        # This branch is only a numerical fallback and preserves the sorted order.
+        label_angles = {
+            key: _norm(ordered[0][1] + index * effective_separation)
+            for index, (key, _, _) in enumerate(ordered)
+        }
+
+    achieved = _minimum_circular_separation(list(label_angles.values()))
+    requested_satisfied = (
+        achieved is None or achieved + 1.0e-8 >= requested_separation
+    )
+    return (
+        label_angles,
+        "cyclic_weighted_forward_pack_v1",
+        effective_separation,
+        achieved,
+        requested_satisfied,
+    )
 
 
 def _mean_longitude(longitudes: list[float]) -> float:
@@ -334,9 +464,45 @@ def compute_chart_wheel_packet(
         config.collision_orb_deg,
     )
 
+    true_point_angles = {
+        name: _angle_for_longitude(longitude, offset)
+        for name, _, longitude, _ in point_sources
+    }
+    if config.label_mode == "hidden":
+        label_angles = dict(true_point_angles)
+        label_algorithm = "hidden"
+        effective_label_separation = 0.0
+        achieved_label_separation = None
+        requested_label_constraint_satisfied = True
+    else:
+        (
+            label_angles,
+            label_algorithm,
+            effective_label_separation,
+            achieved_label_separation,
+            requested_label_constraint_satisfied,
+        ) = _layout_label_angles(
+            [
+                (name, true_point_angles[name], _label_priority(kind, name))
+                for name, kind, _, _ in point_sources
+            ],
+            config.min_label_separation_deg,
+        )
+        if effective_label_separation + 1.0e-8 < config.min_label_separation_deg:
+            warnings.append(
+                _warning(
+                    "label_separation_reduced",
+                    "min_label_separation_deg exceeds the circular capacity for "
+                    f"{len(point_sources)} labels; effective separation is "
+                    f"{effective_label_separation:.12g} degrees",
+                    "warning",
+                )
+            )
+
     points: list[ChartWheelPointPrimitiveResponse] = []
     for name, kind, longitude, retrograde in point_sources:
-        angle = _angle_for_longitude(longitude, offset)
+        angle = true_point_angles[name]
+        label_angle = label_angles[name]
         sign, sign_symbol, sign_degree = sign_of(longitude)
         points.append(
             ChartWheelPointPrimitiveResponse(
@@ -346,7 +512,9 @@ def compute_chart_wheel_packet(
                 angle_deg=angle,
                 radius=config.point_radius,
                 position=_xy(angle, config.point_radius),
-                label_position=_xy(angle, config.label_radius),
+                label_angle_deg=label_angle,
+                label_position=_xy(label_angle, config.label_radius),
+                label_displacement_deg=_signed_angular_delta(label_angle, angle),
                 label=_label(name, config),
                 glyph=_glyph(name, config),
                 sign=sign,
@@ -359,6 +527,11 @@ def compute_chart_wheel_packet(
                 hidden_label=(config.label_mode == "hidden"),
             )
         )
+
+    label_displacements = [
+        abs(point.label_displacement_deg)
+        for point in points
+    ]
 
     house_cusps: list[ChartWheelHouseCuspPrimitiveResponse] = []
     if houses is not None:
@@ -428,9 +601,13 @@ def compute_chart_wheel_packet(
                 )
             )
 
+    chart_response = serialize_chart(chart)
+    houses_response = serialize_houses(houses) if houses is not None else None
+    orientation_uses_ascendant = config.orientation.startswith("ascendant_")
+
     return ChartWheelPacketResponse(
-        chart=serialize_chart(chart),
-        houses=serialize_houses(houses) if houses is not None else None,
+        chart=chart_response,
+        houses=houses_response,
         config=config,
         orientation_offset_deg=offset,
         warnings=warnings,
@@ -440,6 +617,77 @@ def compute_chart_wheel_packet(
         points=points,
         aspects=aspects,
         collision_groups=collision_groups,
+        computation_truth=ChartWheelComputationTruthResponse(
+            house_engine_entrypoint=(
+                "Moira.houses" if houses_response is not None else None
+            ),
+            node_selection=ChartWheelNodeSelectionTruthResponse(
+                chart_requested_include_nodes=request.chart.include_nodes,
+                config_requested_include_nodes=config.include_nodes,
+                effective_include_nodes=config.include_nodes,
+                config_override_applied=(
+                    request.chart.include_nodes != config.include_nodes
+                ),
+            ),
+            houses=ChartWheelHousePolicyTruthResponse(
+                houses_requested=request.houses is not None,
+                requested_system=(
+                    request.houses.system if request.houses is not None else None
+                ),
+                effective_system=(
+                    houses_response.effective_system
+                    if houses_response is not None
+                    else None
+                ),
+                fallback_applied=(
+                    houses_response.fallback if houses_response is not None else None
+                ),
+                fallback_reason=(
+                    houses_response.fallback_reason
+                    if houses_response is not None
+                    else None
+                ),
+                applied_policy=(
+                    houses_response.policy if houses_response is not None else None
+                ),
+            ),
+            orientation=ChartWheelOrientationTruthResponse(
+                requested_orientation=config.orientation,
+                source=(
+                    "house_ascendant"
+                    if orientation_uses_ascendant
+                    else "fixed_aries"
+                ),
+                anchor_longitude_deg=asc if orientation_uses_ascendant else 0.0,
+                offset_deg=offset,
+            ),
+            aspects=ChartWheelAspectPolicyTruthResponse(
+                include_aspects_requested=config.include_aspects,
+                included=config.include_aspects,
+                tier=config.aspect_tier,
+                orb_factor=config.orb_factor,
+                positions_include_nodes=config.include_nodes,
+                returned_count=len(aspects),
+            ),
+            label_placement=ChartWheelLabelPlacementTruthResponse(
+                mode=config.label_mode,
+                algorithm=label_algorithm,
+                requested_minimum_separation_deg=config.min_label_separation_deg,
+                effective_minimum_separation_deg=effective_label_separation,
+                achieved_minimum_separation_deg=achieved_label_separation,
+                requested_constraint_satisfied=requested_label_constraint_satisfied,
+                collision_threshold_deg=config.collision_orb_deg,
+                labels_considered=(
+                    0 if config.label_mode == "hidden" else len(points)
+                ),
+                labels_displaced=sum(
+                    displacement > 1.0e-8 for displacement in label_displacements
+                ),
+                max_absolute_displacement_deg=(
+                    max(label_displacements) if label_displacements else 0.0
+                ),
+            ),
+        ),
     )
 
 

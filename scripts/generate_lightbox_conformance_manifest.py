@@ -327,6 +327,42 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "chart_wheel_packet_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The drawing packet preserves immutable chart coordinates beside deterministic label geometry and explicit chart, house, orientation, aspect, and placement policy truth.",
+        "stage_label": "Chart-wheel drawing-packet truth",
+        "operation": "Build the governed chart and optional house frame, derive drawing primitives without replacing calculated positions, and return the applied policies and label-placement result beside the packet.",
+        "semantic_values": {
+            "inputs": [
+                "A typed chart, optional house request, and bounded chart-wheel configuration are exposed by OpenAPI."
+            ],
+            "units": [
+                "Calculated longitudes, drawing angles, cusps, aspect geometry, and label displacement use degrees where named."
+            ],
+            "reference_frame": [
+                "The packet names the requested and effective wheel orientation and its anchor source; it does not reinterpret the calculated chart frame."
+            ],
+            "origin": [
+                "Point geometry retains each calculated longitude while label geometry is returned separately as a display-only displacement."
+            ],
+            "timescale": [
+                "The typed chart request supplies the calculation epoch; label placement does not advance or alter it."
+            ],
+            "corrections": [
+                "No astronomical correction is inferred from display placement; the packet states that point positions are preserved."
+            ],
+            "policies_defaults": [
+                "Node override, requested and effective house policy, orientation, aspect selection, and requested and achieved label separation are explicit."
+            ],
+            "fallbacks": [
+                "House-system fallback and impossible-density separation reduction are disclosed; neither silently changes calculated point coordinates."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects invalid configuration, unavailable house-dependent orientation, unknown-time house requests, and invalid house coordinates."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
     "relationship_overlay_vessel": {
         "inspectability_mode": "embedded_result",
         "summary": "Each directional overlay embeds labels, node policy, point count, target house-system identity, effective system, and fallback state.",

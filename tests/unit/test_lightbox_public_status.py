@@ -26,18 +26,31 @@ def _module():
 
 def test_current_status_preserves_doctrine_and_refuses_universal_claim() -> None:
     generator = _module()
+    manifest = generator._load(generator.MANIFEST_PATH)
+    matrix = generator._load(generator.MATRIX_PATH)
     status = generator.build_status(
-        generator._load(generator.MANIFEST_PATH),
+        manifest,
         generator._load(generator.REGISTER_PATH),
         generator._load(generator.ASSESSMENT_PATH),
-        generator._load(generator.MATRIX_PATH),
+        matrix,
     )
     assert generator.validate_status(status) == []
     assert status["doctrine_text_changed"] is False
     assert status["universal_current_conformance_supported"] is False
-    assert status["publication_disposition"] == "local_unreleased_status"
-    assert status["summary"]["canonical_calculations"] == 1210
-    assert status["summary"]["unresolved"] == 1182
+    expected_disposition = (
+        "exact_release_status"
+        if matrix["receipt_artifact_status"] == "exact_source_revision"
+        else "local_unreleased_status"
+    )
+    canonical = [
+        row for row in manifest["entries"] if row["entry_role"] == "canonical"
+    ]
+    assert status["publication_disposition"] == expected_disposition
+    assert status["summary"]["canonical_calculations"] == len(canonical)
+    assert status["summary"]["unresolved"] == sum(
+        row["conformance_status"] == "unresolved" for row in canonical
+    )
+    assert str(matrix["summary"]["surfaces_with_contracts"]) in status["limitations"][1]
     claims = {row["claim"]: row["status"] for row in status["claim_dispositions"]}
     assert claims["Every Calculation is Benchmarked."] == "unsupported"
 

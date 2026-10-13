@@ -154,8 +154,8 @@ def build_status(
         },
         "limitations": [
             "This source-tree status is not a production deployment receipt.",
-            "Local passed contracts cover 15 calculations and do not generalize to their entire families.",
-            "All 1210 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted.",
+            f"Bounded replay contracts cover {matrix['summary']['surfaces_with_contracts']} calculations and do not generalize to their entire families.",
+            f"All {len(canonical)} residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted.",
         ],
     }
 

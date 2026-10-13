@@ -20112,7 +20112,7 @@
       "family_id": "chart",
       "family_label": "Chart",
       "ownership": {
-        "source_line": 55,
+        "source_line": 53,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P0",
@@ -20166,7 +20166,7 @@
       "family_id": "chart",
       "family_label": "Chart",
       "ownership": {
-        "source_line": 83,
+        "source_line": 74,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P0",
@@ -23231,7 +23231,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 113,
+        "source_line": 95,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P0",
@@ -23258,7 +23258,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 133,
+        "source_line": 116,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P1",
@@ -23283,7 +23283,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 152,
+        "source_line": 135,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P1",
@@ -23308,7 +23308,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 143,
+        "source_line": 126,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P1",
@@ -23333,7 +23333,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 166,
+        "source_line": 149,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P1",
@@ -23358,7 +23358,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 123,
+        "source_line": 106,
         "source_path": "moira_server/routers/chart.py"
       },
       "priority": "P0",
@@ -27122,7 +27122,7 @@
       "family_id": "positions",
       "family_label": "Positions",
       "ownership": {
-        "source_line": 35,
+        "source_line": 33,
         "source_path": "moira_server/routers/positions.py"
       },
       "priority": "P0",
@@ -27149,7 +27149,7 @@
       "family_id": "positions",
       "family_label": "Positions",
       "ownership": {
-        "source_line": 45,
+        "source_line": 44,
         "source_path": "moira_server/routers/positions.py"
       },
       "priority": "P0",
@@ -27176,7 +27176,7 @@
       "family_id": "positions",
       "family_label": "Positions",
       "ownership": {
-        "source_line": 56,
+        "source_line": 55,
         "source_path": "moira_server/routers/positions.py"
       },
       "priority": "P0",
@@ -30710,7 +30710,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "2f7abd5dbdf85f5c57af6b2d7072f6b72d3e708d62a8619dc5cd1be1517f0f6d",
+  "inventory_fingerprint_sha256": "f8df0b3e4fd9abd672d4421e975178cd3600436db02ab3baca845fe213e51ca0",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

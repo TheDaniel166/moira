@@ -183,6 +183,23 @@
       "minimum_tests": 1,
       "claim_scope": "The primary-directions profile reduction retains its tested method, policy, and transport-contract distinctions.",
       "exclusions": ["The receipt does not resolve every primary-direction method or external historical authority question."]
+    },
+    {
+      "claim_id": "LB-CHART-WHEEL-PACKET-TRUTH",
+      "surface_ids": ["rest:POST:/v1/website/chart-wheel/packet"],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_route_is_registered",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_preserves_chart_truth_and_emits_primitives",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_with_houses_places_points_and_cusps",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_label_layout_is_deterministic_across_wraparound",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_label_layout_discloses_impossible_requested_density",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_minimum_label_separation_changes_only_label_geometry",
+        "tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_hidden_labels_bypass_visible_label_placement"
+      ],
+      "minimum_tests": 7,
+      "claim_scope": "The website chart-wheel packet retains immutable point coordinates, deterministic visible-label separation, explicit impossible-density disclosure, node override truth, house policy, orientation source, aspect policy, and label-placement provenance.",
+      "exclusions": ["The replay does not establish renderer typography, pixel collision freedom at a particular viewport, interpretive meaning, or external astronomical authority beyond the underlying admitted chart and house paths."]
     }
   ]
 }

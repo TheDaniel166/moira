@@ -7,6 +7,10 @@ import pytest
 
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.services.chart_wheel import (
+    _layout_label_angles,
+    _minimum_circular_separation,
+)
 
 
 pytestmark = pytest.mark.loopback
@@ -38,6 +42,20 @@ def test_chart_wheel_route_is_registered(
     assert "/v1/website/chart-wheel/packet" in paths
     assert "/v1/website/chart-wheel/presets" in paths
     assert "/v1/website/chart-wheel/validate" in paths
+    schemas = response.json()["components"]["schemas"]
+    packet_required = set(schemas["ChartWheelPacketResponse"]["required"])
+    assert {
+        "chart",
+        "config",
+        "orientation_offset_deg",
+        "points",
+        "aspects",
+        "collision_groups",
+    } <= packet_required
+    assert "computation_truth" in packet_required
+    point_required = set(schemas["ChartWheelPointPrimitiveResponse"]["required"])
+    assert {"longitude", "angle_deg", "position", "label_position"} <= point_required
+    assert {"label_angle_deg", "label_displacement_deg"} <= point_required
 
 
 def test_chart_wheel_presets_return_designer_contracts(
@@ -91,7 +109,7 @@ def test_chart_wheel_packet_preserves_chart_truth_and_emits_primitives(
             "chart": {
                 "dt": dt.isoformat(),
                 "bodies": ["Sun", "Moon"],
-                "include_nodes": False,
+                "include_nodes": True,
             },
             "config": {
                 "include_nodes": False,
@@ -115,6 +133,27 @@ def test_chart_wheel_packet_preserves_chart_truth_and_emits_primitives(
     assert {point["key"] for point in body["points"]} == {"Sun", "Moon"}
     assert all(point["glyph"] for point in body["points"])
     assert all("label_position" in point for point in body["points"])
+    truth = body["computation_truth"]
+    assert truth["source_module"] == "moira_server.services.chart_wheel"
+    assert truth["assembly_entrypoint"] == "compute_chart_wheel_packet"
+    assert truth["chart_engine_entrypoint"] == "Moira.chart"
+    assert truth["house_engine_entrypoint"] is None
+    assert truth["node_selection"] == {
+        "chart_requested_include_nodes": True,
+        "config_requested_include_nodes": False,
+        "effective_include_nodes": False,
+        "config_override_applied": True,
+    }
+    assert truth["houses"]["houses_requested"] is False
+    assert truth["orientation"] == {
+        "requested_orientation": "aries_left",
+        "source": "fixed_aries",
+        "anchor_longitude_deg": 0.0,
+        "offset_deg": 180.0,
+    }
+    assert truth["aspects"]["include_aspects_requested"] is False
+    assert truth["aspects"]["returned_count"] == 0
+    assert truth["label_placement"]["point_coordinates_preserved"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -156,6 +195,153 @@ def test_chart_wheel_packet_with_houses_places_points_and_cusps(
     assert all("position" in point for point in body["points"])
     assert all("start" in aspect and "end" in aspect for aspect in body["aspects"])
     assert all("stroke_key" in aspect for aspect in body["aspects"])
+    truth = body["computation_truth"]
+    assert truth["house_engine_entrypoint"] == "Moira.houses"
+    assert truth["houses"]["houses_requested"] is True
+    assert truth["houses"]["effective_system"] == body["houses"]["effective_system"]
+    assert truth["houses"]["fallback_applied"] == body["houses"]["fallback"]
+    assert truth["houses"]["applied_policy"] == body["houses"]["policy"]
+    assert truth["orientation"]["source"] == "house_ascendant"
+    assert truth["orientation"]["anchor_longitude_deg"] == pytest.approx(houses.asc)
+
+
+def test_chart_wheel_label_layout_is_deterministic_across_wraparound() -> None:
+    sources = [
+        ("Sun", 359.0, 100),
+        ("Mercury", 0.0, 80),
+        ("Node", 1.0, 60),
+    ]
+
+    first = _layout_label_angles(sources, 10.0)
+    second = _layout_label_angles(list(reversed(sources)), 10.0)
+
+    assert first == second
+    angles, algorithm, effective, achieved, requested_satisfied = first
+    assert algorithm == "cyclic_weighted_forward_pack_v1"
+    assert effective == pytest.approx(10.0)
+    assert achieved == pytest.approx(10.0)
+    assert requested_satisfied is True
+    assert _minimum_circular_separation(list(angles.values())) == pytest.approx(10.0)
+
+
+def test_chart_wheel_label_layout_discloses_impossible_requested_density() -> None:
+    sources = [(str(index), float(index), 80) for index in range(10)]
+
+    angles, _, effective, achieved, requested_satisfied = _layout_label_angles(
+        sources,
+        45.0,
+    )
+
+    assert effective == pytest.approx(36.0)
+    assert achieved == pytest.approx(36.0)
+    assert requested_satisfied is False
+    assert _minimum_circular_separation(list(angles.values())) == pytest.approx(36.0)
+
+
+@pytest.mark.requires_ephemeris
+def test_chart_wheel_minimum_label_separation_changes_only_label_geometry(
+    client_with_engine: TestClient,
+) -> None:
+    bodies = [
+        "Sun",
+        "Moon",
+        "Mercury",
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptune",
+        "Pluto",
+    ]
+
+    def packet(minimum_separation: float) -> dict:
+        response = client_with_engine.post(
+            "/v1/website/chart-wheel/packet",
+            json={
+                "chart": {
+                    "dt": "2000-01-01T12:00:00+00:00",
+                    "bodies": bodies,
+                    "include_nodes": False,
+                },
+                "config": {
+                    "include_nodes": False,
+                    "include_aspects": False,
+                    "orientation": "aries_left",
+                    "min_label_separation_deg": minimum_separation,
+                },
+            },
+        )
+        assert response.status_code == 200
+        return response.json()
+
+    unseparated = packet(0.0)
+    separated = packet(45.0)
+    original_by_key = {point["key"]: point for point in unseparated["points"]}
+    separated_by_key = {point["key"]: point for point in separated["points"]}
+
+    assert separated_by_key.keys() == original_by_key.keys()
+    for key, original in original_by_key.items():
+        placed = separated_by_key[key]
+        assert placed["longitude"] == original["longitude"]
+        assert placed["angle_deg"] == original["angle_deg"]
+        assert placed["position"] == original["position"]
+    assert any(
+        separated_by_key[key]["label_position"]
+        != original_by_key[key]["label_position"]
+        for key in original_by_key
+    )
+
+    truth = separated["computation_truth"]["label_placement"]
+    assert truth["requested_minimum_separation_deg"] == pytest.approx(45.0)
+    assert truth["effective_minimum_separation_deg"] == pytest.approx(36.0)
+    assert truth["achieved_minimum_separation_deg"] == pytest.approx(36.0)
+    assert truth["requested_constraint_satisfied"] is False
+    assert truth["labels_displaced"] > 0
+    assert truth["point_coordinates_preserved"] is True
+    assert "label_separation_reduced" in {
+        warning["code"] for warning in separated["warnings"]
+    }
+
+
+@pytest.mark.requires_ephemeris
+def test_chart_wheel_hidden_labels_bypass_visible_label_placement(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/website/chart-wheel/packet",
+        json={
+            "chart": {
+                "dt": "2000-01-01T12:00:00+00:00",
+                "bodies": ["Sun"],
+                "include_nodes": False,
+            },
+            "config": {
+                "include_nodes": False,
+                "include_aspects": False,
+                "label_mode": "hidden",
+                "min_label_separation_deg": 45.0,
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    point = body["points"][0]
+    assert point["label"] == ""
+    assert point["hidden_label"] is True
+    assert point["label_angle_deg"] == point["angle_deg"]
+    assert point["label_displacement_deg"] == pytest.approx(0.0)
+    truth = body["computation_truth"]["label_placement"]
+    assert truth["algorithm"] == "hidden"
+    assert truth["effective_minimum_separation_deg"] == pytest.approx(0.0)
+    assert truth["achieved_minimum_separation_deg"] is None
+    assert truth["requested_constraint_satisfied"] is True
+    assert truth["labels_considered"] == 0
+    assert truth["labels_displaced"] == 0
+    assert "label_separation_reduced" not in {
+        warning["code"] for warning in body["warnings"]
+    }
 
 
 def test_chart_wheel_packet_rejects_house_dependent_orientation_without_houses(
