@@ -348,12 +348,18 @@ class HouseSystemFamily(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable house-family taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.HouseSystemFamily",
+      "risk": "low",
+      "api": {"frozen": ["EQUAL", "QUADRANT", "WHOLE_SIGN", "SOLAR"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     EQUAL      = "equal"
     QUADRANT   = "quadrant"
@@ -391,12 +397,18 @@ class HouseSystemCuspBasis(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable cusp-basis taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.HouseSystemCuspBasis",
+      "risk": "low",
+      "api": {"frozen": ["ECLIPTIC", "EQUATORIAL", "SEMI_ARC", "OBLIQUE_ASCENSION", "QUADRANT_TRISECTION", "PRIME_VERTICAL", "HORIZON", "POLAR_PROJECTION", "SINUSOIDAL", "GREAT_CIRCLE", "APC_FORMULA", "SOLAR_POSITION"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     ECLIPTIC             = "ecliptic"
     EQUATORIAL           = "equatorial"
@@ -465,12 +477,18 @@ class HouseSystemClassification:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "classification_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["family", "cusp_basis", "latitude_sensitive", "polar_capable"],
-      "guarantees": ["immutable doctrinal record", "code-derived semantics only"]
+      "scope": "class",
+      "id": "moira.houses.HouseSystemClassification",
+      "risk": "medium",
+      "api": {"frozen": ["family", "cusp_basis", "latitude_sensitive", "polar_capable"], "internal": []},
+      "state": {"mutable": false, "owners": ["_CLASSIFICATIONS"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none; known-code validation belongs to classify_house_system"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "classification_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     family:              HouseSystemFamily
     cusp_basis:          HouseSystemCuspBasis
@@ -604,12 +622,18 @@ class UnknownSystemPolicy(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable unknown-system policy taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.UnknownSystemPolicy",
+      "risk": "medium",
+      "api": {"frozen": ["FALLBACK_TO_PLACIDUS", "RAISE"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none; calculate_houses enforces the selected policy"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     FALLBACK_TO_PLACIDUS = "fallback_to_placidus"
     RAISE                = "raise"
@@ -645,12 +669,18 @@ class PolarFallbackPolicy(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable polar-fallback policy taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.PolarFallbackPolicy",
+      "risk": "high",
+      "api": {"frozen": ["FALLBACK_TO_PORPHYRY", "FALLBACK_TO_EQUAL", "FALLBACK_TO_WHOLE_SIGN", "RAISE", "EXPERIMENTAL_SEARCH"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none; calculate_houses enforces the selected policy"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     FALLBACK_TO_PORPHYRY   = "fallback_to_porphyry"
     FALLBACK_TO_EQUAL      = "fallback_to_equal"
@@ -718,12 +748,18 @@ class HousePolicy:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "policy_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["unknown_system", "polar_fallback"],
-      "guarantees": ["immutable fallback doctrine", "constructor-stable defaults"]
+      "scope": "class",
+      "id": "moira.houses.HousePolicy",
+      "risk": "high",
+      "api": {"frozen": ["unknown_system", "polar_fallback"], "public_methods": ["default", "strict", "experimental"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none; calculate_houses raises when the selected doctrine requires it"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     unknown_system: UnknownSystemPolicy = UnknownSystemPolicy.FALLBACK_TO_PLACIDUS
     polar_fallback: PolarFallbackPolicy = PolarFallbackPolicy.FALLBACK_TO_PORPHYRY
@@ -1058,12 +1094,18 @@ class HouseCusps:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "result_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["12 cusp longitudes", "asc", "mc", "armc", "system truth", "policy truth"],
-      "guarantees": ["construction-time invariants", "requested/effective distinction", "audit-ready fallback metadata"]
+      "scope": "class",
+      "id": "moira.houses.HouseCusps",
+      "risk": "high",
+      "api": {"frozen": ["system", "cusps", "asc", "mc", "armc", "east_point", "vertex", "anti_vertex", "effective_system", "fallback", "fallback_reason", "classification", "policy", "boundary_geometry"], "public_methods": ["dsc", "ic", "is_quadrant_system", "is_latitude_sensitive", "sign_of_cusp"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["calculate_houses", "houses_from_armc"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError or TypeError when constructor invariants fail"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change", "fallback_policy_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     system:           str
     cusps:            tuple[float, ...]    # 12 ecliptic longitudes, degrees [0,360)
@@ -1220,12 +1262,18 @@ class DerivedHouseCusps:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "derived_result_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["pivot_house", "12 rotated cusps", "origin HouseCusps"],
-      "guarantees": ["pivot-cusp alignment", "immutable derived wheel"]
+      "scope": "class",
+      "id": "moira.houses.DerivedHouseCusps",
+      "risk": "medium",
+      "api": {"frozen": ["pivot_house", "cusps", "source"], "public_methods": ["sign_of_cusp"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["derived_houses"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when pivot or rotated-cusp invariants fail"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     pivot_house: int
@@ -4127,12 +4175,18 @@ class HousePlacement:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "membership_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house", "longitude", "house_cusps", "exact_on_cusp", "cusp_longitude"],
-      "guarantees": ["house/cusp alignment", "immutable placement witness"]
+      "scope": "class",
+      "id": "moira.houses.HousePlacement",
+      "risk": "medium",
+      "api": {"frozen": ["house", "longitude", "house_cusps", "exact_on_cusp", "cusp_longitude"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["assign_house"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when placement invariants fail"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "boundary_doctrine_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     house:         int
     longitude:     float
@@ -4297,12 +4351,18 @@ class HouseBoundaryProfile:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "boundary_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["placement", "opening_cusp", "closing_cusp", "distance fields", "threshold"],
-      "guarantees": ["forward-arc consistency", "immutable cusp-boundary profile"]
+      "scope": "class",
+      "id": "moira.houses.HouseBoundaryProfile",
+      "risk": "medium",
+      "api": {"frozen": ["placement", "opening_cusp", "closing_cusp", "dist_to_opening", "dist_to_closing", "house_span", "nearest_cusp", "nearest_cusp_distance", "near_cusp_threshold", "is_near_cusp"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["describe_boundary"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when distance or threshold invariants fail"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "boundary_doctrine_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     placement:             HousePlacement
     opening_cusp:          float
@@ -4469,12 +4529,18 @@ class HouseAngularity(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable angularity taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.HouseAngularity",
+      "risk": "medium",
+      "api": {"frozen": ["ANGULAR", "SUCCEDENT", "CADENT"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     ANGULAR   = "angular"
     SUCCEDENT = "succedent"
@@ -4534,12 +4600,18 @@ class HouseAngularityProfile:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "angularity_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["placement", "category", "house"],
-      "guarantees": ["house/category consistency", "immutable angularity witness"]
+      "scope": "class",
+      "id": "moira.houses.HouseAngularityProfile",
+      "risk": "medium",
+      "api": {"frozen": ["placement", "category", "house"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["describe_angularity"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when house and angularity disagree"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     placement: HousePlacement
     category:  HouseAngularity
@@ -4634,12 +4706,18 @@ class HouseSystemComparison:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "comparison_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["left", "right", "12 cusp deltas", "agreement flags"],
-      "guarantees": ["signed cusp-delta truth", "effective-system comparison fidelity"]
+      "scope": "class",
+      "id": "moira.houses.HouseSystemComparison",
+      "risk": "medium",
+      "api": {"frozen": ["left", "right", "cusp_deltas", "systems_agree", "fallback_differs", "families_differ"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["compare_systems"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when deltas or agreement flags are inconsistent"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "comparison_semantics_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     left:             HouseCusps
     right:            HouseCusps
@@ -4701,12 +4779,18 @@ class HousePlacementComparison:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "placement_comparison_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["longitude", "placements", "houses", "agreement flags"],
-      "guarantees": ["placement summary fidelity", "immutable cross-system witness"]
+      "scope": "class",
+      "id": "moira.houses.HousePlacementComparison",
+      "risk": "medium",
+      "api": {"frozen": ["longitude", "placements", "houses", "all_agree", "angularity_agrees"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["compare_placements"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when placements and summary fields disagree"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "comparison_semantics_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     longitude:         float
     placements:        tuple[HousePlacement, ...]
@@ -4874,12 +4958,18 @@ class HouseOccupancy:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "occupancy_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house", "count", "longitudes", "placements", "is_empty"],
-      "guarantees": ["count fidelity", "per-house placement alignment"]
+      "scope": "class",
+      "id": "moira.houses.HouseOccupancy",
+      "risk": "medium",
+      "api": {"frozen": ["house", "count", "longitudes", "placements", "is_empty"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["distribute_points"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when count or placement alignment fails"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     house:      int
     count:      int
@@ -4933,12 +5023,18 @@ class HouseDistributionProfile:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "distribution_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house_cusps", "point_count", "occupancies", "counts", "summary sets and totals"],
-      "guarantees": ["12-house occupancy integrity", "chart-wide count consistency"]
+      "scope": "class",
+      "id": "moira.houses.HouseDistributionProfile",
+      "risk": "medium",
+      "api": {"frozen": ["house_cusps", "point_count", "occupancies", "counts", "empty_houses", "dominant_houses", "angular_count", "succedent_count", "cadent_count"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["distribute_points"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when occupancy or chart totals are inconsistent"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "distribution_semantics_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     house_cusps:      HouseCusps
     point_count:      int
@@ -5519,12 +5615,18 @@ class CuspSpeed:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "dynamics_leaf_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house", "cusp_longitude", "speed_deg_per_day"],
-      "guarantees": ["unit-explicit cusp motion record"]
+      "scope": "class",
+      "id": "moira.houses.CuspSpeed",
+      "risk": "medium",
+      "api": {"frozen": ["house", "cusp_longitude", "speed_deg_per_day"], "internal": []},
+      "state": {"mutable": false, "owners": ["cusp_speeds_at", "house_dynamics_from_armc"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none at the vessel boundary"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "unit_semantics_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     house:              int
     cusp_longitude:     float
@@ -5594,12 +5696,18 @@ class HouseDynamics:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "dynamics_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house_cusps", "cusp_speeds", "angle speeds"],
-      "guarantees": ["single-chart motion profile"]
+      "scope": "class",
+      "id": "moira.houses.HouseDynamics",
+      "risk": "medium",
+      "api": {"frozen": ["house_cusps", "cusp_speeds", "asc_speed_deg_per_day", "mc_speed_deg_per_day", "vertex_speed_deg_per_day", "anti_vertex_speed_deg_per_day"], "internal": []},
+      "state": {"mutable": false, "owners": ["cusp_speeds_at", "house_dynamics_from_armc"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none at the vessel boundary; producing calculations raise upstream"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "unit_semantics_change", "derivative_policy_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
     house_cusps:                    'HouseCusps'
     cusp_speeds:                    tuple
@@ -5968,12 +6076,18 @@ class Quadrant(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable Rudhyar quadrant taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.Quadrant",
+      "risk": "medium",
+      "api": {"frozen": ["Q1", "Q2", "Q3", "Q4"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "canon_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     Q1 = "Q1"  # houses 1–3   personal / instinctive
@@ -6062,12 +6176,18 @@ class QuadrantEmphasisProfile:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "quadrant_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["house_cusps", "quadrant counts", "quadrant point names", "hemisphere totals"],
-      "guarantees": ["quadrant count integrity", "named-point preservation"]
+      "scope": "class",
+      "id": "moira.houses.QuadrantEmphasisProfile",
+      "risk": "medium",
+      "api": {"frozen": ["house_cusps", "point_count", "q1_count", "q2_count", "q3_count", "q4_count", "q1_points", "q2_points", "q3_points", "q4_points", "dominant_quadrant", "eastern_count", "western_count", "northern_count", "southern_count"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["quadrant_emphasis"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when quadrant or hemisphere totals are inconsistent"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     house_cusps:        HouseCusps
@@ -6223,12 +6343,18 @@ class DiurnalQuadrant(str, Enum):
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "enum",
-      "owns_state": false,
-      "mutates_external_state": false,
-      "requires": [],
-      "guarantees": ["stable diurnal quadrant taxonomy"]
+      "scope": "class",
+      "id": "moira.houses.DiurnalQuadrant",
+      "risk": "medium",
+      "api": {"frozen": ["DQ1", "DQ2", "DQ3", "DQ4"], "internal": []},
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     DQ1 = "DQ1"  # ASC → MC   (eastern, above horizon)
@@ -6323,12 +6449,18 @@ class DiurnalPosition:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "diurnal_position_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["quadrant", "hour_angle", "arc lengths", "flags", "ra", "dec"],
-      "guarantees": ["single-body diurnal witness"]
+      "scope": "class",
+      "id": "moira.houses.DiurnalPosition",
+      "risk": "medium",
+      "api": {"frozen": ["quadrant", "hour_angle", "semi_diurnal_arc", "semi_nocturnal_arc", "fraction", "is_above_horizon", "is_eastern", "is_circumpolar", "is_never_rises", "ra", "dec"], "internal": []},
+      "state": {"mutable": false, "owners": ["diurnal_position"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "none at the vessel boundary; diurnal_position validates inputs upstream"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "diurnal_semantics_change", "unit_semantics_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     quadrant:           DiurnalQuadrant
@@ -6508,12 +6640,18 @@ class DiurnalEmphasisProfile:
 
     [MACHINE_CONTRACT v1]
     {
-      "type": "diurnal_profile_vessel",
-      "owns_state": true,
-      "mutates_external_state": false,
-      "requires": ["point_count", "diurnal counts", "point-name buckets", "positions"],
-      "guarantees": ["diurnal count integrity", "per-point position preservation"]
+      "scope": "class",
+      "id": "moira.houses.DiurnalEmphasisProfile",
+      "risk": "medium",
+      "api": {"frozen": ["point_count", "dq1_count", "dq2_count", "dq3_count", "dq4_count", "dq1_points", "dq2_points", "dq3_points", "dq4_points", "positions", "dominant_quadrant", "above_horizon_count", "below_horizon_count", "eastern_count", "western_count"], "internal": ["__post_init__"]},
+      "state": {"mutable": false, "owners": ["diurnal_emphasis"]},
+      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise ValueError when quadrant totals are inconsistent"},
+      "succession": {"stance": "terminal", "override_points": []},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "diurnal_semantics_change", "invariant_change"]}
     }
+    [/MACHINE_CONTRACT]
     """
 
     point_count:          int
