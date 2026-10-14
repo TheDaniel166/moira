@@ -1051,6 +1051,198 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "transit_and_return_search_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The transit, ingress, natal-aspect, lunar-phase, and solar/lunar/planet/relocated return routes return exact crossing or phase instants alongside embedded computation_truth, classification, relation, condition_profile, or dual-chart relocation receipts.",
+        "stage_label": "Predictive transit, ingress, phase, and return search truth",
+        "operation": "Resolve moving and target bodies or phase angles on the apparent geocentric ecliptic lattice, bracket and bisect exact crossings under explicit step/tolerance/direction policies, and return event vessels with computation_truth or relocated-return chart receipts.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose moving bodies, targets or natal longitudes, aspect specs, search windows or return years, direction/motion filters, step/tolerance overrides, and relocation coordinates in OpenAPI."
+            ],
+            "units": [
+                "Longitudes, phase angles, aspect angles, orbs, and geographic coordinates use degrees; epochs, scan steps, and solver tolerances use days (JD UT)."
+            ],
+            "reference_frame": [
+                "Apparent geocentric true ecliptic of date for longitude crossings, sign ingresses, lunar phases, and returns; topocentric house frames for relocated return charts."
+            ],
+            "origin": [
+                "Geocenter for transit, ingress, phase, and return timing; source and relocated geographic coordinates for relocated return chart contexts."
+            ],
+            "timescale": [
+                "Event and return instants are reported in JD UT alongside UTC ISO-8601 timestamps; relocated returns also bind JD TT."
+            ],
+            "corrections": [
+                "Target resolution truth, crossing bracket and bisection tolerance, retrograde-hit and orb-window boundary flags, or same-epoch/same-celestial-snapshot relocation truth are returned explicitly."
+            ],
+            "policies_defaults": [
+                "Requested and effective step_days, solver_tolerance_days, direction filter, search_motion, return search policy, and house-system fallback flags are carried by the response."
+            ],
+            "fallbacks": [
+                "Unentered or unexited aspect orb windows remain null on jd_entering/jd_leaving; house-system polar fallbacks in relocated returns are disclosed per chart without altering return timing."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects reversed windows, non-finite JDs, unknown movers/targets, invalid return selectors, and out-of-range steps or tolerances."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "progression_and_arc_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The secondary progression, solar/time-key/planetary arc, and daily house-frame progression routes return progressed positions or cusps with embedded doctrine/rate/application classifications, relation, and condition_profile, paired with dedicated /reduction endpoints exposing ProgressionComputationTruth.",
+        "stage_label": "Progressed chart, directed arc, and house-frame derivation",
+        "operation": "Map natal and target epochs through the selected progression time key, directed arc rate, or daily house-frame rotation, evaluate progressed positions or cusps, and expose full stage and formula receipts on the paired /reduction endpoint.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose timezone-aware natal_dt and target_dt, method/technique selectors, bodies, converse flags, observer coordinates, and house policy in OpenAPI."
+            ],
+            "units": [
+                "Longitudes, latitudes, right ascensions, declinations, cusps, and solar/directed arcs use degrees; speeds use degrees per day; epochs use JD UT."
+            ],
+            "reference_frame": [
+                "The response names coordinate_system (ecliptic_longitude, equatorial_ra, declination, or house_cusps) and pairs with /reduction for full frame provenance."
+            ],
+            "origin": [
+                "Geocentric planetary reduction for secondary/arc progressions; topocentric observer latitude and longitude for progressed house frames."
+            ],
+            "timescale": [
+                "Natal and progressed JD UT and target UTC datetime are returned in the response and expanded with elapsed years and key constants on /reduction."
+            ],
+            "corrections": [
+                "Direct vs converse motion, rate_mode, application_mode, and house-system fallback state are explicit."
+            ],
+            "policies_defaults": [
+                "Doctrine family, coordinate system, rate mode, application mode, relation, and condition_profile are embedded on every response."
+            ],
+            "fallbacks": [
+                "House-frame polar fallback is reported explicitly on house-frame responses and /reduction vessels; no silent technique substitution is permitted."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects naive datetimes, unsupported bodies, missing arc_body on planetary_arc, and invalid observer coordinates."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+        ],
+    },
+    "primary_directions_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The primary-directions speculum and network/reduction routes expose the complete equatorial/mundane speculum (lon, lat, ra, dec, ha, dsa, nsa, upper, f) or directed network graph paired with PrimaryDirectionsArcsReductionTruth.",
+        "stage_label": "Primary-directions speculum and network reduction truth",
+        "operation": "Compute equatorial and mundane speculum coordinates (RA, declination, hour angle, diurnal/nocturnal semi-arcs, meridian hemisphere, ascensional/mundane factor) or reduce the primary-direction network alongside UT1/TT/delta-T, observer, house_context, resolved_policy, and stage_sequence.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose timezone-aware chart datetime, observer latitude/longitude, house system, bodies, node inclusion, max_arc, and primary-directions policy/preset in OpenAPI."
+            ],
+            "units": [
+                "Longitudes, latitudes, right ascensions, declinations, hour angles, semi-arcs, and directed arcs use degrees; delta_t_seconds uses seconds; epochs use JD UT and JD TT."
+            ],
+            "reference_frame": [
+                "Equatorial and mundane diurnal/nocturnal semi-arc geometry on the celestial sphere for the observer latitude."
+            ],
+            "origin": [
+                "Observer geographic latitude and longitude (with explicit PositionObserverContextResponse on reduction routes)."
+            ],
+            "timescale": [
+                "Reduction routes report requested_datetime, normalized_datetime_utc, jd_ut, jd_tt, and delta_t_seconds."
+            ],
+            "corrections": [
+                "Latitude doctrine (zodiacal vs cum_latitudine), converse doctrine, house-system fallback, and target-extension contexts are explicit in resolved_policy."
+            ],
+            "policies_defaults": [
+                "Method (placidus/regiomontanus), space (mundane/zodiacal), key, key_source, perfection_kind, admitted relation/significator/promissor classes, and policy_source are returned."
+            ],
+            "fallbacks": [
+                "House-system fallback is reported in house_context; speculum and network routes do not mask evaluation failures."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects naive datetimes, polar/invalid observer latitudes, non-positive max_arc, unknown presets or keys, and self-directions."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+        ],
+    },
+    "timelord_and_profection_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The annual/schedule profection and Firdaria, Decennials, and Zodiacal Releasing sequence routes return complete period sequences alongside embedded activation_truth, chronology receipts, DecennialSequenceAssemblyTruth, or ZRFortuneAngularityTruth.",
+        "stage_label": "Hellenistic and medieval time-lord and profection sequence truth",
+        "operation": "Evaluate Whole Sign annual/monthly profections with civil-anniversary chronology and activation truth, or construct Firdaria, Decennials, or Zodiacal Releasing period sequences with embedded sect, year/month basis, sequence assembly, or Fortune-angularity truth.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose natal ascendant or timezone-aware natal/query datetimes, sect or lot longitudes, variant/level selectors, and civil_timezone/leap_day/ambiguous_time policies in OpenAPI."
+            ],
+            "units": [
+                "Longitudes and activation orbs use degrees; period durations use years, months, and days under the declared year basis; interval bounds use JD UT and ISO dates."
+            ],
+            "reference_frame": [
+                "Tropical Whole Sign houses and ecliptic longitudes for profections, Decennials, and Zodiacal Releasing; sect-governed Chaldean/planetary sequences for Firdaria."
+            ],
+            "origin": [
+                "Natal chart epoch and natal Ascendant, sect light, or Lot of Spirit/Fortune anchor."
+            ],
+            "timescale": [
+                "Profection schedules bind IANA civil_timezone with tzdata version and UTC/JD interval bounds; Decennials and Firdaria report sequence_origin_jd, time_basis, and calendar_projection_basis."
+            ],
+            "corrections": [
+                "Loosing-of-the-bond transitions, Fortune-relative angularity and peak classification, Decennial forward-arc ordering from sect light, and leap-day/DST fold policies are explicit."
+            ],
+            "policies_defaults": [
+                "Firdaria nocturnal variant (al-Qabisi vs Bonatti), Decennial 360-day year / 30-day month basis, ZR 360-day Egyptian year basis, and profection interval/boundary semantics are carried in the response."
+            ],
+            "fallbacks": [
+                "Absent natal positions in profections return activation_truth.status='not_evaluable' with reason='natal_positions_not_supplied'; absent Fortune longitude in ZR returns fortune_angularity_truth.status='not_evaluable'."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects naive datetimes, pre-birth query dates, unsupported Decennial deep levels (3-4), invalid variants or lot names, and unconfigured Feb-29 or DST fold policies when triggered."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "batch_assembly_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The batch chart, chart-reduction, event, return, and progression routes preserve deterministic request ordering, item-level failure isolation (BatchFailureResponse), and per-item embedded computation_truth or paired /reduction receipts.",
+        "stage_label": "Bounded batch calculation and item-level failure isolation",
+        "operation": "Validate the bounded batch request list, execute each chart, transit/ingress/station/lunar-phase/aspect event, return, or progression item with per-item exception isolation, and return ordered success payloads (with embedded truth or reduction vessels) and typed failure receipts.",
+        "semantic_values": {
+            "inputs": [
+                "Bounded request arrays (with explicit maximum item counts) of typed chart, event, return, or progression request items are exposed by OpenAPI."
+            ],
+            "units": [
+                "Each item payload preserves the exact domain units (degrees, AU/km, JD UT/TT days, seconds) of its underlying single-item contract."
+            ],
+            "reference_frame": [
+                "Each succeeded item carries the reference frame and coordinate system of its underlying chart, transit/ingress, return, or progression vessel."
+            ],
+            "origin": [
+                "Geocentric or topocentric observer context is preserved per item and exposed in /v1/batch/charts/reduction and /v1/batch/progressions/reduction."
+            ],
+            "timescale": [
+                "Each item resolves and reports its own UTC/UT1/TT epochs; batch chart construction resolves UTC, TT, and UT1 once per item for all consumers."
+            ],
+            "corrections": [
+                "Per-item reduction vessels (/v1/batch/charts/reduction, /v1/batch/progressions/reduction) and embedded transit/ingress/return computation_truth preserve all applied corrections and stage sequences."
+            ],
+            "policies_defaults": [
+                "Item index, kind/technique, total_count, succeeded_count, failed_count, and per-item policy/truth vessels are returned."
+            ],
+            "fallbacks": [
+                "Per-item failures are isolated into structured BatchFailureResponse(error_type, message, error_module) with ok=False rather than aborting sibling items."
+            ],
+            "refusal_behavior": [
+                "Envelope-level validation rejects empty or over-limit batch arrays, unknown discriminators, and malformed request schemas with 422 before item execution."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "paired_reduction_endpoint",
+            "generated_documentation",
+        ],
+    },
 }
 
 

@@ -7511,7 +7511,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1862,
+        "source_line": 1865,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -7586,7 +7586,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2717,
+        "source_line": 2767,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -8061,7 +8061,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1688,
+        "source_line": 1691,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -9869,7 +9869,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2767,
+        "source_line": 2817,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -9894,7 +9894,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2755,
+        "source_line": 2805,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -10646,7 +10646,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2676,
+        "source_line": 2727,
         "source_path": "moira/transits.py"
       },
       "priority": "P0",
@@ -10660,6 +10660,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:last_full_moon",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.transits",
+      "canonical_surface_id": "python:moira.facade:last_full_moon_with_truth",
+      "domain_group": "predictive-and-time",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "transits",
+      "family_label": "Transits",
+      "ownership": {
+        "source_line": 2708,
+        "source_path": "moira/transits.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:last_full_moon_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -10723,7 +10748,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2660,
+        "source_line": 2693,
         "source_path": "moira/transits.py"
       },
       "priority": "P0",
@@ -10737,6 +10762,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:last_new_moon",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.transits",
+      "canonical_surface_id": "python:moira.facade:last_new_moon_with_truth",
+      "domain_group": "predictive-and-time",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "transits",
+      "family_label": "Transits",
+      "ownership": {
+        "source_line": 2674,
+        "source_path": "moira/transits.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:last_new_moon_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -11052,7 +11102,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2403,
+        "source_line": 2406,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -12427,7 +12477,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1954,
+        "source_line": 1957,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -12452,7 +12502,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2000,
+        "source_line": 2003,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -12677,7 +12727,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1566,
+        "source_line": 1569,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -14154,7 +14204,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2193,
+        "source_line": 2196,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -14656,7 +14706,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2692,
+        "source_line": 2742,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -16285,7 +16335,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2222,
+        "source_line": 2225,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -16310,7 +16360,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2261,
+        "source_line": 2264,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17439,7 +17489,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2773,
+        "source_line": 2823,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17464,7 +17514,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2814,
+        "source_line": 2864,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17489,7 +17539,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2761,
+        "source_line": 2811,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17514,7 +17564,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2749,
+        "source_line": 2799,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -18299,7 +18349,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2296,
+        "source_line": 2299,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -18324,7 +18374,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2366,
+        "source_line": 2369,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -31235,7 +31285,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd",
+  "inventory_fingerprint_sha256": "e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31279,7 +31329,7 @@
       "astronomy-and-chart-core": 132,
       "locational": 58,
       "phenomena-and-visibility": 126,
-      "predictive-and-time": 163,
+      "predictive-and-time": 165,
       "relationship": 42,
       "specialist-and-compositional": 303,
       "traditional-western": 129,
@@ -31288,21 +31338,21 @@
     "canonical_by_exposure": {
       "production_user": 171,
       "public_api": 344,
-      "source_only": 716
+      "source_only": 718
     },
     "canonical_by_priority": {
       "P0": 171,
       "P1": 344,
-      "P2": 716
+      "P2": 718
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1231,
+      "reviewed": 1233,
       "seeded": 0
     },
-    "canonical_entries": 1231,
+    "canonical_entries": 1233,
     "cross_transport_families": 53,
-    "entries_total": 1235,
+    "entries_total": 1237,
     "family_count": 143
   }
 }

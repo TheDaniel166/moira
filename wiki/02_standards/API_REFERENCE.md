@@ -2242,7 +2242,9 @@ This is a completed boundary, not unfinished Hellenistic engine work.
 from moira.facade import (
     find_transits, next_transit, find_ingresses, next_ingress, next_ingress_into,
     solar_return, lunar_return, planet_return,
-    last_new_moon, last_full_moon, prenatal_syzygy,
+    last_new_moon, last_new_moon_with_truth,
+    last_full_moon, last_full_moon_with_truth,
+    prenatal_syzygy, SyzygySearchWithTruth,
     transit_relations, ingress_relations,
     transit_condition_profiles, ingress_condition_profiles,
     transit_chart_condition_profile, transit_condition_network_profile,
@@ -2290,7 +2292,9 @@ jd_sr  = solar_return(natal_sun_lon, year=2025, reader=reader)
 jd_lr  = lunar_return(natal_moon_lon, jd_now, reader=reader)
 jd_pr  = planet_return(Body.JUPITER, natal_jup_lon, jd_now, reader=reader)
 jd_nm  = last_new_moon(jd_now, reader=reader)
+nm_tr  = last_new_moon_with_truth(jd_now, reader=reader)
 jd_fm  = last_full_moon(jd_now, reader=reader)
+fm_tr  = last_full_moon_with_truth(jd_now, reader=reader)
 jd_syn, kind = prenatal_syzygy(jd_natal, reader=reader)
 ```
 

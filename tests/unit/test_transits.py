@@ -21,6 +21,7 @@ from moira.transits import (
     CrossingSearchClassification,
     TransitComputationTruth,
     TransitComputationClassification,
+    SyzygySearchWithTruth,
     TransitSearchKind,
     TransitTargetKind,
     TransitWrapperKind,
@@ -46,7 +47,9 @@ from moira.transits import (
     ingress_condition_profiles,
     ingress_relations,
     last_full_moon,
+    last_full_moon_with_truth,
     last_new_moon,
+    last_new_moon_with_truth,
     lunar_return,
     next_transit,
     next_ingress,
@@ -1766,3 +1769,39 @@ def test_return_and_syzygy_stress_matrix_remains_exact() -> None:
         )
         assert nm_sep < 1e-3
         assert fm_sep < 1e-3
+
+
+@pytest.mark.requires_ephemeris
+def test_last_syzygy_with_truth_matches_scalar_syzygy_and_search_truth() -> None:
+    ref = jd_from_datetime(datetime(2024, 4, 20, 12, 0, tzinfo=timezone.utc))
+
+    nm = last_new_moon(ref)
+    nm_with_truth = last_new_moon_with_truth(ref)
+    assert isinstance(nm_with_truth, SyzygySearchWithTruth)
+    assert nm_with_truth.jd_ut == nm
+    assert nm_with_truth.phase_kind == "New Moon"
+    assert nm_with_truth.target_elongation_deg == 0.0
+    assert nm_with_truth.reference_frame == "apparent_geocentric_true_ecliptic_of_date"
+    assert nm_with_truth.search_truth.crossing_jd_ut == nm
+    assert nm_with_truth.search_truth.search_end_jd_ut == ref
+    assert (
+        nm_with_truth.search_truth.bracket_start_jd_ut
+        <= nm_with_truth.jd_ut
+        <= nm_with_truth.search_truth.bracket_end_jd_ut
+    )
+
+    fm = last_full_moon(ref)
+    fm_with_truth = last_full_moon_with_truth(ref)
+    assert isinstance(fm_with_truth, SyzygySearchWithTruth)
+    assert fm_with_truth.jd_ut == fm
+    assert fm_with_truth.phase_kind == "Full Moon"
+    assert fm_with_truth.target_elongation_deg == 180.0
+    assert fm_with_truth.reference_frame == "apparent_geocentric_true_ecliptic_of_date"
+    assert fm_with_truth.search_truth.crossing_jd_ut == fm
+    assert fm_with_truth.search_truth.search_end_jd_ut == ref
+    assert (
+        fm_with_truth.search_truth.bracket_start_jd_ut
+        <= fm_with_truth.jd_ut
+        <= fm_with_truth.search_truth.bracket_end_jd_ut
+    )
+

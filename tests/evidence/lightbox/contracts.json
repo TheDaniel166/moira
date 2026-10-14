@@ -569,7 +569,151 @@
       "exclusions": [
         "The replay covers the six P0 eclipse, planetary heliacal, and twilight REST routes; global eclipse contour/path cartography and general visibility event routes are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-SYNODIC-CYCLE-SYZYGY-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:last_new_moon",
+        "python:moira.facade:last_new_moon_with_truth",
+        "python:moira.facade:last_full_moon",
+        "python:moira.facade:last_full_moon_with_truth",
+        "python:moira.facade:synodic_cycle_position"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_transits.py::test_last_syzygy_with_truth_matches_scalar_syzygy_and_search_truth",
+        "tests/unit/test_cycles.py::TestSynodicCyclePosition::test_returns_correct_bodies",
+        "tests/unit/test_cycles.py::TestSynodicCyclePosition::test_phase_angle_in_range",
+        "tests/unit/test_cycles.py::TestSynodicCyclePosition::test_waxing_flag_consistent",
+        "tests/unit/test_cycles.py::TestSynodicCyclePosition::test_phase_matches_angle"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The preceding-syzygy and synodic-cycle Python surfaces preserve legacy return values while exposing SyzygySearchWithTruth (phase_kind, target_elongation_deg, reference_frame, and CrossingSearchTruth bracket/tolerance receipts) and SynodicCyclePosition (body1, body2, jd_ut, phase_angle, 8-phase classification, is_waxing, lon1, lon2).",
+      "exclusions": [
+        "The replay covers apparent geocentric true-ecliptic syzygy search and pairwise synodic phase classification; prenatal_syzygy and great_conjunctions are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-TRANSITS-RETURNS-PREDICTIVE-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/transits/search",
+        "rest:POST:/v1/transits/ingresses",
+        "rest:POST:/v1/transits/next-ingress",
+        "rest:POST:/v1/transits/natal-aspects",
+        "rest:POST:/v1/lunar-phases",
+        "rest:POST:/v1/returns/solar",
+        "rest:POST:/v1/returns/lunar",
+        "rest:POST:/v1/returns/planet",
+        "rest:POST:/v1/returns/relocated"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_transit_routes.py::test_transit_search_route_preserves_selected_event_truth",
+        "tests/server/test_server_transit_routes.py::test_ingress_search_route_preserves_sign_and_boundary_truth",
+        "tests/server/test_server_transit_routes.py::test_next_ingress_route_matches_engine_truth",
+        "tests/server/test_server_transit_routes.py::test_return_routes_match_engine_selected_truth",
+        "tests/server/test_server_transit_routes.py::test_lunar_phases_route_matches_engine_phase_truth",
+        "tests/server/test_server_natal_aspect_routes.py::test_natal_aspects_route_matches_engine_grid",
+        "tests/server/test_server_forecasting_routes.py::test_relocated_return_route_preserves_epoch_and_sky_snapshot"
+      ],
+      "minimum_tests": 7,
+      "claim_scope": "The nine P0 predictive transit, ingress, natal-aspect, lunar-phase, and return REST routes preserve engine parity while exposing TransitComputationTruth, IngressComputationTruth, classification, relation, condition_profile, aspect orb-window entry/exit and retrograde-hit state, Sun/Moon longitudes at lunar phases, and dual source/relocated chart and return_truth/relocation_truth receipts.",
+      "exclusions": [
+        "The replay covers the nine P0 predictive REST routes; aggregate transit condition-network routes (/v1/transits/condition-profile, /v1/transits/network) and sidereal varshaphal routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-PROGRESSIONS-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/progressions/secondary",
+        "rest:POST:/v1/progressions/arc",
+        "rest:POST:/v1/progressions/house-frame"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_phase8_progression_routes.py::test_secondary_progression_route_matches_engine",
+        "tests/server/test_server_phase8_progression_routes.py::test_secondary_progression_reduction_route_exposes_computation_truth",
+        "tests/server/test_server_phase8_arc_progression_routes.py::test_solar_arc_route_matches_engine",
+        "tests/server/test_server_phase8_arc_progression_routes.py::test_arc_reduction_route_exposes_directed_arc_truth",
+        "tests/server/test_server_phase8_house_frame_routes.py::test_house_frame_route_matches_engine",
+        "tests/server/test_server_phase8_house_frame_routes.py::test_house_frame_reduction_route_exposes_house_frame_truth"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "The secondary progression, directed arc, and daily house-frame REST routes preserve engine parity while embedding doctrine_family, coordinate_system, rate_mode, application_mode, relation, and condition_profile and pairing with /reduction endpoints that expose ProgressionComputationTruth and stage_sequence.",
+      "exclusions": [
+        "The replay covers /v1/progressions/secondary, /v1/progressions/arc, and /v1/progressions/house-frame and their /reduction pairs; secondary declination, time-key, and house-frame-arc routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-PRIMARY-DIRECTIONS-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/primary-directions/network/reduction",
+        "rest:POST:/v1/primary-directions/speculum"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_phase8_primary_directions_routes.py::test_primary_directions_speculum_route_matches_engine",
+        "tests/server/test_server_phase8_primary_directions_routes.py::test_primary_directions_network_route_matches_engine",
+        "tests/server/test_server_phase8_primary_directions_routes.py::test_primary_directions_network_reduction_route_exposes_policy_truth",
+        "tests/server/test_server_phase8_primary_directions_routes.py::test_primary_directions_speculum_rejects_naive_dt"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The primary-directions speculum and network/reduction REST routes preserve engine parity while exposing the 10-field equatorial/mundane speculum (lon, lat, ra, dec, ha, dsa, nsa, upper, f) and PrimaryDirectionsArcsReductionTruth (UT1/TT/delta-T, observer, house_context, resolved_policy, and stage_sequence).",
+      "exclusions": [
+        "The replay covers /v1/primary-directions/speculum and /v1/primary-directions/network/reduction; chronological life-timeline and standalone arc/relation endpoints are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-TIMELORDS-PROFECTIONS-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/profections/annual",
+        "rest:POST:/v1/profections/schedule",
+        "rest:POST:/v1/timelords/decennials/sequence",
+        "rest:POST:/v1/timelords/firdaria/sequence",
+        "rest:POST:/v1/timelords/zodiacal-releasing/sequence"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_timelord_routes.py::test_profection_routes_match_engine_truth",
+        "tests/server/test_server_timelord_routes.py::test_profection_routes_reject_invalid_inputs",
+        "tests/server/test_server_phase8_decennial_routes.py::test_decennials_sequence_route_matches_engine",
+        "tests/server/test_server_phase8_timelord_routes.py::test_firdaria_sequence_route_matches_engine",
+        "tests/server/test_server_phase8_zr_routes.py::test_zr_sequence_route_matches_engine",
+        "tests/server/test_server_phase8_zr_routes.py::test_zr_sequence_with_fortune_longitude"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "The annual/schedule profection and Decennials, Firdaria, and Zodiacal Releasing sequence REST routes preserve engine parity while exposing ProfectionActivationTruth, civil-anniversary ProfectionChronology (with tzdata version and leap-day/DST fold policies), DecennialSequenceAssemblyTruth, Firdaria sect/variant/year-basis metadata, and ZRFortuneAngularityTruth.",
+      "exclusions": [
+        "The replay covers the five P0 profection and time-lord sequence REST routes; grouped, current-period, active-pair, and condition-profile sub-routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-BATCH-ASSEMBLY-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:batch_progressions",
+        "rest:POST:/v1/batch/charts",
+        "rest:POST:/v1/batch/charts/reduction",
+        "rest:POST:/v1/batch/events",
+        "rest:POST:/v1/batch/progressions",
+        "rest:POST:/v1/batch/returns"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_batch.py::test_batch_progressions_uses_request_objects",
+        "tests/unit/test_batch.py::test_batch_progressions_isolate_per_request_failures",
+        "tests/server/test_server_batch_routes.py::test_batch_charts_route_preserves_item_level_failure_isolation",
+        "tests/server/test_server_batch_routes.py::test_batch_charts_reduction_route_preserves_item_reduction_truth",
+        "tests/server/test_server_batch_routes.py::test_batch_returns_and_progressions_routes_preserve_success_and_failure_items",
+        "tests/server/test_server_batch_routes.py::test_batch_events_route_preserves_embedded_ingress_truth",
+        "tests/server/test_server_batch_routes.py::test_batch_progressions_route_serializes_all_result_families"
+      ],
+      "minimum_tests": 7,
+      "claim_scope": "The batch_progressions Python surface and the five P0 batch REST routes (/v1/batch/charts, /v1/batch/charts/reduction, /v1/batch/events, /v1/batch/progressions, /v1/batch/returns) preserve deterministic request ordering, item-level failure isolation (BatchFailure / BatchFailureResponse), and per-item embedded computation_truth or reduction receipts.",
+      "exclusions": [
+        "The replay covers batch_progressions and the five P0 batch REST routes; /v1/batch/transits and /v1/batch/progressions/reduction are outside this contract."
+      ]
     }
   ]
 }
+
 

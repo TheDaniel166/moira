@@ -29,6 +29,7 @@ _CURATED_PUBLIC_NAMES = [
     "CrossingSearchTruth",
     "TransitComputationTruth",
     "IngressComputationTruth",
+    "SyzygySearchWithTruth",
     "LongitudeResolutionClassification",
     "CrossingSearchClassification",
     "TransitComputationClassification",
@@ -53,7 +54,9 @@ _CURATED_PUBLIC_NAMES = [
     "varshaphal_chart",
     "lunar_return",
     "last_new_moon",
+    "last_new_moon_with_truth",
     "last_full_moon",
+    "last_full_moon_with_truth",
     "prenatal_syzygy",
     "find_lunar_phases",
     "planet_return",
@@ -98,5 +101,5 @@ class TestModuleAgreement:
                 f"moira.transits.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_47(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 47
+    def test_curated_count_is_50(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 50

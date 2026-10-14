@@ -600,8 +600,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 15
+        "partial": 6,
+        "unresolved": 9
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -1015,8 +1015,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 12
+        "partial": 1,
+        "unresolved": 11
       },
       "documentation_leads": [
         "docs/superpowers/plans/2026-05-04-conftest-fixture-adoption.md",
@@ -5381,8 +5381,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 9
+        "partial": 9,
+        "unresolved": 0
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5440,8 +5440,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 1,
-        "unresolved": 10
+        "partial": 3,
+        "unresolved": 8
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5674,8 +5674,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 1,
-        "unresolved": 49
+        "partial": 4,
+        "unresolved": 46
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md",
@@ -6594,8 +6594,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 41
+        "partial": 5,
+        "unresolved": 36
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
@@ -6671,13 +6671,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 23,
+      "canonical_surface_count": 25,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 23
+        "partial": 4,
+        "unresolved": 21
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6729,7 +6729,7 @@
         "python:moira.facade:last_full_moon",
         "python:moira.facade:last_new_moon"
       ],
-      "python_surface_count": 23,
+      "python_surface_count": 25,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_3_product_use",
@@ -7785,7 +7785,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd",
+  "inventory_fingerprint_sha256": "e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7797,7 +7797,7 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1231,
+    "canonical_surface_count": 1233,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
@@ -7819,8 +7819,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 110,
-      "unresolved": 1121
+      "partial": 140,
+      "unresolved": 1093
     }
   }
 }

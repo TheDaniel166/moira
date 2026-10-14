@@ -403,6 +403,31 @@ def test_r4_phenomena_horizon_visibility_and_locational_contracts_are_bounded() 
         assert contract["exclusions"]
 
 
+def test_r5a_predictive_and_timelord_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-SYNODIC-CYCLE-SYZYGY-TRUTH": (5, 5),
+        "LB-TRANSITS-RETURNS-PREDICTIVE-TRUTH": (9, 7),
+        "LB-PROGRESSIONS-REST-TRUTH": (3, 6),
+        "LB-PRIMARY-DIRECTIONS-REST-TRUTH": (2, 4),
+        "LB-TIMELORDS-PROFECTIONS-REST-TRUTH": (5, 6),
+        "LB-BATCH-ASSEMBLY-TRUTH": (6, 7),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
+
 
 def test_contract_hash_is_order_stable() -> None:
     replay = _module()

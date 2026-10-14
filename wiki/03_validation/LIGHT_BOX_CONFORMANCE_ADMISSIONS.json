@@ -551,7 +551,158 @@
       "surface_id": "rest:POST:/v1/rise-set/twilight",
       "contract_kind": "heliacal_and_twilight_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:last_new_moon",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:last_new_moon_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:last_full_moon",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:last_full_moon_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:synodic_cycle_position",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:batch_progressions",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/transits/search",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/transits/ingresses",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/transits/next-ingress",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/transits/natal-aspects",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/lunar-phases",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/returns/solar",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/returns/lunar",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/returns/planet",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/returns/relocated",
+      "contract_kind": "transit_and_return_search_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/progressions/secondary",
+      "contract_kind": "progression_and_arc_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/progressions/arc",
+      "contract_kind": "progression_and_arc_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/progressions/house-frame",
+      "contract_kind": "progression_and_arc_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/primary-directions/network/reduction",
+      "contract_kind": "primary_directions_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/primary-directions/speculum",
+      "contract_kind": "primary_directions_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/profections/annual",
+      "contract_kind": "timelord_and_profection_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/profections/schedule",
+      "contract_kind": "timelord_and_profection_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/timelords/decennials/sequence",
+      "contract_kind": "timelord_and_profection_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/timelords/firdaria/sequence",
+      "contract_kind": "timelord_and_profection_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/timelords/zodiacal-releasing/sequence",
+      "contract_kind": "timelord_and_profection_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/batch/charts",
+      "contract_kind": "batch_assembly_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/batch/charts/reduction",
+      "contract_kind": "batch_assembly_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/batch/events",
+      "contract_kind": "batch_assembly_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/batch/progressions",
+      "contract_kind": "batch_assembly_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/batch/returns",
+      "contract_kind": "batch_assembly_vessel",
+      "evidence_classes": ["invariant", "regression"]
     }
   ]
 }
+
 

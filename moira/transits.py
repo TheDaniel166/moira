@@ -60,6 +60,7 @@ __all__ = [
     # Truth
     "LongitudeResolutionTruth", "CrossingSearchTruth",
     "TransitComputationTruth", "IngressComputationTruth",
+    "SyzygySearchWithTruth",
     # Classification
     "LongitudeResolutionClassification", "CrossingSearchClassification",
     "TransitComputationClassification", "IngressComputationClassification",
@@ -73,7 +74,9 @@ __all__ = [
     "next_transit", "find_transits",
     "find_ingresses", "next_ingress", "next_ingress_into",
     "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return", "planet_return",
-    "last_new_moon", "last_full_moon", "prenatal_syzygy", "find_lunar_phases",
+    "last_new_moon", "last_new_moon_with_truth",
+    "last_full_moon", "last_full_moon_with_truth",
+    "prenatal_syzygy", "find_lunar_phases",
     # Condition profile functions
     "transit_relations", "ingress_relations",
     "transit_condition_profiles", "ingress_condition_profiles",
@@ -2657,6 +2660,36 @@ def _last_full_moon_search_truth(
     raise RuntimeError("last_full_moon: no Full Moon found in past synodic month")
 
 
+@dataclass(slots=True, frozen=True)
+class SyzygySearchWithTruth:
+    """Strictly preceding syzygy JD paired with its CrossingSearchTruth receipt."""
+
+    jd_ut: float
+    phase_kind: str
+    target_elongation_deg: float
+    reference_frame: str
+    search_truth: CrossingSearchTruth
+
+
+def last_new_moon_with_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> SyzygySearchWithTruth:
+    """
+    Find the most recent New Moon (Sun-Moon conjunction) before *jd* and
+    preserve its CrossingSearchTruth receipt.
+    """
+    crossing_jd, search_truth = _last_new_moon_search_truth(jd, reader, policy)
+    return SyzygySearchWithTruth(
+        jd_ut=crossing_jd,
+        phase_kind="New Moon",
+        target_elongation_deg=0.0,
+        reference_frame="apparent_geocentric_true_ecliptic_of_date",
+        search_truth=search_truth,
+    )
+
+
 def last_new_moon(
     jd: float,
     reader: SpkReader | None = None,
@@ -2669,8 +2702,26 @@ def last_new_moon(
     -------
     Julian Day (UT) of the New Moon.
     """
-    crossing_jd, _ = _last_new_moon_search_truth(jd, reader, policy)
-    return crossing_jd
+    return last_new_moon_with_truth(jd, reader, policy).jd_ut
+
+
+def last_full_moon_with_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> SyzygySearchWithTruth:
+    """
+    Find the most recent Full Moon (Sun-Moon opposition) before *jd* and
+    preserve its CrossingSearchTruth receipt.
+    """
+    crossing_jd, search_truth = _last_full_moon_search_truth(jd, reader, policy)
+    return SyzygySearchWithTruth(
+        jd_ut=crossing_jd,
+        phase_kind="Full Moon",
+        target_elongation_deg=180.0,
+        reference_frame="apparent_geocentric_true_ecliptic_of_date",
+        search_truth=search_truth,
+    )
 
 
 def last_full_moon(
@@ -2685,8 +2736,7 @@ def last_full_moon(
     -------
     Julian Day (UT) of the Full Moon.
     """
-    crossing_jd, _ = _last_full_moon_search_truth(jd, reader, policy)
-    return crossing_jd
+    return last_full_moon_with_truth(jd, reader, policy).jd_ut
 
 
 def prenatal_syzygy(

@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.9.9`
-- Surface fingerprint: `0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd`
+- Surface fingerprint: `e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 
@@ -19,7 +19,7 @@ Conservative rule: an ambiguous public callable remains in calculation scope. Ty
 
 | Surface | Total | In calculation scope | Explicit aliases | In-scope without documentation mention | In-scope without test mention |
 |---|---:|---:|---:|---:|---:|
-| Python facade | 2323 | 762 | 2 | 64 | 9 |
+| Python facade | 2326 | 764 | 2 | 64 | 9 |
 | REST operations | 518 | 473 | 3 | 0 | 3 |
 
 ### Python export kinds
@@ -27,19 +27,19 @@ Conservative rule: an ambiguous public callable remains in calculation scope. Ty
 | Kind | Count |
 |---|---:|
 | `class` | 29 |
-| `dataclass` | 1058 |
+| `dataclass` | 1059 |
 | `enum` | 244 |
 | `exception` | 38 |
-| `function` | 800 |
+| `function` | 802 |
 | `value` | 154 |
 
 ### Python surface classifications
 
 | Classification | Count |
 |---|---:|
-| `calculation` | 681 |
+| `calculation` | 683 |
 | `composition_profile` | 81 |
-| `excluded_type` | 1369 |
+| `excluded_type` | 1370 |
 | `excluded_value` | 154 |
 | `reference_query` | 26 |
 | `validation_helper` | 12 |
@@ -374,10 +374,10 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:find_grand_trines` | `find_grand_trines` | `calculation` | yes | `canonical` | `moira/patterns.py:1248` | `wiki/02_standards/API_REFERENCE.md` | `tests/server/test_server_pattern_coherence_routes.py` +4 |
 | `python:moira.facade:find_hard_wedges` | `find_hard_wedges` | `calculation` | yes | `canonical` | `moira/patterns.py:1924` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns_public_api.py` |
 | `python:moira.facade:find_hyleg` | `find_hyleg` | `calculation` | yes | `canonical` | `moira/longevity.py:218` | `docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md` +7 | `tests/unit/test_experimental_validation.py` +1 |
-| `python:moira.facade:find_ingresses` | `find_ingresses` | `calculation` | yes | `canonical` | `moira/transits.py:1862` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +6 | `tests/server/test_server_transit_routes.py` +5 |
+| `python:moira.facade:find_ingresses` | `find_ingresses` | `calculation` | yes | `canonical` | `moira/transits.py:1865` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +6 | `tests/server/test_server_transit_routes.py` +5 |
 | `python:moira.facade:find_irritation_triangles` | `find_irritation_triangles` | `calculation` | yes | `canonical` | `moira/patterns.py:1888` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns_public_api.py` |
 | `python:moira.facade:find_kites` | `find_kites` | `calculation` | yes | `canonical` | `moira/patterns.py:1419` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_pattern_coherence_qualitative.py` +1 |
-| `python:moira.facade:find_lunar_phases` | `find_lunar_phases` | `calculation` | yes | `canonical` | `moira/transits.py:2717` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +1 | `tests/server/test_server_heliacal_eclipse_phase_routes.py` +4 |
+| `python:moira.facade:find_lunar_phases` | `find_lunar_phases` | `calculation` | yes | `canonical` | `moira/transits.py:2767` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +1 | `tests/server/test_server_heliacal_eclipse_phase_routes.py` +4 |
 | `python:moira.facade:find_minor_grand_trines` | `find_minor_grand_trines` | `calculation` | yes | `canonical` | `moira/patterns.py:1522` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns.py` +1 |
 | `python:moira.facade:find_muhurta_windows` | `find_muhurta_windows` | `calculation` | yes | `canonical` | `moira/muhurta_search.py:326` | `CHANGELOG.md` +2 | `tests/integration/test_muhurta_search.py` +3 |
 | `python:moira.facade:find_mystic_rectangles` | `find_mystic_rectangles` | `calculation` | yes | `canonical` | `moira/patterns.py:1362` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_pattern_coherence_qualitative.py` +2 |
@@ -396,7 +396,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:find_stelliums` | `find_stelliums` | `calculation` | yes | `canonical` | `moira/patterns.py:1464` | `wiki/02_services/SERVICE_LAYER_GUIDE.md` +4 | `tests/unit/test_patterns.py` +2 |
 | `python:moira.facade:find_t_squares` | `find_t_squares` | `calculation` | yes | `canonical` | `moira/patterns.py:1213` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_pattern_coherence_qualitative.py` +2 |
 | `python:moira.facade:find_thors_hammers` | `find_thors_hammers` | `calculation` | yes | `canonical` | `moira/patterns.py:1639` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns_public_api.py` |
-| `python:moira.facade:find_transits` | `find_transits` | `calculation` | yes | `canonical` | `moira/transits.py:1688` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +6 |
+| `python:moira.facade:find_transits` | `find_transits` | `calculation` | yes | `canonical` | `moira/transits.py:1691` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +6 |
 | `python:moira.facade:find_trapezes` | `find_trapezes` | `calculation` | yes | `canonical` | `moira/patterns.py:1807` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns.py` +1 |
 | `python:moira.facade:find_wedges` | `find_wedges` | `calculation` | yes | `canonical` | `moira/patterns.py:1717` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_patterns_public_api.py` |
 | `python:moira.facade:find_whole_sign_aspects` | `find_whole_sign_aspects` | `calculation` | yes | `canonical` | `moira/aspects.py:3703` | `wiki/01_doctrines/hellenistic_6_3/assemble_condition_admission.md` +4 | `tests/server/test_server_hellenistic_aspects_routes.py` +4 |
@@ -469,8 +469,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:hunt_hellenistic_offices` | `hunt_hellenistic_offices` | `calculation` | yes | `canonical` | `moira/hellenistic_offices.py:486` | `wiki/03_release/RELEASE_NOTES_6.3.0.md` | `tests/unit/test_api_surface_adversarial_audit.py` +3 |
 | `python:moira.facade:icrf_to_ecliptic` | `icrf_to_ecliptic` | `calculation` | yes | `canonical` | `moira/coordinates.py:231` | `docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md` +5 | `tests/unit/test_adversarial_hardmode_singularities.py` +2 |
 | `python:moira.facade:icrf_to_equatorial` | `icrf_to_equatorial` | `calculation` | yes | `canonical` | `moira/coordinates.py:343` | `docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md` +1 | `tests/integration/test_eclipse_lunar_contacts_nasa_reference.py` +3 |
-| `python:moira.facade:ingress_condition_profiles` | `ingress_condition_profiles` | `composition_profile` | yes | `canonical` | `moira/transits.py:2767` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
-| `python:moira.facade:ingress_relations` | `ingress_relations` | `calculation` | yes | `canonical` | `moira/transits.py:2755` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:ingress_condition_profiles` | `ingress_condition_profiles` | `composition_profile` | yes | `canonical` | `moira/transits.py:2817` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:ingress_relations` | `ingress_relations` | `calculation` | yes | `canonical` | `moira/transits.py:2805` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
 | `python:moira.facade:integrate_progressed_influence` | `integrate_progressed_influence` | `calculation` | yes | `canonical` | `moira/progressed_astrodynes_search.py:691` | — | `tests/integration/test_progressed_astrodynes_search.py` +2 |
 | `python:moira.facade:intensity_at` | `intensity_at` | `calculation` | yes | `canonical` | `moira/huber.py:556` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_classical_facade.py` +2 |
 | `python:moira.facade:intensity_function_spectrum` | `intensity_function_spectrum` | `calculation` | yes | `canonical` | `moira/harmograms/compute.py:271` | `docs/architecture/MOIRA_NATIVE_CLOSURE_PROGRAM.md` +5 | `tests/server/test_server_harmograms_routes.py` +7 |
@@ -500,10 +500,12 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:karaka_pair` | `karaka_pair` | `calculation` | yes | `canonical` | `moira/jaimini.py:756` | `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md` +3 | `tests/server/test_server_jaimini_service.py` +3 |
 | `python:moira.facade:karakamsa` | `karakamsa` | `calculation` | yes | `canonical` | `moira/jaimini_extended.py:479` | `CHANGELOG.md` +4 | `tests/server/test_vedic_direct_input_hardening.py` +2 |
 | `python:moira.facade:lajjitadi_avasthas` | `lajjitadi_avasthas` | `calculation` | yes | `canonical` | `moira/avasthas.py:902` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
-| `python:moira.facade:last_full_moon` | `last_full_moon` | `calculation` | yes | `canonical` | `moira/transits.py:2676` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:last_full_moon` | `last_full_moon` | `calculation` | yes | `canonical` | `moira/transits.py:2727` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:last_full_moon_with_truth` | `last_full_moon_with_truth` | `calculation` | yes | `canonical` | `moira/transits.py:2708` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
 | `python:moira.facade:last_morning_visibility` | `last_morning_visibility` | `calculation` | yes | `canonical` | `moira/stars.py:1459` | `CHANGELOG.md` +1 | `tests/unit/test_native_runtime_verification.py` +2 |
 | `python:moira.facade:last_morning_visibility_event` | `last_morning_visibility_event` | `calculation` | yes | `canonical` | `moira/stars.py:1487` | `CHANGELOG.md` +1 | `tests/unit/test_native_runtime_verification.py` +2 |
-| `python:moira.facade:last_new_moon` | `last_new_moon` | `calculation` | yes | `canonical` | `moira/transits.py:2660` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:last_new_moon` | `last_new_moon` | `calculation` | yes | `canonical` | `moira/transits.py:2693` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:last_new_moon_with_truth` | `last_new_moon_with_truth` | `calculation` | yes | `canonical` | `moira/transits.py:2674` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
 | `python:moira.facade:lifetime_returns` | `lifetime_returns` | `calculation` | yes | `canonical` | `moira/cycles.py:1253` | `wiki/02_standards/API_REFERENCE.md` | `tests/test_api_reference_validation.py` +1 |
 | `python:moira.facade:lilly_perfection_at` | `lilly_perfection_at` | `calculation` | yes | `canonical` | `moira/classical_perfection.py:553` | `CHANGELOG.md` +4 | `tests/integration/test_classical_perfection_de441.py` +6 |
 | `python:moira.facade:list_all_centaurs` | `list_all_centaurs` | `reference_query` | no | `canonical` | `moira/asteroids.py:557` | — | — |
@@ -531,7 +533,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:lunar_occultation_path_topology` | `lunar_occultation_path_topology` | `calculation` | yes | `canonical` | `moira/occultations.py:4091` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/integration/test_occultation_polar_topology_horizons_reference.py` +3 |
 | `python:moira.facade:lunar_occultation_path_topology_at` | `lunar_occultation_path_topology_at` | `calculation` | yes | `canonical` | `moira/occultations.py:4149` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/server/test_server_occultation_path_topology.py` +2 |
 | `python:moira.facade:lunar_orientation_at` | `lunar_orientation_at` | `calculation` | yes | `canonical` | `moira/lunar_orientation.py:145` | `CHANGELOG.md` +3 | `tests/integration/test_lunar_orientation_authority.py` +2 |
-| `python:moira.facade:lunar_return` | `lunar_return` | `calculation` | yes | `canonical` | `moira/transits.py:2403` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +5 |
+| `python:moira.facade:lunar_return` | `lunar_return` | `calculation` | yes | `canonical` | `moira/transits.py:2406` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +5 |
 | `python:moira.facade:lunar_star_occultation` | `lunar_star_occultation` | `calculation` | yes | `canonical` | `moira/occultations.py:4187` | `wiki/02_standards/API_REFERENCE.md` +2 | `tests/integration/test_occultations_external_reference.py` +2 |
 | `python:moira.facade:lunar_star_occultation_path_topology` | `lunar_star_occultation_path_topology` | `calculation` | yes | `canonical` | `moira/occultations.py:4388` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/server/test_server_occultation_path_topology.py` +2 |
 | `python:moira.facade:lunar_star_occultation_path_topology_at` | `lunar_star_occultation_path_topology_at` | `calculation` | yes | `canonical` | `moira/occultations.py:4456` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/server/test_server_occultation_path_topology.py` +2 |
@@ -589,8 +591,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:next_conjunction` | `next_conjunction` | `calculation` | yes | `canonical` | `moira/phenomena.py:961` | `wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md` +2 | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:next_heliocentric_conjunction` | `next_heliocentric_conjunction` | `calculation` | yes | `canonical` | `moira/phenomena.py:1207` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_phenomena_regressions.py` |
 | `python:moira.facade:next_heliocentric_transit` | `next_heliocentric_transit` | `calculation` | yes | `canonical` | `moira/planets.py:4057` | `wiki/02_standards/API_REFERENCE.md` +4 | `tests/oracle/test_oracle_validation.py` +1 |
-| `python:moira.facade:next_ingress` | `next_ingress` | `calculation` | yes | `canonical` | `moira/transits.py:1954` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +3 | `tests/server/test_server_transit_routes.py` +3 |
-| `python:moira.facade:next_ingress_into` | `next_ingress_into` | `calculation` | yes | `canonical` | `moira/transits.py:2000` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_adversarial_public_visibility_transits.py` +2 |
+| `python:moira.facade:next_ingress` | `next_ingress` | `calculation` | yes | `canonical` | `moira/transits.py:1957` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +3 | `tests/server/test_server_transit_routes.py` +3 |
+| `python:moira.facade:next_ingress_into` | `next_ingress_into` | `calculation` | yes | `canonical` | `moira/transits.py:2003` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_adversarial_public_visibility_transits.py` +2 |
 | `python:moira.facade:next_maximum` | `next_maximum` | `calculation` | yes | `canonical` | `moira/variable_stars.py:921` | `docs/architecture/P11-02_VARIABLE_STARS_TRANSPORT_DESIGN.md` +2 | `tests/server/test_server_stars_routes.py` +1 |
 | `python:moira.facade:next_minimum` | `next_minimum` | `calculation` | yes | `canonical` | `moira/variable_stars.py:889` | `docs/architecture/P11-02_VARIABLE_STARS_TRANSPORT_DESIGN.md` +2 | `tests/integration/test_variable_stars_external_reference.py` +2 |
 | `python:moira.facade:next_moon_connection` | `next_moon_connection` | `calculation` | yes | `canonical` | `moira/void_of_course.py:1135` | `docs/architecture/P13-U1_WESTERN_ELECTIONAL_ISSUES_01_16_IMPLEMENTATION_PLAN.md` | `tests/server/test_server_dorotheus_rooted_context_routes.py` +2 |
@@ -599,7 +601,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:next_nasa_lunar_eclipse` | `next_nasa_lunar_eclipse` | `calculation` | yes | `canonical` | `moira/compat/nasa/eclipse.py:259` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_lunar_nasa_compat_reference.py` +1 |
 | `python:moira.facade:next_solar_eclipse_at_location` | `next_solar_eclipse_at_location` | `calculation` | yes | `canonical` | `moira/eclipse.py:7847` | `CHANGELOG.md` +3 | `tests/oracle/test_oracle_validation.py` +3 |
 | `python:moira.facade:next_station` | `next_station` | `calculation` | yes | `canonical` | `moira/stations.py:525` | `wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md` +3 | `tests/integration/test_r3c_station_truth_evidence.py` +1 |
-| `python:moira.facade:next_transit` | `next_transit` | `calculation` | yes | `canonical` | `moira/transits.py:1566` | `docs/superpowers/plans/2026-05-15-feature-audit.md` +7 | `tests/server/test_server_transit_routes.py` +2 |
+| `python:moira.facade:next_transit` | `next_transit` | `calculation` | yes | `canonical` | `moira/transits.py:1569` | `docs/superpowers/plans/2026-05-15-feature-audit.md` +7 | `tests/server/test_server_transit_routes.py` +2 |
 | `python:moira.facade:next_void_of_course` | `next_void_of_course` | `calculation` | yes | `canonical` | `moira/void_of_course.py:1255` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/integration/test_r3d_void_of_course_truth_evidence.py` +4 |
 | `python:moira.facade:nodes_and_apsides_at` | `nodes_and_apsides_at` | `calculation` | yes | `canonical` | `moira/nodes.py:708` | `wiki/02_standards/API_REFERENCE.md` +3 | `tests/oracle/test_oracle_validation.py` +2 |
 | `python:moira.facade:normal_progressed_horoscope` | `normal_progressed_horoscope` | `calculation` | yes | `canonical` | `moira/progressed_astrodynes.py:929` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
@@ -660,7 +662,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:planet_reduction_breakdown_at` | `planet_reduction_breakdown_at` | `calculation` | yes | `canonical` | `moira/planets.py:2531` | `CHANGELOG.md` +5 | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:planet_relative_to` | `planet_relative_to` | `calculation` | yes | `canonical` | `moira/planets.py:3921` | `docs/architecture/MOIRA_NATIVE_PLANETARY_CLOSURE_TRACKER.md` +10 | `tests/oracle/test_oracle_validation.py` +2 |
 | `python:moira.facade:planet_relative_to_with_truth` | `planet_relative_to_with_truth` | `calculation` | yes | `canonical` | `moira/planets.py:4013` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_r2b_truth_evidence.py` +1 |
-| `python:moira.facade:planet_return` | `planet_return` | `calculation` | yes | `canonical` | `moira/transits.py:2193` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +5 |
+| `python:moira.facade:planet_return` | `planet_return` | `calculation` | yes | `canonical` | `moira/transits.py:2196` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +5 | `tests/server/test_server_transit_routes.py` +5 |
 | `python:moira.facade:planet_time_series` | `planet_time_series` | `calculation` | yes | `canonical` | `moira/batch.py:723` | `wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md` | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:planetary_age_at` | `planetary_age_at` | `calculation` | yes | `canonical` | `moira/cycles.py:1451` | `wiki/02_standards/API_REFERENCE.md` | `tests/test_api_reference_validation.py` +1 |
 | `python:moira.facade:planetary_age_profile` | `planetary_age_profile` | `composition_profile` | yes | `canonical` | `moira/cycles.py:1479` | `wiki/02_standards/API_REFERENCE.md` | `tests/test_api_reference_validation.py` +1 |
@@ -680,7 +682,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:practical_progressed_horoscope` | `practical_progressed_horoscope` | `calculation` | yes | `canonical` | `moira/progressed_astrodynes.py:1933` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:predict_sothic_epoch` | `predict_sothic_epoch` | `calculation` | yes | `canonical` | `moira/sothic.py:1783` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_sothic.py` +1 |
 | `python:moira.facade:predicted_sothic_epoch_year` | `predicted_sothic_epoch_year` | `calculation` | yes | `canonical` | `moira/sothic.py:1756` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_sothic.py` +1 |
-| `python:moira.facade:prenatal_syzygy` | `prenatal_syzygy` | `calculation` | yes | `canonical` | `moira/transits.py:2692` | `docs/superpowers/plans/2026-05-15-feature-audit.md` +4 | `tests/unit/test_facade_clock_boundaries.py` +2 |
+| `python:moira.facade:prenatal_syzygy` | `prenatal_syzygy` | `calculation` | yes | `canonical` | `moira/transits.py:2742` | `docs/superpowers/plans/2026-05-15-feature-audit.md` +4 | `tests/unit/test_facade_clock_boundaries.py` +2 |
 | `python:moira.facade:previous_nasa_lunar_eclipse` | `previous_nasa_lunar_eclipse` | `calculation` | yes | `canonical` | `moira/compat/nasa/eclipse.py:295` | `wiki/02_standards/API_REFERENCE.md` | — |
 | `python:moira.facade:profection_activation_truth` | `profection_activation_truth` | `calculation` | yes | `canonical` | `moira/profections.py:1068` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:profection_chronology` | `profection_chronology` | `calculation` | yes | `canonical` | `moira/profections.py:1220` | `wiki/01_doctrines/timelords/monthly_profection_chronology_doctrine.md` +4 | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
@@ -745,8 +747,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:solar_condition_at` | `solar_condition_at` | `calculation` | yes | `canonical` | `moira/phenomena.py:1599` | `CHANGELOG.md` +7 | `tests/server/test_server_generic_phenomena_routes.py` +2 |
 | `python:moira.facade:solar_condition_events_in_range` | `solar_condition_events_in_range` | `calculation` | yes | `canonical` | `moira/phenomena.py:1568` | `CHANGELOG.md` +5 | `tests/server/test_server_generic_phenomena_routes.py` +3 |
 | `python:moira.facade:solar_proximity_truth` | `solar_proximity_truth` | `calculation` | yes | `canonical` | `moira/dignities.py:562` | `CHANGELOG.md` +2 | `tests/server/test_server_dignities_routes.py` +5 |
-| `python:moira.facade:solar_return` | `solar_return` | `calculation` | yes | `canonical` | `moira/transits.py:2222` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +7 | `tests/server/test_server_batch_routes.py` +7 |
-| `python:moira.facade:solar_return_chart` | `solar_return_chart` | `calculation` | yes | `canonical` | `moira/transits.py:2261` | `wiki/06_roadmap/lord_of_the_turn/lord_of_the_turn_roadmap.md` +2 | `tests/unit/test_api_surface_adversarial_audit.py` +3 |
+| `python:moira.facade:solar_return` | `solar_return` | `calculation` | yes | `canonical` | `moira/transits.py:2225` | `docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md` +7 | `tests/server/test_server_batch_routes.py` +7 |
+| `python:moira.facade:solar_return_chart` | `solar_return_chart` | `calculation` | yes | `canonical` | `moira/transits.py:2264` | `wiki/06_roadmap/lord_of_the_turn/lord_of_the_turn_roadmap.md` +2 | `tests/unit/test_api_surface_adversarial_audit.py` +3 |
 | `python:moira.facade:sothic_chart_condition_profile` | `sothic_chart_condition_profile` | `composition_profile` | yes | `canonical` | `moira/sothic.py:1825` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_sothic.py` +1 |
 | `python:moira.facade:sothic_condition_network_profile` | `sothic_condition_network_profile` | `composition_profile` | yes | `canonical` | `moira/sothic.py:1891` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_sothic.py` +1 |
 | `python:moira.facade:sothic_drift_rate` | `sothic_drift_rate` | `calculation` | yes | `canonical` | `moira/sothic.py:1705` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_sothic.py` +1 |
@@ -791,10 +793,10 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:to_dial_22_5` | `to_dial_22_5` | `calculation` | yes | `canonical` | `moira/midpoints.py:649` | — | `tests/unit/test_midpoints.py` |
 | `python:moira.facade:to_dial_45` | `to_dial_45` | `calculation` | yes | `canonical` | `moira/midpoints.py:635` | — | `tests/unit/test_midpoints.py` |
 | `python:moira.facade:to_dial_90` | `to_dial_90` | `calculation` | yes | `canonical` | `moira/midpoints.py:621` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_astrology_adversarial_gauntlet.py` +2 |
-| `python:moira.facade:transit_chart_condition_profile` | `transit_chart_condition_profile` | `composition_profile` | yes | `canonical` | `moira/transits.py:2773` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
-| `python:moira.facade:transit_condition_network_profile` | `transit_condition_network_profile` | `composition_profile` | yes | `canonical` | `moira/transits.py:2814` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
-| `python:moira.facade:transit_condition_profiles` | `transit_condition_profiles` | `composition_profile` | yes | `canonical` | `moira/transits.py:2761` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
-| `python:moira.facade:transit_relations` | `transit_relations` | `calculation` | yes | `canonical` | `moira/transits.py:2749` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_progressed_astrodynes_chart_adapter.py` +3 |
+| `python:moira.facade:transit_chart_condition_profile` | `transit_chart_condition_profile` | `composition_profile` | yes | `canonical` | `moira/transits.py:2823` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:transit_condition_network_profile` | `transit_condition_network_profile` | `composition_profile` | yes | `canonical` | `moira/transits.py:2864` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:transit_condition_profiles` | `transit_condition_profiles` | `composition_profile` | yes | `canonical` | `moira/transits.py:2811` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_transits.py` +1 |
+| `python:moira.facade:transit_relations` | `transit_relations` | `calculation` | yes | `canonical` | `moira/transits.py:2799` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_progressed_astrodynes_chart_adapter.py` +3 |
 | `python:moira.facade:transit_strength` | `transit_strength` | `calculation` | yes | `canonical` | `moira/ashtakavarga.py:749` | `docs/architecture/P9-09_ASHTAKAVARGA_TRANSPORT_DESIGN.md` +5 | `tests/server/test_server_ashtakavarga_routes.py` +3 |
 | `python:moira.facade:transiting_astrocartography` | `transiting_astrocartography` | `calculation` | yes | `canonical` | `moira/locational_forecasting.py:854` | `wiki/02_standards/API_REFERENCE.md` | `tests/server/test_server_forecasting_routes.py` +3 |
 | `python:moira.facade:translate_lunar_eclipse_event` | `translate_lunar_eclipse_event` | `calculation` | yes | `canonical` | `moira/compat/nasa/eclipse.py:225` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_nasa_compat_eclipse.py` |
@@ -838,8 +840,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:variable_stars_by_type` | `variable_stars_by_type` | `calculation` | yes | `canonical` | `moira/variable_stars.py:1098` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_variable_stars.py` |
 | `python:moira.facade:variant_nature` | `variant_nature` | `calculation` | yes | `canonical` | `moira/manazil.py:371` | `wiki/02_standards/MANAZIL_BACKEND_STANDARD.md` | `tests/unit/test_manazil.py` |
 | `python:moira.facade:variant_signification` | `variant_signification` | `calculation` | yes | `canonical` | `moira/manazil.py:381` | `wiki/02_standards/MANAZIL_BACKEND_STANDARD.md` | `tests/unit/test_manazil.py` |
-| `python:moira.facade:varshaphal` | `varshaphal` | `calculation` | yes | `canonical` | `moira/transits.py:2296` | `docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md` +10 | `tests/server/test_server_phase8_varshaphal_routes.py` +5 |
-| `python:moira.facade:varshaphal_chart` | `varshaphal_chart` | `calculation` | yes | `canonical` | `moira/transits.py:2366` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/unit/test_api_surface_adversarial_audit.py` +3 |
+| `python:moira.facade:varshaphal` | `varshaphal` | `calculation` | yes | `canonical` | `moira/transits.py:2299` | `docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md` +10 | `tests/server/test_server_phase8_varshaphal_routes.py` +5 |
+| `python:moira.facade:varshaphal_chart` | `varshaphal_chart` | `calculation` | yes | `canonical` | `moira/transits.py:2369` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/unit/test_api_surface_adversarial_audit.py` +3 |
 | `python:moira.facade:varshaphal_judgement_profile` | `varshaphal_judgement_profile` | `composition_profile` | yes | `canonical` | `moira/varshaphal.py:2927` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/server/test_server_phase8_varshaphal_routes.py` +1 |
 | `python:moira.facade:varshaphal_sahams` | `varshaphal_sahams` | `calculation` | yes | `canonical` | `moira/varshaphal.py:3619` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/unit/test_varshaphal.py` |
 | `python:moira.facade:varshaphal_topic_judgements` | `varshaphal_topic_judgements` | `composition_profile` | yes | `canonical` | `moira/varshaphal.py:3087` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/server/test_server_phase8_varshaphal_routes.py` +1 |
