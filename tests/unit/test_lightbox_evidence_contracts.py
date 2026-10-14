@@ -449,6 +449,29 @@ def test_r5b_classical_traditional_western_contracts_are_bounded() -> None:
         assert contract["exclusions"]
 
 
+def test_r5c_vedic_and_electional_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-VIMSHOTTARI-DASHA-REST-TRUTH": (3, 6),
+        "LB-PANCHA-PAKSHI-SOURCE-SCOPED-REST-TRUTH": (15, 15),
+        "LB-SHADBALA-CHART-REST-TRUTH": (2, 4),
+        "LB-VEDIC-DIGNITIES-CHART-PROFILE-TRUTH": (1, 3),
+        "LB-VEDIC-YOGAS-PROOF-TRUTH": (1, 4),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"doctrine_source", "invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
 
 
 def test_contract_hash_is_order_stable() -> None:

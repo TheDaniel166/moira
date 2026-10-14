@@ -28,9 +28,9 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | Per-surface conformance | Canonical surfaces |
 |---|---:|
 | `conformant` | 0 |
-| `partial` | 151 |
+| `partial` | 173 |
 | `not_applicable` | 0 |
-| `unresolved` | 1082 |
+| `unresolved` | 1060 |
 
 ## Reviewed queue
 
@@ -56,7 +56,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `cosmic-references` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 3 | 0 | 0 | 3 | 0 | 0 |
 | `cycles` | `predictive-and-time` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 12 | 1 | 1 | 11 | 0 | 0 |
 | `daily-panchanga` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `dasha` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 16 | 3 | 0 | 16 | 0 | 0 |
+| `dasha` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 16 | 3 | 3 | 13 | 0 | 0 |
 | `decanates` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 9 | 0 | 0 | 9 | 0 | 0 |
 | `declination-aspects` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `deep-sky` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 6 | 1 | 0 | 6 | 2 | 0 |
@@ -119,7 +119,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `obliquity` | `astronomy-and-chart-core` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 4 | 1 | 2 | 2 | 0 | 0 |
 | `occultations` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 8 | 0 | 0 | 8 | 0 | 0 |
 | `orbits` | `astronomy-and-chart-core` | `strong_exemplar` | `stage_2_exemplars` | 10 | 0 | 1 | 9 | 0 | 0 |
-| `pancha-pakshi` | `vedic-and-electional` | `strong_exemplar` | `stage_2_exemplars` | 33 | 16 | 1 | 32 | 0 | 0 |
+| `pancha-pakshi` | `vedic-and-electional` | `strong_exemplar` | `stage_2_exemplars` | 33 | 16 | 16 | 17 | 0 | 0 |
 | `panchanga` | `vedic-and-electional` | `major_gap` | `stage_5_remaining_tail` | 9 | 0 | 0 | 9 | 0 | 0 |
 | `panchanga-shuddhi` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 3 | 0 | 0 | 3 | 0 | 0 |
 | `paran-stars` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 1 | 0 |
@@ -144,7 +144,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `rise-set` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 2 | 0 | 0 | 2 | 1 | 0 |
 | `sade-sati` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 4 | 0 | 0 | 4 | 0 | 0 |
 | `sayanadi-dated` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `shadbala` | `vedic-and-electional` | `major_gap` | `stage_3_product_use,stage_5_remaining_tail` | 18 | 2 | 0 | 18 | 0 | 0 |
+| `shadbala` | `vedic-and-electional` | `major_gap` | `stage_3_product_use,stage_5_remaining_tail` | 18 | 2 | 2 | 16 | 0 | 0 |
 | `shadbala-components` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `shadbala-context` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `sidereal` | `astronomy-and-chart-core` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 14 | 3 | 14 | 0 | 0 | 0 |
@@ -163,7 +163,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `valens-transmissions` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `varga` | `vedic-and-electional` | `major_gap` | `stage_5_remaining_tail` | 22 | 0 | 0 | 22 | 0 | 0 |
 | `varshaphal` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 28 | 0 | 0 | 28 | 0 | 0 |
-| `vedic-dignities` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 11 | 1 | 0 | 11 | 0 | 0 |
+| `vedic-dignities` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 11 | 1 | 1 | 10 | 0 | 0 |
 | `vedic-profile` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `visibility` | `phenomena-and-visibility` | `partial` | `stage_3_product_use,stage_4_phenomena_relationships` | 7 | 1 | 1 | 6 | 0 | 0 |
 | `void-of-course` | `phenomena-and-visibility` | `partial` | `stage_4_phenomena_relationships` | 5 | 0 | 0 | 5 | 0 | 0 |
@@ -178,7 +178,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `western-electional-scan` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `western-electional-windows` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `western-profile` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `yogas` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 9 | 1 | 0 | 9 | 8 | 0 |
+| `yogas` | `vedic-and-electional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 9 | 1 | 1 | 8 | 8 | 0 |
 
 ## Interpretation
 

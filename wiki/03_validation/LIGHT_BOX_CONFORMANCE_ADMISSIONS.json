@@ -756,6 +756,116 @@
       "surface_id": "rest:POST:/v1/manazil/position",
       "contract_kind": "manazil_lunar_mansion_vessel",
       "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dasha/vimshottari/balance",
+      "contract_kind": "vimshottari_dasha_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dasha/vimshottari/current",
+      "contract_kind": "vimshottari_dasha_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dasha/vimshottari/sequence",
+      "contract_kind": "vimshottari_dasha_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/context/astronomical-paksha",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/context/local-solar",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/identity/aksara",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/identity/natal-moon",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/mappings/nakshatra-bird",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/relationships/directed",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/roles/padu",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/first-eat-bird",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/nominal",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/civil-time-select",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/schedule-select",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/select",
+      "contract_kind": "pancha_pakshi_source_scoped_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/shadbala/chart",
+      "contract_kind": "shadbala_and_bhava_bala_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/shadbala/chart/full",
+      "contract_kind": "shadbala_and_bhava_bala_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/vedic-dignities/chart-profile",
+      "contract_kind": "vedic_dignities_chart_profile_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/yogas/evaluate",
+      "contract_kind": "vedic_yogas_proof_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
     }
   ]
 }

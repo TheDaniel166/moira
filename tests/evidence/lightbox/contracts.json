@@ -796,6 +796,125 @@
       "exclusions": [
         "The replay covers /v1/manazil/position; /v1/manazil/bulk, catalog/tradition lookup routes, and Python manazil helpers are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-VIMSHOTTARI-DASHA-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/dasha/vimshottari/balance",
+        "rest:POST:/v1/dasha/vimshottari/current",
+        "rest:POST:/v1/dasha/vimshottari/sequence"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_sequence_route_matches_engine",
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_balance_route_matches_engine",
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_current_route_matches_engine",
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_sequence_rejects_naive_natal_dt",
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_current_rejects_date_before_birth",
+        "tests/server/test_server_phase8_dasha_routes.py::test_dasha_current_rejects_date_beyond_cycle"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "The three P0 Vimshottari Dasha REST routes (/v1/dasha/vimshottari/balance, /v1/dasha/vimshottari/current, /v1/dasha/vimshottari/sequence) preserve engine parity while exposing birth_nakshatra, nakshatra_fraction, year_basis ('savana_360' or 'julian_365.25'), clipped and unclipped JD/ISO period bounds, and recursive Mahadasha-through-Prana sub-period chains.",
+      "exclusions": [
+        "The replay covers the three P0 Vimshottari Dasha routes; /v1/dasha/vimshottari/profile, /v1/dasha/vimshottari/lord-pair, Yogini/Ashtottari/Kalachakra dashas, and Python dasha helpers are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-PANCHA-PAKSHI-SOURCE-SCOPED-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/pancha-pakshi/context/astronomical-paksha",
+        "rest:POST:/v1/pancha-pakshi/context/local-solar",
+        "rest:POST:/v1/pancha-pakshi/identity/aksara",
+        "rest:POST:/v1/pancha-pakshi/identity/natal-moon",
+        "rest:POST:/v1/pancha-pakshi/mappings/nakshatra-bird",
+        "rest:POST:/v1/pancha-pakshi/relationships/directed",
+        "rest:POST:/v1/pancha-pakshi/roles/padu",
+        "rest:POST:/v1/pancha-pakshi/schedule/first-eat-bird",
+        "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
+        "rest:POST:/v1/pancha-pakshi/schedule/nominal",
+        "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional",
+        "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
+        "rest:POST:/v1/pancha-pakshi/sookshma/civil-time-select",
+        "rest:POST:/v1/pancha-pakshi/sookshma/schedule-select",
+        "rest:POST:/v1/pancha-pakshi/sookshma/select"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_pancha_pakshi_routes.py::test_aksara_identity_route_is_explicit_and_not_natal",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_nominal_schedule_preserves_exact_fractional_time_and_source_context",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_local_solar_context_route_is_policy_explicit_and_does_not_materialize_offsets",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_fixed_clock_current_cell_route_returns_one_bounded_selected_cell",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_route_serializes_exact_full_half_materialization",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_current_cell_route_returns_one_selected_cell",
+        "tests/server/test_server_pancha_pakshi_routes.py::test_directed_relationship_route_does_not_infer_reciprocity",
+        "tests/server/test_server_pancha_pakshi_astronomical_paksha.py::test_astronomical_paksha_route_is_explicit_and_serialized",
+        "tests/server/test_server_pancha_pakshi_natal_moon.py::test_natal_moon_route_is_strict_and_transparent",
+        "tests/server/test_server_pancha_pakshi_rest_completeness.py::test_missing_nakshatra_mapping_route_is_now_strictly_admitted",
+        "tests/server/test_server_pancha_pakshi_padu.py::test_padu_route_is_registered_strict_and_has_no_temporal_policy_inputs",
+        "tests/server/test_server_pancha_pakshi_first_eat_bird.py::test_first_eat_route_is_strict_and_routes_no_temporal_inference",
+        "tests/server/test_server_pancha_pakshi_sookshma.py::test_route_requires_and_echoes_each_explicit_policy",
+        "tests/server/test_server_pancha_pakshi_schedule_sookshma.py::test_route_requires_and_echoes_both_profile_and_policy_choices",
+        "tests/server/test_server_pancha_pakshi_civil_time_sookshma.py::test_route_returns_the_full_explicit_stage2o_contract"
+      ],
+      "minimum_tests": 15,
+      "claim_scope": "All fifteen remaining P0 Pancha Pakshi REST routes enforce explicit profile_id and policy axes without defaults, preserve source-scoped table and witness provenance, and separate table lookups from astronomical paksha, local-solar, fixed-clock, solar-proportional, and Sookshma temporal composition.",
+      "exclusions": [
+        "The replay covers the fifteen P0 Pancha Pakshi POST routes; GET catalog/constitution routes and Python helper functions are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-SHADBALA-CHART-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/shadbala/chart",
+        "rest:POST:/v1/shadbala/chart/full"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_shadbala_routes.py::test_shadbala_chart_route_matches_service",
+        "tests/server/test_server_shadbala_routes.py::test_shadbala_full_route_matches_individual_services",
+        "tests/server/test_server_shadbala_routes.py::test_shadbala_chart_route_rejects_naive_datetime",
+        "tests/server/test_server_shadbala_routes.py::test_shadbala_chart_route_rejects_invalid_ayanamsa_name"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/shadbala/chart and /v1/shadbala/chart/full REST routes preserve engine parity while exposing ShadbalaAppliedPolicyResponse, ShadbalaContextResponse, Graha Yuddha WarResolutionResponse, SaptavargajaEntryResponse evidence, and coherent chart/profile/network/bhava strength vessels.",
+      "exclusions": [
+        "The replay covers /v1/shadbala/chart and /v1/shadbala/chart/full; standalone /v1/shadbala/chart/profile, /network, /condition, and /bhava routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-VEDIC-DIGNITIES-CHART-PROFILE-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/vedic-dignities/chart-profile"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_vedic_dignities_routes.py::test_vedic_chart_profile_route_matches_engine_profile",
+        "tests/server/test_server_vedic_dignities_routes.py::test_vedic_chart_profile_route_rejects_empty_map",
+        "tests/server/test_server_vedic_dignities_routes.py::test_vedic_chart_profile_route_rejects_invalid_planet"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The /v1/vedic-dignities/chart-profile REST route preserves engine parity while returning per-planet VedicDignityResultResponse vessels, exaltation scores, tier classifications, strong/neutral/weak counts, and ayanamsa_system provenance.",
+      "exclusions": [
+        "The replay covers /v1/vedic-dignities/chart-profile; single-planet, relationship, and chart-backed sub-routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-VEDIC-YOGAS-PROOF-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/yogas/evaluate"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_yogas.py::TestEvaluateYogas::test_full_chart_evaluation_counts",
+        "tests/unit/test_yogas.py::TestEvaluateYogas::test_every_result_is_internally_consistent",
+        "tests/unit/test_yogas.py::TestEvaluateYogas::test_every_yoga_carries_conditions_and_citation",
+        "tests/server/test_vedic_direct_input_hardening.py::test_yoga_speed_and_chara_epoch_reject_non_finite_values"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/yogas/evaluate REST route and underlying evaluate_yogas proof engine validate all seven classical sidereal longitudes, lagna_sidereal_lon, optional planet_speeds, and YogaPolicyRequest switches while returning YogaResultResponse proof objects with formation conditions, bhanga cancellations, Nabhasa precedence suppression, and textual source citations.",
+      "exclusions": [
+        "The replay covers /v1/yogas/evaluate; individual family helper functions in moira.yogas are outside this contract."
+      ]
     }
   ]
 }

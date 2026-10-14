@@ -21,9 +21,9 @@ Aliases remain visible but do not inflate the canonical denominator. Numeric res
 | Canonical entries | 1233 |
 | Alias entries | 4 |
 | Canonical conformant | 0 |
-| Canonical partial | 151 |
+| Canonical partial | 173 |
 | Canonical not applicable | 0 |
-| Canonical unresolved | 1082 |
+| Canonical unresolved | 1060 |
 
 ### Residual dispositions (canonical entries)
 
@@ -891,11 +891,11 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/dasha/alternate/yogini/chart/sequence` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/alternate_dashas.py:100` |
 | `rest:POST:/v1/dasha/alternate/yogini/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/alternate_dashas.py:93` |
 | `rest:POST:/v1/dasha/alternate/yogini/sequence` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/alternate_dashas.py:86` |
-| `rest:POST:/v1/dasha/vimshottari/balance` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/dasha.py:56` |
-| `rest:POST:/v1/dasha/vimshottari/current` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/dasha.py:65` |
+| `rest:POST:/v1/dasha/vimshottari/balance` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/dasha.py:56` |
+| `rest:POST:/v1/dasha/vimshottari/current` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/dasha.py:65` |
 | `rest:POST:/v1/dasha/vimshottari/lord-pair` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/dasha.py:83` |
 | `rest:POST:/v1/dasha/vimshottari/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/dasha.py:73` |
-| `rest:POST:/v1/dasha/vimshottari/sequence` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/dasha.py:47` |
+| `rest:POST:/v1/dasha/vimshottari/sequence` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/dasha.py:47` |
 | `rest:POST:/v1/davison/chart` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/relationship.py:219` |
 | `rest:POST:/v1/davison/transits` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/forecasting.py:55` |
 | `rest:POST:/v1/decanates/chaldean-face` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/decans.py:40` |
@@ -1096,22 +1096,22 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/orbits/class/batch` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/orbits.py:56` |
 | `rest:POST:/v1/orbits/distance-extremes` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/orbits.py:38` |
 | `rest:POST:/v1/orbits/elements` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/orbits.py:29` |
-| `rest:POST:/v1/pancha-pakshi/context/astronomical-paksha` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:236` |
-| `rest:POST:/v1/pancha-pakshi/context/local-solar` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:311` |
-| `rest:POST:/v1/pancha-pakshi/identity/aksara` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:122` |
-| `rest:POST:/v1/pancha-pakshi/identity/natal-moon` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:130` |
-| `rest:POST:/v1/pancha-pakshi/mappings/nakshatra-bird` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:145` |
-| `rest:POST:/v1/pancha-pakshi/relationships/directed` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:324` |
-| `rest:POST:/v1/pancha-pakshi/roles/padu` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:181` |
-| `rest:POST:/v1/pancha-pakshi/schedule/first-eat-bird` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:167` |
+| `rest:POST:/v1/pancha-pakshi/context/astronomical-paksha` | `canonical` | `composition_profile` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:236` |
+| `rest:POST:/v1/pancha-pakshi/context/local-solar` | `canonical` | `composition_profile` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:311` |
+| `rest:POST:/v1/pancha-pakshi/identity/aksara` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:122` |
+| `rest:POST:/v1/pancha-pakshi/identity/natal-moon` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:130` |
+| `rest:POST:/v1/pancha-pakshi/mappings/nakshatra-bird` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:145` |
+| `rest:POST:/v1/pancha-pakshi/relationships/directed` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:324` |
+| `rest:POST:/v1/pancha-pakshi/roles/padu` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:181` |
+| `rest:POST:/v1/pancha-pakshi/schedule/first-eat-bird` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:167` |
 | `rest:POST:/v1/pancha-pakshi/schedule/fixed-clock` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:251` |
-| `rest:POST:/v1/pancha-pakshi/schedule/fixed-clock/current-cell` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:266` |
-| `rest:POST:/v1/pancha-pakshi/schedule/nominal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:159` |
-| `rest:POST:/v1/pancha-pakshi/schedule/solar-proportional` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:281` |
-| `rest:POST:/v1/pancha-pakshi/schedule/solar-proportional/current-cell` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:296` |
-| `rest:POST:/v1/pancha-pakshi/sookshma/civil-time-select` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:221` |
-| `rest:POST:/v1/pancha-pakshi/sookshma/schedule-select` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:207` |
-| `rest:POST:/v1/pancha-pakshi/sookshma/select` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/pancha_pakshi.py:193` |
+| `rest:POST:/v1/pancha-pakshi/schedule/fixed-clock/current-cell` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:266` |
+| `rest:POST:/v1/pancha-pakshi/schedule/nominal` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:159` |
+| `rest:POST:/v1/pancha-pakshi/schedule/solar-proportional` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:281` |
+| `rest:POST:/v1/pancha-pakshi/schedule/solar-proportional/current-cell` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:296` |
+| `rest:POST:/v1/pancha-pakshi/sookshma/civil-time-select` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:221` |
+| `rest:POST:/v1/pancha-pakshi/sookshma/schedule-select` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:207` |
+| `rest:POST:/v1/pancha-pakshi/sookshma/select` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/pancha_pakshi.py:193` |
 | `rest:POST:/v1/panchanga/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:67` |
 | `rest:POST:/v1/panchanga/chart/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:75` |
 | `rest:POST:/v1/panchanga/day` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:46` |
@@ -1192,10 +1192,10 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/rise-set/twilight` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/phenomena.py:340` |
 | `rest:POST:/v1/sade-sati/status` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/sade_sati.py:26` |
 | `rest:POST:/v1/sade-sati/windows` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/sade_sati.py:36` |
-| `rest:POST:/v1/shadbala/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:33` |
+| `rest:POST:/v1/shadbala/chart` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/shadbala.py:33` |
 | `rest:POST:/v1/shadbala/chart/bhava` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:65` |
 | `rest:POST:/v1/shadbala/chart/condition` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:57` |
-| `rest:POST:/v1/shadbala/chart/full` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:74` |
+| `rest:POST:/v1/shadbala/chart/full` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/shadbala.py:74` |
 | `rest:POST:/v1/shadbala/chart/network` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:49` |
 | `rest:POST:/v1/shadbala/chart/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:41` |
 | `rest:POST:/v1/sidereal/ayanamsa` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/sidereal.py:36` |
@@ -1266,7 +1266,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/varshaphal/tasira/active` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/varshaphal.py:81` |
 | `rest:POST:/v1/varshaphal/topics` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/varshaphal.py:121` |
 | `rest:POST:/v1/varshaphal/topics/windows` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/varshaphal.py:131` |
-| `rest:POST:/v1/vedic-dignities/chart-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/vedic_dignities.py:81` |
+| `rest:POST:/v1/vedic-dignities/chart-profile` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/vedic_dignities.py:81` |
 | `rest:POST:/v1/vedic-dignities/chart/dignity` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/vedic_dignities.py:93` |
 | `rest:POST:/v1/vedic-dignities/chart/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/vedic_dignities.py:122` |
 | `rest:POST:/v1/vedic-dignities/chart/relationships` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/vedic_dignities.py:106` |
@@ -1289,7 +1289,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/website/chart-wheel/validate` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart_wheel.py:34` |
 | `rest:POST:/v1/website/parans/packet` | `canonical` | `transport_adapter` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/paran_packet.py:17` |
 | `rest:POST:/v1/western/chart-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/western_profile.py:20` |
-| `rest:POST:/v1/yogas/evaluate` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/yogas.py:14` |
+| `rest:POST:/v1/yogas/evaluate` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/yogas.py:14` |
 
 ## Next Light Box layer
 

@@ -1391,6 +1391,186 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "vimshottari_dasha_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The Vimshottari Dasha sequence, balance, and current-line routes return recursive DashaPeriodResponse trees or balance receipts carrying start/end JD and ISO dates, year_basis, birth_nakshatra, nakshatra_fraction, lord_type, and full unclipped birth-period bounds.",
+        "stage_label": "Vimshottari Dasha nakshatra-balance and recursive sub-period projection",
+        "operation": "Validate timezone-aware natal and query datetimes, ayanamsa system, VimshottariYearBasis ('savana_360' or 'julian_365.25'), and recursion depth (1..5), compute sidereal Moon nakshatra and remaining balance at birth, and project Mahadasha through Prana sub-periods.",
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware natal CivilDateTime, optional query current_dt, KnownAyanamsa, VimshottariYearBasis ('savana_360' or 'julian_365.25'), and bounded levels (1..5) are validated."
+            ],
+            "units": [
+                "Period bounds use Julian Day UT (start_jd, end_jd, full_start_jd, full_end_jd) and ISO-8601 date strings; durations carry both years and days; nakshatra_fraction is a unitless ratio in [0, 1]."
+            ],
+            "reference_frame": [
+                "Sidereal ecliptic Moon longitude reduced under the requested or default (Lahiri) ayanamsa system."
+            ],
+            "origin": [
+                "Geocentric sidereal Moon position at the natal epoch."
+            ],
+            "timescale": [
+                "Timezone-aware civil datetimes are normalized to UT Julian Day; sub-period durations scale by the explicit year_basis ('julian_365.25' or 'savana_360')."
+            ],
+            "corrections": [
+                "Birth-period clipping preserves both the clipped start_jd/end_jd from birth and the unclipped full_start_jd/full_end_jd of the natal Mahadasha."
+            ],
+            "policies_defaults": [
+                "Default ayanamsa is Lahiri, default sequence depth is 2 (Mahadasha + Antardasha), default current-line depth is 5 (through Prana), and each period echoes year_basis, birth_nakshatra, and nakshatra_fraction."
+            ],
+            "fallbacks": [
+                "No silent fallback across year bases or ayanamsa systems is permitted."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, levels outside 1..5, unknown ayanamsa or year_basis values, pre-birth current_dt, and query dates beyond the 120-year cycle are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "pancha_pakshi_source_scoped_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The source-scoped Pancha Pakshi routes require an explicit profile_id and policy axes on every call, refusing implicit defaults or cross-tradition synthesis while returning exact rational/nominal fractions, solar/fixed-clock intervals, and source witness metadata.",
+        "stage_label": "Source-scoped Pancha Pakshi identity, schedule, context, and Sookshma evaluation",
+        "operation": "Validate the explicit profile_id and required timing/paksha/sookshma policy axes without fallback defaults, execute the profile-bound table lookup, astronomical paksha/local-solar context, nominal/fixed-clock/solar-proportional schedule, or Sookshma interval selection, and serialize the full policy and provenance receipt.",
+        "semantic_values": {
+            "inputs": [
+                "Explicit profile_id and route-specific typed axes (aksara/nakshatra/paksha/day-or-night/yama/activity/timing-policy/sookshma-policy or aware datetime and observer coordinates) are strictly validated with extra='forbid'."
+            ],
+            "units": [
+                "Nominal schedules and Sookshma intervals report exact rational fractions alongside minutes/seconds; materialized schedules report timezone-aware timestamps and durations; astronomical paksha reports elongation in degrees."
+            ],
+            "reference_frame": [
+                "Table-only routes explicitly route no astronomy; natal-Moon and astronomical-paksha routes name the sidereal/geocentric frame and ayanamsa policy."
+            ],
+            "origin": [
+                "Source-attested profile tables (such as uromarisi_tamil_pp_1991_v1) combined, only where requested, with observer topocentric sunrise/sunset or geocentric syzygy/Moon coordinates."
+            ],
+            "timescale": [
+                "Civil-time and solar-context routes require timezone-aware datetimes and explicit FixedClockMaterializationPolicy or SolarProportionalMaterializationPolicy."
+            ],
+            "corrections": [
+                "Each response echoes the exact applied policy vessels and separates source-attested table cells from modern temporal or astronomical composition."
+            ],
+            "policies_defaults": [
+                "No implicit default profile_id, timing model, or Sookshma rule is permitted; every policy axis must be supplied by the caller and is echoed in the response."
+            ],
+            "fallbacks": [
+                "Unmaterialized fixed-clock tails and unavailable profile capabilities are surfaced explicitly or refused; no cross-profile fallback is allowed."
+            ],
+            "refusal_behavior": [
+                "Missing or unknown profile_id, unadvertised profile capabilities, naive datetimes, mixed fixed-clock/solar-proportional policies, and extra fields are rejected with 422/400 errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "shadbala_and_bhava_bala_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The Shadbala chart and full-chart routes return ShadbalaAppliedPolicyResponse, ShadbalaContextResponse, WarResolutionResponse (Graha Yuddha credits/debits), SaptavargajaEntryResponse evidence, and per-planet six-fold Bala and Bhava Bala breakdowns.",
+        "stage_label": "Six-fold Shadbala, Graha Yuddha, Saptavargaja, and Bhava Bala reduction",
+        "operation": "Derive sidereal longitudes, declinations, local sunrise/sunset, and house cusps through Moira, apply ShadbalaPolicyRequest (ayanamsa_system and saptavargaja_profile), compute Sthana, Dig, Kala, Chesta, Naisargika, and Drig Bala with Graha Yuddha war resolution and optional Bhava Bala/network profiles, and return ShadbalaAppliedPolicyResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware CivilDateTime, finite observer latitude/longitude/elevation, KnownHouseSystem, KnownAyanamsa, optional hora_lord, and ShadbalaPolicyRequest are validated."
+            ],
+            "units": [
+                "Component strengths use shashtiamsas (1/60 rupa) and rupas; required thresholds and strength ratios use rupas and unitless ratios; longitudes and declinations use degrees; epochs use JD UT."
+            ],
+            "reference_frame": [
+                "ShadbalaContextResponse explicitly names longitude_frame ('sidereal') with ayanamsa_system andayanamsa_degrees, alongside declination_frame ('tropical_equatorial')."
+            ],
+            "origin": [
+                "Geocentric planetary positions combined with topocentric observer sunrise/sunset and house cusps."
+            ],
+            "timescale": [
+                "JD UT, local_apparent_day_fraction, sunrise_jd, sunset_jd, next_sunrise_jd, and abda/masa/vara/hora lords are returned in ShadbalaContextResponse."
+            ],
+            "corrections": [
+                "Graha Yuddha planetary war adjustments (WarResolutionResponse with raw_totals, credits, debits, and rule='raman_1996_lesser_longitude') and Saptavargaja seven-division dignity entries are returned."
+            ],
+            "policies_defaults": [
+                "ShadbalaAppliedPolicyResponse echoes requested/policy/applied ayanamsa_system, ayanamsa_precedence, requested/resolved/effective house_system, polar_fallback_applied, and saptavargaja_profile ('raman_1996' or 'bphs_santhanam_27')."
+            ],
+            "fallbacks": [
+                "Polar house fallback is explicitly disclosed via polar_fallback_applied and resolved_house_system in ShadbalaAppliedPolicyResponse."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, non-finite observer coordinates, unknown ayanamsa or house systems, and non-classical planet or hora_lord names are rejected with 422 validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "vedic_dignities_chart_profile_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The Vedic dignities chart-profile route returns VedicChartDignityProfileResponse with per-planet VedicDignityResultResponse items (sign_index, dignity_rank, exaltation/mulatrikona/own-sign flags, exaltation_score), tier classifications, and ayanamsa_system provenance.",
+        "stage_label": "Sidereal Panchadha/sapta-graha dignity and chart-profile evaluation",
+        "operation": "Validate finite sidereal longitudes for the classical planets and VedicDignityPolicyRequest, evaluate exaltation, debilitation, mulatrikona, own-sign, and friend/neutral/enemy dignity ranks and continuous exaltation scores, and aggregate chart-wide strong/neutral/weak counts and strongest/weakest planets.",
+        "semantic_values": {
+            "inputs": [
+                "Non-empty map of classical planet names to finite sidereal longitudes and optional VedicDignityPolicyRequest (ayanamsa_system) are validated."
+            ],
+            "units": [
+                "Sidereal longitudes are degrees in [0, 360); sign_index is 0..11; exaltation_score is a continuous unitless score."
+            ],
+            "reference_frame": [
+                "Caller-supplied sidereal longitudes labeled with the declared ayanamsa_system (default 'Lahiri')."
+            ],
+            "origin": [
+                "Direct sidereal longitude map for the seven classical grahas."
+            ],
+            "timescale": [
+                "Instantaneous sidereal positions; epoch-backed conversion is handled by the paired /v1/vedic-dignities/chart/* routes."
+            ],
+            "corrections": [
+                "Mercury exaltation/mulatrikona overlap in Virgo is resolved deterministically by degree band and reflected in dignity_rank and boolean flags."
+            ],
+            "policies_defaults": [
+                "Default ayanamsa_system label is 'Lahiri' and is echoed on both the top-level profile and every per-planet VedicDignityResultResponse."
+            ],
+            "fallbacks": [
+                "No silent planet-name coercion or missing-longitude fabrication is permitted."
+            ],
+            "refusal_behavior": [
+                "Empty longitude maps, non-classical planet keys, non-finite longitudes, boolean numbers, and blank ayanamsa_system strings are rejected with 422 validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "vedic_yogas_proof_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The Vedic yogas evaluation route returns YogaChartResponse where every evaluated classical yoga (Pancha Mahapurusha, Nabhasa, Chandra, Surya, Raja, Dhana) is serialized as a proof object with satisfied/unsatisfied formation conditions, bhanga cancellation clauses, Nabhasa precedence suppression, and textual source citations.",
+        "stage_label": "Classical Vedic yoga formation, bhanga cancellation, and precedence proof evaluation",
+        "operation": "Validate all seven classical sidereal longitudes, finite lagna_sidereal_lon, optional planet_speeds, and YogaPolicyRequest (BPHS/Parashara/Phaladeepika/Uttara Kalamrita/Raman doctrine switches), evaluate formation and cancellation conditions across all six yoga families, apply Nabhasa precedence suppression, and return YogaResultResponse proof objects.",
+        "semantic_values": {
+            "inputs": [
+                "Complete seven-planet sidereal_longitudes map, finite lagna_sidereal_lon, optional finite planet_speeds map, YogaPolicyRequest, and include_absent flag are validated."
+            ],
+            "units": [
+                "Sidereal planet and lagna longitudes are degrees; optional planet speeds are degrees per day; houses_involved are 1..12 whole-sign house numbers; lagna_sign_index is 0..11."
+            ],
+            "reference_frame": [
+                "Sidereal whole-sign houses anchored to lagna_sign_index derived from lagna_sidereal_lon."
+            ],
+            "origin": [
+                "Caller-supplied sidereal longitudes for Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna."
+            ],
+            "timescale": [
+                "Instantaneous sidereal chart state; optional planet_speeds supply retrograde state for Neecha Bhanga retrograde-clause evaluation."
+            ],
+            "corrections": [
+                "First-class bhanga cancellation clauses (such as Kemadruma bhanga, Budhaditya combustion cancel, and Dhana dusthana contamination) and Nabhasa hierarchy suppression (suppressed_by) are recorded on each YogaResultResponse."
+            ],
+            "policies_defaults": [
+                "YogaPolicyRequest defaults to BPHS-primary rules (moon_benefic_mode='paksha', mercury_benefic_mode='conditional', mahapurusha_reference='lagna', gajakesari_mode='parashara', budhaditya_combustion_cancel=False, viparita_mode='phaladeepika')."
+            ],
+            "fallbacks": [
+                "When planet_speeds are omitted, retrograde-dependent clauses evaluate to satisfied=False with explicit observed evidence rather than guessing motion."
+            ],
+            "refusal_behavior": [
+                "Missing any of the seven classical planets, unknown body keys, non-finite longitudes or speeds, and invalid policy literals are rejected with 422 validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 
