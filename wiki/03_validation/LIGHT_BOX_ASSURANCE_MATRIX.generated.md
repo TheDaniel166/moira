@@ -4,11 +4,11 @@
 
 - Engine version: `6.9.9`
 - Inventory fingerprint: `e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b`
-- Receipt source revision: `fe6b9f61b44434b2908106bcf9f9acc27238b4bf`
+- Receipt source revision: `469ab71436bb768f6d3676906cf18f887e0158cf`
 - Receipt artifact status: `exact_source_revision`
 - Canonical surfaces: 1233
-- Surfaces with replay contracts: 140
-- Surfaces without replay contracts: 1093
+- Surfaces with replay contracts: 151
+- Surfaces without replay contracts: 1082
 
 ## Boundary
 
@@ -22,22 +22,25 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 |---|---:|---:|---:|---:|
 | `authority` | 0 | 19 | 0 | 1214 |
 | `corroboration` | 0 | 0 | 0 | 1233 |
-| `invariant` | 0 | 140 | 0 | 1093 |
-| `doctrine_source` | 0 | 20 | 0 | 1213 |
-| `regression` | 0 | 140 | 0 | 1093 |
+| `invariant` | 0 | 151 | 0 | 1082 |
+| `doctrine_source` | 0 | 31 | 0 | 1202 |
+| `regression` | 0 | 151 | 0 | 1082 |
 | `native_parity` | 0 | 0 | 0 | 1233 |
 | `harness` | 0 | 0 | 0 | 1233 |
 | `performance` | 0 | 0 | 0 | 1233 |
-| `release` | 0 | 140 | 0 | 1093 |
+| `release` | 0 | 151 | 0 | 1082 |
 
 ## Replayed contracts
 
 | Claim | Surfaces | Evidence classes | Tests passed | Status | Artifact |
 |---|---:|---|---:|---|---|
+| `LB-ANTISCIA-CONTACTS-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
 | `LB-ASTROCARTOGRAPHY-REST-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-BATCH-ASSEMBLY-TRUTH` | 6 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
 | `LB-CHART-SHAPE-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 16 | `passed` | `exact_source_revision` |
 | `LB-CHART-WHEEL-PACKET-TRUTH` | 1 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-CLASSICAL-DIGNITIES-TRUTH` | 8 | `doctrine_source,invariant,regression,release` | 10 | `passed` | `exact_source_revision` |
+| `LB-CLASSICAL-LOTS-CHART-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-CORE-POSITIONS-HOUSES-CHART-TRUTH` | 4 | `invariant,regression,release` | 8 | `passed` | `exact_source_revision` |
 | `LB-ECLIPSE-HELIACAL-TWILIGHT-REST-TRUTH` | 6 | `invariant,regression,release` | 8 | `passed` | `exact_source_revision` |
 | `LB-EXEMPLAR-ASPECT-MOTION` | 1 | `invariant,regression,release` | 15 | `passed` | `exact_source_revision` |
@@ -53,6 +56,7 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 | `LB-FOUNDATION-KERNEL-RELATIVE-TRUTH` | 4 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
 | `LB-LOCATIONAL-PROJECTION-REST-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-MANAZIL-POSITION-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-PARAN-SEARCH-PACKET-REST-TRUTH` | 2 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-PLANETARY-HOURS-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
