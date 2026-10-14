@@ -1545,11 +1545,27 @@ roles without arbitrary left/right labels.
 ### Chart shape (Jones types)
 
 ```python
-from moira.facade import classify_chart_shape, ChartShape, ChartShapeType
+from moira.facade import (
+    classify_chart_shape,
+    classify_chart_shape_with_truth,
+    ChartShape,
+    ChartShapeType,
+    ChartShapeGapTruth,
+    ChartShapeDetectorTruth,
+    ChartShapeComputationTruth,
+    ChartShapeWithTruth,
+)
 
 shape = classify_chart_shape(chart.longitudes(include_nodes=False))
 # ChartShape(shape, occupied_arc, largest_gap, leading_planet,
 #            handle_planet, clusters, handle_bodies)
+
+resolved = classify_chart_shape_with_truth(
+    chart.longitudes(include_nodes=False),
+    input_frame="apparent_geocentric_tropical_ecliptic_of_date",
+    input_source="caller_supplied_longitudes",
+)
+# ChartShapeWithTruth(result=ChartShape(...), truth=ChartShapeComputationTruth(...))
 ```
 
 `ChartShapeType` constants: `BUNDLE  BOWL  BUCKET  LOCOMOTIVE  SEESAW  SPLAY  SPLASH`
@@ -1562,8 +1578,12 @@ group boundaries use his functioning-sextile or greater-than-70-degree rule,
 and a Splay may have a singleton reins group. Jones also treats borderline
 classification as approximate, so the ordered detector precedence and final
 Splash tie-break are Moira engine policy, not claimed as source-supplied rigid
-bins. See [`PROVENANCE.md`](../../PROVENANCE.md#jones-chart-shape-doctrine) for
-the primary-source ledger and the source/policy boundary.
+bins. `classify_chart_shape_with_truth` preserves the normalized circular
+ordering, per-gap separation receipts (`ChartShapeGapTruth`), ordered detector
+attempts (`ChartShapeDetectorTruth`), selected detector rule, and explicit
+input frame/source labels alongside the `ChartShape` result. See
+[`PROVENANCE.md`](../../PROVENANCE.md#jones-chart-shape-doctrine) for the
+primary-source ledger and the source/policy boundary.
 
 ### Midpoints
 
@@ -5668,17 +5688,30 @@ strength = m.shadbala_for_chart(chart, houses)
 ### Sidereal, Ayanamsa, and Nakshatras
 
 ```python
-from moira.vedic import (
-    UserDefinedAyanamsa, NakshatraPosition,
-    nakshatra_of, all_nakshatras_at,
-    # ayanamsa, tropical_to_sidereal, sidereal_to_tropical already in essentials
+from moira.facade import (
+    Ayanamsa, UserDefinedAyanamsa, NakshatraPosition,
+    AyanamsaComputationTruth, SiderealConversionTruth,
+    NakshatraComputationTruth, NakshatraPositionWithTruth, BulkNakshatraWithTruth,
+    ayanamsa, ayanamsa_with_truth,
+    tropical_to_sidereal, tropical_to_sidereal_with_truth,
+    sidereal_to_tropical, sidereal_to_tropical_with_truth,
+    nakshatra_of, nakshatra_of_with_truth,
+    all_nakshatras_at, all_nakshatras_at_with_truth,
 )
 ```
 
 | Function | Signature | Description |
 |---|---|---|
+| `ayanamsa(jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ float` | Ayanamsa offset in degrees at a UT1-coded Julian Day |
+| `ayanamsa_with_truth(jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ AyanamsaComputationTruth` | Same ayanamsa offset plus UT1/TT epochs, ΔT seconds, polynomial vs. live-star-anchor path, precession/drift/nutation terms, and explicit fallback disclosure |
+| `tropical_to_sidereal(longitude, jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ float` | Convert tropical longitude to sidereal longitude in `[0°, 360°)` |
+| `tropical_to_sidereal_with_truth(longitude, jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ SiderealConversionTruth` | Tropical-to-sidereal conversion with normalized input, unwrapped/wrapped output, and nested `AyanamsaComputationTruth` |
+| `sidereal_to_tropical(longitude, jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ float` | Convert sidereal longitude to tropical longitude in `[0°, 360°)` |
+| `sidereal_to_tropical_with_truth(longitude, jd, system=Ayanamsa.LAHIRI, mode="true")` | `→ SiderealConversionTruth` | Sidereal-to-tropical conversion with normalized input, unwrapped/wrapped output, and nested `AyanamsaComputationTruth` |
 | `nakshatra_of(tropical_longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `→ NakshatraPosition` | Nakshatra position for a tropical ecliptic longitude |
+| `nakshatra_of_with_truth(tropical_longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI, mode="true")` | `→ NakshatraPositionWithTruth` | `NakshatraPosition` paired with `NakshatraComputationTruth` (ayanamsa receipt, equal `13°20′` / `3°20′` partition constants, raw index/pada before boundary clamping, and clamping flags) |
 | `all_nakshatras_at(positions: dict[str, float], jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `→ dict[str, NakshatraPosition]` | Nakshatra positions for all bodies in a chart |
+| `all_nakshatras_at_with_truth(positions: dict[str, float], jd, ayanamsa_system=Ayanamsa.LAHIRI, mode="true")` | `→ BulkNakshatraWithTruth` | Shared single-evaluation `AyanamsaComputationTruth`, `results`, and per-body `NakshatraComputationTruth` map |
 
 #### `NakshatraPosition` fields
 

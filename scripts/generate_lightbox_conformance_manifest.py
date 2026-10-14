@@ -727,6 +727,78 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "sidereal_utility_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The sidereal and Nakshatra utility routes return their effective ayanamsa reduction path, UT1/TT epochs, delta-T, polynomial or live-star-anchor components, fallback state, and equal-mansion partition truth beside the result.",
+        "stage_label": "Sidereal and Nakshatra utility computation truth",
+        "operation": "Validate finite UT1 Julian date and longitude inputs, resolve the named ayanamsa on TT, apply mechanical longitude conversion or 27-Nakshatra segmentation, and return computation truth and provenance beside the result.",
+        "semantic_values": {
+            "inputs": [
+                "A finite UT1 Julian date, named built-in ayanamsa system, true/mean mode, and finite longitude or bounded named longitude map are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates use days, delta-T uses seconds, and ayanamsa, precession, drift, nutation, longitudes, and Nakshatra spans use degrees."
+            ],
+            "reference_frame": [
+                "The response distinguishes tropical ecliptic of date from the selected sidereal zodiac frame and names the anchor star where applicable."
+            ],
+            "origin": [
+                "Ayanamsa offsets are anchored to J2000 polynomial reference values or live star positions; no observer-local topocentric or house origin is implied."
+            ],
+            "timescale": [
+                "Input epochs are caller-supplied UT1 Julian dates; computation truth discloses the resolved TT Julian date and delta-T seconds."
+            ],
+            "corrections": [
+                "IAU 2006 general precession, secular drift, IAU 2000A nutation in longitude, or live star-anchor evaluation are disclosed by computation truth."
+            ],
+            "policies_defaults": [
+                "System identity, requested/effective mode, effective reduction path, and equal 27-Nakshatra / 4-pada partition constants are returned explicitly."
+            ],
+            "fallbacks": [
+                "Star-anchor lookup fallback to the polynomial path and exact-boundary Nakshatra/pada clamping are disclosed explicitly when they occur."
+            ],
+            "refusal_behavior": [
+                "Typed request validation and engine guards reject unknown systems, invalid modes, non-finite JDs or longitudes, and empty or oversized bulk maps."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "chart_shape_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The chart-shape route returns normalized ten-body longitudes, circular ordering, adjacent gap receipts, ordered Jones detector attempts, and the selected detector rule beside the classified shape.",
+        "stage_label": "Jones chart-shape classification truth",
+        "operation": "Build or validate the ten canonical planetary longitudes, normalize circular ordering and gap separations, evaluate the ordered Jones detectors, and return the classified shape beside its computation truth.",
+        "semantic_values": {
+            "inputs": [
+                "Either a typed chart request or an explicit ten-planet longitude map (Sun through Pluto) is exposed by OpenAPI."
+            ],
+            "units": [
+                "Longitudes, occupied arc, largest gap, gap spans, and functioning aspect orbs use degrees."
+            ],
+            "reference_frame": [
+                "Computation truth names either apparent geocentric tropical ecliptic of date (for chart-derived inputs) or caller-supplied longitudes."
+            ],
+            "origin": [
+                "Input source is explicitly labeled as chart_request or caller_supplied_positions; only the ten canonical Jones bodies are admitted."
+            ],
+            "timescale": [
+                "When chart-derived, the chart request supplies the epoch; when position-derived, no epoch is inferred."
+            ],
+            "corrections": [
+                "Input longitudes are normalized modulo 360 degrees; no hidden positional or node/angle addition is applied."
+            ],
+            "policies_defaults": [
+                "Required ten-body set, body-dependent major aspect orbs, group-separation thresholds, ordered detector attempts, and selected detector are explicit."
+            ],
+            "fallbacks": [
+                "Ordered detector precedence and the final Splash fallback are explicitly recorded in detector_attempts and selected_detector."
+            ],
+            "refusal_behavior": [
+                "Typed validation and engine guards reject missing, extra, or non-finite planetary longitudes before detector evaluation."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

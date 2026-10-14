@@ -85,6 +85,38 @@ R3D_VOID_OF_COURSE_SURFACES = {
     "rest:POST:/v1/void-of-course/is-active",
     "rest:POST:/v1/void-of-course/range",
 }
+R2A_CORE_REST_SURFACES = {
+    "rest:POST:/v1/chart",
+    "rest:POST:/v1/houses",
+    "rest:POST:/v1/positions/planet",
+    "rest:POST:/v1/positions/sky",
+}
+R2C_SIDEREAL_PYTHON_SURFACES = {
+    f"python:moira.facade:{name}"
+    for name in (
+        "all_nakshatras_at",
+        "all_nakshatras_at_with_truth",
+        "ayanamsa",
+        "ayanamsa_with_truth",
+        "nakshatra_of",
+        "nakshatra_of_with_truth",
+        "sidereal_to_tropical",
+        "sidereal_to_tropical_with_truth",
+        "tropical_to_sidereal",
+        "tropical_to_sidereal_with_truth",
+    )
+}
+R2C_SIDEREAL_REST_SURFACES = {
+    "rest:POST:/v1/nakshatra/bulk",
+    "rest:POST:/v1/nakshatra/position",
+    "rest:POST:/v1/sidereal/ayanamsa",
+    "rest:POST:/v1/sidereal/convert",
+}
+R3A_CHART_SHAPE_SURFACES = {
+    "python:moira.facade:classify_chart_shape",
+    "python:moira.facade:classify_chart_shape_with_truth",
+    "rest:POST:/v1/chart-shape/classify",
+}
 
 
 def _module():
@@ -297,6 +329,53 @@ def test_r3d_void_of_course_surfaces_have_a_bounded_replay_contract() -> None:
         assert "not an independent void-of-course almanac residual" in (
             contract["exclusions"][0]
         )
+
+
+def test_r2a_core_rest_and_r2c_sidereal_and_r3a_chart_shape_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    core_rest = by_id["LB-CORE-POSITIONS-HOUSES-CHART-TRUTH"]
+    assert set(core_rest["surface_ids"]) == R2A_CORE_REST_SURFACES
+    assert set(core_rest["evidence_classes"]) == {
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert core_rest["minimum_tests"] == 8
+    assert "paired /reduction routes" in core_rest["claim_scope"]
+
+    sidereal_py = by_id["LB-SIDEREAL-PYTHON-TRUTH"]
+    assert set(sidereal_py["surface_ids"]) == R2C_SIDEREAL_PYTHON_SURFACES
+    assert set(sidereal_py["evidence_classes"]) == {
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert sidereal_py["minimum_tests"] == 11
+    assert "single-evaluation bulk ayanamsa reuse" in sidereal_py["claim_scope"]
+
+    sidereal_rest = by_id["LB-SIDEREAL-REST-TRUTH"]
+    assert set(sidereal_rest["surface_ids"]) == R2C_SIDEREAL_REST_SURFACES
+    assert set(sidereal_rest["evidence_classes"]) == {
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert sidereal_rest["minimum_tests"] == 7
+    assert "shared-ayanamsa bulk Nakshatra placement" in sidereal_rest["claim_scope"]
+
+    chart_shape = by_id["LB-CHART-SHAPE-TRUTH"]
+    assert set(chart_shape["surface_ids"]) == R3A_CHART_SHAPE_SURFACES
+    assert set(chart_shape["evidence_classes"]) == {
+        "doctrine_source",
+        "invariant",
+        "regression",
+        "release",
+    }
+    assert chart_shape["minimum_tests"] == 16
+    assert "ten-planet canonical body set" in chart_shape["claim_scope"]
 
 
 def test_contract_hash_is_order_stable() -> None:

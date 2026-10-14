@@ -919,7 +919,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5655,
+        "source_line": 5763,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -944,7 +944,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5626,
+        "source_line": 5734,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -969,7 +969,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5696,
+        "source_line": 5804,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1821,7 +1821,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4155,
+        "source_line": 4209,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -2506,7 +2506,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5398,
+        "source_line": 5494,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -2941,7 +2941,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 3951,
+        "source_line": 3999,
         "source_path": "moira/houses.py"
       },
       "priority": "P0",
@@ -3599,7 +3599,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 513,
+        "source_line": 531,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -3801,7 +3801,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4778,
+        "source_line": 4862,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -3826,7 +3826,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4739,
+        "source_line": 4823,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4553,7 +4553,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5738,
+        "source_line": 5846,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5482,7 +5482,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 1256,
+        "source_line": 1304,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5507,7 +5507,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4562,
+        "source_line": 4634,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5532,7 +5532,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4339,
+        "source_line": 4399,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5807,7 +5807,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4977,
+        "source_line": 5073,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5832,7 +5832,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6541,
+        "source_line": 6679,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5857,7 +5857,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6347,
+        "source_line": 6479,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -9594,7 +9594,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5823,
+        "source_line": 5931,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -9719,7 +9719,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5051,
+        "source_line": 5147,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -14931,7 +14931,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6099,
+        "source_line": 6219,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -14956,7 +14956,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5993,
+        "source_line": 6107,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -31135,7 +31135,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
+  "inventory_fingerprint_sha256": "19894c0af4962153dc6a8a1063c1257a3a367ca6feb5faf57c73deb84d2a8bdb",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

@@ -301,6 +301,111 @@
       "surface_id": "rest:POST:/v1/void-of-course/range",
       "contract_kind": "void_of_course_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:all_nakshatras_at",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:all_nakshatras_at_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:ayanamsa",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:ayanamsa_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:nakshatra_of",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:nakshatra_of_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:sidereal_to_tropical",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:sidereal_to_tropical_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:tropical_to_sidereal",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:tropical_to_sidereal_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:classify_chart_shape",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:classify_chart_shape_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/chart",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/houses",
+      "contract_kind": "policy_reduction_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/planet",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/positions/sky",
+      "contract_kind": "reduction_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/chart-shape/classify",
+      "contract_kind": "chart_shape_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/nakshatra/bulk",
+      "contract_kind": "sidereal_utility_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/nakshatra/position",
+      "contract_kind": "sidereal_utility_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/sidereal/ayanamsa",
+      "contract_kind": "sidereal_utility_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/sidereal/convert",
+      "contract_kind": "sidereal_utility_vessel",
+      "evidence_classes": ["invariant", "regression"]
     }
   ]
 }

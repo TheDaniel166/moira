@@ -323,6 +323,98 @@
       "exclusions": [
         "The replay is a bounded engine-and-transport consistency proof, not an independent void-of-course almanac residual, a claim that every astrological tradition uses this definition, or evidence of interpretive efficacy. It does not admit next_moon_connection, arbitrary moving-body batch void periods, orb-entry definitions, non-Ptolemaic aspects, topocentric variants, or epochs and kernels outside the sampled resource coverage."
       ]
+    },
+    {
+      "claim_id": "LB-CORE-POSITIONS-HOUSES-CHART-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/chart",
+        "rest:POST:/v1/houses",
+        "rest:POST:/v1/positions/planet",
+        "rest:POST:/v1/positions/sky"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_chart_routes.py::test_plain_position_and_chart_openapi_contracts_are_additive",
+        "tests/server/test_server_chart_routes.py::test_chart_route_matches_engine_selected_truth",
+        "tests/server/test_server_chart_routes.py::test_planet_position_route_matches_engine_selected_truth",
+        "tests/server/test_server_chart_routes.py::test_planet_truth_distinguishes_requested_from_applied_corrections",
+        "tests/server/test_server_chart_routes.py::test_sky_position_route_matches_engine_selected_truth",
+        "tests/server/test_server_chart_routes.py::test_sky_truth_keeps_apparent_pipeline_distinct_from_optional_corrections",
+        "tests/server/test_server_chart_routes.py::test_houses_route_matches_engine_selected_truth",
+        "tests/server/test_server_chart_routes.py::test_houses_polar_fallback_policies"
+      ],
+      "minimum_tests": 8,
+      "claim_scope": "The primary chart, house, planet-position, and sky-position routes embed typed computation_truth aligned with their paired /reduction routes while preserving their legacy response fields, time normalization, reference-frame and origin disclosure, correction stages, and house-policy fallback truth.",
+      "exclusions": [
+        "The replay is a transport-and-reduction parity check and does not establish an external astronomical ephemeris residual beyond the underlying admitted reduction vessels."
+      ]
+    },
+    {
+      "claim_id": "LB-SIDEREAL-PYTHON-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:all_nakshatras_at",
+        "python:moira.facade:all_nakshatras_at_with_truth",
+        "python:moira.facade:ayanamsa",
+        "python:moira.facade:ayanamsa_with_truth",
+        "python:moira.facade:nakshatra_of",
+        "python:moira.facade:nakshatra_of_with_truth",
+        "python:moira.facade:sidereal_to_tropical",
+        "python:moira.facade:sidereal_to_tropical_with_truth",
+        "python:moira.facade:tropical_to_sidereal",
+        "python:moira.facade:tropical_to_sidereal_with_truth"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_sidereal.py::TestSiderealCalculationTruthAndFiniteBoundary"
+      ],
+      "minimum_tests": 11,
+      "claim_scope": "The additive sidereal and Nakshatra Python truth surfaces preserve legacy return values while exposing UT1/TT epochs, delta-T seconds, polynomial precession/drift/nutation components, live star-anchor evaluation, explicit missing-star fallback disclosure, single-evaluation bulk ayanamsa reuse, equal 27-Nakshatra / 4-pada partition truth, and strict finite-input validation.",
+      "exclusions": [
+        "The replay does not adjudicate competing traditional ayanamsa doctrines, does not establish an external astronomical ephemeris residual beyond existing sidereal unit benchmarks, and does not cover Panchanga, Dasha, or Varga calculations."
+      ]
+    },
+    {
+      "claim_id": "LB-SIDEREAL-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/nakshatra/bulk",
+        "rest:POST:/v1/nakshatra/position",
+        "rest:POST:/v1/sidereal/ayanamsa",
+        "rest:POST:/v1/sidereal/convert"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_sidereal_routes.py::test_ayanamsa_value_route_matches_engine",
+        "tests/server/test_server_sidereal_routes.py::test_ayanamsa_route_normalizes_declared_output_range_at_ancient_epoch",
+        "tests/server/test_server_sidereal_routes.py::test_sidereal_conversion_route_matches_engine",
+        "tests/server/test_server_sidereal_routes.py::test_sidereal_conversion_route_resolves_ayanamsa_once",
+        "tests/server/test_server_sidereal_routes.py::test_nakshatra_position_route_matches_engine",
+        "tests/server/test_server_sidereal_routes.py::test_nakshatra_bulk_route_matches_engine"
+      ],
+      "minimum_tests": 7,
+      "claim_scope": "The four sidereal and Nakshatra utility REST routes preserve engine parity while embedding typed computation_truth for polynomial and star-anchored ayanamsa reduction, tropical/sidereal conversion, single-longitude Nakshatra lookup, and shared-ayanamsa bulk Nakshatra placement.",
+      "exclusions": [
+        "The replay is a transport-and-engine parity check and does not admit user-defined ayanamsa payloads over REST, Abhijit or Manazil schemes, or Panchanga/Dasha interpretation."
+      ]
+    },
+    {
+      "claim_id": "LB-CHART-SHAPE-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:classify_chart_shape",
+        "python:moira.facade:classify_chart_shape_with_truth",
+        "rest:POST:/v1/chart-shape/classify"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_chart_shape.py::TestCalculationTruthAndFiniteBoundary",
+        "tests/unit/test_chart_shape.py::TestPlanetSetDoctrine",
+        "tests/server/test_server_relationship_routes.py::test_chart_shape_route_rejects_non_jones_planet_sets",
+        "tests/server/test_server_relationship_routes.py::test_phase_seven_relationship_routes_match_engine_truth"
+      ],
+      "minimum_tests": 16,
+      "claim_scope": "The Python and REST Jones chart-shape surfaces enforce the ten-planet canonical body set and finite-longitude guards while exposing normalized longitudes, circular order, adjacent gap receipts, body-dependent functioning orbs, ordered detector attempts, selected detector identity, and input frame/source labels.",
+      "exclusions": [
+        "The replay verifies adherence to Moira's documented Marc Edmund Jones detector order and functioning-orb policy; it does not claim that borderline chart shapes have a single universal astrological classification outside that declared policy."
+      ]
     }
   ]
 }

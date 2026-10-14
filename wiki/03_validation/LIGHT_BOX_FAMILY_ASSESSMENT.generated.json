@@ -658,8 +658,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 1,
-        "unresolved": 2
+        "partial": 3,
+        "unresolved": 0
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_BOUNDARY.md",
@@ -708,8 +708,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 2
+        "partial": 2,
+        "unresolved": 0
       },
       "documentation_leads": [
         "wiki/02_standards/API_REFERENCE.md",
@@ -719,9 +719,7 @@
       "family_id": "chart-shape",
       "family_label": "Chart Shape",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
-      "missing_documentation_surface_ids": [
-        "python:moira.facade:classify_chart_shape_with_truth"
-      ],
+      "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/chart_shape.py"
@@ -2616,8 +2614,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 1,
-        "unresolved": 25
+        "partial": 2,
+        "unresolved": 24
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -4326,6 +4324,7 @@
         "wiki/02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md",
         "wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md",
         "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
+        "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
         "wiki/02_standards/URANIAN_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_5.2.2.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -5302,8 +5301,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 2,
-        "unresolved": 2
+        "partial": 4,
+        "unresolved": 0
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
@@ -6096,8 +6095,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 14
+        "partial": 14,
+        "unresolved": 0
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6206,13 +6205,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
-      "missing_documentation_surface_ids": [
-        "python:moira.facade:all_nakshatras_at_with_truth",
-        "python:moira.facade:ayanamsa_with_truth",
-        "python:moira.facade:nakshatra_of_with_truth",
-        "python:moira.facade:sidereal_to_tropical_with_truth",
-        "python:moira.facade:tropical_to_sidereal_with_truth"
-      ],
+      "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/sidereal.py",
@@ -7794,7 +7787,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
+  "inventory_fingerprint_sha256": "19894c0af4962153dc6a8a1063c1257a3a367ca6feb5faf57c73deb84d2a8bdb",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7820,7 +7813,7 @@
       "strong_exemplar": 4,
       "unresolved": 0
     },
-    "families_with_missing_documentation": 28,
+    "families_with_missing_documentation": 26,
     "families_with_missing_tests": 7,
     "family_count": 143,
     "production_user_surface_count": 171,
@@ -7828,8 +7821,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 60,
-      "unresolved": 1167
+      "partial": 81,
+      "unresolved": 1146
     }
   }
 }

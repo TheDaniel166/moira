@@ -10,12 +10,23 @@ This standard governs the root/facade sidereal utility surfaces that are
 public through Python and candidates for P-GAP-05 REST admission:
 
 - `moira.sidereal.Ayanamsa`
+- `moira.sidereal.UserDefinedAyanamsa`
+- `moira.sidereal.AyanamsaComputationTruth`
+- `moira.sidereal.SiderealConversionTruth`
+- `moira.sidereal.NakshatraComputationTruth`
+- `moira.sidereal.NakshatraPositionWithTruth`
+- `moira.sidereal.BulkNakshatraWithTruth`
 - `moira.sidereal.ayanamsa`
+- `moira.sidereal.ayanamsa_with_truth`
 - `moira.sidereal.tropical_to_sidereal`
+- `moira.sidereal.tropical_to_sidereal_with_truth`
 - `moira.sidereal.sidereal_to_tropical`
+- `moira.sidereal.sidereal_to_tropical_with_truth`
 - `moira.sidereal.list_ayanamsa_systems`
 - `moira.sidereal.nakshatra_of`
+- `moira.sidereal.nakshatra_of_with_truth`
 - `moira.sidereal.all_nakshatras_at`
+- `moira.sidereal.all_nakshatras_at_with_truth`
 
 This standard does not govern Panchanga, Muhurta, Dasha, Varga, Shadbala,
 Jaimini, Ashtakavarga, Vedic dignities, Manazil, or chart-backed sidereal
@@ -53,12 +64,17 @@ Admitted fields:
 Owned by:
 
 - `moira.sidereal.ayanamsa`
+- `moira.sidereal.ayanamsa_with_truth`
+- `moira.sidereal.AyanamsaComputationTruth`
 
 Meaning:
 
 - date-specific ayanamsa value in degrees for a finite `jd_ut`
 - accepts named built-in systems only for REST Stage 1
 - accepts explicit mode: `true` or `mean`
+- `ayanamsa_with_truth` and REST `computation_truth` disclose UT1/TT epochs,
+  $\Delta T$ seconds, polynomial vs. live-star-anchor effective path,
+  precession/drift/nutation components, and explicit fallback disclosure
 
 Admitted fields:
 
@@ -67,13 +83,17 @@ Admitted fields:
 - `mode`
 - `ayanamsa_deg`
 - `value_range`
+- `computation_truth`
 
 ### Longitude Conversion
 
 Owned by:
 
 - `moira.sidereal.tropical_to_sidereal`
+- `moira.sidereal.tropical_to_sidereal_with_truth`
 - `moira.sidereal.sidereal_to_tropical`
+- `moira.sidereal.sidereal_to_tropical_with_truth`
+- `moira.sidereal.SiderealConversionTruth`
 
 Meaning:
 
@@ -82,6 +102,9 @@ Meaning:
 - no body identity
 - no house derivation
 - no Panchanga judgement
+- `tropical_to_sidereal_with_truth`, `sidereal_to_tropical_with_truth`, and REST
+  `computation_truth` preserve raw/normalized input longitude, unwrapped and
+  wrapped output longitude, and nested `AyanamsaComputationTruth`
 
 Admitted fields:
 
@@ -93,14 +116,20 @@ Admitted fields:
 - `output_longitude_deg`
 - `ayanamsa_deg`
 - `longitude_range`
+- `computation_truth`
 
 ### Nakshatra Position
 
 Owned by:
 
 - `moira.sidereal.NakshatraPosition`
+- `moira.sidereal.NakshatraComputationTruth`
+- `moira.sidereal.NakshatraPositionWithTruth`
+- `moira.sidereal.BulkNakshatraWithTruth`
 - `moira.sidereal.nakshatra_of`
+- `moira.sidereal.nakshatra_of_with_truth`
 - `moira.sidereal.all_nakshatras_at`
+- `moira.sidereal.all_nakshatras_at_with_truth`
 
 Meaning:
 
@@ -110,6 +139,10 @@ Meaning:
 - no Panchanga tithi/vara/yoga/karana computation
 - no Muhurta interpretation
 - no Dasha balance computation
+- `nakshatra_of_with_truth`, `all_nakshatras_at_with_truth`, and REST
+  `computation_truth` disclose the shared `AyanamsaComputationTruth`, equal
+  `13°20′` / `3°20′` partition constants, raw index/pada before boundary
+  clamping, and clamping flags
 
 Admitted fields:
 
@@ -125,6 +158,7 @@ Admitted fields:
 - `degrees_in`
 - `degrees_remaining`
 - `sidereal_longitude_deg`
+- `computation_truth`
 
 ---
 
