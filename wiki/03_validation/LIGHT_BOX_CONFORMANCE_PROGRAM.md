@@ -23,4 +23,15 @@ Family review uses `strong_exemplar`, `partial`, `mixed`, `major_gap`, and `unre
 
 ## Release boundary
 
-The generated current-status artifacts are source-tree truth until an exact release receipt binds them to a commit and package. They must not be described as deployed or current-production evidence before that release boundary is crossed. The Website and Workspace remain separate consumers and are not edited by this engine program.
+The generated current-status artifacts are source-tree truth until an exact release receipt binds them to a source commit and package. They must not be described as deployed or current-production evidence before that release boundary is crossed. The Website and Workspace remain separate consumers and are not edited by this engine program.
+
+Exact evidence uses a two-commit boundary so that a receipt never claims to have tested the commit that merely stores that receipt:
+
+1. The **source commit** contains the calculation source, contracts, gate, and documentation to be tested. Its parent worktree and nested wiki must be clean.
+2. `scripts/replay_lightbox_receipts.py --require-exact-source` records that source commit only when `HEAD` and the clean worktree remain unchanged from the beginning through the end of the replay.
+3. The assurance matrix and current status are regenerated from those receipts. Before commit, the only permitted parent-worktree changes are the five generated evidence files and, after wiki synchronization, the `moira.wiki` gitlink.
+4. The generated assurance and current-status Markdown pages are committed in the nested wiki. That nested commit may change only those two pages.
+5. A single-parent **attestation commit** records exactly the five generated evidence files plus the nested wiki gitlink. Its sole parent must be the receipt's source revision. It is an evidence envelope for that parent; it is not itself the tested source revision.
+6. `scripts/check_lightbox_release_gate.py --exact-release` accepts either the bounded pre-attestation state or the clean committed attestation state. It rejects source drift, merge attestations, a wrong parent, extra or missing paths, dirty post-attestation worktrees, nested-wiki drift, local receipts, and failed replay contracts.
+
+The attestation commit can be published only after the exact gate passes in both states. Any later source change requires a new source commit, replay, and attestation; an earlier receipt is never carried forward by assertion.

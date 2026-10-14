@@ -62,6 +62,15 @@ def _git(args: Sequence[str]) -> str:
     return process.stdout.strip()
 
 
+def _source_snapshot() -> tuple[str, bool]:
+    """Return the current revision and whether the tracked source tree is clean."""
+
+    return (
+        _git(["rev-parse", "HEAD"]),
+        not bool(_git(["status", "--porcelain", "--untracked-files=all"])),
+    )
+
+
 def load_contracts(
     contracts_path: Path = CONTRACTS_PATH,
     inventory_path: Path = INVENTORY_PATH,
@@ -211,10 +220,15 @@ def replay_contract(
 
 def build_receipt_set(
     selected_claim_ids: set[str] | None = None,
+    *,
+    require_exact_source: bool = False,
 ) -> dict[str, Any]:
     contracts, inventory = load_contracts()
-    source_revision = _git(["rev-parse", "HEAD"])
-    working_tree_clean = not bool(_git(["status", "--porcelain"]))
+    source_revision, source_clean_at_start = _source_snapshot()
+    if require_exact_source and not source_clean_at_start:
+        raise ReceiptReplayError(
+            "exact-source replay requires a clean worktree before execution"
+        )
     available = {contract["claim_id"]: contract for contract in contracts["contracts"]}
     selected = set(available) if selected_claim_ids is None else selected_claim_ids
     unknown = selected - set(available)
@@ -225,10 +239,38 @@ def build_receipt_set(
             available[claim_id],
             inventory=inventory,
             source_revision=source_revision,
-            working_tree_clean=working_tree_clean,
+            working_tree_clean=source_clean_at_start,
         )
         for claim_id in sorted(selected)
     ]
+    final_revision, source_clean_at_end = _source_snapshot()
+    exact_source = (
+        source_clean_at_start
+        and source_clean_at_end
+        and final_revision == source_revision
+    )
+    if require_exact_source and not exact_source:
+        reasons: list[str] = []
+        if final_revision != source_revision:
+            reasons.append("HEAD changed during replay")
+        if not source_clean_at_end:
+            reasons.append("the worktree changed during replay")
+        if not reasons:
+            reasons.append("the source snapshot was not stable")
+        raise ReceiptReplayError(
+            "exact-source replay lost its source boundary: " + "; ".join(reasons)
+        )
+    artifact_status = (
+        "exact_source_revision" if exact_source else "local_unreleased_worktree"
+    )
+    rebound_receipts: list[dict[str, Any]] = []
+    for receipt in receipts:
+        receipt_core = dict(receipt)
+        receipt_core.pop("receipt_id", None)
+        receipt_core["working_tree_clean"] = exact_source
+        receipt_core["artifact_status"] = artifact_status
+        rebound_receipts.append({"receipt_id": _sha(receipt_core), **receipt_core})
+    receipts = rebound_receipts
     return {
         "schema_version": SCHEMA_VERSION,
         "contracts_path": CONTRACTS_PATH.relative_to(REPO_ROOT).as_posix(),
@@ -236,10 +278,8 @@ def build_receipt_set(
         "engine_version": inventory["engine_version"],
         "inventory_fingerprint_sha256": inventory["surface_fingerprint_sha256"],
         "source_revision": source_revision,
-        "working_tree_clean": working_tree_clean,
-        "artifact_status": "exact_source_revision"
-        if working_tree_clean
-        else "local_unreleased_worktree",
+        "working_tree_clean": exact_source,
+        "artifact_status": artifact_status,
         "summary": {
             "contracts_run": len(receipts),
             "passed": sum(row["status"] == "passed" for row in receipts),
@@ -259,13 +299,28 @@ def main() -> int:
         action="store_true",
         help="re-evaluate a saved receipt set without rerunning its retained pytest output",
     )
+    parser.add_argument(
+        "--require-exact-source",
+        action="store_true",
+        help=(
+            "refuse to write receipts unless HEAD and the clean worktree remain "
+            "unchanged for the entire replay"
+        ),
+    )
     args = parser.parse_args()
     try:
+        if args.reclassify_existing and args.require_exact_source:
+            raise ReceiptReplayError(
+                "--require-exact-source cannot be combined with --reclassify-existing"
+            )
         output = args.output.resolve()
         receipt_set = (
             reclassify_existing(_load(output))
             if args.reclassify_existing
-            else build_receipt_set(set(args.claim) or None)
+            else build_receipt_set(
+                set(args.claim) or None,
+                require_exact_source=args.require_exact_source,
+            )
         )
         output.parent.mkdir(parents=True, exist_ok=True)
         temporary = output.with_suffix(output.suffix + ".tmp")

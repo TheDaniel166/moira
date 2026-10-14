@@ -5,6 +5,9 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import sys
+from typing import Any
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).parents[2]
@@ -229,11 +232,115 @@ def test_r3b_solar_condition_surfaces_have_a_bounded_replay_contract() -> None:
         assert len(contract["pytest_targets"]) == 5
         assert contract["minimum_tests"] == 5
         assert "8.5 degrees" in contract["claim_scope"]
-        assert "not an independent astronomical authority residual" in contract[
-            "exclusions"
-        ][0]
+        assert (
+            "not an independent astronomical authority residual"
+            in contract["exclusions"][0]
+        )
 
 
 def test_contract_hash_is_order_stable() -> None:
     replay = _module()
     assert replay._sha({"b": 2, "a": 1}) == replay._sha({"a": 1, "b": 2})
+
+
+def _stub_build(
+    replay: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    snapshots: list[tuple[str, bool]],
+) -> None:
+    contract = {
+        "claim_id": "LB-TEST",
+        "surface_ids": ["python:moira.facade:test"],
+        "evidence_classes": ["release"],
+        "claim_scope": "test",
+        "exclusions": ["none"],
+        "pytest_targets": ["tests/unit/test_lightbox_evidence_contracts.py"],
+        "minimum_tests": 1,
+    }
+    contracts = {"contracts": [contract]}
+    inventory = {
+        "engine_version": "test",
+        "surface_fingerprint_sha256": "fingerprint",
+    }
+    snapshots_iter = iter(snapshots)
+    monkeypatch.setattr(replay, "load_contracts", lambda: (contracts, inventory))
+    monkeypatch.setattr(replay, "_source_snapshot", lambda: next(snapshots_iter))
+
+    def fake_replay_contract(
+        raw_contract: dict[str, Any],
+        *,
+        inventory: dict[str, Any],
+        source_revision: str,
+        working_tree_clean: bool,
+    ) -> dict[str, Any]:
+        return {
+            "receipt_id": "old-id",
+            "claim_id": raw_contract["claim_id"],
+            "source_revision": source_revision,
+            "working_tree_clean": working_tree_clean,
+            "artifact_status": (
+                "exact_source_revision"
+                if working_tree_clean
+                else "local_unreleased_worktree"
+            ),
+            "status": "passed",
+            "passed_tests": 1,
+        }
+
+    monkeypatch.setattr(replay, "replay_contract", fake_replay_contract)
+
+
+def test_exact_replay_requires_a_stable_clean_source_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replay = _module()
+    source = "1" * 40
+    _stub_build(replay, monkeypatch, [(source, True), (source, True)])
+    receipt_set = replay.build_receipt_set(require_exact_source=True)
+    assert receipt_set["source_revision"] == source
+    assert receipt_set["working_tree_clean"] is True
+    assert receipt_set["artifact_status"] == "exact_source_revision"
+    assert receipt_set["receipts"][0]["working_tree_clean"] is True
+    assert receipt_set["receipts"][0]["artifact_status"] == "exact_source_revision"
+    assert receipt_set["receipts"][0]["receipt_id"] != "old-id"
+
+
+def test_exact_replay_refuses_a_dirty_start(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replay = _module()
+    _stub_build(replay, monkeypatch, [("1" * 40, False)])
+    with pytest.raises(
+        replay.ReceiptReplayError, match="clean worktree before execution"
+    ):
+        replay.build_receipt_set(require_exact_source=True)
+
+
+@pytest.mark.parametrize(
+    "final_snapshot",
+    [("2" * 40, True), ("1" * 40, False)],
+)
+def test_exact_replay_refuses_revision_or_worktree_drift(
+    monkeypatch: pytest.MonkeyPatch,
+    final_snapshot: tuple[str, bool],
+) -> None:
+    replay = _module()
+    _stub_build(replay, monkeypatch, [("1" * 40, True), final_snapshot])
+    with pytest.raises(replay.ReceiptReplayError, match="lost its source boundary"):
+        replay.build_receipt_set(require_exact_source=True)
+
+
+def test_local_replay_downgrades_when_source_changes_during_execution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    replay = _module()
+    source = "1" * 40
+    _stub_build(replay, monkeypatch, [(source, True), ("2" * 40, True)])
+    receipt_set = replay.build_receipt_set()
+    assert receipt_set["source_revision"] == source
+    assert receipt_set["working_tree_clean"] is False
+    assert receipt_set["artifact_status"] == "local_unreleased_worktree"
+    assert receipt_set["receipts"][0]["working_tree_clean"] is False
+    assert receipt_set["receipts"][0]["artifact_status"] == (
+        "local_unreleased_worktree"
+    )
