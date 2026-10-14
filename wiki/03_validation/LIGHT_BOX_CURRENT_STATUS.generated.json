@@ -28,12 +28,12 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.9.9",
-  "evidence_source_revision": "469ab71436bb768f6d3676906cf18f887e0158cf",
+  "evidence_source_revision": "dfaedcb154a72951d349cc76995a05e5709b691f",
   "generated_by": "scripts/generate_lightbox_public_status.py",
   "inventory_fingerprint_sha256": "e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
-    "Bounded replay contracts cover 151 calculations and do not generalize to their entire families.",
+    "Bounded replay contracts cover 173 calculations and do not generalize to their entire families.",
     "All 1233 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
   ],
   "links": {
@@ -56,21 +56,21 @@
       "unresolved": 0
     },
     "not_applicable": 0,
-    "partial": 151,
+    "partial": 173,
     "production_user_by_status": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 113,
-      "unresolved": 58
+      "partial": 135,
+      "unresolved": 36
     },
     "production_user_calculations": 171,
-    "replayed_contracts": 44,
-    "replayed_contracts_passed_exact_source": 44,
+    "replayed_contracts": 49,
+    "replayed_contracts_passed_exact_source": 49,
     "replayed_contracts_passed_local": 0,
     "reviewed_families": 143,
-    "surfaces_with_replay_contracts": 151,
-    "surfaces_without_replay_contracts": 1082,
-    "unresolved": 1082
+    "surfaces_with_replay_contracts": 173,
+    "surfaces_without_replay_contracts": 1060,
+    "unresolved": 1060
   },
   "universal_current_conformance_supported": false
 }

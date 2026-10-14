@@ -4,11 +4,11 @@
 
 - Engine version: `6.9.9`
 - Inventory fingerprint: `e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b`
-- Receipt source revision: `469ab71436bb768f6d3676906cf18f887e0158cf`
+- Receipt source revision: `dfaedcb154a72951d349cc76995a05e5709b691f`
 - Receipt artifact status: `exact_source_revision`
 - Canonical surfaces: 1233
-- Surfaces with replay contracts: 151
-- Surfaces without replay contracts: 1082
+- Surfaces with replay contracts: 173
+- Surfaces without replay contracts: 1060
 
 ## Boundary
 
@@ -22,13 +22,13 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 |---|---:|---:|---:|---:|
 | `authority` | 0 | 19 | 0 | 1214 |
 | `corroboration` | 0 | 0 | 0 | 1233 |
-| `invariant` | 0 | 151 | 0 | 1082 |
-| `doctrine_source` | 0 | 31 | 0 | 1202 |
-| `regression` | 0 | 151 | 0 | 1082 |
+| `invariant` | 0 | 173 | 0 | 1060 |
+| `doctrine_source` | 0 | 53 | 0 | 1180 |
+| `regression` | 0 | 173 | 0 | 1060 |
 | `native_parity` | 0 | 0 | 0 | 1233 |
 | `harness` | 0 | 0 | 0 | 1233 |
 | `performance` | 0 | 0 | 0 | 1233 |
-| `release` | 0 | 151 | 0 | 1082 |
+| `release` | 0 | 173 | 0 | 1060 |
 
 ## Replayed contracts
 
@@ -57,6 +57,7 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 | `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
 | `LB-LOCATIONAL-PROJECTION-REST-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
 | `LB-MANAZIL-POSITION-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-PANCHA-PAKSHI-SOURCE-SCOPED-REST-TRUTH` | 15 | `doctrine_source,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
 | `LB-PARAN-SEARCH-PACKET-REST-TRUTH` | 2 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-PLANETARY-HOURS-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
@@ -69,6 +70,7 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 | `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 10 | `passed` | `exact_source_revision` |
 | `LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
 | `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-SHADBALA-CHART-REST-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-SIDEREAL-PYTHON-TRUTH` | 10 | `invariant,regression,release` | 11 | `passed` | `exact_source_revision` |
 | `LB-SIDEREAL-REST-TRUTH` | 4 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
 | `LB-SOLAR-CONDITION-BOUNDARY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
@@ -76,6 +78,9 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 | `LB-SYNODIC-CYCLE-SYZYGY-TRUTH` | 5 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
 | `LB-TIMELORDS-PROFECTIONS-REST-TRUTH` | 5 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-TRANSITS-RETURNS-PREDICTIVE-TRUTH` | 9 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-VEDIC-DIGNITIES-CHART-PROFILE-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-VEDIC-YOGAS-PROOF-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-VIMSHOTTARI-DASHA-REST-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
 | `LB-VISIBILITY-ASSESSMENT-TRUTH` | 1 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
 | `LB-VOID-OF-COURSE-TRUTH` | 4 | `invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
 
