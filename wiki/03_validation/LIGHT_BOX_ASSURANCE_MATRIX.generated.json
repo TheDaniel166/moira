@@ -14,7 +14,7 @@
         "The replay does not establish renderer typography, pixel collision freedom at a particular viewport, interpretive meaning, or external astronomical authority beyond the underlying admitted chart and house paths."
       ],
       "passed_tests": 7,
-      "receipt_id": "da795a093dd02934c7894dde1fbefefc615aa27b465acc22f9803f8214d137b8",
+      "receipt_id": "3682140ab51835eb3630ef9ab2480328a059d890514e65034d4cf589f3de8f75",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/website/chart-wheel/packet"
@@ -33,7 +33,7 @@
         "No claim is made for relationship operations that do not use this witness vessel."
       ],
       "passed_tests": 15,
-      "receipt_id": "61a8fd023aab1c9b869931c212674e44dbf0dd5d9568b73a2d269fcb410c6bbb",
+      "receipt_id": "7a69a3d3ea310e3fb5e4c50f9d104f974c19af4c0b4cd07f4afdfb3ab6857ca1",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/motion-witness"
@@ -52,7 +52,7 @@
         "No external-authority numerical residual is inferred from transport tests."
       ],
       "passed_tests": 40,
-      "receipt_id": "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84",
+      "receipt_id": "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/chart/reduction",
@@ -74,7 +74,7 @@
         "The receipt does not promote regression coverage to an external astronomical authority comparison."
       ],
       "passed_tests": 13,
-      "receipt_id": "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b",
+      "receipt_id": "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/positions/frame/heliocentric",
@@ -97,7 +97,7 @@
         "The receipt does not convert the profile into a numerical astronomy benchmark."
       ],
       "passed_tests": 6,
-      "receipt_id": "a2f5fc6e94804ec10c50bfba0e9e3c1f566c8a5f9c51e63e227c0f1019a1c6e3",
+      "receipt_id": "71da12243116e9033ea7f411f1caae0947ba47860315ce162c6610219468978d",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/hellenistic/chart-profile"
@@ -117,7 +117,7 @@
         "This replay does not replace the underlying authority fixtures or claim coverage beyond the route tests."
       ],
       "passed_tests": 15,
-      "receipt_id": "bffd47b9d217136206e9ca861301617201a82b5162275549891cd2999e39c5a0",
+      "receipt_id": "996b85f80385433e4271d94ba52dc80aa5ac5d6c0fd17aa0ecaf65af52705c60",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/orbits/elements"
@@ -137,7 +137,7 @@
         "The receipt is not a universal Pancha Pakshi tradition or historical-source claim."
       ],
       "passed_tests": 18,
-      "receipt_id": "f86721f7abd19a3eb7bcb70cb20b832a80c72340d64128b9c04892cb2b4c0c52",
+      "receipt_id": "4c9960efb48f241272c10dbb8200818b8d08face6bcede8f23694c2b7f98a63b",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"
@@ -157,7 +157,7 @@
         "The receipt does not resolve every primary-direction method or external historical authority question."
       ],
       "passed_tests": 46,
-      "receipt_id": "1bb37e0fc174f81d43818f481244cb4801724defc205736c901637e9063481d9",
+      "receipt_id": "3a546a73616bce629b7f7d3b0529d9f3b17f75b08b65cca3c568b324b48f024b",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/primary-directions/profile/reduction"
@@ -177,7 +177,7 @@
         "No broader progression-family or external-authority residual claim is inferred."
       ],
       "passed_tests": 13,
-      "receipt_id": "8d1abe07033eeb5830f865ca06a4544a8b2120d9c7c50517b8c6e2be0483b6f9",
+      "receipt_id": "d2026318e89a245a378b5bc0dcf8ad8c95f01daee8a321792b7709c5a426ba6a",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/progressions/secondary/reduction"
@@ -197,7 +197,7 @@
         "The receipt does not establish source completeness beyond the named doctrine packet and tests."
       ],
       "passed_tests": 5,
-      "receipt_id": "59daf217ed59f665a6416b070b2029d6ad4216a6740537b0e3a04cbd02183e59",
+      "receipt_id": "c5e42f308c23e4041de98f785992b9f698171d9d1ed6f5dfec6fabd463c675b6",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/electional/western/judgement"
@@ -217,7 +217,7 @@
         "The replay does not infer an epoch or celestial frame not supplied by the caller, does not include refraction or polar motion, and does not make body-ephemeris accuracy claims."
       ],
       "passed_tests": 14,
-      "receipt_id": "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1",
+      "receipt_id": "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:ecliptic_to_equatorial",
@@ -241,7 +241,7 @@
         "The replay is not an independent JPL Horizons residual, does not revalidate the DE441 bytes or native SPK parser beyond the separately admitted resource receipt, and makes no claim outside the kernel coverage, sampled bodies, epochs, frames, or rate conventions."
       ],
       "passed_tests": 6,
-      "receipt_id": "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17",
+      "receipt_id": "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:planet_relative_to",
@@ -264,7 +264,7 @@
         "The replay does not validate bundled DUT1 or historical Delta-T values against a separately acquired IERS/HMNAO corpus, does not make the future Delta-T scenario predictive, and does not claim pre-1972 civil UTC authority beyond Moira's disclosed proxy/handoff policy."
       ],
       "passed_tests": 17,
-      "receipt_id": "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946",
+      "receipt_id": "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:jd_from_datetime",
@@ -294,7 +294,7 @@
         "The replay does not resolve historical doctrine, external numerical residuals, or methods outside the tested reference-place and midpoint-location variants."
       ],
       "passed_tests": 2,
-      "receipt_id": "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a",
+      "receipt_id": "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/chart",
@@ -314,7 +314,7 @@
         "The replay does not establish historical doctrine authority, interpretive meaning, or an external numerical comparison for midpoint or dial products."
       ],
       "passed_tests": 3,
-      "receipt_id": "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6",
+      "receipt_id": "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/midpoints/calculate",
@@ -335,7 +335,7 @@
         "The replay does not establish interpretive judgement, universal house-system accuracy, or authority beyond the existing chart and house computations."
       ],
       "passed_tests": 1,
-      "receipt_id": "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170",
+      "receipt_id": "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/overlay",
@@ -355,7 +355,7 @@
         "The replay does not establish complete historical pattern doctrine, predictive efficacy, or an external numerical authority comparison."
       ],
       "passed_tests": 1,
-      "receipt_id": "c6192c1d7e1fb28d5b13fa46a53ff8fcdb2574e9ff8b221f1dcb765a514a0f64",
+      "receipt_id": "39b1600ba5950d9147e8d0ee91fb9198797b0ba6c030c04f20f01d270c094627",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/patterns/find"
@@ -374,7 +374,7 @@
         "The replay does not infer an epoch, ephemeris origin, motion classification, or external numerical authority for caller-supplied longitudes."
       ],
       "passed_tests": 10,
-      "receipt_id": "ed30ed8a66f73eb72f2afe9894053338ed359b2ca7f73889b46c64033da39987",
+      "receipt_id": "158c2d82d60e54dc2d15197a72790cf9e6685293ae1524d8ee94e68f0262a45e",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/from-longitudes"
@@ -393,7 +393,7 @@
         "The replay does not establish interpretive judgement, a shared relationship epoch, applying or separating motion, or an external numerical authority comparison."
       ],
       "passed_tests": 2,
-      "receipt_id": "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b",
+      "receipt_id": "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/aspects",
@@ -413,7 +413,7 @@
         "The replay does not establish an external transit authority residual, moving-target search, orb-window timing, or interpretive ranking."
       ],
       "passed_tests": 2,
-      "receipt_id": "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c",
+      "receipt_id": "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/transits",
@@ -434,7 +434,7 @@
         "The replay is a bounded doctrine-and-engine consistency check, not an independent astronomical authority residual, a claim that every astrological tradition uses these thresholds, or evidence of interpretive efficacy."
       ],
       "passed_tests": 5,
-      "receipt_id": "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4",
+      "receipt_id": "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/solar-condition/instant",
@@ -454,7 +454,7 @@
         "The replay is a bounded engine-and-transport consistency proof, not an independent astronomical station catalog residual, and makes no claim outside the sampled major planets, epochs, kernel coverage, apparent geocentric true-ecliptic speed convention, strict sign-change detector, or configured scan windows. Small-body station requests explicitly report that only the planetary context identity is available and are not admitted for rate-sample or body-kernel provenance. The separate /v1/stations/retrograde-periods route is not admitted by this contract."
       ],
       "passed_tests": 12,
-      "receipt_id": "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6",
+      "receipt_id": "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/stations/search",
@@ -475,7 +475,7 @@
         "The replay is a bounded engine-and-transport consistency proof, not an independent void-of-course almanac residual, a claim that every astrological tradition uses this definition, or evidence of interpretive efficacy. It does not admit next_moon_connection, arbitrary moving-body batch void periods, orb-entry definitions, non-Ptolemaic aspects, topocentric variants, or epochs and kernels outside the sampled resource coverage."
       ],
       "passed_tests": 13,
-      "receipt_id": "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2",
+      "receipt_id": "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/void-of-course/window",
@@ -490,7 +490,7 @@
   "generated_by": "scripts/generate_lightbox_assurance_matrix.py",
   "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
   "receipt_artifact_status": "exact_source_revision",
-  "receipt_source_revision": "d15c1e674d7ed267d92114a3692aff150ec71c3e",
+  "receipt_source_revision": "fa439ee15fdcdcc554f34c7c5f23853181128c84",
   "receipts_path": "tests/evidence/lightbox/receipts/local.generated.json",
   "schema_version": "moira.lightbox-assurance-matrix/v1",
   "summary": {
@@ -10554,7 +10554,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10578,7 +10578,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10597,7 +10597,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10606,7 +10606,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -10624,7 +10624,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10648,7 +10648,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10667,7 +10667,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -10676,7 +10676,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -11734,7 +11734,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11758,7 +11758,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11777,7 +11777,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11786,7 +11786,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -11804,7 +11804,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11828,7 +11828,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11847,7 +11847,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -11856,7 +11856,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -13486,7 +13486,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13510,7 +13510,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13529,7 +13529,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13538,7 +13538,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -13556,7 +13556,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13580,7 +13580,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13599,7 +13599,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13608,7 +13608,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -13834,7 +13834,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13858,7 +13858,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13877,7 +13877,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13886,7 +13886,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -13904,7 +13904,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13928,7 +13928,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13947,7 +13947,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -13956,7 +13956,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -21982,7 +21982,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22006,7 +22006,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22025,7 +22025,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22034,7 +22034,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -22052,7 +22052,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22076,7 +22076,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22095,7 +22095,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22104,7 +22104,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -22902,7 +22902,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22926,7 +22926,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22945,7 +22945,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22954,7 +22954,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -22972,7 +22972,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -22996,7 +22996,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -23015,7 +23015,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -23024,7 +23024,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -29822,7 +29822,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -29841,7 +29841,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -29850,7 +29850,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         }
@@ -29888,7 +29888,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -29907,7 +29907,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -29916,7 +29916,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         }
@@ -37442,7 +37442,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -37461,7 +37461,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -37470,7 +37470,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         }
@@ -37508,7 +37508,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -37527,7 +37527,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         },
@@ -37536,7 +37536,7 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "9435804f2eebe77de7819e902c525b932d82cb79bef5bb0417e427867983db17"
+            "669b5fd7b9aa5a3f53ee952a4bdeecf60df5bb774a5ea432bf75934f56cd1006"
           ],
           "status": "passed_exact_source"
         }
@@ -37554,7 +37554,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37578,7 +37578,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37597,7 +37597,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37606,7 +37606,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -37624,7 +37624,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37648,7 +37648,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37667,7 +37667,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         },
@@ -37676,7 +37676,7 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "9347ad741f9bff0c264af01257ed92c63d200fc134849f157ed3efc2ed7a11d1"
+            "4154e9a6ab94b9acebe963d22d4aac9a4c81389edfa0f6f95476d6e451ed5d5b"
           ],
           "status": "passed_exact_source"
         }
@@ -37902,7 +37902,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -37926,7 +37926,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -37945,7 +37945,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -37954,7 +37954,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -37972,7 +37972,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -37996,7 +37996,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38015,7 +38015,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38024,7 +38024,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -38042,7 +38042,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38066,7 +38066,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38085,7 +38085,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38094,7 +38094,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -38112,7 +38112,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38136,7 +38136,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38155,7 +38155,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         },
@@ -38164,7 +38164,7 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "cf3ab25acc486710d5cf754a7fee2883c3013bb79df0a4e0152a6512e51cd946"
+            "f9becdff64fdcfd0291352ef72283fba6c66fb128aaed54fd78896125af00e78"
           ],
           "status": "passed_exact_source"
         }
@@ -41218,7 +41218,7 @@
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "ed30ed8a66f73eb72f2afe9894053338ed359b2ca7f73889b46c64033da39987"
+            "158c2d82d60e54dc2d15197a72790cf9e6685293ae1524d8ee94e68f0262a45e"
           ],
           "status": "passed_exact_source"
         },
@@ -41237,7 +41237,7 @@
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "ed30ed8a66f73eb72f2afe9894053338ed359b2ca7f73889b46c64033da39987"
+            "158c2d82d60e54dc2d15197a72790cf9e6685293ae1524d8ee94e68f0262a45e"
           ],
           "status": "passed_exact_source"
         },
@@ -41246,7 +41246,7 @@
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "ed30ed8a66f73eb72f2afe9894053338ed359b2ca7f73889b46c64033da39987"
+            "158c2d82d60e54dc2d15197a72790cf9e6685293ae1524d8ee94e68f0262a45e"
           ],
           "status": "passed_exact_source"
         }
@@ -41440,7 +41440,7 @@
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "61a8fd023aab1c9b869931c212674e44dbf0dd5d9568b73a2d269fcb410c6bbb"
+            "7a69a3d3ea310e3fb5e4c50f9d104f974c19af4c0b4cd07f4afdfb3ab6857ca1"
           ],
           "status": "passed_exact_source"
         },
@@ -41459,7 +41459,7 @@
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "61a8fd023aab1c9b869931c212674e44dbf0dd5d9568b73a2d269fcb410c6bbb"
+            "7a69a3d3ea310e3fb5e4c50f9d104f974c19af4c0b4cd07f4afdfb3ab6857ca1"
           ],
           "status": "passed_exact_source"
         },
@@ -41468,7 +41468,7 @@
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "61a8fd023aab1c9b869931c212674e44dbf0dd5d9568b73a2d269fcb410c6bbb"
+            "7a69a3d3ea310e3fb5e4c50f9d104f974c19af4c0b4cd07f4afdfb3ab6857ca1"
           ],
           "status": "passed_exact_source"
         }
@@ -43482,7 +43482,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -43501,7 +43501,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -43510,7 +43510,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         }
@@ -43652,7 +43652,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         },
@@ -43671,7 +43671,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         },
@@ -43680,7 +43680,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         }
@@ -43718,7 +43718,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         },
@@ -43737,7 +43737,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         },
@@ -43746,7 +43746,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         }
@@ -44512,7 +44512,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         },
@@ -44531,7 +44531,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         },
@@ -44540,7 +44540,7 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "98a7f0f58b1744722481fe02c3b79b263b01cff87858f5d1b66700301f02c60a"
+            "85c85cefdc6c3e95247dd67846b2488f2822c1a32c01084bfdeb02e8eed09d70"
           ],
           "status": "passed_exact_source"
         }
@@ -44578,7 +44578,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         },
@@ -44597,7 +44597,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         },
@@ -44606,7 +44606,7 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "d6e70003b3f766d960c8a5aa02a52701708d70787e9bae0af8342fb58b41b67c"
+            "7751f4c5a7fc3d2c0eedb585f312877a55fb90c92024fcf7a37f7846b0e2c509"
           ],
           "status": "passed_exact_source"
         }
@@ -46818,7 +46818,7 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "59daf217ed59f665a6416b070b2029d6ad4216a6740537b0e3a04cbd02183e59"
+            "c5e42f308c23e4041de98f785992b9f698171d9d1ed6f5dfec6fabd463c675b6"
           ],
           "status": "passed_exact_source"
         },
@@ -46832,7 +46832,7 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "59daf217ed59f665a6416b070b2029d6ad4216a6740537b0e3a04cbd02183e59"
+            "c5e42f308c23e4041de98f785992b9f698171d9d1ed6f5dfec6fabd463c675b6"
           ],
           "status": "passed_exact_source"
         },
@@ -46851,7 +46851,7 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "59daf217ed59f665a6416b070b2029d6ad4216a6740537b0e3a04cbd02183e59"
+            "c5e42f308c23e4041de98f785992b9f698171d9d1ed6f5dfec6fabd463c675b6"
           ],
           "status": "passed_exact_source"
         },
@@ -46860,7 +46860,7 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "59daf217ed59f665a6416b070b2029d6ad4216a6740537b0e3a04cbd02183e59"
+            "c5e42f308c23e4041de98f785992b9f698171d9d1ed6f5dfec6fabd463c675b6"
           ],
           "status": "passed_exact_source"
         }
@@ -49436,7 +49436,7 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "a2f5fc6e94804ec10c50bfba0e9e3c1f566c8a5f9c51e63e227c0f1019a1c6e3"
+            "71da12243116e9033ea7f411f1caae0947ba47860315ce162c6610219468978d"
           ],
           "status": "passed_exact_source"
         },
@@ -49450,7 +49450,7 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "a2f5fc6e94804ec10c50bfba0e9e3c1f566c8a5f9c51e63e227c0f1019a1c6e3"
+            "71da12243116e9033ea7f411f1caae0947ba47860315ce162c6610219468978d"
           ],
           "status": "passed_exact_source"
         },
@@ -49469,7 +49469,7 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "a2f5fc6e94804ec10c50bfba0e9e3c1f566c8a5f9c51e63e227c0f1019a1c6e3"
+            "71da12243116e9033ea7f411f1caae0947ba47860315ce162c6610219468978d"
           ],
           "status": "passed_exact_source"
         },
@@ -49478,7 +49478,7 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "a2f5fc6e94804ec10c50bfba0e9e3c1f566c8a5f9c51e63e227c0f1019a1c6e3"
+            "71da12243116e9033ea7f411f1caae0947ba47860315ce162c6610219468978d"
           ],
           "status": "passed_exact_source"
         }
@@ -50088,7 +50088,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -50107,7 +50107,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -50116,7 +50116,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         }
@@ -51974,7 +51974,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -51993,7 +51993,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -52002,7 +52002,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         }
@@ -52092,7 +52092,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -52111,7 +52111,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -52120,7 +52120,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         }
@@ -52210,7 +52210,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -52229,7 +52229,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         },
@@ -52238,7 +52238,7 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "74ef36e1d9c97cea70194deb45f9a1756a76f089caaa97477993df89bf78a2c6"
+            "ad2426665fd50b641f708d64f41f8663fdb55a62464d8f16936e1b2e95390d9c"
           ],
           "status": "passed_exact_source"
         }
@@ -54960,7 +54960,7 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "bffd47b9d217136206e9ca861301617201a82b5162275549891cd2999e39c5a0"
+            "996b85f80385433e4271d94ba52dc80aa5ac5d6c0fd17aa0ecaf65af52705c60"
           ],
           "status": "passed_exact_source"
         },
@@ -54984,7 +54984,7 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "bffd47b9d217136206e9ca861301617201a82b5162275549891cd2999e39c5a0"
+            "996b85f80385433e4271d94ba52dc80aa5ac5d6c0fd17aa0ecaf65af52705c60"
           ],
           "status": "passed_exact_source"
         },
@@ -55003,7 +55003,7 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "bffd47b9d217136206e9ca861301617201a82b5162275549891cd2999e39c5a0"
+            "996b85f80385433e4271d94ba52dc80aa5ac5d6c0fd17aa0ecaf65af52705c60"
           ],
           "status": "passed_exact_source"
         },
@@ -55012,7 +55012,7 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "bffd47b9d217136206e9ca861301617201a82b5162275549891cd2999e39c5a0"
+            "996b85f80385433e4271d94ba52dc80aa5ac5d6c0fd17aa0ecaf65af52705c60"
           ],
           "status": "passed_exact_source"
         }
@@ -55456,7 +55456,7 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "f86721f7abd19a3eb7bcb70cb20b832a80c72340d64128b9c04892cb2b4c0c52"
+            "4c9960efb48f241272c10dbb8200818b8d08face6bcede8f23694c2b7f98a63b"
           ],
           "status": "passed_exact_source"
         },
@@ -55470,7 +55470,7 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "f86721f7abd19a3eb7bcb70cb20b832a80c72340d64128b9c04892cb2b4c0c52"
+            "4c9960efb48f241272c10dbb8200818b8d08face6bcede8f23694c2b7f98a63b"
           ],
           "status": "passed_exact_source"
         },
@@ -55489,7 +55489,7 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "f86721f7abd19a3eb7bcb70cb20b832a80c72340d64128b9c04892cb2b4c0c52"
+            "4c9960efb48f241272c10dbb8200818b8d08face6bcede8f23694c2b7f98a63b"
           ],
           "status": "passed_exact_source"
         },
@@ -55498,7 +55498,7 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "f86721f7abd19a3eb7bcb70cb20b832a80c72340d64128b9c04892cb2b4c0c52"
+            "4c9960efb48f241272c10dbb8200818b8d08face6bcede8f23694c2b7f98a63b"
           ],
           "status": "passed_exact_source"
         }
@@ -56784,7 +56784,7 @@
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "c6192c1d7e1fb28d5b13fa46a53ff8fcdb2574e9ff8b221f1dcb765a514a0f64"
+            "39b1600ba5950d9147e8d0ee91fb9198797b0ba6c030c04f20f01d270c094627"
           ],
           "status": "passed_exact_source"
         },
@@ -56803,7 +56803,7 @@
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "c6192c1d7e1fb28d5b13fa46a53ff8fcdb2574e9ff8b221f1dcb765a514a0f64"
+            "39b1600ba5950d9147e8d0ee91fb9198797b0ba6c030c04f20f01d270c094627"
           ],
           "status": "passed_exact_source"
         },
@@ -56812,7 +56812,7 @@
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "c6192c1d7e1fb28d5b13fa46a53ff8fcdb2574e9ff8b221f1dcb765a514a0f64"
+            "39b1600ba5950d9147e8d0ee91fb9198797b0ba6c030c04f20f01d270c094627"
           ],
           "status": "passed_exact_source"
         }
@@ -57526,7 +57526,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57545,7 +57545,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57554,7 +57554,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         }
@@ -57592,7 +57592,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57611,7 +57611,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57620,7 +57620,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         }
@@ -57658,7 +57658,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57677,7 +57677,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57686,7 +57686,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         }
@@ -57724,7 +57724,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57743,7 +57743,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         },
@@ -57752,7 +57752,7 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "d3e3f4e4938bb204d81080ab5dcfb75251b192eeb277327ccc5bffe00e4f632b"
+            "14ba99c9970629d3e4f0069079615773e1603d7a011ddb350aa143e842f95bf5"
           ],
           "status": "passed_exact_source"
         }
@@ -57842,7 +57842,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -57861,7 +57861,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -57870,7 +57870,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         }
@@ -57960,7 +57960,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -57979,7 +57979,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         },
@@ -57988,7 +57988,7 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "46abc0e4d05aa4833a80ef222e159de584dd41bc2aa3987a1de2a63dee703f84"
+            "c7cf0a392ea7558fef8b4d708516487cf6146891491cdafb14a9cd13d656558e"
           ],
           "status": "passed_exact_source"
         }
@@ -58276,7 +58276,7 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "1bb37e0fc174f81d43818f481244cb4801724defc205736c901637e9063481d9"
+            "3a546a73616bce629b7f7d3b0529d9f3b17f75b08b65cca3c568b324b48f024b"
           ],
           "status": "passed_exact_source"
         },
@@ -58290,7 +58290,7 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "1bb37e0fc174f81d43818f481244cb4801724defc205736c901637e9063481d9"
+            "3a546a73616bce629b7f7d3b0529d9f3b17f75b08b65cca3c568b324b48f024b"
           ],
           "status": "passed_exact_source"
         },
@@ -58309,7 +58309,7 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "1bb37e0fc174f81d43818f481244cb4801724defc205736c901637e9063481d9"
+            "3a546a73616bce629b7f7d3b0529d9f3b17f75b08b65cca3c568b324b48f024b"
           ],
           "status": "passed_exact_source"
         },
@@ -58318,7 +58318,7 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "1bb37e0fc174f81d43818f481244cb4801724defc205736c901637e9063481d9"
+            "3a546a73616bce629b7f7d3b0529d9f3b17f75b08b65cca3c568b324b48f024b"
           ],
           "status": "passed_exact_source"
         }
@@ -59386,7 +59386,7 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "8d1abe07033eeb5830f865ca06a4544a8b2120d9c7c50517b8c6e2be0483b6f9"
+            "d2026318e89a245a378b5bc0dcf8ad8c95f01daee8a321792b7709c5a426ba6a"
           ],
           "status": "passed_exact_source"
         },
@@ -59400,7 +59400,7 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "8d1abe07033eeb5830f865ca06a4544a8b2120d9c7c50517b8c6e2be0483b6f9"
+            "d2026318e89a245a378b5bc0dcf8ad8c95f01daee8a321792b7709c5a426ba6a"
           ],
           "status": "passed_exact_source"
         },
@@ -59419,7 +59419,7 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "8d1abe07033eeb5830f865ca06a4544a8b2120d9c7c50517b8c6e2be0483b6f9"
+            "d2026318e89a245a378b5bc0dcf8ad8c95f01daee8a321792b7709c5a426ba6a"
           ],
           "status": "passed_exact_source"
         },
@@ -59428,7 +59428,7 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "8d1abe07033eeb5830f865ca06a4544a8b2120d9c7c50517b8c6e2be0483b6f9"
+            "d2026318e89a245a378b5bc0dcf8ad8c95f01daee8a321792b7709c5a426ba6a"
           ],
           "status": "passed_exact_source"
         }
@@ -60444,7 +60444,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60458,7 +60458,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60477,7 +60477,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60486,7 +60486,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         }
@@ -60514,7 +60514,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60528,7 +60528,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60547,7 +60547,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         },
@@ -60556,7 +60556,7 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "b41d859ff90269b02152b8427da449378eeea596de8ec9f505823fdce082cab4"
+            "4ab83f59a2ab289502ec0ce03cbc8bf424dc1758db87e61a8653b30471fa8879"
           ],
           "status": "passed_exact_source"
         }
@@ -61114,7 +61114,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61133,7 +61133,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61142,7 +61142,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         }
@@ -61180,7 +61180,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61199,7 +61199,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61208,7 +61208,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         }
@@ -61298,7 +61298,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61317,7 +61317,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         },
@@ -61326,7 +61326,7 @@
             "LB-STATION-MOTION-TRUTH"
           ],
           "receipt_ids": [
-            "e166ff5b2d71eb97a9f62d39c0bdfb89d1fb2a8e8d71a6d3786a8104a3d8b9f6"
+            "2a86fef1c9420b1784951e1e5947de18a9cd657f1e27c877d6b5a2885e09c066"
           ],
           "status": "passed_exact_source"
         }
@@ -61416,7 +61416,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         },
@@ -61435,7 +61435,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         },
@@ -61444,7 +61444,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         }
@@ -61482,7 +61482,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         },
@@ -61501,7 +61501,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         },
@@ -61510,7 +61510,7 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "63619c70739b417bd9658fd30023181bbeb0581d7c6c7ee722bef2dc89c2c21b"
+            "66207d704546b8555c4b88fc4e070b56173bf34a518bf1a2f4ab41215c4f849c"
           ],
           "status": "passed_exact_source"
         }
@@ -61548,7 +61548,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         },
@@ -61567,7 +61567,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         },
@@ -61576,7 +61576,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         }
@@ -61614,7 +61614,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         },
@@ -61633,7 +61633,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         },
@@ -61642,7 +61642,7 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "fa8b0f1e374168d2b029c5c00f23f61f2e6fe8431db26cdaff918152fcb5f170"
+            "62504549e9d7a5045f3456d7778c506ae8c991ccf2477a04a2ec7b460cc87bd4"
           ],
           "status": "passed_exact_source"
         }
@@ -64800,7 +64800,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64819,7 +64819,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64828,7 +64828,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         }
@@ -64866,7 +64866,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64885,7 +64885,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64894,7 +64894,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         }
@@ -64932,7 +64932,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64951,7 +64951,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -64960,7 +64960,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         }
@@ -64998,7 +64998,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -65017,7 +65017,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         },
@@ -65026,7 +65026,7 @@
             "LB-VOID-OF-COURSE-TRUTH"
           ],
           "receipt_ids": [
-            "0904ef8d375c9759e1fb88a708c1cd0a5e97b5f7cbe30228afea67831e7e14b2"
+            "1fd17642227a15e20cf7c3273696d5fbbe70ccc0244f888793aba33da1081055"
           ],
           "status": "passed_exact_source"
         }
@@ -65064,7 +65064,7 @@
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "da795a093dd02934c7894dde1fbefefc615aa27b465acc22f9803f8214d137b8"
+            "3682140ab51835eb3630ef9ab2480328a059d890514e65034d4cf589f3de8f75"
           ],
           "status": "passed_exact_source"
         },
@@ -65083,7 +65083,7 @@
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "da795a093dd02934c7894dde1fbefefc615aa27b465acc22f9803f8214d137b8"
+            "3682140ab51835eb3630ef9ab2480328a059d890514e65034d4cf589f3de8f75"
           ],
           "status": "passed_exact_source"
         },
@@ -65092,7 +65092,7 @@
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "da795a093dd02934c7894dde1fbefefc615aa27b465acc22f9803f8214d137b8"
+            "3682140ab51835eb3630ef9ab2480328a059d890514e65034d4cf589f3de8f75"
           ],
           "status": "passed_exact_source"
         }

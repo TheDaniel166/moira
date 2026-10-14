@@ -28,7 +28,7 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.9.9",
-  "evidence_source_revision": "d15c1e674d7ed267d92114a3692aff150ec71c3e",
+  "evidence_source_revision": "fa439ee15fdcdcc554f34c7c5f23853181128c84",
   "generated_by": "scripts/generate_lightbox_public_status.py",
   "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
   "limitations": [
