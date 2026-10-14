@@ -1,12 +1,12 @@
 {
-  "artifact_status": "local_unreleased_worktree",
+  "artifact_status": "exact_source_revision",
   "contracts_path": "tests/evidence/lightbox/contracts.json",
   "contracts_sha256": "56693bea48534a149df575807e2777783671853ad6d2660cec0d149a694b2f70",
   "engine_version": "6.9.9",
   "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
   "receipts": [
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-CHART-WHEEL-PACKET-TRUTH",
       "claim_scope": "The website chart-wheel packet retains immutable point coordinates, deterministic visible-label separation, explicit impossible-density disclosure, node override truth, house policy, orientation source, aspect policy, and label-placement provenance.",
       "command": [
@@ -23,7 +23,7 @@
         "-q"
       ],
       "contract_sha256": "e898018cc19b00f6591c23789960f762d81d4a3b09b3a45c577b750618ada191",
-      "duration_seconds": 17.335,
+      "duration_seconds": 19.394,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -33,12 +33,12 @@
       "exclusions": [
         "The replay does not establish renderer typography, pixel collision freedom at a particular viewport, interpretive meaning, or external astronomical authority beyond the underlying admitted chart and house paths."
       ],
-      "executed_at_utc": "2026-10-13T23:25:39.683190Z",
+      "executed_at_utc": "2026-10-14T09:25:51.860056Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 7,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "777034489e952cbe45c1bcab62339ac37cab162c409e5c652828851792663fb8",
+      "output_sha256": "2a31468760cc8d19b27ceccabcc71ee1f9b38b505cfd6a9300501be40bdf8a42",
       "output_tail": [
         ".......                                                                  [100%]",
         "============================== warnings summary ===============================",
@@ -56,24 +56,24 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=8, run=8, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    4.557s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_route_is_registered",
-        "    1.850s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_preserves_chart_truth_and_emits_primitives",
+        "    5.122s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_route_is_registered",
+        "    2.016s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_preserves_chart_truth_and_emits_primitives",
+        "    0.007s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_with_houses_places_points_and_cusps",
         "    0.006s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_minimum_label_separation_changes_only_label_geometry",
-        "    0.004s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_packet_with_houses_places_points_and_cusps",
-        "    0.003s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_hidden_labels_bypass_visible_label_placement"
+        "    0.004s  tests/server/test_server_chart_wheel_routes.py::test_chart_wheel_hidden_labels_bypass_visible_label_placement"
       ],
       "passed_tests": 7,
       "python_version": "3.13.11",
-      "receipt_id": "b9d6def1bf4e7382e89e1ab8ae0c41f83745df89ed7bceab54356096f058bdae",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "7c7a1e9081717a9f64c1b6b9816b8878ab77bdb30d93b497148cb1908fce9def",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/website/chart-wheel/packet"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-ASPECT-MOTION",
       "claim_scope": "The route returns the signed motion witness used by its applying/separating classification contract.",
       "command": [
@@ -84,7 +84,7 @@
         "-q"
       ],
       "contract_sha256": "a324c0d801b3493cd8a094f3e77d8a421b1a7b73a9fa0cf6523ff5b129fa2155",
-      "duration_seconds": 16.284,
+      "duration_seconds": 19.079,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -94,12 +94,12 @@
       "exclusions": [
         "No claim is made for relationship operations that do not use this witness vessel."
       ],
-      "executed_at_utc": "2026-10-13T23:25:55.967704Z",
+      "executed_at_utc": "2026-10-14T09:26:10.939631Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "0af0c18f670fe98f901253f19bd6d84d907a893ffe9c410d8fbe5e30592e3677",
+      "output_sha256": "b8df18e779b74fb4a97d66f3e36957eaf7e2bdf13c9f82997259f60096b41c9d",
       "output_tail": [
         "...............                                                          [100%]",
         "============================== warnings summary ===============================",
@@ -116,24 +116,24 @@
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    4.630s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_openapi_is_fully_typed",
-        "    0.006s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload0]",
-        "    0.004s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_exposes_signed_wraparound_truth",
-        "    0.002s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_preserves_exact_truth_without_speeds",
-        "    0.002s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_exposes_station_reason"
+        "    5.068s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_openapi_is_fully_typed",
+        "    0.007s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_exposes_signed_wraparound_truth",
+        "    0.007s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload0]",
+        "    0.005s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload9]",
+        "    0.005s  tests/server/test_server_aspect_motion_witness.py::test_motion_route_rejects_invalid_or_ambiguous_inputs[payload1]"
       ],
       "passed_tests": 15,
       "python_version": "3.13.11",
-      "receipt_id": "3992f11d2f2e61817ab5a1ec860dacb05ee0fa0fbd47787bdcd0a0524621e734",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "d442d78014adbab24d3cf481d10b4af54f2dd8e522c888416a095ff8b66a79f7",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/motion-witness"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-CORE-REDUCTIONS",
       "claim_scope": "Typed chart, house, planet-position, and sky-position reduction vessels retain their tested response contracts.",
       "command": [
@@ -144,7 +144,7 @@
         "-q"
       ],
       "contract_sha256": "16a72ceef83910bb368820757bb43e5b09db7b98cb7c3a83960a58548aeea98c",
-      "duration_seconds": 66.16,
+      "duration_seconds": 78.139,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -154,12 +154,12 @@
       "exclusions": [
         "No external-authority numerical residual is inferred from transport tests."
       ],
-      "executed_at_utc": "2026-10-13T23:27:02.127782Z",
+      "executed_at_utc": "2026-10-14T09:27:29.079253Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "f4f198eb47f8c6391fb03a534de0d09be672c5778a48a305f85f53faedfe3a60",
+      "output_sha256": "eea215fbff68d4c2e1d956f5fb214986fe2d257d868f0a74c5b98b03769ea817",
       "output_tail": [
         "........................................                                 [100%]",
         "============================== warnings summary ===============================",
@@ -178,16 +178,16 @@
         "  Planetary resource: receipts=43, run=43, skip=0, failure=0, content_probes=1, identities=DE441",
         "  Supplemental small-body resource: receipts=1, run=1, skip=0, failure=0, terminal=1, manifests=3, shards=470, bodies=11720, identities=moira-asteroids-wheel@2026.08.14.1:c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22,moira-asteroids@2026.09.18.1:1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e,moira-comets@2026.07.28.1:31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
         "============================ Moira: slowest tests =============================",
-        "    4.544s  tests/server/test_server_chart_routes.py::test_plain_position_and_chart_openapi_contracts_are_additive",
-        "    2.367s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_admits_small_bodies",
-        "    1.730s  tests/server/test_server_chart_routes.py::test_chart_route_matches_engine_selected_truth",
-        "    1.246s  tests/server/test_server_chart_routes.py::test_planet_position_route_preserves_topocentric_truth",
-        "    0.020s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_exposes_pipeline_truth"
+        "    5.170s  tests/server/test_server_chart_routes.py::test_plain_position_and_chart_openapi_contracts_are_additive",
+        "    1.828s  tests/server/test_server_chart_routes.py::test_chart_route_matches_engine_selected_truth",
+        "    1.688s  tests/server/test_server_chart_routes.py::test_planet_position_route_preserves_topocentric_truth",
+        "    1.569s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_admits_small_bodies",
+        "    0.030s  tests/server/test_server_chart_routes.py::test_chart_reduction_route_exposes_pipeline_truth"
       ],
       "passed_tests": 40,
       "python_version": "3.13.11",
-      "receipt_id": "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/chart/reduction",
@@ -195,10 +195,10 @@
         "rest:POST:/v1/positions/planet/reduction",
         "rest:POST:/v1/positions/sky/reduction"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-FRAME-POSITIONS",
       "claim_scope": "Frame-specific response envelopes retain request/time/frame/bounds/validation/provenance contracts.",
       "command": [
@@ -209,7 +209,7 @@
         "-q"
       ],
       "contract_sha256": "7dedc67b22a2e7176c8e50cd3e08a283e95a120b7b6159d3a44f019659b2ecb5",
-      "duration_seconds": 15.651,
+      "duration_seconds": 19.747,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -219,12 +219,12 @@
       "exclusions": [
         "The receipt does not promote regression coverage to an external astronomical authority comparison."
       ],
-      "executed_at_utc": "2026-10-13T23:27:17.779404Z",
+      "executed_at_utc": "2026-10-14T09:27:48.826702Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "212e73d214b05d82776611e5fca6df36807d1158bcc7999d8289a6efaba40886",
+      "output_sha256": "82ba4611e36beaa3da82f5c1b2257967532cd1c8c9301eb05b68a3c06e220470",
       "output_tail": [
         ".............                                                            [100%]",
         "============================== warnings summary ===============================",
@@ -242,16 +242,16 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=16, run=16, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    0.572s  tests/server/test_server_frame_positions_routes.py::test_frame_ssb_route_includes_sun_and_matches_facade",
-        "    0.388s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_matches_facade_for_explicit_bodies",
-        "    0.232s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_supports_default_bodies",
-        "    0.017s  tests/server/test_server_frame_positions_routes.py::test_frame_received_light_route_matches_facade_for_outer_planet",
-        "    0.003s  tests/server/test_server_frame_positions_routes.py::test_frame_planetocentric_route_matches_facade"
+        "    0.682s  tests/server/test_server_frame_positions_routes.py::test_frame_ssb_route_includes_sun_and_matches_facade",
+        "    0.398s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_matches_facade_for_explicit_bodies",
+        "    0.248s  tests/server/test_server_frame_positions_routes.py::test_frame_heliocentric_route_supports_default_bodies",
+        "    0.027s  tests/server/test_server_frame_positions_routes.py::test_frame_received_light_route_matches_facade_for_outer_planet",
+        "    0.004s  tests/server/test_server_frame_positions_routes.py::test_frame_planetocentric_route_matches_facade"
       ],
       "passed_tests": 13,
       "python_version": "3.13.11",
-      "receipt_id": "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/positions/frame/heliocentric",
@@ -259,10 +259,10 @@
         "rest:POST:/v1/positions/frame/received-light",
         "rest:POST:/v1/positions/frame/ssb"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-HELLENISTIC-PROFILE",
       "claim_scope": "The Hellenistic chart profile retains its tested typed composition and source-bound fields.",
       "command": [
@@ -273,7 +273,7 @@
         "-q"
       ],
       "contract_sha256": "92e6dea44f64cf2158a3a9ebd49c3acda5d7c8bcdde71b6509ae8716febc726c",
-      "duration_seconds": 50.059,
+      "duration_seconds": 54.277,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -284,12 +284,12 @@
       "exclusions": [
         "The receipt does not convert the profile into a numerical astronomy benchmark."
       ],
-      "executed_at_utc": "2026-10-13T23:28:07.838342Z",
+      "executed_at_utc": "2026-10-14T09:28:43.104160Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "aa484aefc7244a56158a9dbb145926e123db267772017c12c6e837fb41c86338",
+      "output_sha256": "f41ca8bcd1cb9c59d5a76aa56b723ee843790030896f057d078070feb39c2189",
       "output_tail": [
         "......                                                                   [100%]",
         "============================== warnings summary ===============================",
@@ -307,24 +307,24 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "   33.809s  tests/server/test_server_hellenistic_profile.py::test_request_validation_rejects_ambiguous_or_closed_exclusion_inputs",
-        "    4.723s  tests/server/test_server_hellenistic_profile.py::test_openapi_profile_graph_is_typed_score_free_with_closed_exclusions",
-        "    1.708s  tests/server/test_server_hellenistic_profile.py::test_route_matches_engine_service_and_preserves_profile_boundaries",
-        "    0.021s  tests/server/test_server_hellenistic_profile.py::test_profile_route_can_enable_optional_overlays",
+        "   36.490s  tests/server/test_server_hellenistic_profile.py::test_request_validation_rejects_ambiguous_or_closed_exclusion_inputs",
+        "    5.331s  tests/server/test_server_hellenistic_profile.py::test_openapi_profile_graph_is_typed_score_free_with_closed_exclusions",
+        "    1.693s  tests/server/test_server_hellenistic_profile.py::test_route_matches_engine_service_and_preserves_profile_boundaries",
+        "    0.023s  tests/server/test_server_hellenistic_profile.py::test_profile_route_can_enable_optional_overlays",
         "    0.000s  tests/server/test_server_hellenistic_profile.py::test_service_separates_planetary_and_observer_geometry"
       ],
       "passed_tests": 6,
       "python_version": "3.13.11",
-      "receipt_id": "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/hellenistic/chart-profile"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-ORBITAL-ELEMENTS",
       "claim_scope": "The orbital-elements envelope retains governed time conversion, frame, gravity, state-source, threshold, and provenance fields.",
       "command": [
@@ -335,7 +335,7 @@
         "-q"
       ],
       "contract_sha256": "712b7658410fea74f6a72db53a34a842680895f379ea84b0f46f98b2f344fd95",
-      "duration_seconds": 17.284,
+      "duration_seconds": 18.813,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "authority",
@@ -346,12 +346,12 @@
       "exclusions": [
         "This replay does not replace the underlying authority fixtures or claim coverage beyond the route tests."
       ],
-      "executed_at_utc": "2026-10-13T23:28:25.122856Z",
+      "executed_at_utc": "2026-10-14T09:29:01.917573Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "ba37996375119847d9f267e4081c8fd448105039cdcfad2fd919f7b90edc9db8",
+      "output_sha256": "5438de97a0d7fade44683c272f5b782ed3f5d4323d2c9cee81b2237cb49734a2",
       "output_tail": [
         "...............                                                          [100%]",
         "============================== warnings summary ===============================",
@@ -368,24 +368,24 @@
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    4.515s  tests/server/test_server_orbits_routes.py::test_orbit_class_batch_openapi_limit_matches_shared_server_limit",
-        "    0.015s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_invalid_inputs[payload0-not an orbital target]",
-        "    0.010s  tests/server/test_server_orbits_routes.py::test_orbit_class_route_returns_sbdb_classification",
-        "    0.007s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_extra_fields",
-        "    0.007s  tests/server/test_server_orbits_routes.py::test_distance_extremes_route_returns_tt_extremes_and_search_provenance"
+        "    5.217s  tests/server/test_server_orbits_routes.py::test_orbit_class_batch_openapi_limit_matches_shared_server_limit",
+        "    0.016s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_invalid_inputs[payload0-not an orbital target]",
+        "    0.014s  tests/server/test_server_orbits_routes.py::test_orbit_class_route_returns_sbdb_classification",
+        "    0.007s  tests/server/test_server_orbits_routes.py::test_distance_extremes_route_returns_tt_extremes_and_search_provenance",
+        "    0.007s  tests/server/test_server_orbits_routes.py::test_orbits_routes_reject_extra_fields"
       ],
       "passed_tests": 15,
       "python_version": "3.13.11",
-      "receipt_id": "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/orbits/elements"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PANCHA-PAKSHI",
       "claim_scope": "The admitted fixed-clock schedule route retains its typed doctrine-bound materialization contract.",
       "command": [
@@ -396,7 +396,7 @@
         "-q"
       ],
       "contract_sha256": "73e2ae715c6e13fb07ae2633cf0af1dcc1ca2c69d5b0779404e0793adaaead82",
-      "duration_seconds": 17.693,
+      "duration_seconds": 18.842,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -407,12 +407,12 @@
       "exclusions": [
         "The receipt is not a universal Pancha Pakshi tradition or historical-source claim."
       ],
-      "executed_at_utc": "2026-10-13T23:28:42.815923Z",
+      "executed_at_utc": "2026-10-14T09:29:20.760245Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "8a67e26d4805c63e7b28569a1261572f7cdb747740e78018be776cb8ba1467be",
+      "output_sha256": "6e11fc0aa3f464b6fc58a367ee2d3766d4beeea295c9bccef3e5e0019ae4c1f7",
       "output_tail": [
         "..................                                                       [100%]",
         "============================== warnings summary ===============================",
@@ -429,24 +429,24 @@
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    4.308s  tests/server/test_server_pancha_pakshi_routes.py::test_pancha_pakshi_openapi_is_strict_typed_and_source_scoped",
-        "    0.024s  tests/server/test_server_pancha_pakshi_routes.py::test_profiles_and_profile_info_expose_source_scope_without_a_default",
-        "    0.012s  tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_current_cell_route_rejects_implicit_or_mixed_policy",
-        "    0.010s  tests/server/test_server_pancha_pakshi_routes.py::test_fixed_clock_materialization_route_rejects_implicit_or_scaling_policy",
-        "    0.009s  tests/server/test_server_pancha_pakshi_routes.py::test_local_solar_context_route_rejects_implicit_policy_naive_time_and_extra_routing"
+        "    4.674s  tests/server/test_server_pancha_pakshi_routes.py::test_pancha_pakshi_openapi_is_strict_typed_and_source_scoped",
+        "    0.044s  tests/server/test_server_pancha_pakshi_routes.py::test_profiles_and_profile_info_expose_source_scope_without_a_default",
+        "    0.013s  tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_current_cell_route_rejects_implicit_or_mixed_policy",
+        "    0.010s  tests/server/test_server_pancha_pakshi_routes.py::test_local_solar_context_route_rejects_implicit_policy_naive_time_and_extra_routing",
+        "    0.010s  tests/server/test_server_pancha_pakshi_routes.py::test_solar_proportional_route_rejects_implicit_or_mixed_timing_policy"
       ],
       "passed_tests": 18,
       "python_version": "3.13.11",
-      "receipt_id": "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PRIMARY-DIRECTIONS",
       "claim_scope": "The primary-directions profile reduction retains its tested method, policy, and transport-contract distinctions.",
       "command": [
@@ -457,7 +457,7 @@
         "-q"
       ],
       "contract_sha256": "95687f842b96b80dea76ea369c920617a1f65a3634e85ee7eacaa09190e29508",
-      "duration_seconds": 7.148,
+      "duration_seconds": 7.078,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -468,36 +468,36 @@
       "exclusions": [
         "The receipt does not resolve every primary-direction method or external historical authority question."
       ],
-      "executed_at_utc": "2026-10-13T23:28:49.964472Z",
+      "executed_at_utc": "2026-10-14T09:29:27.838120Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "504f5d79e37d560a940e1d12f9e3d13c691c35bc55a443a5bb80c9f06f726a21",
+      "output_sha256": "a475f8ea9de3a60e18b2e34c2bc72345be225de1cf5802fcfd8a1641fe4a3480",
       "output_tail": [
         "..............................................                           [100%]",
         "======================== Moira: harness policy receipt ========================",
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    0.098s  tests/server/test_primary_directions_transport_contract.py::test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded",
-        "    0.026s  tests/server/test_primary_directions_transport_contract.py::test_advanced_search_inputs_convert_to_exact_engine_vessels",
-        "    0.011s  tests/server/test_primary_directions_transport_contract.py::test_submitted_arcs_are_bounded_and_cannot_hide_conversion_fallbacks",
-        "    0.010s  tests/server/test_primary_directions_transport_contract.py::test_natal_and_direction_coordinates_are_distinct_and_greenwich_is_preserved",
+        "    0.105s  tests/server/test_primary_directions_transport_contract.py::test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded",
+        "    0.046s  tests/server/test_primary_directions_transport_contract.py::test_advanced_search_inputs_convert_to_exact_engine_vessels",
+        "    0.013s  tests/server/test_primary_directions_transport_contract.py::test_natal_and_direction_coordinates_are_distinct_and_greenwich_is_preserved",
+        "    0.010s  tests/server/test_primary_directions_transport_contract.py::test_submitted_arcs_are_bounded_and_cannot_hide_conversion_fallbacks",
         "    0.003s  tests/server/test_primary_directions_transport_contract.py::test_every_canonical_engine_preset_is_transport_resolvable"
       ],
       "passed_tests": 46,
       "python_version": "3.13.11",
-      "receipt_id": "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/primary-directions/profile/reduction"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
       "claim_scope": "The secondary-progression reduction route retains its tested computation-time and reduction response contract.",
       "command": [
@@ -508,7 +508,7 @@
         "-q"
       ],
       "contract_sha256": "31017c33d75f2a3baf31067bf4632764f7955e4f3689ce31d9346f7ec981fb2a",
-      "duration_seconds": 16.064,
+      "duration_seconds": 15.799,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -519,12 +519,12 @@
       "exclusions": [
         "No broader progression-family or external-authority residual claim is inferred."
       ],
-      "executed_at_utc": "2026-10-13T23:29:06.028636Z",
+      "executed_at_utc": "2026-10-14T09:29:43.637616Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "c374ac36b653bb134b378a54ea27eac63ab05f9b4b0ef2701de4407fad763eb9",
+      "output_sha256": "56ff3ab345d5138185fb7551e795db3793e3245a4d34cd225067475fc167a19b",
       "output_tail": [
         ".............                                                            [100%]",
         "============================== warnings summary ===============================",
@@ -542,24 +542,24 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=16, run=16, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.938s  tests/server/test_server_phase8_progression_routes.py::test_secondary_progression_route_matches_engine",
-        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_progression_network_route_distinct_techniques",
+        "    2.057s  tests/server/test_server_phase8_progression_routes.py::test_secondary_progression_route_matches_engine",
+        "    0.007s  tests/server/test_server_phase8_progression_routes.py::test_secondary_declination_reduction_route_exposes_declination_truth",
+        "    0.006s  tests/server/test_server_phase8_progression_routes.py::test_progression_network_route_distinct_techniques",
         "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_converse_secondary_progression_route_matches_engine",
-        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_secondary_declination_route_matches_engine",
-        "    0.003s  tests/server/test_server_phase8_progression_routes.py::test_progression_profile_route_matches_engine"
+        "    0.004s  tests/server/test_server_phase8_progression_routes.py::test_secondary_declination_route_matches_engine"
       ],
       "passed_tests": 13,
       "python_version": "3.13.11",
-      "receipt_id": "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/progressions/secondary/reduction"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-WESTERN-ELECTIONAL",
       "claim_scope": "The western electional judgement route retains tested structured doctrine, components, and limitation states.",
       "command": [
@@ -570,7 +570,7 @@
         "-q"
       ],
       "contract_sha256": "09a29a4211d200e01828a2fafc159f258388f49360ca8d4adcaff6aa47c3dd28",
-      "duration_seconds": 141.873,
+      "duration_seconds": 122.46,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -581,12 +581,12 @@
       "exclusions": [
         "The receipt does not establish source completeness beyond the named doctrine packet and tests."
       ],
-      "executed_at_utc": "2026-10-13T23:31:27.902046Z",
+      "executed_at_utc": "2026-10-14T09:31:46.098106Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "da9837e20d12d19cf2165d69d56528477fe0aa9f70e1b147ec5e9e6924644558",
+      "output_sha256": "05f3e1ede300f784994d2260d3230975e8fc302e171b6faf88b66c6e2e66c32d",
       "output_tail": [
         ".....                                                                    [100%]",
         "============================== warnings summary ===============================",
@@ -604,24 +604,24 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "   63.265s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_round_trips_complete_sahl_composition",
-        "   33.342s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_dorotheus_flow_construction",
-        "   29.510s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_the_named_land_travel_sign_nature_policy",
-        "    5.531s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_openapi_names_full_request_and_response",
-        "    0.309s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_request_rejects_cross_doctrine_and_hidden_score"
+        "   59.724s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_round_trips_complete_sahl_composition",
+        "   24.165s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_dorotheus_flow_construction",
+        "   24.047s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_route_preserves_the_named_land_travel_sign_nature_policy",
+        "    4.931s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_openapi_names_full_request_and_response",
+        "    0.279s  tests/server/test_server_western_electional_judgement_routes.py::test_judgement_request_rejects_cross_doctrine_and_hidden_score"
       ],
       "passed_tests": 5,
       "python_version": "3.13.11",
-      "receipt_id": "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/electional/western/judgement"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH",
       "claim_scope": "The additive frame truth surfaces retain legacy coordinate/obliquity results, match ERFA/SOFA for five true-obliquity epochs and three ordinary horizontal reductions, preserve independent unit-vector rotation invariants, and expose undefined azimuth at sampled zenith, nadir, and geographic-pole singularities.",
       "command": [
@@ -632,7 +632,7 @@
         "-q"
       ],
       "contract_sha256": "aed5a7f5a7856c74dd14d8c82ee14aecfd54c0b0ac5e984aa38fa87ca6143dfa",
-      "duration_seconds": 5.794,
+      "duration_seconds": 5.34,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "authority",
@@ -643,28 +643,28 @@
       "exclusions": [
         "The replay does not infer an epoch or celestial frame not supplied by the caller, does not include refraction or polar motion, and does not make body-ephemeris accuracy claims."
       ],
-      "executed_at_utc": "2026-10-13T23:31:33.696922Z",
+      "executed_at_utc": "2026-10-14T09:31:51.438618Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 14,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "e32fb51646000a2c6497b2509aff331a3c94b550b9b995edfd007fb2b9935c3e",
+      "output_sha256": "a67c6358b6c6107e9cf810c1719a3d615ba7b27db523487ab50d47a174b9d8d7",
       "output_tail": [
         "..............                                                           [100%]",
         "======================== Moira: harness policy receipt ========================",
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    0.009s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j1500]",
-        "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_horizontal_truth_matches_erfa_sofa[ordinary-north]",
+        "    0.006s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j1500]",
         "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j1800]",
+        "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j2000]",
         "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j2024]",
         "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BFrameTruthEvidence::test_true_obliquity_truth_matches_erfa_sofa[j2100]"
       ],
       "passed_tests": 14,
       "python_version": "3.13.11",
-      "receipt_id": "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:ecliptic_to_equatorial",
@@ -674,10 +674,10 @@
         "python:moira.facade:true_obliquity",
         "python:moira.facade:true_obliquity_with_truth"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH",
       "claim_scope": "Against the locally admitted DE441 resource, the additive kernel truth surfaces retain legacy results while naming center, clock, kernel identity, true-of-date frame, correction exclusions, method, gravity, and rate sampling. Direct NAIF-route vector subtraction is checked for three center/body cases and the lunar osculating-apogee eccentricity-vector invariant for two epochs.",
       "command": [
@@ -688,7 +688,7 @@
         "-q"
       ],
       "contract_sha256": "b50b3e39048720613bdc15dc2a3f2775709e8cbce5ed5910c8a7bad00a16607d",
-      "duration_seconds": 8.413,
+      "duration_seconds": 7.729,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -698,12 +698,12 @@
       "exclusions": [
         "The replay is not an independent JPL Horizons residual, does not revalidate the DE441 bytes or native SPK parser beyond the separately admitted resource receipt, and makes no claim outside the kernel coverage, sampled bodies, epochs, frames, or rate conventions."
       ],
-      "executed_at_utc": "2026-10-13T23:31:42.110565Z",
+      "executed_at_utc": "2026-10-14T09:31:59.167377Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 6,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "a1bd08108e68d0ce71420cd3849b3c5642db2f4728c15e40b7dd5c8007b68978",
+      "output_sha256": "ee42c9400b721e9055ed0be627ecd1063b21a5887c1326a817ae8c6faa217258",
       "output_tail": [
         "......                                                                   [100%]",
         "======================== Moira: harness policy receipt ========================",
@@ -711,16 +711,16 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=8, run=8, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    0.669s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[venus-from-earth-2024]",
-        "    0.438s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_true_lilith_truth_matches_independent_eccentricity_vector[j2000]",
-        "    0.159s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[mars-from-sun-j2000]",
-        "    0.038s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[mars-from-jupiter-2024]",
+        "    0.763s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[venus-from-earth-2024]",
+        "    0.514s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_true_lilith_truth_matches_independent_eccentricity_vector[j2000]",
+        "    0.170s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[mars-from-sun-j2000]",
+        "    0.039s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_relative_planet_truth_matches_direct_spk_vector_geometry[mars-from-jupiter-2024]",
         "    0.001s  tests/integration/test_r2b_truth_evidence.py::TestR2BKernelTruthEvidence::test_true_lilith_truth_matches_independent_eccentricity_vector[2026]"
       ],
       "passed_tests": 6,
       "python_version": "3.13.11",
-      "receipt_id": "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:planet_relative_to",
@@ -728,10 +728,10 @@
         "python:moira.facade:true_lilith",
         "python:moira.facade:true_lilith_with_truth"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-TIME-TRUTH",
       "claim_scope": "The additive time truth surfaces retain legacy results while naming civil normalization, caller-labelled calendar decomposition, admitted Delta-T source branches, UTC-to-UT1/TT policy, and mean/apparent sidereal semantics. ERFA/SOFA comparisons cover three modern civil/atomic epochs and five J1500-J2100 apparent-sidereal epochs at the stated test tolerances.",
       "command": [
@@ -742,7 +742,7 @@
         "-q"
       ],
       "contract_sha256": "97b2d38ba371b1dd88f228b39adbe17b8cc78de433c13141ed55a5d423c243fb",
-      "duration_seconds": 4.826,
+      "duration_seconds": 4.223,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "authority",
@@ -753,28 +753,28 @@
       "exclusions": [
         "The replay does not validate bundled DUT1 or historical Delta-T values against a separately acquired IERS/HMNAO corpus, does not make the future Delta-T scenario predictive, and does not claim pre-1972 civil UTC authority beyond Moira's disclosed proxy/handoff policy."
       ],
-      "executed_at_utc": "2026-10-13T23:31:46.936981Z",
+      "executed_at_utc": "2026-10-14T09:32:03.390462Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 17,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "895805111f19c4120eac9dca96340c51bb373630847848432d6aa21ab33edcc8",
+      "output_sha256": "426585c7b8f514dfa964cbbaf4661f7233e7f2205b0f94d2f4326929af4f9f90",
       "output_tail": [
         ".................                                                        [100%]",
         "======================== Moira: harness policy receipt ========================",
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    0.012s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_atomic_utc_adapters_match_erfa[1972-era-start]",
-        "    0.010s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_apparent_local_sidereal_time_matches_erfa_sofa[j1500]",
-        "    0.001s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_civil_datetime_to_jd_matches_erfa_calendar[utc-era-start]",
+        "    0.011s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_atomic_utc_adapters_match_erfa[1972-era-start]",
+        "    0.007s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_apparent_local_sidereal_time_matches_erfa_sofa[j1500]",
+        "    0.003s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_civil_datetime_to_jd_matches_erfa_calendar[utc-era-start]",
         "    0.001s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_apparent_local_sidereal_time_matches_erfa_sofa[j1800]",
         "    0.000s  tests/integration/test_r2b_truth_evidence.py::TestR2BTimeTruthEvidence::test_apparent_local_sidereal_time_matches_erfa_sofa[j2100]"
       ],
       "passed_tests": 17,
       "python_version": "3.13.11",
-      "receipt_id": "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:jd_from_datetime",
@@ -790,10 +790,10 @@
         "python:moira.facade:local_sidereal_time",
         "python:moira.facade:local_sidereal_time_with_truth"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-DERIVED-CHART-TRUTH",
       "claim_scope": "Composite and Davison chart routes retain method-specific construction truth and nested position-only aspect truth.",
       "command": [
@@ -804,7 +804,7 @@
         "-q"
       ],
       "contract_sha256": "ec355875c4c2153a30550f3395ff35e66790cfe31192a7a3b4e42812071e8d1d",
-      "duration_seconds": 12.887,
+      "duration_seconds": 11.798,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -814,12 +814,12 @@
       "exclusions": [
         "The replay does not resolve historical doctrine, external numerical residuals, or methods outside the tested reference-place and midpoint-location variants."
       ],
-      "executed_at_utc": "2026-10-13T23:31:59.823772Z",
+      "executed_at_utc": "2026-10-14T09:32:15.188538Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 2,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "5483c956250292bec7e4939d038a613f9799c37fe830b9b084b9aa0e9900bfdd",
+      "output_sha256": "5f9beb612656b79c0e7d11b8df660b15c08d4bd566808cf6f3af6fc8ddafd215",
       "output_tail": [
         "..                                                                       [100%]",
         "============================== warnings summary ===============================",
@@ -837,22 +837,22 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.648s  tests/server/test_server_relationship_routes.py::test_lightbox_derived_chart_routes_expose_existing_construction_truth[/v1/composite/chart-reference_place]",
-        "    0.005s  tests/server/test_server_relationship_routes.py::test_lightbox_derived_chart_routes_expose_existing_construction_truth[/v1/davison/chart-midpoint_location]"
+        "    1.691s  tests/server/test_server_relationship_routes.py::test_lightbox_derived_chart_routes_expose_existing_construction_truth[/v1/composite/chart-reference_place]",
+        "    0.007s  tests/server/test_server_relationship_routes.py::test_lightbox_derived_chart_routes_expose_existing_construction_truth[/v1/davison/chart-midpoint_location]"
       ],
       "passed_tests": 2,
       "python_version": "3.13.11",
-      "receipt_id": "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/chart",
         "rest:POST:/v1/davison/chart"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH",
       "claim_scope": "Production midpoint routes retain chart-position source, shorter-arc geometry, planet-set and node policy, dial/focus/score semantics, ordering, and result counts.",
       "command": [
@@ -863,7 +863,7 @@
         "-q"
       ],
       "contract_sha256": "e03e99d924667485e74e14e4b4ee13e5208a2c67fb1abb346f07afacd904daea",
-      "duration_seconds": 13.062,
+      "duration_seconds": 12.08,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -873,12 +873,12 @@
       "exclusions": [
         "The replay does not establish historical doctrine authority, interpretive meaning, or an external numerical comparison for midpoint or dial products."
       ],
-      "executed_at_utc": "2026-10-13T23:32:12.885652Z",
+      "executed_at_utc": "2026-10-14T09:32:27.269117Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 3,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "ccaf872a5fce1ce8f20d44e38a8adcdd2177e8899b26ffda7252b7ab682997db",
+      "output_sha256": "f1909544feabecaf4630e0d34c151c447eeaa1f7ad24410675c68c7d1d932fb4",
       "output_tail": [
         "...                                                                      [100%]",
         "============================== warnings summary ===============================",
@@ -896,24 +896,24 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=6, run=6, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.658s  tests/server/test_server_relationship_routes.py::test_lightbox_midpoint_routes_expose_governing_policy_truth[/v1/midpoints/calculate-calculate_midpoints-extra0-filtered_chart_pair_order]",
+        "    1.755s  tests/server/test_server_relationship_routes.py::test_lightbox_midpoint_routes_expose_governing_policy_truth[/v1/midpoints/calculate-calculate_midpoints-extra0-filtered_chart_pair_order]",
         "    0.004s  tests/server/test_server_relationship_routes.py::test_lightbox_midpoint_routes_expose_governing_policy_truth[/v1/midpoints/pictures-planetary_pictures-extra1-orb_ascending]",
         "    0.003s  tests/server/test_server_relationship_routes.py::test_lightbox_midpoint_routes_expose_governing_policy_truth[/v1/midpoints/weighting-midpoint_weighting-extra2-score_descending_then_planet_name]"
       ],
       "passed_tests": 3,
       "python_version": "3.13.11",
-      "receipt_id": "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/midpoints/calculate",
         "rest:POST:/v1/midpoints/pictures",
         "rest:POST:/v1/midpoints/weighting"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-OVERLAY-TRUTH",
       "claim_scope": "Directional and mutual overlay routes retain labels, node policy, point count, and requested/effective target-house-frame truth beside their placements.",
       "command": [
@@ -924,7 +924,7 @@
         "-q"
       ],
       "contract_sha256": "b4ac35c452331fcf24afea0d09ac331c0e2dee9e2f22413d36e7403bcd71468d",
-      "duration_seconds": 12.437,
+      "duration_seconds": 12.097,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -934,12 +934,12 @@
       "exclusions": [
         "The replay does not establish interpretive judgement, universal house-system accuracy, or authority beyond the existing chart and house computations."
       ],
-      "executed_at_utc": "2026-10-13T23:32:25.323275Z",
+      "executed_at_utc": "2026-10-14T09:32:39.366025Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "c46ac99749622a82aaec2ac517902bae42b13338f35804a619c8790d86d9c7ad",
+      "output_sha256": "a87c7e95b6f17bc567a61fffc97a7bd0e2b790973741d16594225446df3e8253",
       "output_tail": [
         ".                                                                        [100%]",
         "============================== warnings summary ===============================",
@@ -957,21 +957,21 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=4, run=4, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.692s  tests/server/test_server_relationship_routes.py::test_lightbox_overlay_routes_expose_existing_house_frame_truth"
+        "    1.851s  tests/server/test_server_relationship_routes.py::test_lightbox_overlay_routes_expose_existing_house_frame_truth"
       ],
       "passed_tests": 1,
       "python_version": "3.13.11",
-      "receipt_id": "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/overlay",
         "rest:POST:/v1/synastry/overlays"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH",
       "claim_scope": "The production pattern route retains chart input sources, node and orb policy, detector selection, dominance filtering, ordering, structured result evidence, and result count.",
       "command": [
@@ -982,7 +982,7 @@
         "-q"
       ],
       "contract_sha256": "1bd5eccf38d3f59b7f1499910984ef0325944e76a939dc417a0df5577cfefc47",
-      "duration_seconds": 12.37,
+      "duration_seconds": 14.246,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -992,12 +992,12 @@
       "exclusions": [
         "The replay does not establish complete historical pattern doctrine, predictive efficacy, or an external numerical authority comparison."
       ],
-      "executed_at_utc": "2026-10-13T23:32:37.693541Z",
+      "executed_at_utc": "2026-10-14T09:32:53.612219Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 1,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "99367c56319adb1627916e7f00aafba5c1ef0c7e5f71c6058318abdf612a5ee1",
+      "output_sha256": "de39eca175f269c2905cf373530960cfca59e631b5dfee427ec79993da89e301",
       "output_tail": [
         ".                                                                        [100%]",
         "============================== warnings summary ===============================",
@@ -1015,20 +1015,20 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=4, run=4, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.655s  tests/server/test_server_relationship_routes.py::test_lightbox_pattern_route_exposes_selection_truth"
+        "    2.178s  tests/server/test_server_relationship_routes.py::test_lightbox_pattern_route_exposes_selection_truth"
       ],
       "passed_tests": 1,
       "python_version": "3.13.11",
-      "receipt_id": "f1aa6411017b0242d6ea024d53824f80585fbc238838b411cd9384df988138ea",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "588dc67984bae9974ccba3498b4b3646aaad715e269488f3a59c44fefb07d808",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/patterns/find"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-POSITION-ASPECTS",
       "claim_scope": "The position-only aspect route retains its typed normalization, aspect policy, node exclusion, count, and no-motion truth contract.",
       "command": [
@@ -1039,7 +1039,7 @@
         "-q"
       ],
       "contract_sha256": "5a5cd19b992b59c7de760b9ae31f0d63b2c97950fab2288141d3a4891fa5987b",
-      "duration_seconds": 12.339,
+      "duration_seconds": 25.565,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -1049,12 +1049,12 @@
       "exclusions": [
         "The replay does not infer an epoch, ephemeris origin, motion classification, or external numerical authority for caller-supplied longitudes."
       ],
-      "executed_at_utc": "2026-10-13T23:32:50.032437Z",
+      "executed_at_utc": "2026-10-14T09:33:19.177461Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 10,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "fb34827a00df7d0ef8a2dd9345741fd67ac7da097ea5605faaf99413ba70bf8a",
+      "output_sha256": "f46e78ce692851e5624d9feb813e5cbb22000c8744c8a73defe9eded1c0b8bf1",
       "output_tail": [
         "..........                                                               [100%]",
         "============================== warnings summary ===============================",
@@ -1071,24 +1071,24 @@
         "  Hypothesis: profile=moira-ci, max_examples=50, database=disabled, derandomize=True",
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "============================ Moira: slowest tests =============================",
-        "    0.006s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload0]",
-        "    0.005s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload4]",
-        "    0.003s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_preserves_wrap_boundary_and_engine_policy",
-        "    0.003s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_excludes_just_outside_boundary",
-        "    0.003s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload3]"
+        "    0.030s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload3]",
+        "    0.006s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_excludes_just_outside_boundary",
+        "    0.006s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_filters_nodes_without_reclassifying_other_points",
+        "    0.005s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload0]",
+        "    0.005s  tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_rejects_invalid_or_unowned_inputs[payload1]"
       ],
       "passed_tests": 10,
       "python_version": "3.13.11",
-      "receipt_id": "169dd7ecf47f813a7e01bd21afbb30e97914002172bf0204253eca6f320e653b",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "6f5a551df4d08c0b0e5fe72e663c185f558f4e7987a33c27982abea52d8f5524",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/from-longitudes"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH",
       "claim_scope": "Synastry aspect and contact routes retain effective labels, aspect policy, node-variant policy, cross-chart motion limits, ordering, and event-count truth even when results are empty.",
       "command": [
@@ -1099,7 +1099,7 @@
         "-q"
       ],
       "contract_sha256": "820123e71bafdcb4f91fa339d117b7b0230168768e39c87fdc4633a188cf1d70",
-      "duration_seconds": 13.019,
+      "duration_seconds": 14.045,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -1109,12 +1109,12 @@
       "exclusions": [
         "The replay does not establish interpretive judgement, a shared relationship epoch, applying or separating motion, or an external numerical authority comparison."
       ],
-      "executed_at_utc": "2026-10-13T23:33:03.051287Z",
+      "executed_at_utc": "2026-10-14T09:33:33.222987Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 2,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "b85bb397f10a363c65313888ebc6747c0288f8d0d819afd5cc3d5f3f49bb0278",
+      "output_sha256": "6c397bbe8f62043c73922fa3151b01c08a23c41f4a185b5f7aab4e9a16be3dc3",
       "output_tail": [
         "..                                                                       [100%]",
         "============================== warnings summary ===============================",
@@ -1132,22 +1132,22 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.685s  tests/server/test_server_relationship_routes.py::test_lightbox_synastry_routes_expose_effective_search_truth[/v1/synastry/aspects-synastry_aspects]",
+        "    2.144s  tests/server/test_server_relationship_routes.py::test_lightbox_synastry_routes_expose_effective_search_truth[/v1/synastry/aspects-synastry_aspects]",
         "    0.009s  tests/server/test_server_relationship_routes.py::test_lightbox_synastry_routes_expose_effective_search_truth[/v1/synastry/contacts-synastry_contacts]"
       ],
       "passed_tests": 2,
       "python_version": "3.13.11",
-      "receipt_id": "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/aspects",
         "rest:POST:/v1/synastry/contacts"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-TRANSIT-TRUTH",
       "claim_scope": "Composite and Davison transit routes retain immutable target-set identity, construction truth, bounded search policy, event source, and count receipts.",
       "command": [
@@ -1158,7 +1158,7 @@
         "-q"
       ],
       "contract_sha256": "3a48b577fe6717a085acdfb3caa50614f218f9c1866fee19ea527cccb1400701",
-      "duration_seconds": 12.861,
+      "duration_seconds": 13.629,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "invariant",
@@ -1168,12 +1168,12 @@
       "exclusions": [
         "The replay does not establish an external transit authority residual, moving-target search, orb-window timing, or interpretive ranking."
       ],
-      "executed_at_utc": "2026-10-13T23:33:15.912738Z",
+      "executed_at_utc": "2026-10-14T09:33:46.851725Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 2,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "f78ef5fb978a42ad8229b8e8ed6f02389fe783f6a20cba481097f0d610cf9cbb",
+      "output_sha256": "36ab982badf9c7d7d9655dbd933427a0eb58fdcce4c708da6c2fceed06cb5780",
       "output_tail": [
         "..                                                                       [100%]",
         "============================== warnings summary ===============================",
@@ -1191,22 +1191,22 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.703s  tests/server/test_server_forecasting_routes.py::test_relationship_transit_routes_return_static_target_receipts[/v1/composite/transits-reference_place]",
-        "    0.006s  tests/server/test_server_forecasting_routes.py::test_relationship_transit_routes_return_static_target_receipts[/v1/davison/transits-midpoint_location]"
+        "    1.923s  tests/server/test_server_forecasting_routes.py::test_relationship_transit_routes_return_static_target_receipts[/v1/composite/transits-reference_place]",
+        "    0.007s  tests/server/test_server_forecasting_routes.py::test_relationship_transit_routes_return_static_target_receipts[/v1/davison/transits-midpoint_location]"
       ],
       "passed_tests": 2,
       "python_version": "3.13.11",
-      "receipt_id": "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/transits",
         "rest:POST:/v1/davison/transits"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-SOLAR-CONDITION-BOUNDARY-TRUTH",
       "claim_scope": "The solar-condition routes retain one shared classical threshold policy, expose the exact effective thresholds in provenance, and serialize the signed and absolute boundary reported by the engine for each returned crossing. The actual DE441 Mercury ingress regression fixes the combust boundary at 8.5 degrees for the sampled epoch.",
       "command": [
@@ -1221,7 +1221,7 @@
         "-q"
       ],
       "contract_sha256": "930ad3185f82aba178cfde4c3e3fb5004ab5d8ca668ad388e831380aeb9a2d33",
-      "duration_seconds": 12.628,
+      "duration_seconds": 12.147,
       "engine_version": "6.9.9",
       "evidence_classes": [
         "doctrine_source",
@@ -1232,12 +1232,12 @@
       "exclusions": [
         "The replay is a bounded doctrine-and-engine consistency check, not an independent astronomical authority residual, a claim that every astrological tradition uses these thresholds, or evidence of interpretive efficacy."
       ],
-      "executed_at_utc": "2026-10-13T23:33:28.540711Z",
+      "executed_at_utc": "2026-10-14T09:33:58.999144Z",
       "exit_code": 0,
       "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
       "minimum_tests": 5,
       "network_policy": "MOIRA_NO_DOWNLOAD=1; harness default deny",
-      "output_sha256": "72467c54875eaa4226301a2119c5c1228d46ae802970e8050f693cbae1215ff4",
+      "output_sha256": "566755d196c6b3a76d5996bc4c80c045154d902ae3d99fc92011ed2efa5d82ff",
       "output_tail": [
         ".....                                                                    [100%]",
         "============================== warnings summary ===============================",
@@ -1255,31 +1255,31 @@
         "  Network: default=deny, loopback=marked-only, external=disabled",
         "  Planetary resource: receipts=5, run=5, skip=0, failure=0, content_probes=1, identities=DE441",
         "============================ Moira: slowest tests =============================",
-        "    1.002s  tests/unit/test_solar_condition_at.py::test_mercury_combust_ingress_uses_authoritative_8_5_degree_boundary",
-        "    0.318s  tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_events_route_reports_actual_combust_boundary",
+        "    1.007s  tests/unit/test_solar_condition_at.py::test_mercury_combust_ingress_uses_authoritative_8_5_degree_boundary",
+        "    0.298s  tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_events_route_reports_actual_combust_boundary",
         "    0.006s  tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_instant_route_returns_truth_and_thresholds",
         "    0.003s  tests/server/test_server_generic_phenomena_routes.py::test_solar_condition_events_route_returns_condition_crossings",
         "    0.000s  tests/unit/test_solar_condition_at.py::test_classical_solar_condition_thresholds_have_one_authoritative_policy"
       ],
       "passed_tests": 5,
       "python_version": "3.13.11",
-      "receipt_id": "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73",
-      "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+      "receipt_id": "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7",
+      "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/solar-condition/instant",
         "rest:POST:/v1/solar-condition/events"
       ],
-      "working_tree_clean": false
+      "working_tree_clean": true
     }
   ],
   "schema_version": "moira.lightbox-evidence-receipts/v1",
-  "source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+  "source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
   "summary": {
     "contracts_run": 21,
     "failed": 0,
     "passed": 21,
     "tests_passed": 241
   },
-  "working_tree_clean": false
+  "working_tree_clean": true
 }

@@ -2,7 +2,7 @@
   "boundary": "Passed-local means the bounded contract replay passed in an unreleased worktree. Passed-exact-source means it passed from the clean recorded source revision. Neither status is external truth, complete family coverage, package-publication evidence, or deployment evidence.",
   "contracts": [
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-CHART-WHEEL-PACKET-TRUTH",
       "claim_scope": "The website chart-wheel packet retains immutable point coordinates, deterministic visible-label separation, explicit impossible-density disclosure, node override truth, house policy, orientation source, aspect policy, and label-placement provenance.",
       "evidence_classes": [
@@ -14,14 +14,14 @@
         "The replay does not establish renderer typography, pixel collision freedom at a particular viewport, interpretive meaning, or external astronomical authority beyond the underlying admitted chart and house paths."
       ],
       "passed_tests": 7,
-      "receipt_id": "b9d6def1bf4e7382e89e1ab8ae0c41f83745df89ed7bceab54356096f058bdae",
+      "receipt_id": "7c7a1e9081717a9f64c1b6b9816b8878ab77bdb30d93b497148cb1908fce9def",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/website/chart-wheel/packet"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-ASPECT-MOTION",
       "claim_scope": "The route returns the signed motion witness used by its applying/separating classification contract.",
       "evidence_classes": [
@@ -33,14 +33,14 @@
         "No claim is made for relationship operations that do not use this witness vessel."
       ],
       "passed_tests": 15,
-      "receipt_id": "3992f11d2f2e61817ab5a1ec860dacb05ee0fa0fbd47787bdcd0a0524621e734",
+      "receipt_id": "d442d78014adbab24d3cf481d10b4af54f2dd8e522c888416a095ff8b66a79f7",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/motion-witness"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-CORE-REDUCTIONS",
       "claim_scope": "Typed chart, house, planet-position, and sky-position reduction vessels retain their tested response contracts.",
       "evidence_classes": [
@@ -52,7 +52,7 @@
         "No external-authority numerical residual is inferred from transport tests."
       ],
       "passed_tests": 40,
-      "receipt_id": "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389",
+      "receipt_id": "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/chart/reduction",
@@ -62,7 +62,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-FRAME-POSITIONS",
       "claim_scope": "Frame-specific response envelopes retain request/time/frame/bounds/validation/provenance contracts.",
       "evidence_classes": [
@@ -74,7 +74,7 @@
         "The receipt does not promote regression coverage to an external astronomical authority comparison."
       ],
       "passed_tests": 13,
-      "receipt_id": "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74",
+      "receipt_id": "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/positions/frame/heliocentric",
@@ -84,7 +84,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-HELLENISTIC-PROFILE",
       "claim_scope": "The Hellenistic chart profile retains its tested typed composition and source-bound fields.",
       "evidence_classes": [
@@ -97,14 +97,14 @@
         "The receipt does not convert the profile into a numerical astronomy benchmark."
       ],
       "passed_tests": 6,
-      "receipt_id": "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e",
+      "receipt_id": "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/hellenistic/chart-profile"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-ORBITAL-ELEMENTS",
       "claim_scope": "The orbital-elements envelope retains governed time conversion, frame, gravity, state-source, threshold, and provenance fields.",
       "evidence_classes": [
@@ -117,14 +117,14 @@
         "This replay does not replace the underlying authority fixtures or claim coverage beyond the route tests."
       ],
       "passed_tests": 15,
-      "receipt_id": "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e",
+      "receipt_id": "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/orbits/elements"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PANCHA-PAKSHI",
       "claim_scope": "The admitted fixed-clock schedule route retains its typed doctrine-bound materialization contract.",
       "evidence_classes": [
@@ -137,14 +137,14 @@
         "The receipt is not a universal Pancha Pakshi tradition or historical-source claim."
       ],
       "passed_tests": 18,
-      "receipt_id": "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378",
+      "receipt_id": "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PRIMARY-DIRECTIONS",
       "claim_scope": "The primary-directions profile reduction retains its tested method, policy, and transport-contract distinctions.",
       "evidence_classes": [
@@ -157,14 +157,14 @@
         "The receipt does not resolve every primary-direction method or external historical authority question."
       ],
       "passed_tests": 46,
-      "receipt_id": "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66",
+      "receipt_id": "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/primary-directions/profile/reduction"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-PROGRESSIONS",
       "claim_scope": "The secondary-progression reduction route retains its tested computation-time and reduction response contract.",
       "evidence_classes": [
@@ -177,14 +177,14 @@
         "No broader progression-family or external-authority residual claim is inferred."
       ],
       "passed_tests": 13,
-      "receipt_id": "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d",
+      "receipt_id": "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/progressions/secondary/reduction"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-EXEMPLAR-WESTERN-ELECTIONAL",
       "claim_scope": "The western electional judgement route retains tested structured doctrine, components, and limitation states.",
       "evidence_classes": [
@@ -197,14 +197,14 @@
         "The receipt does not establish source completeness beyond the named doctrine packet and tests."
       ],
       "passed_tests": 5,
-      "receipt_id": "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6",
+      "receipt_id": "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/electional/western/judgement"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH",
       "claim_scope": "The additive frame truth surfaces retain legacy coordinate/obliquity results, match ERFA/SOFA for five true-obliquity epochs and three ordinary horizontal reductions, preserve independent unit-vector rotation invariants, and expose undefined azimuth at sampled zenith, nadir, and geographic-pole singularities.",
       "evidence_classes": [
@@ -217,7 +217,7 @@
         "The replay does not infer an epoch or celestial frame not supplied by the caller, does not include refraction or polar motion, and does not make body-ephemeris accuracy claims."
       ],
       "passed_tests": 14,
-      "receipt_id": "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db",
+      "receipt_id": "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:ecliptic_to_equatorial",
@@ -229,7 +229,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH",
       "claim_scope": "Against the locally admitted DE441 resource, the additive kernel truth surfaces retain legacy results while naming center, clock, kernel identity, true-of-date frame, correction exclusions, method, gravity, and rate sampling. Direct NAIF-route vector subtraction is checked for three center/body cases and the lunar osculating-apogee eccentricity-vector invariant for two epochs.",
       "evidence_classes": [
@@ -241,7 +241,7 @@
         "The replay is not an independent JPL Horizons residual, does not revalidate the DE441 bytes or native SPK parser beyond the separately admitted resource receipt, and makes no claim outside the kernel coverage, sampled bodies, epochs, frames, or rate conventions."
       ],
       "passed_tests": 6,
-      "receipt_id": "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9",
+      "receipt_id": "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:planet_relative_to",
@@ -251,7 +251,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-FOUNDATION-TIME-TRUTH",
       "claim_scope": "The additive time truth surfaces retain legacy results while naming civil normalization, caller-labelled calendar decomposition, admitted Delta-T source branches, UTC-to-UT1/TT policy, and mean/apparent sidereal semantics. ERFA/SOFA comparisons cover three modern civil/atomic epochs and five J1500-J2100 apparent-sidereal epochs at the stated test tolerances.",
       "evidence_classes": [
@@ -264,7 +264,7 @@
         "The replay does not validate bundled DUT1 or historical Delta-T values against a separately acquired IERS/HMNAO corpus, does not make the future Delta-T scenario predictive, and does not claim pre-1972 civil UTC authority beyond Moira's disclosed proxy/handoff policy."
       ],
       "passed_tests": 17,
-      "receipt_id": "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96",
+      "receipt_id": "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1",
       "status": "passed",
       "surface_ids": [
         "python:moira.facade:jd_from_datetime",
@@ -282,7 +282,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-DERIVED-CHART-TRUTH",
       "claim_scope": "Composite and Davison chart routes retain method-specific construction truth and nested position-only aspect truth.",
       "evidence_classes": [
@@ -294,7 +294,7 @@
         "The replay does not resolve historical doctrine, external numerical residuals, or methods outside the tested reference-place and midpoint-location variants."
       ],
       "passed_tests": 2,
-      "receipt_id": "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e",
+      "receipt_id": "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/chart",
@@ -302,7 +302,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH",
       "claim_scope": "Production midpoint routes retain chart-position source, shorter-arc geometry, planet-set and node policy, dial/focus/score semantics, ordering, and result counts.",
       "evidence_classes": [
@@ -314,7 +314,7 @@
         "The replay does not establish historical doctrine authority, interpretive meaning, or an external numerical comparison for midpoint or dial products."
       ],
       "passed_tests": 3,
-      "receipt_id": "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1",
+      "receipt_id": "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/midpoints/calculate",
@@ -323,7 +323,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-OVERLAY-TRUTH",
       "claim_scope": "Directional and mutual overlay routes retain labels, node policy, point count, and requested/effective target-house-frame truth beside their placements.",
       "evidence_classes": [
@@ -335,7 +335,7 @@
         "The replay does not establish interpretive judgement, universal house-system accuracy, or authority beyond the existing chart and house computations."
       ],
       "passed_tests": 1,
-      "receipt_id": "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d",
+      "receipt_id": "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/overlay",
@@ -343,7 +343,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH",
       "claim_scope": "The production pattern route retains chart input sources, node and orb policy, detector selection, dominance filtering, ordering, structured result evidence, and result count.",
       "evidence_classes": [
@@ -355,14 +355,14 @@
         "The replay does not establish complete historical pattern doctrine, predictive efficacy, or an external numerical authority comparison."
       ],
       "passed_tests": 1,
-      "receipt_id": "f1aa6411017b0242d6ea024d53824f80585fbc238838b411cd9384df988138ea",
+      "receipt_id": "588dc67984bae9974ccba3498b4b3646aaad715e269488f3a59c44fefb07d808",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/patterns/find"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-POSITION-ASPECTS",
       "claim_scope": "The position-only aspect route retains its typed normalization, aspect policy, node exclusion, count, and no-motion truth contract.",
       "evidence_classes": [
@@ -374,14 +374,14 @@
         "The replay does not infer an epoch, ephemeris origin, motion classification, or external numerical authority for caller-supplied longitudes."
       ],
       "passed_tests": 10,
-      "receipt_id": "169dd7ecf47f813a7e01bd21afbb30e97914002172bf0204253eca6f320e653b",
+      "receipt_id": "6f5a551df4d08c0b0e5fe72e663c185f558f4e7987a33c27982abea52d8f5524",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/aspects/from-longitudes"
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH",
       "claim_scope": "Synastry aspect and contact routes retain effective labels, aspect policy, node-variant policy, cross-chart motion limits, ordering, and event-count truth even when results are empty.",
       "evidence_classes": [
@@ -393,7 +393,7 @@
         "The replay does not establish interpretive judgement, a shared relationship epoch, applying or separating motion, or an external numerical authority comparison."
       ],
       "passed_tests": 2,
-      "receipt_id": "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5",
+      "receipt_id": "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/synastry/aspects",
@@ -401,7 +401,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-RELATIONSHIP-TRANSIT-TRUTH",
       "claim_scope": "Composite and Davison transit routes retain immutable target-set identity, construction truth, bounded search policy, event source, and count receipts.",
       "evidence_classes": [
@@ -413,7 +413,7 @@
         "The replay does not establish an external transit authority residual, moving-target search, orb-window timing, or interpretive ranking."
       ],
       "passed_tests": 2,
-      "receipt_id": "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94",
+      "receipt_id": "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/composite/transits",
@@ -421,7 +421,7 @@
       ]
     },
     {
-      "artifact_status": "local_unreleased_worktree",
+      "artifact_status": "exact_source_revision",
       "claim_id": "LB-SOLAR-CONDITION-BOUNDARY-TRUTH",
       "claim_scope": "The solar-condition routes retain one shared classical threshold policy, expose the exact effective thresholds in provenance, and serialize the signed and absolute boundary reported by the engine for each returned crossing. The actual DE441 Mercury ingress regression fixes the combust boundary at 8.5 degrees for the sampled epoch.",
       "evidence_classes": [
@@ -434,7 +434,7 @@
         "The replay is a bounded doctrine-and-engine consistency check, not an independent astronomical authority residual, a claim that every astrological tradition uses these thresholds, or evidence of interpretive efficacy."
       ],
       "passed_tests": 5,
-      "receipt_id": "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73",
+      "receipt_id": "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7",
       "status": "passed",
       "surface_ids": [
         "rest:POST:/v1/solar-condition/instant",
@@ -446,22 +446,22 @@
   "engine_version": "6.9.9",
   "generated_by": "scripts/generate_lightbox_assurance_matrix.py",
   "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
-  "receipt_artifact_status": "local_unreleased_worktree",
-  "receipt_source_revision": "8162a1cd3d3cd174772d8e40360c326b7272a782",
+  "receipt_artifact_status": "exact_source_revision",
+  "receipt_source_revision": "cbd54306efcadd3777d9ae09a98d371c18fef938",
   "receipts_path": "tests/evidence/lightbox/receipts/local.generated.json",
   "schema_version": "moira.lightbox-assurance-matrix/v1",
   "summary": {
     "canonical_surfaces": 1227,
     "contracts": 21,
     "contracts_failed": 0,
-    "contracts_passed_exact_source": 0,
-    "contracts_passed_local": 21,
+    "contracts_passed_exact_source": 21,
+    "contracts_passed_local": 0,
     "evidence_classes": {
       "authority": {
         "failed": 0,
         "not_run": 1208,
-        "passed_exact_source": 0,
-        "passed_local": 19
+        "passed_exact_source": 19,
+        "passed_local": 0
       },
       "corroboration": {
         "failed": 0,
@@ -472,8 +472,8 @@
       "doctrine_source": {
         "failed": 0,
         "not_run": 1220,
-        "passed_exact_source": 0,
-        "passed_local": 7
+        "passed_exact_source": 7,
+        "passed_local": 0
       },
       "harness": {
         "failed": 0,
@@ -484,8 +484,8 @@
       "invariant": {
         "failed": 0,
         "not_run": 1174,
-        "passed_exact_source": 0,
-        "passed_local": 53
+        "passed_exact_source": 53,
+        "passed_local": 0
       },
       "native_parity": {
         "failed": 0,
@@ -502,14 +502,14 @@
       "regression": {
         "failed": 0,
         "not_run": 1174,
-        "passed_exact_source": 0,
-        "passed_local": 53
+        "passed_exact_source": 53,
+        "passed_local": 0
       },
       "release": {
         "failed": 0,
         "not_run": 1174,
-        "passed_exact_source": 0,
-        "passed_local": 53
+        "passed_exact_source": 53,
+        "passed_local": 0
       }
     },
     "surfaces_with_contracts": 53,
@@ -10511,9 +10511,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -10535,9 +10535,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -10554,18 +10554,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:datetime_from_jd"
@@ -10581,9 +10581,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -10605,9 +10605,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -10624,18 +10624,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:datetime_from_jd_with_truth"
@@ -11691,9 +11691,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -11715,9 +11715,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -11734,18 +11734,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:delta_t_from_jd"
@@ -11761,9 +11761,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -11785,9 +11785,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -11804,18 +11804,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:delta_t_from_jd_with_truth"
@@ -13443,9 +13443,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -13467,9 +13467,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -13486,18 +13486,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:ecliptic_to_equatorial"
@@ -13513,9 +13513,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -13537,9 +13537,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -13556,18 +13556,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:ecliptic_to_equatorial_with_truth"
@@ -13791,9 +13791,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -13815,9 +13815,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -13834,18 +13834,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:equatorial_to_horizontal"
@@ -13861,9 +13861,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -13885,9 +13885,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -13904,18 +13904,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:equatorial_to_horizontal_with_truth"
@@ -21939,9 +21939,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -21963,9 +21963,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -21982,18 +21982,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:jd_from_datetime"
@@ -22009,9 +22009,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -22033,9 +22033,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -22052,18 +22052,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:jd_from_datetime_with_truth"
@@ -22859,9 +22859,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -22883,9 +22883,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -22902,18 +22902,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:local_sidereal_time"
@@ -22929,9 +22929,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -22953,9 +22953,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -22972,18 +22972,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:local_sidereal_time_with_truth"
@@ -29779,9 +29779,9 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -29798,18 +29798,18 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:planet_relative_to"
@@ -29845,9 +29845,9 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -29864,18 +29864,18 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:planet_relative_to_with_truth"
@@ -37399,9 +37399,9 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37418,18 +37418,18 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:true_lilith"
@@ -37465,9 +37465,9 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37484,18 +37484,18 @@
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-KERNEL-RELATIVE-TRUTH"
           ],
           "receipt_ids": [
-            "54d90878862cb3e98a1e86d6793d6154f213dcbc2faee59e12b3011c15d65ac9"
+            "bf4a3db59f9f46ff5f7cc2fc34570f863ba07a9070f801c2b3547903e747f588"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:true_lilith_with_truth"
@@ -37511,9 +37511,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -37535,9 +37535,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37554,18 +37554,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:true_obliquity"
@@ -37581,9 +37581,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -37605,9 +37605,9 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37624,18 +37624,18 @@
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-FRAME-SINGULARITY-TRUTH"
           ],
           "receipt_ids": [
-            "bc41f83731e0c255cb19dc278368faf1a9921ef3dddd8217734d49c9cd8f93db"
+            "092dccc0ffbfd0a9dc5d78b2bcd938aff25ba7f125c5580ad986262eb92fe0de"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:true_obliquity_with_truth"
@@ -37859,9 +37859,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -37883,9 +37883,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37902,18 +37902,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:utc_to_tt"
@@ -37929,9 +37929,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -37953,9 +37953,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -37972,18 +37972,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:utc_to_tt_with_truth"
@@ -37999,9 +37999,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -38023,9 +38023,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -38042,18 +38042,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:utc_to_ut1"
@@ -38069,9 +38069,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -38093,9 +38093,9 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -38112,18 +38112,18 @@
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-FOUNDATION-TIME-TRUTH"
           ],
           "receipt_ids": [
-            "04b16af517854d833435796249377084a6e98980ab3c87e873fdaa3740625b96"
+            "a0549524f6d2807ddee314b595afef20b120b18ae796cdf4b6d20b0206eadea1"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "python:moira.facade:utc_to_ut1_with_truth"
@@ -41175,9 +41175,9 @@
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "169dd7ecf47f813a7e01bd21afbb30e97914002172bf0204253eca6f320e653b"
+            "6f5a551df4d08c0b0e5fe72e663c185f558f4e7987a33c27982abea52d8f5524"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -41194,18 +41194,18 @@
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "169dd7ecf47f813a7e01bd21afbb30e97914002172bf0204253eca6f320e653b"
+            "6f5a551df4d08c0b0e5fe72e663c185f558f4e7987a33c27982abea52d8f5524"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-POSITION-ASPECTS"
           ],
           "receipt_ids": [
-            "169dd7ecf47f813a7e01bd21afbb30e97914002172bf0204253eca6f320e653b"
+            "6f5a551df4d08c0b0e5fe72e663c185f558f4e7987a33c27982abea52d8f5524"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/aspects/from-longitudes"
@@ -41397,9 +41397,9 @@
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "3992f11d2f2e61817ab5a1ec860dacb05ee0fa0fbd47787bdcd0a0524621e734"
+            "d442d78014adbab24d3cf481d10b4af54f2dd8e522c888416a095ff8b66a79f7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -41416,18 +41416,18 @@
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "3992f11d2f2e61817ab5a1ec860dacb05ee0fa0fbd47787bdcd0a0524621e734"
+            "d442d78014adbab24d3cf481d10b4af54f2dd8e522c888416a095ff8b66a79f7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-ASPECT-MOTION"
           ],
           "receipt_ids": [
-            "3992f11d2f2e61817ab5a1ec860dacb05ee0fa0fbd47787bdcd0a0524621e734"
+            "d442d78014adbab24d3cf481d10b4af54f2dd8e522c888416a095ff8b66a79f7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/aspects/motion-witness"
@@ -43439,9 +43439,9 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -43458,18 +43458,18 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/chart/reduction"
@@ -43609,9 +43609,9 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -43628,18 +43628,18 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/composite/chart"
@@ -43675,9 +43675,9 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -43694,18 +43694,18 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/composite/transits"
@@ -44469,9 +44469,9 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -44488,18 +44488,18 @@
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-DERIVED-CHART-TRUTH"
           ],
           "receipt_ids": [
-            "b4907529ecc10b990e799ef58c4af25690c3873e0068aa4577eb4a081cdde95e"
+            "5c4ca859243ce20648b9baef3d1c9c35db2da33ab6bd88df491a18cde41dd24b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/davison/chart"
@@ -44535,9 +44535,9 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -44554,18 +44554,18 @@
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-TRANSIT-TRUTH"
           ],
           "receipt_ids": [
-            "69536f38f46b3824f4b5aaf66f3885bac90fbe59687be9d8b2bccf3cb04a2d94"
+            "4695a676a0d675ef04b86ad2af5055febeef2279ec70872e6b6c2691849a319d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/davison/transits"
@@ -46775,9 +46775,9 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6"
+            "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -46789,9 +46789,9 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6"
+            "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -46808,18 +46808,18 @@
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6"
+            "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-WESTERN-ELECTIONAL"
           ],
           "receipt_ids": [
-            "4b5d93fe03e0a70f1e91eb0136b6e506d5c28e6d4d0bd210125efc641fe55cd6"
+            "cc3f5c1cb0ab280e6650b4c938dc15728e4a38154f737b8896cb43d9528200b5"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/electional/western/judgement"
@@ -49393,9 +49393,9 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e"
+            "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -49407,9 +49407,9 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e"
+            "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -49426,18 +49426,18 @@
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e"
+            "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-HELLENISTIC-PROFILE"
           ],
           "receipt_ids": [
-            "1acada9685e8b7f65f93150ba30eb70fd2f899e42422db1e810caecaf02a6c2e"
+            "61fe666e71606b869c76a1552d56bd93e76a55dcab340988502839149fe15b26"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/hellenistic/chart-profile"
@@ -50045,9 +50045,9 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -50064,18 +50064,18 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/houses/reduction"
@@ -51931,9 +51931,9 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -51950,18 +51950,18 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/midpoints/calculate"
@@ -52049,9 +52049,9 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -52068,18 +52068,18 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/midpoints/pictures"
@@ -52167,9 +52167,9 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -52186,18 +52186,18 @@
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "ec64dd101fc2bea36974d5086c84fc8ed732f606b1ef5a9274dc9c60f912a3b1"
+            "e82feec016d97ca78bde9f460151d960631a380d91b4b1673df72571a324c34e"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/midpoints/weighting"
@@ -54917,9 +54917,9 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e"
+            "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "corroboration": {
           "claim_ids": [],
@@ -54941,9 +54941,9 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e"
+            "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -54960,18 +54960,18 @@
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e"
+            "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-ORBITAL-ELEMENTS"
           ],
           "receipt_ids": [
-            "5e1dd4a20a0e7854e2c11310b4b104645d24dc540eba4ee936c010d9d3720b6e"
+            "46f005be79b9ce3317751f021a67c59b354fe4feecfeeedfb2c14c2b5fb10bb7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/orbits/elements"
@@ -55413,9 +55413,9 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378"
+            "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -55427,9 +55427,9 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378"
+            "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -55446,18 +55446,18 @@
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378"
+            "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-PANCHA-PAKSHI"
           ],
           "receipt_ids": [
-            "53d313572a988a187632c2d23ef7cf051bd1374468fc1a0d8741fa91184cf378"
+            "1d2f674f1e1c4e222d6f543e10a7d0cb8518833e2d09dd816792806d2b42ce4d"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock"
@@ -56741,9 +56741,9 @@
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "f1aa6411017b0242d6ea024d53824f80585fbc238838b411cd9384df988138ea"
+            "588dc67984bae9974ccba3498b4b3646aaad715e269488f3a59c44fefb07d808"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -56760,18 +56760,18 @@
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "f1aa6411017b0242d6ea024d53824f80585fbc238838b411cd9384df988138ea"
+            "588dc67984bae9974ccba3498b4b3646aaad715e269488f3a59c44fefb07d808"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "f1aa6411017b0242d6ea024d53824f80585fbc238838b411cd9384df988138ea"
+            "588dc67984bae9974ccba3498b4b3646aaad715e269488f3a59c44fefb07d808"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/patterns/find"
@@ -57483,9 +57483,9 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57502,18 +57502,18 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/frame/heliocentric"
@@ -57549,9 +57549,9 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57568,18 +57568,18 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/frame/planetocentric"
@@ -57615,9 +57615,9 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57634,18 +57634,18 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/frame/received-light"
@@ -57681,9 +57681,9 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57700,18 +57700,18 @@
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-FRAME-POSITIONS"
           ],
           "receipt_ids": [
-            "8bd2e1fc6a53546b68768bc39beef2825db41d68c97a3c7d5f8c090939972e74"
+            "9d5b4b6e75719e114557640cb632dfda7165351522fb82b7c5b541d71e77f5a7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/frame/ssb"
@@ -57799,9 +57799,9 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57818,18 +57818,18 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/planet/reduction"
@@ -57917,9 +57917,9 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -57936,18 +57936,18 @@
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-CORE-REDUCTIONS"
           ],
           "receipt_ids": [
-            "001b5e14a0f45635c941c8a95988494f24d73b5b265f0da2f8ed730efc12e389"
+            "7cdf175915d65df9998f097bbfc9d6b17beb48bad7275cfc72227496b1ef3359"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/positions/sky/reduction"
@@ -58233,9 +58233,9 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66"
+            "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -58247,9 +58247,9 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66"
+            "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -58266,18 +58266,18 @@
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66"
+            "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-PRIMARY-DIRECTIONS"
           ],
           "receipt_ids": [
-            "759dd2fca66a6ffd861049c1e5ad0fad1c988533d0b98070e949305bf6279c66"
+            "99926cfd6f5b2c85e28268b94ae6ac69a199201cca52d25a65200c7315c120e3"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/primary-directions/profile/reduction"
@@ -59343,9 +59343,9 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d"
+            "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -59357,9 +59357,9 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d"
+            "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -59376,18 +59376,18 @@
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d"
+            "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-EXEMPLAR-PROGRESSIONS"
           ],
           "receipt_ids": [
-            "ec521868290844467a14a3fbdd74ee7ba81aa9afeb0b313a4ce108d61737ba8d"
+            "66ea2e4b3516025e046ffd6a663468586d0e55ba4136deae25441396b84ab339"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/progressions/secondary/reduction"
@@ -60401,9 +60401,9 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -60415,9 +60415,9 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -60434,18 +60434,18 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/solar-condition/events"
@@ -60471,9 +60471,9 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "harness": {
           "claim_ids": [],
@@ -60485,9 +60485,9 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -60504,18 +60504,18 @@
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-SOLAR-CONDITION-BOUNDARY-TRUTH"
           ],
           "receipt_ids": [
-            "f8b874987d36394546a19c5a2b749e0af2ff178d9608ecd1e1227d438c6eae73"
+            "5dfdade902310325a5430185eb384dbcd27757da803bc1cc23a9f67b53360ef7"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/solar-condition/instant"
@@ -61331,9 +61331,9 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -61350,18 +61350,18 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/synastry/aspects"
@@ -61397,9 +61397,9 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -61416,18 +61416,18 @@
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH"
           ],
           "receipt_ids": [
-            "7364d298ee25fd89d170392cbc7907ef1b926d656a65bd920a9944cefd08c7f5"
+            "cf3be0ef9488f5af6f0d79d1fb1eecc347790274b0856da2f54b5e221ef7146b"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/synastry/contacts"
@@ -61463,9 +61463,9 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -61482,18 +61482,18 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/synastry/overlay"
@@ -61529,9 +61529,9 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -61548,18 +61548,18 @@
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-RELATIONSHIP-OVERLAY-TRUTH"
           ],
           "receipt_ids": [
-            "1f011666eb56642efae01680a707752392e117957c706ebac7b14adab0ebb86d"
+            "1d2a2ebb4ad7a0201fa4744c14ae2455a2f775c556a8449680b45764295d5628"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/synastry/overlays"
@@ -64923,9 +64923,9 @@
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "b9d6def1bf4e7382e89e1ab8ae0c41f83745df89ed7bceab54356096f058bdae"
+            "7c7a1e9081717a9f64c1b6b9816b8878ab77bdb30d93b497148cb1908fce9def"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "native_parity": {
           "claim_ids": [],
@@ -64942,18 +64942,18 @@
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "b9d6def1bf4e7382e89e1ab8ae0c41f83745df89ed7bceab54356096f058bdae"
+            "7c7a1e9081717a9f64c1b6b9816b8878ab77bdb30d93b497148cb1908fce9def"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         },
         "release": {
           "claim_ids": [
             "LB-CHART-WHEEL-PACKET-TRUTH"
           ],
           "receipt_ids": [
-            "b9d6def1bf4e7382e89e1ab8ae0c41f83745df89ed7bceab54356096f058bdae"
+            "7c7a1e9081717a9f64c1b6b9816b8878ab77bdb30d93b497148cb1908fce9def"
           ],
-          "status": "passed_local"
+          "status": "passed_exact_source"
         }
       },
       "surface_id": "rest:POST:/v1/website/chart-wheel/packet"

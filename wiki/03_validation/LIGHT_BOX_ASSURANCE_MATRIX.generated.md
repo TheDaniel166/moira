@@ -4,8 +4,8 @@
 
 - Engine version: `6.9.9`
 - Inventory fingerprint: `2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9`
-- Receipt source revision: `8162a1cd3d3cd174772d8e40360c326b7272a782`
-- Receipt artifact status: `local_unreleased_worktree`
+- Receipt source revision: `cbd54306efcadd3777d9ae09a98d371c18fef938`
+- Receipt artifact status: `exact_source_revision`
 - Canonical surfaces: 1227
 - Surfaces with replay contracts: 53
 - Surfaces without replay contracts: 1174
@@ -20,42 +20,42 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 
 | Evidence class | Passed local | Passed exact source | Failed | Not run |
 |---|---:|---:|---:|---:|
-| `authority` | 19 | 0 | 0 | 1208 |
+| `authority` | 0 | 19 | 0 | 1208 |
 | `corroboration` | 0 | 0 | 0 | 1227 |
-| `invariant` | 53 | 0 | 0 | 1174 |
-| `doctrine_source` | 7 | 0 | 0 | 1220 |
-| `regression` | 53 | 0 | 0 | 1174 |
+| `invariant` | 0 | 53 | 0 | 1174 |
+| `doctrine_source` | 0 | 7 | 0 | 1220 |
+| `regression` | 0 | 53 | 0 | 1174 |
 | `native_parity` | 0 | 0 | 0 | 1227 |
 | `harness` | 0 | 0 | 0 | 1227 |
 | `performance` | 0 | 0 | 0 | 1227 |
-| `release` | 53 | 0 | 0 | 1174 |
+| `release` | 0 | 53 | 0 | 1174 |
 
 ## Replayed contracts
 
 | Claim | Surfaces | Evidence classes | Tests passed | Status | Artifact |
 |---|---:|---|---:|---|---|
-| `LB-CHART-WHEEL-PACKET-TRUTH` | 1 | `invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-ASPECT-MOTION` | 1 | `invariant,regression,release` | 15 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-CORE-REDUCTIONS` | 4 | `invariant,regression,release` | 40 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-FRAME-POSITIONS` | 4 | `invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-HELLENISTIC-PROFILE` | 1 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-ORBITAL-ELEMENTS` | 1 | `authority,invariant,regression,release` | 15 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PANCHA-PAKSHI` | 1 | `doctrine_source,invariant,regression,release` | 18 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PRIMARY-DIRECTIONS` | 1 | `doctrine_source,invariant,regression,release` | 46 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PROGRESSIONS` | 1 | `doctrine_source,invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-WESTERN-ELECTIONAL` | 1 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-FRAME-SINGULARITY-TRUTH` | 6 | `authority,invariant,regression,release` | 14 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-KERNEL-RELATIVE-TRUTH` | 4 | `invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-DERIVED-CHART-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH` | 3 | `invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-OVERLAY-TRUTH` | 2 | `invariant,regression,release` | 1 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH` | 1 | `invariant,regression,release` | 1 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 10 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-SOLAR-CONDITION-BOUNDARY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
+| `LB-CHART-WHEEL-PACKET-TRUTH` | 1 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-ASPECT-MOTION` | 1 | `invariant,regression,release` | 15 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-CORE-REDUCTIONS` | 4 | `invariant,regression,release` | 40 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-FRAME-POSITIONS` | 4 | `invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-HELLENISTIC-PROFILE` | 1 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-ORBITAL-ELEMENTS` | 1 | `authority,invariant,regression,release` | 15 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PANCHA-PAKSHI` | 1 | `doctrine_source,invariant,regression,release` | 18 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PRIMARY-DIRECTIONS` | 1 | `doctrine_source,invariant,regression,release` | 46 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PROGRESSIONS` | 1 | `doctrine_source,invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-WESTERN-ELECTIONAL` | 1 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-FRAME-SINGULARITY-TRUTH` | 6 | `authority,invariant,regression,release` | 14 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-KERNEL-RELATIVE-TRUTH` | 4 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-DERIVED-CHART-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH` | 3 | `invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-OVERLAY-TRUTH` | 2 | `invariant,regression,release` | 1 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH` | 1 | `invariant,regression,release` | 1 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 10 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-SOLAR-CONDITION-BOUNDARY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
 
 ## Release interpretation
 
-These receipts prove local bounded replays. They are not exact-source, package-publication, or deployment evidence; the conformance manifest correctly remains partial/unresolved.
+These receipts prove bounded replays from the clean exact source revision. They are source-candidate evidence, not package-publication or deployment evidence; the conformance manifest correctly remains partial/unresolved.
