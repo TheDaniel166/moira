@@ -4,7 +4,7 @@
 
 - Schema: `moira.lightbox-conformance-manifest/v1`
 - Engine version: `6.9.9`
-- Inventory fingerprint: `2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9`
+- Inventory fingerprint: `816da4c9ccac5f5661dccbd9e743e7cbf21d03b445ec809e9e758123b2612857`
 - Canonical schema: `wiki/03_validation/LIGHT_BOX_CONFORMANCE_SCHEMA.json`
 
 ## Boundary
@@ -21,9 +21,9 @@ Aliases remain visible but do not inflate the canonical denominator. Numeric res
 | Canonical entries | 1227 |
 | Alias entries | 4 |
 | Canonical conformant | 0 |
-| Canonical partial | 53 |
+| Canonical partial | 56 |
 | Canonical not applicable | 0 |
-| Canonical unresolved | 1174 |
+| Canonical unresolved | 1171 |
 
 ### Residual dispositions (canonical entries)
 
@@ -71,7 +71,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:all_deep_sky_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/deep_sky.py:353` |
 | `python:moira.facade:all_galactic_positions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/galactic.py:550` |
 | `python:moira.facade:all_gauquelin_sectors` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/gauquelin.py:467` |
-| `python:moira.facade:all_heliocentric_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3798` |
+| `python:moira.facade:all_heliocentric_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3802` |
 | `python:moira.facade:all_lunar_occultations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/occultations.py:4501` |
 | `python:moira.facade:all_mansions_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/manazil.py:444` |
 | `python:moira.facade:all_mansions_at_sidereal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/manazil.py:470` |
@@ -368,7 +368,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:find_resonant_aspects` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/asteroid_families.py:302` |
 | `python:moira.facade:find_septile_triangles` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/patterns.py:2073` |
 | `python:moira.facade:find_stars` | `alias` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stars.py:862` |
-| `python:moira.facade:find_stations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:188` |
+| `python:moira.facade:find_stations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:416` |
 | `python:moira.facade:find_stelliums` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/patterns.py:1464` |
 | `python:moira.facade:find_t_squares` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/patterns.py:1213` |
 | `python:moira.facade:find_thors_hammers` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/patterns.py:1639` |
@@ -427,7 +427,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:heliacal_setting` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stars.py:1204` |
 | `python:moira.facade:heliacal_setting_event` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stars.py:1348` |
 | `python:moira.facade:heliocentric_conjunctions_in_range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1149` |
-| `python:moira.facade:heliocentric_planet_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3730` |
+| `python:moira.facade:heliocentric_planet_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:3734` |
 | `python:moira.facade:hellenistic_chart_profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/hellenistic.py:1819` |
 | `python:moira.facade:hellenistic_superiority_truth` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/aspects.py:736` |
 | `python:moira.facade:hora_lord_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/shadbala.py:880` |
@@ -456,7 +456,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:is_in_joy` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dignities.py:507` |
 | `python:moira.facade:is_in_sect` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/dignities.py:383` |
 | `python:moira.facade:is_resolvable` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/multiple_stars.py:486` |
-| `python:moira.facade:is_retrograde` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:267` |
+| `python:moira.facade:is_retrograde` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:573` |
 | `python:moira.facade:is_vargottama` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:1031` |
 | `python:moira.facade:is_visible_tonight` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:8069` |
 | `python:moira.facade:is_void_of_course` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/void_of_course.py:936` |
@@ -544,7 +544,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:navamsa` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/varga.py:415` |
 | `python:moira.facade:next_conjunction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:920` |
 | `python:moira.facade:next_heliocentric_conjunction` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1100` |
-| `python:moira.facade:next_heliocentric_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:4053` |
+| `python:moira.facade:next_heliocentric_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:4057` |
 | `python:moira.facade:next_ingress` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:1954` |
 | `python:moira.facade:next_ingress_into` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2000` |
 | `python:moira.facade:next_maximum` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/variable_stars.py:921` |
@@ -554,7 +554,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:next_moon_phase` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:651` |
 | `python:moira.facade:next_nasa_lunar_eclipse` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/compat/nasa/eclipse.py:259` |
 | `python:moira.facade:next_solar_eclipse_at_location` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/eclipse.py:7847` |
-| `python:moira.facade:next_station` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:243` |
+| `python:moira.facade:next_station` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:525` |
 | `python:moira.facade:next_transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:1566` |
 | `python:moira.facade:next_void_of_course` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/void_of_course.py:956` |
 | `python:moira.facade:nodes_and_apsides_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/nodes.py:708` |
@@ -611,9 +611,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:planet_heliacal_setting` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:8643` |
 | `python:moira.facade:planet_morning_last` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/heliacal.py:8800` |
 | `python:moira.facade:planet_phenomena_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:1215` |
-| `python:moira.facade:planet_reduction_breakdown_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:2527` |
-| `python:moira.facade:planet_relative_to` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:3917` |
-| `python:moira.facade:planet_relative_to_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:4009` |
+| `python:moira.facade:planet_reduction_breakdown_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/planets.py:2531` |
+| `python:moira.facade:planet_relative_to` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:3921` |
+| `python:moira.facade:planet_relative_to_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/planets.py:4013` |
 | `python:moira.facade:planet_return` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/transits.py:2193` |
 | `python:moira.facade:planet_time_series` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/batch.py:723` |
 | `python:moira.facade:planetary_age_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1451` |
@@ -664,7 +664,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:relocated_solar_return` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/locational_forecasting.py:616` |
 | `python:moira.facade:resonance` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/phenomena.py:788` |
 | `python:moira.facade:resonance_network` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/asteroid_families.py:357` |
-| `python:moira.facade:retrograde_periods` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:280` |
+| `python:moira.facade:retrograde_periods` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/stations.py:617` |
 | `python:moira.facade:return_series` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1113` |
 | `python:moira.facade:sade_sati_status` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sade_sati.py:234` |
 | `python:moira.facade:sade_sati_windows` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/sade_sati.py:287` |
@@ -909,18 +909,18 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/draconic/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/draconic.py:39` |
 | `rest:POST:/v1/draconic/longitude` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/draconic.py:25` |
 | `rest:POST:/v1/draconic/positions` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/draconic.py:33` |
-| `rest:POST:/v1/eclipses/lunar/global-circumstances` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:353` |
-| `rest:POST:/v1/eclipses/lunar/local` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:332` |
-| `rest:POST:/v1/eclipses/lunar/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:300` |
-| `rest:POST:/v1/eclipses/lunar/previous` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:316` |
-| `rest:POST:/v1/eclipses/lunar/visibility` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:340` |
-| `rest:POST:/v1/eclipses/solar/cartography` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:407` |
-| `rest:POST:/v1/eclipses/solar/footprint` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:374` |
-| `rest:POST:/v1/eclipses/solar/global-circumstances` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:394` |
-| `rest:POST:/v1/eclipses/solar/local-visible` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:324` |
-| `rest:POST:/v1/eclipses/solar/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:292` |
-| `rest:POST:/v1/eclipses/solar/path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:366` |
-| `rest:POST:/v1/eclipses/solar/previous` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:308` |
+| `rest:POST:/v1/eclipses/lunar/global-circumstances` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:399` |
+| `rest:POST:/v1/eclipses/lunar/local` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:378` |
+| `rest:POST:/v1/eclipses/lunar/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:346` |
+| `rest:POST:/v1/eclipses/lunar/previous` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:362` |
+| `rest:POST:/v1/eclipses/lunar/visibility` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:386` |
+| `rest:POST:/v1/eclipses/solar/cartography` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:453` |
+| `rest:POST:/v1/eclipses/solar/footprint` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:420` |
+| `rest:POST:/v1/eclipses/solar/global-circumstances` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:440` |
+| `rest:POST:/v1/eclipses/solar/local-visible` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:370` |
+| `rest:POST:/v1/eclipses/solar/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:338` |
+| `rest:POST:/v1/eclipses/solar/path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:412` |
+| `rest:POST:/v1/eclipses/solar/previous` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:354` |
 | `rest:POST:/v1/egyptian-bounds/aggregate` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/egyptian_bounds.py:90` |
 | `rest:POST:/v1/egyptian-bounds/bound` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/egyptian_bounds.py:54` |
 | `rest:POST:/v1/egyptian-bounds/classification` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/egyptian_bounds.py:63` |
@@ -981,9 +981,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/harmonics/pattern-score` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/harmonics.py:68` |
 | `rest:POST:/v1/harmonics/sweep` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/harmonics.py:82` |
 | `rest:POST:/v1/harmonics/transit-forecast` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/harmonics.py:116` |
-| `rest:POST:/v1/heliacal/phasis` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:688` |
-| `rest:POST:/v1/heliacal/planet` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:670` |
-| `rest:POST:/v1/heliacal/visibility-event` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:679` |
+| `rest:POST:/v1/heliacal/phasis` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:734` |
+| `rest:POST:/v1/heliacal/planet` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:716` |
+| `rest:POST:/v1/heliacal/visibility-event` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:725` |
 | `rest:POST:/v1/hellenistic/chart-profile` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/hellenistic_profile.py:28` |
 | `rest:POST:/v1/hellenistic/circumambulations` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/hellenistic_systems.py:28` |
 | `rest:POST:/v1/hellenistic/condition` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/hellenistic_atoms.py:31` |
@@ -1074,18 +1074,18 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/nodes/geometric` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/nodes.py:48` |
 | `rest:POST:/v1/nodes/planetary/mean` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/nodes.py:34` |
 | `rest:POST:/v1/nodes/planetary/mean/bulk` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/nodes.py:40` |
-| `rest:POST:/v1/occultations/all-lunar` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:487` |
-| `rest:POST:/v1/occultations/close-approaches` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:427` |
-| `rest:POST:/v1/occultations/lunar` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:447` |
-| `rest:POST:/v1/occultations/lunar-path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:507` |
-| `rest:POST:/v1/occultations/lunar-path-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:527` |
-| `rest:POST:/v1/occultations/lunar-path-topology` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:581` |
-| `rest:POST:/v1/occultations/lunar-path-topology-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:604` |
-| `rest:POST:/v1/occultations/lunar-star` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:467` |
-| `rest:POST:/v1/occultations/lunar-star-path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:544` |
-| `rest:POST:/v1/occultations/lunar-star-path-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:564` |
-| `rest:POST:/v1/occultations/lunar-star-path-topology` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:624` |
-| `rest:POST:/v1/occultations/lunar-star-path-topology-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:650` |
+| `rest:POST:/v1/occultations/all-lunar` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:533` |
+| `rest:POST:/v1/occultations/close-approaches` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:473` |
+| `rest:POST:/v1/occultations/lunar` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:493` |
+| `rest:POST:/v1/occultations/lunar-path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:553` |
+| `rest:POST:/v1/occultations/lunar-path-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:573` |
+| `rest:POST:/v1/occultations/lunar-path-topology` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:627` |
+| `rest:POST:/v1/occultations/lunar-path-topology-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:650` |
+| `rest:POST:/v1/occultations/lunar-star` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:513` |
+| `rest:POST:/v1/occultations/lunar-star-path` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:590` |
+| `rest:POST:/v1/occultations/lunar-star-path-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:610` |
+| `rest:POST:/v1/occultations/lunar-star-path-topology` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:670` |
+| `rest:POST:/v1/occultations/lunar-star-path-topology-at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:696` |
 | `rest:POST:/v1/orbits/class` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/orbits.py:47` |
 | `rest:POST:/v1/orbits/class/batch` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/orbits.py:56` |
 | `rest:POST:/v1/orbits/distance-extremes` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/orbits.py:38` |
@@ -1112,15 +1112,15 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/panchanga/instant` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:55` |
 | `rest:POST:/v1/panchanga/instant/profile` | `canonical` | `composition_profile` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:60` |
 | `rest:POST:/v1/panchanga/lunar-month` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/panchanga.py:37` |
-| `rest:POST:/v1/parans/field/analysis` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:791` |
-| `rest:POST:/v1/parans/field/contours` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:801` |
-| `rest:POST:/v1/parans/field/paths` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:811` |
-| `rest:POST:/v1/parans/field/samples` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:780` |
-| `rest:POST:/v1/parans/field/structure` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:821` |
-| `rest:POST:/v1/parans/natal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:731` |
-| `rest:POST:/v1/parans/natal-angular-contacts` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:752` |
-| `rest:POST:/v1/parans/search` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:697` |
-| `rest:POST:/v1/parans/site` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:770` |
+| `rest:POST:/v1/parans/field/analysis` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:837` |
+| `rest:POST:/v1/parans/field/contours` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:847` |
+| `rest:POST:/v1/parans/field/paths` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:857` |
+| `rest:POST:/v1/parans/field/samples` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:826` |
+| `rest:POST:/v1/parans/field/structure` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:867` |
+| `rest:POST:/v1/parans/natal` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:777` |
+| `rest:POST:/v1/parans/natal-angular-contacts` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:798` |
+| `rest:POST:/v1/parans/search` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:743` |
+| `rest:POST:/v1/parans/site` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:816` |
 | `rest:POST:/v1/patterns/chart-profile` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/relationship.py:257` |
 | `rest:POST:/v1/patterns/coherence` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/relationship.py:245` |
 | `rest:POST:/v1/patterns/find` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/relationship.py:230` |
@@ -1181,9 +1181,9 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/returns/planet` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/returns.py:51` |
 | `rest:POST:/v1/returns/relocated` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/forecasting.py:102` |
 | `rest:POST:/v1/returns/solar` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/returns.py:23` |
-| `rest:POST:/v1/rise-set/phenomena` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:268` |
-| `rest:POST:/v1/rise-set/transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:276` |
-| `rest:POST:/v1/rise-set/twilight` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:284` |
+| `rest:POST:/v1/rise-set/phenomena` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:314` |
+| `rest:POST:/v1/rise-set/transit` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:322` |
+| `rest:POST:/v1/rise-set/twilight` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:330` |
 | `rest:POST:/v1/sade-sati/status` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/sade_sati.py:26` |
 | `rest:POST:/v1/sade-sati/windows` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/sade_sati.py:36` |
 | `rest:POST:/v1/shadbala/chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/shadbala.py:33` |
@@ -1206,10 +1206,10 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/stars/variable/pair` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/stars.py:118` |
 | `rest:POST:/v1/stars/variable/range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/stars.py:102` |
 | `rest:POST:/v1/stars/variable/state` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/stars.py:95` |
-| `rest:POST:/v1/stations/is-retrograde` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:202` |
-| `rest:POST:/v1/stations/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:193` |
-| `rest:POST:/v1/stations/retrograde-periods` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:214` |
-| `rest:POST:/v1/stations/search` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:183` |
+| `rest:POST:/v1/stations/is-retrograde` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/phenomena.py:243` |
+| `rest:POST:/v1/stations/next` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/phenomena.py:197` |
+| `rest:POST:/v1/stations/retrograde-periods` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:260` |
+| `rest:POST:/v1/stations/search` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/phenomena.py:185` |
 | `rest:POST:/v1/stelliums/analyze` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/stelliums.py:13` |
 | `rest:POST:/v1/synastry/aspects` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/relationship.py:177` |
 | `rest:POST:/v1/synastry/contacts` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/relationship.py:190` |
@@ -1275,10 +1275,10 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `rest:POST:/v1/visibility/point-source-threshold` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/visibility.py:128` |
 | `rest:POST:/v1/visibility/tonight` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/visibility.py:56` |
 | `rest:POST:/v1/visibility/twilight-sky-brightness` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/visibility.py:116` |
-| `rest:POST:/v1/void-of-course/is-active` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:243` |
-| `rest:POST:/v1/void-of-course/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:235` |
-| `rest:POST:/v1/void-of-course/range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:255` |
-| `rest:POST:/v1/void-of-course/window` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:227` |
+| `rest:POST:/v1/void-of-course/is-active` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:289` |
+| `rest:POST:/v1/void-of-course/next` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:281` |
+| `rest:POST:/v1/void-of-course/range` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:301` |
+| `rest:POST:/v1/void-of-course/window` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/phenomena.py:273` |
 | `rest:POST:/v1/website/chart-wheel/packet` | `canonical` | `transport_adapter` | `partial` | `embedded_result` | `unresolved` | `embedded_result,generated_documentation` | `not_verified` | `moira_server/routers/chart_wheel.py:43` |
 | `rest:POST:/v1/website/chart-wheel/validate` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/chart_wheel.py:34` |
 | `rest:POST:/v1/website/parans/packet` | `canonical` | `transport_adapter` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira_server/routers/paran_packet.py:17` |

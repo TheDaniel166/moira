@@ -78,22 +78,97 @@ class RetrogradePeriodSearchRequest(_StrictModel):
     step_days: float | None = None
 
 
+class StationReductionTruthResponse(_StrictModel):
+    body: str
+    body_family: str
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    delta_t_retarget_mode: str
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    reader_type: str
+    kernel_identity: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    ephemeris_identity_scope: str
+    observer_center: str
+    source_vector_frame: str
+    result_frame: str
+    position_mode: str
+    light_time_applied: bool
+    annual_aberration_applied: bool
+    gravitational_deflection_applied: bool
+    precession_applied: bool
+    nutation_applied: bool
+    topocentric_applied: bool
+    speed_method: str
+    speed_sample_half_span_days: float | None
+    speed_sample_timescale: str
+
+
+class StationEventTruthResponse(_StrictModel):
+    reduction: StationReductionTruthResponse
+    coarse_bracket_start_jd_ut: float
+    coarse_bracket_end_jd_ut: float
+    speed_at_bracket_start_deg_per_day: float
+    speed_at_bracket_end_deg_per_day: float
+    signed_speed_at_station_deg_per_day: float
+    station_speed_threshold_deg_per_day: float
+    refinement_method: str
+    refinement_tolerance_days: float
+    refinement_max_iterations: int
+
+
+class StationSearchTruthResponse(_StrictModel):
+    body: str
+    search_start_jd_ut: float
+    search_end_jd_ut: float
+    requested_step_days: float | None
+    effective_step_days: float
+    result_count: int
+    no_result_reason: str | None
+    source_identity_at_search_start: StationReductionTruthResponse | None
+    station_speed_threshold_deg_per_day: float
+    station_detection_rule: str
+    search_timescale: str
+    refinement_method: str
+    refinement_tolerance_days: float
+    refinement_max_iterations: int
+
+
+class StationStateTruthResponse(_StrictModel):
+    body: str
+    jd_ut: float
+    signed_longitude_speed_deg_per_day: float
+    reduction: StationReductionTruthResponse | None
+    state_reason: str
+    station_speed_threshold_deg_per_day: float
+    retrograde_rule: str
+
+
 class StationEventResponse(_StrictModel):
     body: str
     station_type: str
     jd_ut: float
     datetime_utc: str
     longitude: float
+    computation_truth: StationEventTruthResponse | None = None
 
 
 class StationSearchResponse(_StrictModel):
     events: list[StationEventResponse]
+    computation_truth: StationSearchTruthResponse
 
 
 class StationStateResponse(_StrictModel):
     body: str
     jd_ut: float
     is_retrograde: bool
+    signed_longitude_speed_deg_per_day: float
+    computation_truth: StationStateTruthResponse
 
 
 class RetrogradePeriodResponse(_StrictModel):

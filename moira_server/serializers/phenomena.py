@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from moira import datetime_from_jd
 from moira.julian import _ut1_to_utc, calendar_datetime_from_jd
 from moira.eclipse import (
@@ -68,7 +70,12 @@ from moira.parans import (
     ParanThresholdCrossing,
 )
 from moira.rise_set import TwilightTimes
-from moira.stations import StationEvent
+from moira.stations import (
+    StationEvent,
+    StationEventWithTruth,
+    StationSearchTruth,
+    StationStateTruth,
+)
 from moira.void_of_course import LastAspect, VoidOfCourseWindow
 
 from ..models.phenomena import (
@@ -142,6 +149,9 @@ from ..models.phenomena import (
     SolarEclipsePathResponse,
     SolarEclipseLocalCircumstancesResponse,
     StationEventResponse,
+    StationEventTruthResponse,
+    StationSearchTruthResponse,
+    StationStateTruthResponse,
     TwilightTimesResponse,
     VisibilityAssessmentCompactResponse,
     VoidOfCourseWindowResponse,
@@ -155,14 +165,35 @@ def serialize_event_instant(jd_ut: float) -> EventInstantResponse:
     )
 
 
-def serialize_station_event(event: StationEvent) -> StationEventResponse:
+def serialize_station_event(
+    event: StationEvent | StationEventWithTruth,
+) -> StationEventResponse:
+    event_truth = event.truth if isinstance(event, StationEventWithTruth) else None
+    station_event = event.event if isinstance(event, StationEventWithTruth) else event
     return StationEventResponse(
-        body=event.body,
-        station_type=event.station_type,
-        jd_ut=event.jd_ut,
-        datetime_utc=event.datetime_utc.isoformat(),
-        longitude=event.longitude,
+        body=station_event.body,
+        station_type=station_event.station_type,
+        jd_ut=station_event.jd_ut,
+        datetime_utc=station_event.datetime_utc.isoformat(),
+        longitude=station_event.longitude,
+        computation_truth=(
+            None
+            if event_truth is None
+            else StationEventTruthResponse.model_validate(asdict(event_truth))
+        ),
     )
+
+
+def serialize_station_search_truth(
+    truth: StationSearchTruth,
+) -> StationSearchTruthResponse:
+    return StationSearchTruthResponse.model_validate(asdict(truth))
+
+
+def serialize_station_state_truth(
+    truth: StationStateTruth,
+) -> StationStateTruthResponse:
+    return StationStateTruthResponse.model_validate(asdict(truth))
 
 
 def serialize_retrograde_period(period: tuple[float, float]) -> RetrogradePeriodResponse:

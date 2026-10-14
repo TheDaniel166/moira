@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 
 from moira import Moira
 
@@ -116,6 +116,8 @@ from ..serializers.phenomena import (
     serialize_solar_eclipse_path,
     serialize_solar_eclipse_local,
     serialize_station_event,
+    serialize_station_search_truth,
+    serialize_station_state_truth,
     serialize_twilight_times,
     serialize_void_of_course_window,
 )
@@ -140,7 +142,7 @@ from ..services.phenomena import (
     compute_natal_parans,
     compute_natal_parans_with_inventory,
     compute_natal_angular_contacts,
-    compute_next_station,
+    compute_next_station_with_truth,
     compute_next_lunar_eclipse,
     compute_next_solar_eclipse,
     compute_previous_lunar_eclipse,
@@ -162,8 +164,8 @@ from ..services.phenomena import (
     compute_solar_eclipse_footprint,
     compute_solar_eclipse_cartography,
     compute_solar_eclipse_global_circumstances,
-    compute_station_state,
-    compute_stations,
+    compute_station_state_with_truth,
+    compute_stations_with_truth,
     compute_solar_eclipse_path,
     compute_twilight_times,
     compute_void_of_course_state,
@@ -185,18 +187,57 @@ def station_search_route(
     request: StationSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> StationSearchResponse:
+    result = compute_stations_with_truth(engine, request)
     return StationSearchResponse(
-        events=[serialize_station_event(event) for event in compute_stations(engine, request)]
+        events=[serialize_station_event(event) for event in result.events],
+        computation_truth=serialize_station_search_truth(result.truth),
     )
 
 
-@router.post("/stations/next", response_model=StationEventResponse | None)
+@router.post(
+    "/stations/next",
+    response_model=StationEventResponse | None,
+    responses={
+        200: {
+            "description": (
+                "The next station, or JSON null when the bounded search has no result. "
+                "A null result carries the reason and applied search controls in headers."
+            ),
+            "headers": {
+                "X-Moira-Station-No-Result-Reason": {
+                    "description": "Machine-readable reason for a null response body.",
+                    "schema": {"type": "string"},
+                },
+                "X-Moira-Station-Search-End-JD-UT": {
+                    "description": "Upper bound of the completed UT1 search.",
+                    "schema": {"type": "number"},
+                },
+                "X-Moira-Station-Effective-Step-Days": {
+                    "description": "Effective coarse scan step in days.",
+                    "schema": {"type": "number"},
+                },
+            },
+        }
+    },
+)
 def next_station_route(
     request: NextStationRequest,
+    response: Response,
     engine: Moira = Depends(get_engine),
 ) -> StationEventResponse | None:
-    event = compute_next_station(engine, request)
-    return serialize_station_event(event) if event is not None else None
+    result = compute_next_station_with_truth(engine, request)
+    if result.event is not None:
+        return serialize_station_event(result.event)
+    response.headers["X-Moira-Station-No-Result-Reason"] = (
+        result.search_truth.no_result_reason or "no_station_in_search_window"
+    )
+    response.headers["X-Moira-Station-Search-End-JD-UT"] = str(
+        result.search_truth.search_end_jd_ut
+    )
+    response.headers["X-Moira-Station-Effective-Step-Days"] = str(
+        result.search_truth.effective_step_days
+    )
+    return None
 
 
 @router.post("/stations/is-retrograde", response_model=StationStateResponse)
@@ -204,10 +245,15 @@ def station_state_route(
     request: StationStateRequest,
     engine: Moira = Depends(get_engine),
 ) -> StationStateResponse:
+    result = compute_station_state_with_truth(engine, request)
     return StationStateResponse(
         body=request.body,
         jd_ut=request.jd_ut,
-        is_retrograde=compute_station_state(engine, request),
+        is_retrograde=result.is_retrograde,
+        signed_longitude_speed_deg_per_day=(
+            result.truth.signed_longitude_speed_deg_per_day
+        ),
+        computation_truth=serialize_station_state_truth(result.truth),
     )
 
 

@@ -48,7 +48,15 @@ from moira.parans import (
 from moira.paran_stars import PARAN_STAR_CANON, list_paran_stars, paran_star_tiers
 from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, twilight_times
 from moira.spk_reader import use_reader_override
-from moira.stations import find_stations, is_retrograde, next_station, retrograde_periods
+from moira.stations import (
+    find_stations,
+    find_stations_with_truth,
+    is_retrograde,
+    next_station,
+    next_station_with_truth,
+    retrograde_periods,
+    station_state_with_truth,
+)
 from moira.void_of_course import (
     is_void_of_course,
     next_void_of_course,
@@ -372,6 +380,20 @@ def compute_stations(engine: Moira, request: StationSearchRequest):
     )
 
 
+def compute_stations_with_truth(engine: Moira, request: StationSearchRequest):
+    _require_supported_station_body(request.body)
+    _validate_jd_window(request.jd_start, request.jd_end)
+    if request.step_days is not None:
+        _require_positive(request.step_days, "step_days")
+    return find_stations_with_truth(
+        request.body,
+        request.jd_start,
+        request.jd_end,
+        step_days=request.step_days,
+        reader=getattr(engine, "_reader", None),
+    )
+
+
 def compute_next_station(engine: Moira, request: NextStationRequest):
     _require_supported_station_body(request.body)
     _require_finite(request.jd_start, "jd_start")
@@ -387,10 +409,35 @@ def compute_next_station(engine: Moira, request: NextStationRequest):
     )
 
 
+def compute_next_station_with_truth(engine: Moira, request: NextStationRequest):
+    _require_supported_station_body(request.body)
+    _require_finite(request.jd_start, "jd_start")
+    _require_positive(request.max_days, "max_days")
+    if request.step_days is not None:
+        _require_positive(request.step_days, "step_days")
+    return next_station_with_truth(
+        request.body,
+        request.jd_start,
+        max_days=request.max_days,
+        step_days=request.step_days,
+        reader=getattr(engine, "_reader", None),
+    )
+
+
 def compute_station_state(engine: Moira, request: StationStateRequest) -> bool:
     _require_supported_station_body(request.body)
     _require_finite(request.jd_ut, "jd_ut")
     return is_retrograde(
+        request.body,
+        request.jd_ut,
+        reader=getattr(engine, "_reader", None),
+    )
+
+
+def compute_station_state_with_truth(engine: Moira, request: StationStateRequest):
+    _require_supported_station_body(request.body)
+    _require_finite(request.jd_ut, "jd_ut")
+    return station_state_with_truth(
         request.body,
         request.jd_ut,
         reader=getattr(engine, "_reader", None),

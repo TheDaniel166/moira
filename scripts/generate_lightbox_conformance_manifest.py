@@ -439,6 +439,42 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "station_motion_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "For major-planet requests, the station routes expose the signed longitude-speed state, bounded search policy, crossing bracket, solver tolerance, frame/correction policy, clock, and serving ephemeris identity without replacing legacy results.",
+        "stage_label": "Station-motion search and state truth",
+        "operation": "Sample the declared apparent geocentric true-ecliptic longitude-speed product on a UT1 search lattice, bracket strict sign changes, refine each zero by bisection, and return the applied reduction and search truth beside legacy results.",
+        "semantic_values": {
+            "inputs": [
+                "Typed body, Julian-date state or search bounds, optional scan step, and next-search horizon are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates and solver tolerances use days; longitude uses degrees; signed longitude speed uses degrees per day."
+            ],
+            "reference_frame": [
+                "The response names ICRF barycentric source vectors and the apparent geocentric true ecliptic and equinox of date result frame."
+            ],
+            "origin": [
+                "The observer center is Earth's geocenter; topocentric displacement is explicitly false."
+            ],
+            "timescale": [
+                "Search epochs are UT1, each reduction reports bound UT1, TT, and TDB values, and the centered longitude-rate sample is identified as TT."
+            ],
+            "corrections": [
+                "Light time, annual aberration, gravitational deflection, precession, and nutation flags are returned; topocentric correction is explicitly excluded."
+            ],
+            "policies_defaults": [
+                "For major planets, the zero-speed threshold, strict sign-change rule, requested and effective scan step, coarse bracket, bisection method, tolerance, iteration cap, exact rate sample, and serving DE/LE identity are explicit."
+            ],
+            "fallbacks": [
+                "Sun and Moon return an explicit non-retrograding-body reason; an empty bounded planetary search returns a distinct no-station-in-window reason. A null next-station body remains null and carries its reason in documented headers. Small-body requests name their family and the limitation that supplemental body-kernel identity and exact rate sampling are not exposed."
+            ],
+            "refusal_behavior": [
+                "Typed service validation rejects unsupported bodies, non-finite dates, reversed ranges, non-positive steps, and non-positive next-search horizons."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
     "relationship_overlay_vessel": {
         "inspectability_mode": "embedded_result",
         "summary": "Each directional overlay embeds labels, node policy, point count, target house-system identity, effective system, and fallback state.",

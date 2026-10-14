@@ -284,6 +284,25 @@
       "exclusions": [
         "The replay is a bounded doctrine-and-engine consistency check, not an independent astronomical authority residual, a claim that every astrological tradition uses these thresholds, or evidence of interpretive efficacy."
       ]
+    },
+    {
+      "claim_id": "LB-STATION-MOTION-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/stations/search",
+        "rest:POST:/v1/stations/next",
+        "rest:POST:/v1/stations/is-retrograde"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/integration/test_r3c_station_truth_evidence.py::TestR3CStationTruthEvidence",
+        "tests/server/test_server_phenomena_routes.py::test_station_routes_match_engine_truth",
+        "tests/server/test_server_phenomena_routes.py::test_station_routes_report_explicit_no_result_without_changing_null_body"
+      ],
+      "minimum_tests": 12,
+      "claim_scope": "For major-planet requests, the three production-used station routes preserve their existing request and response shapes while exposing the signed apparent geocentric true-ecliptic longitude-speed witness, UT1 search controls, TT rate sampling, zero-speed rule, coarse bracket, bisection tolerance, correction/frame policy, and serving DE/LE identity. A DE441 Mercury regression fixes the first sampled 2000 retrograde station and verifies that legacy and truth-bearing results agree; null next-station bodies remain null and report a machine-readable absence reason in documented headers.",
+      "exclusions": [
+        "The replay is a bounded engine-and-transport consistency proof, not an independent astronomical station catalog residual, and makes no claim outside the sampled major planets, epochs, kernel coverage, apparent geocentric true-ecliptic speed convention, strict sign-change detector, or configured scan windows. Small-body station requests explicitly report that only the planetary context identity is available and are not admitted for rate-sample or body-kernel provenance. The separate /v1/stations/retrograde-periods route is not admitted by this contract."
+      ]
     }
   ]
 }

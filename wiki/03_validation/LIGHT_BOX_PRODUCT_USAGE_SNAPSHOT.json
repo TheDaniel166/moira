@@ -1,5 +1,5 @@
 {
-  "audit_date": "2026-10-13",
+  "audit_date": "2026-10-14",
   "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
   "engine_version": "6.9.9",
   "entries": [
@@ -892,7 +892,7 @@
           "product": "website",
           "source_line": 887,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/antiscia/contacts",
@@ -906,28 +906,28 @@
           "product": "website",
           "source_line": 114,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 154,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 577,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 580,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -969,35 +969,35 @@
           "product": "website",
           "source_line": 67,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 323,
           "source_path": "server/completeNatalGenerate.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 303,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 392,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 26,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/asteroids/bulk",
@@ -1039,28 +1039,28 @@
           "product": "website",
           "source_line": 127,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 295,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 346,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 368,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/astrocartography/chart/subjects/lines",
@@ -1074,7 +1074,7 @@
           "product": "website",
           "source_line": 139,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/astrocartography/chart/subjects/subplanetary",
@@ -1130,7 +1130,7 @@
           "product": "website",
           "source_line": 32,
           "source_path": "server/_core/natalAstrodynes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -1151,14 +1151,14 @@
           "product": "website",
           "source_line": 204,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 497,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/batch/charts",
@@ -1172,70 +1172,70 @@
           "product": "website",
           "source_line": 79,
           "source_path": "client/src/site/home/sky/positionSamples.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 24,
           "source_path": "server/craft/ephemerisYear.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 17,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 42,
           "source_path": "server/lotSupport.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 1154,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 1184,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 1210,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 15,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 75,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 80,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/batch/charts/reduction",
@@ -1270,7 +1270,7 @@
           "product": "website",
           "source_line": 748,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/batch/progressions",
@@ -1298,7 +1298,7 @@
           "product": "website",
           "source_line": 137,
           "source_path": "server/pdfGenerator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/chart",
@@ -1312,35 +1312,35 @@
           "product": "website",
           "source_line": 20,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 59,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 487,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 17,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 80,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/chart-shape/classify",
@@ -1354,224 +1354,224 @@
           "product": "website",
           "source_line": 71,
           "source_path": "client/src/components/wheel/chartTypes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 73,
           "source_path": "client/src/components/wheel/chartTypes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 75,
           "source_path": "client/src/components/wheel/chartTypes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 77,
           "source_path": "client/src/components/wheel/chartTypes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 79,
           "source_path": "client/src/components/wheel/chartTypes.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 128,
           "source_path": "client/src/site/home/sky/shapeData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 144,
           "source_path": "server/_core/engineChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 83,
           "source_path": "server/_core/natalResearch.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 785,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 232,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 340,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 376,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 52,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 57,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 137,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 239,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 254,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 114,
           "source_path": "server/routers/readers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 465,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 531,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 532,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 597,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 598,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 316,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 321,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 182,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 49,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 73,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 16,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 80,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 162,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 172,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/chart/reduction",
@@ -1585,7 +1585,7 @@
           "product": "website",
           "source_line": 68,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/comets/bulk",
@@ -1599,14 +1599,14 @@
           "product": "website",
           "source_line": 144,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 533,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -1641,14 +1641,14 @@
           "product": "website",
           "source_line": 155,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 207,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dasha/vimshottari/balance",
@@ -1662,7 +1662,7 @@
           "product": "website",
           "source_line": 153,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dasha/vimshottari/current",
@@ -1676,21 +1676,21 @@
           "product": "website",
           "source_line": 154,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 206,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 95,
           "source_path": "server/routers/yogas.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dasha/vimshottari/sequence",
@@ -1704,14 +1704,14 @@
           "product": "website",
           "source_line": 158,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 599,
           "source_path": "server/routers/relationship.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -1746,7 +1746,7 @@
           "product": "website",
           "source_line": 1303,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/deep-sky/bulk",
@@ -1760,14 +1760,21 @@
           "product": "website",
           "source_line": 241,
           "source_path": "server/_core/chartFingerprint.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 189,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
+        },
+        {
+          "detection": "exact_rest_path_literal",
+          "product": "website",
+          "source_line": 109,
+          "source_path": "server/routers/music.ts",
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dignities/chart",
@@ -1781,7 +1788,7 @@
           "product": "website",
           "source_line": 209,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dignities/chart/profile",
@@ -1795,14 +1802,14 @@
           "product": "website",
           "source_line": 181,
           "source_path": "server/_core/chartFingerprint.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 231,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/dignities/chart/receptions",
@@ -1816,7 +1823,7 @@
           "product": "website",
           "source_line": 133,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/draconic/chart",
@@ -1830,14 +1837,14 @@
           "product": "website",
           "source_line": 66,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 183,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/draconic/positions",
@@ -1851,14 +1858,14 @@
           "product": "website",
           "source_line": 95,
           "source_path": "client/src/site/home/sky/eclipseData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 18,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/local",
@@ -1872,28 +1879,28 @@
           "product": "website",
           "source_line": 58,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 660,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 19,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 80,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/next",
@@ -1907,21 +1914,21 @@
           "product": "website",
           "source_line": 41,
           "source_path": "client/src/site/home/sky/eclipseData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 113,
           "source_path": "client/src/site/home/sky/eclipseData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 20,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/local-visible",
@@ -1935,35 +1942,35 @@
           "product": "website",
           "source_line": 59,
           "source_path": "client/src/site/home/sky/eclipseData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 58,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 659,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 21,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 80,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/next",
@@ -1977,7 +1984,7 @@
           "product": "website",
           "source_line": 1297,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/galactic/reference-points",
@@ -1991,7 +1998,7 @@
           "product": "website",
           "source_line": 1259,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -2012,7 +2019,7 @@
           "product": "website",
           "source_line": 145,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/geodetic/chart/equivalents",
@@ -2026,7 +2033,7 @@
           "product": "website",
           "source_line": 227,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/geodetic/chart/location-chart",
@@ -2040,7 +2047,7 @@
           "product": "website",
           "source_line": 513,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmograms/trace",
@@ -2054,7 +2061,7 @@
           "product": "website",
           "source_line": 405,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmonics/age-chart",
@@ -2068,7 +2075,7 @@
           "product": "website",
           "source_line": 47,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmonics/aspects",
@@ -2082,14 +2089,14 @@
           "product": "website",
           "source_line": 138,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 354,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmonics/chart",
@@ -2103,7 +2110,7 @@
           "product": "website",
           "source_line": 598,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmonics/fingerprint",
@@ -2117,7 +2124,7 @@
           "product": "website",
           "source_line": 307,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/harmonics/pattern-score",
@@ -2131,7 +2138,7 @@
           "product": "website",
           "source_line": 570,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/heliacal/planet",
@@ -2145,14 +2152,14 @@
           "product": "website",
           "source_line": 12,
           "source_path": "server/_core/hellenistic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 23,
           "source_path": "server/_core/hellenisticEnhanced.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/hellenistic/chart-profile",
@@ -2166,119 +2173,119 @@
           "product": "website",
           "source_line": 125,
           "source_path": "client/src/site/home/sky/liveEngine.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 154,
           "source_path": "server/_core/engineChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 161,
           "source_path": "server/craft/housesGrid.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 183,
           "source_path": "server/craft/housesGrid.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 18,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 580,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 381,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 141,
           "source_path": "server/routers/draconic.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 314,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 458,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 119,
           "source_path": "server/routers/readers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 326,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 336,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 187,
           "source_path": "server/services/harmonics.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 74,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 22,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 166,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/houses",
@@ -2292,7 +2299,7 @@
           "product": "website",
           "source_line": 98,
           "source_path": "server/_core/natalResearch.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/houses/reduction",
@@ -2306,7 +2313,14 @@
           "product": "website",
           "source_line": 1233,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
+        },
+        {
+          "detection": "exact_rest_path_literal",
+          "product": "website",
+          "source_line": 99,
+          "source_path": "server/routers/music.ts",
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -2327,28 +2341,35 @@
           "product": "website",
           "source_line": 79,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 561,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
+        },
+        {
+          "detection": "exact_rest_path_literal",
+          "product": "website",
+          "source_line": 113,
+          "source_path": "server/routers/music.ts",
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 410,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 415,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/lots/chart",
@@ -2362,56 +2383,56 @@
           "product": "website",
           "source_line": 271,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 55,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 32,
           "source_path": "server/lotSupport.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 214,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 287,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 23,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 100,
           "source_path": "server/socialEvents.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 180,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -2432,7 +2453,7 @@
           "product": "website",
           "source_line": 874,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/manazil/position",
@@ -2446,7 +2467,7 @@
           "product": "website",
           "source_line": 810,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/midpoints/calculate",
@@ -2460,7 +2481,7 @@
           "product": "website",
           "source_line": 806,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/midpoints/pictures",
@@ -2474,14 +2495,14 @@
           "product": "website",
           "source_line": 385,
           "source_path": "server/_core/chartFingerprint.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 829,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/midpoints/weighting",
@@ -2495,7 +2516,7 @@
           "product": "website",
           "source_line": 337,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/nakshatra/position",
@@ -2509,7 +2530,7 @@
           "product": "website",
           "source_line": 323,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/context/astronomical-paksha",
@@ -2523,7 +2544,7 @@
           "product": "website",
           "source_line": 358,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/context/local-solar",
@@ -2537,7 +2558,7 @@
           "product": "website",
           "source_line": 260,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/identity/aksara",
@@ -2551,7 +2572,7 @@
           "product": "website",
           "source_line": 267,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/identity/natal-moon",
@@ -2565,7 +2586,7 @@
           "product": "website",
           "source_line": 274,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/mappings/nakshatra-bird",
@@ -2579,7 +2600,7 @@
           "product": "website",
           "source_line": 365,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/relationships/directed",
@@ -2593,7 +2614,7 @@
           "product": "website",
           "source_line": 295,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/roles/padu",
@@ -2607,7 +2628,7 @@
           "product": "website",
           "source_line": 288,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/first-eat-bird",
@@ -2621,7 +2642,7 @@
           "product": "website",
           "source_line": 330,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock",
@@ -2635,7 +2656,7 @@
           "product": "website",
           "source_line": 337,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
@@ -2649,7 +2670,7 @@
           "product": "website",
           "source_line": 281,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/nominal",
@@ -2663,7 +2684,7 @@
           "product": "website",
           "source_line": 344,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional",
@@ -2677,7 +2698,7 @@
           "product": "website",
           "source_line": 351,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
@@ -2691,7 +2712,7 @@
           "product": "website",
           "source_line": 316,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/civil-time-select",
@@ -2705,7 +2726,7 @@
           "product": "website",
           "source_line": 309,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/schedule-select",
@@ -2719,7 +2740,7 @@
           "product": "website",
           "source_line": 302,
           "source_path": "shared/panchaPakshi.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/sookshma/select",
@@ -2733,7 +2754,7 @@
           "product": "website",
           "source_line": 192,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/parans/natal",
@@ -2747,42 +2768,42 @@
           "product": "website",
           "source_line": 145,
           "source_path": "server/_core/chartFingerprint.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 19,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 587,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 353,
           "source_path": "server/routers/liveCards.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 24,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 167,
           "source_path": "server/socialEvents.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/patterns/find",
@@ -2796,14 +2817,14 @@
           "product": "website",
           "source_line": 694,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 1,
           "source_path": "server/routers/pipelineMap.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/positions/planet/reduction",
@@ -2817,42 +2838,42 @@
           "product": "website",
           "source_line": 109,
           "source_path": "client/src/site/home/sky/liveEngine.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 33,
           "source_path": "server/lotSupport.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 190,
           "source_path": "server/routers/planetaryHours.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 202,
           "source_path": "server/routers/planetaryHours.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 226,
           "source_path": "server/routers/planetaryHours.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 25,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/planetary-hours/hour-at",
@@ -2866,7 +2887,7 @@
           "product": "website",
           "source_line": 171,
           "source_path": "server/routers/planetaryHours.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/planetary-hours/schedule",
@@ -2880,49 +2901,49 @@
           "product": "website",
           "source_line": 267,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 307,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 210,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 212,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 246,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 176,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 229,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/positions/planet",
@@ -2936,49 +2957,49 @@
           "product": "website",
           "source_line": 131,
           "source_path": "client/src/site/home/sky/eclipseData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 95,
           "source_path": "client/src/site/home/sky/twilightData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 288,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 360,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 426,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 636,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 26,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/positions/sky",
@@ -3034,7 +3055,7 @@
           "product": "website",
           "source_line": 651,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/profections/annual",
@@ -3048,7 +3069,7 @@
           "product": "website",
           "source_line": 24,
           "source_path": "server/_core/hellenisticEnhanced.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/profections/schedule",
@@ -3062,7 +3083,7 @@
           "product": "website",
           "source_line": 90,
           "source_path": "server/routers/progressions.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/progressions/arc",
@@ -3076,7 +3097,7 @@
           "product": "website",
           "source_line": 102,
           "source_path": "server/routers/progressions.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/progressions/house-frame",
@@ -3090,21 +3111,21 @@
           "product": "website",
           "source_line": 70,
           "source_path": "server/routers/dashboard.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 91,
           "source_path": "server/routers/progressions.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 210,
           "source_path": "server/transitDigest.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/progressions/secondary",
@@ -3118,7 +3139,7 @@
           "product": "website",
           "source_line": 60,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -3139,14 +3160,14 @@
           "product": "website",
           "source_line": 60,
           "source_path": "server/services/returnChart.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 12,
           "source_path": "server/workspaceProxyRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -3202,14 +3223,14 @@
           "product": "website",
           "source_line": 67,
           "source_path": "client/src/site/home/sky/twilightData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 27,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/rise-set/twilight",
@@ -3223,7 +3244,7 @@
           "product": "website",
           "source_line": 314,
           "source_path": "client/src/pages/Shadbala.tsx",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/shadbala/chart",
@@ -3237,14 +3258,14 @@
           "product": "website",
           "source_line": 67,
           "source_path": "server/routers/shadbala.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 69,
           "source_path": "server/routers/yogas.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/shadbala/chart/full",
@@ -3258,35 +3279,35 @@
           "product": "website",
           "source_line": 86,
           "source_path": "server/_core/natalResearch.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 416,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 156,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 208,
           "source_path": "server/routers/dasha.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 30,
           "source_path": "server/routers/yogas.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/sidereal/ayanamsa",
@@ -3300,14 +3321,14 @@
           "product": "website",
           "source_line": 42,
           "source_path": "client/src/site/home/sky/beamData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 28,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -3328,35 +3349,35 @@
           "product": "website",
           "source_line": 41,
           "source_path": "client/src/site/home/sky/beamData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 346,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 347,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 348,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 29,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/solar-condition/instant",
@@ -3370,21 +3391,28 @@
           "product": "website",
           "source_line": 326,
           "source_path": "server/_core/chartFingerprint.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 69,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 689,
           "source_path": "server/routers/advancedLayers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
+        },
+        {
+          "detection": "exact_rest_path_literal",
+          "product": "website",
+          "source_line": 119,
+          "source_path": "server/routers/music.ts",
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/stars/bulk",
@@ -3398,14 +3426,14 @@
           "product": "website",
           "source_line": 203,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 79,
           "source_path": "server/socialEvents.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/stations/is-retrograde",
@@ -3419,7 +3447,7 @@
           "product": "website",
           "source_line": 720,
           "source_path": "server/routers/calculator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/stations/next",
@@ -3433,28 +3461,28 @@
           "product": "website",
           "source_line": 56,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 282,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 321,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 30,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/stations/search",
@@ -3468,7 +3496,7 @@
           "product": "website",
           "source_line": 27,
           "source_path": "server/_core/stelliums.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
@@ -3503,14 +3531,14 @@
           "product": "website",
           "source_line": 316,
           "source_path": "server/routers/readers.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 379,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/synastry/aspects",
@@ -3538,14 +3566,14 @@
           "product": "website",
           "source_line": 392,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 401,
           "source_path": "server/routers/synastry.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/synastry/overlay",
@@ -3573,7 +3601,7 @@
           "product": "website",
           "source_line": 26,
           "source_path": "server/_core/hellenisticEnhanced.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/timelords/decennials/sequence",
@@ -3587,14 +3615,14 @@
           "product": "website",
           "source_line": 27,
           "source_path": "server/_core/hellenisticEnhanced.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 658,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/timelords/firdaria/sequence",
@@ -3608,7 +3636,7 @@
           "product": "website",
           "source_line": 25,
           "source_path": "server/_core/hellenisticEnhanced.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/timelords/zodiacal-releasing/sequence",
@@ -3622,35 +3650,35 @@
           "product": "website",
           "source_line": 351,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 57,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 326,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 410,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 31,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/transits/ingresses",
@@ -3664,7 +3692,7 @@
           "product": "website",
           "source_line": 889,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/transits/natal-aspects",
@@ -3678,35 +3706,35 @@
           "product": "website",
           "source_line": 342,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 344,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 216,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 218,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 120,
           "source_path": "server/socialEvents.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/transits/next-ingress",
@@ -3720,7 +3748,7 @@
           "product": "website",
           "source_line": 191,
           "source_path": "server/pdfGenerator.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/transits/search",
@@ -3734,7 +3762,7 @@
           "product": "website",
           "source_line": 73,
           "source_path": "server/_core/extraBodies.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/uranian/bulk",
@@ -3748,7 +3776,7 @@
           "product": "website",
           "source_line": 70,
           "source_path": "server/routers/yogas.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/vedic-dignities/chart-profile",
@@ -3762,21 +3790,21 @@
           "product": "website",
           "source_line": 96,
           "source_path": "client/src/site/home/sky/twilightData.js",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 421,
           "source_path": "server/routers/astrocartography.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 32,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/visibility/assessment",
@@ -3790,7 +3818,7 @@
           "product": "website",
           "source_line": 222,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/void-of-course/is-active",
@@ -3804,7 +3832,7 @@
           "product": "website",
           "source_line": 427,
           "source_path": "server/routers/transits.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/void-of-course/range",
@@ -3818,42 +3846,42 @@
           "product": "website",
           "source_line": 275,
           "source_path": "server/dailyHoroscope.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 46,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 50,
           "source_path": "server/homeSkyCache.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 220,
           "source_path": "server/routers/sky.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 33,
           "source_path": "server/skyEngineRoute.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         },
         {
           "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 134,
           "source_path": "server/socialEvents.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/void-of-course/window",
@@ -3867,7 +3895,7 @@
           "product": "website",
           "source_line": 99,
           "source_path": "server/_core/natalResearch.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/website/chart-wheel/packet",
@@ -3895,7 +3923,7 @@
           "product": "website",
           "source_line": 56,
           "source_path": "server/routers/yogas.ts",
-          "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+          "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
         }
       ],
       "canonical_surface_id": "rest:POST:/v1/yogas/evaluate",
@@ -3903,7 +3931,7 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "2f6d9b6c21e28600fb77cf241bbfc144330898ad9b385dad3944cb61183baab9",
+  "inventory_fingerprint_sha256": "816da4c9ccac5f5661dccbd9e743e7cbf21d03b445ec809e9e758123b2612857",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",
@@ -3912,10 +3940,10 @@
   ],
   "roots": [
     {
-      "files_scanned": 943,
+      "files_scanned": 962,
       "product": "website",
       "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
-      "source_revision": "c9c9ebf29f6eedf5c78973e4f01926a4be71622f"
+      "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
     },
     {
       "files_scanned": 583,
@@ -3926,7 +3954,7 @@
   ],
   "schema_version": "moira.lightbox-product-usage/v1",
   "summary": {
-    "callsites": 386,
+    "callsites": 390,
     "production_user_surfaces": 171,
     "python_surfaces": 45,
     "rest_surfaces": 126

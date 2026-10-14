@@ -22,6 +22,7 @@ from moira.parans import (
     natal_parans,
     sample_paran_field,
 )
+from moira.planets import planet_at
 from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, twilight_times
 from moira.spk_reader import use_reader_override
 from moira.stations import is_retrograde, next_station
@@ -81,11 +82,22 @@ def test_station_routes_match_engine_truth(
     assert len(search_body["events"]) == len(direct_stations)
     assert search_body["events"][0]["station_type"] == direct_stations[0].station_type
     assert search_body["events"][0]["jd_ut"] == pytest.approx(direct_stations[0].jd_ut)
+    assert search_body["computation_truth"]["result_count"] == len(direct_stations)
+    assert search_body["computation_truth"]["effective_step_days"] == 1.0
+    assert (
+        search_body["computation_truth"]["source_identity_at_search_start"]
+        ["planetary_ephemeris"]
+        == "DE441"
+    )
+    first_truth = search_body["events"][0]["computation_truth"]
+    assert first_truth["coarse_bracket_start_jd_ut"] < direct_stations[0].jd_ut
+    assert direct_stations[0].jd_ut < first_truth["coarse_bracket_end_jd_ut"]
 
     assert next_response.status_code == 200
     next_body = next_response.json()
     assert next_body["body"] == direct_next.body
     assert next_body["jd_ut"] == pytest.approx(direct_next.jd_ut)
+    assert next_body["computation_truth"]["reduction"]["planetary_ephemeris"] == "DE441"
 
     assert periods_response.status_code == 200
     periods_body = periods_response.json()
@@ -94,7 +106,66 @@ def test_station_routes_match_engine_truth(
     assert periods_body["periods"][0]["end"]["jd_ut"] == pytest.approx(direct_periods[0][1])
 
     assert state_response.status_code == 200
-    assert state_response.json()["is_retrograde"] is direct_state
+    state_body = state_response.json()
+    assert state_body["is_retrograde"] is direct_state
+    expected_speed = planet_at(
+        "Mercury",
+        midpoint,
+        reader=getattr(moira_engine, "_reader", None),
+    ).speed
+    assert state_body["signed_longitude_speed_deg_per_day"] == expected_speed
+    assert state_body["computation_truth"]["reduction"]["planetary_ephemeris"] == "DE441"
+
+
+@pytest.mark.requires_ephemeris
+def test_station_routes_report_explicit_no_result_without_changing_null_body(
+    client_with_engine: TestClient,
+) -> None:
+    search_response = client_with_engine.post(
+        "/v1/stations/search",
+        json={"body": "Sun", "jd_start": 2451545.0, "jd_end": 2451555.0},
+    )
+    next_response = client_with_engine.post(
+        "/v1/stations/next",
+        json={"body": "Sun", "jd_start": 2451545.0},
+    )
+    state_response = client_with_engine.post(
+        "/v1/stations/is-retrograde",
+        json={"body": "Sun", "jd_ut": 2451545.0},
+    )
+
+    assert search_response.status_code == 200
+    search_body = search_response.json()
+    assert search_body["events"] == []
+    assert (
+        search_body["computation_truth"]["no_result_reason"]
+        == "body_has_no_retrograde_motion"
+    )
+
+    assert next_response.status_code == 200
+    assert next_response.json() is None
+    assert (
+        next_response.headers["x-moira-station-no-result-reason"]
+        == "body_has_no_retrograde_motion"
+    )
+    assert next_response.headers["x-moira-station-search-end-jd-ut"] == "2451945.0"
+    assert next_response.headers["x-moira-station-effective-step-days"] == "5.0"
+
+    assert state_response.status_code == 200
+    state_body = state_response.json()
+    assert state_body["is_retrograde"] is False
+    assert state_body["signed_longitude_speed_deg_per_day"] == 0.0
+    assert state_body["computation_truth"]["state_reason"] == (
+        "body_has_no_retrograde_motion"
+    )
+
+    next_operation = client_with_engine.app.openapi()["paths"]["/v1/stations/next"][
+        "post"
+    ]
+    documented_headers = next_operation["responses"]["200"]["headers"]
+    assert "X-Moira-Station-No-Result-Reason" in documented_headers
+    assert "X-Moira-Station-Search-End-JD-UT" in documented_headers
+    assert "X-Moira-Station-Effective-Step-Days" in documented_headers
 
 
 @pytest.mark.requires_ephemeris

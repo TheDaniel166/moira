@@ -87,11 +87,15 @@ from .corrections import (
 # PlanetData.speed is the time derivative of the canonical geocentric
 # ecliptic longitude product.  A 0.002-day symmetric step is large enough to
 # avoid floating-point cancellation in the apparent-place correction stack
-# while remaining stable through planetary station searches.
-_LONGITUDE_RATE_STEP_DAYS = 2.0e-3
+# while remaining stable through planetary station searches.  This is public
+# because downstream event searches must be able to report the exact speed
+# witness they consume instead of copying an implementation-private number.
+PLANET_LONGITUDE_RATE_SAMPLE_HALF_SPAN_DAYS = 2.0e-3
+_LONGITUDE_RATE_STEP_DAYS = PLANET_LONGITUDE_RATE_SAMPLE_HALF_SPAN_DAYS
 
 __all__ = [
     "PlanetData",
+    "PLANET_LONGITUDE_RATE_SAMPLE_HALF_SPAN_DAYS",
     "PlanetReductionBreakdown",
     "PlanetReductionStage",
     "SkyPosition",
