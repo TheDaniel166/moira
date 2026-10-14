@@ -1243,6 +1243,154 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
             "generated_documentation",
         ],
     },
+    "classical_dignities_and_condition_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The classical dignities, receptions, and condition-profile surfaces embed EssentialDignityTruth, AccidentalDignityTruth, SectTruth, SolarConditionTruth, MutualReceptionTruth, and derived condition/network graph receipts.",
+        "stage_label": "Classical dignity, reception, and condition-network evaluation",
+        "operation": "Validate chart or planet/house inputs and DignityComputationPolicy, evaluate atomic essential components, accidental conditions, sect/hayz/horizon truth, solar proximity/phase truth, and formal receptions, and project deterministic per-planet, chart-wide, and network condition profiles.",
+        "semantic_values": {
+            "inputs": [
+                "Planet/house position lists or timezone-aware chart request parameters, optional DignityHorizonFrame, node/fixed-star longitudes, and typed DignityComputationPolicy are validated."
+            ],
+            "units": [
+                "Longitudes, separations, and orbs are degrees; essential and accidental weights and scores are signed integers."
+            ],
+            "reference_frame": [
+                "Tropical ecliptic sign/degree placement paired with optional exact Ascendant/Midheaven horizon geometry (DignityHorizonFrame / HorizonTruth)."
+            ],
+            "origin": [
+                "Geocentric ecliptic longitudes and topocentric house/horizon frame from the chart or caller-supplied positions."
+            ],
+            "timescale": [
+                "Chart-backed REST routes resolve the timezone-aware UTC datetime through the Moira engine; direct position functions operate on instantaneous longitudes and speeds."
+            ],
+            "corrections": [
+                "Sect/Hayz horizon method (exact horizon vs house-cusp fallback), Mercury sect model, solar proximity band classification, and besieging dependency completeness are explicitly carried in the truth vessels."
+            ],
+            "policies_defaults": [
+                "EssentialDignityTruth and SectTruth echo scoring_mode (william_lilly_1647 default), bounds_doctrine, triplicity_doctrine, and HalbHayzDoctrine alongside per-component weights and status."
+            ],
+            "fallbacks": [
+                "Missing Sun, incomplete besieging bodies, or exact boundary ties fail closed as typed TruthEvaluationStatus (NOT_EVALUABLE / SUPPRESSED_BY_POLICY) with an explicit reason string rather than fabricating a condition or score."
+            ],
+            "refusal_behavior": [
+                "Duplicate planet entries, non-finite coordinates, incoherent scoring/doctrine combinations (such as Lilly 1647 with modern co-rulers), and outer-planet condition queries without modern_co_rulers are rejected."
+            ],
+        },
+        "public_modes": [
+            "embedded_result",
+            "source_only",
+            "generated_documentation",
+        ],
+    },
+    "classical_lots_evaluation_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The classical lots chart route returns LotsResultResponse with evaluated ArabicPartResponse items (carrying ArabicPartComputationTruth, ArabicPartClassification, LotDependencyCompletenessTruth, and LotAstrologicalConditionTruth) beside explicit LotNotEvaluableResponse records.",
+        "stage_label": "Classical lots formula projection and dependency completeness evaluation",
+        "operation": "Derive chart positions and house cusps through Moira, resolve LotsComputationPolicy (including unresolved-reference mode and derived/external reference switches), evaluate each catalog lot with ArabicPartComputationTruth and dependency completeness, and segregate missing-reference lots into LotNotEvaluableResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware datetime, finite observer coordinates, house_system, optional external reference longitudes (syzygy, prenatal_new_moon, prenatal_full_moon, lord_of_hour), and LotsComputationPolicy are validated."
+            ],
+            "units": [
+                "Ecliptic longitudes and sign degrees are degrees in [0, 360) and [0, 30); DMS tuples carry integer degrees/minutes and float seconds."
+            ],
+            "reference_frame": [
+                "Tropical ecliptic longitudes projected from the Ascendant, house cusps, planetary rulers, or inter-lot references under explicit LotArcPolicy."
+            ],
+            "origin": [
+                "Observer-specific Ascendant and house cusps combined with geocentric planetary positions."
+            ],
+            "timescale": [
+                "Chart epoch is normalized from the timezone-aware datetime through the Moira chart service."
+            ],
+            "corrections": [
+                "Diurnal/nocturnal formula reversal (reversed_at_night and reversed_for_chart), effective add/sub reference keys, and projector reference truth are recorded on ArabicPartComputationTruth."
+            ],
+            "policies_defaults": [
+                "LotsComputationPolicy defaults to unresolved_reference_mode='skip' with derived Fortune/Spirit/Eros and external syzygy/prenatal/lord_of_hour references enabled when supplied."
+            ],
+            "fallbacks": [
+                "Lots whose required external or derived references are absent are never fabricated; under 'skip' mode they are recorded in not_evaluable with missing_references and status='not_evaluable'."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, non-finite observer or optional reference longitudes, invalid policy values, or missing references under strict failure mode raise validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "ordinary_antiscia_contacts_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The ordinary antiscia contacts route embeds AntisciaContactResponse items with shadow longitude, orb, and optional speed-based applying/separating motion state beside AntisciaProvenanceResponse.",
+        "stage_label": "Solstitial reflection and ordinary antiscia contact search",
+        "operation": "Validate bounded caller-supplied longitudes, optional speeds, and orb, reflect each longitude across the Cancer-Capricorn (antiscion) and Aries-Libra (contra-antiscion) axes, match contacts within orb in deterministic order, and attach AntisciaProvenanceResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Bounded non-empty position map (up to 64 bodies), finite orb in [0, 30] degrees, and optional finite speed map are validated."
+            ],
+            "units": [
+                "Longitudes, reflected shadows, and orbs are degrees; optional speeds are degrees per day."
+            ],
+            "reference_frame": [
+                "Tropical ecliptic longitudes reflected across the 0 Cancer / 0 Capricorn solstitial axis ((180 - lon) mod 360) and 0 Aries / 0 Libra equinoctial axis ((360 - lon) mod 360)."
+            ],
+            "origin": [
+                "Caller-supplied ecliptic longitude map; ephemeris is explicitly marked 'not_used' in AntisciaProvenanceResponse."
+            ],
+            "timescale": [
+                "Instantaneous caller-supplied positions; chart_motion is 'not_computed' when speeds are omitted or 'applying_separating_from_caller_speeds' when speeds are supplied."
+            ],
+            "corrections": [
+                "AntisciaProvenanceResponse explicitly declares primary_direction_boundary='not_primary_direction_antiscia' and records the exact reflection formulas and stage_sequence."
+            ],
+            "policies_defaults": [
+                "Default orb is 1.0 degree, maximum positions is 64, maximum orb is 30.0 degrees, and result_ordering is 'orb_asc_then_input_pair_order'."
+            ],
+            "fallbacks": [
+                "When speeds are omitted for a pair, motion_state and applying remain None rather than guessing motion direction."
+            ],
+            "refusal_behavior": [
+                "Empty or over-limit position maps, blank or duplicate trimmed body names, non-finite longitudes/speeds, and out-of-range orbs are rejected with 422 validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "manazil_lunar_mansion_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The Arabic lunar mansion (Manazil) position route returns MansionPositionEnvelopeResponse pairing MansionPositionResponse (1..28 index, degrees_in, computation_longitude, and tradition attribution) with MansionProvenanceResponse.",
+        "stage_label": "Equal-28 Arabic lunar mansion division and tradition attribution",
+        "operation": "Validate finite longitude, tropical/sidereal mode (requiring jd_ut when sidereal), and MansionTraditionName, normalize or convert longitude to the computation frame, divide 360 degrees into 28 equal mansions, attach tradition nature/signification, and emit MansionProvenanceResponse with stage_sequence.",
+        "semantic_values": {
+            "inputs": [
+                "Finite ecliptic longitude, MansionComputationMode (tropical or sidereal), optional jd_ut, ayanamsa_system, ayanamsa_mode, and MansionTraditionName are validated."
+            ],
+            "units": [
+                "Requested, normalized, computation, and in-mansion longitudes are degrees; mansion span is 360/28 degrees; jd_ut is Julian Day UT."
+            ],
+            "reference_frame": [
+                "Explicitly reported in MansionProvenanceResponse.mode ('tropical' or 'sidereal' with named ayanamsa_system and ayanamsa_mode)."
+            ],
+            "origin": [
+                "0 degrees Aries (tropical or sidereal according to mode) divided into 28 equal 12d51m25.7s segments."
+            ],
+            "timescale": [
+                "Sidereal mode requires a finite jd_ut epoch for ayanamsa reduction and echoes jd_ut in MansionProvenanceResponse; tropical mode is epoch-independent."
+            ],
+            "corrections": [
+                "Sidereal mode applies the requested ayanamsa_system and ayanamsa_mode before equal-28 mansion indexing and records the stage in stage_sequence."
+            ],
+            "policies_defaults": [
+                "Default mode is 'tropical', default tradition is 'agrippa', default sidereal ayanamsa is 'Lahiri' ('true'), and default authority is 'al_biruni_book_of_instruction'."
+            ],
+            "fallbacks": [
+                "No silent fallback between tropical and sidereal modes is permitted; sidereal mode without jd_ut is refused."
+            ],
+            "refusal_behavior": [
+                "Non-finite longitudes or jd_ut, unknown traditions or modes, blank ayanamsa strings, and sidereal requests missing jd_ut are rejected with 422 validation errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

@@ -140,7 +140,7 @@ def test_structural_admissions_are_bounded_and_not_release_certificates(
     manifest,
 ) -> None:
     admissions = generator.load_admissions(inventory)
-    assert len(admissions) == 140
+    assert len(admissions) == 151
     rows = {row["surface_id"]: row for row in manifest["entries"]}
     for surface_id in admissions:
         row = rows[surface_id]

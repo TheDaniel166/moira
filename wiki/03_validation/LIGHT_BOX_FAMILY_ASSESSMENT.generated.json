@@ -82,8 +82,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 5
+        "partial": 1,
+        "unresolved": 4
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
@@ -1342,8 +1342,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 33
+        "partial": 8,
+        "unresolved": 25
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -3383,8 +3383,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 15
+        "partial": 1,
+        "unresolved": 14
       },
       "documentation_leads": [
         "docs/architecture/DERIVED_CHART_POSITIONS_ANALYSIS_ARC.md",
@@ -3564,8 +3564,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 9
+        "partial": 1,
+        "unresolved": 8
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md",
@@ -7819,8 +7819,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 140,
-      "unresolved": 1093
+      "partial": 151,
+      "unresolved": 1082
     }
   }
 }

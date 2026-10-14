@@ -28,9 +28,9 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | Per-surface conformance | Canonical surfaces |
 |---|---:|
 | `conformant` | 0 |
-| `partial` | 140 |
+| `partial` | 151 |
 | `not_applicable` | 0 |
-| `unresolved` | 1093 |
+| `unresolved` | 1082 |
 
 ## Reviewed queue
 
@@ -38,7 +38,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | `almuten` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `alternate-dashas` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 9 | 0 | 0 | 9 | 0 | 0 |
-| `antiscia` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 5 | 1 | 0 | 5 | 0 | 0 |
+| `antiscia` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 5 | 1 | 1 | 4 | 0 | 0 |
 | `ashtakavarga` | `vedic-and-electional` | `major_gap` | `stage_5_remaining_tail` | 17 | 0 | 0 | 17 | 0 | 0 |
 | `aspect-events` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `aspects` | `astronomy-and-chart-core` | `mixed` | `stage_3_product_use,stage_5_remaining_tail` | 15 | 1 | 0 | 15 | 0 | 0 |
@@ -61,7 +61,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `declination-aspects` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `deep-sky` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 6 | 1 | 0 | 6 | 2 | 0 |
 | `delta-t-physical` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
-| `dignities` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 33 | 8 | 0 | 33 | 1 | 0 |
+| `dignities` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 33 | 8 | 8 | 25 | 1 | 0 |
 | `draconic` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 7 | 2 | 0 | 7 | 0 | 0 |
 | `eclipse` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `eclipses` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 3 | 0 | 0 | 3 | 0 | 1 |
@@ -97,11 +97,11 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `longevity` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `lord-of-the-orb` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `lord-of-the-turn` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `lots` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 15 | 1 | 0 | 15 | 2 | 0 |
+| `lots` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 15 | 1 | 1 | 14 | 2 | 0 |
 | `lunar-direction` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `lunar-month` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `lunar-orientation` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `manazil` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 9 | 1 | 0 | 9 | 0 | 0 |
+| `manazil` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 9 | 1 | 1 | 8 | 0 | 0 |
 | `midpoints` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 16 | 0 | 0 | 16 | 4 | 0 |
 | `muhurta` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 48 | 0 | 0 | 48 | 10 | 2 |
 | `muhurta-dosha` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |

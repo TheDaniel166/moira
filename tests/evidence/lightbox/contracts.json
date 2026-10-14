@@ -712,6 +712,90 @@
       "exclusions": [
         "The replay covers batch_progressions and the five P0 batch REST routes; /v1/batch/transits and /v1/batch/progressions/reduction are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-CLASSICAL-DIGNITIES-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:calculate_chart_condition_profile",
+        "python:moira.facade:calculate_condition_network_profile",
+        "python:moira.facade:calculate_condition_profiles",
+        "python:moira.facade:calculate_dignities",
+        "python:moira.facade:calculate_receptions",
+        "rest:POST:/v1/dignities/chart",
+        "rest:POST:/v1/dignities/chart/profile",
+        "rest:POST:/v1/dignities/chart/receptions"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_moira_dignities_and_lots.py::test_essential_dignity_truth_preserves_all_atomic_components",
+        "tests/unit/test_moira_dignities_and_lots.py::test_reception_layer_is_deterministic_and_distinguishes_mutual_and_unilateral",
+        "tests/unit/test_moira_dignities_and_lots.py::test_condition_profiles_are_deterministic_and_align_with_dignity_truth",
+        "tests/unit/test_moira_dignities_and_lots.py::test_chart_condition_profile_is_deterministic_and_aligns_with_planet_profiles",
+        "tests/unit/test_moira_dignities_and_lots.py::test_condition_network_profile_is_deterministic_and_aligns_with_reception_truth",
+        "tests/unit/test_moira_dignities_and_lots.py::test_moira_wrappers_for_dignities_and_lots_match_module_level_calculations",
+        "tests/server/test_server_dignities_routes.py::test_dignities_chart_route_matches_service",
+        "tests/server/test_server_dignities_routes.py::test_dignities_chart_receptions_route_matches_service",
+        "tests/server/test_server_dignities_routes.py::test_dignities_chart_profile_route_matches_service",
+        "tests/server/test_server_dignities_routes.py::test_dignities_chart_route_rejects_incoherent_lilly_policy"
+      ],
+      "minimum_tests": 10,
+      "claim_scope": "The five P0 Python dignity/reception/condition-profile functions and three P0 REST routes (/v1/dignities/chart, /v1/dignities/chart/profile, /v1/dignities/chart/receptions) preserve atomic EssentialDignityTruth, AccidentalDignityTruth, SectTruth, SolarConditionTruth, MutualReceptionTruth, and deterministic chart/network condition aggregation.",
+      "exclusions": [
+        "The replay covers the eight P0 classical dignity, reception, and condition-profile surfaces; dispositorship, almuten, phasis, and P1/P2 helper surfaces are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-CLASSICAL-LOTS-CHART-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/lots/chart"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_lots_routes.py::test_lots_chart_route_matches_service",
+        "tests/server/test_server_lots_routes.py::test_lots_chart_route_rejects_naive_datetime",
+        "tests/server/test_server_lots_routes.py::test_lots_chart_route_rejects_non_finite_optional_external",
+        "tests/server/test_server_lots_routes.py::test_lots_chart_route_rejects_invalid_policy_value"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/lots/chart REST route preserves engine parity while returning ArabicPartComputationTruth (projector, arc_policy, diurnal/nocturnal reversal, add/sub reference truth, formula), LotDependencyCompletenessTruth, LotAstrologicalConditionTruth, and explicit not_evaluable records for missing references.",
+      "exclusions": [
+        "The replay covers /v1/lots/chart; lots dependency/condition/network sub-routes and Python helper functions are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-ANTISCIA-CONTACTS-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/antiscia/contacts"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_antiscia_routes.py::test_contacts_route_preserves_engine_contact_vessel_and_ordering",
+        "tests/server/test_server_antiscia_routes.py::test_antiscia_routes_reject_invalid_position_maps",
+        "tests/server/test_server_antiscia_routes.py::test_antiscia_routes_reject_invalid_orb_and_point_inputs"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The /v1/antiscia/contacts REST route preserves engine parity, deterministic orb-ascending contact ordering, optional speed-based applying/separating motion state, and AntisciaProvenanceResponse (solstitial/equinoctial reflection formulas, primary-direction boundary disclosure, bounds, and stage_sequence).",
+      "exclusions": [
+        "The replay covers /v1/antiscia/contacts; /v1/antiscia/reflect, /v1/antiscia/to-point, and Python antiscia helpers are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-MANAZIL-POSITION-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/manazil/position"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_manazil_routes.py::test_manazil_position_route_preserves_boundary_truth",
+        "tests/server/test_server_manazil_routes.py::test_manazil_position_route_applies_tradition_attribution",
+        "tests/server/test_server_manazil_routes.py::test_manazil_sidereal_position_requires_jd_ut",
+        "tests/server/test_server_manazil_routes.py::test_manazil_position_route_rejects_non_finite_longitude"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/manazil/position REST route preserves equal-28 Arabic lunar mansion boundary arithmetic, tradition attribution (al_biruni, abenragel, ibn_alarabi, agrippa, picatrix), explicit tropical/sidereal mode handling, and MansionProvenanceResponse with stage_sequence.",
+      "exclusions": [
+        "The replay covers /v1/manazil/position; /v1/manazil/bulk, catalog/tradition lookup routes, and Python manazil helpers are outside this contract."
+      ]
     }
   ]
 }

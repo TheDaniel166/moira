@@ -427,6 +427,28 @@ def test_r5a_predictive_and_timelord_contracts_are_bounded() -> None:
         assert contract["exclusions"]
 
 
+def test_r5b_classical_traditional_western_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-CLASSICAL-DIGNITIES-TRUTH": (8, 10),
+        "LB-CLASSICAL-LOTS-CHART-TRUTH": (1, 4),
+        "LB-ANTISCIA-CONTACTS-TRUTH": (1, 3),
+        "LB-MANAZIL-POSITION-TRUTH": (1, 4),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"doctrine_source", "invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
 
 
 def test_contract_hash_is_order_stable() -> None:

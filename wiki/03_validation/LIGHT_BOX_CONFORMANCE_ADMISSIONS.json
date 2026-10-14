@@ -701,6 +701,61 @@
       "surface_id": "rest:POST:/v1/batch/returns",
       "contract_kind": "batch_assembly_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_dignities",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_receptions",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_condition_profiles",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_chart_condition_profile",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_condition_network_profile",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dignities/chart",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dignities/chart/profile",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/dignities/chart/receptions",
+      "contract_kind": "classical_dignities_and_condition_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/lots/chart",
+      "contract_kind": "classical_lots_evaluation_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/antiscia/contacts",
+      "contract_kind": "ordinary_antiscia_contacts_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/manazil/position",
+      "contract_kind": "manazil_lunar_mansion_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
     }
   ]
 }
