@@ -203,20 +203,40 @@ def test_void_of_course_routes_match_engine_truth(
     assert window_body["moon_sign"] == direct_window.moon_sign
     assert window_body["jd_voc_start"] == pytest.approx(direct_window.jd_voc_start)
     assert window_body["jd_voc_end"] == pytest.approx(direct_window.jd_voc_end)
+    window_truth = window_body["computation_truth"]
+    assert window_truth["policy"]["effective_mode"] == "traditional"
+    assert window_truth["policy"]["aspect_bodies"] == [
+        "Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"
+    ]
+    assert window_truth["reduction_at_request"]["planetary_ephemeris"] == "DE441"
+    assert window_truth["last_aspect_witness"]["signed_target_residual_deg"] == (
+        pytest.approx(0.0, abs=2.0e-4)
+    )
 
     assert next_response.status_code == 200
     next_body = next_response.json()
     assert next_body["jd_voc_start"] == pytest.approx(direct_next.jd_voc_start)
     assert next_body["moon_sign_next"] == direct_next.moon_sign_next
+    assert next_body["computation_truth"]["request_kind"] == (
+        "next_strictly_future_window"
+    )
 
     assert range_response.status_code == 200
     range_body = range_response.json()
     assert len(range_body["windows"]) == len(direct_range)
     assert range_body["windows"][0]["jd_voc_start"] == pytest.approx(direct_range[0].jd_voc_start)
+    assert range_body["computation_truth"]["result_count"] == len(direct_range)
+    assert range_body["windows"][0]["computation_truth"]["request_kind"] == (
+        "range_member"
+    )
 
     assert state_response.status_code == 200
-    assert state_response.json()["is_void_of_course"] is (
+    state_body = state_response.json()
+    assert state_body["is_void_of_course"] is (
         direct_window.jd_voc_start <= 2451545.0 <= direct_window.jd_voc_end
+    )
+    assert state_body["computation_truth"]["policy"]["active_state_rule"] == (
+        "jd_voc_start_inclusive_through_jd_voc_end_inclusive"
     )
 
 

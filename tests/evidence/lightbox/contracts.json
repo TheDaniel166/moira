@@ -303,6 +303,26 @@
       "exclusions": [
         "The replay is a bounded engine-and-transport consistency proof, not an independent astronomical station catalog residual, and makes no claim outside the sampled major planets, epochs, kernel coverage, apparent geocentric true-ecliptic speed convention, strict sign-change detector, or configured scan windows. Small-body station requests explicitly report that only the planetary context identity is available and are not admitted for rate-sample or body-kernel provenance. The separate /v1/stations/retrograde-periods route is not admitted by this contract."
       ]
+    },
+    {
+      "claim_id": "LB-VOID-OF-COURSE-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/void-of-course/window",
+        "rest:POST:/v1/void-of-course/next",
+        "rest:POST:/v1/void-of-course/is-active",
+        "rest:POST:/v1/void-of-course/range"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/integration/test_r3d_void_of_course_truth_evidence.py::TestR3DVoidOfCourseTruthEvidence",
+        "tests/server/test_server_phenomena_routes.py::test_void_of_course_routes_match_engine_truth",
+        "tests/unit/test_void_of_course.py::test_no_aspect_voc_last_aspect_is_none"
+      ],
+      "minimum_tests": 13,
+      "claim_scope": "The four void-of-course routes preserve their existing request fields and legacy results while exposing the requested and effective traditional or modern body policy, directional major-aspect targets, exact-perfection rule and residual, tropical sign-entry and sign-exit boundaries, inclusive active-state rule, bounded next/range search policy, solver cadence and tolerance, apparent geocentric true-ecliptic frame and correction policy, UT1/TT/TDB clock binding, and serving DE/LE identity. A DE441 J2000 regression fixes the sampled Scorpio window, Mars square witness, and Sagittarius ingress; controlled geometry proves the explicit no-aspect fallback to sign entry.",
+      "exclusions": [
+        "The replay is a bounded engine-and-transport consistency proof, not an independent void-of-course almanac residual, a claim that every astrological tradition uses this definition, or evidence of interpretive efficacy. It does not admit next_moon_connection, arbitrary moving-body batch void periods, orb-entry definitions, non-Ptolemaic aspects, topocentric variants, or epochs and kernels outside the sampled resource coverage."
+      ]
     }
   ]
 }

@@ -569,6 +569,16 @@ a second solver.
 | POST | `/v1/eclipses/solar/path` | `solar_eclipse_path_route` |
 | POST | `/v1/eclipses/solar/footprint` | `solar_eclipse_footprint_route` |
 | POST | `/v1/eclipses/solar/global-circumstances` | `solar_eclipse_global_circumstances_route` |
+
+The four void-of-course responses preserve their legacy window, state, and
+range fields and add typed `computation_truth`. That receipt names the explicit
+traditional or modern body policy, directional Ptolemaic targets,
+exact-perfection rule and residual, tropical sign boundaries, inclusive state
+rule, scan and bisection policy, UT1/TT/TDB clock binding, apparent geocentric
+true-ecliptic frame and corrections, and serving DE/LE identity. A sign with no
+admitted exact aspect reports the sign-entry fallback rather than implying a
+hidden aspect. These fields describe Moira's declared VOC method; they do not
+claim that every astrological tradition uses the same definition.
 | POST | `/v1/eclipses/solar/cartography` | `solar_eclipse_cartography_route` |
 | POST | `/v1/occultations/close-approaches` | `close_approaches_route` |
 | POST | `/v1/occultations/lunar` | `lunar_occultations_route` |

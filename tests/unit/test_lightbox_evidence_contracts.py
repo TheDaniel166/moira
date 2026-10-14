@@ -79,6 +79,12 @@ R3C_STATION_SURFACES = {
     "rest:POST:/v1/stations/next",
     "rest:POST:/v1/stations/is-retrograde",
 }
+R3D_VOID_OF_COURSE_SURFACES = {
+    "rest:POST:/v1/void-of-course/window",
+    "rest:POST:/v1/void-of-course/next",
+    "rest:POST:/v1/void-of-course/is-active",
+    "rest:POST:/v1/void-of-course/range",
+}
 
 
 def _module():
@@ -264,6 +270,31 @@ def test_r3c_station_surfaces_have_a_bounded_replay_contract() -> None:
         assert contract["minimum_tests"] == 12
         assert "null next-station bodies remain null" in contract["claim_scope"]
         assert "/v1/stations/retrograde-periods route is not admitted" in (
+            contract["exclusions"][0]
+        )
+
+
+def test_r3d_void_of_course_surfaces_have_a_bounded_replay_contract() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_surface = {
+        surface_id: contract
+        for contract in contracts["contracts"]
+        for surface_id in contract["surface_ids"]
+    }
+
+    assert R3D_VOID_OF_COURSE_SURFACES <= set(by_surface)
+    for surface_id in R3D_VOID_OF_COURSE_SURFACES:
+        contract = by_surface[surface_id]
+        assert set(contract["evidence_classes"]) == {
+            "invariant",
+            "regression",
+            "release",
+        }
+        assert len(contract["pytest_targets"]) == 3
+        assert contract["minimum_tests"] == 13
+        assert "controlled geometry" in contract["claim_scope"]
+        assert "not an independent void-of-course almanac residual" in (
             contract["exclusions"][0]
         )
 

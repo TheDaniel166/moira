@@ -4950,8 +4950,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 5,
-        "unresolved": 61
+        "partial": 9,
+        "unresolved": 57
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7295,6 +7295,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_r3d_void_of_course_truth_evidence.py",
         "tests/server/test_server_dorotheus_rooted_context_routes.py",
         "tests/server/test_server_phenomena_routes.py",
         "tests/test_api_reference_validation.py",
@@ -7793,7 +7794,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "816da4c9ccac5f5661dccbd9e743e7cbf21d03b445ec809e9e758123b2612857",
+  "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7827,8 +7828,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 56,
-      "unresolved": 1171
+      "partial": 60,
+      "unresolved": 1167
     }
   }
 }

@@ -58,13 +58,25 @@ def voc_scan_windows(planetary_reader):
 
 _EXPECTED_PUBLIC = frozenset({
     "LastAspect",
+    "LastAspectTruth",
     "MoonConnection",
+    "VoidOfCoursePolicyTruth",
+    "VoidOfCourseRangeResult",
+    "VoidOfCourseRangeTruth",
+    "VoidOfCourseReductionTruth",
+    "VoidOfCourseStateResult",
     "VoidOfCourseWindow",
+    "VoidOfCourseWindowTruth",
+    "VoidOfCourseWindowWithTruth",
     "void_of_course_window",
+    "void_of_course_window_with_truth",
     "is_void_of_course",
+    "void_of_course_state_with_truth",
     "next_moon_connection",
     "next_void_of_course",
+    "next_void_of_course_with_truth",
     "void_periods_in_range",
+    "void_periods_in_range_with_truth",
 })
 
 _EXPECTED_INTERNAL = frozenset({

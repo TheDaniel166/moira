@@ -76,7 +76,13 @@ from moira.stations import (
     StationSearchTruth,
     StationStateTruth,
 )
-from moira.void_of_course import LastAspect, VoidOfCourseWindow
+from moira.void_of_course import (
+    LastAspect,
+    VoidOfCourseRangeTruth,
+    VoidOfCourseWindow,
+    VoidOfCourseWindowTruth,
+    VoidOfCourseWindowWithTruth,
+)
 
 from ..models.phenomena import (
     HeliacalPhasisKindResponse,
@@ -154,7 +160,9 @@ from ..models.phenomena import (
     StationStateTruthResponse,
     TwilightTimesResponse,
     VisibilityAssessmentCompactResponse,
+    VoidOfCourseRangeTruthResponse,
     VoidOfCourseWindowResponse,
+    VoidOfCourseWindowTruthResponse,
 )
 
 
@@ -213,21 +221,46 @@ def serialize_last_aspect(last_aspect: LastAspect) -> LastAspectResponse:
     )
 
 
-def serialize_void_of_course_window(window: VoidOfCourseWindow) -> VoidOfCourseWindowResponse:
+def serialize_void_of_course_window_truth(
+    truth: VoidOfCourseWindowTruth,
+) -> VoidOfCourseWindowTruthResponse:
+    return VoidOfCourseWindowTruthResponse.model_validate(asdict(truth))
+
+
+def serialize_void_of_course_range_truth(
+    truth: VoidOfCourseRangeTruth,
+) -> VoidOfCourseRangeTruthResponse:
+    return VoidOfCourseRangeTruthResponse.model_validate(asdict(truth))
+
+
+def serialize_void_of_course_window(
+    window: VoidOfCourseWindow | VoidOfCourseWindowWithTruth,
+) -> VoidOfCourseWindowResponse:
+    computation_truth = (
+        window.truth if isinstance(window, VoidOfCourseWindowWithTruth) else None
+    )
+    legacy_window = (
+        window.window if isinstance(window, VoidOfCourseWindowWithTruth) else window
+    )
     return VoidOfCourseWindowResponse(
-        moon_sign=window.moon_sign,
-        moon_sign_next=window.moon_sign_next,
-        jd_voc_start=window.jd_voc_start,
-        voc_start_datetime_utc=datetime_from_jd(window.jd_voc_start).isoformat(),
-        jd_voc_end=window.jd_voc_end,
-        voc_end_datetime_utc=datetime_from_jd(window.jd_voc_end).isoformat(),
+        moon_sign=legacy_window.moon_sign,
+        moon_sign_next=legacy_window.moon_sign_next,
+        jd_voc_start=legacy_window.jd_voc_start,
+        voc_start_datetime_utc=datetime_from_jd(legacy_window.jd_voc_start).isoformat(),
+        jd_voc_end=legacy_window.jd_voc_end,
+        voc_end_datetime_utc=datetime_from_jd(legacy_window.jd_voc_end).isoformat(),
         last_aspect=(
-            serialize_last_aspect(window.last_aspect)
-            if window.last_aspect is not None
+            serialize_last_aspect(legacy_window.last_aspect)
+            if legacy_window.last_aspect is not None
             else None
         ),
-        duration_hours=window.duration_hours,
-        is_long=window.is_long,
+        duration_hours=legacy_window.duration_hours,
+        is_long=legacy_window.is_long,
+        computation_truth=(
+            serialize_void_of_course_window_truth(computation_truth)
+            if computation_truth is not None
+            else None
+        ),
     )
 
 

@@ -60,8 +60,12 @@ from moira.stations import (
 from moira.void_of_course import (
     is_void_of_course,
     next_void_of_course,
+    next_void_of_course_with_truth,
     void_of_course_window,
+    void_of_course_window_with_truth,
+    void_of_course_state_with_truth,
     void_periods_in_range,
+    void_periods_in_range_with_truth,
 )
 
 from ..models.phenomena import (
@@ -467,9 +471,27 @@ def compute_void_of_course_window(engine: Moira, request: VoidOfCourseRequest):
     )
 
 
+def compute_void_of_course_window_with_truth(engine: Moira, request: VoidOfCourseRequest):
+    _require_finite(request.jd_ut, "jd_ut")
+    return void_of_course_window_with_truth(
+        request.jd_ut,
+        reader=getattr(engine, "_reader", None),
+        modern=request.modern,
+    )
+
+
 def compute_void_of_course_state(engine: Moira, request: VoidOfCourseRequest) -> bool:
     _require_finite(request.jd_ut, "jd_ut")
     return is_void_of_course(
+        request.jd_ut,
+        reader=getattr(engine, "_reader", None),
+        modern=request.modern,
+    )
+
+
+def compute_void_of_course_state_with_truth(engine: Moira, request: VoidOfCourseRequest):
+    _require_finite(request.jd_ut, "jd_ut")
+    return void_of_course_state_with_truth(
         request.jd_ut,
         reader=getattr(engine, "_reader", None),
         modern=request.modern,
@@ -485,9 +507,28 @@ def compute_next_void_of_course(engine: Moira, request: VoidOfCourseRequest):
     )
 
 
+def compute_next_void_of_course_with_truth(engine: Moira, request: VoidOfCourseRequest):
+    _require_finite(request.jd_ut, "jd_ut")
+    return next_void_of_course_with_truth(
+        request.jd_ut,
+        reader=getattr(engine, "_reader", None),
+        modern=request.modern,
+    )
+
+
 def compute_void_periods(engine: Moira, request: VoidOfCourseRangeRequest):
     _validate_jd_window(request.jd_start, request.jd_end)
     return void_periods_in_range(
+        request.jd_start,
+        request.jd_end,
+        reader=getattr(engine, "_reader", None),
+        modern=request.modern,
+    )
+
+
+def compute_void_periods_with_truth(engine: Moira, request: VoidOfCourseRangeRequest):
+    _validate_jd_window(request.jd_start, request.jd_end)
+    return void_periods_in_range_with_truth(
         request.jd_start,
         request.jd_end,
         reader=getattr(engine, "_reader", None),

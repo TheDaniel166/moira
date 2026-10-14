@@ -199,6 +199,83 @@ class LastAspectResponse(_StrictModel):
     datetime_utc: str
 
 
+class VoidOfCourseReductionTruthResponse(_StrictModel):
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    delta_t_retarget_mode: str
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    reader_type: str
+    kernel_identity: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    observer_center: str
+    source_vector_frame: str
+    result_frame: str
+    zodiac: str
+    position_mode: str
+    light_time_applied: bool
+    annual_aberration_applied: bool
+    gravitational_deflection_applied: bool
+    precession_applied: bool
+    nutation_applied: bool
+    topocentric_applied: bool
+
+
+class VoidOfCoursePolicyTruthResponse(_StrictModel):
+    requested_modern: bool
+    effective_mode: str
+    aspect_bodies: list[str]
+    directional_aspect_targets_deg: list[float]
+    aspect_names: list[str]
+    exactness_rule: str
+    voc_start_rule: str
+    voc_end_rule: str
+    active_state_rule: str
+
+
+class LastAspectTruthResponse(_StrictModel):
+    body: str
+    aspect_name: str
+    target_angle_deg: float
+    jd_exact_ut1: float
+    moon_longitude_deg: float
+    body_longitude_deg: float
+    signed_target_residual_deg: float
+
+
+class VoidOfCourseWindowTruthResponse(_StrictModel):
+    request_kind: str
+    request_jd_ut1: float
+    search_start_jd_ut1: float
+    search_end_jd_ut1: float
+    sign_entry_jd_ut1: float
+    sign_exit_jd_ut1: float
+    aspect_perfection_count: int
+    no_aspect_reason: str | None
+    last_aspect_witness: LastAspectTruthResponse | None
+    policy: VoidOfCoursePolicyTruthResponse
+    reduction_at_request: VoidOfCourseReductionTruthResponse
+    scan_step_days: float
+    maximum_sign_transit_days: float
+    refinement_method: str
+    refinement_tolerance_days: float
+    refinement_max_iterations: int
+
+
+class VoidOfCourseRangeTruthResponse(_StrictModel):
+    search_start_jd_ut1: float
+    search_end_jd_ut1: float
+    requested_modern: bool
+    result_count: int
+    selection_rule: str
+    deduplication_rule: str
+    source_identity_at_search_start: VoidOfCourseReductionTruthResponse
+
+
 class VoidOfCourseWindowResponse(_StrictModel):
     moon_sign: str
     moon_sign_next: str
@@ -209,16 +286,19 @@ class VoidOfCourseWindowResponse(_StrictModel):
     last_aspect: LastAspectResponse | None = None
     duration_hours: float
     is_long: bool
+    computation_truth: VoidOfCourseWindowTruthResponse | None = None
 
 
 class VoidOfCourseRangeResponse(_StrictModel):
     windows: list[VoidOfCourseWindowResponse]
+    computation_truth: VoidOfCourseRangeTruthResponse
 
 
 class VoidOfCourseStateResponse(_StrictModel):
     jd_ut: float
     modern: bool
     is_void_of_course: bool
+    computation_truth: VoidOfCourseWindowTruthResponse
 
 
 class RiseSetPolicyRequest(_StrictModel):

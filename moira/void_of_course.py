@@ -49,6 +49,7 @@ Public surface / exports:
     is_void_of_course()       — True/False at a given JD
     next_void_of_course()     — next VOC window starting after a given JD
     void_periods_in_range()   — all VOC windows in a date range
+    *_with_truth()            — additive calculation-truth variants used by REST
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ARCHITECTURE FREEZE
@@ -164,11 +165,10 @@ RULE-11  void_periods_in_range returns chronological list
     All windows returned by void_periods_in_range are sorted by
     jd_voc_start and their jd_voc_end falls within the search range.
 
-RULE-12  Public surface sealed
-    moira.__all__ and moira.void_of_course.__all__ expose exactly
-    {LastAspect, MoonConnection, VoidOfCourseWindow, void_of_course_window,
-     is_void_of_course, next_moon_connection, next_void_of_course,
-     void_periods_in_range}.
+RULE-12  Public module surface sealed
+    moira.void_of_course.__all__ exposes the legacy vessels and functions plus
+    the additive VOC truth vessels and *_with_truth entrypoints declared in
+    this module.  The package facade retains its historical legacy exports.
     No internal name (_TRADITIONAL_BODIES, _SCAN_STEP, _bisect_aspect,
     etc.) appears in either __all__.
 
@@ -183,6 +183,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from ._ephemeris_time import _bind_ephemeris_time
 from .asteroids import asteroid_at
 from .comets import comet_at
 from .small_body_identity import resolve_small_body_identity
@@ -194,11 +195,23 @@ __all__ = [
     "LastAspect",
     "MoonConnection",
     "VoidOfCourseWindow",
+    "VoidOfCourseReductionTruth",
+    "VoidOfCoursePolicyTruth",
+    "LastAspectTruth",
+    "VoidOfCourseWindowTruth",
+    "VoidOfCourseWindowWithTruth",
+    "VoidOfCourseRangeTruth",
+    "VoidOfCourseRangeResult",
+    "VoidOfCourseStateResult",
     "void_of_course_window",
+    "void_of_course_window_with_truth",
     "is_void_of_course",
+    "void_of_course_state_with_truth",
     "next_moon_connection",
     "next_void_of_course",
+    "next_void_of_course_with_truth",
     "void_periods_in_range",
+    "void_periods_in_range_with_truth",
 ]
 
 
@@ -247,6 +260,8 @@ _SCAN_STEP: float = 0.25
 # 30 iterations provides a 2× safety margin with negligible cost.
 _BISECT_ITER: int = 30
 _BISECT_TOL: float = 1e-5
+
+VOID_OF_COURSE_DEFAULT_NEXT_HORIZON_DAYS: float = 60.0
 
 
 # ---------------------------------------------------------------------------
@@ -351,6 +366,136 @@ class VoidOfCourseWindow:
             f"end=JD{self.jd_voc_end:.4f}, "
             f"{self.duration_hours:.1f}h, last={asp})"
         )
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseReductionTruth:
+    """Clock, ephemeris, frame, and correction identity for one VOC request."""
+
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    delta_t_seconds: float
+    delta_t_source_product: str
+    delta_t_retarget_mode: str
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    reader_type: str
+    kernel_identity: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    observer_center: str = "geocenter"
+    source_vector_frame: str = "ICRF_barycentric"
+    result_frame: str = "true_ecliptic_and_equinox_of_date"
+    zodiac: str = "tropical"
+    position_mode: str = "apparent"
+    light_time_applied: bool = True
+    annual_aberration_applied: bool = True
+    gravitational_deflection_applied: bool = True
+    precession_applied: bool = True
+    nutation_applied: bool = True
+    topocentric_applied: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCoursePolicyTruth:
+    """The explicit traditional or modern doctrine applied to one request."""
+
+    requested_modern: bool
+    effective_mode: str
+    aspect_bodies: tuple[str, ...]
+    directional_aspect_targets_deg: tuple[float, ...]
+    aspect_names: tuple[str, ...]
+    exactness_rule: str = "exact_perfection_not_orb_entry"
+    voc_start_rule: str = "last_exact_major_aspect_else_sign_entry"
+    voc_end_rule: str = "next_tropical_sign_ingress"
+    active_state_rule: str = "jd_voc_start_inclusive_through_jd_voc_end_inclusive"
+
+
+@dataclass(frozen=True, slots=True)
+class LastAspectTruth:
+    """Numerical residual for the exact aspect that starts a VOC window."""
+
+    body: str
+    aspect_name: str
+    target_angle_deg: float
+    jd_exact_ut1: float
+    moon_longitude_deg: float
+    body_longitude_deg: float
+    signed_target_residual_deg: float
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseWindowTruth:
+    """Sign boundaries, policy, numerical witness, and source identity."""
+
+    request_kind: str
+    request_jd_ut1: float
+    search_start_jd_ut1: float
+    search_end_jd_ut1: float
+    sign_entry_jd_ut1: float
+    sign_exit_jd_ut1: float
+    aspect_perfection_count: int
+    no_aspect_reason: str | None
+    last_aspect_witness: LastAspectTruth | None
+    policy: VoidOfCoursePolicyTruth
+    reduction_at_request: VoidOfCourseReductionTruth
+    scan_step_days: float = _SCAN_STEP
+    maximum_sign_transit_days: float = _MAX_SIGN_TRANSIT_DAYS
+    refinement_method: str = "bisection_on_signed_angular_residual"
+    refinement_tolerance_days: float = _BISECT_TOL
+    refinement_max_iterations: int = _BISECT_ITER
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseWindowWithTruth:
+    """Legacy VOC window paired with the calculation truth that produced it."""
+
+    window: VoidOfCourseWindow
+    truth: VoidOfCourseWindowTruth
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseRangeTruth:
+    """Bounded range-search policy and outcome."""
+
+    search_start_jd_ut1: float
+    search_end_jd_ut1: float
+    requested_modern: bool
+    result_count: int
+    selection_rule: str
+    deduplication_rule: str
+    source_identity_at_search_start: VoidOfCourseReductionTruth
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseRangeResult:
+    """Range results with per-window and range-level truth."""
+
+    windows: tuple[VoidOfCourseWindowWithTruth, ...]
+    truth: VoidOfCourseRangeTruth
+
+
+@dataclass(frozen=True, slots=True)
+class VoidOfCourseStateResult:
+    """Boolean VOC state paired with its sign-bounded derivation."""
+
+    is_void_of_course: bool
+    truth: VoidOfCourseWindowTruth
+
+
+@dataclass(frozen=True, slots=True)
+class _VoidWindowWitness:
+    """Private complete sign-window computation before public projection."""
+
+    sign_name: str
+    next_sign_name: str
+    sign_entry_jd_ut1: float
+    sign_exit_jd_ut1: float
+    voc_start_jd_ut1: float
+    last_aspect: LastAspect | None
+    perfections: tuple[LastAspect, ...]
+    duration_hours: float
 
 
 class VoidOfCourseEngine:
@@ -811,32 +956,25 @@ def _build_voc_window(
         4. The last perfection = VOC start.
            If none, the Moon entered its current sign already VOC → VOC start = jd_sign_entry.
     """
-    moon_sign_name, moon_sign_next, jd_voc_start, jd_sign_exit, last_asp, duration_hours = (
-        _build_body_void_window_data(Body.MOON, jd_ref, reader, modern)
-    )
+    witness = _build_body_void_window_witness(Body.MOON, jd_ref, reader, modern)
 
     return VoidOfCourseWindow(
-        moon_sign=moon_sign_name,
-        moon_sign_next=moon_sign_next,
-        jd_voc_start=jd_voc_start,
-        jd_voc_end=jd_sign_exit,
-        last_aspect=last_asp,
-        duration_hours=duration_hours,
+        moon_sign=witness.sign_name,
+        moon_sign_next=witness.next_sign_name,
+        jd_voc_start=witness.voc_start_jd_ut1,
+        jd_voc_end=witness.sign_exit_jd_ut1,
+        last_aspect=witness.last_aspect,
+        duration_hours=witness.duration_hours,
     )
 
 
-def _build_body_void_window_data(
+def _build_body_void_window_witness(
     moving_body: str,
     jd_ref: float,
     reader: SpkReader,
     modern: bool,
-) -> tuple[str, str, float, float, LastAspect | None, float]:
-    """
-    Build the generic sign-window data for a moving body.
-
-    Returns:
-        sign_name, next_sign_name, jd_voc_start, jd_voc_end, last_aspect, duration_hours
-    """
+) -> _VoidWindowWitness:
+    """Build the complete sign-bounded witness for a moving body."""
     bodies = _MODERN_BODIES if modern else _TRADITIONAL_BODIES
 
     jd_sign_entry = _body_last_sign_ingress(moving_body, jd_ref, reader)
@@ -861,7 +999,133 @@ def _build_body_void_window_data(
         jd_voc_start = jd_sign_entry
 
     duration_hours = (jd_sign_exit - jd_voc_start) * 24.0
-    return sign_name, next_sign_name, jd_voc_start, jd_sign_exit, last_aspect, duration_hours
+    return _VoidWindowWitness(
+        sign_name=sign_name,
+        next_sign_name=next_sign_name,
+        sign_entry_jd_ut1=jd_sign_entry,
+        sign_exit_jd_ut1=jd_sign_exit,
+        voc_start_jd_ut1=jd_voc_start,
+        last_aspect=last_aspect,
+        perfections=tuple(perfections),
+        duration_hours=duration_hours,
+    )
+
+
+def _build_body_void_window_data(
+    moving_body: str,
+    jd_ref: float,
+    reader: SpkReader,
+    modern: bool,
+) -> tuple[str, str, float, float, LastAspect | None, float]:
+    """Return the historical tuple projection used by batch consumers."""
+    witness = _build_body_void_window_witness(moving_body, jd_ref, reader, modern)
+    return (
+        witness.sign_name,
+        witness.next_sign_name,
+        witness.voc_start_jd_ut1,
+        witness.sign_exit_jd_ut1,
+        witness.last_aspect,
+        witness.duration_hours,
+    )
+
+
+def _voc_reduction_truth(
+    jd_ut1: float,
+    reader: SpkReader,
+) -> VoidOfCourseReductionTruth:
+    bound = _bind_ephemeris_time(jd_ut1, reader)
+    identity = bound.identity
+    return VoidOfCourseReductionTruth(
+        jd_ut1=bound.jd_ut1,
+        jd_tt=bound.epoch_tt,
+        jd_tdb=bound.epoch_tdb,
+        delta_t_seconds=bound.delta_t_seconds,
+        delta_t_source_product=bound.raw_delta_t.source_product,
+        delta_t_retarget_mode=bound.raw_delta_t.retarget_mode,
+        delta_t_correction_seconds=bound.delta_t_correction_seconds,
+        tdb_minus_tt_seconds=bound.tdb_minus_tt_seconds,
+        reader_type=type(reader).__name__,
+        kernel_identity=identity.summary_label,
+        planetary_ephemeris=identity.planetary_ephemeris,
+        lunar_ephemeris=identity.lunar_ephemeris,
+    )
+
+
+def _voc_policy_truth(modern: bool) -> VoidOfCoursePolicyTruth:
+    bodies = _MODERN_BODIES if modern else _TRADITIONAL_BODIES
+    return VoidOfCoursePolicyTruth(
+        requested_modern=modern,
+        effective_mode="modern" if modern else "traditional",
+        aspect_bodies=bodies,
+        directional_aspect_targets_deg=_ASPECT_TARGETS,
+        aspect_names=tuple(dict.fromkeys(_ASPECT_NAMES.values())),
+    )
+
+
+def _last_aspect_truth(
+    aspect: LastAspect,
+    reader: SpkReader,
+) -> LastAspectTruth:
+    moon_longitude = _moon_longitude(aspect.jd_exact, reader)
+    body_longitude = _planet_longitude(aspect.body, aspect.jd_exact, reader)
+    return LastAspectTruth(
+        body=aspect.body,
+        aspect_name=aspect.aspect_name,
+        target_angle_deg=aspect.angle,
+        jd_exact_ut1=aspect.jd_exact,
+        moon_longitude_deg=moon_longitude,
+        body_longitude_deg=body_longitude,
+        signed_target_residual_deg=_aspect_signal(
+            moon_longitude,
+            body_longitude,
+            aspect.angle,
+        ),
+    )
+
+
+def _window_with_truth(
+    jd_ref: float,
+    reader: SpkReader,
+    modern: bool,
+    *,
+    request_kind: str,
+    request_jd_ut1: float,
+    search_start_jd_ut1: float,
+    search_end_jd_ut1: float,
+) -> VoidOfCourseWindowWithTruth:
+    witness = _build_body_void_window_witness(Body.MOON, jd_ref, reader, modern)
+    window = VoidOfCourseWindow(
+        moon_sign=witness.sign_name,
+        moon_sign_next=witness.next_sign_name,
+        jd_voc_start=witness.voc_start_jd_ut1,
+        jd_voc_end=witness.sign_exit_jd_ut1,
+        last_aspect=witness.last_aspect,
+        duration_hours=witness.duration_hours,
+    )
+    return VoidOfCourseWindowWithTruth(
+        window=window,
+        truth=VoidOfCourseWindowTruth(
+            request_kind=request_kind,
+            request_jd_ut1=request_jd_ut1,
+            search_start_jd_ut1=search_start_jd_ut1,
+            search_end_jd_ut1=search_end_jd_ut1,
+            sign_entry_jd_ut1=witness.sign_entry_jd_ut1,
+            sign_exit_jd_ut1=witness.sign_exit_jd_ut1,
+            aspect_perfection_count=len(witness.perfections),
+            no_aspect_reason=(
+                None
+                if witness.perfections
+                else "no_exact_major_aspect_in_current_sign"
+            ),
+            last_aspect_witness=(
+                _last_aspect_truth(witness.last_aspect, reader)
+                if witness.last_aspect is not None
+                else None
+            ),
+            policy=_voc_policy_truth(modern),
+            reduction_at_request=_voc_reduction_truth(request_jd_ut1, reader),
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -933,6 +1197,26 @@ def void_of_course_window(
     return _build_voc_window(jd, reader, modern)
 
 
+def void_of_course_window_with_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    modern: bool = False,
+) -> VoidOfCourseWindowWithTruth:
+    """Return the legacy current-sign VOC window with its calculation truth."""
+    if not math.isfinite(jd):
+        raise ValueError("jd must be finite")
+    resolved_reader = get_reader() if reader is None else reader
+    return _window_with_truth(
+        jd,
+        resolved_reader,
+        modern,
+        request_kind="current_sign_window",
+        request_jd_ut1=jd,
+        search_start_jd_ut1=jd,
+        search_end_jd_ut1=jd,
+    )
+
+
 def is_void_of_course(
     jd: float,
     reader: SpkReader | None = None,
@@ -953,11 +1237,26 @@ def is_void_of_course(
     return window.jd_voc_start <= jd <= window.jd_voc_end
 
 
+def void_of_course_state_with_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    modern: bool = False,
+) -> VoidOfCourseStateResult:
+    """Return the VOC state and the window whose inclusive bounds decide it."""
+    result = void_of_course_window_with_truth(jd, reader=reader, modern=modern)
+    return VoidOfCourseStateResult(
+        is_void_of_course=(
+            result.window.jd_voc_start <= jd <= result.window.jd_voc_end
+        ),
+        truth=result.truth,
+    )
+
+
 def next_void_of_course(
     jd: float,
     reader: SpkReader | None = None,
     modern: bool = False,
-    max_days: float = 60.0,
+    max_days: float = VOID_OF_COURSE_DEFAULT_NEXT_HORIZON_DAYS,
 ) -> VoidOfCourseWindow | None:
     """
     Find the next Void of Course window that starts strictly after jd.
@@ -990,6 +1289,39 @@ def next_void_of_course(
             return window
         # Advance to the next sign
         jd_cursor = _moon_next_sign_ingress(jd_in_sign, reader)
+
+    return None
+
+
+def next_void_of_course_with_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    modern: bool = False,
+    max_days: float = VOID_OF_COURSE_DEFAULT_NEXT_HORIZON_DAYS,
+) -> VoidOfCourseWindowWithTruth | None:
+    """Return the first strictly future VOC window with bounded-search truth."""
+    if not math.isfinite(jd):
+        raise ValueError("jd must be finite")
+    if not math.isfinite(max_days) or max_days <= 0.0:
+        raise ValueError("max_days must be finite and greater than zero")
+    resolved_reader = get_reader() if reader is None else reader
+    jd_limit = jd + max_days
+    jd_cursor = _moon_next_sign_ingress(jd, resolved_reader)
+
+    while jd_cursor < jd_limit:
+        jd_in_sign = jd_cursor + _BISECT_TOL * 10
+        result = _window_with_truth(
+            jd_in_sign,
+            resolved_reader,
+            modern,
+            request_kind="next_strictly_future_window",
+            request_jd_ut1=jd,
+            search_start_jd_ut1=jd,
+            search_end_jd_ut1=jd_limit,
+        )
+        if result.window.jd_voc_start > jd:
+            return result
+        jd_cursor = _moon_next_sign_ingress(jd_in_sign, resolved_reader)
 
     return None
 
@@ -1043,3 +1375,69 @@ def void_periods_in_range(
 
     results.sort(key=lambda w: w.jd_voc_start)
     return results
+
+
+def void_periods_in_range_with_truth(
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+    modern: bool = False,
+) -> VoidOfCourseRangeResult:
+    """Return all legacy range windows plus per-window and range-search truth."""
+    if not math.isfinite(jd_start) or not math.isfinite(jd_end):
+        raise ValueError("range Julian dates must be finite")
+    if jd_end < jd_start:
+        raise ValueError("jd_end must be greater than or equal to jd_start")
+    resolved_reader = get_reader() if reader is None else reader
+    results: list[VoidOfCourseWindowWithTruth] = []
+    seen_starts: set[float] = set()
+
+    result = _window_with_truth(
+        jd_start,
+        resolved_reader,
+        modern,
+        request_kind="range_member",
+        request_jd_ut1=jd_start,
+        search_start_jd_ut1=jd_start,
+        search_end_jd_ut1=jd_end,
+    )
+    if result.window.jd_voc_end >= jd_start:
+        results.append(result)
+        seen_starts.add(round(result.window.jd_voc_start, 6))
+
+    jd_cursor = _moon_next_sign_ingress(jd_start, resolved_reader)
+    while jd_cursor < jd_end:
+        jd_in_sign = jd_cursor + _BISECT_TOL * 10
+        result = _window_with_truth(
+            jd_in_sign,
+            resolved_reader,
+            modern,
+            request_kind="range_member",
+            request_jd_ut1=jd_start,
+            search_start_jd_ut1=jd_start,
+            search_end_jd_ut1=jd_end,
+        )
+        key = round(result.window.jd_voc_start, 6)
+        if key not in seen_starts and result.window.jd_voc_start < jd_end:
+            results.append(result)
+            seen_starts.add(key)
+        jd_cursor = _moon_next_sign_ingress(jd_in_sign, resolved_reader)
+
+    results.sort(key=lambda item: item.window.jd_voc_start)
+    return VoidOfCourseRangeResult(
+        windows=tuple(results),
+        truth=VoidOfCourseRangeTruth(
+            search_start_jd_ut1=jd_start,
+            search_end_jd_ut1=jd_end,
+            requested_modern=modern,
+            result_count=len(results),
+            selection_rule=(
+                "include_start_sign_window_then_windows_starting_before_range_end"
+            ),
+            deduplication_rule="rounded_voc_start_to_six_decimal_places",
+            source_identity_at_search_start=_voc_reduction_truth(
+                jd_start,
+                resolved_reader,
+            ),
+        ),
+    )

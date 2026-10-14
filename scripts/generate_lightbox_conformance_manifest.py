@@ -475,6 +475,42 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "void_of_course_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The void-of-course routes expose their exact-perfection doctrine, sign-bounded search, numerical witness, frame/correction policy, clock, and serving ephemeris identity without replacing legacy results.",
+        "stage_label": "Void-of-course sign-window truth",
+        "operation": "Find the Moon's tropical sign boundaries, scan the selected traditional or modern body set for exact directional Ptolemaic aspect perfections, select the last perfection or explicit no-aspect sign-entry fallback, and return the governing truth beside the legacy window or state.",
+        "semantic_values": {
+            "inputs": [
+                "Typed Julian-date window, state, next, or range bounds plus the explicit modern-mode boolean are exposed by OpenAPI."
+            ],
+            "units": [
+                "Julian dates and solver tolerances use days; duration uses hours; aspect targets, longitudes, and exactness residuals use degrees."
+            ],
+            "reference_frame": [
+                "The response names ICRF barycentric source vectors and apparent geocentric true ecliptic and equinox of date longitudes in the tropical zodiac."
+            ],
+            "origin": [
+                "The observer center is Earth's geocenter; topocentric displacement is explicitly false."
+            ],
+            "timescale": [
+                "Request and event Julian dates are UT1, and the request receipt exposes the bound TT and TDB epochs."
+            ],
+            "corrections": [
+                "Light time, annual aberration, gravitational deflection, precession, and nutation are explicit; topocentric correction is excluded."
+            ],
+            "policies_defaults": [
+                "Traditional mode is the default six-body policy; modern mode adds Uranus, Neptune, and Pluto. The eight directional Ptolemaic targets, exact-perfection rather than orb-entry rule, sign-ingress boundary, scan cadence, and bisection tolerance are returned."
+            ],
+            "fallbacks": [
+                "When a sign contains no exact admitted aspect, the returned reason identifies the sign-entry fallback. Next search uses the existing fixed horizon, and range membership and deduplication rules are explicit; no doctrine mode is inferred."
+            ],
+            "refusal_behavior": [
+                "Typed service validation rejects non-finite dates and reversed ranges; truth-bearing engine entrypoints also reject non-positive or non-finite next-search horizons."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
     "relationship_overlay_vessel": {
         "inspectability_mode": "embedded_result",
         "summary": "Each directional overlay embeds labels, node policy, point count, target house-system identity, effective system, and fallback state.",

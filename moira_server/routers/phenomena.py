@@ -119,7 +119,9 @@ from ..serializers.phenomena import (
     serialize_station_search_truth,
     serialize_station_state_truth,
     serialize_twilight_times,
+    serialize_void_of_course_range_truth,
     serialize_void_of_course_window,
+    serialize_void_of_course_window_truth,
 )
 from ..services.phenomena import (
     compute_all_lunar_occultations,
@@ -148,7 +150,7 @@ from ..services.phenomena import (
     compute_previous_lunar_eclipse,
     compute_previous_solar_eclipse,
     compute_next_visible_solar_eclipse,
-    compute_next_void_of_course,
+    compute_next_void_of_course_with_truth,
     compute_parans,
     compute_parans_with_inventory,
     compute_paran_field_analysis,
@@ -168,9 +170,9 @@ from ..services.phenomena import (
     compute_stations_with_truth,
     compute_solar_eclipse_path,
     compute_twilight_times,
-    compute_void_of_course_state,
-    compute_void_of_course_window,
-    compute_void_periods,
+    compute_void_of_course_state_with_truth,
+    compute_void_of_course_window_with_truth,
+    compute_void_periods_with_truth,
     get_paran_star_canon,
 )
 
@@ -275,7 +277,9 @@ def void_of_course_window_route(
     request: VoidOfCourseRequest,
     engine: Moira = Depends(get_engine),
 ) -> VoidOfCourseWindowResponse:
-    return serialize_void_of_course_window(compute_void_of_course_window(engine, request))
+    return serialize_void_of_course_window(
+        compute_void_of_course_window_with_truth(engine, request)
+    )
 
 
 @router.post("/void-of-course/next", response_model=VoidOfCourseWindowResponse)
@@ -283,7 +287,9 @@ def next_void_of_course_route(
     request: VoidOfCourseRequest,
     engine: Moira = Depends(get_engine),
 ) -> VoidOfCourseWindowResponse:
-    return serialize_void_of_course_window(compute_next_void_of_course(engine, request))
+    return serialize_void_of_course_window(
+        compute_next_void_of_course_with_truth(engine, request)
+    )
 
 
 @router.post("/void-of-course/is-active", response_model=VoidOfCourseStateResponse)
@@ -291,10 +297,12 @@ def void_of_course_state_route(
     request: VoidOfCourseRequest,
     engine: Moira = Depends(get_engine),
 ) -> VoidOfCourseStateResponse:
+    result = compute_void_of_course_state_with_truth(engine, request)
     return VoidOfCourseStateResponse(
         jd_ut=request.jd_ut,
         modern=request.modern,
-        is_void_of_course=compute_void_of_course_state(engine, request),
+        is_void_of_course=result.is_void_of_course,
+        computation_truth=serialize_void_of_course_window_truth(result.truth),
     )
 
 
@@ -303,11 +311,13 @@ def void_of_course_range_route(
     request: VoidOfCourseRangeRequest,
     engine: Moira = Depends(get_engine),
 ) -> VoidOfCourseRangeResponse:
+    result = compute_void_periods_with_truth(engine, request)
     return VoidOfCourseRangeResponse(
         windows=[
             serialize_void_of_course_window(window)
-            for window in compute_void_periods(engine, request)
-        ]
+            for window in result.windows
+        ],
+        computation_truth=serialize_void_of_course_range_truth(result.truth),
     )
 
 

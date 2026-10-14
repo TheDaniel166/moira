@@ -10219,7 +10219,7 @@
       "family_id": "void-of-course",
       "family_label": "Void Of Course",
       "ownership": {
-        "source_line": 936,
+        "source_line": 1220,
         "source_path": "moira/void_of_course.py"
       },
       "priority": "P2",
@@ -12477,7 +12477,7 @@
       "family_id": "void-of-course",
       "family_label": "Void Of Course",
       "ownership": {
-        "source_line": 871,
+        "source_line": 1135,
         "source_path": "moira/void_of_course.py"
       },
       "priority": "P2",
@@ -12652,7 +12652,7 @@
       "family_id": "void-of-course",
       "family_label": "Void Of Course",
       "ownership": {
-        "source_line": 956,
+        "source_line": 1255,
         "source_path": "moira/void_of_course.py"
       },
       "priority": "P2",
@@ -18726,7 +18726,7 @@
       "family_id": "void-of-course",
       "family_label": "Void Of Course",
       "ownership": {
-        "source_line": 909,
+        "source_line": 1173,
         "source_path": "moira/void_of_course.py"
       },
       "priority": "P2",
@@ -18776,7 +18776,7 @@
       "family_id": "void-of-course",
       "family_label": "Void Of Course",
       "ownership": {
-        "source_line": 997,
+        "source_line": 1329,
         "source_path": "moira/void_of_course.py"
       },
       "priority": "P2",
@@ -21573,7 +21573,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 399,
+        "source_line": 409,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21598,7 +21598,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 378,
+        "source_line": 388,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -21625,7 +21625,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 346,
+        "source_line": 356,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -21652,7 +21652,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 362,
+        "source_line": 372,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21677,7 +21677,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 386,
+        "source_line": 396,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21702,7 +21702,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 453,
+        "source_line": 463,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21727,7 +21727,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 420,
+        "source_line": 430,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21752,7 +21752,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 440,
+        "source_line": 450,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21777,7 +21777,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 370,
+        "source_line": 380,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -21804,7 +21804,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 338,
+        "source_line": 348,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -21831,7 +21831,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 412,
+        "source_line": 422,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -21856,7 +21856,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 354,
+        "source_line": 364,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23402,7 +23402,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 734,
+        "source_line": 744,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23427,7 +23427,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 716,
+        "source_line": 726,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -23454,7 +23454,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 725,
+        "source_line": 735,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25753,7 +25753,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 533,
+        "source_line": 543,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25778,7 +25778,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 473,
+        "source_line": 483,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25803,7 +25803,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 493,
+        "source_line": 503,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25828,7 +25828,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 553,
+        "source_line": 563,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25853,7 +25853,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 573,
+        "source_line": 583,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25878,7 +25878,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 627,
+        "source_line": 637,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25903,7 +25903,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 650,
+        "source_line": 660,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25928,7 +25928,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 513,
+        "source_line": 523,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25953,7 +25953,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 590,
+        "source_line": 600,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25978,7 +25978,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 610,
+        "source_line": 620,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26003,7 +26003,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 670,
+        "source_line": 680,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26028,7 +26028,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 696,
+        "source_line": 706,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26735,7 +26735,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 837,
+        "source_line": 847,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26760,7 +26760,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 847,
+        "source_line": 857,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26785,7 +26785,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 857,
+        "source_line": 867,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26810,7 +26810,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 826,
+        "source_line": 836,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26835,7 +26835,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 867,
+        "source_line": 877,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26860,7 +26860,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 777,
+        "source_line": 787,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -26887,7 +26887,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 798,
+        "source_line": 808,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26912,7 +26912,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 743,
+        "source_line": 753,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -26937,7 +26937,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 816,
+        "source_line": 826,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28504,7 +28504,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 314,
+        "source_line": 324,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28529,7 +28529,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 322,
+        "source_line": 332,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28554,7 +28554,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 330,
+        "source_line": 340,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -29144,7 +29144,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 243,
+        "source_line": 245,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -29171,7 +29171,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 197,
+        "source_line": 199,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -29198,7 +29198,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 260,
+        "source_line": 262,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29223,7 +29223,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 185,
+        "source_line": 187,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -30906,7 +30906,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 289,
+        "source_line": 295,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -30933,7 +30933,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 281,
+        "source_line": 285,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -30958,7 +30958,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 301,
+        "source_line": 309,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -30985,7 +30985,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 273,
+        "source_line": 275,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -31135,7 +31135,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "816da4c9ccac5f5661dccbd9e743e7cbf21d03b445ec809e9e758123b2612857",
+  "inventory_fingerprint_sha256": "b826cf635d90eaeeb21a96a464e470d0c293300683805e3e0ed603d84f689c33",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31156,7 +31156,7 @@
         "files_scanned": 962,
         "product": "website",
         "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
-        "source_revision": "84f6a63fa4e790a6050071a9b8f00a53ea71617a"
+        "source_revision": "407b700a6250e69bc361fe15e77e47054a37983d"
       },
       {
         "files_scanned": 583,

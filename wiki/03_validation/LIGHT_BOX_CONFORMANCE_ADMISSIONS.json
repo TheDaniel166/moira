@@ -281,6 +281,26 @@
       "surface_id": "rest:POST:/v1/stations/is-retrograde",
       "contract_kind": "station_motion_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/void-of-course/window",
+      "contract_kind": "void_of_course_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/void-of-course/next",
+      "contract_kind": "void_of_course_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/void-of-course/is-active",
+      "contract_kind": "void_of_course_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/void-of-course/range",
+      "contract_kind": "void_of_course_vessel",
+      "evidence_classes": ["invariant", "regression"]
     }
   ]
 }
