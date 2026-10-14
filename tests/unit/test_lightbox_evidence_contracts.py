@@ -378,6 +378,32 @@ def test_r2a_core_rest_and_r2c_sidereal_and_r3a_chart_shape_contracts_are_bounde
     assert "ten-planet canonical body set" in chart_shape["claim_scope"]
 
 
+def test_r4_phenomena_horizon_visibility_and_locational_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-PLANETARY-HOURS-TRUTH": (4, 5),
+        "LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH": (6, 5),
+        "LB-VISIBILITY-ASSESSMENT-TRUTH": (1, 4),
+        "LB-ASTROCARTOGRAPHY-REST-TRUTH": (6, 6),
+        "LB-LOCATIONAL-PROJECTION-REST-TRUTH": (4, 5),
+        "LB-PARAN-SEARCH-PACKET-REST-TRUTH": (2, 4),
+        "LB-ECLIPSE-HELIACAL-TWILIGHT-REST-TRUTH": (6, 8),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
+
 def test_contract_hash_is_order_stable() -> None:
     replay = _module()
     assert replay._sha({"b": 2, "a": 1}) == replay._sha({"a": 1, "b": 2})

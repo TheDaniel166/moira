@@ -420,8 +420,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 19
+        "partial": 6,
+        "unresolved": 13
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
@@ -1812,8 +1812,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 5
+        "partial": 1,
+        "unresolved": 4
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
@@ -1863,8 +1863,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 10
+        "partial": 2,
+        "unresolved": 8
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
@@ -3222,8 +3222,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 4
+        "partial": 1,
+        "unresolved": 3
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
@@ -4944,13 +4944,13 @@
     },
     {
       "assessment_status": "major_gap",
-      "canonical_surface_count": 66,
+      "canonical_surface_count": 69,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 9,
-        "unresolved": 57
+        "partial": 22,
+        "unresolved": 47
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5010,10 +5010,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "finding": "Prioritize paired receipt or generated-documentation coverage; do not infer evidence from implementation depth alone.",
-      "missing_documentation_surface_ids": [
-        "python:moira.facade:heliocentric_conjunctions_in_range",
-        "python:moira.facade:next_heliocentric_conjunction"
-      ],
+      "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [
         "python:moira.facade:moon_phases_in_range",
         "python:moira.facade:next_moon_phase"
@@ -5044,7 +5041,7 @@
         "rest:POST:/v1/void-of-course/range",
         "rest:POST:/v1/void-of-course/window"
       ],
-      "python_surface_count": 14,
+      "python_surface_count": 17,
       "rest_surface_count": 52,
       "review_stages": [
         "stage_3_product_use",
@@ -5084,13 +5081,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 3,
+      "canonical_surface_count": 4,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 3
+        "partial": 4,
+        "unresolved": 0
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md",
@@ -5126,10 +5123,11 @@
         "rest:POST:/v1/planetary-hours/hour-at",
         "rest:POST:/v1/planetary-hours/schedule"
       ],
-      "python_surface_count": 1,
+      "python_surface_count": 2,
       "rest_surface_count": 2,
       "review_stages": [
-        "stage_3_product_use"
+        "stage_3_product_use",
+        "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
@@ -7216,8 +7214,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 7
+        "partial": 1,
+        "unresolved": 6
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
@@ -7378,8 +7376,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 1
+        "partial": 1,
+        "unresolved": 0
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7787,7 +7785,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "19894c0af4962153dc6a8a1063c1257a3a367ca6feb5faf57c73deb84d2a8bdb",
+  "inventory_fingerprint_sha256": "0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7799,12 +7797,12 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1227,
+    "canonical_surface_count": 1231,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 120
+      "stage_5_remaining_tail": 121
     },
     "families_by_status": {
       "major_gap": 11,
@@ -7813,7 +7811,7 @@
       "strong_exemplar": 4,
       "unresolved": 0
     },
-    "families_with_missing_documentation": 26,
+    "families_with_missing_documentation": 25,
     "families_with_missing_tests": 7,
     "family_count": 143,
     "production_user_surface_count": 171,
@@ -7821,8 +7819,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 81,
-      "unresolved": 1146
+      "partial": 110,
+      "unresolved": 1121
     }
   }
 }

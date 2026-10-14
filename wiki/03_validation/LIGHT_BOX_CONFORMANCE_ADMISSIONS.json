@@ -406,6 +406,152 @@
       "surface_id": "rest:POST:/v1/sidereal/convert",
       "contract_kind": "sidereal_utility_vessel",
       "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:planetary_hours",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:planetary_hours_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:resonance",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:resonance_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:conjunctions_in_range",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:conjunctions_in_range_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range_with_truth",
+      "contract_kind": "source_truth_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/planetary-hours/schedule",
+      "contract_kind": "planetary_hours_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/planetary-hours/hour-at",
+      "contract_kind": "planetary_hours_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/visibility/assessment",
+      "contract_kind": "visibility_assessment_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/lines",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/chart/lines",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/chart/subjects/lines",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/chart/subjects/subplanetary",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/dynamic/transits",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrocartography/fixed-stars",
+      "contract_kind": "astrocartography_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/gauquelin/chart/sectors",
+      "contract_kind": "locational_projection_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/geodetic/chart/equivalents",
+      "contract_kind": "locational_projection_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/geodetic/chart/location-chart",
+      "contract_kind": "locational_projection_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/local-space/chart/positions",
+      "contract_kind": "locational_projection_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/parans/natal",
+      "contract_kind": "paran_search_and_packet_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/website/parans/packet",
+      "contract_kind": "paran_search_and_packet_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/eclipses/solar/next",
+      "contract_kind": "eclipse_circumstances_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/eclipses/lunar/next",
+      "contract_kind": "eclipse_circumstances_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/eclipses/solar/local-visible",
+      "contract_kind": "eclipse_circumstances_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/eclipses/lunar/local",
+      "contract_kind": "eclipse_circumstances_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/heliacal/planet",
+      "contract_kind": "heliacal_and_twilight_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/rise-set/twilight",
+      "contract_kind": "heliacal_and_twilight_vessel",
+      "evidence_classes": ["invariant", "regression"]
     }
   ]
 }
+

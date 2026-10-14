@@ -944,7 +944,14 @@ from .transits import (
     transit_condition_network_profile,
 )
 from .stations import StationEvent, find_stations, next_station, is_retrograde, retrograde_periods
-from .planetary_hours import PlanetaryHour, PlanetaryHoursDay, planetary_hours
+from .planetary_hours import (
+    PlanetaryHour,
+    PlanetaryHoursComputationTruth,
+    PlanetaryHoursDay,
+    PlanetaryHoursWithTruth,
+    planetary_hours,
+    planetary_hours_with_truth,
+)
 from .planetary_hours import PlanetaryHour as PlanetaryHourClassical
 from .stars import (
     StarPositionTruth,
@@ -1361,13 +1368,31 @@ from .chart_shape import (
     classify_chart_shape_with_truth,
 )
 from .phenomena import (
-    PhenomenonEvent, OrbitalResonance, greatest_elongation, perihelion, aphelion,
-    next_moon_phase, moon_phases_in_range,
-    next_conjunction, conjunctions_in_range, resonance,
-    PlanetPhenomena, planet_phenomena_at,
-    next_heliocentric_conjunction, heliocentric_conjunctions_in_range,
-    ProximityEvent, proximity_events_in_range, solar_condition_events_in_range,
+    ConjunctionRangeComputationTruth,
+    ConjunctionRangeWithTruth,
+    OrbitalResonance,
+    OrbitalResonanceComputationTruth,
+    OrbitalResonanceWithTruth,
+    PhenomenonEvent,
+    PlanetPhenomena,
+    ProximityEvent,
+    aphelion,
+    conjunctions_in_range,
+    conjunctions_in_range_with_truth,
+    greatest_elongation,
+    heliocentric_conjunctions_in_range,
+    heliocentric_conjunctions_in_range_with_truth,
+    moon_phases_in_range,
+    next_conjunction,
+    next_heliocentric_conjunction,
+    next_moon_phase,
+    perihelion,
+    planet_phenomena_at,
+    proximity_events_in_range,
+    resonance,
+    resonance_with_truth,
     solar_condition_at,
+    solar_condition_events_in_range,
 )
 from .manazil import (
     AstronomicalMansion, ElectionalMansion, MansionPosition, MansionTradition, AL_BIRUNI_MANSIONS, AGRIPPA_MANSIONS, MANSION_SPAN,
@@ -2651,7 +2676,9 @@ __all__ = [
     # Stations
     "StationEvent", "find_stations", "next_station", "is_retrograde", "retrograde_periods",
     # Planetary Hours
-    "PlanetaryHour", "PlanetaryHourClassical", "PlanetaryHoursDay", "planetary_hours",
+    "PlanetaryHour", "PlanetaryHourClassical", "PlanetaryHoursDay",
+    "PlanetaryHoursComputationTruth", "PlanetaryHoursWithTruth",
+    "planetary_hours", "planetary_hours_with_truth",
     # Heliocentric positions
     "HeliocentricData", "heliocentric_planet_at", "all_heliocentric_at",
     # Planetocentric positions
@@ -2969,11 +2996,16 @@ __all__ = [
     "ChartShapeDetectorTruth", "ChartShapeComputationTruth", "ChartShapeWithTruth",
     "classify_chart_shape", "classify_chart_shape_with_truth",
     # Planetary phenomena
-    "PhenomenonEvent", "OrbitalResonance", "greatest_elongation", "perihelion", "aphelion",
+    "PhenomenonEvent", "OrbitalResonance",
+    "OrbitalResonanceComputationTruth", "OrbitalResonanceWithTruth",
+    "ConjunctionRangeComputationTruth", "ConjunctionRangeWithTruth",
+    "greatest_elongation", "perihelion", "aphelion",
     "next_moon_phase", "moon_phases_in_range",
-    "next_conjunction", "conjunctions_in_range", "resonance",
+    "next_conjunction", "conjunctions_in_range", "conjunctions_in_range_with_truth",
+    "resonance", "resonance_with_truth",
     "PlanetPhenomena", "planet_phenomena_at",
-    "next_heliocentric_conjunction", "heliocentric_conjunctions_in_range",
+    "next_heliocentric_conjunction",
+    "heliocentric_conjunctions_in_range", "heliocentric_conjunctions_in_range_with_truth",
     "ProximityEvent", "proximity_events_in_range", "solar_condition_events_in_range",
     "solar_condition_at",
 

@@ -2157,11 +2157,19 @@ See Section 4 (Ephemeris & Positions).
 ### Planetary Hours (moira.planetary_hours)
 
 ```python
-from moira.facade import planetary_hours, PlanetaryHoursDay, PlanetaryHour
+from moira.facade import (
+    planetary_hours,
+    planetary_hours_with_truth,
+    PlanetaryHoursDay,
+    PlanetaryHoursWithTruth,
+    PlanetaryHoursComputationTruth,
+    PlanetaryHour,
+)
 
 day = planetary_hours(jd_ut, latitude, longitude, reader=None)
-# PlanetaryHoursDay(date, day_hours: list[PlanetaryHour], night_hours: list[PlanetaryHour])
-# PlanetaryHour(ruler, start_jd, end_jd)
+with_truth = planetary_hours_with_truth(jd_ut, latitude, longitude, reader=None)
+# PlanetaryHoursDay(date_jd, latitude, longitude, sunrise_jd, sunset_jd, hours: tuple[PlanetaryHour, ...])
+# PlanetaryHour(hour_number, ruler, jd_start, jd_end, is_daytime)
 ```
 
 > **Note:** This is `moira.planetary_hours.PlanetaryHour`. A distinct vessel, `moira.cycles.PlanetaryHour`, is documented in Section 10 with additional fields (`hour_number`, `is_day_hour`). The two classes serve different engines and must not be conflated.
@@ -5242,8 +5250,13 @@ out-of-coverage orientation resources raise the corresponding named
 | `next_moon_phase(phase_name, jd_start)` | `→ float` | Next named Moon phase (JD UT); keys from `MOON_PHASE_ANGLES` |
 | `moon_phases_in_range(jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All eight Moon phases in a date range |
 | `next_conjunction(body1, body2, jd_start)` | `→ PhenomenonEvent` | Next geocentric conjunction |
-| `conjunctions_in_range(body1, body2, jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All conjunctions in a date range |
+| `conjunctions_in_range(body1, body2, jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All geocentric conjunctions in a date range |
+| `conjunctions_in_range_with_truth(body1, body2, jd_start, jd_end)` | `→ ConjunctionRangeWithTruth` | Geocentric conjunctions in a date range paired with solver and frame truth |
+| `next_heliocentric_conjunction(body1, body2, jd_start)` | `→ PhenomenonEvent` | Next heliocentric conjunction |
+| `heliocentric_conjunctions_in_range(body1, body2, jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All heliocentric conjunctions in a date range |
+| `heliocentric_conjunctions_in_range_with_truth(body1, body2, jd_start, jd_end)` | `→ ConjunctionRangeWithTruth` | Heliocentric conjunctions in a date range paired with solver and frame truth |
 | `resonance(body1, body2)` | `→ OrbitalResonance` | Best harmonic ratio P/Q between sidereal periods |
+| `resonance_with_truth(body1, body2)` | `→ OrbitalResonanceWithTruth` | Best harmonic ratio P/Q paired with sidereal period and approximation truth |
 | `planet_phenomena_at(body, jd_ut)` | `→ PlanetPhenomena` | Full phenomena snapshot at epoch |
 
 `MOON_PHASE_ANGLES` — dict mapping phase name → target elongation:

@@ -53,7 +53,10 @@ from .spk_reader import get_reader, SpkReader
 __all__ = [
     "PhenomenonEvent",
     "OrbitalResonance",
+    "OrbitalResonanceComputationTruth",
+    "OrbitalResonanceWithTruth",
     "resonance",
+    "resonance_with_truth",
     "MOON_PHASE_ANGLES",
     "greatest_elongation",
     "perihelion",
@@ -61,12 +64,16 @@ __all__ = [
     "next_moon_phase",
     "moon_phases_in_range",
     "next_conjunction",
+    "ConjunctionRangeComputationTruth",
+    "ConjunctionRangeWithTruth",
     "conjunctions_in_range",
+    "conjunctions_in_range_with_truth",
     "PlanetPhenomena",
     "planet_phenomena_at",
     "find_closest_resonance",
     "next_heliocentric_conjunction",
     "heliocentric_conjunctions_in_range",
+    "heliocentric_conjunctions_in_range_with_truth",
     "ProximityEvent",
     "proximity_events_in_range",
     "solar_condition_events_in_range",
@@ -785,30 +792,64 @@ def find_closest_resonance(ratio: float, max_denominator: int = 50) -> tuple[int
     return bounded.numerator, bounded.denominator
 
 
-def resonance(body1: str, body2: str) -> OrbitalResonance:
-    """
-    Computes the orbital resonance and synodic cycle of two bodies.
-    """
+@dataclass(frozen=True, slots=True)
+class OrbitalResonanceComputationTruth:
+    """Explicit period-source and rational-approximation truth for orbital resonance."""
+
+    body1: str
+    body2: str
+    body1_sidereal_period_years: float
+    body2_sidereal_period_years: float
+    period_source: str = "Body.SIDEREAL_PERIODS"
+    max_denominator: int = 50
+    approximation_method: str = "fractions.Fraction.limit_denominator"
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitalResonanceWithTruth:
+    """Orbital resonance vessel paired with explicit period and approximation truth."""
+
+    result: OrbitalResonance
+    truth: OrbitalResonanceComputationTruth
+
+
+def resonance_with_truth(body1: str, body2: str) -> OrbitalResonanceWithTruth:
+    """Compute the orbital resonance and synodic cycle of two bodies with explicit computation truth."""
     p1 = Body.SIDEREAL_PERIODS.get(body1)
     p2 = Body.SIDEREAL_PERIODS.get(body2)
-    
+
     if p1 is None or p2 is None:
         raise ValueError(f"Resonance requires mean orbital periods for {body1} and {body2}")
     if body1 == body2 or p1 == p2:
         raise ValueError("Resonance requires bodies with distinct orbital periods")
-        
+
     ratio = p1 / p2
     synodic = 1.0 / abs((1.0 / p1) - (1.0 / p2))
     num, den = find_closest_resonance(ratio)
     harmonic = f"{num}:{den}"
-    
-    return OrbitalResonance(
+    result = OrbitalResonance(
         ratio=ratio,
         synodic_period=synodic,
         harmonic_ratio=harmonic,
         near_integer=(num, den),
-        error=abs(ratio - (num/den))
+        error=abs(ratio - (num / den)),
     )
+    return OrbitalResonanceWithTruth(
+        result=result,
+        truth=OrbitalResonanceComputationTruth(
+            body1=body1,
+            body2=body2,
+            body1_sidereal_period_years=p1,
+            body2_sidereal_period_years=p2,
+        ),
+    )
+
+
+def resonance(body1: str, body2: str) -> OrbitalResonance:
+    """
+    Computes the orbital resonance and synodic cycle of two bodies.
+    """
+    return resonance_with_truth(body1, body2).result
 
 
 # ---------------------------------------------------------------------------
@@ -973,6 +1014,34 @@ def next_conjunction(
     return None
 
 
+@dataclass(frozen=True, slots=True)
+class ConjunctionRangeComputationTruth:
+    """Explicit solver and reference-frame truth for range-bounded conjunction searches."""
+
+    body1: str
+    body2: str
+    jd_start_ut1: float
+    jd_end_ut1: float
+    reference_frame: str
+    center: str
+    coarse_step_days: float
+    coarse_pass: str
+    refinement_pass: str
+    bisection_tolerance_days: float
+    bisection_max_iterations: int
+    polish_neighborhood_steps: int
+    post_event_advance_days: float
+    result_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class ConjunctionRangeWithTruth:
+    """Range-bounded conjunction events paired with explicit solver truth."""
+
+    events: tuple[PhenomenonEvent, ...]
+    truth: ConjunctionRangeComputationTruth
+
+
 def conjunctions_in_range(
     body1: str,
     body2: str,
@@ -992,6 +1061,44 @@ def conjunctions_in_range(
         else:
             break
     return conjs
+
+
+def conjunctions_in_range_with_truth(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+) -> ConjunctionRangeWithTruth:
+    """Find all geocentric conjunctions between two bodies in a range with explicit solver truth."""
+    events = tuple(
+        conjunctions_in_range(
+            body1,
+            body2,
+            jd_start,
+            jd_end,
+            reader=reader,
+        )
+    )
+    return ConjunctionRangeWithTruth(
+        events=events,
+        truth=ConjunctionRangeComputationTruth(
+            body1=body1,
+            body2=body2,
+            jd_start_ut1=float(jd_start),
+            jd_end_ut1=float(jd_end),
+            reference_frame="apparent_geocentric_true_ecliptic_of_date",
+            center="geocenter",
+            coarse_step_days=3.0,
+            coarse_pass="geometric_ecliptic_longitude",
+            refinement_pass="apparent_ecliptic_longitude_bisection_and_subsecond_polish",
+            bisection_tolerance_days=1e-8,
+            bisection_max_iterations=96,
+            polish_neighborhood_steps=64,
+            post_event_advance_days=2.0,
+            result_count=len(events),
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1175,6 +1282,44 @@ def heliocentric_conjunctions_in_range(
         conjs.append(ev)
         jd = ev.jd_ut + 2.0
     return conjs
+
+
+def heliocentric_conjunctions_in_range_with_truth(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+) -> ConjunctionRangeWithTruth:
+    """Find all heliocentric conjunctions between two bodies in a range with explicit solver truth."""
+    events = tuple(
+        heliocentric_conjunctions_in_range(
+            body1,
+            body2,
+            jd_start,
+            jd_end,
+            reader=reader,
+        )
+    )
+    return ConjunctionRangeWithTruth(
+        events=events,
+        truth=ConjunctionRangeComputationTruth(
+            body1=body1,
+            body2=body2,
+            jd_start_ut1=float(jd_start),
+            jd_end_ut1=float(jd_end),
+            reference_frame="heliocentric_true_ecliptic_of_date",
+            center="Sun",
+            coarse_step_days=3.0,
+            coarse_pass="heliocentric_ecliptic_longitude",
+            refinement_pass="heliocentric_ecliptic_longitude_bisection_and_subsecond_polish",
+            bisection_tolerance_days=1e-8,
+            bisection_max_iterations=96,
+            polish_neighborhood_steps=64,
+            post_event_advance_days=2.0,
+            result_count=len(events),
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------

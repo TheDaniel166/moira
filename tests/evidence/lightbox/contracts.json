@@ -415,6 +415,161 @@
       "exclusions": [
         "The replay verifies adherence to Moira's documented Marc Edmund Jones detector order and functioning-orb policy; it does not claim that borderline chart shapes have a single universal astrological classification outside that declared policy."
       ]
+    },
+    {
+      "claim_id": "LB-PLANETARY-HOURS-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:planetary_hours",
+        "python:moira.facade:planetary_hours_with_truth",
+        "rest:POST:/v1/planetary-hours/schedule",
+        "rest:POST:/v1/planetary-hours/hour-at"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_planetary_hours_api.py::test_planetary_hours_with_truth_matches_planetary_hours",
+        "tests/unit/test_planetary_hours_api.py::test_planetary_hours_real_solar_window_invariants_common_locations",
+        "tests/unit/test_planetary_hours_api.py::test_real_sydney_monday_begins_with_moon_and_polar_day_fails",
+        "tests/server/test_server_planetary_hours_routes.py::test_schedule_route_serializes_twenty_four_ordered_hours",
+        "tests/server/test_server_planetary_hours_routes.py::test_hour_at_route_returns_containing_hour_and_window"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The sunrise-based planetary-hours Python and REST surfaces resolve the enclosing local solar day from UT1, partition daytime and nighttime into twelve contiguous Chaldean hours each, expose explicit sunrise/sunset/next-sunrise window and weekday/day-ruler truth, distinguish moira.planetary_hours.PlanetaryHour from moira.cycles.PlanetaryHour, and fail closed on polar day/night windows lacking sunrise or sunset crossings.",
+      "exclusions": [
+        "The replay covers sunrise-to-next-sunrise unequal Chaldean hours in moira.planetary_hours and /v1/planetary-hours/*; it does not cover civil-midnight or equal-hour schemes or the distinct moira.cycles.planetary_hours_for_day profile."
+      ]
+    },
+    {
+      "claim_id": "LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:resonance",
+        "python:moira.facade:resonance_with_truth",
+        "python:moira.facade:conjunctions_in_range",
+        "python:moira.facade:conjunctions_in_range_with_truth",
+        "python:moira.facade:heliocentric_conjunctions_in_range",
+        "python:moira.facade:heliocentric_conjunctions_in_range_with_truth"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_phenomena_regressions.py::test_bounded_resonance_is_the_closest_allowed_fraction",
+        "tests/unit/test_phenomena_regressions.py::test_resonance_rejects_identical_bodies",
+        "tests/unit/test_phenomena_regressions.py::test_resonance_with_truth_exposes_period_and_approximation_truth",
+        "tests/unit/test_phenomena_regressions.py::test_conjunction_range_rejects_solver_result_beyond_end",
+        "tests/unit/test_phenomena_regressions.py::test_conjunction_ranges_with_truth_expose_solver_and_frame_truth"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The orbital resonance and geocentric/heliocentric range-conjunction Python surfaces preserve legacy return values while exposing mean sidereal period and bounded rational approximation truth (limit_denominator=50) alongside explicit geocentric apparent vs heliocentric true-ecliptic reference-frame, center, coarse-step, 96-iteration bisection, and 64-step sub-second root-polish truth.",
+      "exclusions": [
+        "The replay verifies bounded period-table resonance and ecliptic-longitude conjunction root-finding; it does not claim dynamical mean-motion libration capture or topocentric conjunction times."
+      ]
+    },
+    {
+      "claim_id": "LB-VISIBILITY-ASSESSMENT-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/visibility/assessment"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_visibility_routes.py::test_visibility_assessment_route_matches_engine_selected_truth",
+        "tests/server/test_server_visibility_routes.py::test_visibility_routes_reject_unsupported_target_with_validation_envelope",
+        "tests/server/test_server_visibility_routes.py::test_visibility_openapi_exposes_bounded_physical_contracts",
+        "tests/server/test_server_visibility_routes.py::test_visibility_assessment_route_accepts_explicit_physical_policy"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/visibility/assessment route preserves engine parity with visibility_tonight / visibility_assessment while exposing the selected criterion family, effective limiting magnitude, true and apparent altitudes, solar elongation, and optional physical atmospheric-extinction, directional twilight-brightness, and Crumey point-source threshold breakdowns.",
+      "exclusions": [
+        "The replay is a transport-and-engine parity and schema-contract check; it does not claim site-specific meteorological transparency or empirical naked-eye field campaign calibration beyond the declared Schaefer/Kasten-Young/Crumey models."
+      ]
+    },
+    {
+      "claim_id": "LB-ASTROCARTOGRAPHY-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/astrocartography/lines",
+        "rest:POST:/v1/astrocartography/chart/lines",
+        "rest:POST:/v1/astrocartography/chart/subjects/lines",
+        "rest:POST:/v1/astrocartography/chart/subjects/subplanetary",
+        "rest:POST:/v1/astrocartography/dynamic/transits",
+        "rest:POST:/v1/astrocartography/fixed-stars"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_astrocartography_routes.py::test_astrocartography_direct_lines_route_matches_engine_truth",
+        "tests/server/test_server_astrocartography_routes.py::test_astrocartography_chart_lines_route_matches_service_truth",
+        "tests/server/test_server_astrocartography_routes.py::test_astrocartography_subject_chart_lines_accepts_mixed_subjects",
+        "tests/server/test_server_astrocartography_routes.py::test_astrocartography_subject_chart_subplanetary_accepts_mixed_subjects",
+        "tests/server/test_server_forecasting_routes.py::test_fixed_star_route_exposes_identity_geometry_and_receipts",
+        "tests/server/test_server_forecasting_routes.py::test_dynamic_astrocartography_route_returns_geometry_only_snapshots"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "The six P0 astrocartography REST routes preserve engine and service parity across direct RA/Dec, chart-backed planetary/minor-body/mixed-subject, fixed-star registry, and dynamic transit projections while embedding typed subject provenance or computation_truth (coordinate_source, NAIF IDs, canonical names, position_source, observer origin, stage_sequence, and geometry-only interpretation rules).",
+      "exclusions": [
+        "The replay covers geometric MC/IC/ASC/DSC and Zenith/Nadir projection and provenance; it does not admit progressed or directed dynamic astrocartography modes or interpretive location scoring."
+      ]
+    },
+    {
+      "claim_id": "LB-LOCATIONAL-PROJECTION-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/gauquelin/chart/sectors",
+        "rest:POST:/v1/geodetic/chart/equivalents",
+        "rest:POST:/v1/geodetic/chart/location-chart",
+        "rest:POST:/v1/local-space/chart/positions"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_gauquelin_routes.py::test_gauquelin_chart_sectors_route_matches_service_truth",
+        "tests/server/test_server_gauquelin_routes.py::test_gauquelin_direct_sector_preserves_circumpolar_status",
+        "tests/server/test_server_geodetic_routes.py::test_geodetic_chart_location_chart_route_matches_service_truth",
+        "tests/server/test_server_geodetic_routes.py::test_geodetic_chart_equivalents_route_matches_service_truth",
+        "tests/server/test_server_local_space_routes.py::test_local_space_chart_positions_route_matches_service_truth"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The chart-backed Gauquelin sector, geodetic location-chart and equivalents, and local-space position routes preserve service parity while embedding typed provenance (coordinate_source, observer origin, zodiac/ayanamsa policy, requested/returned bodies, and stage_sequence) and explicit circumpolar/never-rises horizon status handling.",
+      "exclusions": [
+        "The replay is a bounded transport-and-service parity proof for the four P0 chart-backed locational projection routes and does not make statistical claims about the historical Gauquelin effect."
+      ]
+    },
+    {
+      "claim_id": "LB-PARAN-SEARCH-PACKET-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/parans/natal",
+        "rest:POST:/v1/website/parans/packet"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_paran_packet.py::test_paran_packet_composes_kernel_free_star_truth",
+        "tests/server/test_server_paran_packet.py::test_paran_packet_applies_named_policy_and_strict_request_validation",
+        "tests/server/test_server_paran_packet.py::test_paran_packet_reports_heliacal_kernel_prerequisite",
+        "tests/server/test_server_phenomena_routes.py::test_heliacal_and_paran_routes_match_engine_truth"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The natal paran search and website paran packet routes preserve engine parity while exposing per-crossing source_method and altitude_policy, linear orb strength models, effective policy presets, optional four-circle crossing inventories with explicit circumpolar status/absence reasons, star-canon tiers, and kernel-prerequisite warnings.",
+      "exclusions": [
+        "The replay verifies paran search and website packet composition under declared horizon/meridian policies; it does not cover paran latitude-field contour or hierarchy routes (/v1/parans/field/*)."
+      ]
+    },
+    {
+      "claim_id": "LB-ECLIPSE-HELIACAL-TWILIGHT-REST-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/eclipses/solar/next",
+        "rest:POST:/v1/eclipses/lunar/next",
+        "rest:POST:/v1/eclipses/solar/local-visible",
+        "rest:POST:/v1/eclipses/lunar/local",
+        "rest:POST:/v1/heliacal/planet",
+        "rest:POST:/v1/rise-set/twilight"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_phenomena_routes.py::test_rise_set_routes_match_engine_truth",
+        "tests/server/test_server_phenomena_routes.py::test_eclipse_routes_match_engine_truth",
+        "tests/server/test_server_heliacal_eclipse_phase_routes.py::test_planet_heliacal_route_serves_standard_kinds",
+        "tests/server/test_server_heliacal_eclipse_phase_routes.py::test_planet_heliacal_route_returns_null_for_inapplicable_kind",
+        "tests/server/test_server_phenomena_routes.py::test_remaining_phase_six_routes_reject_invalid_kinds_and_pairings"
+      ],
+      "minimum_tests": 8,
+      "claim_scope": "The solar/lunar next-eclipse and local-circumstances routes, planetary heliacal event route, and twilight route preserve engine parity while exposing 17-field eclipse geometric/Saros/Metonic data, lunar local mode/source_model/canon_method, solar topocentric separation and overlap, standard Ptolemy/Schoch heliacal event kinds (with explicit null on inapplicable kinds), and solar/civil/nautical/astronomical twilight instants.",
+      "exclusions": [
+        "The replay covers the six P0 eclipse, planetary heliacal, and twilight REST routes; global eclipse contour/path cartography and general visibility event routes are outside this contract."
+      ]
     }
   ]
 }
+

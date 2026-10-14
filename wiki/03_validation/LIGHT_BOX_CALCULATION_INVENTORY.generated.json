@@ -3051,7 +3051,7 @@
       "owner_qualname": "COMET_NAIF",
       "owner_resolution": "facade-import-fallback",
       "public_name": "COMET_NAIF",
-      "source_line": 1003,
+      "source_line": 1010,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:COMET_NAIF",
       "surface_kind": "excluded_value",
@@ -3456,7 +3456,7 @@
       "owner_qualname": "Chart",
       "owner_resolution": "runtime-object",
       "public_name": "Chart",
-      "source_line": 3407,
+      "source_line": 3439,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Chart",
       "surface_kind": "excluded_type",
@@ -4305,6 +4305,46 @@
         "tests/unit/test_dignities_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ConjunctionRangeComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "ConjunctionRangeComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ConjunctionRangeComputationTruth",
+      "source_line": 1017,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:ConjunctionRangeComputationTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:ConjunctionRangeWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "ConjunctionRangeWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "ConjunctionRangeWithTruth",
+      "source_line": 1037,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:ConjunctionRangeWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
     },
     {
       "alias_of": null,
@@ -19303,7 +19343,7 @@
       "owner_qualname": "Moira",
       "owner_resolution": "runtime-object",
       "public_name": "Moira",
-      "source_line": 3512,
+      "source_line": 3544,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:Moira",
       "surface_kind": "excluded_type",
@@ -22291,9 +22331,49 @@
       "owner_qualname": "OrbitalResonance",
       "owner_resolution": "runtime-object",
       "public_name": "OrbitalResonance",
-      "source_line": 175,
+      "source_line": 182,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:OrbitalResonance",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:OrbitalResonanceComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "OrbitalResonanceComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "OrbitalResonanceComputationTruth",
+      "source_line": 795,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:OrbitalResonanceComputationTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:OrbitalResonanceWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "OrbitalResonanceWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "OrbitalResonanceWithTruth",
+      "source_line": 808,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:OrbitalResonanceWithTruth",
       "surface_kind": "excluded_type",
       "test_paths": []
     },
@@ -25742,7 +25822,7 @@
       "owner_qualname": "PhenomenonEvent",
       "owner_resolution": "runtime-object",
       "public_name": "PhenomenonEvent",
-      "source_line": 80,
+      "source_line": 87,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:PhenomenonEvent",
       "surface_kind": "excluded_type",
@@ -26737,7 +26817,7 @@
       "owner_qualname": "PlanetPhenomena",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetPhenomena",
-      "source_line": 1184,
+      "source_line": 1329,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:PlanetPhenomena",
       "surface_kind": "excluded_type",
@@ -27081,7 +27161,7 @@
       "owner_qualname": "PlanetaryHour",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetaryHour",
-      "source_line": 73,
+      "source_line": 74,
       "source_path": "moira/planetary_hours.py",
       "surface_id": "python:moira.facade:PlanetaryHour",
       "surface_kind": "excluded_type",
@@ -27105,9 +27185,30 @@
       "owner_qualname": "PlanetaryHour",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetaryHourClassical",
-      "source_line": 73,
+      "source_line": 74,
       "source_path": "moira/planetary_hours.py",
       "surface_id": "python:moira.facade:PlanetaryHourClassical",
+      "surface_kind": "excluded_type",
+      "test_paths": []
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:PlanetaryHoursComputationTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.planetary_hours",
+      "owner_qualname": "PlanetaryHoursComputationTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "PlanetaryHoursComputationTruth",
+      "source_line": 374,
+      "source_path": "moira/planetary_hours.py",
+      "surface_id": "python:moira.facade:PlanetaryHoursComputationTruth",
       "surface_kind": "excluded_type",
       "test_paths": []
     },
@@ -27131,7 +27232,7 @@
       "owner_qualname": "PlanetaryHoursDay",
       "owner_resolution": "runtime-object",
       "public_name": "PlanetaryHoursDay",
-      "source_line": 158,
+      "source_line": 159,
       "source_path": "moira/planetary_hours.py",
       "surface_id": "python:moira.facade:PlanetaryHoursDay",
       "surface_kind": "excluded_type",
@@ -27162,6 +27263,27 @@
         "tests/test_api_reference_validation.py",
         "tests/unit/test_cycles.py"
       ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:PlanetaryHoursWithTruth",
+      "classification_basis": "non-callable-export",
+      "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
+      "export_kind": "dataclass",
+      "in_lightbox_calculation_scope": false,
+      "owner_module": "moira.planetary_hours",
+      "owner_qualname": "PlanetaryHoursWithTruth",
+      "owner_resolution": "runtime-object",
+      "public_name": "PlanetaryHoursWithTruth",
+      "source_line": 395,
+      "source_path": "moira/planetary_hours.py",
+      "surface_id": "python:moira.facade:PlanetaryHoursWithTruth",
+      "surface_kind": "excluded_type",
+      "test_paths": []
     },
     {
       "alias_of": null,
@@ -28756,7 +28878,7 @@
       "owner_qualname": "ProximityEvent",
       "owner_resolution": "runtime-object",
       "public_name": "ProximityEvent",
-      "source_line": 159,
+      "source_line": 166,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:ProximityEvent",
       "surface_kind": "excluded_type",
@@ -38729,7 +38851,7 @@
       "owner_qualname": "__author__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__author__",
-      "source_line": 3400,
+      "source_line": 3432,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__author__",
       "surface_kind": "excluded_value",
@@ -38760,7 +38882,7 @@
       "owner_qualname": "__version__",
       "owner_resolution": "facade-local-definition",
       "public_name": "__version__",
-      "source_line": 3399,
+      "source_line": 3431,
       "source_path": "moira/facade.py",
       "surface_id": "python:moira.facade:__version__",
       "surface_kind": "excluded_value",
@@ -40093,7 +40215,7 @@
       "owner_qualname": "aphelion",
       "owner_resolution": "runtime-object",
       "public_name": "aphelion",
-      "source_line": 532,
+      "source_line": 539,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:aphelion",
       "surface_kind": "calculation",
@@ -43410,9 +43532,32 @@
       "owner_qualname": "conjunctions_in_range",
       "owner_resolution": "runtime-object",
       "public_name": "conjunctions_in_range",
-      "source_line": 976,
+      "source_line": 1045,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:conjunctions_in_range",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_phenomena_regressions.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:conjunctions_in_range_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "conjunctions_in_range_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "conjunctions_in_range_with_truth",
+      "source_line": 1066,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:conjunctions_in_range_with_truth",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_phenomena_regressions.py"
@@ -48820,7 +48965,7 @@
       "owner_qualname": "greatest_elongation",
       "owner_resolution": "runtime-object",
       "public_name": "greatest_elongation",
-      "source_line": 382,
+      "source_line": 389,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:greatest_elongation",
       "surface_kind": "calculation",
@@ -49321,7 +49466,9 @@
       "canonical_id": "python:moira.facade:heliocentric_conjunctions_in_range",
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
-      "documentation_paths": [],
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
       "exclusion_reason": null,
       "export_kind": "function",
       "in_lightbox_calculation_scope": true,
@@ -49329,9 +49476,32 @@
       "owner_qualname": "heliocentric_conjunctions_in_range",
       "owner_resolution": "runtime-object",
       "public_name": "heliocentric_conjunctions_in_range",
-      "source_line": 1149,
+      "source_line": 1256,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_phenomena_regressions.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:heliocentric_conjunctions_in_range_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "heliocentric_conjunctions_in_range_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "heliocentric_conjunctions_in_range_with_truth",
+      "source_line": 1287,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range_with_truth",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_phenomena_regressions.py"
@@ -52336,7 +52506,7 @@
       "owner_qualname": "moon_phases_in_range",
       "owner_resolution": "runtime-object",
       "public_name": "moon_phases_in_range",
-      "source_line": 716,
+      "source_line": 723,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:moon_phases_in_range",
       "surface_kind": "calculation",
@@ -53134,7 +53304,7 @@
       "owner_qualname": "next_conjunction",
       "owner_resolution": "runtime-object",
       "public_name": "next_conjunction",
-      "source_line": 920,
+      "source_line": 961,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:next_conjunction",
       "surface_kind": "calculation",
@@ -53149,7 +53319,9 @@
       "canonical_id": "python:moira.facade:next_heliocentric_conjunction",
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
-      "documentation_paths": [],
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
       "exclusion_reason": null,
       "export_kind": "function",
       "in_lightbox_calculation_scope": true,
@@ -53157,7 +53329,7 @@
       "owner_qualname": "next_heliocentric_conjunction",
       "owner_resolution": "runtime-object",
       "public_name": "next_heliocentric_conjunction",
-      "source_line": 1100,
+      "source_line": 1207,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:next_heliocentric_conjunction",
       "surface_kind": "calculation",
@@ -53371,7 +53543,7 @@
       "owner_qualname": "next_moon_phase",
       "owner_resolution": "runtime-object",
       "public_name": "next_moon_phase",
-      "source_line": 651,
+      "source_line": 658,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:next_moon_phase",
       "surface_kind": "calculation",
@@ -54878,7 +55050,7 @@
       "owner_qualname": "perihelion",
       "owner_resolution": "runtime-object",
       "public_name": "perihelion",
-      "source_line": 478,
+      "source_line": 485,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:perihelion",
       "surface_kind": "calculation",
@@ -55257,7 +55429,7 @@
       "owner_qualname": "planet_phenomena_at",
       "owner_resolution": "runtime-object",
       "public_name": "planet_phenomena_at",
-      "source_line": 1215,
+      "source_line": 1360,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:planet_phenomena_at",
       "surface_kind": "calculation",
@@ -55544,7 +55716,7 @@
       "owner_qualname": "planetary_hours",
       "owner_resolution": "runtime-object",
       "public_name": "planetary_hours",
-      "source_line": 373,
+      "source_line": 440,
       "source_path": "moira/planetary_hours.py",
       "surface_id": "python:moira.facade:planetary_hours",
       "surface_kind": "calculation",
@@ -55583,6 +55755,29 @@
       "test_paths": [
         "tests/test_api_reference_validation.py",
         "tests/unit/test_cycles.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:planetary_hours_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.planetary_hours",
+      "owner_qualname": "planetary_hours_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "planetary_hours_with_truth",
+      "source_line": 403,
+      "source_path": "moira/planetary_hours.py",
+      "surface_id": "python:moira.facade:planetary_hours_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_planetary_hours_api.py"
       ]
     },
     {
@@ -56230,7 +56425,7 @@
       "owner_qualname": "proximity_events_in_range",
       "owner_resolution": "runtime-object",
       "public_name": "proximity_events_in_range",
-      "source_line": 1324,
+      "source_line": 1469,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:proximity_events_in_range",
       "surface_kind": "calculation",
@@ -56636,7 +56831,7 @@
       "owner_qualname": "resonance",
       "owner_resolution": "runtime-object",
       "public_name": "resonance",
-      "source_line": 788,
+      "source_line": 848,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:resonance",
       "surface_kind": "calculation",
@@ -56670,6 +56865,29 @@
       "surface_kind": "composition_profile",
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "canonical_id": "python:moira.facade:resonance_with_truth",
+      "classification_basis": "conservative-callable-default",
+      "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
+      "documentation_paths": [
+        "wiki/02_standards/API_REFERENCE.md"
+      ],
+      "exclusion_reason": null,
+      "export_kind": "function",
+      "in_lightbox_calculation_scope": true,
+      "owner_module": "moira.phenomena",
+      "owner_qualname": "resonance_with_truth",
+      "owner_resolution": "runtime-object",
+      "public_name": "resonance_with_truth",
+      "source_line": 816,
+      "source_path": "moira/phenomena.py",
+      "surface_id": "python:moira.facade:resonance_with_truth",
+      "surface_kind": "calculation",
+      "test_paths": [
+        "tests/unit/test_phenomena_regressions.py"
       ]
     },
     {
@@ -57548,7 +57766,7 @@
       "owner_qualname": "solar_condition_at",
       "owner_resolution": "runtime-object",
       "public_name": "solar_condition_at",
-      "source_line": 1454,
+      "source_line": 1599,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:solar_condition_at",
       "surface_kind": "calculation",
@@ -57578,7 +57796,7 @@
       "owner_qualname": "solar_condition_events_in_range",
       "owner_resolution": "runtime-object",
       "public_name": "solar_condition_events_in_range",
-      "source_line": 1423,
+      "source_line": 1568,
       "source_path": "moira/phenomena.py",
       "surface_id": "python:moira.facade:solar_condition_events_in_range",
       "surface_kind": "calculation",
@@ -77035,30 +77253,30 @@
   "schema_version": "moira.lightbox-calculation-inventory/v1",
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
-    "python_surface_ids_sha256": "0e7c7157e60ddca132e1dc80b50f52502b31478a439b7c90fea46f52d77617ee",
+    "python_surface_ids_sha256": "5b5f40baa7fed1177e1254c2858e695c5f13cc2b6602609c9ad57db5a06568ba",
     "rest_surface_ids_sha256": "c8fcb2388ea85f38ea0897cc62a1294c121cddf11ffeafb9c5c124aeea667be2"
   },
   "summary": {
     "python_aliases": 2,
     "python_by_export_kind": {
       "class": 29,
-      "dataclass": 1052,
+      "dataclass": 1058,
       "enum": 244,
       "exception": 38,
-      "function": 796,
+      "function": 800,
       "value": 154
     },
     "python_by_surface_kind": {
-      "calculation": 677,
+      "calculation": 681,
       "composition_profile": 81,
-      "excluded_type": 1363,
+      "excluded_type": 1369,
       "excluded_value": 154,
       "reference_query": 26,
       "validation_helper": 12
     },
-    "python_exports": 2313,
-    "python_in_scope": 758,
-    "python_in_scope_without_documentation_mentions": 66,
+    "python_exports": 2323,
+    "python_in_scope": 762,
+    "python_in_scope_without_documentation_mentions": 64,
     "python_in_scope_without_test_mentions": 9,
     "rest_aliases": 3,
     "rest_by_surface_kind": {
@@ -77073,5 +77291,5 @@
     "rest_in_scope_without_test_mentions": 3,
     "rest_operations": 518
   },
-  "surface_fingerprint_sha256": "19894c0af4962153dc6a8a1063c1257a3a367ca6feb5faf57c73deb84d2a8bdb"
+  "surface_fingerprint_sha256": "0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd"
 }

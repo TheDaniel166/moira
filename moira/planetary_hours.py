@@ -12,7 +12,8 @@ geographic coordinate conversion.
 
 Public surface:
     PlanetaryHour, PlanetaryHoursDay,
-    planetary_hours
+    PlanetaryHoursComputationTruth, PlanetaryHoursWithTruth,
+    planetary_hours, planetary_hours_with_truth
 
 Import-time side effects: None
 
@@ -370,6 +371,72 @@ def _planetary_hours_from_utc(
     return _planetary_hours_for_solar_day(solar_day)
 
 
+@dataclass(frozen=True, slots=True)
+class PlanetaryHoursComputationTruth:
+    """Explicit local-solar-day and Chaldean sequence truth for planetary hours."""
+
+    requested_jd_ut1: float
+    latitude_deg: float
+    longitude_deg: float
+    sunrise_jd_ut1: float
+    sunset_jd_ut1: float
+    next_sunrise_jd_ut1: float
+    day_duration_days: float
+    night_duration_days: float
+    day_hour_duration_days: float
+    night_hour_duration_days: float
+    local_mean_solar_weekday_sunday0: int
+    day_ruler: str
+    sequence_basis: str = "chaldean_order"
+    day_window_basis: str = "sunrise_to_next_sunrise"
+    solar_event_source: str = "moira._solar"
+
+
+@dataclass(frozen=True, slots=True)
+class PlanetaryHoursWithTruth:
+    """Complete sunrise-to-sunrise planetary hours day paired with computation truth."""
+
+    result: PlanetaryHoursDay
+    truth: PlanetaryHoursComputationTruth
+
+
+def planetary_hours_with_truth(
+    jd: float,
+    latitude: float,
+    longitude: float,
+    reader: SpkReader | None = None,
+) -> PlanetaryHoursWithTruth:
+    """Calculate all 24 planetary hours for the enclosing sunrise-based local day with explicit computation truth."""
+    solar_day = _local_solar_day_from_ut1(
+        jd,
+        latitude,
+        longitude,
+        reader,
+        bounds_owner="planetary-hours",
+    )
+    day = _planetary_hours_for_solar_day(solar_day)
+    day_duration = solar_day.sunset_jd - solar_day.sunrise_jd
+    night_duration = solar_day.next_sunrise_jd - solar_day.sunset_jd
+    day_ruler = _CHALDEAN[_DAY_RULER_IDX[solar_day.weekday]]
+    return PlanetaryHoursWithTruth(
+        result=day,
+        truth=PlanetaryHoursComputationTruth(
+            requested_jd_ut1=solar_day.jd,
+            latitude_deg=solar_day.latitude,
+            longitude_deg=solar_day.longitude,
+            sunrise_jd_ut1=solar_day.sunrise_jd,
+            sunset_jd_ut1=solar_day.sunset_jd,
+            next_sunrise_jd_ut1=solar_day.next_sunrise_jd,
+            day_duration_days=day_duration,
+            night_duration_days=night_duration,
+            day_hour_duration_days=day_duration / 12.0,
+            night_hour_duration_days=night_duration / 12.0,
+            local_mean_solar_weekday_sunday0=solar_day.weekday,
+            day_ruler=day_ruler,
+        ),
+    )
+
+
 def planetary_hours(
     jd: float,
     latitude: float,
@@ -393,11 +460,10 @@ def planetary_hours(
     reader : SpkReader or None
         Explicit kernel reader, or the active reader when omitted.
     """
-    solar_day = _local_solar_day_from_ut1(
+    return planetary_hours_with_truth(
         jd,
         latitude,
         longitude,
-        reader,
-        bounds_owner="planetary-hours",
-    )
-    return _planetary_hours_for_solar_day(solar_day)
+        reader=reader,
+    ).result
+

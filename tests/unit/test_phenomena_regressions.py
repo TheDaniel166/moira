@@ -211,3 +211,53 @@ def test_solar_condition_event_search_uses_exact_shared_threshold(
         Body.MERCURY, 0.0, 1.0, condition=condition, reader=object(),
     ) == []
     assert captured == [expected_threshold]
+
+
+def test_resonance_with_truth_exposes_period_and_approximation_truth() -> None:
+    from moira.facade import resonance, resonance_with_truth
+
+    direct = resonance(Body.VENUS, Body.EARTH)
+    with_truth = resonance_with_truth(Body.VENUS, Body.EARTH)
+
+    assert with_truth.result == direct
+    assert with_truth.truth.body1 == Body.VENUS
+    assert with_truth.truth.body2 == Body.EARTH
+    assert with_truth.truth.body1_sidereal_period_years == pytest.approx(Body.SIDEREAL_PERIODS[Body.VENUS])
+    assert with_truth.truth.body2_sidereal_period_years == pytest.approx(Body.SIDEREAL_PERIODS[Body.EARTH])
+    assert with_truth.truth.period_source == "Body.SIDEREAL_PERIODS"
+    assert with_truth.truth.max_denominator == 50
+    assert with_truth.truth.approximation_method == "fractions.Fraction.limit_denominator"
+
+
+def test_conjunction_ranges_with_truth_expose_solver_and_frame_truth(reader) -> None:
+    from moira.facade import (
+        conjunctions_in_range,
+        conjunctions_in_range_with_truth,
+        heliocentric_conjunctions_in_range,
+        heliocentric_conjunctions_in_range_with_truth,
+    )
+
+    geo_direct = conjunctions_in_range(Body.SUN, Body.MOON, 2451545.0, 2451580.0, reader=reader)
+    geo_with_truth = conjunctions_in_range_with_truth(
+        Body.SUN, Body.MOON, 2451545.0, 2451580.0, reader=reader
+    )
+    assert list(geo_with_truth.events) == geo_direct
+    assert geo_with_truth.truth.body1 == Body.SUN
+    assert geo_with_truth.truth.body2 == Body.MOON
+    assert geo_with_truth.truth.reference_frame == "apparent_geocentric_true_ecliptic_of_date"
+    assert geo_with_truth.truth.center == "geocenter"
+    assert geo_with_truth.truth.result_count == len(geo_direct) == 1
+
+    helio_direct = heliocentric_conjunctions_in_range(
+        Body.MERCURY, Body.VENUS, 2451545.0, 2451700.0, reader=reader
+    )
+    helio_with_truth = heliocentric_conjunctions_in_range_with_truth(
+        Body.MERCURY, Body.VENUS, 2451545.0, 2451700.0, reader=reader
+    )
+    assert list(helio_with_truth.events) == helio_direct
+    assert helio_with_truth.truth.body1 == Body.MERCURY
+    assert helio_with_truth.truth.body2 == Body.VENUS
+    assert helio_with_truth.truth.reference_frame == "heliocentric_true_ecliptic_of_date"
+    assert helio_with_truth.truth.center == "Sun"
+    assert helio_with_truth.truth.result_count == len(helio_direct) >= 1
+

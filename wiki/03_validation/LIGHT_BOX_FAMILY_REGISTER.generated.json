@@ -1219,7 +1219,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 532,
+        "source_line": 539,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -4001,7 +4001,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 976,
+        "source_line": 1045,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P0",
@@ -4015,6 +4015,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:conjunctions_in_range",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "python owner module moira.phenomena",
+      "canonical_surface_id": "python:moira.facade:conjunctions_in_range_with_truth",
+      "domain_group": "phenomena-and-visibility",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "phenomena",
+      "family_label": "Phenomena",
+      "ownership": {
+        "source_line": 1066,
+        "source_path": "moira/phenomena.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_4_phenomena_relationships",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:conjunctions_in_range_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -8940,7 +8965,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 382,
+        "source_line": 389,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -9392,7 +9417,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1149,
+        "source_line": 1256,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P0",
@@ -9406,6 +9431,31 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "python owner module moira.phenomena",
+      "canonical_surface_id": "python:moira.facade:heliocentric_conjunctions_in_range_with_truth",
+      "domain_group": "phenomena-and-visibility",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "phenomena",
+      "family_label": "Phenomena",
+      "ownership": {
+        "source_line": 1287,
+        "source_path": "moira/phenomena.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_4_phenomena_relationships",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:heliocentric_conjunctions_in_range_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -11602,7 +11652,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 716,
+        "source_line": 723,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -12302,7 +12352,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 920,
+        "source_line": 961,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -12327,7 +12377,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1100,
+        "source_line": 1207,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -12527,7 +12577,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 651,
+        "source_line": 658,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -13677,7 +13727,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 478,
+        "source_line": 485,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -14002,7 +14052,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1215,
+        "source_line": 1360,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -14254,7 +14304,7 @@
       "family_id": "planetary-hours",
       "family_label": "Planetary Hours",
       "ownership": {
-        "source_line": 373,
+        "source_line": 440,
         "source_path": "moira/planetary_hours.py"
       },
       "priority": "P0",
@@ -14293,6 +14343,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:planetary_hours_for_day",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.planetary_hours",
+      "canonical_surface_id": "python:moira.facade:planetary_hours_with_truth",
+      "domain_group": "traditional-western",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "planetary-hours",
+      "family_label": "Planetary Hours",
+      "ownership": {
+        "source_line": 403,
+        "source_path": "moira/planetary_hours.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:planetary_hours_with_truth",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -14906,7 +14981,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1324,
+        "source_line": 1469,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -15308,7 +15383,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 788,
+        "source_line": 848,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P0",
@@ -15348,6 +15423,31 @@
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:resonance_network",
       "surface_kind": "composition_profile",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "python owner module moira.phenomena",
+      "canonical_surface_id": "python:moira.facade:resonance_with_truth",
+      "domain_group": "phenomena-and-visibility",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "phenomena",
+      "family_label": "Phenomena",
+      "ownership": {
+        "source_line": 816,
+        "source_path": "moira/phenomena.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_4_phenomena_relationships",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:resonance_with_truth",
+      "surface_kind": "calculation",
       "transport": "python"
     },
     {
@@ -16110,7 +16210,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1454,
+        "source_line": 1599,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -16135,7 +16235,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 1423,
+        "source_line": 1568,
         "source_path": "moira/phenomena.py"
       },
       "priority": "P2",
@@ -31135,7 +31235,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "19894c0af4962153dc6a8a1063c1257a3a367ca6feb5faf57c73deb84d2a8bdb",
+  "inventory_fingerprint_sha256": "0c47324ca8d910dacbdafb27c38cdcd24e657b186d7e1b77b5267224e0ee34fd",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31178,31 +31278,31 @@
     "canonical_by_domain_group": {
       "astronomy-and-chart-core": 132,
       "locational": 58,
-      "phenomena-and-visibility": 123,
+      "phenomena-and-visibility": 126,
       "predictive-and-time": 163,
       "relationship": 42,
       "specialist-and-compositional": 303,
-      "traditional-western": 128,
+      "traditional-western": 129,
       "vedic-and-electional": 278
     },
     "canonical_by_exposure": {
       "production_user": 171,
       "public_api": 344,
-      "source_only": 712
+      "source_only": 716
     },
     "canonical_by_priority": {
       "P0": 171,
       "P1": 344,
-      "P2": 712
+      "P2": 716
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1227,
+      "reviewed": 1231,
       "seeded": 0
     },
-    "canonical_entries": 1227,
+    "canonical_entries": 1231,
     "cross_transport_families": 53,
-    "entries_total": 1231,
+    "entries_total": 1235,
     "family_count": 143
   }
 }

@@ -799,6 +799,258 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "planetary_hours_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The planetary-hours routes return the enclosing sunrise-to-next-sunrise local solar window, 24 Chaldean daytime/nighttime hour bounds, optional hour-at lookup, and explicit provenance naming the vessel, sequence basis, solar-event source, and stage sequence.",
+        "stage_label": "Sunrise-anchored Chaldean planetary-hours resolution",
+        "operation": "Validate geographic coordinates and UT1 JD, resolve the enclosing sunrise-to-next-sunrise local solar day, partition daytime and nighttime into 12 Chaldean hours each, optionally select the containing hour, and emit provenance.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schema exposes jd, latitude, longitude, include_iso_utc, and (for hour-at) include_schedule in OpenAPI."
+            ],
+            "units": [
+                "Geographic coordinates use degrees; Julian Days and day/night durations use days."
+            ],
+            "reference_frame": [
+                "Sunrise and sunset boundaries are evaluated in the observer's topocentric horizontal frame via moira._solar."
+            ],
+            "origin": [
+                "Topocentric observer at caller-supplied geographic latitude and longitude."
+            ],
+            "timescale": [
+                "Input and hour-boundary JDs use UT1, with optional UTC ISO-8601 calendar serialization."
+            ],
+            "corrections": [
+                "Standard solar-limb and atmospheric-refraction horizon altitude (-0.8333 degrees) is applied during sunrise/sunset refinement."
+            ],
+            "policies_defaults": [
+                "Provenance names Chaldean_order, weekday_rulership, sunrise_to_next_sunrise windowing, moira.planetary_hours.PlanetaryHour (distinct from moira.cycles.PlanetaryHour), and utc_output_only."
+            ],
+            "fallbacks": [
+                "No silent polar fallback is admitted; hour-at returns null with contains_requested_jd=false only if a window does not contain the requested JD."
+            ],
+            "refusal_behavior": [
+                "Typed request validation and solar-window guards reject non-finite JDs, out-of-range coordinates, or polar days/nights lacking sunrise/sunset crossings."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "visibility_assessment_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The visibility assessment route returns the target and solar geometry, criterion family, effective limiting magnitude, and optional physical atmospheric-extinction, directional twilight-brightness, and Crumey point-source threshold breakdowns.",
+        "stage_label": "Empirical and physical visibility assessment",
+        "operation": "Validate target body, epoch, observer coordinates, and visibility policy; evaluate apparent target/solar altitudes, elongation, magnitude, and selected visibility criterion; and return the full assessment breakdown.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schema exposes body, jd_ut, lat, lon, and optional VisibilityPolicyRequest fields in OpenAPI."
+            ],
+            "units": [
+                "Altitudes, elongations, and coordinates use degrees; magnitudes and extinction use V-band magnitudes; sky brightness uses nanolamberts."
+            ],
+            "reference_frame": [
+                "Topocentric horizontal altitude/azimuth and apparent geocentric/topocentric solar elongation at the observer."
+            ],
+            "origin": [
+                "Topocentric observer at caller-supplied geographic latitude, longitude, and policy elevation."
+            ],
+            "timescale": [
+                "Evaluation epoch is Julian Day in Universal Time (jd_ut)."
+            ],
+            "corrections": [
+                "True and apparent altitudes, optional Kasten-Young or Schaefer atmospheric extinction, directional twilight brightness, and lunar crescent details are exposed explicitly."
+            ],
+            "policies_defaults": [
+                "Criterion family, extinction model, twilight model, field factor, and whether target extinction is applied separately are carried in the response."
+            ],
+            "fallbacks": [
+                "No silent criterion substitution is performed; physical component validity flags and lunar crescent classification are reported explicitly."
+            ],
+            "refusal_behavior": [
+                "Typed validation and engine guards reject unsupported target bodies, invalid coordinates, and out-of-domain policy parameters."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "astrocartography_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The astrocartography routes return MC/IC/ASC/DSC horizon and meridian loci, subplanetary Zenith/Nadir points, or dynamic/fixed-star series alongside explicit subject provenance or computation_truth.",
+        "stage_label": "Locational astrocartography projection and provenance",
+        "operation": "Resolve direct RA/Dec, chart-derived planetary/minor-body/lot/point coordinates, fixed-star registry positions, or multi-epoch transit snapshots; project MC/IC/ASC/DSC curves and Zenith/Nadir points; and emit subject provenance or computation_truth.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose direct RA/Dec maps with gmst_deg, chart datetime/body/subject specifications, fixed-star names with jd_ut/jd_tt, or dynamic transit epochs and observer coordinates."
+            ],
+            "units": [
+                "Right ascension, declination, GMST, geographic latitude/longitude, and lat_step use degrees."
+            ],
+            "reference_frame": [
+                "Equatorial RA/Dec of date projected onto geographic latitude/longitude via Greenwich sidereal rotation and horizon altitude geometry."
+            ],
+            "origin": [
+                "Provenance and computation_truth distinguish direct_none, chart_request topocentric observer, and geocentric ecliptic-to-equatorial subject origins."
+            ],
+            "timescale": [
+                "Chart and dynamic routes bind UTC/UT1 and TT epochs explicitly; direct RA/Dec routes bind caller-supplied gmst_deg and optional jd_ut."
+            ],
+            "corrections": [
+                "Horizon refraction inclusion, topocentric vs geocentric subject reduction, and ordered stage sequences are recorded in provenance or computation_truth."
+            ],
+            "policies_defaults": [
+                "Subject classes, NAIF IDs, canonical names, position sources, lat_step cadence, and geometry-only interpretation rules are explicit."
+            ],
+            "fallbacks": [
+                "No silent small-body family disambiguation or comet topocentric fallback is permitted."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects ambiguous unqualified small bodies, unsupported chart bodies, partial observer overrides, duplicate subject labels, and out-of-range steps."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "locational_projection_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The chart-backed Gauquelin, geodetic, and local-space routes project chart bodies into diurnal sectors, geographic equivalents/angles, or local horizon azimuth/altitude while embedding typed provenance.",
+        "stage_label": "Chart-backed locational projection and provenance",
+        "operation": "Normalize chart datetime and observer coordinates, resolve apparent celestial positions and obliquity/sidereal time, project into Gauquelin 36-sector diurnal arcs, geodetic MC/ASC/equivalents, or local-space azimuth/altitude, and attach provenance.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose timezone-aware datetime, observer coordinates, body lists, and technique-specific horizon or zodiac parameters in OpenAPI."
+            ],
+            "units": [
+                "Right ascension, declination, longitudes, azimuth, altitude, obliquity, and degree-in-sector use degrees; Gauquelin sectors use integer indices 1..36."
+            ],
+            "reference_frame": [
+                "Provenance names chart_apparent_topocentric_ra_dec_lst, chart_tropical_longitudes / chart_epoch_obliquity, or chart_apparent_topocentric_ra_dec."
+            ],
+            "origin": [
+                "Topocentric observer or geocentric chart reduction as declared in provenance.observer and coordinate_source."
+            ],
+            "timescale": [
+                "Timezone-aware UTC datetime normalized to UT1/TT chart epochs."
+            ],
+            "corrections": [
+                "Apparent topocentric RA/Dec, true obliquity of date, sidereal rotation, and horizon altitude policies are recorded in provenance.stage_sequence."
+            ],
+            "policies_defaults": [
+                "Requested/returned bodies, coordinate_source, zodiac/ayanamsa policy, and Gauquelin plus-zone / horizon status classifications are explicit."
+            ],
+            "fallbacks": [
+                "Circumpolar and never-rises bodies in Gauquelin sectors preserve explicit horizon_status with null sector fields rather than fabricated sectors."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects naive datetimes, non-finite or polar-invalid latitudes, unsupported bodies, and incomplete observer coordinates."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "paran_search_and_packet_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The natal paran search and website paran packet routes return co-rising/culminating/setting paran events, crossing source methods, altitude policies, strength models, optional four-circle crossing inventories, and packet provenance/warnings.",
+        "stage_label": "Horizon/meridian paran search and packet composition",
+        "operation": "Resolve diurnal rise/set/culmination/anti-culmination crossings for requested planets and fixed stars on the local day, pair co-temporal crossings within orb under the active policy preset, and emit crossing inventories, angular contacts, heliacal events, and provenance.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose bodies, natal_jd, lat, lon, orb_minutes, policy_preset, and inventory/packet inclusion flags in OpenAPI."
+            ],
+            "units": [
+                "Geographic coordinates and horizon altitude policies use degrees; crossing times use JD UT1; orbs and contact deltas use minutes."
+            ],
+            "reference_frame": [
+                "Topocentric horizon (Rising/Setting) and local meridian (Culminating/AntiCulminating) for the observer latitude and longitude."
+            ],
+            "origin": [
+                "Topocentric observer at caller-supplied latitude and longitude."
+            ],
+            "timescale": [
+                "Crossing and event timestamps are reported in JD UT1 alongside UTC ISO-8601 timestamps."
+            ],
+            "corrections": [
+                "Each ParanCrossingResponse records source_method (find_phenomena or get_transit) and altitude_policy (-0.5667 degrees for horizon crossings, null for meridian transits)."
+            ],
+            "policies_defaults": [
+                "Effective policy preset, event/axis/body family labels, linear orb strength model, and star-canon tiers are returned explicitly."
+            ],
+            "fallbacks": [
+                "Circumpolar or non-crossing bodies report explicit ParanCrossingStatus (always_above_horizon, always_below_horizon) and absence_reason in crossing_inventory; missing planetary kernels in the website packet emit explicit warnings."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects unknown policy presets, unknown star-canon tiers, invalid coordinates, and extra fields."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "eclipse_circumstances_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The solar and lunar eclipse search and local-circumstances routes return the eclipse instant, 17-field geometric/Saros/Metonic data vessel, and topocentric contact or overlap circumstances with declared source_model and canon_method.",
+        "stage_label": "Solar and lunar eclipse search and topocentric circumstances",
+        "operation": "Locate the next matching solar or lunar syzygy eclipse and, for local routes, evaluate topocentric solar/lunar altitude, azimuth, overlap, or penumbral/umbral contact circumstances under native or nasa_compat mode.",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose jd_start, kind, and (for local routes) latitude, longitude, elevation_m, max_lunations, or mode in OpenAPI."
+            ],
+            "units": [
+                "Longitudes, latitudes, node distances, 3D separations, altitudes, and azimuths use degrees; elevation uses meters; epochs use JD UT."
+            ],
+            "reference_frame": [
+                "Geocentric ecliptic longitudes/latitudes for syzygy classification and topocentric horizontal azimuth/altitude for local circumstances."
+            ],
+            "origin": [
+                "Geocenter for global syzygy classification; observer latitude, longitude, and elevation for local circumstances."
+            ],
+            "timescale": [
+                "Eclipse and contact instants are returned as jd_ut with paired datetime_utc strings."
+            ],
+            "corrections": [
+                "Lunar local circumstances explicitly record mode (native or nasa_compat), source_model, and canon_method; solar local circumstances record topocentric_separation_deg and topocentric_overlap."
+            ],
+            "policies_defaults": [
+                "Eclipse type filter (any, total, partial, annular, penumbral), Saros/Metonic cycle indices, and contact visibility flags are explicit."
+            ],
+            "fallbacks": [
+                "Contacts absent for partial or penumbral lunar eclipses (such as u1..u4) are returned as null rather than fabricated."
+            ],
+            "refusal_behavior": [
+                "Typed validation and engine guards reject unknown eclipse kinds, invalid modes, non-finite JDs, and out-of-range coordinates."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "heliacal_and_twilight_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The planetary heliacal and twilight routes return topocentric horizon/twilight crossing instants and heliacal visibility geometry (elongation, planet/Sun altitudes, apparent magnitude) for the observer.",
+        "stage_label": "Topocentric twilight and planetary heliacal event resolution",
+        "operation": "Evaluate local solar depression crossings (-0.8333, -6, -12, -18 degrees) for twilight or scan forward for the next applicable planetary heliacal phenomenon (heliacal/acronychal/cosmical rising or setting, evening first, morning last).",
+        "semantic_values": {
+            "inputs": [
+                "Typed request schemas expose jd_day or jd_start, lat, lon, and (for heliacal) body, kind, and search_days in OpenAPI."
+            ],
+            "units": [
+                "Coordinates, elongations, and altitudes use degrees; apparent magnitude uses V-band magnitude; epochs use JD UT."
+            ],
+            "reference_frame": [
+                "Topocentric horizontal frame and apparent solar elongation at the observer."
+            ],
+            "origin": [
+                "Topocentric observer at caller-supplied geographic latitude and longitude."
+            ],
+            "timescale": [
+                "Event instants are reported as jd_ut with paired datetime_utc strings."
+            ],
+            "corrections": [
+                "Standard solar horizon (-0.8333 deg) and civil/nautical/astronomical twilight depression thresholds (-6, -12, -18 deg) or heliacal arcus visionis / visibility thresholds are applied."
+            ],
+            "policies_defaults": [
+                "Standard Ptolemy/Schoch heliacal event kinds and twilight depression tiers are exposed as named fields."
+            ],
+            "fallbacks": [
+                "Inapplicable heliacal event kinds (such as evening_first for outer planets) or absent twilight crossings return null without fabricating an instant."
+            ],
+            "refusal_behavior": [
+                "Typed validation rejects unknown heliacal kinds, unsupported bodies, non-finite JDs, and out-of-range geographic coordinates."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

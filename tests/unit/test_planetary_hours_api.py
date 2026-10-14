@@ -253,3 +253,41 @@ def test_real_sydney_monday_begins_with_moon_and_polar_day_fails() -> None:
                 0.0,
                 reader=reader,
             )
+
+
+def test_planetary_hours_with_truth_matches_planetary_hours(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from moira.facade import planetary_hours, planetary_hours_with_truth
+
+    monkeypatch.setattr(
+        local_solar_day_module,
+        "_sunrise_sunset",
+        lambda jd_noon, latitude, longitude, reader: (jd_noon - 0.75, jd_noon - 0.25),
+    )
+    monkeypatch.setattr(
+        local_solar_day_module,
+        "_refine_sunrise",
+        lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
+    )
+    monkeypatch.setattr(local_solar_day_module, "get_reader", lambda: object())
+
+    direct = planetary_hours(2451545.5, 40.7128, -74.0060)
+    with_truth = planetary_hours_with_truth(2451545.5, 40.7128, -74.0060)
+
+    assert with_truth.result == direct
+    assert with_truth.truth.requested_jd_ut1 == pytest.approx(2451545.5)
+    assert with_truth.truth.latitude_deg == pytest.approx(40.7128)
+    assert with_truth.truth.longitude_deg == pytest.approx(-74.0060)
+    assert with_truth.truth.sunrise_jd_ut1 == pytest.approx(direct.sunrise_jd)
+    assert with_truth.truth.sunset_jd_ut1 == pytest.approx(direct.sunset_jd)
+    assert with_truth.truth.next_sunrise_jd_ut1 == pytest.approx(direct.hours[-1].jd_end)
+    assert with_truth.truth.day_duration_days == pytest.approx(direct.sunset_jd - direct.sunrise_jd)
+    assert with_truth.truth.night_duration_days == pytest.approx(direct.hours[-1].jd_end - direct.sunset_jd)
+    assert with_truth.truth.day_hour_duration_days == pytest.approx(with_truth.truth.day_duration_days / 12.0)
+    assert with_truth.truth.night_hour_duration_days == pytest.approx(with_truth.truth.night_duration_days / 12.0)
+    assert with_truth.truth.day_ruler == direct.hours[0].ruler
+    assert with_truth.truth.sequence_basis == "chaldean_order"
+    assert with_truth.truth.day_window_basis == "sunrise_to_next_sunrise"
+    assert with_truth.truth.solar_event_source == "moira._solar"
+

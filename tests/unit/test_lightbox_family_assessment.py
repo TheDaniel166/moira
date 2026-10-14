@@ -62,7 +62,7 @@ def test_generated_assessment_is_complete_and_current(
 def test_every_family_is_reviewed_without_becoming_conformant(assessment) -> None:
     summary = assessment["summary"]
     assert summary["reviewed_families"] == summary["family_count"]
-    assert summary["canonical_surface_count"] == 1227
+    assert summary["canonical_surface_count"] == 1231
     assert summary["surface_conformance_counts"]["conformant"] == 0
     assert summary["surface_conformance_counts"]["partial"] > 0
     assert summary["surface_conformance_counts"]["unresolved"] > 0
