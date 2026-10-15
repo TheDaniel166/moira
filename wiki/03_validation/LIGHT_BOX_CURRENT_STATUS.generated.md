@@ -4,7 +4,7 @@
 
 - Engine version: `6.9.9`
 - Inventory fingerprint: `0a30932b7528ffefc99faba78d04bc3c8c8edfc04955e17db09402858cd23ff5`
-- Evidence source revision: `97a460795d91f3f0c959086b4555b9e4ee5fdf4a`
+- Evidence source revision: `2cfb40dc2230568b2c0649085e781b404251ef6c`
 - Artifact status: `exact_source_revision`
 - Publication disposition: `exact_release_status`
 
@@ -15,11 +15,11 @@ The Light Box doctrine is preserved. Universal current-release conformance is **
 | Per-surface status | Canonical calculations | P0 product-source calculations |
 |---|---:|---:|
 | Conformant | 0 | 0 |
-| Partial | 191 | 153 |
+| Partial | 209 | 171 |
 | Not applicable | 0 | 0 |
-| Unresolved | 1042 | 18 |
+| Unresolved | 1024 | 0 |
 
-All 143 families have a structural review disposition. 0 bounded local contracts and 55 exact-source contracts passed across 191 calculations; 1042 calculations have no replay contract yet.
+All 143 families have a structural review disposition. 0 bounded local contracts and 63 exact-source contracts passed across 209 calculations; 1024 calculations have no replay contract yet.
 
 ## Claim disposition
 
