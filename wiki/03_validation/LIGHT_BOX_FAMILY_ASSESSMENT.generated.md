@@ -28,9 +28,9 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | Per-surface conformance | Canonical surfaces |
 |---|---:|
 | `conformant` | 0 |
-| `partial` | 191 |
+| `partial` | 209 |
 | `not_applicable` | 0 |
-| `unresolved` | 1042 |
+| `unresolved` | 1024 |
 
 ## Reviewed queue
 
@@ -44,7 +44,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `aspects` | `astronomy-and-chart-core` | `mixed` | `stage_3_product_use,stage_5_remaining_tail` | 15 | 1 | 1 | 14 | 0 | 0 |
 | `asteroids` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 14 | 6 | 6 | 8 | 1 | 1 |
 | `astrocartography` | `locational` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 19 | 6 | 6 | 13 | 0 | 0 |
-| `astrodynes` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 25 | 1 | 0 | 25 | 9 | 0 |
+| `astrodynes` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 25 | 1 | 1 | 24 | 9 | 0 |
 | `avasthas` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 10 | 0 | 0 | 10 | 4 | 0 |
 | `batch` | `predictive-and-time` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 15 | 6 | 6 | 9 | 0 | 0 |
 | `chart` | `astronomy-and-chart-core` | `partial` | `stage_2_exemplars` | 3 | 3 | 3 | 0 | 0 | 0 |
@@ -62,7 +62,7 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `deep-sky` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 6 | 1 | 1 | 5 | 2 | 0 |
 | `delta-t-physical` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `dignities` | `traditional-western` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 33 | 8 | 8 | 25 | 1 | 0 |
-| `draconic` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 7 | 2 | 0 | 7 | 0 | 0 |
+| `draconic` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 7 | 2 | 2 | 5 | 0 | 0 |
 | `eclipse` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `eclipses` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 3 | 0 | 0 | 3 | 0 | 1 |
 | `egyptian-bounds` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 6 | 0 | 0 | 6 | 0 | 0 |
@@ -74,10 +74,10 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `gochara` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 9 | 0 | 0 | 9 | 0 | 0 |
 | `gochara-dated` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `gochara-windows` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 3 | 0 | 0 | 3 | 0 | 0 |
-| `harmograms` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 5 | 1 | 0 | 5 | 0 | 0 |
+| `harmograms` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 5 | 1 | 1 | 4 | 0 | 0 |
 | `harmograms-compute` | `predictive-and-time` | `partial` | `stage_5_remaining_tail` | 6 | 0 | 0 | 6 | 0 | 0 |
 | `harmonic-transits` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
-| `harmonics` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 18 | 8 | 0 | 18 | 0 | 0 |
+| `harmonics` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 18 | 8 | 8 | 10 | 0 | 0 |
 | `heliacal` | `phenomena-and-visibility` | `major_gap` | `stage_4_phenomena_relationships` | 20 | 0 | 0 | 20 | 0 | 0 |
 | `hellenistic` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `hellenistic-aspects` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
@@ -88,11 +88,11 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `hellenistic-systems` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 3 | 0 | 0 | 3 | 0 | 0 |
 | `horary` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `houses` | `astronomy-and-chart-core` | `partial` | `stage_2_exemplars` | 26 | 3 | 3 | 23 | 1 | 0 |
-| `huber` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 12 | 2 | 0 | 12 | 0 | 0 |
+| `huber` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 12 | 2 | 2 | 10 | 0 | 0 |
 | `hyleg` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `jaimini` | `vedic-and-electional` | `major_gap` | `stage_5_remaining_tail` | 23 | 0 | 0 | 23 | 3 | 0 |
 | `julian` | `astronomy-and-chart-core` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 21 | 6 | 12 | 9 | 0 | 0 |
-| `light-cone` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 2 | 1 | 0 | 2 | 0 | 0 |
+| `light-cone` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 2 | 1 | 1 | 1 | 0 | 0 |
 | `local-space` | `locational` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 4 | 1 | 1 | 3 | 0 | 0 |
 | `longevity` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `lord-of-the-orb` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
@@ -152,14 +152,14 @@ A family disposition is not a conformance score. `Strong exemplar` means a patte
 | `ssb` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 2 | 0 | 0 | 2 | 0 | 0 |
 | `stars` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 53 | 3 | 3 | 50 | 0 | 0 |
 | `stations` | `phenomena-and-visibility` | `partial` | `stage_4_phenomena_relationships` | 4 | 0 | 0 | 4 | 0 | 0 |
-| `stelliums` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 2 | 1 | 0 | 2 | 0 | 0 |
+| `stelliums` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 2 | 1 | 1 | 1 | 0 | 0 |
 | `timelords` | `predictive-and-time` | `major_gap` | `stage_3_product_use,stage_5_remaining_tail` | 41 | 5 | 5 | 36 | 1 | 0 |
 | `transits` | `predictive-and-time` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 25 | 2 | 4 | 21 | 0 | 0 |
 | `transits-equatorial` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `triplicity` | `traditional-western` | `partial` | `stage_5_remaining_tail` | 4 | 0 | 0 | 4 | 0 | 0 |
 | `twelfth-parts` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `upagrahas` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 4 | 0 | 0 | 4 | 2 | 1 |
-| `uranian` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 4 | 2 | 0 | 4 | 0 | 0 |
+| `uranian` | `specialist-and-compositional` | `partial` | `stage_3_product_use,stage_5_remaining_tail` | 4 | 2 | 2 | 2 | 0 | 0 |
 | `valens-transmissions` | `specialist-and-compositional` | `partial` | `stage_5_remaining_tail` | 1 | 0 | 0 | 1 | 0 | 0 |
 | `varga` | `vedic-and-electional` | `major_gap` | `stage_5_remaining_tail` | 22 | 0 | 0 | 22 | 0 | 0 |
 | `varshaphal` | `vedic-and-electional` | `partial` | `stage_5_remaining_tail` | 28 | 0 | 0 | 28 | 0 | 0 |

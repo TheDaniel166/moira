@@ -483,8 +483,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 25
+        "partial": 1,
+        "unresolved": 24
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -1460,8 +1460,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 7
+        "partial": 2,
+        "unresolved": 5
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -2035,8 +2035,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 5
+        "partial": 1,
+        "unresolved": 4
       },
       "documentation_leads": [
         "docs/architecture/P-GAP-06_HARMOGRAMS_TRANSPORT_DESIGN.md",
@@ -2157,8 +2157,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 18
+        "partial": 8,
+        "unresolved": 10
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -2767,8 +2767,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 12
+        "partial": 2,
+        "unresolved": 10
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
@@ -3177,8 +3177,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 2
+        "partial": 1,
+        "unresolved": 1
       },
       "documentation_leads": [
         "docs/architecture/P-GAP-01_FRAME_SPECIFIC_POSITIONS_TRANSPORT_DESIGN.md",
@@ -6541,8 +6541,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 2
+        "partial": 1,
+        "unresolved": 1
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6930,8 +6930,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 4
+        "partial": 2,
+        "unresolved": 2
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
@@ -7814,8 +7814,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 191,
-      "unresolved": 1042
+      "partial": 209,
+      "unresolved": 1024
     }
   }
 }

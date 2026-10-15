@@ -496,6 +496,32 @@ def test_r6a_catalog_and_core_tail_contracts_are_bounded() -> None:
         assert contract["exclusions"]
 
 
+def test_r6b_specialist_and_compositional_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-HARMONICS-CHART-AND-SPECTRUM-TRUTH": (8, 8),
+        "LB-HARMOGRAMS-TRACE-TRUTH": (1, 3),
+        "LB-HUBER-LIFE-CLOCK-AND-INTENSITY-TRUTH": (2, 5),
+        "LB-URANIAN-HYPOTHETICAL-BODIES-TRUTH": (2, 4),
+        "LB-DRACONIC-CHART-AND-POSITIONS-TRUTH": (2, 4),
+        "LB-ASTRODYNES-CHART-TRUTH": (1, 3),
+        "LB-STELLIUMS-ANALYSIS-TRUTH": (1, 4),
+        "LB-RECEIVED-LIGHT-CONE-TRUTH": (1, 4),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
 
 
 

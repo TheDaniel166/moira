@@ -1036,6 +1036,163 @@
       "exclusions": [
         "The replay covers aspect_strength, calculate_houses, and the website pipeline alias routes; non-P0 house/aspect helpers are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-HARMONICS-CHART-AND-SPECTRUM-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:calculate_harmonic",
+        "python:moira.facade:harmonic_conjunctions",
+        "python:moira.facade:vibrational_fingerprint",
+        "rest:POST:/v1/harmonics/age-chart",
+        "rest:POST:/v1/harmonics/aspects",
+        "rest:POST:/v1/harmonics/chart",
+        "rest:POST:/v1/harmonics/fingerprint",
+        "rest:POST:/v1/harmonics/pattern-score"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_harmonics.py::test_calculate_harmonic_preserves_fractional_h_exactly",
+        "tests/unit/test_harmonics.py::test_addey_policy_uses_o1_on_projected_circle_not_o1_over_h_twice",
+        "tests/unit/test_harmonics.py::test_vibrational_fingerprint_propagates_explicit_orb_policy",
+        "tests/server/test_server_harmonics_routes.py::test_harmonic_chart_route_preserves_h5_formula_and_preset_provenance",
+        "tests/server/test_server_harmonics_routes.py::test_age_harmonic_route_preserves_decimal_harmonic",
+        "tests/server/test_server_harmonics_routes.py::test_harmonic_pattern_score_route_preserves_cluster_invariants",
+        "tests/server/test_server_harmonics_routes.py::test_harmonic_aspects_route_matches_conjunction_dual_path",
+        "tests/server/test_server_harmonics_routes.py::test_harmonic_fingerprint_route_preserves_peak_and_total_invariants"
+      ],
+      "minimum_tests": 8,
+      "claim_scope": "The eight P0 harmonic Python and REST surfaces (calculate_harmonic, harmonic_conjunctions, vibrational_fingerprint, /v1/harmonics/chart, /v1/harmonics/age-chart, /v1/harmonics/pattern-score, /v1/harmonics/aspects, and /v1/harmonics/fingerprint) preserve H-wheel projection, Addey inverse-harmonic O_H = O_1 / H orb policy truth, cluster pattern scoring, and vibrational fingerprint sweeps.",
+      "exclusions": [
+        "The replay covers the eight P0 harmonic surfaces; cross-chart composite harmonic routes and sampled harmonic transit forecast routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-HARMOGRAMS-TRACE-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/harmograms/trace"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_harmograms_routes.py::test_trace_route_matches_engine",
+        "tests/server/test_server_harmograms_routes.py::test_harmogram_routes_reject_invalid_inputs",
+        "tests/server/test_server_harmograms_routes.py::test_harmogram_route_methods_are_bounded"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The /v1/harmograms/trace REST route matches engine harmogram wave traces while exposing HarmogramTracePolicyResponse, HarmogramHarmonicDomainResponse, HarmogramIntensityPolicyResponse, and HarmogramProvenanceResponse receipts.",
+      "exclusions": [
+        "The replay covers /v1/harmograms/trace; /v1/harmograms/vector, /v1/harmograms/zero-aries-vector, /v1/harmograms/intensity-spectrum, and /v1/harmograms/projection are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-HUBER-LIFE-CLOCK-AND-INTENSITY-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:age_point",
+        "python:moira.facade:chart_intensity_profile"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_huber.py::TestAgePoint::test_age_zero_at_ascendant",
+        "tests/unit/test_huber.py::TestAgePoint::test_intensity_is_excluded_by_default",
+        "tests/unit/test_huber.py::TestAgePoint::test_negative_age_rejected",
+        "tests/unit/test_huber.py::TestChartIntensityProfile::test_high_intensity_near_cusp",
+        "tests/unit/test_huber.py::TestChartIntensityProfile::test_near_cusp_and_near_low_point_flags"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The two P0 Huber Python surfaces (age_point and chart_intensity_profile) preserve the 72-year Life Clock progression (6 years per house), golden-section PHI balance/low-point house zones, default separation of canonical AgePointPosition from opt-in intensity scoring, and ChartIntensityProfile invariants.",
+      "exclusions": [
+        "The replay covers age_point and chart_intensity_profile; age_point_contacts and REST Huber routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-URANIAN-HYPOTHETICAL-BODIES-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:uranian_at",
+        "rest:POST:/v1/uranian/bulk"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_uranian.py::test_catalog_separates_hamburg_eight_from_transpluto",
+        "tests/unit/test_uranian.py::test_apparent_positions_carry_geometry_motion_and_provenance",
+        "tests/server/test_server_uranian_routes.py::test_uranian_bulk_route_defaults_to_all_nine_bodies",
+        "tests/server/test_server_uranian_routes.py::test_uranian_bulk_route_rejects_duplicate_and_oversized_name_lists"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The two P0 Uranian surfaces (uranian_at and /v1/uranian/bulk) preserve Hamburg Eight (Neely 1980) and Transpluto (Sevin/Strubell 1952) synthetic Keplerian element reduction, DE441 geocentric projection, and UranianPosition/UranianProvenanceResponse receipts.",
+      "exclusions": [
+        "The replay covers uranian_at and /v1/uranian/bulk; /v1/uranian/position, /v1/uranian/catalog, and all_uranian_at are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-DRACONIC-CHART-AND-POSITIONS-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/draconic/chart",
+        "rest:POST:/v1/draconic/positions"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_draconic_routes.py::test_draconic_positions_route_preserves_vessel_parity",
+        "tests/server/test_server_draconic_routes.py::test_draconic_positions_route_rejects_unknown_node_mode",
+        "tests/server/test_server_draconic_routes.py::test_draconic_chart_route_builds_node_bearing_source_chart",
+        "tests/server/test_server_draconic_routes.py::test_draconic_chart_route_mean_node_policy"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The two P0 Draconic REST surfaces (/v1/draconic/chart and /v1/draconic/positions) preserve ascending-node anchor resolution (true_node and mean_node), nodal longitude rotation, zero anchor_residual verification, and DraconicProvenanceResponse stage sequences.",
+      "exclusions": [
+        "The replay covers /v1/draconic/chart and /v1/draconic/positions; /v1/draconic/longitude and Python draconic helpers are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-ASTRODYNES-CHART-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/astrodynes/chart"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_astrodynes_routes.py::test_chart_route_matches_service_and_discloses_house_and_frame_truth",
+        "tests/server/test_server_astrodynes_routes.py::test_chart_service_does_not_make_planets_topocentric",
+        "tests/server/test_server_astrodynes_routes.py::test_geometry_route_rejects_unvalidated_multi_cusp_sign_distribution"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The /v1/astrodynes/chart REST surface reduces geocentric apparent planetary longitudes/declinations and observer house cusps through the eight-stage Church of Light Astrodyne pipeline while disclosing house fallback, geocentric_apparent planetary frame truth, and two-cusps-per-sign domain bounds.",
+      "exclusions": [
+        "The replay covers /v1/astrodynes/chart; /v1/astrodynes/geometry, /v1/astrodynes/doctrine, and progressed integration routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-STELLIUMS-ANALYSIS-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/stelliums/analyze"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_stelliums.py::test_supplied_snapshot_python_http_round_trip_has_no_engine_dependency",
+        "tests/server/test_server_stelliums.py::test_malformed_or_contradictory_house_context_is_not_silently_unavailable",
+        "tests/server/test_server_stelliums.py::test_absent_houses_returns_named_partial_not_empty_success",
+        "tests/server/test_server_stelliums.py::test_total_arc_preserves_full_precision_and_associations_do_not_count"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The /v1/stelliums/analyze REST surface validates caller-supplied position and house snapshots without hidden engine recalculation, enforces house classification and opposite-angle DSC/IC consistency, separates core vs associated bodies, and returns named partial receipts when house context is absent.",
+      "exclusions": [
+        "The replay covers /v1/stelliums/analyze; direct Python stellium helpers are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-RECEIVED-LIGHT-CONE-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:received_light_at"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_light_cone.py::TestValidation::test_node_raises",
+        "tests/unit/test_light_cone.py::TestReceivedLightPositionVessel::test_emission_jd_consistent_with_light_travel",
+        "tests/unit/test_light_cone.py::TestApparentVsGeometric::test_apparent_matches_planet_at_apparent",
+        "tests/unit/test_light_cone.py::TestApparentVsGeometric::test_geometric_matches_planet_at_geometric"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The received_light_at Python surface pairs apparent observed ecliptic positions with instantaneous geometric positions via DE441, preserves emission_jd = jd_ut - light_travel_days and distance/speed-of-light identities, and rejects non-emitting mathematical points.",
+      "exclusions": [
+        "The replay covers received_light_at; all_received_light_at and REST light-cone routes are outside this contract."
+      ]
     }
   ]
 }

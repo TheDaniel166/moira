@@ -956,6 +956,96 @@
       "surface_id": "python:moira.facade:calculate_houses",
       "contract_kind": "core_houses_and_aspect_strength_vessel",
       "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_harmonic",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:harmonic_conjunctions",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:vibrational_fingerprint",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmonics/age-chart",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmonics/aspects",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmonics/chart",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmonics/fingerprint",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmonics/pattern-score",
+      "contract_kind": "harmonics_chart_and_spectrum_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/harmograms/trace",
+      "contract_kind": "harmograms_trace_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:age_point",
+      "contract_kind": "huber_life_clock_and_intensity_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:chart_intensity_profile",
+      "contract_kind": "huber_life_clock_and_intensity_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:uranian_at",
+      "contract_kind": "uranian_hypothetical_bodies_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/uranian/bulk",
+      "contract_kind": "uranian_hypothetical_bodies_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/draconic/chart",
+      "contract_kind": "draconic_chart_and_positions_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/draconic/positions",
+      "contract_kind": "draconic_chart_and_positions_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/astrodynes/chart",
+      "contract_kind": "astrodynes_chart_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/stelliums/analyze",
+      "contract_kind": "stelliums_analysis_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:received_light_at",
+      "contract_kind": "received_light_cone_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
     }
   ]
 }

@@ -1787,6 +1787,379 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "harmonics_chart_and_spectrum_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Addey/Hamblin harmonic projection, inverse-harmonic orb conjunctions, pattern scoring, and vibrational fingerprint",
+        "operation": (
+            "Project caller-supplied longitudes onto harmonic wheel H via "
+            "lambda_H = (H * lambda) mod 360, resolve Addey inverse-harmonic "
+            "orb thresholds O_H = O_1 / H (default Hamblin O_1 = 12.0 deg), "
+            "and materialize HarmonicPosition, HarmonicConjunction, "
+            "HarmonicPatternScore, HarmonicAspect, VibrationFingerprint, and "
+            "HarmonicProvenanceResponse vessels."
+        ),
+        "summary": (
+            "Harmonic chart and spectrum surfaces expose H-wheel positions, "
+            "Addey inverse-harmonic orb policy truth, cluster pattern scoring, "
+            "harmonic aspects, and vibrational fingerprint sweeps with explicit "
+            "provenance."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Caller-supplied body-to-longitude mapping, positive real harmonic H (or birth_jd/target_jd age parameters on age-chart), and optional orb or HarmonicOrbPolicy."
+            ],
+            "units": [
+                "Longitudes, separations, and orb thresholds use degrees in [0.0, 360.0); pattern scores and cluster sizes are dimensionless integers/floats."
+            ],
+            "reference_frame": [
+                "Caller-supplied ecliptic longitude frame projected onto the H-th harmonic circle [0.0, 360.0) anchored at 0 deg Aries."
+            ],
+            "origin": [
+                "Inherits the geocentric or topocentric origin of the caller-supplied longitudes without hidden observer translation."
+            ],
+            "timescale": [
+                "Longitude-map calculations are epoch-agnostic; /v1/harmonics/age-chart evaluates decimal age from birth_jd and target_jd on the JD UT scale."
+            ],
+            "corrections": [
+                "Exact modulo-360 harmonic wrap (H * lambda) mod 360 and Addey inverse-harmonic source orb scaling O_H = O_1 / H."
+            ],
+            "policies_defaults": [
+                "Default reference orb is Hamblin O_1 = 12.0 deg on the harmonic wheel (HarmonicOrbPolicy); HarmonicProvenanceResponse and HarmonicOrbPolicyResponse disclose preset names, formula, and continuous fractional-harmonic extension flags."
+            ],
+            "fallbacks": [
+                "No silent integer truncation of fractional harmonics; custom non-preset harmonics disclose preset_name=None and continuous-extension provenance."
+            ],
+            "refusal_behavior": [
+                "Non-positive or non-finite harmonics, coercive boolean/string scalars, empty or oversized body maps, negative ages, and conflicting orb/policy parameters are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "harmograms_trace_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Fourier/Addey continuous harmogram trace and intensity policy envelope",
+        "operation": (
+            "Evaluate continuous harmonic wave traces across the requested "
+            "longitude or harmonic domain and return HarmogramTraceEnvelopeResponse "
+            "carrying HarmogramTracePolicyResponse, HarmogramHarmonicDomainResponse, "
+            "HarmogramIntensityPolicyResponse, and HarmogramProvenanceResponse."
+        ),
+        "summary": (
+            "The /v1/harmograms/trace surface exposes continuous harmonic wave "
+            "sampling alongside explicit trace, domain, intensity, and "
+            "provenance envelopes."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Caller-supplied ecliptic longitude map, harmonic domain specification, trace sampling step/bounds, and intensity normalization policy."
+            ],
+            "units": [
+                "Sampled longitudes use degrees in [0.0, 360.0); wave amplitudes and intensities are dimensionless real scalars."
+            ],
+            "reference_frame": [
+                "Ecliptic longitude domain [0.0, 360.0) projected into harmonic phase space."
+            ],
+            "origin": [
+                "Inherits the observer origin of the caller-supplied longitude map."
+            ],
+            "timescale": [
+                "Operates directly on caller-supplied ecliptic longitudes without hidden time-scale conversion."
+            ],
+            "corrections": [
+                "Continuous cosine-wave superposition and explicit intensity-policy normalization across the requested harmonic domain."
+            ],
+            "policies_defaults": [
+                "HarmogramTraceEnvelopeResponse serializes HarmogramTracePolicyResponse, HarmogramHarmonicDomainResponse, HarmogramIntensityPolicyResponse, and HarmogramProvenanceResponse."
+            ],
+            "fallbacks": [
+                "No silent fallback between pairwise and zero-Aries phase modes; policy fields explicitly record active normalization and phase anchoring."
+            ],
+            "refusal_behavior": [
+                "Empty or non-finite longitude maps, invalid harmonic domains, out-of-range grid steps, and coercive scalar inputs are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "huber_life_clock_and_intensity_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Huber 72-year Life Clock age-point progression and golden-section house intensity profile",
+        "operation": (
+            "Advance the Huber Age Point counterclockwise from the Ascendant "
+            "through the 12 houses at 6 years per house (72-year cycle), "
+            "classify cardinal/fixed/mutable zones using golden-ratio PHI "
+            "invert/low points, and evaluate optional or chart-wide dynamic "
+            "house intensity curves into AgePointPosition and ChartIntensityProfile."
+        ),
+        "summary": (
+            "Huber surfaces expose AgePointPosition (separating canonical "
+            "72-year Life Clock and PHI house zones from opt-in intensity "
+            "scoring) and ChartIntensityProfile."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Non-negative age_years, 12-house cusp sequence in [0.0, 360.0), optional include_intensity flag on age_point, and body longitude mapping on chart_intensity_profile."
+            ],
+            "units": [
+                "Ages and years_into_house use years (72-year cycle, 6 years/house); longitudes use degrees; house fractions and intensity scores are normalized to [0.0, 1.0]."
+            ],
+            "reference_frame": [
+                "Ecliptic longitude frame of the supplied 12 house cusps (canonically Koch houses in Huber API doctrine)."
+            ],
+            "origin": [
+                "Topocentric local horizon/meridian house-cusp basis supplied by the caller."
+            ],
+            "timescale": [
+                "Life-Clock age progression in years (with cycle wrapping every 72.0 years)."
+            ],
+            "corrections": [
+                "Golden-section subdivision of each house arc via balance point (1 - 1/PHI) and low point (1/PHI) with piecewise sinusoidal intensity interpolation."
+            ],
+            "policies_defaults": [
+                "age_point returns AgePointPosition with intensity=None by default unless include_intensity=True is explicitly requested; chart_intensity_profile returns per-point HouseIntensityScore vessels and mean_intensity."
+            ],
+            "fallbacks": [
+                "Ages beyond 72 years wrap deterministically into subsequent cycles (cycle >= 2) while preserving exact house fraction."
+            ],
+            "refusal_behavior": [
+                "Negative ages, house numbers outside 1..12, malformed cusp sequences, and non-finite longitudes are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "uranian_hypothetical_bodies_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Hamburg School / Uranian hypothetical body Keplerian reduction and geocentric projection",
+        "operation": (
+            "Evaluate fixed-element heliocentric Keplerian orbits for the "
+            "eight Witte/Sieggrun Hamburg points (Neely 1980 elements) and "
+            "Transpluto/Bacchus (Sevin/Strubell 1952 elements), combine with "
+            "DE441 Earth-Sun vectors, and return UranianPosition and "
+            "UranianBulkResponse with UranianProvenanceResponse."
+        ),
+        "summary": (
+            "Uranian surfaces compute hypothetical planetary positions while "
+            "explicitly disclosing their synthetic Keplerian element lineage "
+            "and separating Hamburg Eight from Transpluto."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Canonical Uranian body name (or bounded list of names on /v1/uranian/bulk) and finite Julian Date jd_ut."
+            ],
+            "units": [
+                "Longitudes and latitudes use degrees; distance_au uses astronomical units; longitudinal speed uses degrees per day."
+            ],
+            "reference_frame": [
+                "Geocentric apparent tropical ecliptic of date [0.0, 360.0)."
+            ],
+            "origin": [
+                "Geocentric observer (Earth center reduced against DE441 solar/terrestrial state vectors)."
+            ],
+            "timescale": [
+                "Julian Date UT (jd_ut) evaluated against epoch orbital elements and DE441 ephemeris."
+            ],
+            "corrections": [
+                "Newton-Raphson eccentric-anomaly Kepler solution, heliocentric-to-geocentric vector translation, and central-difference daily speed derivation."
+            ],
+            "policies_defaults": [
+                "Catalog separates Hamburg Eight (Cupido, Hades, Zeus, Kronos, Apollon, Admetos, Vulkanus, Poseidon; Neely 1980) from Transpluto (Sevin/Strubell 1952); bulk route defaults to all nine bodies in canonical order."
+            ],
+            "fallbacks": [
+                "No fallback to physical ephemeris kernels; UranianPosition and UranianProvenanceResponse explicitly mark hypothetical/synthetic status."
+            ],
+            "refusal_behavior": [
+                "Unknown or case-mismatched body names, empty or duplicate bulk lists, and non-finite Julian Dates are rejected before kernel resolution."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "draconic_chart_and_positions_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Draconic lunar-node zero-point rotation and chart/position materialization",
+        "operation": (
+            "Resolve the ascending lunar node anchor (true_node or mean_node, "
+            "chart-derived or caller-supplied), rotate longitudes by "
+            "lambda_draconic = (lambda_source - lambda_node) mod 360, verify "
+            "anchor_residual == 0.0, and return DraconicChartResponse with "
+            "DraconicProvenanceResponse."
+        ),
+        "summary": (
+            "Draconic REST surfaces rotate tropical or caller-supplied "
+            "positions, houses, and angles onto the nodal 0 deg Aries anchor "
+            "while recording node policy, anchor owner, and stage sequence."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware UTC datetime, node_mode ('true_node' or 'mean_node'), and optional observer/house parameters on /v1/draconic/chart; or caller-supplied position map and anchor_longitude on /v1/draconic/positions."
+            ],
+            "units": [
+                "Source longitudes, draconic longitudes, anchor_longitude, rotation_degrees, and anchor_residual use degrees; speeds use degrees per day."
+            ],
+            "reference_frame": [
+                "Draconic ecliptic frame rotated so the ascending lunar node defines 0 deg Aries."
+            ],
+            "origin": [
+                "Geocentric apparent planetary positions (with optional topocentric house cusps/angles) on /v1/draconic/chart; caller-supplied on /v1/draconic/positions."
+            ],
+            "timescale": [
+                "UTC datetime reduced to JD UT on /v1/draconic/chart; optional caller-supplied jd_ut metadata on /v1/draconic/positions."
+            ],
+            "corrections": [
+                "Uniform azimuthal rotation lambda_draconic = (lambda_source - lambda_anchor) mod 360 applied to bodies, house cusps, and angles."
+            ],
+            "policies_defaults": [
+                "DraconicAnchorResponse and DraconicProvenanceResponse disclose node_mode, node_name, rotation_degrees, source_zodiac, anchor_owner, chart_construction_owner, ephemeris, and stage_sequence."
+            ],
+            "fallbacks": [
+                "Source chart always evaluates lunar nodes to establish the anchor even when include_nodes=False omits node entries from output positions."
+            ],
+            "refusal_behavior": [
+                "Unknown node_mode, empty or oversized position maps, non-finite longitudes, and naive datetimes on chart routes are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "astrodynes_chart_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Church of Light Cosmodyne/Astrodyne power, harmony, and discord reduction",
+        "operation": (
+            "Reduce geocentric apparent tropical positions, declinations, and "
+            "admitted house cusps through the eight-stage Church of Light "
+            "pipeline (geometry normalization, relation detection, admission "
+            "and scoring, body condition profiles, sign/house aggregation, "
+            "summary profiles, condition network, and cross-layer validation) "
+            "and return AstrodynesCalculationResponse."
+        ),
+        "summary": (
+            "The /v1/astrodynes/chart surface computes Church of Light "
+            "astrodynes, harmony, and discord across bodies, signs, houses, "
+            "and summary groups with explicit provenance and cusp-distribution "
+            "guards."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware UTC datetime, observer latitude and longitude, and optional house_system code."
+            ],
+            "units": [
+                "Longitudes, declinations, and obliquity use degrees; power (astrodynes), harmony (cosmodynes), and discord are Church of Light scalar units."
+            ],
+            "reference_frame": [
+                "Geocentric apparent tropical ecliptic longitudes and true-equatorial declinations."
+            ],
+            "origin": [
+                "Geocentric apparent planetary frame (planetary_frame='geocentric_apparent') paired with observer-located house cusps and angles."
+            ],
+            "timescale": [
+                "Timezone-aware UTC datetime reduced via utc_to_ut1 to JD UT for DE441 planetary and house evaluation."
+            ],
+            "corrections": [
+                "Ecliptic-to-equatorial declination reduction via true obliquity, Church of Light linear orb-decay aspect/parallel scoring, and essential/accidental house-power weighting."
+            ],
+            "policies_defaults": [
+                "Governed by DEFAULT_ASTRODYNE_POLICY (Elbert Benjamine / Church of Light tables); response discloses source_mode, requested/effective house_system, house_fallback, planetary_frame, kernel_required, and stage_sequence."
+            ],
+            "fallbacks": [
+                "Polar house fallback is disclosed via house_fallback and house_fallback_reason; cusp distributions with more than two house cusps in one sign are refused rather than silently misallocated."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, invalid observer coordinates, and unsupported multi-cusp sign distributions (>2 cusps in a single sign) are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "stelliums_analysis_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Snapshot-based stellium cluster detection, span policy, and house/sign co-presence validation",
+        "operation": (
+            "Validate caller-supplied position and optional house-cusp "
+            "snapshots (verifying classification consistency and opposite-angle "
+            "DSC/IC residuals), partition core vs associated bodies, and "
+            "evaluate circular span, sign, and house stellium criteria into "
+            "StelliumAnalysis."
+        ),
+        "summary": (
+            "The /v1/stelliums/analyze surface performs pure snapshot-based "
+            "stellium detection without hidden ephemeris calculation, "
+            "preserving core/associated body roles, house boundary receipts, "
+            "and named partial status when houses are absent."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Caller-supplied body position snapshot, StelliumAnalysisPolicy, StelliumSelection (core vs associated bodies), StelliumContext, and optional StelliumHouseSnapshot."
+            ],
+            "units": [
+                "Longitudes, max_span_degrees, and total_arc_degrees use degrees in [0.0, 360.0); body counts are integers."
+            ],
+            "reference_frame": [
+                "Circular ecliptic longitude frame disclosed in StelliumContext and verified against StelliumHouseSnapshot.longitude_frame."
+            ],
+            "origin": [
+                "Snapshot-governed; performs no hidden geocentric or topocentric ephemeris recalculation."
+            ],
+            "timescale": [
+                "Snapshot-based analysis; preserves caller-supplied StelliumContext metadata without time-scale conversion."
+            ],
+            "corrections": [
+                "Circular wrap-around arc-span minimization, core-only span/count gating, and house-snapshot DSC/IC opposite-angle verification."
+            ],
+            "policies_defaults": [
+                "Separates core bodies (which govern cluster admission and total_arc_degrees) from associated bodies; validates house classification fields against classify_house_system."
+            ],
+            "fallbacks": [
+                "When houses are omitted, house-dependent criteria return a named partial status with house_unavailable_reason rather than an empty success."
+            ],
+            "refusal_behavior": [
+                "Non-finite longitudes, contradictory house classification metadata, DSC/IC opposite-angle mismatches, and malformed policy/selection snapshots are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "received_light_cone_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Explicit light-cone apparent vs geometric position and photon emission epoch reduction",
+        "operation": (
+            "Evaluate both apparent observed ecliptic coordinates (at photon "
+            "emission instant jd_ut - tau) and instantaneous geometric "
+            "coordinates (at jd_ut) via DE441, compute one-way light travel "
+            "time tau = distance_km / C_KM_PER_DAY, and return "
+            "ReceivedLightPosition."
+        ),
+        "summary": (
+            "The received_light_at surface makes light-cone geometry explicit "
+            "by pairing apparent and geometric ecliptic coordinates with "
+            "distance_km, light_travel_days, emission_jd, and signed "
+            "longitude_displacement."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Physical solar-system body name in RECEIVED_LIGHT_BODIES and finite Julian Date jd_ut."
+            ],
+            "units": [
+                "Longitudes, latitudes, and longitude_displacement use degrees; distance_km uses kilometres (distance_au in AU); light_travel_days uses days (light_travel_minutes in minutes); speed uses degrees per day."
+            ],
+            "reference_frame": [
+                "Apparent ecliptic of date paired with instantaneous geometric ecliptic of date in [0.0, 360.0)."
+            ],
+            "origin": [
+                "Geocentric observer at jd_ut."
+            ],
+            "timescale": [
+                "Julian Date UT (jd_ut) paired with explicit photon emission epoch emission_jd = jd_ut - light_travel_days."
+            ],
+            "corrections": [
+                "DE441 one-way light-time retardations (tau = distance_km / C_KM_PER_DAY) and apparent-sky reductions contrasted against instantaneous geometric coordinates."
+            ],
+            "policies_defaults": [
+                "Admits only physical light-emitting solar-system bodies in RECEIVED_LIGHT_BODIES; zodiac sign, sign_symbol, and sign_degree reflect apparent_longitude."
+            ],
+            "fallbacks": [
+                "No synthetic light-time fallback for non-emitting mathematical points."
+            ],
+            "refusal_behavior": [
+                "Computed points without physical photon emission (True Node, Mean Node, Lilith) and unknown body names raise ValueError."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 
