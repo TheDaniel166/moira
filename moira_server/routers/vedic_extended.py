@@ -8,6 +8,13 @@ from moira import Moira
 from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..dependencies import get_engine
+from ..models.jaimini_profiles import (
+    JaiminiCatalogueResponse, CharaProfileRequest, CharaProfileResponse,
+    ArgalaAssessmentRequest, ArgalaAssessmentResponse,
+)
+from ..services.jaimini_profiles import (
+    jaimini_profile_catalogue, compute_chara_profile, compute_argala_assessment,
+)
 from ..models.sayanadi import AvasthaBirthRequest, SayanadiRequest, SayanadiResponse
 from ..serializers.avasthas import serialize_avastha_birth, serialize_avastha_chart
 from ..services.avasthas import compute_avastha_birth
@@ -40,6 +47,24 @@ avasthas_router = APIRouter(prefix="/v1/avasthas", tags=["avasthas"])
 jaimini_extended_router = APIRouter(
     prefix="/v1/jaimini/extended", tags=["jaimini"],
 )
+
+
+@jaimini_extended_router.get("/profiles", response_model=JaiminiCatalogueResponse)
+def jaimini_profiles_route() -> JaiminiCatalogueResponse:
+    """Discover executable, retained legacy and research-only Jaimini profiles."""
+    return jaimini_profile_catalogue()
+
+
+@jaimini_extended_router.post("/chara-dasha/profile", response_model=CharaProfileResponse)
+def chara_profile_route(request: CharaProfileRequest) -> CharaProfileResponse:
+    """One named Rangacharya recipe, source years and optional explicit Moira clock."""
+    return compute_chara_profile(request)
+
+
+@jaimini_extended_router.post("/argala/assessment", response_model=ArgalaAssessmentResponse)
+def argala_assessment_route(request: ArgalaAssessmentRequest) -> ArgalaAssessmentResponse:
+    """Named Argala assessment preserving qualifications and unresolved strength."""
+    return compute_argala_assessment(request)
 
 
 @upagrahas_router.post("/sun-based", response_model=SunBasedUpagrahasResponse)
@@ -178,8 +203,7 @@ def arudhas_route(request: ArudhaRequest) -> ArudhaResponse:
 
 @jaimini_extended_router.post("/argala", response_model=ArgalaResponse)
 def argala_route(request: ArgalaRequest) -> ArgalaResponse:
-    """Argala/virodha for all twelve houses (JUS 1.1.5-10, Rath/PVR
-    reading), including the Ketu reversal and the malefic-third rule."""
+    """Retained Moira count convention; source assessments have a separate route."""
     from moira.jaimini_extended import argala
 
     result = argala(
@@ -201,6 +225,7 @@ def argala_route(request: ArgalaRequest) -> ArgalaResponse:
             for h, a in result.houses.items()
         },
         lineage=result.lineage,
+        computation=result.computation,
     )
 
 

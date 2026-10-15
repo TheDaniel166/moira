@@ -351,13 +351,13 @@ class HouseSystemFamily(str, Enum):
       "scope": "class",
       "id": "moira.houses.HouseSystemFamily",
       "risk": "low",
-      "api": {"frozen": ["EQUAL", "QUADRANT", "WHOLE_SIGN", "SOLAR"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
+      "api": {"frozen":["EQUAL","QUADRANT","WHOLE_SIGN","SOLAR"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -400,13 +400,13 @@ class HouseSystemCuspBasis(str, Enum):
       "scope": "class",
       "id": "moira.houses.HouseSystemCuspBasis",
       "risk": "low",
-      "api": {"frozen": ["ECLIPTIC", "EQUATORIAL", "SEMI_ARC", "OBLIQUE_ASCENSION", "QUADRANT_TRISECTION", "PRIME_VERTICAL", "HORIZON", "POLAR_PROJECTION", "SINUSOIDAL", "GREAT_CIRCLE", "APC_FORMULA", "SOLAR_POSITION"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
+      "api": {"frozen":["ECLIPTIC","EQUATORIAL","SEMI_ARC","OBLIQUE_ASCENSION","QUADRANT_TRISECTION","PRIME_VERTICAL","HORIZON","POLAR_PROJECTION","SINUSOIDAL","GREAT_CIRCLE","APC_FORMULA","SOLAR_POSITION"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -480,13 +480,13 @@ class HouseSystemClassification:
       "scope": "class",
       "id": "moira.houses.HouseSystemClassification",
       "risk": "medium",
-      "api": {"frozen": ["family", "cusp_basis", "latitude_sensitive", "polar_capable"], "internal": []},
-      "state": {"mutable": false, "owners": ["_CLASSIFICATIONS"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none; known-code validation belongs to classify_house_system"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "classification_change"]}
+      "api": {"frozen":["family","cusp_basis","latitude_sensitive","polar_capable"],"internal":[]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"classification_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"No custom validation; standard dataclass constructor errors propagate. Annotations do not enforce field types."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -624,14 +624,14 @@ class UnknownSystemPolicy(str, Enum):
     {
       "scope": "class",
       "id": "moira.houses.UnknownSystemPolicy",
-      "risk": "medium",
-      "api": {"frozen": ["FALLBACK_TO_PLACIDUS", "RAISE"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none; calculate_houses enforces the selected policy"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
+      "risk": "low",
+      "api": {"frozen":["FALLBACK_TO_PLACIDUS","RAISE"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -671,14 +671,14 @@ class PolarFallbackPolicy(str, Enum):
     {
       "scope": "class",
       "id": "moira.houses.PolarFallbackPolicy",
-      "risk": "high",
-      "api": {"frozen": ["FALLBACK_TO_PORPHYRY", "FALLBACK_TO_EQUAL", "FALLBACK_TO_WHOLE_SIGN", "RAISE", "EXPERIMENTAL_SEARCH"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none; calculate_houses enforces the selected policy"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
+      "risk": "low",
+      "api": {"frozen":["FALLBACK_TO_PORPHYRY","FALLBACK_TO_EQUAL","FALLBACK_TO_WHOLE_SIGN","RAISE","EXPERIMENTAL_SEARCH"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -750,14 +750,14 @@ class HousePolicy:
     {
       "scope": "class",
       "id": "moira.houses.HousePolicy",
-      "risk": "high",
-      "api": {"frozen": ["unknown_system", "polar_fallback"], "public_methods": ["default", "strict", "experimental"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none; calculate_houses raises when the selected doctrine requires it"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "fallback_policy_change"]}
+      "risk": "medium",
+      "api": {"frozen":["unknown_system","polar_fallback","default","strict","experimental"],"internal":[]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"policy_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"Standard dataclass constructor errors propagate; unknown-system and polar policy enforcement belongs to the house engine."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -1096,14 +1096,14 @@ class HouseCusps:
     {
       "scope": "class",
       "id": "moira.houses.HouseCusps",
-      "risk": "high",
-      "api": {"frozen": ["system", "cusps", "asc", "mc", "armc", "east_point", "vertex", "anti_vertex", "effective_system", "fallback", "fallback_reason", "classification", "policy", "boundary_geometry"], "public_methods": ["dsc", "ic", "is_quadrant_system", "is_latitude_sensitive", "sign_of_cusp"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["calculate_houses", "houses_from_armc"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError or TypeError when constructor invariants fail"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change", "fallback_policy_change"]}
+      "risk": "medium",
+      "api": {"frozen":["system","cusps","asc","mc","armc","east_point","vertex","anti_vertex","effective_system","fallback","fallback_reason","classification","policy","boundary_geometry","dsc","ic","is_quadrant_system","is_latitude_sensitive","sign_of_cusp"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"result_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked construction invariants; TypeError for a non-HousePolicy policy; tuple-conversion, lookup and index errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -1265,13 +1265,13 @@ class DerivedHouseCusps:
       "scope": "class",
       "id": "moira.houses.DerivedHouseCusps",
       "risk": "medium",
-      "api": {"frozen": ["pivot_house", "cusps", "source"], "public_methods": ["sign_of_cusp"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["derived_houses"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when pivot or rotated-cusp invariants fail"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change"]}
+      "api": {"frozen":["pivot_house","cusps","source","sign_of_cusp"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"derived_result_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for invalid pivot, cusp count or pivot alignment; source and sequence lookup/type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4178,13 +4178,13 @@ class HousePlacement:
       "scope": "class",
       "id": "moira.houses.HousePlacement",
       "risk": "medium",
-      "api": {"frozen": ["house", "longitude", "house_cusps", "exact_on_cusp", "cusp_longitude"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["assign_house"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when placement invariants fail"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "boundary_doctrine_change"]}
+      "api": {"frozen":["house","longitude","house_cusps","exact_on_cusp","cusp_longitude"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"membership_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked house/longitude/cusp invariants; source cusp lookup and type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4354,13 +4354,13 @@ class HouseBoundaryProfile:
       "scope": "class",
       "id": "moira.houses.HouseBoundaryProfile",
       "risk": "medium",
-      "api": {"frozen": ["placement", "opening_cusp", "closing_cusp", "dist_to_opening", "dist_to_closing", "house_span", "nearest_cusp", "nearest_cusp_distance", "near_cusp_threshold", "is_near_cusp"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["describe_boundary"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when distance or threshold invariants fail"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "boundary_doctrine_change", "invariant_change"]}
+      "api": {"frozen":["placement","opening_cusp","closing_cusp","dist_to_opening","dist_to_closing","house_span","nearest_cusp","nearest_cusp_distance","near_cusp_threshold","is_near_cusp"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"boundary_profile_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked ranges, forward distances, span, threshold and near-cusp flag consistency; type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4531,14 +4531,14 @@ class HouseAngularity(str, Enum):
     {
       "scope": "class",
       "id": "moira.houses.HouseAngularity",
-      "risk": "medium",
-      "api": {"frozen": ["ANGULAR", "SUCCEDENT", "CADENT"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
+      "risk": "low",
+      "api": {"frozen":["ANGULAR","SUCCEDENT","CADENT"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4603,13 +4603,13 @@ class HouseAngularityProfile:
       "scope": "class",
       "id": "moira.houses.HouseAngularityProfile",
       "risk": "medium",
-      "api": {"frozen": ["placement", "category", "house"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["describe_angularity"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when house and angularity disagree"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "invariant_change"]}
+      "api": {"frozen":["placement","category","house"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"angularity_profile_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked house range, placement house and angularity category consistency; lookup/type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4709,13 +4709,13 @@ class HouseSystemComparison:
       "scope": "class",
       "id": "moira.houses.HouseSystemComparison",
       "risk": "medium",
-      "api": {"frozen": ["left", "right", "cusp_deltas", "systems_agree", "fallback_differs", "families_differ"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["compare_systems"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when deltas or agreement flags are inconsistent"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "comparison_semantics_change", "invariant_change"]}
+      "api": {"frozen":["left","right","cusp_deltas","systems_agree","fallback_differs","families_differ"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"comparison_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked delta count/range and effective-system/fallback flags; caller-supplied reference/type errors propagate. The class does not recompute cusp deltas."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4782,13 +4782,13 @@ class HousePlacementComparison:
       "scope": "class",
       "id": "moira.houses.HousePlacementComparison",
       "risk": "medium",
-      "api": {"frozen": ["longitude", "placements", "houses", "all_agree", "angularity_agrees"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["compare_placements"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when placements and summary fields disagree"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "comparison_semantics_change", "invariant_change"]}
+      "api": {"frozen":["longitude","placements","houses","all_agree","angularity_agrees"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"placement_comparison_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked longitude, placement count, per-placement house/longitude and all_agree consistency; type errors propagate. The class does not recompute angularity_agrees."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -4961,13 +4961,13 @@ class HouseOccupancy:
       "scope": "class",
       "id": "moira.houses.HouseOccupancy",
       "risk": "medium",
-      "api": {"frozen": ["house", "count", "longitudes", "placements", "is_empty"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["distribute_points"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when count or placement alignment fails"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "invariant_change"]}
+      "api": {"frozen":["house","count","longitudes","placements","is_empty"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"occupancy_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked house range, counts, empty flag and per-placement house agreement; type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -5026,13 +5026,13 @@ class HouseDistributionProfile:
       "scope": "class",
       "id": "moira.houses.HouseDistributionProfile",
       "risk": "medium",
-      "api": {"frozen": ["house_cusps", "point_count", "occupancies", "counts", "empty_houses", "dominant_houses", "angular_count", "succedent_count", "cadent_count"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["distribute_points"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when occupancy or chart totals are inconsistent"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "distribution_semantics_change", "invariant_change"]}
+      "api": {"frozen":["house_cusps","point_count","occupancies","counts","empty_houses","dominant_houses","angular_count","succedent_count","cadent_count"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"distribution_profile_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError for checked occupancy/count shape, totals, per-house counts and supplied dominant-house membership; lookup/index/type errors propagate."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -5618,13 +5618,13 @@ class CuspSpeed:
       "scope": "class",
       "id": "moira.houses.CuspSpeed",
       "risk": "medium",
-      "api": {"frozen": ["house", "cusp_longitude", "speed_deg_per_day"], "internal": []},
-      "state": {"mutable": false, "owners": ["cusp_speeds_at", "house_dynamics_from_armc"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none at the vessel boundary"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "unit_semantics_change"]}
+      "api": {"frozen":["house","cusp_longitude","speed_deg_per_day"],"internal":[]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"dynamics_leaf_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"No custom validation; standard dataclass constructor errors propagate. Motion units are carried as declared data, not independently verified here."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -5699,13 +5699,13 @@ class HouseDynamics:
       "scope": "class",
       "id": "moira.houses.HouseDynamics",
       "risk": "medium",
-      "api": {"frozen": ["house_cusps", "cusp_speeds", "asc_speed_deg_per_day", "mc_speed_deg_per_day", "vertex_speed_deg_per_day", "anti_vertex_speed_deg_per_day"], "internal": []},
-      "state": {"mutable": false, "owners": ["cusp_speeds_at", "house_dynamics_from_armc"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none at the vessel boundary; producing calculations raise upstream"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "unit_semantics_change", "derivative_policy_change"]}
+      "api": {"frozen":["house_cusps","cusp_speeds","asc_speed_deg_per_day","mc_speed_deg_per_day","vertex_speed_deg_per_day","anti_vertex_speed_deg_per_day"],"internal":[]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"dynamics_profile_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"No custom validation; standard dataclass constructor errors propagate. This vessel does not compute or validate motion samples."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -6078,14 +6078,14 @@ class Quadrant(str, Enum):
     {
       "scope": "class",
       "id": "moira.houses.Quadrant",
-      "risk": "medium",
-      "api": {"frozen": ["Q1", "Q2", "Q3", "Q4"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "canon_change"]}
+      "risk": "low",
+      "api": {"frozen":["Q1","Q2","Q3","Q4"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -6179,13 +6179,13 @@ class QuadrantEmphasisProfile:
       "scope": "class",
       "id": "moira.houses.QuadrantEmphasisProfile",
       "risk": "medium",
-      "api": {"frozen": ["house_cusps", "point_count", "q1_count", "q2_count", "q3_count", "q4_count", "q1_points", "q2_points", "q3_points", "q4_points", "dominant_quadrant", "eastern_count", "western_count", "northern_count", "southern_count"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["quadrant_emphasis"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when quadrant or hemisphere totals are inconsistent"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change", "invariant_change"]}
+      "api": {"frozen":["house_cusps","point_count","q1_count","q2_count","q3_count","q4_count","q1_points","q2_points","q3_points","q4_points","dominant_quadrant","eastern_count","western_count","northern_count","southern_count"],"internal":["__post_init__"]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"quadrant_profile_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError when quadrant or hemisphere count totals disagree with point_count; supplied point buckets are not independently recomputed."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -6345,14 +6345,14 @@ class DiurnalQuadrant(str, Enum):
     {
       "scope": "class",
       "id": "moira.houses.DiurnalQuadrant",
-      "risk": "medium",
-      "api": {"frozen": ["DQ1", "DQ2", "DQ3", "DQ4"], "internal": []},
-      "state": {"mutable": false, "owners": []},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "doctrine_change"]}
+      "risk": "low",
+      "api": {"frozen":["DQ1","DQ2","DQ3","DQ4"],"internal":[]},
+      "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
+      "failures": {"policy":"Standard Enum conversion and lookup failures propagate; no custom computation or validation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -6452,13 +6452,13 @@ class DiurnalPosition:
       "scope": "class",
       "id": "moira.houses.DiurnalPosition",
       "risk": "medium",
-      "api": {"frozen": ["quadrant", "hour_angle", "semi_diurnal_arc", "semi_nocturnal_arc", "fraction", "is_above_horizon", "is_eastern", "is_circumpolar", "is_never_rises", "ra", "dec"], "internal": []},
-      "state": {"mutable": false, "owners": ["diurnal_position"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "none at the vessel boundary; diurnal_position validates inputs upstream"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "diurnal_semantics_change", "unit_semantics_change"]}
+      "api": {"frozen":["quadrant","hour_angle","semi_diurnal_arc","semi_nocturnal_arc","fraction","is_above_horizon","is_eastern","is_circumpolar","is_never_rises","ra","dec"],"internal":[]},
+      "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"diurnal_position_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"No custom validation; standard dataclass constructor errors propagate. Diurnal geometry and flags are supplied by the producing computation."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """
@@ -6643,13 +6643,13 @@ class DiurnalEmphasisProfile:
       "scope": "class",
       "id": "moira.houses.DiurnalEmphasisProfile",
       "risk": "medium",
-      "api": {"frozen": ["point_count", "dq1_count", "dq2_count", "dq3_count", "dq4_count", "dq1_points", "dq2_points", "dq3_points", "dq4_points", "positions", "dominant_quadrant", "above_horizon_count", "below_horizon_count", "eastern_count", "western_count"], "internal": ["__post_init__"]},
-      "state": {"mutable": false, "owners": ["diurnal_emphasis"]},
-      "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise ValueError when quadrant totals are inconsistent"},
-      "succession": {"stance": "terminal", "override_points": []},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change", "diurnal_semantics_change", "invariant_change"]}
+      "api": {"frozen":["point_count","dq1_count","dq2_count","dq3_count","dq4_count","dq1_points","dq2_points","dq3_points","dq4_points","positions","dominant_quadrant","above_horizon_count","below_horizon_count","eastern_count","western_count"],"internal":["__post_init__"]},
+      "state": {"mutable":true,"owners":["the constructed result or policy instance"],"kind":"diurnal_profile_vessel","notes":"Frozen field bindings, but positions is a caller-accessible mutable dictionary. No recursive freeze or synchronization is provided."},
+      "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
+      "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
+      "failures": {"policy":"ValueError when diurnal quadrant counts do not sum to point_count; the positions dictionary and other summary fields are not recomputed or deep-frozen."},
+      "succession": {"stance":"standalone_vessel"},
+      "agent": {"autofix":"allowed","requires_human_for":["public API, defaults or invariant changes"]}
     }
     [/MACHINE_CONTRACT]
     """

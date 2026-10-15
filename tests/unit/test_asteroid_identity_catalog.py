@@ -17,10 +17,10 @@ EXPECTED_CATALOG_SHA256 = (
     "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec"
 )
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
-    "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e"
+    "3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d"
 )
 EXPECTED_UNIFIED_MASTER_SHA256 = (
-    "70f36b651426ad4b3f050996a26d456c1213a00e4bab7f4ec7f37be02b3ee843"
+    "c0d983d66d664182dfe18b0aa9420f491802ac98ad9c205e2bb367c8d998ef0f"
 )
 EXPECTED_ADMITTED_TARGETS_SHA256 = (
     "676ca3b07acbb05b013ce5422441328275abc83f4109b6582f23bb203ac3b85f"
@@ -110,7 +110,7 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert hashlib.sha256(catalog_bytes).hexdigest() == EXPECTED_CATALOG_SHA256
     assert metadata["schema_version"] == 1
     assert metadata["catalog_id"] == "moira-asteroids"
-    assert metadata["catalog_version"] == "2026.09.18.1"
+    assert metadata["catalog_version"] == "2026.10.10.1"
     assert metadata["source"]["release_manifest_sha256"] == (
         EXPECTED_RELEASE_MANIFEST_SHA256
     )

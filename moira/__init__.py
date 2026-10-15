@@ -228,9 +228,22 @@ from .stelliums import (
 )
 from .facade import (
     Chart, MissingEphemerisKernelError, Moira, __author__, __version__,
+    JaiminiChart, ArgalaReference, CharaProjection,
+    JaiminiSource, JaiminiRule, JaiminiConflict, JaiminiProfile,
+    JaiminiProfileCatalogue, list_jaimini_profiles,
+    CharaArithmeticRow, CharaProfileInterval, CharaProfileSchedule,
+    CharaArithmeticResult, evaluate_chara_profile,
+    ArgalaCharacter, ArgalaCountGrade, ArgalaQuarterWitness, ArgalaEligibleBlockers,
+    ArgalaStrengthFactors, ArgalaPairAssessment, ArgalaSpecialThird,
+    ArgalaReferenceAssessment, ArgalaAssessmentResult, assess_argala, ArgalaComputation,
     SayanadiBirthPolicy, SayanadiSunriseBracket, AvasthaBirthResult,
     SayanadiResourceError, SayanadiCoverageError, avasthas_for_datetime,
     NamedMuhurtaPolicy, NamedMuhurtaAnchor, NamedMuhurtaInterval, NamedMuhurtaResult, NamedMuhurtaDay, named_muhurta_from_solar_times, named_muhurta_for_date,
+    YogaExtensionSource, YogaExtensionRule, YogaExtensionProfile,
+    YogaExtensionPolicy, YogaExtensionCatalogue, list_yoga_extension_rules,
+    YogaExtensionPosition, YogaExtensionClause, YogaExtensionBranch,
+    YogaExtensionQualification, YogaExtensionResult, YogaExtensionChartResult,
+    evaluate_yoga_extensions,
 )
 from .houses import (
     HouseBoundaryCurvePoint,
@@ -564,6 +577,7 @@ from .yogas import (
     dhana_yogas,
     evaluate_yogas,
 )
+
 from .upagrahas import (
     UpagrahaPolicy,
     SunBasedUpagrahas,
@@ -1473,6 +1487,9 @@ from .mundane import (
 )
 
 __all__ = [
+    # VED-013 source-scoped profiles and immutable evidence.
+    'JaiminiChart', 'ArgalaReference', 'CharaProjection', 'JaiminiSource', 'JaiminiRule', 'JaiminiConflict', 'JaiminiProfile', 'JaiminiProfileCatalogue', 'list_jaimini_profiles', 'CharaArithmeticRow', 'CharaProfileInterval', 'CharaProfileSchedule', 'CharaArithmeticResult', 'evaluate_chara_profile', 'ArgalaCharacter', 'ArgalaCountGrade', 'ArgalaQuarterWitness', 'ArgalaEligibleBlockers', 'ArgalaStrengthFactors', 'ArgalaPairAssessment', 'ArgalaSpecialThird', 'ArgalaReferenceAssessment', 'ArgalaAssessmentResult', 'assess_argala', 'ArgalaComputation',
+    'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",
     "LagnaRuleEvidence",
@@ -2784,4 +2801,68 @@ __all__ = [
     "WesternElectionalProfileWindow",
     "WesternElectionalProfileScan",
     "scan_western_electional_profile",
+]
+
+# VED-014 source-owned Kalachakra public surface.
+from .kalachakra import (
+    KalachakraSource,
+    KalachakraRule,
+    KalachakraConflict,
+    KalachakraProfile,
+    KalachakraCatalogue,
+    KalachakraInputError,
+    KalachakraProjectionError,
+    KalachakraCoverageError,
+    KalachakraResourceError,
+    KalachakraInvariantError,
+    KalachakraEpoch,
+    KalachakraSeed,
+    KalachakraProjection,
+    KalachakraSourceSpan,
+    KalachakraDateSpan,
+    KalachakraAstronomy,
+    KalachakraProvenance,
+    KalachakraBirth,
+    KalachakraPeriod,
+    KalachakraTransition,
+    KalachakraProjectionReceipt,
+    KalachakraSequence,
+    KalachakraActivePeriod,
+    KalachakraCurrent,
+    kalachakra_profiles,
+    kalachakra_sequence,
+    kalachakra_for_datetime,
+    project_kalachakra_sequence,
+    current_kalachakra_periods,
+)
+__all__ += [
+    'KalachakraSource',
+    'KalachakraRule',
+    'KalachakraConflict',
+    'KalachakraProfile',
+    'KalachakraCatalogue',
+    'KalachakraInputError',
+    'KalachakraProjectionError',
+    'KalachakraCoverageError',
+    'KalachakraResourceError',
+    'KalachakraInvariantError',
+    'KalachakraEpoch',
+    'KalachakraSeed',
+    'KalachakraProjection',
+    'KalachakraSourceSpan',
+    'KalachakraDateSpan',
+    'KalachakraAstronomy',
+    'KalachakraProvenance',
+    'KalachakraBirth',
+    'KalachakraPeriod',
+    'KalachakraTransition',
+    'KalachakraProjectionReceipt',
+    'KalachakraSequence',
+    'KalachakraActivePeriod',
+    'KalachakraCurrent',
+    'kalachakra_profiles',
+    'kalachakra_sequence',
+    'kalachakra_for_datetime',
+    'project_kalachakra_sequence',
+    'current_kalachakra_periods',
 ]

@@ -8,6 +8,7 @@
     "trajectory_authority": "NASA/JPL Horizons",
     "trajectory_source": "JPL Horizons VECTORS",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "horizons_file_api": "https://ssd.jpl.nasa.gov/api/horizons_file.api",
     "query_policy": {
       "command_template": "DES={number}P;NOFRAG;CAP",
       "object_data": false,
@@ -18,7 +19,31 @@
       "vector_table": 2,
       "csv_format": true,
       "time_digits": "FRACSEC",
-      "timescale": "JDTDB"
+      "timescale": "JDTDB",
+      "sampling": {
+        "policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+        "mode": "certified_adaptive_radial_extrema",
+        "base_step_days": 10,
+        "initial_refinement_step_days": 1.0,
+        "minimum_refinement_step_days": 0.0078125,
+        "refinement_padding_days": 4.0,
+        "refined_extrema": [
+          "PERICENTER",
+          "APOCENTER"
+        ],
+        "time_tags": "nonuniform",
+        "integration_coherence": "every_exact_request_includes_coverage_endpoints",
+        "window_size": 7,
+        "certification": {
+          "witness_step_ratio": 0.5,
+          "distance_absolute_km": 0.1495978707,
+          "event_time_absolute_seconds": 8.64,
+          "failure_action": "halve_refinement_step_or_reject_body"
+        },
+        "horizons_tlist_limit": 10000,
+        "reserved_integration_anchor_epochs": 2,
+        "refinement_request_max_span_days": 11688.0
+      }
     },
     "identity_source": "Horizons target body name returned for each numbered periodic-comet query",
     "naif_convention": "1000000_plus_periodic_comet_number",
@@ -29,7 +54,9 @@
     "capture_limits": {
       "raw_horizons_responses_retained": false,
       "per_query_retrieval_timestamps_retained": false,
-      "statement": "The original build retained parsed state vectors and build evidence, not raw Horizons response bodies or query timestamps."
+      "per_query_receipt_timestamps_retained": true,
+      "per_query_response_hashes_retained": true,
+      "statement": "The build retains parsed state vectors plus receipt-generation timestamps and SHA-256 response hashes, not raw Horizons response bodies or authoritative retrieval timestamps."
     }
   },
   "coverage": {
@@ -38,8 +65,29 @@
     "note": "requested DE441 span; per-comet coverage clamped to Horizons validity"
   },
   "sampling": {
-    "step_days": 30,
-    "window_size": 5
+    "step_days": 10,
+    "window_size": 7,
+    "policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+    "mode": "certified_adaptive_radial_extrema",
+    "base_step_days": 10,
+    "initial_refinement_step_days": 1.0,
+    "minimum_refinement_step_days": 0.0078125,
+    "refinement_padding_days": 4.0,
+    "refined_extrema": [
+      "PERICENTER",
+      "APOCENTER"
+    ],
+    "time_tags": "nonuniform",
+    "integration_coherence": "every_exact_request_includes_coverage_endpoints",
+    "certification": {
+      "witness_step_ratio": 0.5,
+      "distance_absolute_km": 0.1495978707,
+      "event_time_absolute_seconds": 8.64,
+      "failure_action": "halve_refinement_step_or_reject_body"
+    },
+    "horizons_tlist_limit": 10000,
+    "reserved_integration_anchor_epochs": 2,
+    "refinement_request_max_span_days": 11688.0
   },
   "accuracy_note": "Comet positions are apparition-dependent due to non-gravitational outgassing forces; fidelity degrades far from observed apparitions.",
   "body_count": 497,
@@ -76,12 +124,12 @@
         1000029,
         1000030
       ],
-      "bytes": 15367168,
-      "sha256": "b5385ac89e110e0c26975010cf6f193697916ee4f7c2f99e33eb2ab43d4f77b9",
+      "bytes": 51148800,
+      "sha256": "7ed6a1b9bd01766aaebfddcddd704594593cea521733b426b23b2bf1fc83eaaa",
       "metadata": {
         "path": "comet_shard_000.metadata.json",
-        "bytes": 8839,
-        "sha256": "919b0ec305f6b63b2f8bfc1514c250ccb7be07fffe572ad92b3c307db6165980"
+        "bytes": 370635,
+        "sha256": "4c5d630f41644ffd966d2f4afd2d1c14572b7b4469fede7855eef2eb50663383"
       }
     },
     {
@@ -115,12 +163,12 @@
         1000055,
         1000056
       ],
-      "bytes": 15367168,
-      "sha256": "49c4840f8eaedb9ab5efc7abbec84bb7a028193a15d5f952953987006b194039",
+      "bytes": 50768896,
+      "sha256": "b3e9c2eefe93de41633e4f7fa1c6d4289413620d17a672a9c76cb668e020ec56",
       "metadata": {
         "path": "comet_shard_001.metadata.json",
-        "bytes": 9100,
-        "sha256": "6a38878828acb4e1e055bd7ce3ab224268572067fa5e22ab406f7d6d9cff204f"
+        "bytes": 366096,
+        "sha256": "2efcdf9714475ec23db93c01b2c847962c0f61d50adfca4462af462905f5f097"
       }
     },
     {
@@ -154,12 +202,12 @@
         1000081,
         1000082
       ],
-      "bytes": 15367168,
-      "sha256": "4e6fda19f09d0889166ea4f6369a9cea3383546e06cc3dbb5d0b6daf56f75370",
+      "bytes": 55121920,
+      "sha256": "f3e6712e74899fb2d1d2a80745fc5508f0fd2a3b778e32c3a701f855686399ac",
       "metadata": {
         "path": "comet_shard_002.metadata.json",
-        "bytes": 9065,
-        "sha256": "afefc0cca32a20118fe4d26da0f7fdb6fe60ce1289f2a864ea0ea840944e9524"
+        "bytes": 453198,
+        "sha256": "bfd2242441c77a164aca57028385993323cd7dba352ab16c8019767db0e55b1b"
       }
     },
     {
@@ -193,12 +241,12 @@
         1000110,
         1000111
       ],
-      "bytes": 15367168,
-      "sha256": "8522fccdc782b0c29c0c394897bd0c9694f890d5cb6b3ae692b07b702c75a595",
+      "bytes": 57849856,
+      "sha256": "d2b69a804683fa319ddd0b0a843c7e51f63b52939048ada1d4ea13014a9a1661",
       "metadata": {
         "path": "comet_shard_003.metadata.json",
-        "bytes": 8900,
-        "sha256": "e3972e2575232ec71df6fef615fa9179386b6178efdb9623aa73146f8f8b1fd6"
+        "bytes": 463714,
+        "sha256": "af70f75ee7633523a207ba4c8a4958e6968aa0ae47f00f0a76c76e0edd522a11"
       }
     },
     {
@@ -232,12 +280,12 @@
         1000136,
         1000137
       ],
-      "bytes": 15367168,
-      "sha256": "be3503c8e8ac5f707e9352607c26945b2ed1e6ade8245c2fd647a2ab0d972612",
+      "bytes": 50945024,
+      "sha256": "6b4dcb144e0146cb8e3801aa001426db2ef85dbd1b94eeca87dddf4976761c6b",
       "metadata": {
         "path": "comet_shard_004.metadata.json",
-        "bytes": 9154,
-        "sha256": "a011a245df0304d3fbeaea80cad34c2483e98d282d371687307428c18711d1d8"
+        "bytes": 372198,
+        "sha256": "7aaa311e05f0a40b3d288cfc1fd92f7c155d66d67e575e0ee02b4cc3b6461139"
       }
     },
     {
@@ -271,12 +319,12 @@
         1000161,
         1000162
       ],
-      "bytes": 15367168,
-      "sha256": "7609436e634a41fcdb43306eb7a1019cdf9d48f9290f88c9dceca8f2a31ff4a4",
+      "bytes": 50435072,
+      "sha256": "ffd6c962aec6ea1beab590858c408690050f99938d9b59ef9f5972af2429bdf3",
       "metadata": {
         "path": "comet_shard_005.metadata.json",
-        "bytes": 9094,
-        "sha256": "a3ad81e31de416fe50fb8dbb392864aa79daa3b4bd8e27774063186bd94ade1e"
+        "bytes": 359755,
+        "sha256": "15b8215305322b66c415c348a5ac1cd119b1f5e78fa81ac78bd97fd34ef8acb5"
       }
     },
     {
@@ -310,12 +358,12 @@
         1000188,
         1000189
       ],
-      "bytes": 15367168,
-      "sha256": "1ac2ca02a7a5666e6fef3a55a8854938614de7679c31c25aa2724d221ece328f",
+      "bytes": 65357824,
+      "sha256": "439c45a627745382d17b2a334467e061013f235d15dbf6260aae30fa925f2ec3",
       "metadata": {
         "path": "comet_shard_006.metadata.json",
-        "bytes": 8850,
-        "sha256": "eb40c8f597ee7157805c9c0a407f1666de1133219d30272ac8c3d92c7a75edf5"
+        "bytes": 457791,
+        "sha256": "b97168d2c601a16a2507437244e88bd5564dd57b47905679e3a3f51a164cb853"
       }
     },
     {
@@ -349,12 +397,12 @@
         1000213,
         1000214
       ],
-      "bytes": 15367168,
-      "sha256": "6f00c7ef95219c111bc71a4b9a3988ada48a432d05d976b30aef048e3f2fe545",
+      "bytes": 51376128,
+      "sha256": "c3696c00c37231cd17a7af8b6a033a48129bb906ac86120d86320fdb0cc5b375",
       "metadata": {
         "path": "comet_shard_007.metadata.json",
-        "bytes": 8832,
-        "sha256": "e6f2deeff43f7d0744857ebbc959f05e2243f9824cf5829586a8f190fdfec2e6"
+        "bytes": 373521,
+        "sha256": "e1fc472a750ce98dd55dede12c76e6160a83a6a0a214b7ffeff5612d09b3249e"
       }
     },
     {
@@ -388,12 +436,12 @@
         1000238,
         1000239
       ],
-      "bytes": 15367168,
-      "sha256": "6e655c1872171478d2a60f7607ea24f1ee0d4565a5ed68107cf0e787f0683721",
+      "bytes": 51945472,
+      "sha256": "c9803634159dc6ec6428514aabbce9259bcc026185f60d365ec212c2e6f9691c",
       "metadata": {
         "path": "comet_shard_008.metadata.json",
-        "bytes": 8807,
-        "sha256": "01f46b5752d63fae19b3027e53d2d08bc46fb2e2c542355ad5beb93cb4826986"
+        "bytes": 375252,
+        "sha256": "29b1f507299ec50a07aaa124146477f4e3a71d9d9a6f034963fb5f9932087eb4"
       }
     },
     {
@@ -427,12 +475,12 @@
         1000263,
         1000264
       ],
-      "bytes": 15367168,
-      "sha256": "8a834baa700e448cf6f36500c343d94e3bd84c6e5e34245cd260d80c032603b4",
+      "bytes": 51604480,
+      "sha256": "7bc4a0bb976ff0afc6f230c37fd7a8332ec26965a93b8fa442ba92bdc2e2fb7e",
       "metadata": {
         "path": "comet_shard_009.metadata.json",
-        "bytes": 8742,
-        "sha256": "8fa43ac99b77565a4baf58144388391e4772740fede8c6e7d5ea08ed3ef739d6"
+        "bytes": 374963,
+        "sha256": "f3408dba15d99fa5e2d889015d2b2254eca36551312df5e7f3a862f41066a22e"
       }
     },
     {
@@ -466,12 +514,12 @@
         1000290,
         1000291
       ],
-      "bytes": 15367168,
-      "sha256": "952104c3f2e86222401459d1d75628c315e14e1e407a200cb2da420ef54b7fed",
+      "bytes": 50308096,
+      "sha256": "b412f95d6591a6b6ce62811e7cab2e3653423dc1b4167b6b932561bf1c18ea3f",
       "metadata": {
         "path": "comet_shard_010.metadata.json",
-        "bytes": 8880,
-        "sha256": "6993a447db57315c17765e9aaa124de89ab9c801bd0ab9d5464e5e4ecd545c41"
+        "bytes": 360350,
+        "sha256": "cb5de444f8d069e91eb1794e9914edf4089a84143cb9fd870b03ecaece956520"
       }
     },
     {
@@ -505,12 +553,12 @@
         1000315,
         1000316
       ],
-      "bytes": 15367168,
-      "sha256": "85f0dbc4deff6b3072322bf349dd11d70b3f8dc3e3def2ffb645ff0f3d74e1c6",
+      "bytes": 51263488,
+      "sha256": "3f1d1f954c7c09139dbf9d95906d7d1b3c3b76a2acd388ae18dbfc94206acea9",
       "metadata": {
         "path": "comet_shard_011.metadata.json",
-        "bytes": 8879,
-        "sha256": "966c4b9204a1b866f17dcb6ce8775d12865e580dc4d5880c455776b4a61f75fc"
+        "bytes": 369048,
+        "sha256": "87df2c08035fe54a4f6de98728bf6ae75c34de7d756cc1674c0b0beb0a8fce83"
       }
     },
     {
@@ -544,12 +592,12 @@
         1000340,
         1000341
       ],
-      "bytes": 15367168,
-      "sha256": "7966b5dd6d91b13803878bb3c5d94abb83652a1b210d13e88420043dd5b788c0",
+      "bytes": 70035456,
+      "sha256": "920158a8c7f8c8e4c7672a3dc72d74dbd5f27308392953f802a756af235f17af",
       "metadata": {
         "path": "comet_shard_012.metadata.json",
-        "bytes": 8839,
-        "sha256": "9d3abc87883c42966f453516655d49cede424de8104e3b569160248d698f1f1c"
+        "bytes": 564481,
+        "sha256": "62753b4568631a3ad2a6adcfb1a7edfccd7147606c7fa60a06a227184397aabc"
       }
     },
     {
@@ -583,12 +631,12 @@
         1000366,
         1000367
       ],
-      "bytes": 15367168,
-      "sha256": "4ce1332b77d0d289f827783fa701045a85a1a8c17aff6761eb79f04f44c7d6e4",
+      "bytes": 54272000,
+      "sha256": "a2880d5b7f342ba3ce94e4757656a27990f7e4342c1c8dfd7208d0e84f010694",
       "metadata": {
         "path": "comet_shard_013.metadata.json",
-        "bytes": 8840,
-        "sha256": "cf7811c5eadb7dad06b5ebbf989443a3df582aab4bbbb3020aec1306d3810f09"
+        "bytes": 415283,
+        "sha256": "fa45811d0c22a630fdd014705a071d081873cba2720eba6ba8637538e53cfbb7"
       }
     },
     {
@@ -622,12 +670,12 @@
         1000391,
         1000392
       ],
-      "bytes": 15367168,
-      "sha256": "8a943c5a7f1f9eceb263129892b3799d5da360250983bf2910555110884cb88a",
+      "bytes": 49964032,
+      "sha256": "79a282c9b784342d7deec2a032b787a939f161f94f851b23113415a6d8df4500",
       "metadata": {
         "path": "comet_shard_014.metadata.json",
-        "bytes": 8828,
-        "sha256": "4ea9ac82463157a93e22d6684e2ab4ab3f15ef902992424808a2f3c3e3aa838d"
+        "bytes": 368497,
+        "sha256": "ff78e7c6ffbcba6159db91088dc5765caeb0abfda618f9c4a49d5ae641e62e5c"
       }
     },
     {
@@ -661,12 +709,12 @@
         1000416,
         1000417
       ],
-      "bytes": 15367168,
-      "sha256": "bba6ac07af4dbcb3500f98c2c6ee72b65f1a0317cebe1731fefc50fe37e1b8b3",
+      "bytes": 50587648,
+      "sha256": "f613a49fcda20dc77ef102d533e882cfd83e6389721421975bc3e3a1390bdec8",
       "metadata": {
         "path": "comet_shard_015.metadata.json",
-        "bytes": 8908,
-        "sha256": "1c82b2f07e4cceddab64e3ac532755bc4ae214815deb8e588f3bf9a1f2c8366e"
+        "bytes": 368934,
+        "sha256": "1268ea754306e7669806ddac66b7e527a5cf9ffac4f5732bc37298bba7077de0"
       }
     },
     {
@@ -700,12 +748,12 @@
         1000442,
         1000443
       ],
-      "bytes": 15367168,
-      "sha256": "03f93a5c2220436e454b1ce28d762049b852c71d061bbd5dc67bc3e6affe360d",
+      "bytes": 50936832,
+      "sha256": "21363ccede5380e99db5f7f2abc136a1f7f4b0525cfe87ae992794815c70e628",
       "metadata": {
         "path": "comet_shard_016.metadata.json",
-        "bytes": 8909,
-        "sha256": "3900ba4270b4d398e6b5d720af45bd3861954fb9969ffa2fe18f1130ba102c80"
+        "bytes": 368983,
+        "sha256": "6d1f80705a6b8670ad59c8d15b3edac80f3a5873ab94f098575a3e5e2649b339"
       }
     },
     {
@@ -739,12 +787,12 @@
         1000467,
         1000468
       ],
-      "bytes": 15367168,
-      "sha256": "174a29c80fb855eb8dcf0f66f4c0167b0088cdc858e3c107145d88db101d74d2",
+      "bytes": 51081216,
+      "sha256": "da2cd625bbf4ddfc1a6b958fa3747950e738d8e6bb7502b02ae2785516cfbd92",
       "metadata": {
         "path": "comet_shard_017.metadata.json",
-        "bytes": 9017,
-        "sha256": "144a53c8b31d097c90b1115c2fa8288f94f3088dae0880fa5b9957a1c8db9a73"
+        "bytes": 369155,
+        "sha256": "c84336b4df3ea5af406897e62a277b7a9737a19357f7f6a95d0c1de0c5dcb41f"
       }
     },
     {
@@ -778,12 +826,12 @@
         1000493,
         1000494
       ],
-      "bytes": 15367168,
-      "sha256": "299da838ba4fad8b1ed66f090add8fa9f5d90ff9ae550b1f2aa191601f2aedac",
+      "bytes": 52516864,
+      "sha256": "6d8094aa9be7bde8fb75cdcf7439328df58b13cfda7aa1310b3700050f62658f",
       "metadata": {
         "path": "comet_shard_018.metadata.json",
-        "bytes": 8994,
-        "sha256": "6c149c0c5e04b58643ab7d1014b2595ece8aabd0592aa8d7aca55712a3c28ac3"
+        "bytes": 416665,
+        "sha256": "07e5a3aa85f0c3fcbc661f05b0c8657143f937e7cf2b97fc5e5029c6a9bf315e"
       }
     },
     {
@@ -814,19 +862,19 @@
         1000515,
         1000516
       ],
-      "bytes": 13522944,
-      "sha256": "5cc92a4ca6b8ea5ab7aba17358a66faa6ce2fb0c15e30747b6b392ed35f8a3ad",
+      "bytes": 44549120,
+      "sha256": "1814190543376fa89112859d7b7b1e1f4adc1c3b1720440e4583b0d5663c9f8c",
       "metadata": {
         "path": "comet_shard_019.metadata.json",
-        "bytes": 7903,
-        "sha256": "e2de89ec6fb376c973d1da4e6995ce7e6f3f6f9dc3871362acc1c639dfee20eb"
+        "bytes": 323647,
+        "sha256": "8fbdeaeb9f13cde3fc48c0bce715981864349aa41aecdb22c2ae5589d5febfc8"
       }
     }
   ],
-  "catalog_version": "2026.07.28.1",
+  "catalog_version": "2026.10.10.1",
   "release": {
-    "released_utc": "2026-07-28T12:47:17Z",
-    "source_manifest_sha256": "bc8208f6de004915a9baac061d57db3b847ffa186d09ca7a15a8ec237ab6e73d",
+    "released_utc": "2026-10-11T12:18:24Z",
+    "source_manifest_sha256": "0dcf9f662bb1ac8763ee198015f01b6e8c600953eed6aa99bba6a8873402e07c",
     "integrity": {
       "algorithm": "sha256",
       "receipt": "SHA256SUMS",
@@ -836,28 +884,172 @@
       {
         "path": "LICENSE",
         "role": "license",
-        "bytes": 1069,
-        "sha256": "05ffdf01b23096d01fd00bda33d34b85dda365e8119eb8eb054678ada7523c0f"
+        "bytes": 1090,
+        "sha256": "9af4c36525226936a5c8899634c2c609ee793828fe5edfb508fa635524e71570"
       },
       {
         "path": "NOTICE.md",
         "role": "provenance_notice",
-        "bytes": 1101,
-        "sha256": "fe151bbd893e792b120d7b95eddcd73fd6d0b3a53f1a0d364f3f11f7c8e62eb1"
+        "bytes": 1124,
+        "sha256": "b6e9c58d723f0d0443263c79159f15d129f5ec05540677cb7376c3f2c4afa10e"
+      },
+      {
+        "path": "build/audit_comet_solution_freshness.py",
+        "role": "builder_source",
+        "bytes": 13034,
+        "sha256": "00640da33b46030cf9fd773c082af31b8b5e3ed43ec1af7a4adc9510090066ea"
+      },
+      {
+        "path": "build/build_comet_catalog.py",
+        "role": "builder_source",
+        "bytes": 29960,
+        "sha256": "f4dd6639281c8833bf103737622f592d75a9ea7a6d91afe41226845acc894f71"
+      },
+      {
+        "path": "build/horizons_response_cache.py",
+        "role": "builder_source",
+        "bytes": 2390,
+        "sha256": "1aee3939bd2eac44141f93c807f512b666e78527aa8946384c5b246a50e4769a"
+      },
+      {
+        "path": "build/refresh_comet_catalog_solutions.py",
+        "role": "builder_source",
+        "bytes": 15127,
+        "sha256": "80dd4ec79a3b53c74aa836885157a83a2588c5af53e398977bbf219f2f6ace18"
+      },
+      {
+        "path": "build/type13_adaptive_sampling.py",
+        "role": "builder_source",
+        "bytes": 20409,
+        "sha256": "97886932b4dfc1ce451d8eefacff3cae4278aaf7b4dc2edae1c49aa6ad0cbe96"
       },
       {
         "path": "comet_master.json",
         "role": "catalog_build_evidence",
-        "bytes": 172865,
-        "sha256": "78dc12291bf8b3e1a7eab844666632ccffd98b3f362c2d2a1442e9a8714d33f6"
+        "bytes": 7871300,
+        "sha256": "fdda28fdee4d2efb8448f0b7d3d3060b7a2a02f8c104408570e0fd2207386bd3"
       },
       {
         "path": "identity/comet_catalog_aliases.json",
         "role": "identity_alias_policy",
         "bytes": 1107,
         "sha256": "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b"
+      },
+      {
+        "path": "provenance/source_manifest.json",
+        "role": "source_catalog_manifest",
+        "bytes": 21313,
+        "sha256": "0dcf9f662bb1ac8763ee198015f01b6e8c600953eed6aa99bba6a8873402e07c"
+      },
+      {
+        "path": "solution-refresh-receipt.json",
+        "role": "catalog_build_evidence",
+        "bytes": 1218,
+        "sha256": "7f0f437ee5c069545b2f792d39720336e31c1c5318f9faaf917a43efe556a901"
+      },
+      {
+        "path": "validation/comet-freshness-final-20261011.json",
+        "role": "scientific_validation",
+        "bytes": 184300,
+        "sha256": "05e11d921f4046e0115c4b7fdaaf83728d514fc8376e97297d4e012e9c4b707c"
+      },
+      {
+        "path": "validation/comet-freshness-pre-refresh-20261010.json",
+        "role": "scientific_validation",
+        "bytes": 184295,
+        "sha256": "73bb2d454cea1c345e1a18695584eaaa3a28e2ecb01d0692652fb5cd37e73587"
+      },
+      {
+        "path": "validation/comet-refresh-offline-validation-20261011.json",
+        "role": "scientific_validation",
+        "bytes": 6644,
+        "sha256": "f3de5c37c2ce12bb29bd01e2bde005e6b53a2c2ca4f5ff2ae738094f177492f9"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000001-000.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6839,
+        "sha256": "16ce5c7ff37c07ef366d5c0482bd973379d9c0f58c55ebf6d915e14a7d83d0d5"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000001-001.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6644,
+        "sha256": "48393eb805aa7a65f2718417b76715dc0aebc17307eae71a5e59accb54f86f20"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000001-002.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6839,
+        "sha256": "4288ff3a9b0d0765a13a8946a36f2f87d48e0507975af8efbceca8fdc2de5b63"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-003.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6850,
+        "sha256": "b65a59b0809e39b43980efd819b4195b3327098662d1617bfb6cd1ebd771f1dd"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-004.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6655,
+        "sha256": "9135361cfac84b462fd51ee6dad614b5ee68ce4699d01d88d73f4dc510651721"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-005.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6850,
+        "sha256": "b8bd6e91f52e054c708bae5e13e8393ebd4875ebd85cddc8682ebbbec758f1df"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-006.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6850,
+        "sha256": "41e2008876a98a57559829eea7cb36241c3d77429a25ab3ea57bb037c2848004"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-007.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6655,
+        "sha256": "60287a78cb69da619b8fb4c2e57973368b3dc6f1573c96f518b1c25b232ffaf3"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/1000002-008.horizons.txt",
+        "role": "scientific_validation",
+        "bytes": 6850,
+        "sha256": "133ecf59e2e8d5be43aff602741f7faf34d80cf04330e70e132a27baf4f0f2f9"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/report.json",
+        "role": "scientific_validation",
+        "bytes": 10488,
+        "sha256": "e05b8feba89bd21197713ec63890fa5094249367d1b525f40308d9912367e0da"
+      },
+      {
+        "path": "validation/current-comet-anchored-oracle/source_review.json",
+        "role": "scientific_validation",
+        "bytes": 2154,
+        "sha256": "158b5252a7cfc9504cd6b50e34bda80472b1c606a0fc9a45fedde0f449e1c8f6"
+      },
+      {
+        "path": "validation/probe_current_comet_authority.py",
+        "role": "oracle_generator_source",
+        "bytes": 8599,
+        "sha256": "c168b2101c41fbecc6143c5e32785383bf7a6437d452742a588041730ddac113"
+      },
+      {
+        "path": "validation/review_current_comet_oracle.py",
+        "role": "validator_source",
+        "bytes": 6250,
+        "sha256": "299bdc4fe1b18f61e9e0d5284792b028d430e0ff832859414f3c4522a91592b7"
+      },
+      {
+        "path": "validation/validate_refreshed_comets.py",
+        "role": "validator_source",
+        "bytes": 11388,
+        "sha256": "b48ed14b7f7cd59649e371cedeb8d692efe173706b0f85269cc28cbee4819649"
       }
     ],
-    "source_revision": "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50"
+    "source_revision": "e4e9a72e115e972438d3bb07d48388fcf8c440dd"
   }
 }

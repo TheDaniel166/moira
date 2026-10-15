@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.9.9",
+  "engine_version": "6.10.0",
   "entries": [
     {
       "assessment_status": "partial",
@@ -1294,7 +1294,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 385,
+        "source_line": 399,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -1319,7 +1319,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 284,
+        "source_line": 285,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -1684,6 +1684,31 @@
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:assemble_western_electional_ranking",
       "surface_kind": "composition_profile",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.argala_assessment",
+      "canonical_surface_id": "python:moira.facade:assess_argala",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "argala-assessment",
+      "family_label": "Argala Assessment",
+      "ownership": {
+        "source_line": 627,
+        "source_path": "moira/argala_assessment.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:assess_argala",
+      "surface_kind": "calculation",
       "transport": "python"
     },
     {
@@ -2306,7 +2331,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 325,
+        "source_line": 2181,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -3345,7 +3370,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 878,
+        "source_line": 2198,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -3370,7 +3395,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 660,
+        "source_line": 681,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -4544,6 +4569,31 @@
       "transport": "python"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.kalachakra",
+      "canonical_surface_id": "python:moira.facade:current_kalachakra_periods",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "kalachakra",
+      "family_label": "Kalachakra",
+      "ownership": {
+        "source_line": 286,
+        "source_path": "moira/kalachakra.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:current_kalachakra_periods",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "python owner module moira.timelords",
       "canonical_surface_id": "python:moira.facade:current_releasing",
@@ -5632,7 +5682,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 1852,
+        "source_line": 2216,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -6503,6 +6553,31 @@
     },
     {
       "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.chara_profiles",
+      "canonical_surface_id": "python:moira.facade:evaluate_chara_profile",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "chara-profiles",
+      "family_label": "Chara Profiles",
+      "ownership": {
+        "source_line": 298,
+        "source_path": "moira/chara_profiles.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:evaluate_chara_profile",
+      "surface_kind": "composition_profile",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
       "assignment_basis": "python owner module moira._western_electional_construction",
       "canonical_surface_id": "python:moira.facade:evaluate_dorotheus_construction",
       "domain_group": "specialist-and-compositional",
@@ -6803,6 +6878,31 @@
     },
     {
       "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.yoga_extensions",
+      "canonical_surface_id": "python:moira.facade:evaluate_yoga_extensions",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "yoga-extensions",
+      "family_label": "Yoga Extensions",
+      "ownership": {
+        "source_line": 634,
+        "source_path": "moira/yoga_extensions.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:evaluate_yoga_extensions",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
       "assignment_basis": "python owner module moira.yogas",
       "canonical_surface_id": "python:moira.facade:evaluate_yogas",
       "domain_group": "vedic-and-electional",
@@ -6811,7 +6911,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 2079,
+        "source_line": 2231,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -10513,6 +10613,81 @@
     },
     {
       "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.kalachakra",
+      "canonical_surface_id": "python:moira.facade:kalachakra_for_datetime",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "kalachakra",
+      "family_label": "Kalachakra",
+      "ownership": {
+        "source_line": 263,
+        "source_path": "moira/kalachakra.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:kalachakra_for_datetime",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.kalachakra_policy",
+      "canonical_surface_id": "python:moira.facade:kalachakra_profiles",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "kalachakra-policy",
+      "family_label": "Kalachakra Policy",
+      "ownership": {
+        "source_line": 125,
+        "source_path": "moira/kalachakra_policy.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:kalachakra_profiles",
+      "surface_kind": "composition_profile",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.kalachakra",
+      "canonical_surface_id": "python:moira.facade:kalachakra_sequence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "kalachakra",
+      "family_label": "Kalachakra",
+      "ownership": {
+        "source_line": 248,
+        "source_path": "moira/kalachakra.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:kalachakra_sequence",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
       "assignment_basis": "python owner module moira.upagrahas",
       "canonical_surface_id": "python:moira.facade:kalavela_upagrahas",
       "domain_group": "vedic-and-electional",
@@ -10596,7 +10771,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 479,
+        "source_line": 500,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -12077,7 +12252,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 589,
+        "source_line": 2210,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -13027,7 +13202,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 410,
+        "source_line": 2192,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -15022,6 +15197,31 @@
       "transport": "python"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.kalachakra",
+      "canonical_surface_id": "python:moira.facade:project_kalachakra_sequence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "kalachakra",
+      "family_label": "Kalachakra",
+      "ownership": {
+        "source_line": 273,
+        "source_path": "moira/kalachakra.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:project_kalachakra_sequence",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "python owner module moira.phenomena",
       "canonical_surface_id": "python:moira.facade:proximity_events_in_range",
@@ -15156,7 +15356,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 1454,
+        "source_line": 2222,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -15206,7 +15406,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 147,
+        "source_line": 148,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -15231,7 +15431,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 170,
+        "source_line": 171,
         "source_path": "moira/jaimini_extended.py"
       },
       "priority": "P2",
@@ -16962,7 +17162,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 1267,
+        "source_line": 2204,
         "source_path": "moira/yogas.py"
       },
       "priority": "P2",
@@ -20427,7 +20627,7 @@
       "family_id": "avasthas",
       "family_label": "Avasthas",
       "ownership": {
-        "source_line": 116,
+        "source_line": 141,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -20452,7 +20652,7 @@
       "family_id": "avasthas",
       "family_label": "Avasthas",
       "ownership": {
-        "source_line": 141,
+        "source_line": 166,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -20477,7 +20677,7 @@
       "family_id": "avasthas",
       "family_label": "Avasthas",
       "ownership": {
-        "source_line": 132,
+        "source_line": 157,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -21087,6 +21287,106 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/dasha/alternate/yogini/sequence",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'kalachakra-dasha'",
+      "canonical_surface_id": "rest:POST:/v1/dasha/kalachakra/chart/current",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "kalachakra-dasha",
+      "family_label": "Kalachakra Dasha",
+      "ownership": {
+        "source_line": 46,
+        "source_path": "moira_server/routers/kalachakra.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/dasha/kalachakra/chart/current",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'kalachakra-dasha'",
+      "canonical_surface_id": "rest:POST:/v1/dasha/kalachakra/chart/sequence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "kalachakra-dasha",
+      "family_label": "Kalachakra Dasha",
+      "ownership": {
+        "source_line": 34,
+        "source_path": "moira_server/routers/kalachakra.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/dasha/kalachakra/chart/sequence",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'kalachakra-dasha'",
+      "canonical_surface_id": "rest:POST:/v1/dasha/kalachakra/current",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "kalachakra-dasha",
+      "family_label": "Kalachakra Dasha",
+      "ownership": {
+        "source_line": 40,
+        "source_path": "moira_server/routers/kalachakra.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/dasha/kalachakra/current",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'kalachakra-dasha'",
+      "canonical_surface_id": "rest:POST:/v1/dasha/kalachakra/sequence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "kalachakra-dasha",
+      "family_label": "Kalachakra Dasha",
+      "ownership": {
+        "source_line": 28,
+        "source_path": "moira_server/routers/kalachakra.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/dasha/kalachakra/sequence",
       "surface_kind": "calculation",
       "transport": "rest"
     },
@@ -24260,7 +24560,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 179,
+        "source_line": 204,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -24278,6 +24578,31 @@
     {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'jaimini'",
+      "canonical_surface_id": "rest:POST:/v1/jaimini/extended/argala/assessment",
+      "domain_group": "vedic-and-electional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "jaimini",
+      "family_label": "Jaimini",
+      "ownership": {
+        "source_line": 64,
+        "source_path": "moira_server/routers/vedic_extended.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/jaimini/extended/argala/assessment",
+      "surface_kind": "composition_profile",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "primary OpenAPI tag 'jaimini'",
       "canonical_surface_id": "rest:POST:/v1/jaimini/extended/arudhas",
       "domain_group": "vedic-and-electional",
       "entry_role": "canonical",
@@ -24285,7 +24610,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 147,
+        "source_line": 172,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -24310,7 +24635,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 228,
+        "source_line": 253,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -24328,6 +24653,31 @@
     {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'jaimini'",
+      "canonical_surface_id": "rest:POST:/v1/jaimini/extended/chara-dasha/profile",
+      "domain_group": "vedic-and-electional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "jaimini",
+      "family_label": "Jaimini",
+      "ownership": {
+        "source_line": 58,
+        "source_path": "moira_server/routers/vedic_extended.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/jaimini/extended/chara-dasha/profile",
+      "surface_kind": "composition_profile",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "primary OpenAPI tag 'jaimini'",
       "canonical_surface_id": "rest:POST:/v1/jaimini/extended/karakamsa",
       "domain_group": "vedic-and-electional",
       "entry_role": "canonical",
@@ -24335,7 +24685,7 @@
       "family_id": "jaimini",
       "family_label": "Jaimini",
       "ownership": {
-        "source_line": 207,
+        "source_line": 232,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -25790,6 +26140,81 @@
       "review_stage": "stage_3_product_use",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/nakshatra/position",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'natal-discovery'",
+      "canonical_surface_id": "rest:POST:/v1/natal-discovery/dispositors",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "natal-discovery",
+      "family_label": "Natal Discovery",
+      "ownership": {
+        "source_line": 24,
+        "source_path": "moira_server/routers/natal_discovery.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/natal-discovery/dispositors",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'natal-discovery'",
+      "canonical_surface_id": "rest:POST:/v1/natal-discovery/lunar-context",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "natal-discovery",
+      "family_label": "Natal Discovery",
+      "ownership": {
+        "source_line": 36,
+        "source_path": "moira_server/routers/natal_discovery.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/natal-discovery/lunar-context",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'natal-discovery'",
+      "canonical_surface_id": "rest:POST:/v1/natal-discovery/shape",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "natal-discovery",
+      "family_label": "Natal Discovery",
+      "ownership": {
+        "source_line": 30,
+        "source_path": "moira_server/routers/natal_discovery.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/natal-discovery/shape",
       "surface_kind": "calculation",
       "transport": "rest"
     },
@@ -30100,7 +30525,7 @@
       "family_id": "upagrahas",
       "family_label": "Upagrahas",
       "ownership": {
-        "source_line": 64,
+        "source_line": 89,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -30125,7 +30550,7 @@
       "family_id": "upagrahas",
       "family_label": "Upagrahas",
       "ownership": {
-        "source_line": 45,
+        "source_line": 70,
         "source_path": "moira_server/routers/vedic_extended.py"
       },
       "priority": "P1",
@@ -31266,7 +31691,7 @@
       "family_id": "yogas",
       "family_label": "Yogas",
       "ownership": {
-        "source_line": 14,
+        "source_line": 18,
         "source_path": "moira_server/routers/yogas.py"
       },
       "priority": "P0",
@@ -31282,10 +31707,35 @@
       "surface_id": "rest:POST:/v1/yogas/evaluate",
       "surface_kind": "calculation",
       "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'yogas'",
+      "canonical_surface_id": "rest:POST:/v1/yogas/extended/evaluate",
+      "domain_group": "vedic-and-electional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "yogas",
+      "family_label": "Yogas",
+      "ownership": {
+        "source_line": 38,
+        "source_path": "moira_server/routers/yogas.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/yogas/extended/evaluate",
+      "surface_kind": "calculation",
+      "transport": "rest"
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "0a30932b7528ffefc99faba78d04bc3c8c8edfc04955e17db09402858cd23ff5",
+  "inventory_fingerprint_sha256": "b13d7f80fef6723363303dd895c55004f297f68f652c62ec764d22bd48dbf879",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31331,28 +31781,28 @@
       "phenomena-and-visibility": 126,
       "predictive-and-time": 165,
       "relationship": 42,
-      "specialist-and-compositional": 303,
+      "specialist-and-compositional": 318,
       "traditional-western": 129,
-      "vedic-and-electional": 278
+      "vedic-and-electional": 281
     },
     "canonical_by_exposure": {
       "production_user": 171,
-      "public_api": 344,
-      "source_only": 718
+      "public_api": 354,
+      "source_only": 726
     },
     "canonical_by_priority": {
       "P0": 171,
-      "P1": 344,
-      "P2": 718
+      "P1": 354,
+      "P2": 726
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1233,
+      "reviewed": 1251,
       "seeded": 0
     },
-    "canonical_entries": 1233,
+    "canonical_entries": 1251,
     "cross_transport_families": 53,
-    "entries_total": 1237,
-    "family_count": 143
+    "entries_total": 1255,
+    "family_count": 150
   }
 }

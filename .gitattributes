@@ -17,6 +17,10 @@ moira/kernels/comets/manifest.json text eol=lf
 
 # The orbital admission receipt binds this fixture's exact SHA-256 and size.
 tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json text eol=lf
+tests/fixtures/small_body_release_manifests/*.json text eol=lf
+
+# VED-014 source admission records this fixture's exact SHA-256.
+tests/fixtures/kalachakra/source_cases.json text eol=lf
 
 # VED-017 binds the validation specification's byte digest. Preserve retained
 # primary/benchmark evidence across Windows and POSIX publication checkouts.

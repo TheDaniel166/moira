@@ -94,6 +94,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "predictive",
     },
     {
+        "name": "kalachakra-dasha",
+        "x-displayName": "Kalachakra Dasha",
+        "description": "Named Santhanam/BPHS profile, exact source years, explicit clocks and bounded active periods.",
+        "x-family": "predictive",
+    },
+    {
         "name": "predictive",
         "x-displayName": "Transits and Returns",
         "description": "Transit, ingress, lunar phase, and planetary return surfaces.",
@@ -139,6 +145,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "name": "relationship",
         "x-displayName": "Relationship",
         "description": "Synastry, composite, Davison, chart-shape, pattern, and midpoint surfaces.",
+        "x-family": "relationship",
+    },
+    {
+        "name": "natal-discovery",
+        "x-displayName": "Natal Discovery",
+        "description": "Selected traditional dispositors, Jones ten-planet shape evidence, and source-verified natal lunar context.",
         "x-family": "relationship",
     },
     {

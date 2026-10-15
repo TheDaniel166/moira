@@ -1138,6 +1138,12 @@ from .yogas import (
     pancha_mahapurusha_yogas, chandra_yogas, surya_yogas,
     nabhasa_yogas, raja_yogas, dhana_yogas, evaluate_yogas,
 )
+from .yoga_extension_policy import (
+    YogaExtensionSource, YogaExtensionRule, YogaExtensionProfile, YogaExtensionPolicy, YogaExtensionCatalogue, list_yoga_extension_rules,
+)
+from .yoga_extensions import (
+    YogaExtensionPosition, YogaExtensionClause, YogaExtensionBranch, YogaExtensionQualification, YogaExtensionResult, YogaExtensionChartResult, evaluate_yoga_extensions,
+)
 from .upagrahas import (
     UpagrahaPolicy, SunBasedUpagrahas, KalavelaUpagraha, KalavelaResult,
     sun_based_upagrahas, kalavela_upagrahas,
@@ -1148,8 +1154,20 @@ from .avasthas import (
     baladi_avastha, jagradadi_avastha, deeptadi_avastha,
     lajjitadi_avasthas, evaluate_avasthas,
 )
+from ._jaimini_profile_inputs import (
+    JaiminiChart, ArgalaReference, CharaProjection,
+)
+from .jaimini_profile_policy import (
+    JaiminiSource, JaiminiRule, JaiminiConflict, JaiminiProfile, JaiminiProfileCatalogue, list_jaimini_profiles,
+)
+from .chara_profiles import (
+    CharaArithmeticRow, CharaProfileInterval, CharaProfileSchedule, CharaArithmeticResult, evaluate_chara_profile,
+)
+from .argala_assessment import (
+    ArgalaCharacter, ArgalaCountGrade, ArgalaQuarterWitness, ArgalaEligibleBlockers, ArgalaStrengthFactors, ArgalaPairAssessment, ArgalaSpecialThird, ArgalaReferenceAssessment, ArgalaAssessmentResult, assess_argala,
+)
 from .jaimini_extended import (
-    JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse,
+    JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse, ArgalaComputation,
     ArgalaResult, Karakamsa, CharaDashaPeriod, CharaDashaResult, CharaDashaComputation,
     rasi_aspects, rasi_drishti_of, arudha_padas, argala, karakamsa,
     chara_dasha,
@@ -2168,6 +2186,9 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    # VED-013 source-scoped profiles and immutable evidence.
+    'JaiminiChart', 'ArgalaReference', 'CharaProjection', 'JaiminiSource', 'JaiminiRule', 'JaiminiConflict', 'JaiminiProfile', 'JaiminiProfileCatalogue', 'list_jaimini_profiles', 'CharaArithmeticRow', 'CharaProfileInterval', 'CharaProfileSchedule', 'CharaArithmeticResult', 'evaluate_chara_profile', 'ArgalaCharacter', 'ArgalaCountGrade', 'ArgalaQuarterWitness', 'ArgalaEligibleBlockers', 'ArgalaStrengthFactors', 'ArgalaPairAssessment', 'ArgalaSpecialThird', 'ArgalaReferenceAssessment', 'ArgalaAssessmentResult', 'assess_argala', 'ArgalaComputation',
+    'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',
     "MuhurtaLagnaPolicy",
     "LagnaPlanet",
     "LagnaRuleEvidence",
@@ -3433,7 +3454,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.9.9"
+__version__ = "6.10.0"
 __author__  = "Moira contributors"
 
 
@@ -3559,3 +3580,67 @@ class Moira(
     SpecialTopicsFacadeMixin,
 ):
     """Primary engine facade with deferred planetary kernel readiness."""
+
+# VED-014 source-owned Kalachakra public surface.
+from .kalachakra import (
+    KalachakraSource,
+    KalachakraRule,
+    KalachakraConflict,
+    KalachakraProfile,
+    KalachakraCatalogue,
+    KalachakraInputError,
+    KalachakraProjectionError,
+    KalachakraCoverageError,
+    KalachakraResourceError,
+    KalachakraInvariantError,
+    KalachakraEpoch,
+    KalachakraSeed,
+    KalachakraProjection,
+    KalachakraSourceSpan,
+    KalachakraDateSpan,
+    KalachakraAstronomy,
+    KalachakraProvenance,
+    KalachakraBirth,
+    KalachakraPeriod,
+    KalachakraTransition,
+    KalachakraProjectionReceipt,
+    KalachakraSequence,
+    KalachakraActivePeriod,
+    KalachakraCurrent,
+    kalachakra_profiles,
+    kalachakra_sequence,
+    kalachakra_for_datetime,
+    project_kalachakra_sequence,
+    current_kalachakra_periods,
+)
+__all__ += [
+    'KalachakraSource',
+    'KalachakraRule',
+    'KalachakraConflict',
+    'KalachakraProfile',
+    'KalachakraCatalogue',
+    'KalachakraInputError',
+    'KalachakraProjectionError',
+    'KalachakraCoverageError',
+    'KalachakraResourceError',
+    'KalachakraInvariantError',
+    'KalachakraEpoch',
+    'KalachakraSeed',
+    'KalachakraProjection',
+    'KalachakraSourceSpan',
+    'KalachakraDateSpan',
+    'KalachakraAstronomy',
+    'KalachakraProvenance',
+    'KalachakraBirth',
+    'KalachakraPeriod',
+    'KalachakraTransition',
+    'KalachakraProjectionReceipt',
+    'KalachakraSequence',
+    'KalachakraActivePeriod',
+    'KalachakraCurrent',
+    'kalachakra_profiles',
+    'kalachakra_sequence',
+    'kalachakra_for_datetime',
+    'project_kalachakra_sequence',
+    'current_kalachakra_periods',
+]

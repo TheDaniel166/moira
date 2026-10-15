@@ -176,4 +176,17 @@ def test_asteroid_not_loaded_error_names_the_current_full_release() -> None:
     )
 
     assert error.catalog == "moira-asteroids"
-    assert error.catalog_version == FULL_CATALOG_VERSION == "2026.09.18.1"
+    assert error.catalog_version == FULL_CATALOG_VERSION == "2026.10.10.1"
+
+
+def test_comet_not_loaded_error_names_the_current_full_release() -> None:
+    error = _not_loaded_error(
+        OrbitalBodyIdentity(
+            name="1P/Halley",
+            kind=OrbitalBodyKind.COMET,
+            naif_id=1_000_001,
+        )
+    )
+
+    assert error.catalog == "moira-comets"
+    assert error.catalog_version == "2026.10.10.1"

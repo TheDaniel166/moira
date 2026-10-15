@@ -1,13 +1,22 @@
 # Moira API Reference
 
 **Document revision:** 2.3.0
-**Engine baseline:** 6.9.9
+**Engine baseline:** 6.10.0
 **Last verified:** 2026-09-26
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
 This is the Python engine/import reference. The HTTP transport surface is
 documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
+
+VED-013 adds `JaiminiChart`, `ArgalaReference`, `CharaProjection`,
+`list_jaimini_profiles()`, `evaluate_chara_profile()` and `assess_argala()` with
+their immutable evidence vessels to root, facade and `moira.vedic`.
+`Moira` exposes the same three operations without chart-reader dependence.
+The [Jaimini profile standard](JAIMINI_PROFILE_ASSESSMENT_STANDARD.md) defines
+the three Chara and three Argala selectors, source precision, optional clock,
+uncertainty states and legacy compatibility. Research-only catalogue identities
+cannot be passed to the evaluators.
 
 For the Hellenistic surface, use the generated
 [capability matrix](../03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md)
@@ -321,6 +330,17 @@ from moira.vedic import *   # includes everything from essentials, plus the full
 
 A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 
+Source-defined yoga extensions expose `list_yoga_extension_rules()` and
+`evaluate_yoga_extensions(sidereal_longitudes, lagna_sidereal_lon, *, profile_ids)`.
+The required selection admits four named profiles containing 21 rules; the
+catalogue also records non-executable BPHS 39.35. Inputs are seven canonical
+sidereal D1 longitudes and Lagna in `[0,360)`. The same immutable objects are
+curated at root/facade/`vedic`, with
+`Moira.yoga_extensions_from_longitudes` as the direct-input facade. See the
+[yoga extension standard](YOGA_EXTENSION_STANDARD.md) for exact source
+interpretations, proof states, examples, and the additive legacy evidence
+and strict-admission migration notes.
+
 The unified surface also includes the already-curated yoga, avastha, extended
 Jaimini, Muhurta, upagraha and Sade Sati families; Vimshopaka/Vargottama,
 Kakshya/Shodhya Pinda and Bhava Bala helpers; and the source-bound Gochara
@@ -338,7 +358,10 @@ strict name/ghati context, optional chart evaluation and reader-bound
 previous-sunrise birth composition through root/facade/`vedic`. See the
 [Sayanadi standard](SAYANADI_ADMISSION_STANDARD.md) for source variants,
 inspectable trace, unavailable clocks and conditional-prose provenance.
-Special Lagnas and Kalachakra remain separate admissions. Daily sunrise-owned Panchanga has its separately
+Special Lagnas remain a separate admission. Kalachakra now has a named
+Santhanam/BPHS profile with exact source years, bounded MD/AD trees and five
+REST operations; see the [Kalachakra API](../02_services/KALACHAKRA_DASHA_API.md).
+Daily sunrise-owned Panchanga has its separately
 admitted policy and [standard](DAILY_PANCHANGA_STANDARD.md). See the
 [Vedic surface ledger](../06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md)
 for the completed package and the

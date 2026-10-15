@@ -19,9 +19,9 @@ Implements Vedic time-lord systems beyond Vimshottari (which is in
                       nakshatra number and reducing to a one-through-eight
                       remainder.  No eligibility condition.
 
-A third system, Kalachakra Dasha, requires Navamsha-based sign traversal
-with Savya/Apasavya direction switching.  It is reserved for Phase 2 of
-this module.
+The separately owned ``moira.kalachakra`` implements the named Santhanam/BPHS
+longitude-and-row-cycle profile with occurrence-aware sign periods. It does
+not share this module's eight-lord vessels or fixed-horizon sequence contract.
 
 Sub-period arithmetic
 ---------------------

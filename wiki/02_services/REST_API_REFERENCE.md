@@ -21,16 +21,40 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 518
-- Registered OpenAPI operations: 518 (GET 45, POST 473)
+- Registered OpenAPI paths: 531
+- Registered OpenAPI operations: 531 (GET 48, POST 483)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 514
+- Versioned `/v1` paths: 527
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+VED-013 adds `GET /v1/jaimini/extended/profiles`,
+`POST /v1/jaimini/extended/chara-dasha/profile`, and
+`POST /v1/jaimini/extended/argala/assessment`. Three Rangacharya recipes and
+three bounded BPHS/PVR/Rath Argala assessments share canonical engine results
+with Python/facade consumers. Strict sign/longitude unions retain input precision;
+explicit references, count grades, directed quarters and unresolved comparison
+reasons survive transport. Legacy Argala receives an additive computation receipt
+and direct-input hardening. See the [profile standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md)
+for executable IDs, required nodes, calendar scope and compatibility.
+
+VED-012 adds `GET /v1/yogas/extended/catalogue` and
+`POST /v1/yogas/extended/evaluate`. Discovery exposes four named profiles,
+21 admitted rules and BPHS 39.35 as `research_required`. Evaluation requires
+exactly seven classical `sidereal_longitudes`, `lagna_sidereal_lon` in
+`[0,360)`, and one to four unique `profile_ids`. Strict `include_absent`
+defaults to true; false retains formed proofs and all qualifications while
+preserving complete evaluated counts. Typed source/role/frame/branch evidence
+and applied-policy receipts survive transport. Extra inputs, coercible booleans
+and invalid values produce structured 422 validation errors. See the
+[source-defined yoga standard](../02_standards/YOGA_EXTENSION_STANDARD.md).
+Legacy `/v1/yogas/evaluate` now exposes condition/formation states and applied
+policy, retaining indeterminate motion-dependent results when filtered.
+Its finite-angle normalization and doctrine defaults remain unchanged.
 
 VED-008 adds `GET /v1/muhurta/shuddhi/catalogue` and
 `POST /v1/muhurta/shuddhi/direct` / `POST /v1/muhurta/shuddhi/day`.
@@ -3449,6 +3473,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/dasha/alternate/yogini/chart/sequence` | alternate-dashas | `yogini_chart_sequence_route_v1_dasha_alternate_yogini_chart_sequence_post` |
 | `POST` | `/v1/dasha/alternate/yogini/profile` | alternate-dashas | `yogini_profile_route_v1_dasha_alternate_yogini_profile_post` |
 | `POST` | `/v1/dasha/alternate/yogini/sequence` | alternate-dashas | `yogini_sequence_route_v1_dasha_alternate_yogini_sequence_post` |
+| `POST` | `/v1/dasha/kalachakra/chart/current` | kalachakra-dasha | `chart_current_v1_dasha_kalachakra_chart_current_post` |
+| `POST` | `/v1/dasha/kalachakra/chart/sequence` | kalachakra-dasha | `chart_sequence_v1_dasha_kalachakra_chart_sequence_post` |
+| `POST` | `/v1/dasha/kalachakra/current` | kalachakra-dasha | `current_v1_dasha_kalachakra_current_post` |
+| `GET` | `/v1/dasha/kalachakra/profiles` | kalachakra-dasha | `profiles_v1_dasha_kalachakra_profiles_get` |
+| `POST` | `/v1/dasha/kalachakra/sequence` | kalachakra-dasha | `sequence_v1_dasha_kalachakra_sequence_post` |
 | `POST` | `/v1/dasha/vimshottari/balance` | dasha | `dasha_balance_route_v1_dasha_vimshottari_balance_post` |
 | `POST` | `/v1/dasha/vimshottari/current` | dasha | `dasha_current_route_v1_dasha_vimshottari_current_post` |
 | `POST` | `/v1/dasha/vimshottari/lord-pair` | dasha | `dasha_lord_pair_route_v1_dasha_vimshottari_lord_pair_post` |
@@ -3581,9 +3610,12 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |
 | `POST` | `/v1/jaimini/chart/profile` | jaimini | `jaimini_chart_profile_route_v1_jaimini_chart_profile_post` |
 | `POST` | `/v1/jaimini/extended/argala` | jaimini | `argala_route_v1_jaimini_extended_argala_post` |
+| `POST` | `/v1/jaimini/extended/argala/assessment` | jaimini | `argala_assessment_route_v1_jaimini_extended_argala_assessment_post` |
 | `POST` | `/v1/jaimini/extended/arudhas` | jaimini | `arudhas_route_v1_jaimini_extended_arudhas_post` |
 | `POST` | `/v1/jaimini/extended/chara-dasha` | jaimini | `chara_dasha_route_v1_jaimini_extended_chara_dasha_post` |
+| `POST` | `/v1/jaimini/extended/chara-dasha/profile` | jaimini | `chara_profile_route_v1_jaimini_extended_chara_dasha_profile_post` |
 | `POST` | `/v1/jaimini/extended/karakamsa` | jaimini | `karakamsa_route_v1_jaimini_extended_karakamsa_post` |
+| `GET` | `/v1/jaimini/extended/profiles` | jaimini | `jaimini_profiles_route_v1_jaimini_extended_profiles_get` |
 | `POST` | `/v1/jaimini/karakas` | jaimini | `jaimini_karakas_route_v1_jaimini_karakas_post` |
 | `POST` | `/v1/jaimini/karakas/condition` | jaimini | `jaimini_karakas_condition_route_v1_jaimini_karakas_condition_post` |
 | `POST` | `/v1/jaimini/karakas/pair` | jaimini | `jaimini_karakas_pair_route_v1_jaimini_karakas_pair_post` |
@@ -3653,6 +3685,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |
+| `POST` | `/v1/natal-discovery/dispositors` | natal-discovery | `natal_dispositors_route_v1_natal_discovery_dispositors_post` |
+| `POST` | `/v1/natal-discovery/lunar-context` | natal-discovery | `natal_lunar_context_route_v1_natal_discovery_lunar_context_post` |
+| `POST` | `/v1/natal-discovery/shape` | natal-discovery | `natal_shape_route_v1_natal_discovery_shape_post` |
 | `POST` | `/v1/nine-parts/abu-mashar` | nine-parts | `abu_mashar_nine_parts_route_v1_nine_parts_abu_mashar_post` |
 | `GET` | `/v1/nodes/catalog` | nodes | `node_catalog_route_v1_nodes_catalog_get` |
 | `POST` | `/v1/nodes/geometric` | nodes | `geometric_node_route_v1_nodes_geometric_post` |
@@ -3881,6 +3916,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/website/parans/packet` | website-parans | `paran_packet_route_v1_website_parans_packet_post` |
 | `POST` | `/v1/western/chart-profile` | western-profile | `western_chart_profile_route_v1_western_chart_profile_post` |
 | `POST` | `/v1/yogas/evaluate` | yogas | `yogas_evaluate_route_v1_yogas_evaluate_post` |
+| `GET` | `/v1/yogas/extended/catalogue` | yogas | `yoga_extensions_catalogue_route_v1_yogas_extended_catalogue_get` |
+| `POST` | `/v1/yogas/extended/evaluate` | yogas | `yoga_extensions_evaluate_route_v1_yogas_extended_evaluate_post` |
 <!-- END GENERATED REST ROUTE INVENTORY -->
 
 ## Documentation Boundary

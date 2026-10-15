@@ -30,16 +30,16 @@ EXPECTED_CATALOG_SHA256 = (
     "77651edfa286678f487214902a7538c411c5fdfd00c26c7959e887b3ccd83a35"
 )
 EXPECTED_METADATA_SHA256 = (
-    "fc71181f2694c64a13da688fe5c220f8b5c949d8cc8effe555ad9bf59dd39f7c"
+    "a7839afe90b57803c612a6f6e7e9af3ecc02d3a0f0a07968a21d9541ce3ab707"
 )
 EXPECTED_ALIASES_SHA256 = (
     "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b"
 )
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
-    "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1"
+    "2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671"
 )
 EXPECTED_MASTER_SHA256 = (
-    "78dc12291bf8b3e1a7eab844666632ccffd98b3f362c2d2a1442e9a8714d33f6"
+    "fdda28fdee4d2efb8448f0b7d3d3060b7a2a02f8c104408570e0fd2207386bd3"
 )
 
 
@@ -221,15 +221,15 @@ def test_packaged_comet_identity_catalog_is_release_bound() -> None:
     assert hashlib.sha256(aliases_bytes).hexdigest() == EXPECTED_ALIASES_SHA256
     assert metadata["schema_version"] == 1
     assert metadata["catalog_id"] == "moira-comets"
-    assert metadata["catalog_version"] == "2026.07.28.1"
+    assert metadata["catalog_version"] == "2026.10.10.1"
     assert metadata["source"]["release_manifest_sha256"] == (
         EXPECTED_RELEASE_MANIFEST_SHA256
     )
     assert metadata["source"]["comet_master_sha256"] == EXPECTED_MASTER_SHA256
     assert metadata["source"]["release_source_revision"] == (
-        "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50"
+        "e4e9a72e115e972438d3bb07d48388fcf8c440dd"
     )
-    assert metadata["source"]["released_utc"] == "2026-07-28T12:47:17Z"
+    assert metadata["source"]["released_utc"] == "2026-10-11T12:18:24Z"
     assert metadata["artifact"] == {
         "path": "moira/data/comet_catalog_naif.json",
         "sha256": EXPECTED_CATALOG_SHA256,

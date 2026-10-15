@@ -154,18 +154,110 @@ def test_direct_route_wins_over_chain_and_pool_order_breaks_ties() -> None:
     assert state.legs[0].source.label == "first"
 
 
-def test_add_during_evaluation_does_not_mutate_active_snapshot() -> None:
+@pytest.mark.parametrize("reader_count", (0, 1, 4))
+def test_initial_pool_builds_once_and_preserves_receipted_state(
+    monkeypatch: pytest.MonkeyPatch, reader_count: int,
+) -> None:
+    readers = tuple(
+        _StrictReader(0, 10, (float(i), 0.0, 0.0), (0.0, 0.0, 0.0), label=f"reader-{i}")
+        for i in range(reader_count)
+    )
+    sequential = KernelPool()
+    for reader in readers:
+        sequential.add(reader)
+    rebuilds = []
+    original_rebuild = KernelPool._rebuild_indices_locked
+
+    def counted_rebuild(pool):
+        rebuilds.append(pool._readers)
+        original_rebuild(pool)
+
+    monkeypatch.setattr(KernelPool, "_rebuild_indices_locked", counted_rebuild)
+    pool = KernelPool._from_initial_readers(iter(readers))
+    assert rebuilds == [readers]
+    with pool._read_lease() as actual, sequential._read_lease() as expected:
+        assert actual == expected
+    if readers:
+        assert pool.position_and_velocity_tdb_with_receipt(0, 10, 1500.0) == (
+            sequential.position_and_velocity_tdb_with_receipt(0, 10, 1500.0)
+        )
+
+    added = _StrictReader(0, 99, (9.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="added")
+    pool.add(added)
+    sequential.add(added)
+    assert pool.position_and_velocity_tdb_with_receipt(0, 99, 1500.0) == (
+        sequential.position_and_velocity_tdb_with_receipt(0, 99, 1500.0)
+    )
+    assert KernelPool(readers)._generation == 0
+
+
+@pytest.mark.parametrize("entry_point", ("facade", "legacy"))
+@pytest.mark.parametrize("discovery_fails", (False, True))
+def test_initial_discovery_preserves_order_and_optional_failure_policy(
+    monkeypatch: pytest.MonkeyPatch, entry_point: str, discovery_fails: bool,
+) -> None:
+    from moira import _facade_kernel, _kernel_paths, _spk_body_kernel, spk_reader
+
+    primary = _StrictReader(0, 10, (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="primary")
+    first = _StrictReader(0, 10, (2.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="first")
+    second = _StrictReader(0, 10, (3.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="second")
+    error = ValueError("unavailable optional manifest")
+    manifests = ("first.json", "second.json")
+    loaded = []
+    rebuilds = []
+    original_rebuild = KernelPool._rebuild_indices_locked
+
+    def load_manifest(path):
+        loaded.append(path)
+        if path == manifests[1] and discovery_fails:
+            raise error
+        return [first if path == manifests[0] else second]
+
+    def counted_rebuild(pool):
+        rebuilds.append(pool._readers)
+        original_rebuild(pool)
+
+    monkeypatch.setattr(_kernel_paths, "find_all_small_body_manifests", lambda: manifests)
+    monkeypatch.setattr(_spk_body_kernel, "small_body_readers_from_manifest", load_manifest)
+    monkeypatch.setattr(_facade_kernel, "small_body_readers_from_manifest", load_manifest)
+    monkeypatch.setattr(KernelPool, "_rebuild_indices_locked", counted_rebuild)
+    if entry_point == "facade":
+        monkeypatch.setattr(_facade_kernel, "SpkReader", lambda path: primary)
+        engine = _facade_kernel.KernelFacadeMixin("primary.bsp")
+        pool = engine._reader_obj
+        assert engine._kernel_init_error is None
+        assert engine._supplemental_kernel_init_error is (error if discovery_fails else None)
+    else:
+        monkeypatch.setattr(spk_reader, "_reader", None)
+        monkeypatch.setattr(spk_reader, "_reader_path", None)
+        monkeypatch.setattr(spk_reader, "SpkReader", lambda path: primary)
+        monkeypatch.setattr(spk_reader, "_OriginalSpkReader", _StrictReader)
+        spk_reader.set_kernel_path("primary.bsp")
+        pool = spk_reader._reader
+    expected_readers = (primary, first) if discovery_fails else (primary, first, second)
+    assert loaded == list(manifests)
+    assert rebuilds == [expected_readers]
+    state = pool.position_and_velocity_tdb_with_receipt(0, 10, 1500.0)
+    assert state.position_km == primary.position
+    assert state.pool_generation == len(expected_readers)
+    assert state.legs[0].pool_index == 0
+
+
+@pytest.mark.parametrize("initial_discovery", (False, True))
+def test_add_during_evaluation_does_not_mutate_active_snapshot(initial_discovery: bool) -> None:
     primary = _StrictReader(0, 10, (1.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="primary")
     added = _StrictReader(0, 10, (2.0, 0.0, 0.0), (0.0, 0.0, 0.0), label="added")
-    pool = KernelPool((primary,))
+    pool = (KernelPool._from_initial_readers((primary,)) if initial_discovery
+            else KernelPool((primary,)))
+    generation = 1 if initial_discovery else 0
     primary.on_evaluate = lambda: pool.add(added)
 
     state = pool.position_and_velocity_tdb_with_receipt(0, 10, 1500.0)
 
-    assert state.pool_generation == 0
+    assert state.pool_generation == generation
     assert state.position_km == (1.0, 0.0, 0.0)
     with pool._read_lease() as snapshot:
-        assert snapshot.generation == 1
+        assert snapshot.generation == generation + 1
         assert snapshot.readers == (primary, added)
 
 

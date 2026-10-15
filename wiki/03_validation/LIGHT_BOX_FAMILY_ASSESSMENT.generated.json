@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.9.9",
+  "engine_version": "6.10.0",
   "families": [
     {
       "assessment_status": "partial",
@@ -119,6 +119,46 @@
         "tests/unit/test_antiscia_motion.py",
         "tests/unit/test_astrology_adversarial_gauntlet.py",
         "tests/unit/test_rule_engine_validation.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "argala-assessment",
+      "family_label": "Argala Assessment",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/argala_assessment.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_jaimini_profiles.py",
+        "tests/tools/benchmark_jaimini_profiles.py",
+        "tests/unit/test_argala_assessment.py",
+        "tests/unit/test_jaimini_profile_admission.py",
+        "tests/unit/test_jaimini_profile_result_invariants.py"
       ]
     },
     {
@@ -245,6 +285,7 @@
         "wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md",
         "wiki/01_doctrines/hellenistic_6_3/assemble_condition_admission.md",
         "wiki/01_doctrines/timelords/decennials_admission_doctrine.md",
+        "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
@@ -650,6 +691,47 @@
     },
     {
       "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/CHARA_DASHA_CYCLE_STANDARD.md",
+        "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "chara-profiles",
+      "family_label": "Chara Profiles",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/chara_profiles.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_jaimini_profiles.py",
+        "tests/tools/benchmark_jaimini_profiles.py",
+        "tests/unit/test_chara_profiles.py",
+        "tests/unit/test_jaimini_profile_admission.py",
+        "tests/unit/test_jaimini_profile_result_invariants.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
       "canonical_surface_count": 3,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
@@ -709,6 +791,7 @@
         "unresolved": 0
       },
       "documentation_leads": [
+        "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
@@ -941,6 +1024,7 @@
         "tests/server/test_server_eclipse_footprint.py",
         "tests/server/test_server_forecasting_routes.py",
         "tests/server/test_server_lunar_eclipse_visibility.py",
+        "tests/server/test_server_natal_discovery.py",
         "tests/server/test_server_occultation_path_topology.py",
         "tests/unit/test_adversarial_dual_singularities.py",
         "tests/unit/test_adversarial_hardmode_singularities.py",
@@ -1356,6 +1440,7 @@
         "wiki/01_doctrines/hellenistic_6_3/exaltation_basis_admission.md",
         "wiki/01_doctrines/hellenistic_6_3/sect_authority_admission.md",
         "wiki/01_doctrines/timelords/decennials_admission_doctrine.md",
+        "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md",
@@ -2845,13 +2930,13 @@
     },
     {
       "assessment_status": "major_gap",
-      "canonical_surface_count": 23,
+      "canonical_surface_count": 25,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 23
+        "unresolved": 25
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -2863,7 +2948,10 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/CHARA_DASHA_CYCLE_STANDARD.md",
         "wiki/02_standards/JAIMINI_BACKEND_STANDARD.md",
+        "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md",
         "wiki/06_roadmap/VEDIC_CHARA_D60_IMPLEMENTATION_PLAN_2026-10-07.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md",
         "wiki/06_roadmap/vedic_jyotish_phase2_gaps.md",
@@ -2876,8 +2964,7 @@
       "finding": "Prioritize paired receipt or generated-documentation coverage; do not infer evidence from implementation depth alone.",
       "missing_documentation_surface_ids": [
         "python:moira.facade:arudha_padas",
-        "python:moira.facade:rasi_aspects",
-        "python:moira.facade:rasi_drishti_of"
+        "python:moira.facade:rasi_aspects"
       ],
       "missing_test_surface_ids": [],
       "ownership_sources": [
@@ -2889,19 +2976,24 @@
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
       "python_surface_count": 11,
-      "rest_surface_count": 12,
+      "rest_surface_count": 14,
       "review_stages": [
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_jaimini_profiles.py",
         "tests/server/test_server_jaimini_routes.py",
         "tests/server/test_server_jaimini_service.py",
         "tests/server/test_vedic_chara_d60_admission.py",
         "tests/server/test_vedic_direct_input_hardening.py",
+        "tests/tools/benchmark_jaimini_profiles.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_chara_profiles.py",
         "tests/unit/test_jaimini.py",
         "tests/unit/test_jaimini_extended.py",
+        "tests/unit/test_jaimini_profile_admission.py",
+        "tests/unit/test_jaimini_profile_result_invariants.py",
         "tests/unit/test_vedic_chara_d60_admission.py",
         "tests/unit/test_vedic_facade.py"
       ]
@@ -3048,6 +3140,7 @@
         "tests/server/test_server_lunar_month.py",
         "tests/server/test_server_muhurta_routes.py",
         "tests/server/test_server_mundane_routes.py",
+        "tests/server/test_server_natal_discovery.py",
         "tests/server/test_server_occultation_path_topology.py",
         "tests/server/test_server_panchanga_routes.py",
         "tests/server/test_server_panchanga_service.py",
@@ -3168,6 +3261,305 @@
         "tests/unit/test_vedic_facade.py",
         "tests/unit/test_vedic_second_pass_repairs.py",
         "tests/unit/test_vertex_oracle.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 4,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 4
+      },
+      "documentation_leads": [
+        "wiki/02_services/KALACHAKRA_DASHA_API.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "kalachakra",
+      "family_label": "Kalachakra",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/kalachakra.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 4,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_kalachakra.py",
+        "tests/unit/test_kalachakra.py",
+        "tests/unit/test_kalachakra_admission.py",
+        "tests/unit/test_kalachakra_astronomy.py",
+        "tests/unit/test_kalachakra_projection.py",
+        "tests/unit/test_kalachakra_public_api.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 4,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 4
+      },
+      "documentation_leads": [
+        "CHANGELOG.md",
+        "PROVENANCE.md",
+        "README.md",
+        "docs/architecture/ECLIPSE_FOOTPRINT_NATIVE_BOUNDARY.md",
+        "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
+        "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
+        "docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md",
+        "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
+        "docs/architecture/MOIRA_SERVER_PHASE13_LEDGER.md",
+        "docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md",
+        "docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md",
+        "docs/architecture/P-GAP-01_FRAME_SPECIFIC_POSITIONS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P-GAP-05_SIDEREAL_NAKSHATRA_UTILITY_TRANSPORT_DESIGN.md",
+        "docs/architecture/P-GAP-06_HARMOGRAMS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P10-01_ASTROCARTOGRAPHY_TRANSPORT_DESIGN.md",
+        "docs/architecture/P10-02_LOCAL_SPACE_TRANSPORT_DESIGN.md",
+        "docs/architecture/P10-03_GEODETIC_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-01_FIXED_STARS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-02_VARIABLE_STARS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-03_MULTIPLE_STARS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-04_ASTEROIDS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-05_COMETS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-06_ASTEROID_FAMILIES_SUBSETS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-07_MANAZIL_TRANSPORT_DESIGN.md",
+        "docs/architecture/P11-08_PLANETARY_NODES_TRANSPORT_DESIGN.md",
+        "docs/architecture/P12-01_URANIAN_TRANSPORT_DESIGN.md",
+        "docs/architecture/P12-02_HARMONICS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P12-10_LORD_OF_THE_ORB_TRANSPORT_DESIGN.md",
+        "docs/architecture/P12-U1_SPECIALIST_UMBRELLA_DOCTRINE_DECISION.md",
+        "docs/architecture/P13-01_ELECTIONAL_WINDOWS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P13-02_ELECTIONAL_MOMENTS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P13-03_SCORED_ELECTIONAL_WINDOWS_DOCTRINE_PACKET.md",
+        "docs/architecture/P13-03_SCORED_ELECTIONAL_WINDOWS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md",
+        "docs/architecture/P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md",
+        "docs/architecture/P13-U1_WESTERN_ELECTIONAL_ISSUES_01_16_IMPLEMENTATION_PLAN.md",
+        "docs/architecture/P9-10_ALTERNATE_DASHAS_TRANSPORT_DESIGN.md",
+        "docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md",
+        "docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_RENDERING_ADAPTER_WORKFLOW.md",
+        "docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md",
+        "docs/architecture/THREAD_SAFETY_GIL_AUDIT_PLAN.md",
+        "docs/superpowers/checkpoints/2026-09-28-small-body-apsidal-adaptive-rebuild.md",
+        "docs/superpowers/plans/2026-05-15-feature-audit.md",
+        "docs/superpowers/plans/2026-05-20-adversarial-singularity-tests.md",
+        "docs/superpowers/plans/2026-07-22-solar-eclipse-cartography-global-circumstances.md",
+        "docs/superpowers/plans/2026-08-15-mean-lilith-iers.md",
+        "docs/superpowers/plans/2026-09-16-orbital-core-stage-3.md",
+        "docs/superpowers/plans/2026-09-26-lunar-orientation-engine.md",
+        "docs/superpowers/specs/2026-05-20-adversarial-singularity-tests-design.md",
+        "wiki/00_foundations/CONSTITUTIONAL_PROCESS.md",
+        "wiki/01_doctrines/dispositorship/dispositorship_doctrine.md",
+        "wiki/01_doctrines/houses/pullen_sinusoidal_admission_doctrine.md",
+        "wiki/01_doctrines/houses/pullen_sinusoidal_runtime_design_note.md",
+        "wiki/01_doctrines/houses/savard_a_admission_failure_note.md",
+        "wiki/01_doctrines/houses/savard_a_source_packet.md",
+        "wiki/01_doctrines/lord_of_the_orb/lord_of_the_orb_doctrine.md",
+        "wiki/01_doctrines/lord_of_the_turn/lord_of_the_turn_doctrine.md",
+        "wiki/01_doctrines/nine_parts/nine_parts_doctrine.md",
+        "wiki/01_doctrines/timelords/decennials_admission_doctrine.md",
+        "wiki/01_doctrines/timelords/monthly_profection_chronology_doctrine.md",
+        "wiki/02_services/KALACHAKRA_DASHA_API.md",
+        "wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md",
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_services/REST_REDUCTION_VISIBILITY_AUDIT.md",
+        "wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md",
+        "wiki/02_services/SERVICE_LAYER_GUIDE.md",
+        "wiki/02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md",
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/ASTEROID_FAMILIES_BACKEND_STANDARD.md",
+        "wiki/02_standards/CHARA_DASHA_CYCLE_STANDARD.md",
+        "wiki/02_standards/D60_SOURCE_ADMISSION_STANDARD.md",
+        "wiki/02_standards/DASHA_BACKEND_STANDARD.md",
+        "wiki/02_standards/DECANS_BACKEND_STANDARD.md",
+        "wiki/02_standards/ELECTIONAL_SEARCH_BACKEND_STANDARD.md",
+        "wiki/02_standards/GALACTIC_BACKEND_STANDARD.md",
+        "wiki/02_standards/HARMONIC_TRANSIT_FORECAST_STANDARD.md",
+        "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
+        "wiki/02_standards/HUBER_BACKEND_STANDARD.md",
+        "wiki/02_standards/JAIMINI_BACKEND_STANDARD.md",
+        "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
+        "wiki/02_standards/LORD_OF_THE_ORB_BACKEND_STANDARD.md",
+        "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
+        "wiki/02_standards/MANAZIL_BACKEND_STANDARD.md",
+        "wiki/02_standards/PANCHANGA_BACKEND_STANDARD.md",
+        "wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md",
+        "wiki/02_standards/PLANETARY_HOURS_BACKEND_STANDARD.md",
+        "wiki/02_standards/PLANETARY_NODES_BACKEND_STANDARD.md",
+        "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
+        "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
+        "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
+        "wiki/02_standards/TIMELORDS_BACKEND_STANDARD.md",
+        "wiki/02_standards/VEDIC_REST_ADMISSION_STANDARD.md",
+        "wiki/02_standards/primary_directions/primary_directions_invariant_register.md",
+        "wiki/03_release/ASTROLOGY_KILLER_TEST_RESULTS.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.0.0.md",
+        "wiki/03_release/PHYSICAL_HELIACAL_VISIBILITY_COMPATIBILITY_NOTES_NEXT.md",
+        "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/03_release/RELEASE_NOTES_5.1.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.0.0.md",
+        "wiki/03_validation/CATEGORICAL_BOUNDARY_LEDGER_2026-05-04.md",
+        "wiki/03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md",
+        "wiki/03_validation/D60_FULL_POSITION_VALIDATION_2026-10-07.md",
+        "wiki/03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md",
+        "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
+        "wiki/03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md",
+        "wiki/03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md",
+        "wiki/03_validation/MOON_CONNECTION_FLOW_VALIDATION_2026-07-15.md",
+        "wiki/03_validation/PURPOSE_ELECTION_VALIDATION_2026-10-11.md",
+        "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md",
+        "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/03_validation/VALIDATION_EXPERIMENTAL.md",
+        "wiki/03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md",
+        "wiki/03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md",
+        "wiki/03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md",
+        "wiki/03_validation/WESTERN_ELECTIONAL_PHASE6_LILLY_PERFECTION_VALIDATION_2026-07-15.md",
+        "wiki/05_research/MOON_FRAME_CONVENTIONS_2026-05-09.md",
+        "wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md",
+        "wiki/05_research/harmograms/harmograms_implementation_roadmap.md",
+        "wiki/05_research/heliacal_visibility/heliacal_visibility_implementation_roadmap.md",
+        "wiki/05_research/mundane/TRACK_B_MUNDANE_SOURCE_AND_CHART_SELECTION_DOSSIER_2026-08.md",
+        "wiki/06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md",
+        "wiki/06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md",
+        "wiki/06_roadmap/D60_FULL_POSITION_SOURCE_RESEARCH_2026-10-07.md",
+        "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
+        "wiki/06_roadmap/GOCHARA_CONSTITUTIONAL_LEDGER.md",
+        "wiki/06_roadmap/HELLENISTIC_FREE_ENHANCED_WORKSPACE_PRODUCT_PLAN.md",
+        "wiki/06_roadmap/PANCHA_PAKSHI_FREE_ENHANCED_PRODUCT_PLAN.md",
+        "wiki/06_roadmap/VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_CHARA_D60_IMPLEMENTATION_PLAN_2026-10-07.md",
+        "wiki/06_roadmap/VEDIC_CHARA_D60_SOURCE_RESEARCH_2026-10-07.md",
+        "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_SOURCE_RESEARCH_2026-10-11.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md",
+        "wiki/06_roadmap/VEDIC_PANCHANGA_SHUDDHI_SOURCE_RESEARCH_2026-10-08.md",
+        "wiki/06_roadmap/VEDIC_PURPOSE_ELECTION_IMPLEMENTATION_PLAN_2026-10-11.md",
+        "wiki/06_roadmap/VEDIC_PURPOSE_ELECTION_SOURCE_RESEARCH_2026-10-11.md",
+        "wiki/06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md",
+        "wiki/06_roadmap/VEDIC_SURFACE_REST_COMPLETENESS_2026-10-06.md",
+        "wiki/06_roadmap/hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md",
+        "wiki/06_roadmap/hellenistic_completion/archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md",
+        "wiki/06_roadmap/lord_of_the_orb/lord_of_the_orb_roadmap.md",
+        "wiki/06_roadmap/nine_parts/nine_parts_roadmap.md",
+        "wiki/06_roadmap/primary_directions/primary_directions_roadmap.md",
+        "wiki/07_audit/FEATURE_AUDIT_2026.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "kalachakra-dasha",
+      "family_label": "Kalachakra Dasha",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [
+        "rest:POST:/v1/dasha/kalachakra/chart/current",
+        "rest:POST:/v1/dasha/kalachakra/chart/sequence",
+        "rest:POST:/v1/dasha/kalachakra/current"
+      ],
+      "ownership_sources": [
+        "moira_server/routers/kalachakra.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 0,
+      "rest_surface_count": 4,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/conftest.py",
+        "tests/harness_meta/test_known_issues_policy.py",
+        "tests/integration/test_gochara_windows_artifacts.py",
+        "tests/integration/test_sbdb_orbit_classes.py",
+        "tests/integration/test_twilight_external_reference.py",
+        "tests/server/test_server_alternate_dashas_routes.py",
+        "tests/server/test_server_kalachakra.py",
+        "tests/server/test_server_lord_of_the_orb_routes.py",
+        "tests/server/test_server_mundane_routes.py",
+        "tests/server/test_server_phase8_dasha_routes.py",
+        "tests/server/test_server_phase8_decennial_routes.py",
+        "tests/server/test_server_phase8_timelord_routes.py",
+        "tests/server/test_server_phase8_zr_routes.py",
+        "tests/server/test_server_vedic_repair_acceptance.py",
+        "tests/server/test_vedic_rest_admission.py",
+        "tests/tools/ritual.py",
+        "tests/unit/test_adversarial_house_singularities.py",
+        "tests/unit/test_cycles.py",
+        "tests/unit/test_dasha.py",
+        "tests/unit/test_dasha_full_intervals.py",
+        "tests/unit/test_dasha_systems.py",
+        "tests/unit/test_fixed_star_astrocartography.py",
+        "tests/unit/test_hellenistic_source_goldens.py",
+        "tests/unit/test_jaimini_profile_result_invariants.py",
+        "tests/unit/test_kalachakra.py",
+        "tests/unit/test_kalachakra_sources.py",
+        "tests/unit/test_locational_forecasting.py",
+        "tests/unit/test_lord_of_the_orb.py",
+        "tests/unit/test_lunar_occultation_contacts.py",
+        "tests/unit/test_mundane.py",
+        "tests/unit/test_mundane_public_api.py",
+        "tests/unit/test_orbit_classes.py",
+        "tests/unit/test_relationship_forecasting.py",
+        "tests/unit/test_rule_engine_validation.py",
+        "tests/unit/test_shadbala.py",
+        "tests/unit/test_special_muhurta.py",
+        "tests/unit/test_timelords.py",
+        "tests/unit/test_triplicity.py",
+        "tests/unit/test_upagrahas.py",
+        "tests/unit/test_western_electional_scan.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/02_services/KALACHAKRA_DASHA_API.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "kalachakra-policy",
+      "family_label": "Kalachakra Policy",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/kalachakra_policy.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/unit/test_kalachakra_admission.py",
+        "tests/unit/test_kalachakra_public_api.py"
       ]
     },
     {
@@ -4168,6 +4560,42 @@
     },
     {
       "assessment_status": "partial",
+      "canonical_surface_count": 3,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 3
+      },
+      "documentation_leads": [
+        "wiki/02_services/REST_API_REFERENCE.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "natal-discovery",
+      "family_label": "Natal Discovery",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [
+        "rest:POST:/v1/natal-discovery/dispositors",
+        "rest:POST:/v1/natal-discovery/lunar-context",
+        "rest:POST:/v1/natal-discovery/shape"
+      ],
+      "ownership_sources": [
+        "moira_server/routers/natal_discovery.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 0,
+      "rest_surface_count": 3,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": []
+    },
+    {
+      "assessment_status": "partial",
       "canonical_surface_count": 1,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
@@ -4354,6 +4782,7 @@
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_SOURCE_RESEARCH_2026-10-11.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md",
         "wiki/07_audit/FEATURE_AUDIT_2026.md",
         "wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md"
@@ -4421,6 +4850,7 @@
         "tests/unit/test_house_polar_branch_selection.py",
         "tests/unit/test_house_pole_height_geometry.py",
         "tests/unit/test_house_projection_geometry.py",
+        "tests/unit/test_kalachakra_astronomy.py",
         "tests/unit/test_local_space.py",
         "tests/unit/test_locational_forecasting.py",
         "tests/unit/test_lunar_limb_event_profile.py",
@@ -6121,7 +6551,9 @@
         "docs/architecture/P9-12_DECANS_TRANSPORT_DESIGN.md",
         "docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md",
         "wiki/01_doctrines/GOCHARA_PHASE1_DOCTRINE.md",
+        "wiki/02_services/KALACHAKRA_DASHA_API.md",
         "wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md",
+        "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md",
@@ -6140,6 +6572,7 @@
         "wiki/02_standards/HARMOGRAMS_BACKEND_STANDARD.md",
         "wiki/02_standards/HARMONICS_BACKEND_STANDARD.md",
         "wiki/02_standards/JAIMINI_BACKEND_STANDARD.md",
+        "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
         "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
         "wiki/02_standards/MANAZIL_BACKEND_STANDARD.md",
         "wiki/02_standards/MUHURTA_BACKEND_STANDARD.md",
@@ -6156,6 +6589,8 @@
         "wiki/02_standards/VEDIC_DIGNITIES_BACKEND_STANDARD.md",
         "wiki/02_standards/VEDIC_REST_ADMISSION_STANDARD.md",
         "wiki/03_release/ASTROLOGY_KILLER_TEST_RESULTS.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.0.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
         "wiki/03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md",
@@ -6172,6 +6607,7 @@
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md",
         "wiki/03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md",
         "wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md",
         "wiki/06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md",
@@ -6181,6 +6617,8 @@
         "wiki/06_roadmap/VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_SOURCE_RESEARCH_2026-10-11.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md",
         "wiki/06_roadmap/VEDIC_LAGNA_SOURCE_AND_PLAN_2026-10-09.md",
         "wiki/06_roadmap/VEDIC_MARRIAGE_ELECTION_IMPLEMENTATION_PLAN_2026-10-10.md",
         "wiki/06_roadmap/VEDIC_MARRIAGE_ELECTION_SOURCE_RESEARCH_2026-10-10.md",
@@ -6230,8 +6668,10 @@
         "tests/panchanga_shuddhi_support.py",
         "tests/server/test_server_geodetic_routes.py",
         "tests/server/test_server_jaimini_service.py",
+        "tests/server/test_server_kalachakra.py",
         "tests/server/test_server_muhurta_routes.py",
         "tests/server/test_server_muhurta_search.py",
+        "tests/server/test_server_natal_discovery.py",
         "tests/server/test_server_pancha_pakshi_rest_completeness.py",
         "tests/server/test_server_panchanga_routes.py",
         "tests/server/test_server_profile_bundle_routes.py",
@@ -6256,6 +6696,7 @@
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_geodetic.py",
         "tests/unit/test_gochara_dated.py",
+        "tests/unit/test_kalachakra_astronomy.py",
         "tests/unit/test_lunar_month.py",
         "tests/unit/test_manazil.py",
         "tests/unit/test_muhurta_dosha_day_contract.py",
@@ -6458,6 +6899,7 @@
         "tests/unit/test_gochara_dated.py",
         "tests/unit/test_heliacal_standard_kinds.py",
         "tests/unit/test_heliacal_visibility_policy.py",
+        "tests/unit/test_kalachakra_astronomy.py",
         "tests/unit/test_muhurta_search.py",
         "tests/unit/test_multiple_stars.py",
         "tests/unit/test_native_runtime_verification.py",
@@ -6685,6 +7127,7 @@
         "docs/superpowers/plans/2026-05-15-feature-audit.md",
         "docs/superpowers/plans/2026-09-02-natal-grid-series-provider.md",
         "docs/superpowers/specs/2026-09-02-natal-grid-series-provider-design.md",
+        "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/REST_REDUCTION_VISIBILITY_AUDIT.md",
         "wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md",
@@ -7028,12 +7471,16 @@
         "wiki/02_standards/D60_SOURCE_ADMISSION_STANDARD.md",
         "wiki/02_standards/NINE_PARTS_BACKEND_STANDARD.md",
         "wiki/02_standards/VARGA_BACKEND_STANDARD.md",
+        "wiki/02_standards/YOGA_EXTENSION_STANDARD.md",
         "wiki/03_validation/VEDIC_CHARA_D60_VALIDATION_2026-10-07.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/VEDIC_ADVERSARIAL_REPAIR_PLAN_2026-10-09.md",
         "wiki/06_roadmap/VEDIC_CHARA_D60_IMPLEMENTATION_PLAN_2026-10-07.md",
         "wiki/06_roadmap/VEDIC_CHARA_D60_SOURCE_RESEARCH_2026-10-07.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_YOGA_EXTENSION_SOURCE_RESEARCH_2026-10-12.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md",
         "wiki/06_roadmap/vedic_jyotish_phase2_gaps.md"
       ],
@@ -7074,7 +7521,8 @@
         "tests/unit/test_varga.py",
         "tests/unit/test_varga_exact_partition.py",
         "tests/unit/test_vedic_chara_d60_admission.py",
-        "tests/unit/test_vedic_facade.py"
+        "tests/unit/test_vedic_facade.py",
+        "tests/unit/test_yoga_extensions.py"
       ]
     },
     {
@@ -7729,17 +8177,59 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 9,
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/YOGA_EXTENSION_STANDARD.md",
+        "wiki/06_roadmap/VEDIC_YOGA_EXTENSION_IMPLEMENTATION_PLAN_2026-10-12.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "yoga-extensions",
+      "family_label": "Yoga Extensions",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/yoga_extensions.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_yoga_extensions.py",
+        "tests/tools/benchmark_yoga_extensions.py",
+        "tests/unit/test_yoga_extension_admission.py",
+        "tests/unit/test_yoga_extensions.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 10,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 1,
-        "unresolved": 8
+        "unresolved": 9
       },
       "documentation_leads": [
         "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_standards/YOGA_EXTENSION_STANDARD.md",
+        "wiki/06_roadmap/VEDIC_YOGA_EXTENSION_IMPLEMENTATION_PLAN_2026-10-12.md",
+        "wiki/06_roadmap/VEDIC_YOGA_EXTENSION_SOURCE_RESEARCH_2026-10-12.md",
         "wiki/06_roadmap/vedic_jyotish_phase2_gaps.md"
       ],
       "domain_group": "vedic-and-electional",
@@ -7750,7 +8240,6 @@
         "python:moira.facade:benefic_malefic_classification",
         "python:moira.facade:chandra_yogas",
         "python:moira.facade:dhana_yogas",
-        "python:moira.facade:evaluate_yogas",
         "python:moira.facade:nabhasa_yogas",
         "python:moira.facade:pancha_mahapurusha_yogas",
         "python:moira.facade:raja_yogas",
@@ -7766,21 +8255,24 @@
         "rest:POST:/v1/yogas/evaluate"
       ],
       "python_surface_count": 8,
-      "rest_surface_count": 1,
+      "rest_surface_count": 2,
       "review_stages": [
         "stage_3_product_use",
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_yoga_extensions.py",
         "tests/server/test_vedic_direct_input_hardening.py",
+        "tests/tools/benchmark_yoga_extensions.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_yoga_extension_admission.py",
         "tests/unit/test_yogas.py"
       ]
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "0a30932b7528ffefc99faba78d04bc3c8c8edfc04955e17db09402858cd23ff5",
+  "inventory_fingerprint_sha256": "b13d7f80fef6723363303dd895c55004f297f68f652c62ec764d22bd48dbf879",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7792,30 +8284,30 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1233,
+    "canonical_surface_count": 1251,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 121
+      "stage_5_remaining_tail": 128
     },
     "families_by_status": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 125,
+      "partial": 132,
       "strong_exemplar": 4,
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
-    "families_with_missing_tests": 7,
-    "family_count": 143,
+    "families_with_missing_tests": 9,
+    "family_count": 150,
     "production_user_surface_count": 171,
-    "reviewed_families": 143,
+    "reviewed_families": 150,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
       "partial": 209,
-      "unresolved": 1024
+      "unresolved": 1042
     }
   }
 }

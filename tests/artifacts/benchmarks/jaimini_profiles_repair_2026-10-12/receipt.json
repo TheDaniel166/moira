@@ -1,0 +1,124 @@
+{
+  "python": "3.14.3",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "scope": "bounded direct arithmetic and reader-free in-process HTTP; performance is not scientific validation",
+  "profiles": [
+    {
+      "profile_id": "rangacharya_2007_method1_classical7_v1",
+      "engine": {
+        "first_ms": 0.4851000012422446,
+        "warm_median_ms": 0.11244999950577039,
+        "warm_max_ms": 0.13279999984661117,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 4.212600000755629,
+        "warm_median_ms": 1.5678000017942395,
+        "warm_max_ms": 2.42929999876651,
+        "repeats": 30
+      },
+      "response_bytes": 4398,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rangacharya_2007_method2_male_classical7_v1",
+      "engine": {
+        "first_ms": 0.15039999925647862,
+        "warm_median_ms": 0.10945000030915253,
+        "warm_max_ms": 0.12570000035339035,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 1.5353000017057639,
+        "warm_median_ms": 1.6021500014176127,
+        "warm_max_ms": 1.837399999203626,
+        "repeats": 30
+      },
+      "response_bytes": 4486,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rangacharya_2007_female_prose_classical7_v1",
+      "engine": {
+        "first_ms": 0.149200001033023,
+        "warm_median_ms": 0.11344999984430615,
+        "warm_max_ms": 0.3142000023217406,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 2.1802000010211486,
+        "warm_median_ms": 1.6298999998980435,
+        "warm_max_ms": 2.010399999562651,
+        "repeats": 30
+      },
+      "response_bytes": 4492,
+      "pair_summaries": 0,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "bphs_santhanam_31_literal_assessment_v1",
+      "engine": {
+        "first_ms": 2.1826000011060387,
+        "warm_median_ms": 1.8930000005639158,
+        "warm_max_ms": 2.306700000190176,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 7.312099998671329,
+        "warm_median_ms": 6.623149998631561,
+        "warm_max_ms": 7.250300001032883,
+        "repeats": 30
+      },
+      "response_bytes": 56973,
+      "pair_summaries": 88,
+      "quarter_pairs": 40
+    },
+    {
+      "profile_id": "pvr_2000_argala_count_first_v1",
+      "engine": {
+        "first_ms": 1.5959000011207536,
+        "warm_median_ms": 1.5121499982342357,
+        "warm_max_ms": 2.010399999562651,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 6.199799998285016,
+        "warm_median_ms": 6.115600001066923,
+        "warm_max_ms": 6.550699999934295,
+        "repeats": 30
+      },
+      "response_bytes": 50140,
+      "pair_summaries": 88,
+      "quarter_pairs": 0
+    },
+    {
+      "profile_id": "rath_argala_article_assessment_v1",
+      "engine": {
+        "first_ms": 5.29419999656966,
+        "warm_median_ms": 4.550200001176563,
+        "warm_max_ms": 5.360500003007473,
+        "repeats": 30
+      },
+      "http": {
+        "first_ms": 12.910000001284061,
+        "warm_median_ms": 12.458350000088103,
+        "warm_max_ms": 68.52739999885671,
+        "repeats": 30
+      },
+      "response_bytes": 91215,
+      "pair_summaries": 132,
+      "quarter_pairs": 0
+    }
+  ],
+  "source_sha256": {
+    "moira/chara_profiles.py": "0b8f364805de6395c5652213684fa2269f99a5f49b91f8a77184a0cd1f12d9e3",
+    "moira/argala_assessment.py": "8108adceebe385e69e86d680eb0d9f15414ef49ed2506d761579b38201982b0e",
+    "moira/_jaimini_profile_inputs.py": "63c0812e8cf1eefcffd0f80e1485dba44c0432f84ae75c5753cd2d549c199600",
+    "moira/_jaimini_profile_results.py": "2d75d0d8fed381216acb6ddb0c42d4ca271907abc7e7e0362b10fe3957d66c69",
+    "moira/jaimini_profile_policy.py": "5e7bc12f97a0f8b9b6d76ee7e051070e0da079e8a2149ffb9b624de3c0dc7a2e",
+    "moira_server/services/jaimini_profiles.py": "2c4ba70202c41b16e011135373e762a22ad42e1ffb205a8aeda08b2ebfb23c24",
+    "moira_server/models/jaimini_profiles.py": "4232d5bcf44121b0306602876043485abc96a47b2f358fc89d4e4f7806d7b0b0"
+  }
+}

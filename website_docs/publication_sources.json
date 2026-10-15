@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-09-29",
+  "last_verified": "2026-10-12",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.9.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.10.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,27 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.10.0",
+      "date": "2026-10-12",
+      "title": "Source-Defined Vedic Engine and REST",
+      "added": [
+        "Source-defined Vedic profiles through selected VED-014 Kalachakra, with exact source intervals, explicit clocks and matching Python/REST contracts.",
+        "Daily Panchanga, bounded Gochar windows, named Muhurta and source-selected marriage, housing, travel and business elections."
+      ],
+      "changed": [
+        "Packaged small-body metadata follows external catalog release 2026.10.10.1; historical scientific receipts retain their original manifests."
+      ],
+      "fixed": [
+        "Strict input admission, serving-reader and timescale provenance, result invariants and REST error boundaries across the delivered Vedic surfaces.",
+        "Correct IAU 2006 general precession for polynomial ayanamsas; named source corrections and documented compatibility limits."
+      ],
+      "validation": [
+        "Source, real-kernel and HTTP acceptance scopes are recorded in the 6.10.0 release validation receipt and the owning Vedic receipts."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.10.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md"
+    },
     {
       "version": "6.9.9",
       "date": "2026-09-29",

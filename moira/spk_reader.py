@@ -1583,6 +1583,18 @@ class KernelPool:
         self._integration_identities: tuple[_EphemerisKernelIdentity, ...] = ()
         self._rebuild_indices_locked()
 
+    @classmethod
+    def _from_initial_readers(cls, readers) -> KernelPool:
+        """Build once while preserving the generation of sequential additions.
+
+        Initial discovery previously added each reader to an empty pool. Keep
+        that receipted generation without rebuilding indices for every prefix.
+        Ordinary constructor and later ``add()`` semantics remain unchanged.
+        """
+        pool = cls(readers)
+        pool._generation = len(pool._readers)
+        return pool
+
     def _rebuild_indices_locked(self) -> None:
         """Construct deterministic lookup indices across the current reader chain."""
         pair_readers: dict[tuple[int, int], list[tuple[int, object]]] = {}
@@ -2778,11 +2790,9 @@ def set_kernel_path(path: str | Path) -> None:
                 pass
 
         if found_supplemental:
-            pool = KernelPool()
-            pool.add(primary_reader)
-            for s_reader in found_supplemental:
-                pool.add(s_reader)
-            _reader = pool
+            _reader = KernelPool._from_initial_readers(
+                (primary_reader, *found_supplemental)
+            )
         else:
             _reader = primary_reader
 

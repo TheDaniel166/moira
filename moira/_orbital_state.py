@@ -387,7 +387,7 @@ def _not_loaded_error(body: OrbitalBodyIdentity) -> OrbitalBodyNotLoadedError:
     if body.kind is OrbitalBodyKind.ASTEROID:
         catalog, version = "moira-asteroids", FULL_CATALOG_VERSION
     elif body.kind is OrbitalBodyKind.COMET:
-        catalog, version = "moira-comets", "2026.07.28.1"
+        catalog, version = "moira-comets", "2026.10.10.1"
     else:
         catalog, version = "planetary-ephemeris", None
     return OrbitalBodyNotLoadedError(

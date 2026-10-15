@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import Field, field_validator, model_validator
+from moira.jaimini_extended import ArgalaComputation
 
 from .common import _StrictModel
 from ._vedic_inputs import ClassicalPlanet, NodePlanet, FiniteNumber, require_classical
@@ -204,6 +205,7 @@ class ArgalaResponse(_StrictModel):
     lagna_sign: int
     houses: dict[int, ArgalaHouseResponse]
     lineage: str
+    computation: ArgalaComputation | None = None
 
 
 class KarakamsaRequest(_StrictModel):

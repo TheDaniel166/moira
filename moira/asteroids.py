@@ -505,7 +505,7 @@ ASTEROID_NAIF: dict[str, int] = {
 
 # Data-driven sovereign identity catalog: merge the canonical names admitted by
 # scripts/build_asteroid_identity_catalog.py from the finalized public asteroid
-# release (name -> NAIF id, 11,223 bodies in release 2026.09.18.1).
+# release (name -> NAIF id, 11,223 bodies in release 2026.10.10.1).
 # Kept in a data file rather than inline so the entries do not bloat this module;
 # loaded here (before the reverse map) so name and NAIF lookups both see them.
 # `setdefault` keeps the curated names above for the core bodies while the data

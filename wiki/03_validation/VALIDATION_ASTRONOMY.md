@@ -361,9 +361,9 @@ on the seam, and a rejected discontinuous seam. Real DE441 checks prove TT in
 legacy `DistanceExtremes`, verified inverse UT1 in `PhenomenonEvent`, the
 Earth-centered Moon rule, and the immutable route/evaluation receipt.
 
-The ten installed DE441 planet/system cases pass those gates. The current
-catalog releases do not yet carry a reviewed Stage 2 apsidal-passage accuracy
-admission, so their six passage-time authority comparisons are `NOT RUN`, not
+The ten installed DE441 planet/system cases pass those gates. At the September
+28 checkpoint, the catalog releases did not carry a reviewed Stage 2 apsidal-passage
+accuracy admission, so their six passage-time authority comparisons were `NOT RUN`, not
 silently accepted under wider gates. This is a separate event-search
 validation frontier from the orbital-element and geometric-node release
 admission below. A runnable Eros search proves catalog routing without
@@ -391,10 +391,10 @@ gate for the high-curvature comet cases, so the daily extremum nodes are an
 additional event-accuracy requirement rather than a substitute for catalog
 parity. This diagnoses and repairs the catalog builder, not the apsidal root
 solver.
-It is still not release admission: a complete 497-comet catalog must be built,
-sealed under a new version, and pass the release-bound passage fixture before
-the comet event cases become acceptance evidence. The active immutable
-`2026.07.28.1` release remains unchanged.
+That September probe was not release admission: the complete 497-comet catalog
+still needed a new sealed release and release-bound validation. The immutable
+`2026.07.28.1` release was not rewritten. The published replacement and its
+current-solution evidence are recorded below.
 
 The same question was then closed exhaustively for the asteroid release rather
 than inferred from Icarus alone. The governed audit in
@@ -413,13 +413,41 @@ a worst-case elliptic Type-13 invariant at the 1.3 AU boundary: eccentricity
 residual of `0.000173152 km`, an `863.97x` margin inside the gate.
 
 This is an exhaustive catalog partition for apsidal sampling, not a general
-all-epoch close-encounter position audit. It does not admit the current
+all-epoch close-encounter position audit. It did not itself admit the September
 asteroid release for apsidal passages: the exact 59-body/40-shard repair roster
-must be rebuilt and the resulting immutable release must pass the same audit
-before catalog apsidal authority tests are enabled.
+still required rebuilding and release-bound validation. That work is now
+complete for the published replacement, without rewriting the historical audit.
+
+#### October 12, 2026 rebuilt-catalog closure
+
+Both catalogs `2026.10.10.1` are published and active. The asteroid release
+rebuilds 40 shards for the 59 audited bodies and reuses 409 byte-identical
+shards after full server-hash verification. All 497 comet trajectories use
+certified adaptive sampling. The ten-day/seven-node base remains; local
+refinement starts at one day and is halved as needed, with policy floors of
+1.5 hours for the repaired asteroids and 11.25 minutes for comets. Those floors
+are limits, not uniform sampling intervals.
+
+Final sealed-release integration checks all 11,720 bodies for native
+state/element, identity, coverage and provenance invariants, plus four frozen
+asteroid element holdouts, six anchored asteroid apsidal events and three
+current-solution comet events. The latter bind Halley `JPL#75` and Encke
+`JPL#K273/22`; their largest measured timing residual is `0.000603497 seconds`.
+The independent-event gates remain `8.64 seconds` and `1e-9 AU`.
+The final comet freshness census checked all 497 solutions; 38 bodies were
+refreshed and 459 trajectory segments remained byte-identical.
+
+This closes the rebuild/publication work, not every possible small-body
+accuracy question. Internal convergence and all-body structural checks are
+not an independent all-body/all-epoch event oracle. Comet distant-apparition
+and upstream solution limitations remain. Public manifest identities and
+release-bound evidence are listed in
+[the release closure](SMALL_BODY_CATALOG_RELEASE_2026_10_10_1.md).
+
+#### Historical September 28 element/node admission
 
 The packaged 25-asteroid wheel remains a fallback implementation check. The
-current element/node admission binds the independently refreshed exact-JDTDB
+September 28 element/node admission binds the independently refreshed exact-JDTDB
 catalog holdout to `moira-asteroids@2026.09.18.1` (manifest SHA-256
 `1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e`)
 and `moira-comets@2026.07.28.1` (manifest SHA-256
@@ -431,7 +459,7 @@ apsidal distances, `1e-5` eccentricity, `0.001 degree` inclination/node, and
 strict-core extraction gates because the release kernels are 10-day asteroid
 and 30-day comet sampled Type-13 products, not raw one-epoch Horizons replies.
 
-All six current authority cases pass those declared gates. The largest
+All six authority cases in that historical admission pass those declared gates. The largest
 measured residual is Encke at `1.203e-6 AU` in semi-major axis and
 `0.000107 degree` in mean anomaly. The isolated live-primary drift audit passes
 all 17 calibration and holdout cases after Horizons advanced Encke from
@@ -467,7 +495,7 @@ orbital-element tests. The admission binds fixture SHA-256
 the exact two manifest hashes, and the established live-product gates; no
 catalog manifest or older historical receipt was rewritten.
 
-The inventory-wide Stage 3 check passes all 11,223 bodies in the verified
+The historical September 28 inventory-wide Stage 3 check passes all 11,223 bodies in the verified
 `moira-asteroids@2026.09.18.1` release and all 497 bodies in
 `moira-comets@2026.07.28.1`. All 11,720 sovereign bodies receive finite node
 checks, exact true-date mapping, canonical resolution, manifest/kernel receipt

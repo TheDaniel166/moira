@@ -29,19 +29,30 @@ _ROOT = Path(__file__).resolve().parents[2]
             "moira/kernels/asteroids/manifest.json",
             "moira/data/asteroid_catalog_naif.metadata.json",
             "moira-asteroids",
-            "2026.09.18.1",
+            "2026.10.10.1",
             11_223,
             449,
-            {"step_days": 10, "window_size": 7},
+            {
+                "base_step_days": 10,
+                "window_size": 7,
+                "policy_version": "moira-small-body-type13-apsidal-adaptive-v4",
+                "minimum_refinement_step_days": 0.0625,
+                "adaptive_body_count": 59,
+            },
         ),
         (
             "moira/kernels/comets/manifest.json",
             "moira/data/comet_catalog_naif.metadata.json",
             "moira-comets",
-            "2026.07.28.1",
+            "2026.10.10.1",
             497,
             20,
-            {"step_days": 30, "window_size": 5},
+            {
+                "base_step_days": 10,
+                "window_size": 7,
+                "policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+                "minimum_refinement_step_days": 0.0078125,
+            },
         ),
     ],
 )
@@ -52,7 +63,7 @@ def test_packaged_manifest_matches_immutable_identity_receipt(
     expected_version: str,
     expected_body_count: int,
     expected_shard_count: int,
-    expected_sampling: dict[str, int],
+    expected_sampling: dict[str, int | float | str],
 ) -> None:
     manifest_path = _ROOT / manifest_relative
     identity_path = _ROOT / identity_relative
@@ -71,7 +82,17 @@ def test_packaged_manifest_matches_immutable_identity_receipt(
     )
     assert manifest["body_count"] == expected_body_count
     assert manifest["shard_count"] == expected_shard_count
-    assert manifest["sampling"] == expected_sampling
+    sampling = manifest["sampling"]
+    assert {key: sampling[key] for key in expected_sampling} == expected_sampling
+    assert sampling["mode"] == "certified_adaptive_radial_extrema"
+    assert sampling["initial_refinement_step_days"] == 1.0
+    assert sampling["time_tags"] == "nonuniform"
+    assert sampling["certification"] == {
+        "witness_step_ratio": 0.5,
+        "distance_absolute_km": 0.1495978707,
+        "event_time_absolute_seconds": 8.64,
+        "failure_action": "halve_refinement_step_or_reject_body",
+    }
     assert manifest["release"]["released_utc"] == identity["source"]["released_utc"]
     assert manifest["release"]["source_revision"] == (
         identity["source"]["release_source_revision"]
@@ -100,19 +121,23 @@ def test_website_catalog_metrics_publish_release_identity() -> None:
     metrics = _catalog_metrics()
 
     asteroid = metrics["position_capable_asteroid_ephemeris"]
-    assert asteroid["catalog_version"] == "2026.09.18.1"
+    assert asteroid["catalog_version"] == "2026.10.10.1"
     assert asteroid["body_count"] == 11_223
     assert asteroid["shard_count"] == 449
-    assert asteroid["sampling"] == {"step_days": 10, "window_size": 7}
+    assert asteroid["sampling"]["base_step_days"] == 10
+    assert asteroid["sampling"]["window_size"] == 7
+    assert asteroid["sampling"]["adaptive_body_count"] == 59
     assert asteroid["manifest_sha256"] == (
-        "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e"
+        "3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d"
     )
 
     comet = metrics["position_capable_periodic_comet_ephemeris"]
-    assert comet["catalog_version"] == "2026.07.28.1"
+    assert comet["catalog_version"] == "2026.10.10.1"
     assert comet["body_count"] == 497
     assert comet["shard_count"] == 20
-    assert comet["sampling"] == {"step_days": 30, "window_size": 5}
+    assert comet["sampling"]["base_step_days"] == 10
+    assert comet["sampling"]["window_size"] == 7
+    assert comet["sampling"]["minimum_refinement_step_days"] == 0.0078125
     assert comet["manifest_sha256"] == (
-        "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1"
+        "2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671"
     )

@@ -1,5 +1,8 @@
 """Transport models for the Moira REST access surface."""
 
+from .yoga_extensions import (
+    YogaExtensionEvaluateRequest, YogaExtensionSourceResponse, YogaExtensionRuleResponse, YogaExtensionProfileResponse, YogaExtensionCatalogueResponse, YogaExtensionPolicyResponse, YogaExtensionPositionResponse, YogaExtensionClauseResponse, YogaExtensionBranchResponse, YogaExtensionQualificationResponse, YogaExtensionResultResponse, YogaExtensionChartResponse,
+)
 from .stelliums import StelliumAnalysisRequest, StelliumAnalysisResponse
 
 from .batch import (
@@ -1078,6 +1081,7 @@ from .gochara import (
 )
 
 __all__ = [
+    'YogaExtensionEvaluateRequest', 'YogaExtensionSourceResponse', 'YogaExtensionRuleResponse', 'YogaExtensionProfileResponse', 'YogaExtensionCatalogueResponse', 'YogaExtensionPolicyResponse', 'YogaExtensionPositionResponse', 'YogaExtensionClauseResponse', 'YogaExtensionBranchResponse', 'YogaExtensionQualificationResponse', 'YogaExtensionResultResponse', 'YogaExtensionChartResponse',
     "GocharaBirthLocationRequest", "GocharaDatePolicyRequest", "GocharaEpochRequest",
     "GocharaDatetimeRequest", "GocharaDatePolicyResponse", "GocharaDatedPositionResponse",
     "GocharaEpochResponse", "GocharaBirthLocationResponse", "GocharaDateResponse",
