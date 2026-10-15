@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 528
-- Registered OpenAPI operations: 528 (GET 48, POST 480)
+- Registered OpenAPI paths: 531
+- Registered OpenAPI operations: 531 (GET 48, POST 483)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 524
+- Versioned `/v1` paths: 527
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3656,6 +3656,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |
+| `POST` | `/v1/natal-discovery/dispositors` | natal-discovery | `natal_dispositors_route_v1_natal_discovery_dispositors_post` |
+| `POST` | `/v1/natal-discovery/lunar-context` | natal-discovery | `natal_lunar_context_route_v1_natal_discovery_lunar_context_post` |
+| `POST` | `/v1/natal-discovery/shape` | natal-discovery | `natal_shape_route_v1_natal_discovery_shape_post` |
 | `POST` | `/v1/nine-parts/abu-mashar` | nine-parts | `abu_mashar_nine_parts_route_v1_nine_parts_abu_mashar_post` |
 | `GET` | `/v1/nodes/catalog` | nodes | `node_catalog_route_v1_nodes_catalog_get` |
 | `POST` | `/v1/nodes/geometric` | nodes | `geometric_node_route_v1_nodes_geometric_post` |

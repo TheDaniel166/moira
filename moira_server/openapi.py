@@ -148,6 +148,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "relationship",
     },
     {
+        "name": "natal-discovery",
+        "x-displayName": "Natal Discovery",
+        "description": "Selected traditional dispositors, Jones ten-planet shape evidence, and source-verified natal lunar context.",
+        "x-family": "relationship",
+    },
+    {
         "name": "stelliums",
         "x-displayName": "Planet-first Stelliums",
         "description": "Independent sign, house and total-span concentration evidence from supplied snapshots; Strict four or Broad three planets, with non-counting associated factors.",

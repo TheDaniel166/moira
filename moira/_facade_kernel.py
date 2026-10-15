@@ -133,11 +133,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
                 self._supplemental_kernel_init_error = exc
 
             if found_supplemental:
-                pool = KernelPool()
-                pool.add(primary_reader)
-                for shard_reader in found_supplemental:
-                    pool.add(shard_reader)
-                self._reader_obj = pool
+                self._reader_obj = KernelPool._from_initial_readers(
+                    (primary_reader, *found_supplemental)
+                )
             else:
                 self._reader_obj = primary_reader
             self._kernel_init_error = None

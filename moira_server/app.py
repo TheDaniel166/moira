@@ -15,6 +15,7 @@ from .cache import (
     ResponseLRUCache,
 )
 from .config import ServerConfig
+from .routers.natal_discovery import router as natal_discovery_router
 from .errors import register_exception_handlers
 from .lifecycle import StartupReadiness, create_engine, prewarm_engine
 from .openapi import OPENAPI_TAGS, install_openapi_discovery
@@ -187,6 +188,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(dasha_router)
     app.include_router(progressions_router)
     app.include_router(relationship_router)
+    app.include_router(natal_discovery_router)
     app.include_router(stelliums_router)
     app.include_router(hellenistic_aspects_router)  # Whole-sign direction and overcoming truth
     app.include_router(hellenistic_atoms_router)  # Twelfth-parts and assemble-condition
