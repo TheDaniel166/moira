@@ -233,8 +233,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 15
+        "partial": 1,
+        "unresolved": 14
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -328,8 +328,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 14
+        "partial": 6,
+        "unresolved": 8
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -365,12 +365,9 @@
       "family_label": "Asteroids",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
       "missing_documentation_surface_ids": [
-        "python:moira.facade:asteroid_orbit_class",
         "python:moira.facade:asteroid_orbit_classes"
       ],
       "missing_test_surface_ids": [
-        "python:moira.facade:all_asteroids_at",
-        "python:moira.facade:asteroid_orbit_class",
         "python:moira.facade:asteroid_orbit_classes"
       ],
       "ownership_sources": [
@@ -831,8 +828,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 4
+        "partial": 3,
+        "unresolved": 1
       },
       "documentation_leads": [
         "docs/architecture/MOIRA_NATIVE_MIGRATION_TRACKER.md",
@@ -847,9 +844,7 @@
       "family_id": "comets",
       "family_label": "Comets",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
-      "missing_documentation_surface_ids": [
-        "python:moira.facade:all_comets_at"
-      ],
+      "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/comets.py",
@@ -1258,8 +1253,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 6
+        "partial": 1,
+        "unresolved": 5
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -1714,8 +1709,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 14
+        "partial": 3,
+        "unresolved": 11
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -2614,8 +2609,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 2,
-        "unresolved": 24
+        "partial": 3,
+        "unresolved": 23
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6370,8 +6365,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 53
+        "partial": 3,
+        "unresolved": 50
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7785,7 +7780,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b",
+  "inventory_fingerprint_sha256": "0a30932b7528ffefc99faba78d04bc3c8c8edfc04955e17db09402858cd23ff5",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -7811,7 +7806,7 @@
       "strong_exemplar": 4,
       "unresolved": 0
     },
-    "families_with_missing_documentation": 25,
+    "families_with_missing_documentation": 24,
     "families_with_missing_tests": 7,
     "family_count": 143,
     "production_user_surface_count": 171,
@@ -7819,8 +7814,8 @@
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 173,
-      "unresolved": 1060
+      "partial": 191,
+      "unresolved": 1042
     }
   }
 }

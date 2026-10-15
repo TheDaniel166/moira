@@ -866,8 +866,100 @@
       "surface_id": "rest:POST:/v1/yogas/evaluate",
       "contract_kind": "vedic_yogas_proof_vessel",
       "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:all_asteroids_at",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:asteroid_at",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:asteroid_family",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:asteroid_orbit_class",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/asteroids/bulk",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/asteroids/families/chart/resonance-network",
+      "contract_kind": "asteroids_position_and_family_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:all_comets_at",
+      "contract_kind": "comets_position_and_bulk_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:comet_at",
+      "contract_kind": "comets_position_and_bulk_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/comets/bulk",
+      "contract_kind": "comets_position_and_bulk_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/deep-sky/bulk",
+      "contract_kind": "deep_sky_catalog_projection_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:galactic_position_of",
+      "contract_kind": "galactic_frame_and_reference_points_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:galactic_reference_points",
+      "contract_kind": "galactic_frame_and_reference_points_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/galactic/reference-points",
+      "contract_kind": "galactic_frame_and_reference_points_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:all_stars_at",
+      "contract_kind": "fixed_stars_catalog_and_bulk_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:star_magnitude",
+      "contract_kind": "fixed_stars_catalog_and_bulk_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/stars/bulk",
+      "contract_kind": "fixed_stars_catalog_and_bulk_vessel",
+      "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:aspect_strength",
+      "contract_kind": "core_houses_and_aspect_strength_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "python:moira.facade:calculate_houses",
+      "contract_kind": "core_houses_and_aspect_strength_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
     }
   ]
 }
+
+
 
 

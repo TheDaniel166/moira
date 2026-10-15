@@ -1571,6 +1571,222 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "asteroids_position_and_family_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The asteroid position, batch, orbit-class, family-lookup, and resonance-network surfaces return AsteroidData vessels, JPL SBDB orbit-class metadata, Nesvorny family memberships, and AsteroidPositionProvenanceResponse/AsteroidBulkProvenanceResponse/AsteroidFamilyResonanceNetworkProvenanceResponse receipts.",
+        "stage_label": "Minor-planet apparent ecliptic position, JPL SBDB orbit classification, and Nesvorny family resonance reduction",
+        "operation": "Resolve asteroid names or NAIF/MPC catalog numbers against ASTEROID_NAIF, asteroid_orbit_classes.json, and Nesvorny family tables, evaluate apparent geocentric true-ecliptic-of-date positions through the active or sovereign Type-13 SPK reader, and assemble batch or family-resonance aspect networks with explicit kernel and catalog provenance.",
+        "semantic_values": {
+            "inputs": [
+                "Asteroid name or NAIF/MPC integer identifier, finite JD UT or timezone-aware CivilDateTime, optional KernelReader, bounded bodies/numbers lists, skip_missing flag, and aspect policy parameters are validated."
+            ],
+            "units": [
+                "Ecliptic longitude and latitude use degrees; geocentric distance uses AU; longitude speed uses degrees per day; aspect orbs use degrees."
+            ],
+            "reference_frame": [
+                "Apparent geocentric true ecliptic and equinox of date reduced from ICRS barycentric SPK states."
+            ],
+            "origin": [
+                "Geocentric apparent vector combined with JPL SBDB orbit classification and AstDyS/Nesvorny dynamical family membership."
+            ],
+            "timescale": [
+                "UT1/UTC Julian Day converted to TT for light-time, aberration, precession, and nutation reduction."
+            ],
+            "corrections": [
+                "Newtonian light-time iteration, stellar aberration, IAU 2006 precession, and IAU 2000A nutation are applied to SPK positions; resonance networks filter pairwise aspects by shared Nesvorny family membership."
+            ],
+            "policies_defaults": [
+                "skip_missing defaults to True on bulk surfaces; REST provenance explicitly records loaded_kernel_available, is_sovereign, known_catalog_entry, kernel_source, and stage_sequence."
+            ],
+            "fallbacks": [
+                "Missing kernel segments are collected in missing when skip_missing=True or raise MissingKernelError when skip_missing=False; uncatalogued family or orbit-class lookups return None without fabricating membership."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, empty or duplicate body lists, unknown asteroid names when skip_missing=False, and requests omitting both bodies and numbers on the resonance-network route are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "comets_position_and_bulk_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The comet position and bulk surfaces return CometData vessels and CometsBulkResponse envelopes with CometPositionProvenanceResponse and CometBulkProvenanceResponse receipts.",
+        "stage_label": "Cometary apparent geocentric true-ecliptic-of-date position and bulk transport reduction",
+        "operation": "Resolve comet designations or aliases against COMET_NAIF, evaluate apparent geocentric true-ecliptic-of-date coordinates and daily speeds from the active or sovereign comet SPK reader, and serialize per-body and batch kernel provenance.",
+        "semantic_values": {
+            "inputs": [
+                "Comet designation, alias, or NAIF ID, finite JD UT or timezone-aware CivilDateTime, optional KernelReader, bounded bodies list, and skip_missing flag are validated."
+            ],
+            "units": [
+                "Ecliptic longitude, latitude, and sign_degree use degrees; geocentric distance uses AU; daily longitude speed uses degrees per day."
+            ],
+            "reference_frame": [
+                "Apparent geocentric true ecliptic and equinox of date."
+            ],
+            "origin": [
+                "Geocentric apparent comet state reduced from SPK segments."
+            ],
+            "timescale": [
+                "UT1/UTC Julian Day converted to TT for ephemeris evaluation and frame reduction."
+            ],
+            "corrections": [
+                "Light-time, stellar aberration, precession, and nutation are applied; canonical designation resolution disambiguates shared discoverer names."
+            ],
+            "policies_defaults": [
+                "all_comets_at and /v1/comets/bulk default to skipping unavailable comets while recording missing bodies, sovereign_used, loaded_kernel_available, and stage_sequence in REST provenance."
+            ],
+            "fallbacks": [
+                "Unavailable comet shards or out-of-coverage epochs are skipped in batch mode when skip_missing=True and surfaced in the missing list."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, empty body identifiers, oversized batch requests, and missing kernels when skip_missing=False are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "deep_sky_catalog_projection_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The deep-sky bulk route projects release-bound ICRS catalog anchors to true ecliptic of date and returns DeepSkyBulkResponse with per-object DeepSkyPositionProvenanceResponse receipts and catalog_version.",
+        "stage_label": "Offline SIMBAD/ICRS deep-sky catalog resolution and true-ecliptic-of-date projection",
+        "operation": "Validate timezone-aware CivilDateTime and bounded object names, convert UTC to TT, resolve each object in the 60-object offline deep-sky catalog, apply proper-motion policy where admitted, project ICRS equatorial coordinates to true ecliptic of date, and serialize DeepSkyPositionProvenanceResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Timezone-aware CivilDateTime, non-empty bounded objects list, and skip_missing boolean flag are validated."
+            ],
+            "units": [
+                "Source RA/Dec and projected ecliptic longitude/latitude/sign_degree use degrees; epochs use JD TT."
+            ],
+            "reference_frame": [
+                "ICRS J2000 source coordinates projected to true ecliptic and equinox of date."
+            ],
+            "origin": [
+                "Offline release-bound 60-object deep-sky catalog with SIMBAD main IDs, coordinate bibcodes, and quality flags."
+            ],
+            "timescale": [
+                "Civil UTC datetime normalized to JD TT alongside source_epoch_jd_tt."
+            ],
+            "corrections": [
+                "Proper motion is applied only when proper_motion_admitted is True for the catalog record and is explicitly reported via proper_motion_applied."
+            ],
+            "policies_defaults": [
+                "skip_missing defaults to True; every returned object carries source_ra_deg, source_dec_deg, source_frame, position_semantics, position_source, simbad_main_id, coordinate_bibcode, coordinate_quality, catalog_version, and stage_sequence."
+            ],
+            "fallbacks": [
+                "When skip_missing=True, unknown names are collected in missing without aborting valid projections."
+            ],
+            "refusal_behavior": [
+                "Naive datetimes, empty or oversized object lists, blank names, and unknown objects when skip_missing=False are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "galactic_frame_and_reference_points_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The galactic position and reference-point surfaces transform between true-of-date ecliptic, J2000/ICRS equatorial, and IAU 1958/Liu-Zhu-Zhang galactic frames, returning GalacticPosition vessels and GalacticReferencePointsResponse provenance.",
+        "stage_label": "True-of-date ecliptic, J2000/ICRS equatorial, and IAU 1958 galactic frame transformation",
+        "operation": "Validate finite obliquity, JD TT, and ecliptic coordinates, bridge between true-of-date equatorial and J2000/ICRS via precession and nutation matrices, apply the orthogonal Liu-Zhu-Zhang (2011) galactic rotation matrix or precess the five named galactic reference landmarks to true ecliptic of date, and return GalacticPosition or GalacticReferencePointsResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Non-empty body label, finite ecliptic longitude/latitude, finite true obliquity of date, and finite JD TT are validated."
+            ],
+            "units": [
+                "Galactic longitude l, galactic latitude b, ecliptic longitude/latitude, obliquity, and great-circle landmark distances use degrees; epochs use JD TT."
+            ],
+            "reference_frame": [
+                "True ecliptic of date bridged through J2000/ICRS equatorial to the IAU 1958 galactic frame (Liu, Zhu & Zhang 2011 matrix)."
+            ],
+            "origin": [
+                "Geocentric direction vector relative to the Galactic Center (l=0, b=0), Anti-Center, North/South Galactic Poles, and the legacy M87 Super-Galactic Center convention."
+            ],
+            "timescale": [
+                "Julian Day TT governs the IAU 2006 precession and IAU 2000A nutation bridge between epoch of date and J2000.0."
+            ],
+            "corrections": [
+                "Inverse nutation and inverse precession rotate true-of-date equatorial vectors to J2000/ICRS prior to galactic rotation, avoiding the ~50 arcsec/year epoch-mixing error."
+            ],
+            "policies_defaults": [
+                "GalacticPosition exposes near_galactic_plane (|b| <= 5 deg), galactic_hemisphere, angular_distance_to_gc, and angular_distance_to_anticenter; REST reference-points responses include GalacticProvenanceResponse with source_frame, target_frame, coordinate_source, and stage_sequence."
+            ],
+            "fallbacks": [
+                "The legacy 'Super-Galactic Center' key is preserved explicitly as the M87 convention while moira.cosmic_references provides typed landmark/proxy semantics."
+            ],
+            "refusal_behavior": [
+                "Non-finite coordinates, latitudes outside [-90, 90], non-finite obliquity or jd_tt, and empty body names are rejected with ValueError or 422 errors."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "fixed_stars_catalog_and_bulk_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The fixed-star catalog, magnitude, and bulk surfaces return FixedStar vessels and StarsBulkResponse envelopes with embedded FixedStarComputationTruth, FixedStarClassification, FixedStarCatalogProvenance, StarConditionProfile, and StarPositionProvenanceResponse receipts.",
+        "stage_label": "Sovereign fixed-star catalog resolution, astrometric space-motion reduction, and photometric condition profiling",
+        "operation": "Resolve fixed stars across the merged Hipparcos/Gaia sovereign catalog, apply 3D space motion, parallax, gravitational deflection, stellar aberration, precession, and nutation to JD TT, attach variable/multiple-star condition profiles, and return FixedStar vessels, V-band magnitudes, or StarsBulkResponse.",
+        "semantic_values": {
+            "inputs": [
+                "Star name or designation, finite JD TT or timezone-aware CivilDateTime, optional FixedStarComputationPolicy/UnifiedStarComputationPolicy, and skip_missing flag are validated."
+            ],
+            "units": [
+                "Ecliptic longitude, latitude, RA, Dec, and sign_degree use degrees; V-band magnitude is unitless apparent magnitude; parallax uses mas; proper motion uses mas/yr; radial velocity uses km/s."
+            ],
+            "reference_frame": [
+                "ICRS J2000 catalog astrometry reduced to apparent geocentric (or topocentric when observer coordinates are supplied) true ecliptic and equinox of date."
+            ],
+            "origin": [
+                "Sovereign fixed-star catalog (Hipparcos/Gaia DR3 merged astrometry with GCVS variable and WDS/ORB6 multiple-star cross-links)."
+            ],
+            "timescale": [
+                "Julian Day TT (with REST datetime requests validated as timezone-aware UTC and converted via utc_to_tt)."
+            ],
+            "corrections": [
+                "Rigorous 3D space motion, annual parallax, relativistic solar deflection, annual aberration, and IAU 2006/2000A precession-nutation are applied when true_position=True."
+            ],
+            "policies_defaults": [
+                "Each FixedStar embeds computation_truth, classification, provenance, relation, and condition_profile; REST StarPositionProvenanceResponse serializes source_mode, lookup_kind, gaia_match_status, merge_state, observer_mode, true_position, dedup_applied, and stage_sequence."
+            ],
+            "fallbacks": [
+                "Bulk star queries collect unresolved names in missing when skip_missing=True and preserve catalog/Gaia merge status on each resolved star."
+            ],
+            "refusal_behavior": [
+                "Unknown star names (when not skipping missing), naive datetimes, empty or oversized bulk star lists, and non-finite epochs are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "core_houses_and_aspect_strength_vessel": {
+        "inspectability_mode": "embedded_result",
+        "summary": "The core house-cusp and aspect-strength surfaces return self-describing HouseCusps vessels (with requested/effective system, fallback reason, HouseSystemClassification, HousePolicy, and HouseBoundaryGeometrySet) and AspectStrength vessels (with orb, allowed_orb, surplus, and exactness).",
+        "stage_label": "Astronomical house-cusp division, polar fallback governance, and geometric aspect-strength derivation",
+        "operation": "Compute ARMC, true obliquity, ASC, MC, Vertex, East Point, and 12 house cusps under the requested system and HousePolicy with explicit polar fallback and spatial boundary geometry, or derive exactness and orb surplus from an admitted AspectData/DeclinationAspect vessel.",
+        "semantic_values": {
+            "inputs": [
+                "Finite JD UT, observer latitude in (-90, 90) and finite longitude, house system code, optional HousePolicy and zodiac_offset for calculate_houses; or an admitted AspectData/DeclinationAspect vessel for aspect_strength."
+            ],
+            "units": [
+                "Cusps, angles (ASC, MC, ARMC, Vertex, East Point), orbs, allowed_orb, and surplus use degrees; exactness is a normalized ratio in [0.0, 1.0]."
+            ],
+            "reference_frame": [
+                "Tropical (or shifted sidereal when zodiac_offset is supplied) ecliptic of date and true equatorial of date."
+            ],
+            "origin": [
+                "Topocentric local horizon and meridian basis at the observer's geographic latitude and longitude."
+            ],
+            "timescale": [
+                "JD UT for Greenwich/local sidereal time and UT-to-TT conversion for true obliquity and nutation."
+            ],
+            "corrections": [
+                "Equation of the equinoxes (nutation in longitude * cos(obliquity)) is applied to GMST/LST; high-latitude semi-arc or pole-height singularities are governed by HousePolicy."
+            ],
+            "policies_defaults": [
+                "HouseCusps preserves system (requested), effective_system, fallback, fallback_reason, classification (family, cusp_basis, latitude_sensitive, polar_capable), policy, and boundary_geometry; AspectStrength preserves categorical whole-sign exactness=1.0 and degree-based exactness=1.0 - orb/allowed_orb."
+            ],
+            "fallbacks": [
+                "When a polar-incapable system or unknown system code falls back under default HousePolicy, fallback=True, effective_system, and fallback_reason record the exact substitution."
+            ],
+            "refusal_behavior": [
+                "Non-finite epochs or coordinates, latitudes outside [-90, 90], strict-policy polar/unknown-system failures, negative or zero allowed_orb (for degree aspects), and orb > allowed_orb invariant violations are rejected."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

@@ -948,19 +948,33 @@ from moira.facade import heliocentric_planet_at, all_heliocentric_at, Heliocentr
 ### Asteroids
 
 ```python
-from moira.facade import asteroid_at, all_asteroids_at, list_asteroids
+from moira.facade import asteroid_at, all_asteroids_at, asteroid_orbit_class, list_asteroids
 from moira.facade import load_asteroid_kernel   # for non-DE441 bodies
 ```
 
 | Function | Returns | Description |
 |---|---|---|
 | `asteroid_at(name_or_id, jd_ut, reader=None)` | `AsteroidData` | Single asteroid geocentric ecliptic position |
-| `all_asteroids_at(jd_ut, reader=None)` | `dict[str, AsteroidData]` | All loaded asteroids |
+| `all_asteroids_at(jd_ut, bodies=None, reader=None, skip_missing=True)` | `dict[str, AsteroidData]` | All loaded or selected asteroids |
+| `asteroid_orbit_class(name_or_naif)` | `dict[str, str] \| None` | JPL SBDB orbit class metadata (`code`, `name`, `region`) for an admitted minor planet |
 | `list_asteroids()` | `list[str]` | Names of currently loaded asteroids |
 | `available_in_kernel(kernel_path)` | `list[str]` | Asteroid names available in a kernel |
 | `load_asteroid_kernel(path)` | — | Load a supplementary SPK kernel |
 | `load_secondary_kernel(path)` | — | Load second SPK kernel |
 | `load_tertiary_kernel(path)` | — | Load third SPK kernel |
+
+### Comets
+
+```python
+from moira.facade import comet_at, all_comets_at, list_comets, CometData
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `comet_at(name_or_id, jd_ut, kernel=None, reader=None)` | `CometData` | Single comet geocentric ecliptic position |
+| `all_comets_at(jd_ut, names=None, reader=None)` | `dict[str, CometData]` | All loaded or selected comets |
+| `list_comets()` | `list[str]` | Sorted names of all cataloged comets |
+
 
 ### Planetary nodes (apsides)
 

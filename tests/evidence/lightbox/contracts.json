@@ -915,8 +915,131 @@
       "exclusions": [
         "The replay covers /v1/yogas/evaluate; individual family helper functions in moira.yogas are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-ASTEROIDS-POSITION-AND-FAMILY-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:all_asteroids_at",
+        "python:moira.facade:asteroid_at",
+        "python:moira.facade:asteroid_family",
+        "python:moira.facade:asteroid_orbit_class",
+        "rest:POST:/v1/asteroids/bulk",
+        "rest:POST:/v1/asteroids/families/chart/resonance-network"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_asteroid_api.py::test_asteroid_orbit_class_lookup_and_all_asteroids_at_delegation",
+        "tests/unit/test_asteroid_families.py::test_complete_memberships_preserve_nested_families_and_display_primary",
+        "tests/unit/test_asteroid_families.py::test_resonance_emits_one_qualifier_for_each_shared_family",
+        "tests/server/test_server_small_body_list_routes.py::test_asteroids_bulk_route_returns_results_missing_and_provenance",
+        "tests/server/test_server_small_body_list_routes.py::test_asteroid_family_resonance_network_route_returns_ui_ready_edges",
+        "tests/server/test_server_small_body_list_routes.py::test_asteroid_family_resonance_network_route_rejects_invalid_requests"
+      ],
+      "minimum_tests": 6,
+      "claim_scope": "The six P0 asteroid Python and REST surfaces (asteroid_at, all_asteroids_at, asteroid_family, asteroid_orbit_class, /v1/asteroids/bulk, and /v1/asteroids/families/chart/resonance-network) preserve AsteroidData vessels, JPL SBDB orbit-class metadata, Nesvorny family memberships, and explicit kernel/catalog provenance receipts.",
+      "exclusions": [
+        "The replay covers the six P0 asteroid surfaces; subset routes, individual classical/centaur/TNO convenience wrappers, and external JPL Horizons numerical residual sweeps are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-COMETS-POSITION-AND-BULK-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:all_comets_at",
+        "python:moira.facade:comet_at",
+        "rest:POST:/v1/comets/bulk"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_comets.py::test_all_comets_skips_a_missing_kernel_without_name_error",
+        "tests/server/test_server_small_body_list_routes.py::test_comet_position_route_returns_position_with_provenance",
+        "tests/server/test_server_small_body_list_routes.py::test_comets_bulk_route_returns_results_missing_and_provenance",
+        "tests/server/test_server_small_body_list_routes.py::test_comets_bulk_route_rejects_invalid_bodies"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The three P0 comet Python and REST surfaces (comet_at, all_comets_at, and /v1/comets/bulk) preserve CometData vessels, canonical designation resolution, missing-kernel containment, and CometPositionProvenanceResponse/CometBulkProvenanceResponse receipts.",
+      "exclusions": [
+        "The replay covers comet_at, all_comets_at, and /v1/comets/bulk; /v1/comets/position and /v1/comets/list are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-DEEP-SKY-BULK-PROJECTION-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/deep-sky/bulk"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_deep_sky_routes.py::test_deep_sky_bulk_route_preserves_results_and_collects_missing",
+        "tests/server/test_server_deep_sky_routes.py::test_deep_sky_bulk_route_can_fail_closed_on_unknown_name",
+        "tests/server/test_server_deep_sky_routes.py::test_deep_sky_bulk_route_enforces_bounds"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The /v1/deep-sky/bulk REST route projects offline SIMBAD/ICRS catalog anchors to true ecliptic of date while preserving DeepSkyPositionProvenanceResponse receipts, proper_motion_applied flags, coordinate bibcodes, catalog_version, and skip_missing error semantics.",
+      "exclusions": [
+        "The replay covers /v1/deep-sky/bulk; /v1/deep-sky/position, /v1/deep-sky/list, and Python deep-sky helpers are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-GALACTIC-FRAME-AND-REFERENCE-POINTS-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:galactic_position_of",
+        "python:moira.facade:galactic_reference_points",
+        "rest:POST:/v1/galactic/reference-points"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_galactic.py::TestGalacticInputValidation::test_galactic_reference_points_rejects_non_finite_inputs",
+        "tests/unit/test_galactic.py::TestGalacticInputValidation::test_galactic_position_of_rejects_empty_body_name",
+        "tests/server/test_server_galactic_routes.py::test_galactic_reference_points_route_matches_engine_truth"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The three P0 galactic surfaces (galactic_position_of, galactic_reference_points, and /v1/galactic/reference-points) enforce finite epoch/obliquity/coordinate validation, preserve J2000/ICRS-to-true-of-date precession-nutation bridging, and return GalacticPosition vessels and GalacticProvenanceResponse receipts.",
+      "exclusions": [
+        "The replay covers galactic_position_of, galactic_reference_points, and /v1/galactic/reference-points; direct coordinate-pair routes and cosmic-reference routes are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-FIXED-STARS-CATALOG-AND-BULK-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:all_stars_at",
+        "python:moira.facade:star_magnitude",
+        "rest:POST:/v1/stars/bulk"
+      ],
+      "evidence_classes": ["authority", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_stars_public_api.py::test_all_stars_at_and_star_magnitude_preserve_truth_and_catalog_consistency",
+        "tests/server/test_server_stars_routes.py::test_stars_bulk_route_preserves_valid_results_and_collects_missing_names",
+        "tests/server/test_server_stars_routes.py::test_stars_bulk_route_rejects_empty_star_list",
+        "tests/server/test_server_stars_routes.py::test_stars_bulk_route_rejects_oversized_star_list"
+      ],
+      "minimum_tests": 4,
+      "claim_scope": "The three P0 fixed-star surfaces (all_stars_at, star_magnitude, and /v1/stars/bulk) preserve FixedStar computation truth, classification, catalog provenance, V-band magnitude parity, and StarPositionProvenanceResponse receipts.",
+      "exclusions": [
+        "The replay covers all_stars_at, star_magnitude, and /v1/stars/bulk; variable-star, multiple-star, and heliacal star surfaces are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-CORE-TAIL-HOUSES-ASPECT-AND-PIPELINE-TRUTH",
+      "surface_ids": [
+        "python:moira.facade:aspect_strength",
+        "python:moira.facade:calculate_houses"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/unit/test_aspects.py::test_aspect_strength_fields_are_arithmetically_consistent",
+        "tests/unit/test_aspects.py::test_whole_sign_aspect_has_domain_aware_strength_and_inspectability",
+        "tests/unit/test_house_truth_preservation.py::test_public_calculate_houses_contract_preserves_governing_truth",
+        "tests/server/test_server_website_routes.py::test_website_pipeline_planet_route_matches_existing_reduction_surface",
+        "tests/server/test_server_website_routes.py::test_website_pipeline_chart_route_exposes_existing_reduction_truth"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The remaining canonical astronomy-and-chart-core P0 surfaces (aspect_strength and calculate_houses) and the website pipeline reduction alias routes (/v1/pipeline/chart and /v1/pipeline/positions/planet) preserve AspectStrength exactness/surplus identities, HouseCusps system/fallback/classification/policy/boundary-geometry truth, and reduction-vessel parity.",
+      "exclusions": [
+        "The replay covers aspect_strength, calculate_houses, and the website pipeline alias routes; non-P0 house/aspect helpers are outside this contract."
+      ]
     }
   ]
 }
+
+
 
 

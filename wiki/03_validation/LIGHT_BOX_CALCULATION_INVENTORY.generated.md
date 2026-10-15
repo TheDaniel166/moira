@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.9.9`
-- Surface fingerprint: `e22a6aa50194c981830410bd03aeea54b1380be6cd2d0c2b09901e02b840320b`
+- Surface fingerprint: `0a30932b7528ffefc99faba78d04bc3c8c8edfc04955e17db09402858cd23ff5`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 
@@ -19,7 +19,7 @@ Conservative rule: an ambiguous public callable remains in calculation scope. Ty
 
 | Surface | Total | In calculation scope | Explicit aliases | In-scope without documentation mention | In-scope without test mention |
 |---|---:|---:|---:|---:|---:|
-| Python facade | 2326 | 764 | 2 | 64 | 9 |
+| Python facade | 2326 | 764 | 2 | 62 | 7 |
 | REST operations | 518 | 473 | 3 | 0 | 3 |
 
 ### Python export kinds
@@ -85,8 +85,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:algol_magnitude` | `algol_magnitude` | `calculation` | yes | `canonical` | `moira/variable_stars.py:1118` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_variable_stars.py` |
 | `python:moira.facade:algol_next_minimum` | `algol_next_minimum` | `calculation` | yes | `canonical` | `moira/variable_stars.py:1123` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_variable_stars.py` |
 | `python:moira.facade:algol_phase` | `algol_phase` | `calculation` | yes | `canonical` | `moira/variable_stars.py:1113` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_variable_stars.py` |
-| `python:moira.facade:all_asteroids_at` | `all_asteroids_at` | `calculation` | yes | `canonical` | `moira/asteroids.py:980` | `docs/architecture/MOIRA_NATIVE_TYPE13_EVALUATION_COMPLETION_PLAN.md` +2 | — |
-| `python:moira.facade:all_comets_at` | `all_comets_at` | `calculation` | yes | `canonical` | `moira/comets.py:417` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
+| `python:moira.facade:all_asteroids_at` | `all_asteroids_at` | `calculation` | yes | `canonical` | `moira/asteroids.py:980` | `docs/architecture/MOIRA_NATIVE_TYPE13_EVALUATION_COMPLETION_PLAN.md` +2 | `tests/unit/test_asteroid_api.py` |
+| `python:moira.facade:all_comets_at` | `all_comets_at` | `calculation` | yes | `canonical` | `moira/comets.py:417` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:all_cosmic_references_at` | `all_cosmic_references_at` | `calculation` | yes | `canonical` | `moira/cosmic_references.py:451` | `wiki/02_standards/API_REFERENCE.md` +2 | `tests/server/test_server_galactic_routes.py` +2 |
 | `python:moira.facade:all_deep_sky_at` | `all_deep_sky_at` | `calculation` | yes | `canonical` | `moira/deep_sky.py:353` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:all_galactic_positions` | `all_galactic_positions` | `calculation` | yes | `canonical` | `moira/galactic.py:550` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +4 | `tests/unit/test_facade_clock_boundaries.py` +1 |
@@ -148,7 +148,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:assign_house` | `assign_house` | `calculation` | yes | `canonical` | `moira/houses.py:4209` | `CHANGELOG.md` +7 | `tests/integration/test_oracle_hostile_semantic_audit.py` +19 |
 | `python:moira.facade:asteroid_at` | `asteroid_at` | `calculation` | yes | `canonical` | `moira/asteroids.py:891` | `CHANGELOG.md` +22 | `tests/integration/test_custom_type13_toutatis_kernel.py` +13 |
 | `python:moira.facade:asteroid_family` | `asteroid_family` | `calculation` | yes | `canonical` | `moira/asteroid_families.py:150` | `wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md` | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
-| `python:moira.facade:asteroid_orbit_class` | `asteroid_orbit_class` | `calculation` | yes | `canonical` | `moira/asteroids.py:540` | — | — |
+| `python:moira.facade:asteroid_orbit_class` | `asteroid_orbit_class` | `calculation` | yes | `canonical` | `moira/asteroids.py:540` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_asteroid_api.py` |
 | `python:moira.facade:asteroid_orbit_classes` | `asteroid_orbit_classes` | `calculation` | yes | `canonical` | `moira/asteroids.py:552` | — | — |
 | `python:moira.facade:astrodynes_summary` | `astrodynes_summary` | `calculation` | yes | `canonical` | `moira/astrodynes.py:1841` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:atmakaraka` | `atmakaraka` | `calculation` | yes | `canonical` | `moira/jaimini.py:660` | `docs/architecture/P9-03_JAIMINI_TRANSPORT_DESIGN.md` +4 | `tests/server/test_server_jaimini_routes.py` +2 |
@@ -512,7 +512,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:list_all_tnos` | `list_all_tnos` | `reference_query` | no | `canonical` | `moira/asteroids.py:566` | — | — |
 | `python:moira.facade:list_asteroids` | `list_asteroids` | `reference_query` | no | `canonical` | `moira/asteroids.py:1018` | `docs/superpowers/plans/2026-05-21-asteroid-integration-refactor.md` +7 | — |
 | `python:moira.facade:list_ayanamsa_systems` | `list_ayanamsa_systems` | `reference_query` | no | `canonical` | `moira/sidereal.py:693` | `docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md` +4 | `tests/server/test_server_sidereal_routes.py` +4 |
-| `python:moira.facade:list_comets` | `list_comets` | `reference_query` | no | `canonical` | `moira/comets.py:448` | `wiki/02_services/REST_API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` |
+| `python:moira.facade:list_comets` | `list_comets` | `reference_query` | no | `canonical` | `moira/comets.py:448` | `wiki/02_services/REST_API_REFERENCE.md` +1 | `tests/unit/test_api_surface_adversarial_audit.py` |
 | `python:moira.facade:list_cosmic_references` | `list_cosmic_references` | `reference_query` | no | `canonical` | `moira/cosmic_references.py:415` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:list_deep_sky_objects` | `list_deep_sky_objects` | `reference_query` | no | `canonical` | `moira/deep_sky.py:252` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:list_multiple_stars` | `list_multiple_stars` | `reference_query` | no | `canonical` | `moira/multiple_stars.py:633` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_multiple_stars.py` |
@@ -955,7 +955,7 @@ Every registered OpenAPI operation appears exactly once. Explicit pipeline alias
 | `rest:POST:/v1/chart-shape/classify` | `POST` | `/v1/chart-shape/classify` | `calculation` | yes | `canonical` | `SingleChartAnalysisRequest` → `ChartShapeResponse` | `moira_server/routers/relationship.py:225` | `docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md` +1 | `tests/server/test_server_relationship_routes.py` |
 | `rest:POST:/v1/chart/reduction` | `POST` | `/v1/chart/reduction` | `calculation` | yes | `canonical` | `ChartRequest` → `ChartReductionResponse` | `moira_server/routers/chart.py:74` | `docs/superpowers/plans/2026-08-15-mean-lilith-iers.md` +3 | `tests/server/test_server_chart_cache.py` +2 |
 | `rest:POST:/v1/comets/bulk` | `POST` | `/v1/comets/bulk` | `calculation` | yes | `canonical` | `CometsBulkRequest` → `CometsBulkResponse` | `moira_server/routers/comets.py:32` | `docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md` +2 | `tests/server/test_server_small_body_list_routes.py` |
-| `rest:GET:/v1/comets/list` | `GET` | `/v1/comets/list` | `reference_query` | no | `canonical` | `none` → `CometListResponse` | `moira_server/routers/comets.py:40` | `docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md` +2 | `tests/server/test_server_small_body_list_routes.py` +1 |
+| `rest:GET:/v1/comets/list` | `GET` | `/v1/comets/list` | `reference_query` | no | `canonical` | `none` → `CometListResponse` | `moira_server/routers/comets.py:40` | `docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md` +3 | `tests/server/test_server_small_body_list_routes.py` +1 |
 | `rest:POST:/v1/comets/position` | `POST` | `/v1/comets/position` | `calculation` | yes | `canonical` | `CometPositionRequest` → `CometPositionResponse` | `moira_server/routers/comets.py:24` | `docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md` +2 | `tests/server/test_server_small_body_list_routes.py` |
 | `rest:POST:/v1/composite/chart` | `POST` | `/v1/composite/chart` | `calculation` | yes | `canonical` | `CompositeChartRequest` → `CompositeChartResponse` | `moira_server/routers/relationship.py:213` | `CHANGELOG.md` +7 | `tests/server/test_server_relationship_routes.py` |
 | `rest:POST:/v1/composite/transits` | `POST` | `/v1/composite/transits` | `calculation` | yes | `canonical` | `CompositeTransitRequest` → `RelationshipTransitSearchResponse` | `moira_server/routers/forecasting.py:39` | `docs/architecture/TRACK_A_BOUNDED_CLOSURE_2026-08.md` +2 | `tests/server/test_server_forecasting_routes.py` |

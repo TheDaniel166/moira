@@ -569,3 +569,22 @@ def test_available_tnos_is_subset_of_list(small_body_reader_context):
     available = set(available_tnos())
     assert set(TNO_NAMES.values()) <= available
     assert available <= set(list_tnos())
+
+
+def test_asteroid_orbit_class_lookup_and_all_asteroids_at_delegation():
+    """Verify JPL SBDB orbit classification lookup and bounded all_asteroids_at batching."""
+    from moira.asteroids import all_asteroids_at, asteroid_orbit_class
+
+    ceres_class = asteroid_orbit_class("Ceres")
+    assert ceres_class is not None
+    assert ceres_class["code"] == "MBA"
+    assert asteroid_orbit_class(CERES) == ceres_class
+    assert asteroid_orbit_class("Chiron")["code"] == "CEN"
+    assert asteroid_orbit_class("nonexistent-minor-body") is None
+
+    dummy = _make_dummy_asteroid_data("Ceres", CERES)
+    with patch("moira.asteroids.asteroid_at", return_value=dummy) as mocked_at:
+        batch = all_asteroids_at(2451545.0, bodies=["Ceres"])
+    mocked_at.assert_called_once_with("Ceres", 2451545.0, reader=None)
+    assert batch == {"Ceres": dummy}
+

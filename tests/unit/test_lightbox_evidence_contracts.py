@@ -472,6 +472,31 @@ def test_r5c_vedic_and_electional_contracts_are_bounded() -> None:
         assert contract["exclusions"]
 
 
+def test_r6a_catalog_and_core_tail_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-ASTEROIDS-POSITION-AND-FAMILY-TRUTH": (6, 6),
+        "LB-COMETS-POSITION-AND-BULK-TRUTH": (3, 4),
+        "LB-DEEP-SKY-BULK-PROJECTION-TRUTH": (1, 3),
+        "LB-GALACTIC-FRAME-AND-REFERENCE-POINTS-TRUTH": (3, 3),
+        "LB-FIXED-STARS-CATALOG-AND-BULK-TRUTH": (3, 4),
+        "LB-CORE-TAIL-HOUSES-ASPECT-AND-PIPELINE-TRUTH": (2, 5),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
+
 
 
 def test_contract_hash_is_order_stable() -> None:
