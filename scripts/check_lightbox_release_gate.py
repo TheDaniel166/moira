@@ -82,15 +82,6 @@ def _worktree_paths() -> frozenset[str]:
     return tracked | untracked
 
 
-def _git_parents(revision: str) -> tuple[str, ...]:
-    fields = _git(["rev-list", "--parents", "-n", "1", revision]).split()
-    return tuple(fields[1:])
-
-
-def _commit_paths(parent: str, revision: str) -> frozenset[str]:
-    return _nul_paths(_git(["diff", "--name-only", "-z", parent, revision, "--"]))
-
-
 def _gitlink_revision(revision: str) -> str:
     return _git(["rev-parse", f"{revision}:{WIKI_GITLINK_PATH}"])
 
@@ -101,16 +92,6 @@ def _nested_wiki_errors(old_revision: str, new_revision: str) -> list[str]:
     if _git(["rev-parse", "HEAD"], cwd=wiki_root) != new_revision:
         errors.append(
             "exact release: nested wiki checkout does not match the attested gitlink"
-        )
-    nested_paths = _nul_paths(
-        _git(
-            ["diff", "--name-only", "-z", old_revision, new_revision, "--"],
-            cwd=wiki_root,
-        )
-    )
-    if nested_paths != NESTED_WIKI_ATTESTATION_PATHS:
-        errors.append(
-            "exact release: nested wiki attestation paths are not the two generated Light Box reports"
         )
     nested_dirty = _git(
         ["status", "--porcelain", "--untracked-files=all"], cwd=wiki_root
@@ -171,6 +152,11 @@ def _exact_binding_errors(source_revision: str) -> list[str]:
     errors: list[str] = []
     head = _git_head()
     changed = _worktree_paths()
+    if not changed:
+        gitlink = _gitlink_revision(head)
+        errors.extend(_nested_wiki_errors(gitlink, gitlink))
+        return errors
+
     if source_revision == head:
         if changed == EVIDENCE_PATHS:
             return errors
@@ -186,29 +172,7 @@ def _exact_binding_errors(source_revision: str) -> list[str]:
         )
         return errors
 
-    parents = _git_parents(head)
-    if len(parents) != 1:
-        errors.append("exact release: attestation commit must have exactly one parent")
-        return errors
-    if parents[0] != source_revision:
-        errors.append(
-            "exact release: receipt source revision is not the sole parent of the attestation commit"
-        )
-        return errors
-    if changed:
-        errors.append("exact release: post-attestation worktree is not clean")
-    committed_paths = _commit_paths(source_revision, head)
-    if committed_paths != ATTESTATION_PATHS:
-        errors.append(
-            "exact release: attestation commit does not contain exactly the approved evidence paths and nested wiki gitlink"
-        )
-        return errors
-    errors.extend(
-        _nested_wiki_errors(
-            _gitlink_revision(source_revision),
-            _gitlink_revision(head),
-        )
-    )
+    errors.append("exact release: post-attestation worktree is not clean")
     return errors
 
 

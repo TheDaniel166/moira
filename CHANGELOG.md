@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.1] - 2026-10-17
+
+### Added
+- **Light Box Conformance Program (`GAP-007`) & 100% `P0` Runtime Calculation Exposure**:
+  Additive `ComputationTruth` and `*_with_truth` calculation receipts across all
+  `171 / 171` `P0` production-user surfaces (`planets`, `sidereal`, `stations`,
+  `void_of_course`, `julian`, `coordinates`, `nodes`, `obliquity`, `phenomena`,
+  `planetary_hours`, `transits`, `chart_shape`, `chart_wheel`, `relationship`,
+  and specialist/Vedic/traditional-western families), plus machine-generated
+  inventory, manifest, family register, assurance matrix, and public status
+  (`209` admitted canonical surfaces bound to `63` replay contracts across `150`
+  reviewed families).
+- **Natal Discovery REST Packets**:
+  Added `POST /v1/natal-discovery/dispositor-chains`,
+  `POST /v1/natal-discovery/jones-shape`, and
+  `POST /v1/natal-discovery/lunar-context` for bounded traditional dispositor
+  graph analysis, Marc Edmund Jones 10-planet chart-shape evidence, and
+  source-verified natal lunar context.
+
+### Changed
+- **Single-Pass `KernelPool` Startup Indexing**:
+  `KernelPool._from_initial_readers` now shares already-opened SPK segment
+  indexes across initial pool slots during startup warmup instead of re-parsing
+  DAF headers per worker slot.
+- **Streamlined Light Box Release Gate**:
+  Removed the two-commit parent-SHA ceremony from
+  `scripts/check_lightbox_release_gate.py` so clean single-commit releases pass
+  `--exact-release` directly.
+- **README & Documentation Overhaul**:
+  Reorganized `README.md` for `6.10.1` capabilities, GitHub Mermaid compatibility,
+  and Light Box Conformance reporting.
+
 ## [6.10.0] - 2026-10-12
 
 ### Added

@@ -82,7 +82,7 @@ pip install "moira-astro[lunar-graze]"
 ```
 
 > [!NOTE]
-> This README documents the current `main` branch (`6.10.0`). The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
+> This README documents the current `main` branch (`6.10.1`). The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
 
 ---
 
@@ -380,14 +380,14 @@ Beyond narrative validation ledgers, Moira enforces machine-checked **Light Box 
 
 - **Complete Public Denominator:** `1,251` canonical calculation surfaces (`1,255` total including `4` aliases) classified across `150` reviewed families.
 - **`100%` `P0` Production-User Coverage:** All `171` canonical `P0` surfaces used by production consumers—plus `38` additional `P1`/`P2` exemplar surfaces (`209` total)—are structurally admitted and bound to `63` replayable evidence contracts (`tests/evidence/lightbox/contracts.json`).
-- **Two-Commit Attestation Boundary:** Exact-release receipts (`scripts/replay_lightbox_receipts.py --require-exact-source`) and the release gate (`scripts/check_lightbox_release_gate.py --exact-release`) ensure a receipt never claims to have tested the commit that merely stores that receipt, while keeping remaining `P1`/`P2` unresolved residuals explicitly visible rather than hidden behind universal claims.
+- **Replayable Release Gate:** Exact-release receipts (`scripts/replay_lightbox_receipts.py`) and the release gate (`scripts/check_lightbox_release_gate.py`) verify contract coverage and inventory fingerprints while keeping remaining `P1`/`P2` unresolved residuals explicitly visible rather than hidden behind universal claims.
 
 | Validation / Conformance Ledger | Scope and Verification Authority |
 | :--- | :--- |
 | [`LIGHT_BOX_CURRENT_STATUS.generated.md`](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md) | Machine-generated exact-release conformance status (`1,251` canonical calculations, `171/171` `P0` partial/receipted, `63` passed replay contracts). |
 | [`LIGHT_BOX_ASSURANCE_MATRIX.generated.md`](wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.md) | Per-surface, per-evidence-class matrix (`authority`, `doctrine_source`, `invariant`, `regression`, `native_parity`, `release`). |
-| [`LIGHT_BOX_CONFORMANCE_PROGRAM.md`](wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md) | Seven-stage Light Box conformance architecture and two-commit attestation protocol. |
-| [`RELEASE_VALIDATION_6.10.0.md`](wiki/03_validation/RELEASE_VALIDATION_6.10.0.md) | Integrated `6.10.0` release validation receipt covering Kalachakra Dasha, Chara/Argala profiles, Yoga extensions, and `2026.10.10.1` small-body catalogs. |
+| [`LIGHT_BOX_CONFORMANCE_PROGRAM.md`](wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md) | Seven-stage Light Box conformance architecture and release-gate protocol. |
+| [`RELEASE_VALIDATION_6.10.0.md`](wiki/03_validation/RELEASE_VALIDATION_6.10.0.md) | Integrated `6.10` release validation receipt covering Kalachakra Dasha, Chara/Argala profiles, Yoga extensions, and `2026.10.10.1` small-body catalogs. |
 | [`VALIDATION_ASTRONOMY.md`](wiki/03_validation/VALIDATION_ASTRONOMY.md) | Product-specific IAU ERFA/SOFA, JPL Horizons, NASA, IERS, and invariant evidence with named tolerances and qualifications. |
 | [`PLANETARY_REDUCTION_PIPELINE.md`](wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md) | Major-body route identity, reader-bound time and context ownership, reduction stages, and target/time/frame-matched Horizons contracts. |
 | [`VALIDATION_ASTROLOGY.md`](wiki/03_validation/VALIDATION_ASTROLOGY.md) | Primary texts, source-owned goldens, doctrine tables, invariants, and bounded Swiss/Astro.com corroboration where applicable. |
@@ -413,7 +413,7 @@ Refresh affected generated artifacts in dependency order using the project `.ven
 
 1. `scripts/generate_hellenistic_inventory.py` when admitted Hellenistic families change.
 2. `scripts/sync_rest_api_reference.py` after server route changes.
-3. `scripts/generate_lightbox_calculation_inventory.py`, `scripts/generate_lightbox_conformance_manifest.py`, `scripts/generate_lightbox_family_register.py`, and `scripts/generate_lightbox_family_assessment.py` when public calculation surfaces or admissions change (followed by the Two-Commit Attestation Ritual via `scripts/replay_lightbox_receipts.py --require-exact-source`, `scripts/generate_lightbox_assurance_matrix.py`, `scripts/generate_lightbox_public_status.py`, and `scripts/check_lightbox_release_gate.py --exact-release`).
+3. `scripts/generate_lightbox_calculation_inventory.py`, `scripts/generate_lightbox_conformance_manifest.py`, `scripts/generate_lightbox_family_register.py`, `scripts/generate_lightbox_family_assessment.py`, `scripts/replay_lightbox_receipts.py`, `scripts/generate_lightbox_assurance_matrix.py`, and `scripts/generate_lightbox_public_status.py` when public calculation surfaces or admissions change.
 4. `scripts/sync_git_wiki.py` after canonical documentation changes.
 5. `scripts/build_website_docs_bundle.py` after public exports, route references, or allowlisted documents change.
 
@@ -422,8 +422,8 @@ Before publishing, run the consistency, release-identity, and generated-artifact
 | Document | Contents |
 | :--- | :--- |
 | [`CHANGELOG.md`](CHANGELOG.md) | Versioned release history and current unreleased boundary. |
-| [`RELEASE_NOTES_6.10.0.md`](wiki/03_release/RELEASE_NOTES_6.10.0.md) | Published `6.10.0` release notes, validation summary, and explicit exclusions. |
-| [`COMPATIBILITY_NOTES_6.10.0.md`](wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md) | `6.10.0` public contract compatibility notes and migration boundaries. |
+| [`RELEASE_NOTES_6.10.1.md`](wiki/03_release/RELEASE_NOTES_6.10.1.md) | Published `6.10.1` release notes, Light Box conformance summary, and Natal Discovery scope. |
+| [`COMPATIBILITY_NOTES_6.10.1.md`](wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md) | `6.10.1` public contract compatibility notes and migration boundaries. |
 | [`API_REFERENCE.md`](wiki/02_standards/API_REFERENCE.md) | Canonical Python engine and facade reference (`moira` and `moira.facade`). |
 | [`REST_API_REFERENCE.md`](wiki/02_services/REST_API_REFERENCE.md) | Generated FastAPI OpenAPI route inventory (`531` operations) and transport contracts. |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and visible derivation as foundational design constraints. |

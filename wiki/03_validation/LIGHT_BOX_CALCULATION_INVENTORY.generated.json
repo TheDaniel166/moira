@@ -6,7 +6,7 @@
     "tests": "identifier/path mentions in repository tests; a mention is not proof of coverage"
   },
   "classification_version": "moira.lightbox-surface-classification/v1",
-  "engine_version": "6.10.0",
+  "engine_version": "6.10.1",
   "generated_by": "scripts/generate_lightbox_calculation_inventory.py",
   "limitations": [
     "Inventory membership is not a correctness or validation claim.",
@@ -20122,6 +20122,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.1.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -20159,6 +20160,7 @@
         "wiki/03_release/RELEASE_NOTES_6.1.0.md",
         "wiki/03_release/RELEASE_NOTES_6.1.1.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -40711,6 +40713,7 @@
         "docs/architecture/P-GAP-05_SIDEREAL_NAKSHATRA_UTILITY_TRANSPORT_DESIGN.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md"
       ],
@@ -42653,6 +42656,7 @@
         "wiki/02_standards/VEDIC_REST_ADMISSION_STANDARD.md",
         "wiki/03_release/ASTROLOGY_KILLER_TEST_RESULTS.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
@@ -44332,6 +44336,7 @@
       "documentation_paths": [
         "wiki/02_services/NATAL_DISCOVERY_API.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
       "exclusion_reason": null,
@@ -45829,6 +45834,7 @@
         "docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
@@ -46470,6 +46476,7 @@
         "docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md",
         "docs/superpowers/plans/2026-05-20-adversarial-singularity-tests.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md"
       ],
@@ -47354,6 +47361,7 @@
         "docs/architecture/TRACK_A_BOUNDED_CLOSURE_2026-08.md",
         "docs/superpowers/plans/2026-05-20-adversarial-singularity-tests.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/KILLER_TEST_RESULTS.md",
         "wiki/03_standards/VALIDATION_CASE_STELLAR_HELIACAL_RISING.md",
         "wiki/03_validation/ADVERSARIAL_SINGULARITY_DEFECT_LEDGER.md",
@@ -47539,6 +47547,7 @@
       "documentation_paths": [
         "docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md"
@@ -51994,6 +52003,7 @@
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
         "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
         "wiki/03_release/COMPATIBILITY_NOTES_2.0.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/RELEASE_NOTES_2.0.0.md",
         "wiki/03_validation/EXPERIMENTAL_POLAR_HOUSE_PROOF.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
@@ -53127,6 +53137,7 @@
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md"
       ],
       "exclusion_reason": null,
@@ -54591,6 +54602,7 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/PANCHANGA_BACKEND_STANDARD.md",
         "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md",
         "wiki/06_roadmap/vedic_jyotish_phase2_gaps.md",
@@ -57072,6 +57084,7 @@
         "docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md",
         "docs/architecture/ORBITAL_CORE_STAGE1_CONSUMER_INVENTORY.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_validation/SWISS_EPHEMERIS_EXTENSIBILITY_ROADMAP.md",
         "wiki/03_validation/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md",
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
@@ -57285,6 +57298,7 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "CHANGELOG.md",
         "docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md",
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
         "docs/architecture/P-GAP-F1_FACADE_PARITY_REVIEW.md",
@@ -59185,7 +59199,8 @@
         "docs/architecture/P-GAP-05_SIDEREAL_NAKSHATRA_UTILITY_TRANSPORT_DESIGN.md",
         "docs/architecture/P-GAP-F1_FACADE_PARITY_REVIEW.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md"
+        "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -61062,6 +61077,7 @@
         "wiki/02_standards/DECANS_BACKEND_STANDARD.md",
         "wiki/02_standards/PANCHANGA_BACKEND_STANDARD.md",
         "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md"
       ],
       "exclusion_reason": null,
@@ -61144,6 +61160,7 @@
         "docs/superpowers/specs/2026-08-15-true-node-lilith-speed-design.md",
         "docs/superpowers/specs/2026-09-15-orbital-core-design.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
@@ -61203,6 +61220,7 @@
         "docs/superpowers/specs/2026-05-21-asteroid-integration-design.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_standards/VALIDATION_CASE_STELLAR_HELIACAL_RISING.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
         "wiki/07_audit/FEATURE_AUDIT_2026.md"
@@ -61470,7 +61488,8 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
-        "wiki/02_standards/API_REFERENCE.md"
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -61538,7 +61557,8 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/DAILY_PANCHANGA_STANDARD.md",
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
-        "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md"
+        "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -65222,7 +65242,8 @@
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md",
-        "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md"
+        "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "handler_module": "moira_server.routers.chart",
@@ -72653,7 +72674,10 @@
       "classification_basis": "conservative-operation-default",
       "classification_rationale": "conservative default for a versioned non-GET operation",
       "documentation_paths": [
-        "wiki/02_services/REST_API_REFERENCE.md"
+        "CHANGELOG.md",
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "handler_module": "moira_server.routers.natal_discovery",
@@ -75143,7 +75167,8 @@
         "wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md",
-        "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md"
+        "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
       ],
       "exclusion_reason": null,
       "handler_module": "moira_server.routers.positions",
@@ -79725,5 +79750,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "b13d7f80fef6723363303dd895c55004f297f68f652c62ec764d22bd48dbf879"
+  "surface_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d"
 }

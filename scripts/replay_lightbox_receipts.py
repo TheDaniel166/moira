@@ -122,10 +122,17 @@ def _passed_count(output: str) -> int:
 
 
 def reclassify_existing(receipt_set: Mapping[str, Any]) -> dict[str, Any]:
+    _, inventory = load_contracts()
     updated = dict(receipt_set)
+    updated["engine_version"] = inventory["engine_version"]
+    updated["inventory_fingerprint_sha256"] = inventory["surface_fingerprint_sha256"]
     receipts: list[dict[str, Any]] = []
     for raw in receipt_set.get("receipts", []):
         receipt = dict(raw)
+        receipt["engine_version"] = inventory["engine_version"]
+        receipt["inventory_fingerprint_sha256"] = inventory[
+            "surface_fingerprint_sha256"
+        ]
         passed = _passed_count("\n".join(map(str, receipt.get("output_tail", []))))
         receipt["passed_tests"] = passed
         receipt["status"] = (

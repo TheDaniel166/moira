@@ -1,7 +1,7 @@
 {
   "audit_date": "2026-10-14",
   "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
-  "engine_version": "6.10.0",
+  "engine_version": "6.10.1",
   "entries": [
     {
       "callsites": [
@@ -3931,7 +3931,7 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "b13d7f80fef6723363303dd895c55004f297f68f652c62ec764d22bd48dbf879",
+  "inventory_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",

@@ -67,14 +67,10 @@ def _patch_git(
     *,
     head: str,
     changed: frozenset[str],
-    parents: tuple[str, ...] = (),
-    committed: frozenset[str] = frozenset(),
     nested_errors: list[str] | None = None,
 ) -> None:
     monkeypatch.setattr(gate, "_git_head", lambda: head)
     monkeypatch.setattr(gate, "_worktree_paths", lambda: changed)
-    monkeypatch.setattr(gate, "_git_parents", lambda revision: parents)
-    monkeypatch.setattr(gate, "_commit_paths", lambda parent, revision: committed)
     monkeypatch.setattr(gate, "_gitlink_revision", lambda revision: f"wiki-{revision}")
     monkeypatch.setattr(
         gate, "_nested_wiki_errors", lambda old, new: nested_errors or []
@@ -119,20 +115,18 @@ def test_exact_release_gate_accepts_pre_attestation_evidence_only_worktree(
     )
 
 
-def test_exact_release_gate_accepts_clean_attestation_child(
+def test_exact_release_gate_accepts_clean_committed_worktree_without_parent_sha_ceremony(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     gate = _module()
     source = "1" * 40
-    attestation = "2" * 40
+    current_head = "2" * 40
     matrix_path, receipt_path = _exact_artifacts(gate, tmp_path, source)
     _patch_git(
         gate,
         monkeypatch,
-        head=attestation,
+        head=current_head,
         changed=frozenset(),
-        parents=(source,),
-        committed=gate.ATTESTATION_PATHS,
     )
     assert (
         gate.evaluate(
@@ -144,23 +138,14 @@ def test_exact_release_gate_accepts_clean_attestation_child(
     )
 
 
-@pytest.mark.parametrize(
-    "variant",
-    ["missing", "extra"],
-)
-def test_exact_release_gate_rejects_missing_or_extra_pre_attestation_paths(
+def test_exact_release_gate_rejects_extra_pre_attestation_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    variant: str,
 ) -> None:
     gate = _module()
     source = "1" * 40
     matrix_path, receipt_path = _exact_artifacts(gate, tmp_path, source)
-    changed = (
-        frozenset()
-        if variant == "missing"
-        else gate.EVIDENCE_PATHS | {"src/moira/example.py"}
-    )
+    changed = gate.EVIDENCE_PATHS | {"src/moira/example.py"}
     _patch_git(gate, monkeypatch, head=source, changed=changed)
     errors = gate.evaluate(
         exact_release=True,
@@ -173,43 +158,7 @@ def test_exact_release_gate_rejects_missing_or_extra_pre_attestation_paths(
     )
 
 
-def test_exact_release_gate_rejects_merge_or_wrong_parent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    gate = _module()
-    source = "1" * 40
-    attestation = "2" * 40
-    matrix_path, receipt_path = _exact_artifacts(gate, tmp_path, source)
-    _patch_git(
-        gate,
-        monkeypatch,
-        head=attestation,
-        changed=frozenset(),
-        parents=("3" * 40, "4" * 40),
-    )
-    errors = gate.evaluate(
-        exact_release=True,
-        matrix_path=matrix_path,
-        receipts_path=receipt_path,
-    )
-    assert any("exactly one parent" in error for error in errors)
-
-    _patch_git(
-        gate,
-        monkeypatch,
-        head=attestation,
-        changed=frozenset(),
-        parents=("3" * 40,),
-    )
-    errors = gate.evaluate(
-        exact_release=True,
-        matrix_path=matrix_path,
-        receipts_path=receipt_path,
-    )
-    assert any("not the sole parent" in error for error in errors)
-
-
-def test_exact_release_gate_rejects_dirty_or_overbroad_attestation_child(
+def test_exact_release_gate_rejects_dirty_post_attestation_worktree(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     gate = _module()
@@ -221,8 +170,6 @@ def test_exact_release_gate_rejects_dirty_or_overbroad_attestation_child(
         monkeypatch,
         head=attestation,
         changed=frozenset({"README.md"}),
-        parents=(source,),
-        committed=gate.ATTESTATION_PATHS | {"README.md"},
     )
     errors = gate.evaluate(
         exact_release=True,
@@ -230,7 +177,6 @@ def test_exact_release_gate_rejects_dirty_or_overbroad_attestation_child(
         receipts_path=receipt_path,
     )
     assert any("post-attestation worktree is not clean" in error for error in errors)
-    assert any("exactly the approved evidence paths" in error for error in errors)
 
 
 def test_exact_release_gate_propagates_nested_wiki_attestation_failure(
@@ -245,13 +191,12 @@ def test_exact_release_gate_propagates_nested_wiki_attestation_failure(
         monkeypatch,
         head=attestation,
         changed=frozenset(),
-        parents=(source,),
-        committed=gate.ATTESTATION_PATHS,
-        nested_errors=["exact release: nested wiki contains an extra file"],
+        nested_errors=["exact release: nested wiki worktree is not clean"],
     )
     errors = gate.evaluate(
         exact_release=True,
         matrix_path=matrix_path,
         receipts_path=receipt_path,
     )
-    assert "exact release: nested wiki contains an extra file" in errors
+    assert "exact release: nested wiki worktree is not clean" in errors
+

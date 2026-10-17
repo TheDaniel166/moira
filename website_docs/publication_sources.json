@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-10-12",
+  "last_verified": "2026-10-17",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.10.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.10.1.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,27 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.10.1",
+      "date": "2026-10-17",
+      "title": "Light Box Conformance (100% P0) and Natal Discovery",
+      "added": [
+        "Additive ComputationTruth and *_with_truth calculation receipts across all 171 P0 production-user surfaces, governed by 63 replay contracts across 150 reviewed families.",
+        "Bounded Natal Discovery REST routes for traditional dispositor chains, Jones 10-planet shape evidence, and source-verified natal lunar context."
+      ],
+      "changed": [
+        "Single-pass KernelPool startup indexing reuses parsed SPK segment indexes across initial pool slots.",
+        "Streamlined Light Box release gate accepts clean single-commit releases directly without a separate two-commit parent-SHA ceremony."
+      ],
+      "fixed": [
+        "Enforced paired observer latitude/longitude validation on POST /v1/chart and POST /v1/positions/planet."
+      ],
+      "validation": [
+        "100% of P0 production-user surfaces (171/171) and 209 total canonical calculations pass all 63 Light Box replay contracts."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.10.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md"
+    },
     {
       "version": "6.10.0",
       "date": "2026-10-12",
