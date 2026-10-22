@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from types import SimpleNamespace
+
 import pytest
 
 import moira
+import moira.classical_perfection as perfection
 from moira import facade
 from moira.classical_perfection import (
     ClassicalBodyState,
@@ -14,6 +18,10 @@ from moira.classical_perfection import (
     classify_lilly_perfection_events,
 )
 from moira.constants import Body
+
+_DIRECTED_ASPECTS = ((0., "conjunction"), (60., "sextile"), (90., "square"),
+                     (120., "trine"), (180., "opposition"), (240., "trine"),
+                     (270., "square"), (300., "sextile"))
 
 
 def _state(body: str, longitude: float, speed: float) -> ClassicalBodyState:
@@ -224,3 +232,149 @@ def test_trace_is_deterministically_ordered_and_summary_is_derived() -> None:
     assert result.complete_electional_judgement is False
     assert result.policy is LILLY_1647_PERFECTION_V1
     assert result.scoring == "not_provided"
+
+
+@pytest.mark.parametrize("angle, aspect", _DIRECTED_ASPECTS)
+@pytest.mark.parametrize("reverse_event", (False, True))
+def test_direct_perfection_is_invariant_under_pair_and_event_orientation(angle, aspect, reverse_event):
+    states = _states(**{Body.MERCURY: ((angle - 1) % 360, 2), Body.JUPITER: (0, .1)})
+    event = _aspect("contact", 1, Body.MERCURY, Body.JUPITER, aspect, angle)
+    if reverse_event:
+        event = replace(event, actor=event.target, target=event.actor, directional_angle_deg=(-angle) % 360)
+    for a, b in ((Body.MERCURY, Body.JUPITER), (Body.JUPITER, Body.MERCURY)):
+        result = _analysis((event,), states, a, b)
+        direct = _witness(result, LillyPerfectionKind.DIRECT)
+        assert direct.state is ClassicalPerfectionState.PRESENT
+        assert direct.actors == (a, b)
+        assert direct.event_ids == ("contact",)
+        assert result.events == (event,)
+        assert result.events[0] is event  # lookup must not rewrite the neutral trace
+
+
+def _synthetic_trace(monkeypatch, mercury, venus, start=0, end=.25):
+    """Analytic longitude corpus; rates deliberately do not locate extrema."""
+    fixed = {Body.SUN: 37, Body.MOON: 81, Body.MARS: 142, Body.JUPITER: 213, Body.SATURN: 282.345}
+
+    def position(body, jd, *, reader):
+        assert start <= jd <= end
+        longitude = mercury(jd) if body == Body.MERCURY else venus(jd) if body == Body.VENUS else fixed[body]
+        return SimpleNamespace(longitude=longitude % 360, speed=1.)
+
+    monkeypatch.setattr(perfection, "planet_at", position)
+    monkeypatch.setattr(perfection, "find_stations", lambda *args, **kwargs: ())
+    return perfection._trace(start, end, object())
+
+
+def _pair_contacts(events, angle=0):
+    return tuple(e for e in events if e.kind is ClassicalPerfectionEventKind.ASPECT_EXACT
+                 and (e.actor, e.target) == (Body.MERCURY, Body.VENUS)
+                 and e.directional_angle_deg == angle)
+
+
+@pytest.mark.parametrize("contact", (0., .25, 1.))
+def test_trace_includes_both_endpoints_and_emits_shared_sample_once(monkeypatch, contact):
+    events = _synthetic_trace(monkeypatch, lambda t: 10 + t, lambda t: 10 + contact, end=1.)
+    hits = _pair_contacts(events)
+    assert len(hits) == 1
+    assert hits[0].jd_ut == pytest.approx(contact, abs=1 / 86400)
+    if contact in (0., 1.):
+        assert hits[0].jd_ut == contact
+
+
+@pytest.mark.parametrize("turn", (.125, .073, .03, .22))
+@pytest.mark.parametrize("curvature", (.1, -.1))
+def test_trace_finds_two_contacts_inside_one_cell_with_no_individual_station(monkeypatch, turn, curvature):
+    events = _synthetic_trace(monkeypatch,
+        lambda t: 10 + t + curvature * ((t - turn) ** 2 - .0004), lambda t: 10 + t)
+    hits = _pair_contacts(events)
+    assert [e.jd_ut for e in hits] == pytest.approx([turn - .02, turn + .02], abs=1 / 86400)
+    assert all(abs(curvature * ((e.jd_ut - turn) ** 2 - .0004)) <= 1e-7 for e in hits)
+    assert not any(e.kind in (ClassicalPerfectionEventKind.STATION_DIRECT,
+                             ClassicalPerfectionEventKind.STATION_RETROGRADE) for e in events)
+
+
+@pytest.mark.parametrize("minimum, count", ((0., 1), (.000002, 0)))
+@pytest.mark.parametrize("direction", (1, -1))
+def test_trace_distinguishes_stationary_contact_from_near_miss(monkeypatch, minimum, count, direction):
+    events = _synthetic_trace(monkeypatch,
+        lambda t: 10 + t + direction * (.1 * (t - .073) ** 2 + minimum), lambda t: 10 + t)
+    hits = _pair_contacts(events)
+    assert len(hits) == count
+    if hits:
+        assert hits[0].jd_ut == pytest.approx(.073, abs=1 / 86400)
+
+
+@pytest.mark.parametrize("angle, aspect", _DIRECTED_ASPECTS)
+@pytest.mark.parametrize("direction", (1, -1))
+def test_trace_finds_every_directed_branch_without_wrap_false_positive(monkeypatch, angle, aspect, direction):
+    events = _synthetic_trace(monkeypatch, lambda t: 7.123 + angle + direction * (t - .1), lambda t: 7.123)
+    hits = _pair_contacts(events, angle)
+    assert len(hits) == 1
+    assert hits[0].jd_ut == pytest.approx(.1, abs=1 / 86400)
+    assert hits[0].aspect == aspect
+    assert len(_pair_contacts(events, (angle + 180) % 360)) == 0
+
+
+def test_trace_rejects_unresolved_continuous_contact_instead_of_partial_success(monkeypatch):
+    with pytest.raises(RuntimeError, match="perfection.*incomplete.*near_continuous_contact"):
+        _synthetic_trace(monkeypatch, lambda t: 10 + t, lambda t: 10 + t)
+
+
+def test_trace_finds_exit_and_return_ingresses_inside_one_cell(monkeypatch):
+    events = _synthetic_trace(monkeypatch,
+        lambda t: 30 + .1 * (t - .073) ** 2 - .00004, lambda t: 11.)
+    ingresses = [e for e in events if e.kind is ClassicalPerfectionEventKind.SIGN_INGRESS
+                 and e.actor == Body.MERCURY]
+    assert [e.jd_ut for e in ingresses] == pytest.approx([.053, .093], abs=1 / 86400)
+    assert [(e.sign_before, e.sign_after) for e in ingresses] == [("Taurus", "Aries"), ("Aries", "Taurus")]
+
+
+def test_trace_does_not_treat_a_tangent_sign_boundary_as_an_ingress(monkeypatch):
+    events = _synthetic_trace(monkeypatch, lambda t: 30 + .1 * (t - .073) ** 2, lambda t: 11.)
+    assert not any(e.kind is ClassicalPerfectionEventKind.SIGN_INGRESS
+                   and e.actor == Body.MERCURY for e in events)
+
+
+@pytest.mark.parametrize("contact", (0., .125, .25))
+@pytest.mark.parametrize("direction", (1, -1))
+def test_trace_records_forward_and_reverse_ingress_boundaries_once(monkeypatch, contact, direction):
+    events = _synthetic_trace(monkeypatch, lambda t: 30 + direction * (t - contact), lambda t: 11.)
+    ingresses = [e for e in events if e.kind is ClassicalPerfectionEventKind.SIGN_INGRESS
+                 and e.actor == Body.MERCURY]
+    assert len(ingresses) == 1
+    assert ingresses[0].jd_ut == pytest.approx(contact, abs=1 / 86400)
+    expected = ("Aries", "Taurus") if direction == 1 else ("Taurus", "Aries")
+    assert (ingresses[0].sign_before, ingresses[0].sign_after) == expected
+
+
+@pytest.mark.parametrize("kind", (LillyPerfectionKind.TRANSLATION, LillyPerfectionKind.COLLECTION,
+                                 LillyPerfectionKind.PROHIBITION))
+def test_compound_witnesses_keep_nonsymmetric_contacts_when_trace_orientation_reverses(kind):
+    if kind is LillyPerfectionKind.TRANSLATION:
+        states = _states(**{Body.MARS: (10, .5), Body.SATURN: (75, .1),
+                            Body.MERCURY: (11, 2), Body.JUPITER: (100, .2)})
+        a, b = Body.MARS, Body.SATURN
+        events = (_aspect("translated", 2, Body.MERCURY, Body.SATURN, "sextile", 300),)
+    elif kind is LillyPerfectionKind.COLLECTION:
+        states = _states(**{Body.SUN: (55, 1), Body.JUPITER: (10, -.2),
+                            Body.SATURN: (1, .05), Body.MERCURY: (100, 1.5)})
+        a, b = Body.SUN, Body.JUPITER
+        events = (_aspect("sun_collects", 2, Body.SUN, Body.SATURN, "sextile", 60),
+                  _aspect("jupiter_collects", 3, Body.JUPITER, Body.SATURN))
+    else:
+        states = _states(**{Body.MOON: (49, 13), Body.MERCURY: (54, 2), Body.JUPITER: (115, .1)})
+        a, b = Body.MERCURY, Body.JUPITER
+        events = (_aspect("moon_mercury", .2, Body.MOON, Body.MERCURY),
+                  _aspect("moon_jupiter", .5, Body.MOON, Body.JUPITER, "sextile", 300),
+                  _aspect("pair", 2, a, b, "sextile", 300))
+    original = _witness(_analysis(events, states, a, b), kind)
+    assert original.state is ClassicalPerfectionState.PRESENT
+    reversed_events = tuple(replace(e, actor=e.target, target=e.actor,
+                                   directional_angle_deg=(-e.directional_angle_deg) % 360) for e in events)
+    assert _witness(_analysis(reversed_events, states, a, b), kind) == original
+
+
+def test_trace_refuses_exhausted_scan_budget(monkeypatch):
+    monkeypatch.setattr(perfection, "_ROOT_POLICY", replace(perfection._ROOT_POLICY, max_evaluations=1))
+    with pytest.raises(RuntimeError, match="perfection.*incomplete.*search_budget_exhausted"):
+        _synthetic_trace(monkeypatch, lambda t: 10 + t, lambda t: 11.)

@@ -156,22 +156,33 @@ def _scan_fixed_aspects(evaluator, targets, intervals, policy):
                     return (-4 * _delta(longitude(t - h), longitude(t)) + _delta(longitude(t - 2 * h), longitude(t))) / (2 * h)
                 return _delta(longitude(t + h), longitude(t - h)) / (2 * h)
 
-            stationary = []
+            # Secant slopes can have the same sign even when an extremum
+            # lies near a cell edge and two roots occur before its midpoint.
+            # Bracket the velocity itself at every knot, including endpoints.
+            rates = {t: velocity(t) for t in times}
+            brackets = [(a, b) for a, b in zip(times, times[1:])
+                        if rates[a] * rates[b] <= 0 and rates[a] != rates[b]
+                        and max(abs(rates[a]), abs(rates[b])) > policy.stationary_rate_tolerance]
             for a, m, b in zip(times, times[1:], times[2:]):
                 left = _delta(longitude(m), longitude(a)) / (m - a)
                 right = _delta(longitude(b), longitude(m)) / (b - m)
                 if left * right <= 0 and left != right and max(abs(left), abs(right)) > policy.stationary_rate_tolerance:
-                    if velocity(a) * velocity(b) <= 0:
-                        try:
-                            root = _bisect_scalar(velocity, a, b, policy.time_tolerance_days, policy.stationary_rate_tolerance)
-                        except ValueError:
-                            reasons.add("unresolved_extremum")
-                            continue
-                        if not any(abs(root - t) <= 4 * policy.time_tolerance_days for t in stationary):
-                            stationary.append(root)
-                            knots.add(root)
+                    if any(a <= low and high <= b for low, high in brackets):
+                        continue
+                    if rates[a] * rates[b] <= 0:
+                        brackets.append((a, b))
                     else:
                         reasons.add("unresolved_extremum")
+            stationary = []
+            for a, b in brackets:
+                try:
+                    root = _bisect_scalar(velocity, a, b, policy.time_tolerance_days, policy.stationary_rate_tolerance)
+                except ValueError:
+                    reasons.add("unresolved_extremum")
+                    continue
+                if not any(abs(root - t) <= 4 * policy.time_tolerance_days for t in stationary):
+                    stationary.append(root)
+                    knots.add(root)
             times = sorted(knots)
 
             for target_index, (target, angle, orb) in enumerate(targets):

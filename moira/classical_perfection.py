@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from ._strenum import StrEnum
 from itertools import combinations
 
+from ._fixed_aspect_search import _FixedScanPolicy, _scan_fixed_aspects
 from .constants import Body, SIGNS, TRADITIONAL_MOIETY_ORBS, sign_of
 from .dignities import DOMICILE, EXALTATION, lilly_1647_term_ruler
 from .longevity import FACE_RULERS
@@ -42,6 +43,14 @@ _TARGETS = ((0.0, "conjunction"), (60.0, "sextile"), (90.0, "square"),
 _SCAN_STEP = 0.25
 _TIME_TOL = 1.0 / 86400.0
 _ANGLE_TOL = 1e-7
+# The shared solver coalesces roots within four refinement tolerances. Keep
+# that resolution at the classifier's existing one-second event-tie tolerance.
+_ROOT_POLICY = _FixedScanPolicy(
+    step_days=_SCAN_STEP, time_tolerance_days=_TIME_TOL / 4,
+    angular_tolerance_deg=_ANGLE_TOL, curvature_tolerance_deg=.1,
+    max_evaluations=10000, max_subdivisions=10000, max_depth=12,
+    velocity_step_days=.001, stationary_rate_tolerance=1e-6,
+)
 _AUTHORITY = (
     "William Lilly, Christian Astrology (London, 1647), Book I, printed "
     "pp. 110-113 and 125-126; Wellcome Collection scan b30338724"
@@ -240,6 +249,7 @@ def _pair(event: ClassicalPerfectionEvent) -> frozenset[str]:
 
 
 def _aspect_events(events, a: str, b: str, directional_angle_deg: float | None = None):
+    """Match an actor-minus-target angle in the requested a-minus-b frame."""
     pair = frozenset((a, b))
     return tuple(
         item for item in events
@@ -248,7 +258,10 @@ def _aspect_events(events, a: str, b: str, directional_angle_deg: float | None =
         and (
             directional_angle_deg is None
             or item.directional_angle_deg is not None
-            and math.isclose(item.directional_angle_deg, directional_angle_deg, abs_tol=_ANGLE_TOL)
+            and abs(_signal(
+                item.directional_angle_deg if item.actor == a else -item.directional_angle_deg,
+                0.0, directional_angle_deg,
+            )) <= _ANGLE_TOL
         )
     )
 
@@ -369,8 +382,7 @@ def classify_lilly_perfection_events(
         slower_relation = _current_relation(states[slower], states[third_name])
         if (third_name not in prohibiting_bodies and slower_relation[0] == "conjunction"
                 and slower_relation[3] == "applying" and slower_relation[4]
-                and item.directional_angle_deg is not None
-                and math.isclose(item.directional_angle_deg, slower_relation[1], abs_tol=_ANGLE_TOL)):
+                and _aspect_events((item,), slower, third_name, slower_relation[1])):
             frustrations.append(item)
     tie = bool(direct_event and any(abs(item.jd_ut - direct_event.jd_ut) <= _TIME_TOL for item in third_aspects + interruptions))
 
@@ -484,62 +496,73 @@ def classify_lilly_perfection_events(
     )
 
 
+def _contact_passes(longitude, angles, jd_start, jd_end, label):
+    """Search a closed UT1 interval or reject an explicitly incomplete scan.
+
+    Angular finite differences measure the same apparent-longitude product as
+    the roots, not the separately declared astrometric body-state speeds.
+    Completion is of the bounded adaptive scan, not an interval-enclosure proof
+    for arbitrary unsampled oscillations. Stationary touches are exact contacts;
+    a continuous contact has no isolated event time and fails explicitly.
+    """
+    result = _scan_fixed_aspects(
+        longitude, tuple((0.0, angle, 0.0) for angle in angles),
+        ((jd_start, jd_end, "study_start", "study_end"),), _ROOT_POLICY,
+    )
+    if not result.complete:
+        raise RuntimeError(f"classical perfection scan incomplete ({label}): " + ", ".join(result.reasons))
+    return result.passes
+
+
 def _trace(jd_start: float, jd_end: float, reader: SpkReader):
+    """Trace isolated contacts, crossing ingresses and admitted stations."""
     cache: dict[tuple[str, float], object] = {}
 
     def position(body, jd):
-        key = (body, round(jd, 12))
+        key = (body, jd)
         if key not in cache:
             cache[key] = planet_at(body, jd, reader=reader)
         return cache[key]
 
     events: list[ClassicalPerfectionEvent] = []
     for body_a, body_b in combinations(_BODIES, 2):
-        for angle, aspect in _TARGETS:
-            jd = jd_start
-            previous = _signal(position(body_a, jd).longitude, position(body_b, jd).longitude, angle)
-            while jd < jd_end:
-                nxt = min(jd + _SCAN_STEP, jd_end)
-                current = _signal(position(body_a, nxt).longitude, position(body_b, nxt).longitude, angle)
-                if previous == 0.0 or (previous * current < 0.0 and abs(previous) < 90.0 and abs(current) < 90.0):
-                    lo, hi, sig_lo = jd, nxt, previous
-                    for _ in range(40):
-                        if hi - lo <= _TIME_TOL:
-                            break
-                        mid = (lo + hi) / 2.0
-                        sig_mid = _signal(position(body_a, mid).longitude, position(body_b, mid).longitude, angle)
-                        if sig_lo * sig_mid <= 0.0:
-                            hi = mid
-                        else:
-                            lo, sig_lo = mid, sig_mid
-                    exact = (lo + hi) / 2.0
-                    eid = f"aspect:{body_a}:{body_b}:{angle:g}:{exact:.8f}"
-                    events.append(ClassicalPerfectionEvent(eid, exact, ClassicalPerfectionEventKind.ASPECT_EXACT,
-                                                           body_a, body_b, aspect, angle))
-                jd, previous = nxt, current
+        def relative_longitude(jd):
+            return position(body_a, jd).longitude - position(body_b, jd).longitude
+
+        for hit in _contact_passes(relative_longitude, (angle for angle, _ in _TARGETS),
+                                   jd_start, jd_end, f"{body_a}/{body_b}"):
+            angle, aspect = _TARGETS[hit.target_index]
+            exact = hit.jd_ut1
+            eid = f"aspect:{body_a}:{body_b}:{angle:g}:{exact:.8f}"
+            events.append(ClassicalPerfectionEvent(eid, exact, ClassicalPerfectionEventKind.ASPECT_EXACT,
+                                                   body_a, body_b, aspect, angle))
 
     for body in _BODIES:
-        jd = jd_start
-        previous_sign = sign_of(position(body, jd).longitude)[0]
-        while jd < jd_end:
-            nxt = min(jd + _SCAN_STEP, jd_end)
-            next_sign = sign_of(position(body, nxt).longitude)[0]
-            if next_sign != previous_sign:
-                lo, hi, lo_sign = jd, nxt, previous_sign
-                for _ in range(40):
-                    if hi - lo <= _TIME_TOL:
-                        break
-                    mid = (lo + hi) / 2.0
-                    if sign_of(position(body, mid).longitude)[0] == lo_sign:
-                        lo = mid
-                    else:
-                        hi = mid
-                exact = (lo + hi) / 2.0
-                after = sign_of(position(body, hi).longitude)[0]
-                events.append(ClassicalPerfectionEvent(f"ingress:{body}:{exact:.8f}", exact,
-                    ClassicalPerfectionEventKind.SIGN_INGRESS, body,
-                    longitude_deg=position(body, exact).longitude, sign_before=lo_sign, sign_after=after))
-            jd, previous_sign = nxt, next_sign
+        def longitude(jd):
+            return position(body, jd).longitude
+
+        hits = _contact_passes(longitude, range(0, 360, 30), jd_start, jd_end, f"{body} ingresses")
+        for index, hit in enumerate(hits):
+            exact, motion = hit.jd_ut1, hit.motion
+            if motion == "stationary":
+                # A touch is an aspect contact, but not a change of sign. Use
+                # in-span flanks, bounded by adjacent hits, to admit only a
+                # genuine crossing even when its instantaneous rate is zero.
+                left = hits[index - 1].jd_ut1 if index else jd_start
+                right = hits[index + 1].jd_ut1 if index + 1 < len(hits) else jd_end
+                h = min(.001, (exact - left) / 2, (right - exact) / 2)
+                if h <= 0:
+                    continue
+                before = _signal(longitude(exact - h), 0, hit.directed_angle_deg)
+                after = _signal(longitude(exact + h), 0, hit.directed_angle_deg)
+                if before * after >= 0:
+                    continue
+                motion = "direct" if after > before else "retrograde"
+            boundary = hit.target_index
+            before_sign, after_sign = ((boundary - 1) % 12, boundary) if motion == "direct" else (boundary, (boundary - 1) % 12)
+            events.append(ClassicalPerfectionEvent(f"ingress:{body}:{exact:.8f}", exact,
+                ClassicalPerfectionEventKind.SIGN_INGRESS, body,
+                longitude_deg=longitude(exact), sign_before=SIGNS[before_sign], sign_after=SIGNS[after_sign]))
 
         for station in find_stations(body, jd_start, jd_end, reader=reader):
             kind = (ClassicalPerfectionEventKind.STATION_RETROGRADE if station.station_type == "retrograde"
@@ -560,7 +583,12 @@ def lilly_perfection_at(
     reader: SpkReader | None = None,
     policy: LillyPerfectionPolicy = LILLY_1647_PERFECTION_V1,
 ) -> ClassicalPerfectionAnalysis:
-    """Trace and classify one bounded Lilly perfection interval."""
+    """Trace and classify one bounded Lilly perfection interval.
+
+    Contacts include both endpoints and isolated stationary touches, coalesced
+    within the one-second event resolution. An incomplete finite scan raises
+    RuntimeError rather than classifying a partial trace as absent perfection.
+    """
 
     if not all(math.isfinite(value) for value in (jd_start, jd_end)) or jd_end <= jd_start:
         raise ValueError("jd_end must be later than finite jd_start")
