@@ -4,7 +4,7 @@
 
 - Schema: `moira.lightbox-conformance-manifest/v1`
 - Engine version: `6.10.1`
-- Inventory fingerprint: `2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee`
+- Inventory fingerprint: `5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969`
 - Canonical schema: `wiki/03_validation/LIGHT_BOX_CONFORMANCE_SCHEMA.json`
 
 ## Boundary
@@ -197,7 +197,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:classify_chart_shape` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/chart_shape.py:1070` |
 | `python:moira.facade:classify_chart_shape_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/chart_shape.py:898` |
 | `python:moira.facade:classify_house_system` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/houses.py:532` |
-| `python:moira.facade:classify_lilly_perfection_events` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/classical_perfection.py:300` |
+| `python:moira.facade:classify_lilly_perfection_events` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/classical_perfection.py:313` |
 | `python:moira.facade:classify_muhurta` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/muhurta.py:580` |
 | `python:moira.facade:close_approaches` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/occultations.py:3860` |
 | `python:moira.facade:combined_magnitude` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/multiple_stars.py:537` |
@@ -490,7 +490,7 @@ The schema rejects missing required fields and unknown fields. Cross-field valid
 | `python:moira.facade:last_new_moon` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/transits.py:2693` |
 | `python:moira.facade:last_new_moon_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/transits.py:2674` |
 | `python:moira.facade:lifetime_returns` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/cycles.py:1253` |
-| `python:moira.facade:lilly_perfection_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/classical_perfection.py:553` |
+| `python:moira.facade:lilly_perfection_at` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/classical_perfection.py:576` |
 | `python:moira.facade:local_sidereal_time` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:2970` |
 | `python:moira.facade:local_sidereal_time_with_truth` | `canonical` | `calculation` | `partial` | `embedded_result` | `unresolved` | `embedded_result,source_only,generated_documentation` | `not_verified` | `moira/julian.py:3004` |
 | `python:moira.facade:local_space_from_chart` | `canonical` | `calculation` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `unresolved` | `moira/local_space.py:284` |

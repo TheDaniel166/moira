@@ -21,6 +21,69 @@ This program implements GAP-007 without weakening the Light Box doctrine. Its go
 
 Family review uses `strong_exemplar`, `partial`, `mixed`, `major_gap`, and `unresolved`. Those labels guide work; they never replace the per-surface conformance status.
 
+## Generated-artifact maintenance
+
+Use the project interpreter with the optional development and server dependencies
+installed. From the repository root on Windows:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\maintain_generated.py --check
+.\.venv\Scripts\python.exe scripts\maintain_generated.py --refresh
+```
+
+`--check` is read-only and stops at the first stale or failed stage. `--refresh`
+writes mechanical generator outputs in the current checkout, stops at the first
+review/replay blocker, and runs the complete check sequence after a successful
+refresh. Earlier outputs can have changed when a later stage fails; review the
+scoped Git diff before publishing. Both modes use the invoking interpreter,
+resolve imports from this checkout, disable automatic downloads, and retain
+strict known-issue checking.
+
+The dependency order is:
+
+1. Generated REST reference blocks and Hellenistic inventories, which are inputs
+   to the documentation index.
+2. Calculation inventory, conformance manifest, family register, and assessment.
+3. Assurance matrix, public status, and the existing source gate.
+4. Git wiki mirror, after all canonical Markdown outputs are ready.
+
+The product-usage snapshot, reviewed release baseline, conformance admissions,
+and execution receipts retain their existing review and replay processes. When
+an inventory change blocks generation, the command identifies the affected
+stage and the review or replay needed. Review the new surface membership and
+bindings, preserve original consumer-audit provenance, and execute the admitted
+contracts when fresh evidence is required. Resume `--refresh` after resolving
+the blocker. Execution receipts retain their actual originating source identity;
+exact-release verification remains a separate release gate.
+
+The wiki refresh uses `--no-prune` and discovers Git-tracked canonical pages.
+Stage newly authored canonical pages explicitly before mirroring them. Review
+the generated diff, publish the nested wiki first, then commit its gitlink with
+the scoped parent changes. Use an isolated checkout when unrelated source work
+is in progress; the command performs no staging, commit, push, or evidence replay.
+
+### Required pre-merge gate
+
+The Release Hardening workflow runs the stable, unique **Generated Artifact
+Gate** job for every pull request and every push to `main`, with no changed-path
+filter. It checks the published wiki submodule, runs the read-only maintenance
+command and its regression tests, and gates the larger release-hardening suites.
+
+Repository branch protection for `main` requires a pull request, an up-to-date
+branch, administrator enforcement, and these stable check names:
+
+- **Engine Docstring Preflight**
+- **Generated Artifact Gate**
+- **Python 3.10 Server Compatibility Gate**
+- **Release Hardening Gate**
+
+Requiring the prerequisite checks also blocks a failed prerequisite from being
+hidden by a skipped dependent job. The solo-maintainer configuration requires
+zero approving reviews while retaining the pull-request and status-check
+requirements. This server-side setting is separate from the workflow file:
+publishing YAML alone does not make a check required. Preserve any additional
+existing repository protections when configuring it.
+
 ## Release boundary
 
 The generated current-status artifacts are source-tree truth until an exact release receipt binds them to a source commit and package. They must not be described as deployed or current-production evidence before that release boundary is crossed. The Website and Workspace remain separate consumers and are not edited by this engine program.

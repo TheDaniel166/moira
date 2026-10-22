@@ -2691,6 +2691,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/server/test_server_horary_routes.py",
         "tests/server/test_track_b_horary_openapi.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
@@ -3096,6 +3097,7 @@
       "test_leads": [
         "tests/harness_meta/test_reference_epoch_policy.py",
         "tests/integration/test_astrometric_corrections_external.py",
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/integration/test_custom_type13_toutatis_kernel.py",
         "tests/integration/test_delta_t_ancient_month_continuity.py",
         "tests/integration/test_delta_t_hybrid.py",
@@ -3439,6 +3441,7 @@
         "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
         "wiki/03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md",
         "wiki/03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md",
+        "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md",
         "wiki/03_validation/MOON_CONNECTION_FLOW_VALIDATION_2026-07-15.md",
         "wiki/03_validation/PURPOSE_ELECTION_VALIDATION_2026-10-11.md",
         "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md",
@@ -7001,6 +7004,7 @@
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrology_adversarial_gauntlet.py",
         "tests/unit/test_batch.py",
+        "tests/unit/test_classical_perfection.py",
         "tests/unit/test_dignities_scoring_policy.py",
         "tests/unit/test_lilly_1647_doctrine.py",
         "tests/unit/test_lord_of_the_turn.py",
@@ -8306,7 +8310,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee",
+  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

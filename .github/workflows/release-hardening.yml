@@ -27,6 +27,43 @@ jobs:
       - name: Check all engine docstrings before native builds
         run: python tests/unit/test_docstring_governance.py
 
+  generated-artifacts:
+    # Stable branch-protection context; keep this name unique across workflows.
+    name: Generated Artifact Gate
+    needs: docstring-preflight
+    runs-on: ubuntu-latest
+
+    env:
+      MOIRA_NO_DOWNLOAD: "1"
+      MOIRA_TEST_MODE: "1"
+      MOIRA_STRICT_KNOWN_ISSUES: "1"
+
+    steps:
+      - name: Checkout repository and published wiki
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install package and maintenance test dependencies
+        run: python -m pip install -e ".[dev,server]"
+
+      - name: Check generated artifacts without rewriting them
+        run: python scripts/maintain_generated.py --check
+
+      - name: Run maintenance and synchronization regression tests
+        run: |
+          python -m pytest \
+            tests/unit/test_lightbox_generated_maintenance.py \
+            tests/unit/test_git_wiki_sync.py \
+            tests/unit/test_hellenistic_inventory_generation.py \
+            -q
+
   python-310-server-compatibility:
     name: Python 3.10 Server Compatibility Gate
     needs: docstring-preflight
@@ -125,7 +162,7 @@ jobs:
 
   release-hardening:
     name: Release Hardening Gate
-    needs: docstring-preflight
+    needs: generated-artifacts
     runs-on: ubuntu-latest
 
     env:
@@ -159,25 +196,8 @@ jobs:
       - name: Check release identity
         run: python scripts/check_release_identity.py
 
-      - name: Check generated Hellenistic inventories
-        run: python scripts/generate_hellenistic_inventory.py --check
-
-      - name: Check Light Box conformance governance
-        run: |
-          python scripts/generate_lightbox_calculation_inventory.py --check
-          python scripts/generate_lightbox_conformance_manifest.py --check
-          python scripts/generate_lightbox_family_register.py --check
-          python scripts/generate_lightbox_family_assessment.py --check
-          python scripts/generate_lightbox_assurance_matrix.py --check
-          python scripts/generate_lightbox_public_status.py --check
-          python scripts/check_lightbox_release_gate.py
-          python -m pytest tests/unit/test_lightbox_*.py -q
-
-      - name: Check generated REST API reference
-        run: python scripts/sync_rest_api_reference.py --check
-
-      - name: Check generated Git wiki
-        run: python scripts/sync_git_wiki.py --check
+      - name: Run Light Box conformance governance regression tests
+        run: python -m pytest tests/unit/test_lightbox_*.py -q
 
       - name: Generate and validate current-source website publication candidate
         run: |
