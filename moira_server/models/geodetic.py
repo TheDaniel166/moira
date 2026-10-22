@@ -8,10 +8,20 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
+from moira.geodetic import (
+    _EARTH_OBLIQUITY_MAX_DEG,
+    _EARTH_OBLIQUITY_MIN_DEG,
+    _POLAR_REFUSAL_MARGIN_DEG,
+)
+
 from .common import _StrictModel
 
 
 GEODETIC_MAX_BODIES = 12
+
+# Derived from the engine's declared polar margin so transport admission and
+# engine computation cannot diverge.
+_POLAR_LIMIT_DEG = 90.0 - _POLAR_REFUSAL_MARGIN_DEG
 
 ZodiacName = Literal["tropical", "sidereal"]
 CoordinateSource = Literal[
@@ -38,13 +48,18 @@ class _GeodeticZodiacPolicyRequest(_StrictModel):
     def _complete_direct_zodiac_policy(self):
         if self.zodiac == "sidereal" and self.ayanamsa_deg is None:
             raise ValueError("sidereal zodiac requires ayanamsa_deg")
+        # Transport has a true absent state (None), so supplying the offset at
+        # all declares the sidereal lane — even 0.0.  The engine sees a float
+        # and so refuses only a nonzero offset.
+        if self.zodiac == "tropical" and self.ayanamsa_deg is not None:
+            raise ValueError("tropical zodiac must not carry ayanamsa_deg")
         return self
 
 
 class _GeodeticChartBackedPolicyRequest(_StrictModel):
     dt: datetime
     geo_longitude: float = Field(ge=-180.0, le=180.0)
-    geo_latitude: float = Field(gt=-90.0, lt=90.0)
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
     zodiac: ZodiacName = "tropical"
     ayanamsa_system: str | None = None
 
@@ -73,12 +88,14 @@ class _GeodeticChartBackedPolicyRequest(_StrictModel):
     def _complete_chart_zodiac_policy(self):
         if self.zodiac == "sidereal" and self.ayanamsa_system is None:
             raise ValueError("sidereal zodiac requires ayanamsa_system")
+        if self.zodiac == "tropical" and self.ayanamsa_system is not None:
+            raise ValueError("tropical zodiac must not carry ayanamsa_system")
         return self
 
 
 class GeodeticDirectChartRequest(_GeodeticZodiacPolicyRequest):
     geo_longitude: float = Field(ge=-180.0, le=180.0)
-    geo_latitude: float = Field(gt=-90.0, lt=90.0)
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
     obliquity: float
 
     @field_validator("geo_longitude", "geo_latitude", "obliquity")
@@ -86,6 +103,13 @@ class GeodeticDirectChartRequest(_GeodeticZodiacPolicyRequest):
     def _finite_values(cls, value: float) -> float:
         if not math.isfinite(value):
             raise ValueError("geodetic chart inputs must be finite")
+        return value
+
+    @field_validator("obliquity")
+    @classmethod
+    def _earth_obliquity_envelope(cls, value: float) -> float:
+        if not _EARTH_OBLIQUITY_MIN_DEG <= value <= _EARTH_OBLIQUITY_MAX_DEG:
+            raise ValueError("Earth obliquity must be in [22, 25] degrees")
         return value
 
 

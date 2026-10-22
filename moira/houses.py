@@ -220,6 +220,7 @@ try:
 except ImportError:
     _moira_native = None
 from ._house_quality import strictly_ordered_cusp_cycle
+from ._angles import _asc_from_armc  # noqa: F401 - canonical doctrine lives in moira._angles
 
 __all__ = [
     # Enums / doctrine
@@ -1415,40 +1416,6 @@ def _mc_above_horizon(mc: float, obliquity: float, lat: float) -> float:
     sin_alt = (math.sin(lat * DEG2RAD) * math.sin(dec * DEG2RAD)
                + math.cos(lat * DEG2RAD) * math.cos(dec * DEG2RAD))
     return (mc + 180.0) % 360.0 if sin_alt < 0.0 else mc
-
-
-def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
-    """
-    Ascendant from ARMC, obliquity, and geographic latitude.
-
-    ``atan2`` yields two candidate solutions 180? apart; the Ascendant is the
-    one whose ecliptic longitude falls in the same semicircle as ``ARMC + 90?``,
-    the approximate right ascension of the eastern horizon.
-
-    Raises:
-        None under normal operation.
-
-    Side effects:
-        None
-    """
-    armc_r = armc * DEG2RAD
-    eps_r  = obliquity * DEG2RAD
-    lat_r  = lat * DEG2RAD
-
-    y   = -math.cos(armc_r)
-    x   =  math.sin(armc_r) * math.cos(eps_r) + math.tan(lat_r) * math.sin(eps_r)
-    raw = math.atan2(y, x) * RAD2DEG % 360.0
-
-    # Pick the candidate closest to the eastern horizon direction (ARMC + 90°)
-    expected = (armc + 90.0) % 360.0
-    alt      = (raw + 180.0) % 360.0
-
-    def _adist(a: float, b: float) -> float:
-        d = abs(a - b) % 360.0
-        return d if d <= 180.0 else 360.0 - d
-
-    chosen = alt if _adist(alt, expected) < _adist(raw, expected) else raw
-    return 0.0 if chosen >= 360.0 else chosen
 
 
 def _local_angles_at(jd_ut: float, latitude: float, longitude: float) -> _LocalAngles:

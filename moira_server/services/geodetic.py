@@ -253,7 +253,12 @@ def _direct_ayanamsa(zodiac: ZodiacName, ayanamsa_deg: float | None) -> float:
         if ayanamsa_deg is None:
             raise ValueError("sidereal zodiac requires ayanamsa_deg")
         return ayanamsa_deg
-    return ayanamsa_deg if ayanamsa_deg is not None else 0.0
+    if ayanamsa_deg is not None:
+        raise ValueError(
+            "tropical zodiac must not carry an ayanamsa offset; the tropical "
+            f"Geodetic MC is geographic longitude, got ayanamsa_deg={ayanamsa_deg!r}"
+        )
+    return 0.0
 
 
 def _chart_ayanamsa(
@@ -266,6 +271,11 @@ def _chart_ayanamsa(
         if ayanamsa_system is None:
             raise ValueError("sidereal zodiac requires ayanamsa_system")
         return ayanamsa(jd_ut, ayanamsa_system)
+    if ayanamsa_system is not None:
+        raise ValueError(
+            "tropical zodiac must not carry an ayanamsa_system; a named ayanamsa "
+            f"belongs to the sidereal lane, got ayanamsa_system={ayanamsa_system!r}"
+        )
     return 0.0
 
 

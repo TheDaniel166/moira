@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Unreleased remediation work on the Geodetic module. No version bump, wheel
+publication, or production pin is implied by these entries.
+
+### Breaking Changes
+- **Direct Sidereal Geodetic Charts Require An Explicit Offset**:
+  `geodetic_chart(..., zodiac="sidereal")` no longer silently assumes a zero
+  ayanamsa when `ayanamsa_deg` is omitted. Pass the selected offset explicitly;
+  `0.0` remains valid when the caller intends coincident lanes.
+- **Geodetic Tropical Lane Refuses An Ayanamsa**: `moira.geodetic` entry points
+  and all four `/v1/geodetic/*` routes now reject a `tropical` request that
+  carries an ayanamsa, instead of resolving the same contradiction two ways —
+  the direct route previously honoured a nonzero `ayanamsa_deg`, while the
+  chart-backed route silently discarded `ayanamsa_system`. Transport reads
+  presence as the declaration, so `zodiac: "tropical"` with
+  `ayanamsa_deg: 0.0` is now HTTP `422`. No shipped client sends either field
+  on a tropical request.
+- **Geodetic Poles Are Refused, Not Extrapolated**: `geodetic_asc`,
+  `geodetic_chart` and REST admission reject latitudes within
+  `_POLAR_REFUSAL_MARGIN_DEG` (`1e-6`) of |90|. At a geographic pole the two
+  tangent roots of the Ascendant are exactly equidistant, so the horizon no
+  longer singles out a rising ecliptic degree; the module previously answered
+  with a mathematical extrapolation.
+
+### Fixed
+- **One Ascendant Branch Doctrine**: `moira.houses` and `moira.geodetic`
+  carried two divergent copies of `_asc_from_armc`. Both now delegate to
+  `moira._angles`, which now selects the rising ecliptic/horizon intersection
+  by the sign of its local-hour-angle vertical rate. This replaces a
+  coordinate-frame mismatch that compared ecliptic longitude with
+  `ARMC + 90°` (a right ascension) and could select the setting root at high
+  latitudes. Exact-pole ties remain deterministic for low-level house callers;
+  public geodetic calculations refuse the undefined polar margin. The shared
+  result is normalized to `[0°, 360°)`.
+- **Sidereal Geodetic Ascendant Frame**: geodetic ARMC was derived from the
+  sidereal MC and then treated as a tropical equatorial frame. The engine now
+  derives ARMC from the zodiac-independent tropical meridian and expresses the
+  sidereal Ascendant as `(tropical ASC - ayanamsa) mod 360`.
+- **Geodetic Ayanamsa Epoch**: `geodetic_chart_from_chart` and
+  `geodetic_equivalents_from_chart` passed the vessel's TT into
+  `moira.sidereal.ayanamsa`, which is contracted for UT and performs its own
+  UT→TT step, so the epoch shifted twice. Measured error is `2.98e-08°` at
+  J2000 and `3.90e-06°` at 100 CE — 3.9× the `1e-6°` longitude covenant.
+  Obliquity correctly remains a TT computation. `moira.vedic` already used the
+  UT scale; geodetic was the only outlier.
+- **Geodetic Equivalents Double Ayanamsa**: `geodetic_equivalents_from_chart`
+  fed the vessel's tropical positions into an inversion helper that reads a
+  nonzero ayanamsa as "these inputs are sidereal", so its sidereal lane
+  returned a meridian displaced by the full ayanamsa — `23.853°` at J2000.
+  Both lanes now return the one zodiac-independent geographic anchor, matching
+  the REST service path, which converted positions first and was never wrong.
+
+### Changed
+- `wiki/02_standards/GEODETIC_BACKEND_STANDARD.md` is amended to `0.4`: lane
+  exclusivity, rising-branch policy, the UT/TT epoch split, polar refusal,
+  caller-supplied latitude semantics, obliquity limits, and result provenance.
+- **Explicit Geodetic Input and Result Contracts**: geodetic latitude is
+  documented as caller-supplied and passed through without conversion or an
+  inferred datum; Earth obliquity is guarded to `[22°, 25°]`; direct
+  `GeodeticChart` construction now enforces the result invariants. Chart-backed
+  chart results retain Julian Days, obliquity model identities, and the
+  sidereal ayanamsa system/time-scale provenance.
+- **Stable Shared Ascendant Evaluation**: `_asc_from_armc` now evaluates the
+  equivalent horizon equation with sine and cosine terms instead of explicitly
+  evaluating `tan(latitude)`, while preserving the rising-root selection and
+  deterministic exact-pole tie.
+
+### Validation
+- Added `tests/unit/test_angles_branch_doctrine.py` (shared doctrine identity,
+  horizon and eastern-intersection witnesses, half-open normalization, polar
+  tie) and extended `tests/unit/test_geodetic.py` plus
+  `tests/server/test_server_geodetic_routes.py` with lane-policy, polar, epoch
+  and lane-parity covenants, including service-layer refusals that hold when
+  transport validation is bypassed.
+- Added a separate altitude-equation root-search oracle across hemispheres,
+  date-line wrapping, and near-polar inputs, plus direct-vessel and
+  chart-provenance validation tests.
+
 ## [6.10.1] - 2026-10-17
 
 ### Added

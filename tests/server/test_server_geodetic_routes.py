@@ -11,14 +11,17 @@ from moira_server.config import ServerConfig
 from moira_server.models.geodetic import (
     GeodeticChartBackedChartRequest,
     GeodeticChartBackedEquivalentsRequest,
+    GeodeticDirectEquivalentsRequest,
 )
 from moira_server.serializers.geodetic import (
     serialize_geodetic_chart_result,
     serialize_geodetic_equivalents_result,
 )
 from moira_server.services.geodetic import (
+    _chart_ayanamsa,
     compute_geodetic_chart_backed_chart,
     compute_geodetic_chart_backed_equivalents,
+    compute_geodetic_direct_equivalents,
 )
 
 
@@ -197,7 +200,32 @@ def test_geodetic_direct_chart_rejects_invalid_coordinate(
         },
     )
 
-    _assert_validation_envelope(response, message_fragment="less than 90")
+    _assert_validation_envelope(response, message_fragment="less than 89.999999")
+
+
+def test_geodetic_direct_chart_refuses_polar_latitude(client_with_engine: TestClient) -> None:
+    for geo_latitude in (90.0, -90.0, 89.9999999, -89.9999999):
+        response = client_with_engine.post(
+            "/v1/geodetic/location-chart",
+            json={
+                "geo_longitude": -74.0060,
+                "geo_latitude": geo_latitude,
+                "obliquity": _OBLIQUITY,
+            },
+        )
+        _assert_validation_envelope(response)
+
+
+def test_geodetic_chart_backed_route_refuses_polar_latitude(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post(
+        "/v1/geodetic/chart/location-chart",
+        json={
+            "dt": _DT_ISO,
+            "geo_longitude": 0.0,
+            "geo_latitude": 90.0,
+        },
+    )
+    _assert_validation_envelope(response)
 
 
 def test_geodetic_direct_chart_rejects_non_finite_obliquity(
@@ -213,6 +241,23 @@ def test_geodetic_direct_chart_rejects_non_finite_obliquity(
     )
 
     _assert_validation_envelope(response, message_fragment="geodetic chart inputs")
+
+
+@pytest.mark.parametrize("obliquity", [21.99, 25.01])
+def test_geodetic_direct_chart_rejects_obliquity_outside_engine_envelope(
+    client_with_engine: TestClient,
+    obliquity: float,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/geodetic/location-chart",
+        json={
+            "geo_longitude": -74.0060,
+            "geo_latitude": 40.7128,
+            "obliquity": obliquity,
+        },
+    )
+
+    _assert_validation_envelope(response, message_fragment="Earth obliquity must be in [22, 25]")
 
 
 def test_geodetic_route_rejects_invalid_zodiac(client_with_engine: TestClient) -> None:
@@ -243,6 +288,44 @@ def test_geodetic_direct_chart_rejects_sidereal_without_ayanamsa(
     )
 
     _assert_validation_envelope(response, message_fragment="sidereal zodiac requires ayanamsa_deg")
+
+
+def test_geodetic_direct_chart_rejects_tropical_with_ayanamsa(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/geodetic/location-chart",
+        json={
+            "geo_longitude": -74.0060,
+            "geo_latitude": 40.7128,
+            "obliquity": _OBLIQUITY,
+            "zodiac": "tropical",
+            "ayanamsa_deg": 23.85,
+        },
+    )
+
+    _assert_validation_envelope(
+        response, message_fragment="tropical zodiac must not carry ayanamsa_deg"
+    )
+
+
+def test_geodetic_direct_equivalents_rejects_tropical_with_zero_ayanamsa(
+    client_with_engine: TestClient,
+) -> None:
+    # Transport has a real absent state, so declaring the offset at all — even
+    # as 0.0 — asserts the sidereal lane against a tropical zodiac.
+    response = client_with_engine.post(
+        "/v1/geodetic/equivalents",
+        json={
+            "longitudes": {"Sun": 45.0},
+            "zodiac": "tropical",
+            "ayanamsa_deg": 0.0,
+        },
+    )
+
+    _assert_validation_envelope(
+        response, message_fragment="tropical zodiac must not carry ayanamsa_deg"
+    )
 
 
 def test_geodetic_direct_equivalents_rejects_empty_map(
@@ -298,6 +381,25 @@ def test_geodetic_chart_route_rejects_sidereal_without_ayanamsa_system(
     _assert_validation_envelope(response, message_fragment="sidereal zodiac requires ayanamsa_system")
 
 
+def test_geodetic_chart_backed_routes_reject_tropical_with_ayanamsa_system(
+    client_with_engine: TestClient,
+) -> None:
+    for path in ("/v1/geodetic/chart/location-chart", "/v1/geodetic/chart/equivalents"):
+        response = client_with_engine.post(
+            path,
+            json={
+                "dt": _DT_ISO,
+                "geo_longitude": -74.0060,
+                "geo_latitude": 40.7128,
+                "zodiac": "tropical",
+                "ayanamsa_system": "Lahiri",
+            },
+        )
+        _assert_validation_envelope(
+            response, message_fragment="tropical zodiac must not carry ayanamsa_system"
+        )
+
+
 def test_geodetic_chart_route_rejects_invalid_ayanamsa_system(
     client_with_engine: TestClient,
 ) -> None:
@@ -345,3 +447,20 @@ def test_geodetic_chart_equivalents_rejects_too_many_bodies(
     )
 
     _assert_validation_envelope(response, message_fragment="at most 12")
+
+
+def test_direct_service_lane_refuses_tropical_ayanamsa_without_transport() -> None:
+    # A forged request proves the service refuses the mismatch itself rather
+    # than relying on the transport model to have filtered it.
+    forged = GeodeticDirectEquivalentsRequest.model_construct(
+        zodiac="tropical",
+        ayanamsa_deg=23.85,
+        longitudes={"Sun": 45.0},
+    )
+    with pytest.raises(ValueError, match="tropical zodiac must not carry an ayanamsa offset"):
+        compute_geodetic_direct_equivalents(forged)
+
+
+def test_chart_service_lane_refuses_tropical_ayanamsa_system_without_transport() -> None:
+    with pytest.raises(ValueError, match="tropical zodiac must not carry an ayanamsa_system"):
+        _chart_ayanamsa(zodiac="tropical", ayanamsa_system="Lahiri", jd_ut=2451545.0)

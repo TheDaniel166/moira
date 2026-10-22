@@ -1,7 +1,7 @@
 # Geodetic Backend Standard
 
-Version: 0.1
-Date: 2026-06-12
+Version: 0.4
+Date: 2026-10-22
 Status: Active backend admission packet for Phase 10 REST evaluation
 Scope: `moira.geodetic`
 
@@ -24,7 +24,9 @@ The governing object is the geodetic zodiac mapping for a terrestrial
 location:
 
 - geographic longitude maps to native Geodetic MC
-- geographic latitude plus obliquity derives the Geodetic Ascendant
+- caller-supplied geographic latitude plus obliquity derives the Geodetic
+  Ascendant; latitude is passed through unchanged with no inferred datum or
+  geodetic/geocentric conversion
 - tropical and sidereal zodiac policies are explicit
 - planet ecliptic longitudes may be inverted into geographic equivalent
   longitudes
@@ -49,7 +51,7 @@ Public functions:
 
 - `geodetic_mc(geo_longitude, ayanamsa_deg=0.0)`
 - `geodetic_asc(geo_longitude, geo_latitude, obliquity, ayanamsa_deg=0.0)`
-- `geodetic_chart(geo_longitude, geo_latitude, obliquity, ayanamsa_deg=0.0, zodiac="tropical")`
+- `geodetic_chart(geo_longitude, geo_latitude, obliquity, ayanamsa_deg=None, zodiac="tropical")`
 - `geodetic_chart_from_chart(chart, zodiac="tropical", ayanamsa_system=None)`
 - `geodetic_equivalents(planet_longitudes, ayanamsa_deg=0.0)`
 - `geodetic_equivalents_from_chart(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)`
@@ -58,6 +60,12 @@ Facade exposure:
 
 - `SpatialFacadeMixin.geodetic(...)`
 - `SpatialFacadeMixin.geodetic_planet_equivalents(...)`
+
+Both wrappers read `jd_ut`, `jd_tt`, `latitude`, `longitude` and `planets`, so
+their argument is a `moira.chart.ChartContext` (as returned by
+`Moira.relocated_chart(...)`). The lighter `moira.facade.Chart` returned by
+`Moira.chart(...)` carries only `jd_ut` — which there denotes the civil UTC
+input, not UT1 — and is not an accepted vessel for these wrappers.
 
 ---
 
@@ -97,11 +105,45 @@ Frame doctrine:
 
 - tropical Geodetic MC is geographic longitude modulo 360.
 - sidereal Geodetic MC is `(geographic longitude - ayanamsa) mod 360`.
+- the ARMC for a location is derived from its tropical Geodetic MC; the
+  sidereal Ascendant is the tropical rising Ascendant reduced by the same
+  ayanamsa: `(tropical_asc - ayanamsa) mod 360`.
+- the rising horizon root is selected by local hour angle, not by comparing
+  ecliptic longitude with right ascension. With `H = ARMC - RA`, altitude's
+  vertical rate under increasing local sidereal time has the sign of
+  `-sin(H)` at non-polar latitudes; the Ascendant is the root with positive
+  rate (`sin(H) < 0`).
+- at exactly either geographic pole, the rising-rate branch is undefined; the
+  shared low-level helper retains its principal-root tie for callers that need
+  a deterministic algebraic result. Public geodetic chart functions refuse a
+  margin of `1e-6` degrees around the poles.
+- the tropical lane carries no ayanamsa: neither a direct offset nor a named
+  system may accompany `zodiac = tropical`.
+- the sidereal lane must name its displacement: `ayanamsa_deg` for direct
+  requests (including an explicit `0.0` when intended), `ayanamsa_system` for
+  chart-backed requests. An omitted direct offset is not treated as zero.
+- an ayanamsa is resolved on the UT scale and obliquity on the TT scale. A
+  vessel's TT must never be handed to `moira.sidereal.ayanamsa`, which performs
+  its own UT→TT step; the duplicate shift grows with Delta-T and crosses the
+  1e-6 degree longitude covenant at historical epochs.
+- a geographic meridian is zodiac-independent, so every lane returns the same
+  geographic anchor. `geodetic_equivalents` reads a nonzero ayanamsa as "these
+  input longitudes are sidereal", so a chart vessel holding tropical positions
+  must be converted into the sidereal lane before inversion, not inverted with
+  the ayanamsa applied twice.
 - geodetic equivalents invert MC mapping and return geographic longitudes in
   `[-180, 180]`.
 - chart-backed sidereal policy must resolve and serialize the ayanamsa system
   and ayanamsa offset.
 - chart-backed obliquity must be derived from the chart epoch.
+- latitude is the caller-supplied geographic latitude, north-positive, passed
+  unchanged into the Ascendant geometry. The engine does not infer a geodetic,
+  geocentric, or astronomical source convention, datum, or conversion.
+- Earth obliquity must be finite and in `[22, 25]` degrees, a guarded envelope
+  around [NASA's reported 22.1–24.5° range](https://science.nasa.gov/science-research/earth-science/climate-science/milankovitch-orbital-cycles-and-their-role-in-earths-climate/)
+  over the last million years; this is an input plausibility guard, not a claim
+  about the epoch-validity span of the IAU 2006 P03 model. Chart-backed
+  obliquity is produced by the engine's TT model.
 
 ---
 
@@ -116,6 +158,7 @@ Frame doctrine:
 - `obliquity`
 - `zodiac`
 - `ayanamsa_deg`
+- `provenance` (direct-input lane or chart epochs/model identities)
 
 Result invariants:
 
@@ -123,8 +166,18 @@ Result invariants:
 - `asc` is in `[0, 360)`.
 - stored geographic longitude is wrapped to `[-180, 180]`.
 - `zodiac` is either `tropical` or `sidereal`.
-- `ayanamsa_deg` is `0.0` for tropical unless a caller deliberately supplies a
-  direct nonzero offset.
+- `ayanamsa_deg` is `0.0` exactly when `zodiac` is `tropical`. A tropical
+  request carrying an ayanamsa is refused, never silently honoured or dropped.
+- transport has a true absent state, so presence is the declaration: supplying
+  `ayanamsa_deg` or `ayanamsa_system` on a tropical request is refused even
+  when the value is `0.0`.
+- public vessel construction enforces finite coordinates and angles, the
+  declared polar refusal margin, normalized stored longitude, zodiac policy,
+  and chart-provenance consistency.
+- chart-backed vessel provenance records the chart Julian Days, TT obliquity
+  model identities, and sidereal ayanamsa system/UT lane when used. Direct
+  calculations identify the caller-supplied input lane without implying an
+  epoch or model.
 
 ---
 
@@ -162,11 +215,31 @@ Covered invariants include:
 - direct MC wrapping
 - sidereal MC and ayanamsa round trip
 - ASC range and equatorial cases
+- rising-root selection across the full non-polar latitude range, including
+  near-polar cases
+- sidereal ASC and MC use the same explicitly declared offset from the
+  zodiac-independent tropical meridian
+- direct sidereal chart requests reject an omitted offset while accepting an
+  explicit zero
 - GeodeticChart vessel integrity
 - geodetic equivalent inversion
 - sidereal equivalent wrapping
 - rejection of non-finite coordinates, obliquity, ayanamsa, invalid zodiac,
   empty body names, and non-finite equivalent longitudes
+- rejection of Earth obliquity outside the guarded `[22, 25]` degree envelope
+- an independent horizon-equation root search agrees with the engine's
+  Ascendant across hemispheres, longitude wrap, and near-polar samples
+- direct `GeodeticChart` construction enforces its structural invariants
+- chart-backed result provenance retains the exact chart Julian Days, obliquity
+  model identities, and named sidereal ayanamsa lane
+- rejection of latitudes within the declared polar margin of |90|, where the
+  horizon no longer defines a rising ecliptic degree
+- rejection of an ayanamsa offset or system carried on a tropical zodiac, at
+  every engine entry point and at REST admission, plus the service-layer
+  refusal when transport validation is bypassed
+- chart-backed wrappers resolving ayanamsa on the UT scale while obliquity
+  stays on the TT scale, with the Delta-T materiality bound recorded
+- geographic-equivalent inversion returning one anchor for both zodiac lanes
 
 ---
 
