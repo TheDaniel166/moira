@@ -220,7 +220,7 @@ try:
 except ImportError:
     _moira_native = None
 from ._house_quality import strictly_ordered_cusp_cycle
-from ._angles import _asc_from_armc  # noqa: F401 - canonical doctrine lives in moira._angles
+from ._angles import _asc_from_armc, _sin_hour_angle  # noqa: F401 - shared angle doctrine
 
 __all__ = [
     # Enums / doctrine
@@ -1483,8 +1483,18 @@ def _vertex_from_armc(armc: float, obliquity: float, lat: float) -> float:
         intersection → y = −cos(ARMC), x = sin(ARMC)·cos(ε) − cot(lat)·sin(ε)
         Vertex = atan2(y, x)  [western branch]  % 360°
 
-    Degenerate at lat = 0° (equatorial observer, cot → ∞) and at lat = ±90°.
-    Returns 0.0 in those cases.
+    Branch doctrine: for either candidate, H = ARMC - RA and the local east
+    component is -cos(dec) * sin(H). The western intersection therefore has
+    sin(H) > 0. Ecliptic longitude must never be compared with an equatorial
+    right-ascension reference to choose this branch. If neither candidate is
+    detectably western (64 machine epsilons in sin(H)), keep the principal
+    algebraic root. This deterministic meridional tie is not a unique western
+    point; coincident planes likewise do not define a unique intersection.
+
+    The existing near-equator compatibility sentinel is retained: return 0.0
+    when abs(sin(latitude)) < 1e-9, where the cotangent expression is singular.
+    At the geographic poles the local frame is conventional; the formula is
+    evaluated in that frame rather than claiming a unique physical Vertex.
 
     Raises:
         None under normal operation.
@@ -1505,13 +1515,14 @@ def _vertex_from_armc(armc: float, obliquity: float, lat: float) -> float:
 
     raw  = math.atan2(y, x) * RAD2DEG % 360.0
     alt  = (raw + 180.0) % 360.0
-    west = (armc - 90.0) % 360.0
-
-    def _adist(a: float, b: float) -> float:
-        d = abs(a - b) % 360.0
-        return d if d <= 180.0 else 360.0 - d
-
-    return alt if _adist(alt, west) < _adist(raw, west) else raw
+    west_tie_tolerance = 64.0 * math.ulp(1.0)
+    raw_is_west = _sin_hour_angle(raw, armc_r, eps_r) > west_tie_tolerance
+    alt_is_west = _sin_hour_angle(alt, armc_r, eps_r) > west_tie_tolerance
+    if raw_is_west != alt_is_west:
+        chosen = raw if raw_is_west else alt
+    else:
+        chosen = raw
+    return 0.0 if chosen >= 360.0 else chosen
 
 
 def _dot3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:

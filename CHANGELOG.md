@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Unreleased remediation work on the Geodetic module. No version bump, wheel
+Unreleased engine remediation work. No version bump, wheel
 publication, or production pin is implied by these entries.
 
 ### Added
@@ -51,6 +51,17 @@ publication, or production pin is implied by these entries.
   with a mathematical extrapolation.
 
 ### Fixed
+- **Vertex / Anti-Vertex Branch Selection (#23)**: Python and native house
+  helpers now select the western prime-vertical/ecliptic intersection by its
+  actual local hour angle. Comparing ecliptic longitude with `ARMC - 90°`
+  could swap the two points at low southern latitudes, including the reported
+  Lima chart. Meridional ties retain the principal root; the existing
+  near-equator sentinel and conventional geographic-pole frame remain explicit.
+- **Native Ascendant Branch Parity**: native `asc_from_armc` now follows the
+  Python rising-intersection doctrine, including bounded sine/cosine evaluation,
+  exact-pole and floating-point ties, and half-open longitude normalization.
+  This also corrects native local-angle reductions that could choose the
+  setting intersection at polar latitudes.
 - **One Ascendant Branch Doctrine**: `moira.houses` and `moira.geodetic`
   carried two divergent copies of `_asc_from_armc`. Both now delegate to
   `moira._angles`, which now selects the rising ecliptic/horizon intersection
@@ -98,6 +109,11 @@ publication, or production pin is implied by these entries.
   deterministic exact-pole tie.
 
 ### Validation
+- Added `tests/unit/test_house_angle_branches.py`: the Lima public-API
+  regression, independent Cartesian prime-vertical/west and horizon/east
+  assertions, near-coincident planes, Python/native grids across both
+  hemispheres and three obliquities, meridional/polar ties, near-equator
+  compatibility, and native-reduction/Python-fallback branch consistency.
 - Added `tests/unit/test_angles_branch_doctrine.py` (shared doctrine identity,
   horizon and eastern-intersection witnesses, half-open normalization, polar
   tie) and extended `tests/unit/test_geodetic.py` plus

@@ -10,12 +10,17 @@ Verified invariants
 - Vertex ∈ [0°, 360°) and Anti-Vertex = (Vertex + 180°) % 360° at every reference epoch.
 - calculate_houses and houses_from_armc return the same vertex when given the same ARMC
   and independently derived obliquity.
-- Vertex changes by < 30° per hour over a diurnal cycle at moderate latitude (no flips).
+- Vertex changes by < 60° per hour over a diurnal cycle at London (no flips).
 
-Formula (Meeus §24)
--------------------
-    Vertex      = Ascendant(ARMC + 90°, obliquity, −latitude)
+Geometric definition
+--------------------
+    Vertex      = western intersection of the prime vertical and ecliptic
     Anti-Vertex = (Vertex + 180°) % 360°
+
+Western-hemisphere selection and the issue #23 southern-latitude regression
+are independently tested in test_house_angle_branches.py. Agreement between
+the two public paths or between Python and native is regression evidence,
+not independent proof of which antipode is western.
 
 Baseline governance
 -------------------

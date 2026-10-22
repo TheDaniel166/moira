@@ -6,6 +6,7 @@
 #include <tuple>
 #include <string>
 #include <stdexcept>
+#include <limits>
 
 #include "constants.hpp"
 #include "math_utils.hpp"
@@ -25,24 +26,41 @@ inline double mc_from_armc(double armc, double obliquity) {
     return normalize_deg_360(std::atan2(std::sin(armc_r), std::cos(armc_r) * std::cos(eps_r)) * RAD2DEG);
 }
 
+// Equatorial hour angle of a zero-latitude ecliptic direction. This is the
+// same coordinate reduction as moira._angles._sin_hour_angle, not a distance
+// between ecliptic longitude and an equatorial reference angle.
+inline double sin_ecliptic_hour_angle(double longitude, double armc_r, double eps_r) {
+    double lam_r = longitude * DEG2RAD;
+    double ra = std::atan2(std::sin(lam_r) * std::cos(eps_r), std::cos(lam_r));
+    return std::sin(armc_r - ra);
+}
+
 inline double asc_from_armc(double armc, double obliquity, double lat) {
     double armc_r = armc * DEG2RAD;
     double eps_r  = obliquity * DEG2RAD;
     double lat_r  = lat * DEG2RAD;
 
-    double y   = -std::cos(armc_r);
-    double x   =  std::sin(armc_r) * std::cos(eps_r) + std::tan(lat_r) * std::sin(eps_r);
-    double raw = normalize_deg_360(std::atan2(y, x) * RAD2DEG);
+    // The horizon-plane equation, scaled by cos(latitude), stays bounded at
+    // the poles and mirrors the Python-governed moira._angles computation.
+    double cos_lat = std::cos(lat_r);
+    double y = -std::cos(armc_r) * cos_lat;
+    double x = std::sin(armc_r) * std::cos(eps_r) * cos_lat
+             + std::sin(eps_r) * std::sin(lat_r);
+    double raw = mod_floor(std::atan2(y, x) * RAD2DEG, 360.0);
+    double alt = mod_floor(raw + 180.0, 360.0);
 
-    double expected = normalize_deg_360(armc + 90.0);
-    double alt      = normalize_deg_360(raw + 180.0);
-
-    auto adist = [](double a, double b) {
-        double d = normalize_deg_360(std::abs(a - b));
-        return (d <= 180.0) ? d : 360.0 - d;
-    };
-
-    double chosen = (adist(alt, expected) < adist(raw, expected)) ? alt : raw;
+    // Altitude rate is -cos(phi)*cos(dec)*sin(H): the rising root has sin(H)<0.
+    // Exact geographic poles and unresolved floating-point ties retain raw,
+    // exactly as Python does; neither tie is claimed to be physically rising.
+    double chosen = raw;
+    if (std::abs(lat) != 90.0) {
+        constexpr double tie = 64.0 * std::numeric_limits<double>::epsilon();
+        bool raw_is_rising = sin_ecliptic_hour_angle(raw, armc_r, eps_r) < -tie;
+        bool alt_is_rising = sin_ecliptic_hour_angle(alt, armc_r, eps_r) < -tie;
+        if (raw_is_rising != alt_is_rising) {
+            chosen = raw_is_rising ? raw : alt;
+        }
+    }
     return normalize_deg_360(chosen);
 }
 
@@ -59,16 +77,15 @@ inline double vertex_from_armc(double armc, double obliquity, double lat) {
     double y = -std::cos(armc_r);
     double x = std::sin(armc_r) * std::cos(eps_r) - (std::cos(lat_r) / sin_lat) * std::sin(eps_r);
 
-    double raw  = normalize_deg_360(std::atan2(y, x) * RAD2DEG);
-    double alt  = normalize_deg_360(raw + 180.0);
-    double west = normalize_deg_360(armc - 90.0);
-
-    auto adist = [](double a, double b) {
-        double d = normalize_deg_360(std::abs(a - b));
-        return (d <= 180.0) ? d : 360.0 - d;
-    };
-
-    double chosen = (adist(alt, west) < adist(raw, west)) ? alt : raw;
+    double raw = mod_floor(std::atan2(y, x) * RAD2DEG, 360.0);
+    double alt = mod_floor(raw + 180.0, 360.0);
+    // Prime-vertical/ecliptic line, oriented west by -cos(dec)*sin(H)<0.
+    // Keep the principal root at an unresolved meridional tie. The near-equator
+    // sentinel above and conventional geographic-pole frame remain unchanged.
+    constexpr double tie = 64.0 * std::numeric_limits<double>::epsilon();
+    bool raw_is_west = sin_ecliptic_hour_angle(raw, armc_r, eps_r) > tie;
+    bool alt_is_west = sin_ecliptic_hour_angle(alt, armc_r, eps_r) > tie;
+    double chosen = raw_is_west != alt_is_west ? (raw_is_west ? raw : alt) : raw;
     return normalize_deg_360(chosen);
 }
 
