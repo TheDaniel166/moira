@@ -73,14 +73,25 @@ from .geoutils import wrap_longitude_deg
 from ._angles import _asc_from_armc  # noqa: F401 - canonical doctrine lives in moira._angles
 
 __all__ = [
+    "GeodeticAngleDerivatives",
     "GeodeticChart",
     "GeodeticChartProvenance",
+    "GeodeticEquivalentPosition",
+    "GeodeticEquivalentsProvenance",
+    "GeodeticEquivalentsResult",
+    "GeodeticInputUncertainty",
+    "GeodeticLatitudeKind",
+    "GeodeticLocation",
+    "GeodeticSensitivityResult",
     "geodetic_mc",
     "geodetic_asc",
     "geodetic_chart",
+    "geodetic_chart_at_location",
     "geodetic_chart_from_chart",
     "geodetic_equivalents",
     "geodetic_equivalents_from_chart",
+    "geodetic_equivalents_result_from_chart",
+    "geodetic_chart_sensitivity",
 ]
 
 
@@ -91,6 +102,208 @@ __all__ = [
 _GEODETIC_LATITUDE_CONVENTION = "caller_supplied_geographic_latitude_no_conversion"
 _EARTH_OBLIQUITY_MIN_DEG = 22.0
 _EARTH_OBLIQUITY_MAX_DEG = 25.0
+_EQUIVALENTS_CALCULATION_POLICY = "geodetic_mc_inverse_v1"
+_CHART_LONGITUDE_FRAME = "chart_context_tropical_ecliptic_longitude"
+
+GeodeticLatitudeKind = Literal["unspecified", "geodetic", "astronomical", "geocentric"]
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticLocation:
+    """Coordinates and optional source metadata for a terrestrial location.
+
+    The engine does not transform coordinates. ``latitude_kind`` records what
+    the caller supplied; the conventional Geodetic calculation uses that
+    numeric latitude unchanged. Geocentric latitude is retained as metadata
+    but is refused by ``geodetic_chart_at_location`` until an explicit
+    conversion is implemented and selected.
+
+    ``coordinate_epoch`` is a decimal year. Height is ellipsoidal metres and
+    therefore requires the caller to identify the reference datum or frame.
+    """
+
+    latitude_deg: float
+    longitude_deg: float
+    latitude_kind: GeodeticLatitudeKind = "unspecified"
+    datum: str | None = None
+    reference_frame: str | None = None
+    coordinate_epoch: float | None = None
+    ellipsoidal_height_m: float | None = None
+    source: str | None = None
+
+    def __post_init__(self) -> None:
+        _validate_finite("latitude_deg", self.latitude_deg)
+        _validate_finite("longitude_deg", self.longitude_deg)
+        if not -90.0 <= self.latitude_deg <= 90.0:
+            raise ValueError("latitude_deg must be in [-90, 90]")
+        if not -180.0 <= self.longitude_deg <= 180.0:
+            raise ValueError("longitude_deg must be in [-180, 180]")
+        if self.latitude_kind not in ("unspecified", "geodetic", "astronomical", "geocentric"):
+            raise ValueError(
+                "latitude_kind must be 'unspecified', 'geodetic', 'astronomical', or 'geocentric'"
+            )
+        for name in ("datum", "reference_frame", "source"):
+            value = getattr(self, name)
+            if value is not None and (not isinstance(value, str) or not value.strip()):
+                raise ValueError(f"{name} must be a non-empty string when supplied")
+        if self.coordinate_epoch is not None:
+            _validate_finite("coordinate_epoch", self.coordinate_epoch)
+        if self.ellipsoidal_height_m is not None:
+            _validate_finite("ellipsoidal_height_m", self.ellipsoidal_height_m)
+            if self.datum is None and self.reference_frame is None:
+                raise ValueError(
+                    "ellipsoidal_height_m requires an explicit datum or reference_frame"
+                )
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticInputUncertainty:
+    """Caller-supplied maximum absolute input deviations, in degrees."""
+
+    longitude_deg: float = 0.0
+    latitude_deg: float = 0.0
+    obliquity_deg: float = 0.0
+
+    def __post_init__(self) -> None:
+        for name in ("longitude_deg", "latitude_deg", "obliquity_deg"):
+            value = getattr(self, name)
+            _validate_finite(name, value)
+            if value < 0.0:
+                raise ValueError(f"{name} must be non-negative")
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticEquivalentPosition:
+    """One chart body's source, selected-zodiac, and geographic longitudes."""
+
+    body: str
+    source_tropical_longitude_deg: float
+    selected_zodiac_longitude_deg: float
+    geographic_longitude_deg: float
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.body, str) or not self.body.strip():
+            raise ValueError("body must be a non-empty string")
+        for name in (
+            "source_tropical_longitude_deg",
+            "selected_zodiac_longitude_deg",
+            "geographic_longitude_deg",
+        ):
+            _validate_finite(name, getattr(self, name))
+        for name in ("source_tropical_longitude_deg", "selected_zodiac_longitude_deg"):
+            value = getattr(self, name)
+            if not 0.0 <= value < 360.0:
+                raise ValueError(f"{name} must be in [0, 360)")
+        if not -180.0 <= self.geographic_longitude_deg <= 180.0:
+            raise ValueError("geographic_longitude_deg must be in [-180, 180]")
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticEquivalentsProvenance:
+    """Chart epoch and policy used for a detailed equivalents result."""
+
+    chart_jd_ut: float
+    chart_jd_tt: float
+    calculation_source: Literal["chart_context"] = "chart_context"
+    zodiac: Literal["tropical", "sidereal"] = "tropical"
+    ayanamsa_deg: float = 0.0
+    ayanamsa_system: str | None = None
+    ayanamsa_timescale: Literal["UT"] | None = None
+    source_longitude_frame: Literal[
+        "chart_context_tropical_ecliptic_longitude"
+    ] = _CHART_LONGITUDE_FRAME
+    calculation_policy: Literal["geodetic_mc_inverse_v1"] = _EQUIVALENTS_CALCULATION_POLICY
+
+    def __post_init__(self) -> None:
+        if self.calculation_source != "chart_context":
+            raise ValueError("equivalents provenance must come from chart_context")
+        _validate_finite("chart_jd_ut", self.chart_jd_ut)
+        _validate_finite("chart_jd_tt", self.chart_jd_tt)
+        _validate_finite("ayanamsa_deg", self.ayanamsa_deg)
+        if self.zodiac not in ("tropical", "sidereal"):
+            raise ValueError("zodiac must be 'tropical' or 'sidereal'")
+        if self.source_longitude_frame != _CHART_LONGITUDE_FRAME:
+            raise ValueError("unsupported source longitude frame")
+        if self.calculation_policy != _EQUIVALENTS_CALCULATION_POLICY:
+            raise ValueError("unsupported equivalents calculation policy")
+        if self.zodiac == "tropical":
+            if self.ayanamsa_deg != 0.0 or self.ayanamsa_system is not None:
+                raise ValueError("tropical equivalents provenance cannot carry an ayanamsa")
+            if self.ayanamsa_timescale is not None:
+                raise ValueError("tropical equivalents provenance cannot carry an ayanamsa timescale")
+        else:
+            if not isinstance(self.ayanamsa_system, str) or not self.ayanamsa_system.strip():
+                raise ValueError("sidereal equivalents provenance requires ayanamsa_system")
+            if self.ayanamsa_timescale != "UT":
+                raise ValueError("sidereal equivalents provenance must name UT")
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticEquivalentsResult:
+    """Immutable, ordered equivalent positions plus the calculation receipt."""
+
+    positions: tuple[GeodeticEquivalentPosition, ...]
+    provenance: GeodeticEquivalentsProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.provenance, GeodeticEquivalentsProvenance):
+            raise TypeError("provenance must be GeodeticEquivalentsProvenance")
+        if not isinstance(self.positions, tuple) or any(
+            not isinstance(item, GeodeticEquivalentPosition) for item in self.positions
+        ):
+            raise TypeError("positions must be a tuple of GeodeticEquivalentPosition")
+        bodies = [item.body for item in self.positions]
+        if len(bodies) != len(set(bodies)):
+            raise ValueError("equivalent position body names must be unique")
+
+    @property
+    def geographic_longitudes(self) -> dict[str, float]:
+        """Return a fresh compatibility mapping of body to geographic longitude."""
+        return {item.body: item.geographic_longitude_deg for item in self.positions}
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticAngleDerivatives:
+    """Local output-angle derivatives per degree of each input quantity."""
+
+    geo_longitude_deg: float
+    geo_latitude_deg: float
+    obliquity_deg: float
+
+    def __post_init__(self) -> None:
+        for name in ("geo_longitude_deg", "geo_latitude_deg", "obliquity_deg"):
+            _validate_finite(name, getattr(self, name))
+
+
+@dataclass(slots=True, frozen=True)
+class GeodeticSensitivityResult:
+    """First-order local sensitivity estimates; these are not error bounds."""
+
+    base_chart: GeodeticChart
+    uncertainty: GeodeticInputUncertainty
+    mc_derivatives: GeodeticAngleDerivatives
+    asc_derivatives: GeodeticAngleDerivatives
+    mc_linearized_radius_deg: float
+    asc_linearized_radius_deg: float
+    latitude_margin_to_pole_deg: float
+    interpretation: Literal["first_order_local_not_a_bound"] = "first_order_local_not_a_bound"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.base_chart, GeodeticChart):
+            raise TypeError("base_chart must be a GeodeticChart")
+        if not isinstance(self.uncertainty, GeodeticInputUncertainty):
+            raise TypeError("uncertainty must be GeodeticInputUncertainty")
+        if not isinstance(self.mc_derivatives, GeodeticAngleDerivatives):
+            raise TypeError("mc_derivatives must be GeodeticAngleDerivatives")
+        if not isinstance(self.asc_derivatives, GeodeticAngleDerivatives):
+            raise TypeError("asc_derivatives must be GeodeticAngleDerivatives")
+        for name in ("mc_linearized_radius_deg", "asc_linearized_radius_deg", "latitude_margin_to_pole_deg"):
+            value = getattr(self, name)
+            _validate_finite(name, value)
+            if value < 0.0:
+                raise ValueError(f"{name} must be non-negative")
+        if self.interpretation != "first_order_local_not_a_bound":
+            raise ValueError("unsupported sensitivity interpretation")
 
 
 @dataclass(slots=True, frozen=True)
@@ -115,6 +328,7 @@ class GeodeticChartProvenance:
     nutation_model: str | None = None
     ayanamsa_system: str | None = None
     ayanamsa_timescale: Literal["UT"] | None = None
+    location: GeodeticLocation | None = None
 
     def __post_init__(self) -> None:
         if self.calculation_source not in ("direct_inputs", "chart_context"):
@@ -142,6 +356,10 @@ class GeodeticChartProvenance:
                 raise ValueError(
                     "direct-input provenance cannot claim chart-derived epochs or models"
                 )
+            if self.location is not None and not isinstance(self.location, GeodeticLocation):
+                raise TypeError("location must be a GeodeticLocation or None")
+            if self.location is not None and self.location.latitude_kind == "geocentric":
+                raise ValueError("geocentric latitude requires an explicit conversion")
             return
 
         if self.chart_jd_ut is None or self.chart_jd_tt is None:
@@ -156,6 +374,8 @@ class GeodeticChartProvenance:
             raise ValueError("ayanamsa_system must be non-empty when supplied")
         if self.ayanamsa_timescale not in (None, "UT"):
             raise ValueError("chart-context ayanamsa provenance must name UT")
+        if self.location is not None and not isinstance(self.location, GeodeticLocation):
+            raise TypeError("location must be a GeodeticLocation or None")
 
 
 @dataclass(slots=True, frozen=True)
@@ -197,7 +417,7 @@ class GeodeticChart:
            Johndro, "The Stars: How and Where They Influence" (1929);
            Meeus, "Astronomical Algorithms" Ch. 13.
 
-    [MACHINE_CONTRACT v2]
+    [MACHINE_CONTRACT v1]
     {
         "scope": "class",
         "id": "moira.geodetic.GeodeticChart",
@@ -270,6 +490,14 @@ class GeodeticChart:
                     raise ValueError(
                         "tropical chart-context provenance must not carry ayanamsa_system"
                     )
+            if self.provenance.location is not None:
+                location = self.provenance.location
+                if location.latitude_kind == "geocentric":
+                    raise ValueError("geocentric latitude requires an explicit conversion")
+                if location.latitude_deg != self.geo_latitude:
+                    raise ValueError("provenance location latitude must match geo_latitude")
+                if wrap_longitude_deg(location.longitude_deg) != self.geo_longitude:
+                    raise ValueError("provenance location longitude must match geo_longitude")
 
     def __repr__(self) -> str:
         return (
@@ -518,6 +746,37 @@ def geodetic_chart(
     )
 
 
+def geodetic_chart_at_location(
+    location: GeodeticLocation,
+    obliquity: float,
+    ayanamsa_deg: float | None = None,
+    zodiac: str = "tropical",
+) -> GeodeticChart:
+    """Build a chart from typed coordinates and retain their source metadata.
+
+    Latitude is passed numerically unchanged for ``unspecified``,
+    ``geodetic``, and ``astronomical`` inputs. A geocentric latitude is
+    rejected because this module has no declared conversion policy.
+    """
+    if not isinstance(location, GeodeticLocation):
+        raise TypeError("location must be a GeodeticLocation")
+    if location.latitude_kind == "geocentric":
+        raise ValueError(
+            "geocentric latitude requires an explicit conversion before Geodetic calculation"
+        )
+    chart = geodetic_chart(
+        location.longitude_deg,
+        location.latitude_deg,
+        obliquity,
+        ayanamsa_deg=ayanamsa_deg,
+        zodiac=zodiac,
+    )
+    return replace(
+        chart,
+        provenance=replace(chart.provenance, location=location),
+    )
+
+
 def geodetic_chart_from_chart(
     chart,
     zodiac:          str = "tropical",
@@ -641,12 +900,12 @@ def geodetic_equivalents(
     return result
 
 
-def geodetic_equivalents_from_chart(
+def geodetic_equivalents_result_from_chart(
     chart,
     bodies:          list[str] | None = None,
     zodiac:          str               = "tropical",
     ayanamsa_system: str | None        = None,
-) -> dict[str, float]:
+) -> GeodeticEquivalentsResult:
     """
     Convenience wrapper: geographic equivalents for natal planets from a ChartContext.
 
@@ -667,7 +926,8 @@ def geodetic_equivalents_from_chart(
 
     Returns
     -------
-    dict mapping body name → geographic longitude in [−180°, +180°].
+    Immutable result containing ordered source/selected/output longitudes and
+    the chart epoch, zodiac lane, ayanamsa, source frame, and policy.
 
     A geographic meridian is zodiac-independent, so both lanes resolve the
     same anchor; ``zodiac`` selects only how the body position is expressed on
@@ -695,15 +955,164 @@ def geodetic_equivalents_from_chart(
         from .sidereal import ayanamsa as compute_ayanamsa
         ayanamsa_deg = compute_ayanamsa(chart.jd_ut, ayanamsa_system)
 
-    planet_longitudes: dict[str, float] = {}
+    _validate_finite("chart.jd_ut", chart.jd_ut)
+    _validate_finite("chart.jd_tt", chart.jd_tt)
+    positions: list[GeodeticEquivalentPosition] = []
+    seen: set[str] = set()
     for body in bodies:
-        longitude = chart.planets[body].longitude
-        if zodiac == "sidereal":
-            # ``ChartContext`` stores tropical positions, but the inversion
-            # helper reads a nonzero ayanamsa as "these inputs are sidereal".
-            # Express the position in the requested lane before inverting,
-            # otherwise the ayanamsa is applied twice.
-            longitude = (longitude - ayanamsa_deg) % 360.0
-        planet_longitudes[body] = longitude
+        if not isinstance(body, str) or not body.strip():
+            raise ValueError("Geodetic equivalent body names must be non-empty")
+        # Preserve the legacy mapping's duplicate-key behavior while exposing
+        # a uniquely keyed immutable result in the detailed API.
+        if body in seen:
+            continue
+        seen.add(body)
+        source_longitude = chart.planets[body].longitude
+        _validate_finite(f"longitude for {body!r}", source_longitude)
+        source_tropical = source_longitude % 360.0
+        selected_longitude = (
+            (source_longitude - ayanamsa_deg) % 360.0
+            if zodiac == "sidereal"
+            else source_longitude % 360.0
+        )
+        # Keep the legacy inversion operations in the same order so its
+        # floating-point result remains bit-for-bit compatible.
+        geographic_longitude = geodetic_equivalents(
+            {body: selected_longitude}, ayanamsa_deg
+        )[body]
+        positions.append(
+            GeodeticEquivalentPosition(
+                body=body,
+                source_tropical_longitude_deg=source_tropical,
+                selected_zodiac_longitude_deg=selected_longitude,
+                geographic_longitude_deg=geographic_longitude,
+            )
+        )
 
-    return geodetic_equivalents(planet_longitudes, ayanamsa_deg)
+    return GeodeticEquivalentsResult(
+        positions=tuple(positions),
+        provenance=GeodeticEquivalentsProvenance(
+            chart_jd_ut=chart.jd_ut,
+            chart_jd_tt=chart.jd_tt,
+            zodiac=zodiac,
+            ayanamsa_deg=ayanamsa_deg,
+            ayanamsa_system=ayanamsa_system,
+            ayanamsa_timescale="UT" if zodiac == "sidereal" else None,
+        ),
+    )
+
+
+def geodetic_equivalents_from_chart(
+    chart,
+    bodies:          list[str] | None = None,
+    zodiac:          str               = "tropical",
+    ayanamsa_system: str | None        = None,
+) -> dict[str, float]:
+    """Compatibility wrapper returning only the geographic-longitude map."""
+    return geodetic_equivalents_result_from_chart(
+        chart,
+        bodies=bodies,
+        zodiac=zodiac,
+        ayanamsa_system=ayanamsa_system,
+    ).geographic_longitudes
+
+
+def _ascendant_local_derivatives(
+    geo_longitude_deg: float,
+    geo_latitude_deg: float,
+    obliquity_deg: float,
+) -> GeodeticAngleDerivatives:
+    """Analytic local derivative of the rising-root angle formula."""
+    longitude = math.radians(geo_longitude_deg)
+    latitude = math.radians(geo_latitude_deg)
+    epsilon = math.radians(obliquity_deg)
+
+    sin_l, cos_l = math.sin(longitude), math.cos(longitude)
+    sin_e, cos_e = math.sin(epsilon), math.cos(epsilon)
+    sin_p, cos_p = math.sin(latitude), math.cos(latitude)
+    armc = math.atan2(sin_l * cos_e, cos_l)
+    sin_a, cos_a = math.sin(armc), math.cos(armc)
+
+    armc_denominator = cos_l * cos_l + sin_l * sin_l * cos_e * cos_e
+    d_armc_d_longitude = cos_e / armc_denominator
+    d_armc_d_obliquity = -sin_l * cos_l * sin_e / armc_denominator
+
+    x = sin_a * cos_e * cos_p + sin_e * sin_p
+    y = -cos_a * cos_p
+    angle_denominator = x * x + y * y
+    if angle_denominator <= 1e-24:
+        raise ValueError("Ascendant sensitivity is undefined at a tangent horizon")
+
+    dx_d_armc = cos_a * cos_e * cos_p
+    dy_d_armc = sin_a * cos_p
+    dx_d_obliquity = -sin_a * sin_e * cos_p + cos_e * sin_p
+    dx_d_latitude = -sin_a * cos_e * sin_p + sin_e * cos_p
+    dy_d_latitude = cos_a * sin_p
+
+    d_asc_d_armc = (x * dy_d_armc - y * dx_d_armc) / angle_denominator
+    d_asc_d_obliquity_direct = -y * dx_d_obliquity / angle_denominator
+    d_asc_d_latitude = (
+        x * dy_d_latitude - y * dx_d_latitude
+    ) / angle_denominator
+
+    return GeodeticAngleDerivatives(
+        geo_longitude_deg=d_asc_d_armc * d_armc_d_longitude,
+        geo_latitude_deg=d_asc_d_latitude,
+        obliquity_deg=(
+            d_asc_d_armc * d_armc_d_obliquity
+            + d_asc_d_obliquity_direct
+        ),
+    )
+
+
+def geodetic_chart_sensitivity(
+    chart: GeodeticChart,
+    uncertainty: GeodeticInputUncertainty,
+) -> GeodeticSensitivityResult:
+    """Estimate first-order MC/ASC output response to input uncertainty.
+
+    The result is a local linearization, not a guaranteed uncertainty bound.
+    The supplied latitude/obliquity intervals must stay inside the calculation
+    domain so the local estimate does not cross a refusal boundary.
+    """
+    if not isinstance(chart, GeodeticChart):
+        raise TypeError("chart must be a GeodeticChart")
+    if not isinstance(uncertainty, GeodeticInputUncertainty):
+        raise TypeError("uncertainty must be a GeodeticInputUncertainty")
+
+    latitude_low = chart.geo_latitude - uncertainty.latitude_deg
+    latitude_high = chart.geo_latitude + uncertainty.latitude_deg
+    polar_limit = 90.0 - _POLAR_REFUSAL_MARGIN_DEG
+    if latitude_low <= -polar_limit or latitude_high >= polar_limit:
+        raise ValueError("latitude uncertainty crosses the Geodetic polar refusal boundary")
+    if (
+        chart.obliquity - uncertainty.obliquity_deg < _EARTH_OBLIQUITY_MIN_DEG
+        or chart.obliquity + uncertainty.obliquity_deg > _EARTH_OBLIQUITY_MAX_DEG
+    ):
+        raise ValueError("obliquity uncertainty crosses the admitted [22, 25] degree envelope")
+
+    mc_derivatives = GeodeticAngleDerivatives(1.0, 0.0, 0.0)
+    asc_derivatives = _ascendant_local_derivatives(
+        chart.geo_longitude,
+        chart.geo_latitude,
+        chart.obliquity,
+    )
+    mc_radius = (
+        abs(mc_derivatives.geo_longitude_deg) * uncertainty.longitude_deg
+        + abs(mc_derivatives.geo_latitude_deg) * uncertainty.latitude_deg
+        + abs(mc_derivatives.obliquity_deg) * uncertainty.obliquity_deg
+    )
+    asc_radius = (
+        abs(asc_derivatives.geo_longitude_deg) * uncertainty.longitude_deg
+        + abs(asc_derivatives.geo_latitude_deg) * uncertainty.latitude_deg
+        + abs(asc_derivatives.obliquity_deg) * uncertainty.obliquity_deg
+    )
+    return GeodeticSensitivityResult(
+        base_chart=chart,
+        uncertainty=uncertainty,
+        mc_derivatives=mc_derivatives,
+        asc_derivatives=asc_derivatives,
+        mc_linearized_radius_deg=mc_radius,
+        asc_linearized_radius_deg=asc_radius,
+        latitude_margin_to_pole_deg=90.0 - abs(chart.geo_latitude),
+    )

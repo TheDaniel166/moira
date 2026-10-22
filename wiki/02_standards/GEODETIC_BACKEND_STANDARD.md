@@ -1,6 +1,6 @@
 # Geodetic Backend Standard
 
-Version: 0.4
+Version: 0.5
 Date: 2026-10-22
 Status: Active backend admission packet for Phase 10 REST evaluation
 Scope: `moira.geodetic`
@@ -46,15 +46,22 @@ Authoritative module:
 Public vessel:
 
 - `GeodeticChart`
+- `GeodeticChartProvenance`
+- `GeodeticLocation` and `GeodeticLatitudeKind`
+- `GeodeticEquivalentPosition`, `GeodeticEquivalentsResult`, and provenance
+- caller-controlled `GeodeticInputUncertainty` and sensitivity result vessels
 
 Public functions:
 
 - `geodetic_mc(geo_longitude, ayanamsa_deg=0.0)`
 - `geodetic_asc(geo_longitude, geo_latitude, obliquity, ayanamsa_deg=0.0)`
 - `geodetic_chart(geo_longitude, geo_latitude, obliquity, ayanamsa_deg=None, zodiac="tropical")`
+- `geodetic_chart_at_location(location, obliquity, ayanamsa_deg=None, zodiac="tropical")`
 - `geodetic_chart_from_chart(chart, zodiac="tropical", ayanamsa_system=None)`
 - `geodetic_equivalents(planet_longitudes, ayanamsa_deg=0.0)`
 - `geodetic_equivalents_from_chart(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)`
+- `geodetic_equivalents_result_from_chart(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)`
+- `geodetic_chart_sensitivity(chart, uncertainty)`
 
 Facade exposure:
 
@@ -139,6 +146,19 @@ Frame doctrine:
 - latitude is the caller-supplied geographic latitude, north-positive, passed
   unchanged into the Ascendant geometry. The engine does not infer a geodetic,
   geocentric, or astronomical source convention, datum, or conversion.
+- `GeodeticLocation` makes that source convention and optional datum, frame,
+  coordinate epoch, ellipsoidal height, and source explicit. Its typed adapter
+  retains those values as immutable provenance and still passes supported
+  numeric latitude through unchanged. `geocentric` is representable as input
+  metadata but is refused by the adapter until a conversion is explicitly
+  selected and implemented. Metadata does not trigger datum or coordinate
+  conversion.
+- This pass-through policy is distinct from Astrocartography's declared WGS-84
+  geometry: `moira.astrocartography` explicitly converts geodetic site latitude
+  to geocentric latitude for horizon sampling and converts geocentric
+  declination to a matching WGS-84 geodetic zenith latitude. Those conversions
+  belong to that module's ellipsoid model and must not be inferred by
+  `moira.geodetic`.
 - Earth obliquity must be finite and in `[22, 25]` degrees, a guarded envelope
   around [NASA's reported 22.1–24.5° range](https://science.nasa.gov/science-research/earth-science/climate-science/milankovitch-orbital-cycles-and-their-role-in-earths-climate/)
   over the last million years; this is an input plausibility guard, not a claim
@@ -159,6 +179,22 @@ Frame doctrine:
 - `zodiac`
 - `ayanamsa_deg`
 - `provenance` (direct-input lane or chart epochs/model identities)
+- an optional typed `GeodeticLocation`, including source-coordinate metadata
+
+`geodetic_equivalents_result_from_chart` returns an immutable ordered tuple of
+`GeodeticEquivalentPosition` values. Each position preserves its source
+tropical longitude, the longitude expressed in the requested zodiac, and the
+resulting geographic longitude. `GeodeticEquivalentsProvenance` records the
+chart UT/TT, zodiac, resolved ayanamsa and system, UT timescale where used,
+source-longitude frame, and named inversion policy. The existing
+`geodetic_equivalents_from_chart` mapping remains the compatibility surface and
+delegates to this result.
+
+`geodetic_chart_sensitivity` returns analytic first derivatives and a
+caller-input-weighted L1 linearization for MC and ASC. The estimate is local,
+first order, and explicitly not a guaranteed error bound. Latitude or
+obliquity uncertainty ranges that cross the calculation's refusal/envelope
+boundaries are rejected. This estimate does not change the chart calculation.
 
 Result invariants:
 
@@ -240,6 +276,21 @@ Covered invariants include:
 - chart-backed wrappers resolving ayanamsa on the UT scale while obliquity
   stays on the TT scale, with the Delta-T materiality bound recorded
 - geographic-equivalent inversion returning one anchor for both zodiac lanes
+- typed location metadata is immutable, retained in provenance, and numerically
+  pass-through for unspecified, geodetic, and astronomical latitude labels
+- geocentric latitude is refused by the typed adapter without an explicit
+  conversion policy
+- chart-backed detailed equivalents retain body order, source and selected
+  zodiac positions, geographic anchors, chart epochs, and UT ayanamsa receipt;
+  the compatibility dictionary matches the detailed result
+- a broader independent altitude-equation root grid covers longitudes,
+  hemispheres, near-polar admitted latitudes, and the guarded obliquity range
+- longitude turns satisfy circular metamorphic invariance
+- analytic sensitivity derivatives agree with centered-difference validation;
+  uncertainty boundary crossings and tangent-horizon singularities are refused
+- `wiki/05_research/geodetic/GEODETIC_PHYSICAL_HORIZON_SPEC.md` separates a
+  future physical-horizon capability from the current spherical Geodetic
+  astrology mapping
 
 ---
 

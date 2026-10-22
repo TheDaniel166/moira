@@ -10,6 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Unreleased remediation work on the Geodetic module. No version bump, wheel
 publication, or production pin is implied by these entries.
 
+### Added
+- **Typed Geodetic Location Metadata**: added immutable `GeodeticLocation`
+  input and `geodetic_chart_at_location`. Latitude kind, datum/reference
+  frame, decimal-year coordinate epoch, ellipsoidal height, and source are
+  retained as metadata; supported latitude kinds remain numerically
+  pass-through. Geocentric latitude is refused until an explicit conversion is
+  selected.
+- **Detailed Geodetic Equivalents Receipt**: added an immutable chart-backed
+  result that records each body's source tropical longitude, selected-zodiac
+  longitude, geographic equivalent, chart UT/TT, and ayanamsa provenance. The
+  existing dictionary-returning wrapper remains compatible.
+- **Caller-Controlled Geodetic Sensitivity**: added analytic local MC/ASC
+  derivatives and first-order L1 response estimates from caller-supplied input
+  uncertainties. Results are explicitly not guaranteed error bounds, and
+  uncertainty ranges crossing calculation-domain boundaries are refused.
+- **Physical-Horizon Research Specification**: separated a possible
+  frame-aware geometric/apparent horizon capability into
+  `wiki/05_research/geodetic/GEODETIC_PHYSICAL_HORIZON_SPEC.md`; no physical
+  horizon calculation or transport route is introduced.
+
 ### Breaking Changes
 - **Direct Sidereal Geodetic Charts Require An Explicit Offset**:
   `geodetic_chart(..., zodiac="sidereal")` no longer silently assumes a zero
@@ -59,7 +79,7 @@ publication, or production pin is implied by these entries.
   the REST service path, which converted positions first and was never wrong.
 
 ### Changed
-- `wiki/02_standards/GEODETIC_BACKEND_STANDARD.md` is amended to `0.4`: lane
+- `wiki/02_standards/GEODETIC_BACKEND_STANDARD.md` is amended to `0.5`: lane
   exclusivity, rising-branch policy, the UT/TT epoch split, polar refusal,
   caller-supplied latitude semantics, obliquity limits, and result provenance.
 - **Explicit Geodetic Input and Result Contracts**: geodetic latitude is
@@ -68,6 +88,10 @@ publication, or production pin is implied by these entries.
   `GeodeticChart` construction now enforces the result invariants. Chart-backed
   chart results retain Julian Days, obliquity model identities, and the
   sidereal ayanamsa system/time-scale provenance.
+- **Geodetic and Astrocartography Latitude Boundary**: documented that
+  `moira.geodetic` records but does not convert caller latitude, while
+  `moira.astrocartography` explicitly owns its WGS-84 geodetic/geocentric
+  conversion for horizon sampling and fixed-star zenith geometry.
 - **Stable Shared Ascendant Evaluation**: `_asc_from_armc` now evaluates the
   equivalent horizon equation with sine and cosine terms instead of explicitly
   evaluating `tan(latitude)`, while preserving the rising-root selection and
@@ -83,6 +107,10 @@ publication, or production pin is implied by these entries.
 - Added a separate altitude-equation root-search oracle across hemispheres,
   date-line wrapping, and near-polar inputs, plus direct-vessel and
   chart-provenance validation tests.
+- Expanded the independent root oracle across the admitted obliquity range,
+  seven longitudes, and both hemispheres; added longitude-turn metamorphic
+  checks, typed-location/provenance tests, detailed-equivalents lane receipts,
+  and finite-difference verification of analytic sensitivity derivatives.
 
 ## [6.10.1] - 2026-10-17
 
