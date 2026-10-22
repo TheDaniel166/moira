@@ -4307,7 +4307,7 @@
       "owner_qualname": "ClassicalBodyState",
       "owner_resolution": "runtime-object",
       "public_name": "ClassicalBodyState",
-      "source_line": 76,
+      "source_line": 85,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:ClassicalBodyState",
       "surface_kind": "excluded_type",
@@ -4337,7 +4337,7 @@
       "owner_qualname": "ClassicalPerfectionAnalysis",
       "owner_resolution": "runtime-object",
       "public_name": "ClassicalPerfectionAnalysis",
-      "source_line": 180,
+      "source_line": 189,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:ClassicalPerfectionAnalysis",
       "surface_kind": "excluded_type",
@@ -4360,7 +4360,7 @@
       "owner_qualname": "ClassicalPerfectionEvent",
       "owner_resolution": "runtime-object",
       "public_name": "ClassicalPerfectionEvent",
-      "source_line": 93,
+      "source_line": 102,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:ClassicalPerfectionEvent",
       "surface_kind": "excluded_type",
@@ -4385,7 +4385,7 @@
       "owner_qualname": "ClassicalPerfectionEventKind",
       "owner_resolution": "runtime-object",
       "public_name": "ClassicalPerfectionEventKind",
-      "source_line": 51,
+      "source_line": 60,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:ClassicalPerfectionEventKind",
       "surface_kind": "excluded_type",
@@ -4411,11 +4411,12 @@
       "owner_qualname": "ClassicalPerfectionState",
       "owner_resolution": "runtime-object",
       "public_name": "ClassicalPerfectionState",
-      "source_line": 59,
+      "source_line": 68,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:ClassicalPerfectionState",
       "surface_kind": "excluded_type",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_classical_perfection.py",
         "tests/unit/test_horary.py",
@@ -5279,6 +5280,7 @@
       "surface_id": "python:moira.facade:DIRECT",
       "surface_kind": "excluded_value",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_muhurta_business.py",
         "tests/server/test_server_muhurta_dosha.py",
@@ -14142,6 +14144,7 @@
       "surface_id": "python:moira.facade:HoraryQuestionTimeBasis",
       "surface_kind": "excluded_type",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py"
@@ -14167,6 +14170,7 @@
       "surface_id": "python:moira.facade:HorarySourceCalendar",
       "surface_kind": "excluded_type",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py"
@@ -14845,6 +14849,7 @@
       "surface_kind": "excluded_type",
       "test_paths": [
         "tests/conftest.py",
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/integration/test_dorotheus_electional_de441.py",
         "tests/integration/test_dorotheus_matter_profiles_de441.py",
         "tests/integration/test_geodetic_small_bodies.py",
@@ -16421,7 +16426,7 @@
       "owner_qualname": "LILLY_1647_PERFECTION_V1",
       "owner_resolution": "symbol-definition",
       "public_name": "LILLY_1647_PERFECTION_V1",
-      "source_line": 177,
+      "source_line": 186,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:LILLY_1647_PERFECTION_V1",
       "surface_kind": "excluded_value",
@@ -16742,11 +16747,12 @@
       "owner_qualname": "LillyPerfectionKind",
       "owner_resolution": "runtime-object",
       "public_name": "LillyPerfectionKind",
-      "source_line": 66,
+      "source_line": 75,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:LillyPerfectionKind",
       "surface_kind": "excluded_type",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_classical_perfection.py",
         "tests/unit/test_western_electional.py",
@@ -16770,7 +16776,7 @@
       "owner_qualname": "LillyPerfectionPolicy",
       "owner_resolution": "runtime-object",
       "public_name": "LillyPerfectionPolicy",
-      "source_line": 132,
+      "source_line": 141,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:LillyPerfectionPolicy",
       "surface_kind": "excluded_type",
@@ -16793,7 +16799,7 @@
       "owner_qualname": "LillyPerfectionWitness",
       "owner_resolution": "runtime-object",
       "public_name": "LillyPerfectionWitness",
-      "source_line": 120,
+      "source_line": 129,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:LillyPerfectionWitness",
       "surface_kind": "excluded_type",
@@ -44497,7 +44503,7 @@
       "owner_qualname": "classify_lilly_perfection_events",
       "owner_resolution": "runtime-object",
       "public_name": "classify_lilly_perfection_events",
-      "source_line": 300,
+      "source_line": 313,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:classify_lilly_perfection_events",
       "surface_kind": "calculation",
@@ -49318,6 +49324,7 @@
       "test_paths": [
         "tests/integration/test_r3c_station_truth_evidence.py",
         "tests/unit/test_batch.py",
+        "tests/unit/test_classical_perfection.py",
         "tests/unit/test_native_gil_release_audit.py",
         "tests/unit/test_topocentric_jitter.py"
       ]
@@ -51132,6 +51139,7 @@
       "surface_id": "python:moira.facade:horary_evidence_at",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/server/test_server_horary_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_horary.py",
@@ -52095,6 +52103,7 @@
       "surface_id": "python:moira.facade:jd_from_datetime",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/integration/test_diurnal_aberration_integration.py",
         "tests/integration/test_iota_spica_moira_lola_model.py",
         "tests/integration/test_lunar_month.py",
@@ -52767,7 +52776,7 @@
       "owner_qualname": "lilly_perfection_at",
       "owner_resolution": "runtime-object",
       "public_name": "lilly_perfection_at",
-      "source_line": 553,
+      "source_line": 576,
       "source_path": "moira/classical_perfection.py",
       "surface_id": "python:moira.facade:lilly_perfection_at",
       "surface_kind": "calculation",
@@ -61656,6 +61665,7 @@
       "surface_id": "python:moira.facade:utc_to_ut1",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/integration/test_classical_perfection_de441.py",
         "tests/integration/test_iota_spica_moira_lola_model.py",
         "tests/integration/test_lunar_month.py",
         "tests/integration/test_lunar_orientation_authority.py",
@@ -66310,6 +66320,7 @@
         "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
         "wiki/03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md",
         "wiki/03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md",
+        "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md",
         "wiki/03_validation/MOON_CONNECTION_FLOW_VALIDATION_2026-07-15.md",
         "wiki/03_validation/PURPOSE_ELECTION_VALIDATION_2026-10-11.md",
         "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md",
@@ -79837,5 +79848,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee"
+  "surface_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969"
 }

@@ -3649,7 +3649,7 @@
       "family_id": "classical-perfection",
       "family_label": "Classical Perfection",
       "ownership": {
-        "source_line": 300,
+        "source_line": 313,
         "source_path": "moira/classical_perfection.py"
       },
       "priority": "P2",
@@ -11000,7 +11000,7 @@
       "family_id": "classical-perfection",
       "family_label": "Classical Perfection",
       "ownership": {
-        "source_line": 553,
+        "source_line": 576,
         "source_path": "moira/classical_perfection.py"
       },
       "priority": "P2",
@@ -31735,7 +31735,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee",
+  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
