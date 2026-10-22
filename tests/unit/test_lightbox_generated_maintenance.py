@@ -218,7 +218,7 @@ def test_full_release_hardening_waits_for_generated_gate():
 
 def test_required_context_is_unique_across_workflows():
     names = []
-    for path in (ROOT / ".github/workflows").glob("*.yml"):
+    for path in sorted(path for path in (ROOT / ".github/workflows").iterdir() if path.suffix.lower() in {".yml", ".yaml"}):
         workflow = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         names.extend(job.get("name", key) for key, job in workflow.get("jobs", {}).items())
     assert names.count("Generated Artifact Gate") == 1
