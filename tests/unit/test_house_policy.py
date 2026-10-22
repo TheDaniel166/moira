@@ -13,6 +13,8 @@ Verifies that:
 
 from __future__ import annotations
 
+import math
+
 import pytest
 from moira.houses import (
     calculate_houses,
@@ -281,12 +283,102 @@ class TestCustomPolicyCombinations:
         assert result.fallback is True
         assert "unordered" in (result.fallback_reason or "")
 
-    def test_unordered_polar_apc_reports_a_degenerate_configured_fallback(self):
+    @pytest.mark.parametrize(
+        ("polar_policy", "expected_system", "target_name"),
+        [
+            (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY, HouseSystem.PORPHYRY, "Porphyry"),
+            (PolarFallbackPolicy.FALLBACK_TO_EQUAL, HouseSystem.EQUAL, "Equal"),
+            (PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN, HouseSystem.WHOLE_SIGN, "Whole Sign"),
+        ],
+    )
+    def test_unordered_polar_apc_keeps_a_valid_configured_fallback(
+        self, polar_policy, expected_system, target_name,
+    ):
+        armc, obliquity, latitude = 25.0, 23.4392911, -80.0
+        policy = HousePolicy(polar_fallback=polar_policy)
+        result = houses_from_armc(
+            armc, obliquity, latitude, HouseSystem.APC, policy=policy,
+        )
+
+        assert result.system == HouseSystem.APC
+        assert result.effective_system == expected_system
+        assert result.fallback is True
+        assert result.policy == policy
+        assert "'Y' produced an unordered ecliptic cusp cycle" in result.fallback_reason
+        assert f"fell back to {target_name}" in result.fallback_reason
+
+        # Before the rising-branch correction in 882df87, this fixture selected
+        # the setting antipode and its Porphyry fallback failed. Independently
+        # project the returned ecliptic direction onto the local horizon frame.
+        # As in test_house_angle_branches, 2e-13 is dimensionless roundoff,
+        # not an ephemeris accuracy tolerance.
+        lam, theta, eps, phi = map(
+            math.radians, (result.asc, armc, obliquity, latitude),
+        )
+        x = math.cos(lam)
+        y = math.sin(lam) * math.cos(eps)
+        z = math.sin(lam) * math.sin(eps)
+        east = -math.sin(theta) * x + math.cos(theta) * y
+        up = (
+            math.cos(phi) * math.cos(theta) * x
+            + math.cos(phi) * math.sin(theta) * y
+            + math.sin(phi) * z
+        )
+        assert abs(up) < 2e-13
+        assert east > 0.0
+
+        assert len(result.cusps) == 12
+        assert all(math.isfinite(cusp) and 0.0 <= cusp < 360.0 for cusp in result.cusps)
+        widths = [
+            (result.cusps[(i + 1) % 12] - result.cusps[i]) % 360.0
+            for i in range(12)
+        ]
+        assert all(width > 0.0 for width in widths)
+        # One forward turn excludes a self-overlapping, multi-turn cusp cycle.
+        assert math.fsum(widths) == pytest.approx(360.0, abs=1e-10, rel=0.0)
+
+        if expected_system == HouseSystem.PORPHYRY:
+            anchors = (
+                result.asc, (result.mc + 180.0) % 360.0,
+                (result.asc + 180.0) % 360.0, result.mc,
+            )
+            for quadrant, anchor in enumerate(anchors):
+                first = 3 * quadrant
+                error = (result.cusps[first] - anchor + 180.0) % 360.0 - 180.0
+                assert error == pytest.approx(0.0, abs=1e-12, rel=0.0)
+                for width in widths[first:first + 3]:
+                    assert width == pytest.approx(widths[first], abs=1e-12, rel=0.0)
+
+        direct = houses_from_armc(
+            armc, obliquity, latitude, expected_system, policy=HousePolicy.strict(),
+        )
+        for cusp, reference in zip(result.cusps, direct.cusps):
+            error = (cusp - reference + 180.0) % 360.0 - 180.0
+            assert error == pytest.approx(0.0, abs=1e-12, rel=0.0)
+
+    @pytest.mark.parametrize(
+        ("policy", "message"),
+        [
+            (HousePolicy.strict(), "'Y' produced an unordered.*policy is RAISE"),
+            (HousePolicy.experimental(), "experimental search for 'Y'.*usable cusps"),
+        ],
+    )
+    def test_unordered_polar_apc_respects_policies_that_refuse_fallback(self, policy, message):
+        with pytest.raises(ValueError, match=message):
+            houses_from_armc(
+                25.0, 23.4392911, -80.0, HouseSystem.APC, policy=policy,
+            )
+
+    @pytest.mark.parametrize("armc, latitude", [(0.0, 90.0), (180.0, -90.0)])
+    def test_unordered_polar_apc_reports_a_degenerate_configured_fallback(self, armc, latitude):
+        # Under the existing deterministic pole tie, ASC and MC coincide and
+        # Porphyry has duplicate boundaries. This does not claim a physically
+        # unique rising Ascendant at a geographic pole.
         with pytest.raises(ValueError, match="configured 'O' fallback also failed"):
             houses_from_armc(
-                25.0,
+                armc,
                 23.4392911,
-                -80.0,
+                latitude,
                 HouseSystem.APC,
                 policy=HousePolicy.default(),
             )
