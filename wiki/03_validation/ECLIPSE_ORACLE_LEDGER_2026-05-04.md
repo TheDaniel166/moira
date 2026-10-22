@@ -8,6 +8,7 @@
 - **Besselian admission update:** 2026-07-17
 - **Polar central-path admission update:** 2026-07-17
 - **Partial-visibility footprint admission update:** 2026-07-18
+- **Limiting solar geometry and lunar model distinction:** 2026-10-22
 - **Target subsystems:** `moira.eclipse`, `moira.eclipse_besselian`,
   `moira.eclipse_geometry`,
   `moira.eclipse_canon`, solar path and partial-visibility footprint geometry,
@@ -264,6 +265,46 @@ Swiss is a secondary comparator. These checks do not establish primary-authority
 Besselian parity, and the one-row `where` check does not validate atlas-grade
 track shape, path width, magnitude, or central duration.
 
+### G. Limiting cone/WGS 84 classification and lunar model distinction
+
+`tests/unit/test_eclipse_solar_classification.py` checks analytically placed
+physical shadow cones against WGS 84, including an axis that intersects the
+equatorial-radius sphere but misses the polar ellipsoid, noncentral umbral and
+antumbral overlap, no penumbral overlap, and the existing hybrid criterion.
+Analytic equatorial cone/circle tangencies are bracketed by one-metre overlap
+and clearance, including a positive penumbral graze whose Sun centre is below
+the horizon while its upper limb is geometrically visible.
+`tests/integration/test_eclipse_limiting_regressions.py` binds the eleven
+reported polar partial solar dates to positive penumbral cone/WGS 84 overlap
+and verifies snapshot, forward, backward, and bulk discovery. The named
+2051-04-11 partial and 2043-04-09/2014-04-29 noncentral total/annular controls
+separate cone overlap from centerline intersection. The 1855-04-16 and
+1953-01-15 candidates have no eclipse. Catalog sources and the one-day
+date-identity envelope are explicit in the test; these rows do not admit a
+full-catalog timing or classification claim.
+Five near-hybrid annular catalog controls also retain their native type.
+
+The noncentral path/global admission is separately covered by
+`tests/integration/test_solar_eclipse_noncentral.py` for the 2014 annular and
+2043 total controls. Physical cone-boundary snapshots retain both quadratic
+ellipsoid roots, close at generator tangencies, and carry an explicit
+unclipped-horizon policy. Central-line width is absent, U1/U4 are present,
+and U2/U3 are paired optional contacts. Unit tests cover signed synthetic
+caps and vessel pairing/order; REST tests cover nullable fields and the
+physical-boundary transport. The companion catalog-comparison document
+records the `0.2 mm` interior / `1 cm` contact cone-residual budgets, adjacent-
+representable-epoch contact brackets, and the precise scope of the NASA 2014
+cone-envelope and 2014/2043 covered-horizon anchors. Those references do not
+establish external duration accuracy or a complete swept daylight polygon.
+
+The same regression module records 2015-04-04 as native Partial and default
+NASA-compatible Total. Shared-TT geometry checks isolate the vector-policy
+difference while the shared Danjon shadow radii remain nearly equal. This
+preserves the native physical-Moon policy and adds a named regression for the
+previously diagnostic-only classification distinction. It does not establish
+observed limb-profile totality or rank the two declared models as universal
+truth.
+
 ## 3. Corrected findings
 
 ### A. NASA Besselian evidence is bounded cross-model validation
@@ -371,10 +412,10 @@ The supportable statement is:
   products before making broader temporal or coverage claims. The admitted
   slice now bounds all applicable contacts for one ordinary penumbral, partial,
   and total event plus one separately classified limiting event.
-- Keep model-sensitive limiting classifications visible. A local diagnostic
-  found a classification difference at the 2015-04-04 near-limit event, but
-  that observation is not yet a fixture-backed covenant. Do not force catalog
-  type agreement unless an internal geometry defect is independently
-  demonstrated.
+- Keep model-sensitive limiting classifications visible. The named
+  2015-04-04 regression now preserves the native/compatibility distinction
+  under their declared vector policies. Broader limiting-event and
+  observational evidence remain separate work. Do not force catalog type
+  agreement unless an internal geometry defect is independently demonstrated.
 - Keep mean-limb geometry distinct from lunar-profile-conditioned Baily's Bead
   or graze products; no bound limb-topography dataset is established here.

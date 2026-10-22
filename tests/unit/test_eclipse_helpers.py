@@ -359,7 +359,7 @@ def test_central_shadow_width_is_full_footprint_support_span() -> None:
     assert width_km == pytest.approx(2.0 * half_width_km, abs=1.0e-9)
 
 
-def test_central_path_fails_on_spherical_wgs84_centrality_divergence(
+def test_central_path_dispatches_noncentral_coverage_without_inventing_a_line(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     event = SimpleNamespace(
@@ -381,12 +381,31 @@ def test_central_path_fails_on_spherical_wgs84_centrality_divergence(
             return event
 
     monkeypatch.setattr(eclipse, "_solar_axis_surface_point", lambda *args: None)
+    expected = object()
+    calls = []
+    monkeypatch.setattr(eclipse, "_solve_noncentral_solar_path",
+                        lambda calc, found, count: calls.append((found, count)) or expected)
+    assert eclipse.EclipseCalculator.solar_eclipse_path(FakeCalculator(), 2451545.0) is expected
+    assert calls == [(event, 9)]
 
-    with pytest.raises(
-        ArithmeticError,
-        match="classification is central.*does not intersect",
-    ):
-        eclipse.EclipseCalculator.solar_eclipse_path(FakeCalculator(), 2451545.0)
+
+@pytest.mark.parametrize("radius", [40.0, -40.0])
+def test_noncentral_boundary_joins_both_exact_ellipsoid_roots(radius):
+    """Analytic cylindrical cap, 10 km axis miss, both umbral signs."""
+    shadow = _earth_fixed_shadow(
+        fundamental_plane_point_xyz_km=(0.0, eclipse.EARTH_RADIUS_KM + 10.0, 0.0),
+        axis_unit_away_from_sun=(1.0, 0.0, 0.0),
+        axis_projection_km=-380000.0,
+        central_radius_km=radius, central_cone_slope=0.0,
+    )
+    boundary = eclipse._noncentral_shadow_boundary(shadow, 2451545.0).boundary
+    assert boundary[0] == boundary[-1]
+    xyz = [eclipse._wgs84_surface_xyz_km(p.latitude_deg, p.longitude_deg) for p in boundary]
+    assert min(p[0] for p in xyz) < -500.0 < 500.0 < max(p[0] for p in xyz)
+    for point in xyz:
+        assert eclipse._central_shadow_clearance_km(shadow, point) == pytest.approx(0.0, abs=1e-7)
+    assert min(eclipse._topocentric_solar_altitude_proxy(shadow, p) for p in xyz) < 0.0
+    assert max(eclipse._topocentric_solar_altitude_proxy(shadow, p) for p in xyz) > 0.0
 
 
 def test_solar_greatest_location_exits_early_on_exact_conjunction(monkeypatch: pytest.MonkeyPatch) -> None:

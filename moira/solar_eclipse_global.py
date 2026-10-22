@@ -3,8 +3,9 @@
 This admission preserves the existing path and footprint products by
 reference while assembling their greatest-eclipse, central-line-limit,
 P-contact, Besselian, body-state, magnitude, obscuration, width, and duration
-information.  It also exposes independently solved U1-U4 cone tangencies,
-equatorial and ecliptic conjunctions, and greatest-duration circumstances.
+information. It also exposes independently solved U1/U4 cone tangencies and
+paired optional U2/U3, equatorial/ecliptic conjunctions, greatest-duration
+circumstances, and noncentral physical shadow snapshots with absent width.
 """
 
 from __future__ import annotations
@@ -33,6 +34,8 @@ if TYPE_CHECKING:
     from .eclipse import (
         EclipseCalculator,
         EclipseEvent,
+        SolarEclipseFootprintPoint,
+        SolarEclipsePath,
         SolarEclipseVisibilityFootprint,
     )
 
@@ -43,6 +46,7 @@ __all__ = [
     "SolarEclipseUmbralContactKind",
     "SolarEclipseUmbralContact",
     "SolarEclipseUmbralContacts",
+    "SolarEclipseShadowFootprint",
     "SolarEclipseGreatestSite",
     "SolarEclipseGlobalCircumstances",
 ]
@@ -131,20 +135,48 @@ class SolarEclipseUmbralContact:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseUmbralContacts:
-    """Vessel: Structured solar eclipse umbral contacts data."""
+    """Vessel: Outer cone contacts and a paired optional internal-contact interval."""
     u1: SolarEclipseUmbralContact
-    u2: SolarEclipseUmbralContact
-    u3: SolarEclipseUmbralContact
+    u2: SolarEclipseUmbralContact | None
+    u3: SolarEclipseUmbralContact | None
     u4: SolarEclipseUmbralContact
 
     def __post_init__(self) -> None:
-        contacts = (self.u1, self.u2, self.u3, self.u4)
-        expected = tuple(SolarEclipseUmbralContactKind)
-        if tuple(contact.kind for contact in contacts) != expected:
-            raise ValueError("umbral contacts must carry U1 through U4")
+        if self.u1 is None or self.u4 is None:
+            raise ValueError("U1/U4 are required")
+        if (self.u2 is None) != (self.u3 is None):
+            raise ValueError("U2/U3 must be paired")
+        named = tuple(zip(tuple(SolarEclipseUmbralContactKind),
+                          (self.u1, self.u2, self.u3, self.u4)))
+        if any(contact.kind is not kind for kind, contact in named if contact is not None):
+            raise ValueError("umbral contacts must carry their named U kind")
+        contacts = tuple(contact for _, contact in named if contact is not None)
         epochs = tuple(contact.epoch.jd_ut1 for contact in contacts)
         if any(left >= right for left, right in zip(epochs, epochs[1:])):
             raise ValueError("umbral contacts must be strictly ordered U1 through U4")
+
+
+@dataclass(frozen=True, slots=True)
+class SolarEclipseShadowFootprint:
+    """Vessel: Closed instantaneous physical cone boundary, without horizon clipping.
+
+    The near and far generator intersections join at the two ellipsoid
+    tangencies. A U1/U4 snapshot degenerates to its single contact point.
+    This physical product is distinct from the daylight visibility footprint.
+    """
+    jd_ut: float
+    boundary: tuple["SolarEclipseFootprintPoint", ...]
+    surface_model: str = field(default="WGS84_ZERO_ELEVATION", init=False)
+    horizon_policy: str = field(default="UNCLIPPED_PHYSICAL_CONE", init=False)
+
+    def __post_init__(self) -> None:
+        _finite("jd_ut", self.jd_ut)
+        if not self.boundary:
+            raise ValueError("shadow footprint requires a boundary")
+        if any(point.jd_ut != self.jd_ut for point in self.boundary):
+            raise ValueError("shadow boundary points must share the snapshot epoch")
+        if self.boundary[0] != self.boundary[-1]:
+            raise ValueError("shadow boundary must be closed")
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +185,7 @@ class SolarEclipseGreatestSite:
     epoch: EclipseEpoch
     latitude_deg: float
     longitude_deg: float
-    path_width_km: float
+    path_width_km: float | None
     central_duration_seconds: float
     sun_altitude_deg: float
     sun_azimuth_deg: float
@@ -170,7 +202,6 @@ class SolarEclipseGreatestSite:
         for name in (
             "latitude_deg",
             "longitude_deg",
-            "path_width_km",
             "central_duration_seconds",
             "sun_altitude_deg",
             "sun_azimuth_deg",
@@ -187,7 +218,9 @@ class SolarEclipseGreatestSite:
             raise ValueError("latitude_deg must be in [-90, 90]")
         if not -180.0 <= self.longitude_deg <= 180.0:
             raise ValueError("longitude_deg must be in [-180, 180]")
-        if self.path_width_km < 0.0 or self.central_duration_seconds < 0.0:
+        if self.path_width_km is not None and _finite("path_width_km", self.path_width_km) < 0.0:
+            raise ValueError("width must be non-negative when present")
+        if self.central_duration_seconds < 0.0:
             raise ValueError("width and duration must be non-negative")
         if not 0.0 <= self.obscuration <= 1.0:
             raise ValueError("obscuration must be in [0, 1]")
@@ -214,6 +247,7 @@ class SolarEclipseGlobalCircumstances:
     first_central_line_limit: SolarEclipseCentralLineLimit | None
     last_central_line_limit: SolarEclipseCentralLineLimit | None
     ephemeris: str
+    noncentral_footprints: tuple[SolarEclipseShadowFootprint, ...] = ()
     surface_model: str = field(default="WGS84_ZERO_ELEVATION", init=False)
     limb_model: str = field(default="SPHERICAL_MEAN_LIMB", init=False)
     umbral_contacts_admitted: bool = field(default=True, init=False)
@@ -242,31 +276,47 @@ class SolarEclipseGlobalCircumstances:
                 < self.last_central_line_limit.epoch.jd_ut1
             ):
                 raise ValueError("central-line limits must bracket greatest eclipse")
-        is_central = any(
+        has_central_coverage = any(
             (
                 self.event.data.eclipse_type.is_annular,
                 self.event.data.eclipse_type.is_total,
                 self.event.data.eclipse_type.is_hybrid,
             )
         )
-        if is_central and self.umbral_contacts is None:
-            raise ValueError("central eclipses require admitted U1-U4 contacts")
-        if not is_central and self.umbral_contacts is not None:
+        if has_central_coverage and self.umbral_contacts is None:
+            raise ValueError("total/annular coverage requires U1/U4 contacts")
+        if not has_central_coverage and self.umbral_contacts is not None:
             raise ValueError("partial eclipses cannot carry U1-U4 contacts")
-        if is_central and self.greatest_duration is None:
-            raise ValueError("central eclipses require a greatest-duration site")
-        if not is_central and self.greatest_duration is not None:
+        if has_central_coverage and self.greatest_duration is None:
+            raise ValueError("total/annular coverage requires a greatest-duration site")
+        if not has_central_coverage and self.greatest_duration is not None:
             raise ValueError("partial eclipses cannot carry a greatest-duration site")
         if self.umbral_contacts is not None and not (
             self.footprint.contacts.p1.point.jd_ut
             < self.umbral_contacts.u1.epoch.jd_ut1
-            < self.umbral_contacts.u2.epoch.jd_ut1
             < self.greatest.epoch.jd_ut1
-            < self.umbral_contacts.u3.epoch.jd_ut1
             < self.umbral_contacts.u4.epoch.jd_ut1
             < self.footprint.contacts.p4.point.jd_ut
         ):
-            raise ValueError("U1-U4 contacts must lie within P1-P4 and bracket GE")
+            raise ValueError("U1/U4 contacts must lie within P1/P4 and bracket GE")
+        if self.noncentral_footprints:
+            if not has_central_coverage or self.first_central_line_limit is not None:
+                raise ValueError("noncentral footprints require coverage without a central line")
+            if self.greatest.path_width_km is not None:
+                raise ValueError("noncentral eclipse has no central-line width")
+            if self.greatest_duration.path_width_km is not None:
+                raise ValueError("noncentral duration site has no central-line width")
+            epochs = tuple(snapshot.jd_ut for snapshot in self.noncentral_footprints)
+            if epochs != tuple(sorted(set(epochs))):
+                raise ValueError("noncentral footprint epochs must be strictly ordered")
+            if (
+                epochs[0] != self.umbral_contacts.u1.epoch.jd_ut1
+                or epochs[-1] != self.umbral_contacts.u4.epoch.jd_ut1
+                or self.event.jd_ut not in epochs
+            ):
+                raise ValueError("noncentral footprints must retain U1, GE, and U4")
+        elif self.greatest.path_width_km is None:
+            raise ValueError("absent central width requires noncentral footprints")
 
 
 def _epoch(calculator: "EclipseCalculator", jd_ut1: float) -> EclipseEpoch:
@@ -454,13 +504,14 @@ def _build_solar_global_circumstances(
         path.max_eclipse_lon,
     )
 
-    central = any(
+    has_central_coverage = any(
         (
             event.data.eclipse_type.is_annular,
             event.data.eclipse_type.is_total,
             event.data.eclipse_type.is_hybrid,
         )
     )
+    central = _solar_axis_surface_point(calculator, event.jd_ut) is not None
     first_limit = None
     last_limit = None
     if central:
@@ -582,9 +633,12 @@ def _build_solar_global_circumstances(
         )
     umbral_contacts = (
         _solve_solar_umbral_contacts(calculator, event.jd_ut)
-        if central
+        if has_central_coverage
         else None
     )
+    if has_central_coverage and not central:
+        assert umbral_contacts is not None
+        greatest_duration = _noncentral_greatest_duration(calculator, path, umbral_contacts)
 
     return SolarEclipseGlobalCircumstances(
         event=event,
@@ -620,4 +674,89 @@ def _build_solar_global_circumstances(
         first_central_line_limit=first_limit,
         last_central_line_limit=last_limit,
         ephemeris=identity.summary_label,
+        noncentral_footprints=path.noncentral_footprints,
+    )
+
+
+def _noncentral_greatest_duration(
+    calculator: "EclipseCalculator",
+    path: "SolarEclipsePath",
+    contacts: SolarEclipseUmbralContacts,
+) -> SolarEclipseGreatestSite:
+    """Maximize full-phase local duration over the noncentral daylight cap.
+
+    Time is bounded by physical U1/U4. Surface candidates start throughout
+    that interval; geographic refinement is bounded and fails on exhaustion.
+    Duration retains the established apparent-disc local convention, without
+    refraction or horizon truncation. The site must have a geometric Sun-centre
+    altitude >= 0 at its local maximum. Width remains undefined.
+    """
+    from .eclipse import (
+        _bounded_scalar_maximum,
+        _earth_fixed_solar_shadow,
+        _offset_geographic_km,
+        _solve_local_solar_central_duration_s,
+        _topocentric_solar_geometry,
+        _topocentric_solar_altitude_proxy,
+        _wgs84_surface_xyz_km,
+    )
+
+    left, right = contacts.u1.epoch.jd_ut1, contacts.u4.epoch.jd_ut1
+    cache: dict[tuple[float, float], tuple[float, float, float, float]] = {}
+
+    def evaluate(latitude: float, longitude: float) -> tuple[float, float, float, float]:
+        key = (round(latitude, 10), round(longitude, 10))
+        if key not in cache:
+            epoch, margin = _bounded_scalar_maximum(
+                lambda epoch: _topocentric_solar_geometry(
+                    calculator, epoch, latitude, longitude, include_below_horizon=True,
+                )[2], left, right,
+            )
+            shadow = _earth_fixed_solar_shadow(calculator, epoch)
+            daylight = shadow is not None and _topocentric_solar_altitude_proxy(
+                shadow, _wgs84_surface_xyz_km(latitude, longitude),
+            ) >= 0.0
+            duration = _solve_local_solar_central_duration_s(
+                calculator, epoch, latitude, longitude, clip_horizon=False,
+            ) if margin > 0.0 and daylight else 0.0
+            cache[key] = (duration, epoch, latitude, longitude)
+        return cache[key]
+
+    seeds = [(path.max_eclipse_lat, path.max_eclipse_lon)]
+    # Both contour branches supply seeds across the sampled physical cap.
+    for footprint in path.noncentral_footprints:
+        boundary = footprint.boundary
+        if len(boundary) <= 1:
+            continue
+        for point in boundary[::max(1, len(boundary) // 8)]:
+            seeds.append((point.latitude_deg, point.longitude_deg))
+    best = max((evaluate(*seed) for seed in seeds), key=lambda row: row[0])
+    for step in (100.0, 30.0, 10.0, 3.0, 1.0, 0.3, 0.1, 0.03, 0.01):
+        for _ in range(64):
+            candidates = [best]
+            for north, east in (
+                (-1, -1), (-1, 0), (-1, 1), (0, -1),
+                (0, 1), (1, -1), (1, 0), (1, 1),
+            ):
+                candidates.append(evaluate(*_offset_geographic_km(
+                    best[2], best[3], north * step, east * step,
+                )))
+            candidate = max(candidates, key=lambda row: row[0])
+            if candidate[0] <= best[0] + 1.0e-5:
+                break
+            best = candidate
+        else:
+            raise ArithmeticError("noncentral greatest-duration refinement did not converge")
+    duration, epoch, latitude, longitude = best
+    if duration <= 0.0:
+        raise ArithmeticError("noncentral eclipse has no admitted daylight full-phase duration")
+    discs = _topocentric_solar_disc_geometry(calculator, epoch, latitude, longitude)
+    return SolarEclipseGreatestSite(
+        epoch=_epoch(calculator, epoch), latitude_deg=latitude, longitude_deg=longitude,
+        path_width_km=None, central_duration_seconds=duration,
+        sun_altitude_deg=discs.sun_altitude_deg, sun_azimuth_deg=discs.sun_azimuth_deg,
+        moon_altitude_deg=discs.moon_altitude_deg, moon_azimuth_deg=discs.moon_azimuth_deg,
+        separation_deg=discs.separation_deg, sun_semidiameter_deg=discs.sun_radius_deg,
+        moon_semidiameter_deg=discs.moon_radius_deg, magnitude=discs.magnitude,
+        obscuration=discs.obscuration, local_class=discs.local_class,
     )

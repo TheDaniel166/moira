@@ -67,7 +67,12 @@ EclipseType
     Field on EclipseData.eclipse_type.
 
 SolarEclipsePath
-    Central shadow-axis geometry and width for totality / annularity.
+    Central shadow-axis geometry and width, or a noncentral shadow sweep
+    with an empty central line and absent central-line width.
+
+SolarEclipseShadowFootprint
+    Closed instantaneous umbral/antumbral cone intersection with WGS84,
+    retaining both generator roots and explicitly omitting horizon clipping.
 
 SolarEclipseVisibilityFootprint
     Complete zero-elevation WGS-84 mean-limb visibility boundary: north/south
@@ -168,6 +173,7 @@ from moira.eclipse import (
     SolarEclipseUmbralContact,
     SolarEclipseUmbralContactKind,
     SolarEclipseUmbralContacts,
+    SolarEclipseShadowFootprint,
     SolarEclipseMapSample,
     SolarEclipseCartography,
     SolarEclipseFootprintPoint,
@@ -209,6 +215,7 @@ __all__ = [
     "SolarEclipseUmbralContactKind",
     "SolarEclipseUmbralContact",
     "SolarEclipseUmbralContacts",
+    "SolarEclipseShadowFootprint",
     "SolarEclipseMapSample",
     "SolarEclipseCartography",
     "SolarEclipseFootprintPoint",

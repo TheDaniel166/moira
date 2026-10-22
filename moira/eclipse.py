@@ -58,7 +58,6 @@ from .eclipse_geometry import (
     lunar_parallax as _parallax,
     penumbra_radius as _penumbra_radius,
     shadow_axis_offset_deg,
-    topocentric_near_moon_radius as _topocentric_near_moon_radius,
     umbra_radius as _umbra_radius,
     lunar_penumbral_magnitude,
     lunar_umbral_magnitude,
@@ -134,6 +133,7 @@ from .solar_eclipse_global import (
     SolarEclipseUmbralContact,
     SolarEclipseUmbralContactKind,
     SolarEclipseUmbralContacts,
+    SolarEclipseShadowFootprint,
     _build_solar_global_circumstances,
 )
 from .eclipse_cartography import (
@@ -175,6 +175,7 @@ __all__ = [
     "SolarEclipseUmbralContactKind",
     "SolarEclipseUmbralContact",
     "SolarEclipseUmbralContacts",
+    "SolarEclipseShadowFootprint",
     "SolarEclipseGreatestSite",
     "SolarEclipseGlobalCircumstances",
     "SolarEclipseMapSample",
@@ -232,6 +233,8 @@ ECLIPSE_LATITUDE_THRESHOLD = 2.0   # degrees Moon latitude (grazing limit)
 # physical shadow/Moon overlap once a snapshot enters this opposition
 # neighborhood; this angle is never itself an eclipse classifier.
 _LUNAR_SHADOW_CANDIDATE_SEPARATION_DEG = 2.0
+# Solar discovery is also a superset. Exact cone/WGS-84 overlap owns type.
+_SOLAR_SHADOW_CANDIDATE_SEPARATION_DEG = 2.0
 
 # ---------------------------------------------------------------------------
 # Saros / Metonic
@@ -289,7 +292,7 @@ class SolarEclipsePath:
     """
     Vessel: The Solar Eclipse Path
     
-    Typed vessel for the geographic path of a solar eclipse's central line.
+    Typed vessel for the central track or a noncentral physical cone sweep.
 
     Initial implemented path vessel.
 
@@ -314,6 +317,8 @@ class SolarEclipsePath:
         - central-shadow width as the full cross-track support span of the
           instantaneous cone/ellipsoid footprint
         - partial eclipses represented honestly as a one-point maximum surface
+        - noncentral total/annular events have an empty central line, absent
+          central-line width, and closed physical cone-boundary snapshots
 
     Validation state
     ----------------
@@ -329,14 +334,15 @@ class SolarEclipsePath:
         Geographic latitudes (degrees, north positive) along the central line,
         sampled at equal time intervals from the first to last shadow-axis
         intersection with the WGS-84 ellipsoid. These endpoints are not the
-        separate U1/U4 cone tangencies.
+        separate U1/U4 cone tangencies. Empty for noncentral total/annular
+        events; partial events retain the legacy one-point maximum surface.
     central_line_lons : tuple of float
         Geographic longitudes (degrees, east positive) at the same sample
         points.  Same length as ``central_line_lats``.
-    umbral_width_km : float
+    umbral_width_km : float or None
         Cross-track support width of the umbral (or antumbral) shadow path in
         kilometres at
-        maximum eclipse.
+        maximum eclipse. Absent for a noncentral total/annular event.
     duration_at_max_s : float
         Duration of totality (or annularity) in seconds at the point of
         maximum eclipse.
@@ -346,6 +352,10 @@ class SolarEclipsePath:
         Geographic longitude of the point of greatest eclipse.
     eclipse_data : EclipseData
         The parent eclipse event from which this path was derived.
+    noncentral_footprints : tuple of SolarEclipseShadowFootprint
+        Physical cone-boundary snapshots including U1, greatest eclipse, and
+        U4. Both root arcs are retained without horizon clipping. Empty for
+        ordinary central and partial products.
     """
     central_line_lats:  tuple
     central_line_lons:  tuple
@@ -353,11 +363,12 @@ class SolarEclipsePath:
     northern_limit_lons: tuple
     southern_limit_lats: tuple
     southern_limit_lons: tuple
-    umbral_width_km:    float
+    umbral_width_km:    float | None
     duration_at_max_s:  float
     max_eclipse_lat:    float
     max_eclipse_lon:    float
     eclipse_data:       'EclipseData'
+    noncentral_footprints: tuple[SolarEclipseShadowFootprint, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -387,9 +398,9 @@ class EclipseType:
             - Serve a human-readable string representation via __str__
         Non-responsibilities:
             - Computing eclipse geometry
-            - Classifying eclipses (delegates to _classify)
+            - Classifying eclipses (delegates to the lunar/solar classifiers)
         Dependencies:
-            - Populated by _classify() in moira.eclipse
+            - Populated by _classify() and _classify_solar_wgs84()
         Structural invariants:
             - At most one of is_partial, is_annular, is_total, is_hybrid is
               True. A penumbral-only lunar eclipse has all four False and a
@@ -408,7 +419,7 @@ class EclipseType:
                    "magnitude_umbral", "magnitude_penumbra"],
         "internal": ["__str__"]
       },
-      "state": {"mutable": false, "owners": ["_classify"]},
+      "state": {"mutable": false, "owners": ["_classify", "_classify_solar_wgs84"]},
       "effects": {"signals_emitted": [], "io": []},
       "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise"},
@@ -1701,11 +1712,7 @@ class EclipseCalculator:
         native_lunar_moon_radius_km = None
         native_lunar_umbra_radius_km = None
         native_lunar_penumbra_radius_km = None
-        native_solar_axis_km = None
-        native_solar_center_sun_radius = None
-        native_solar_center_moon_radius = None
-        native_solar_surface_sun_radius = None
-        native_solar_surface_moon_radius = None
+        native_solar_type = None
         if (
             abs(angular_sep - 180.0)
             < _LUNAR_SHADOW_CANDIDATE_SEPARATION_DEG
@@ -1746,32 +1753,20 @@ class EclipseCalculator:
                     math.radians(canon_penumbra_radius_deg)
                     * canon_moon_distance_km
                 )
-        elif angular_sep < 1.5:
-            (
-                native_solar_axis_km,
-                native_solar_center_sun_radius,
-                native_solar_center_moon_radius,
-                native_solar_surface_sun_radius,
-                native_solar_surface_moon_radius,
-            ) = self._native_solar_shadow_geometry_tt(jd_tt)
+        elif angular_sep < _SOLAR_SHADOW_CANDIDATE_SEPARATION_DEG:
+            native_solar_type = _classify_solar_wgs84(self, jd, jd_tt=jd_tt)
         eclipse_type, is_solar, is_lunar, magnitude = _classify(
             angular_sep,
             moon_lat,
             sun_node_dist,
-            sun_radius,
             moon_radius,
             earth_shadow_radius,
             penumbra_radius,
-            moon_parallax,
             native_lunar_axis_km=native_lunar_axis_km,
             native_lunar_moon_radius_km=native_lunar_moon_radius_km,
             native_lunar_umbra_radius_km=native_lunar_umbra_radius_km,
             native_lunar_penumbra_radius_km=native_lunar_penumbra_radius_km,
-            native_solar_axis_km=native_solar_axis_km,
-            native_solar_center_sun_radius=native_solar_center_sun_radius,
-            native_solar_center_moon_radius=native_solar_center_moon_radius,
-            native_solar_surface_sun_radius=native_solar_surface_sun_radius,
-            native_solar_surface_moon_radius=native_solar_surface_moon_radius,
+            native_solar_type=native_solar_type,
         )
         saros_cycle_position = _saros_cycle_position_jd(jd)
         saros_lunation_number, saros_series = _saros_designation_jd_tt(
@@ -1789,7 +1784,7 @@ class EclipseCalculator:
         # geocentric separation and carries no topocentric claim.
         solar_surface_separation = (
             max(0.0, angular_sep - moon_parallax)
-            if angular_sep < 1.5
+            if angular_sep < _SOLAR_SHADOW_CANDIDATE_SEPARATION_DEG
             else angular_sep
         )
 
@@ -2037,7 +2032,11 @@ class EclipseCalculator:
         self,
         jd_tt: float,
     ) -> tuple[float, float, float, float | None, float | None]:
-        """Return the established native solar geometry tuple at one TT epoch."""
+        """Return axis distance and historical spherical-radius diagnostics.
+
+        The surface-radius fields retain their established spherical meaning;
+        global classification uses the separate exact WGS-84 cone geometry.
+        """
 
         state = self._native_solar_shadow_axis_state_tt(jd_tt)
         return (
@@ -2798,25 +2797,24 @@ class EclipseCalculator:
         Central eclipses use the physical DE441 shadow axis and central-shadow
         cone on the WGS-84 reference ellipsoid. Partial eclipses retain the
         topocentric minimum-separation maximum and return a one-point surface
-        with zero central width and duration.
+        with zero central width and duration. Noncentral total/annular events
+        return an empty central line, absent width, physical cone snapshots,
+        and full-phase local duration without horizon truncation.
         """
         if sample_count < 1:
             raise ValueError("sample_count must be >= 1")
 
         event = self._search_solar_eclipse(jd_start, kind=kind, backward=backward)
         axis_maximum = _solar_axis_surface_point(self, event.jd_ut)
-        classified_central = any(
+        has_central_coverage = any(
             (
                 event.data.eclipse_type.is_annular,
                 event.data.eclipse_type.is_total,
                 event.data.eclipse_type.is_hybrid,
             )
         )
-        if axis_maximum is None and classified_central:
-            raise ArithmeticError(
-                "spherical eclipse classification is central but the physical "
-                "shadow axis does not intersect the WGS-84 ellipsoid"
-            )
+        if axis_maximum is None and has_central_coverage:
+            return _solve_noncentral_solar_path(self, event, sample_count)
         is_central = axis_maximum is not None
         if axis_maximum is None:
             max_lat, max_lon, _ = _solve_solar_greatest_location(self, event.jd_ut)
@@ -3117,10 +3115,7 @@ class EclipseCalculator:
         best_data = self.calculate_jd(best_jd)
         kind_matches = _matches_solar_kind(best_data, kind_key)
         if kind_key == "central" and kind_matches:
-            kind_matches = (
-                self._native_solar_shadow_axis_distance_km(best_jd)
-                <= EARTH_RADIUS_KM
-            )
+            kind_matches = _solar_axis_surface_point(self, best_jd) is not None
         if not kind_matches:
             return None
         return EclipseEvent(jd_ut=best_jd, data=best_data)
@@ -3635,23 +3630,17 @@ def _classify(
     angular_sep:    float,
     moon_lat:       float,
     sun_node_dist:  float,
-    sun_radius:     float,
     moon_radius:    float,
     shadow_radius:  float,
     penumbra_radius: float,
-    moon_parallax:  float,
     native_lunar_axis_km: float | None = None,
     native_lunar_moon_radius_km: float | None = None,
     native_lunar_umbra_radius_km: float | None = None,
     native_lunar_penumbra_radius_km: float | None = None,
-    native_solar_axis_km: float | None = None,
-    native_solar_center_sun_radius: float | None = None,
-    native_solar_center_moon_radius: float | None = None,
-    native_solar_surface_sun_radius: float | None = None,
-    native_solar_surface_moon_radius: float | None = None,
+    native_solar_type: EclipseType | None = None,
 ) -> tuple[EclipseType, bool, bool, float]:
     """
-    Classify eclipse type from geometric parameters.
+    Classify lunar overlap or accept the exact solar surface classification.
 
     Returns
     -------
@@ -3659,7 +3648,15 @@ def _classify(
     """
     _none = EclipseType(False, False, False, False, 0.0, 0.0), False, False, 0.0
 
-    is_new_moon  = angular_sep < 1.5
+    if native_solar_type is not None:
+        is_solar = (
+            native_solar_type.is_partial
+            or native_solar_type.is_annular
+            or native_solar_type.is_total
+            or native_solar_type.is_hybrid
+        )
+        return native_solar_type, is_solar, False, native_solar_type.magnitude_umbral
+
     is_full_moon = abs(angular_sep - 180.0) < 1.5
     near_node    = (sun_node_dist < ECLIPSE_SEASON_THRESHOLD
                     and abs(moon_lat) < ECLIPSE_LATITUDE_THRESHOLD)
@@ -3703,77 +3700,6 @@ def _classify(
 
     if not near_node:
         return _none
-
-    # --- Solar eclipse ---
-    if is_new_moon:
-        c2c_best = max(0.0, angular_sep - moon_parallax)
-        moon_radius_surface = _topocentric_near_moon_radius(moon_parallax)
-
-        if (
-            native_solar_axis_km is not None
-            and native_solar_axis_km <= EARTH_RADIUS_KM
-            and native_solar_center_sun_radius is not None
-            and native_solar_center_moon_radius is not None
-            and native_solar_surface_sun_radius is not None
-            and native_solar_surface_moon_radius is not None
-        ):
-            # The shadow axis actually intersects Earth. Classify at its first
-            # surface intersection, not at the fictitious nearest possible
-            # observer. If the surface is total while the geocentre remains
-            # annular, the cone apex lies within Earth and the global event is
-            # hybrid (annular and total on different path sections).
-            magnitude = (
-                native_solar_surface_moon_radius
-                / native_solar_surface_sun_radius
-            )
-            if native_solar_surface_moon_radius < native_solar_surface_sun_radius:
-                eclipse_type = EclipseType(
-                    False,
-                    True,
-                    False,
-                    False,
-                    magnitude,
-                    magnitude,
-                )
-            elif native_solar_center_moon_radius <= native_solar_center_sun_radius:
-                eclipse_type = EclipseType(
-                    False,
-                    False,
-                    False,
-                    True,
-                    magnitude,
-                    magnitude,
-                )
-            else:
-                eclipse_type = EclipseType(
-                    False,
-                    False,
-                    True,
-                    False,
-                    magnitude,
-                    magnitude,
-                )
-            return eclipse_type, True, False, magnitude
-
-        if c2c_best > sun_radius + moon_radius_surface:
-            return _none
-
-        if c2c_best < abs(sun_radius - moon_radius_surface):
-            # For central eclipses the published magnitude product is the
-            # local Moon/Sun diameter ratio; the radius ratio is identical.
-            mag = moon_radius_surface / sun_radius
-            if moon_radius_surface > sun_radius:
-                if moon_radius <= sun_radius:
-                    et = EclipseType(False, False, False, True, mag, mag)
-                else:
-                    et = EclipseType(False, False, True, False, mag, mag)
-            else:
-                et = EclipseType(False, True, False, False, mag, mag)
-            return et, True, False, mag
-
-        mag = (sun_radius + moon_radius_surface - c2c_best) / (2 * sun_radius)
-        et = EclipseType(True, False, False, False, mag, mag)
-        return et, True, False, mag
 
     # --- Lunar eclipse ---
     if is_full_moon:
@@ -4005,6 +3931,8 @@ def _topocentric_solar_geometry(
     latitude: float,
     longitude: float,
     elevation_m: float = 0.0,
+    *,
+    include_below_horizon: bool = False,
 ) -> tuple[float, float, float]:
     sun = sky_position_at(
         Body.SUN,
@@ -4014,7 +3942,7 @@ def _topocentric_solar_geometry(
         elevation_m,
         reader=calc._reader,
     )
-    if sun.altitude <= 0.0:
+    if not include_below_horizon and sun.altitude <= 0.0:
         return float("inf"), float("-inf"), float("-inf")
 
     moon = sky_position_at(
@@ -4315,6 +4243,8 @@ def _transpose_matrix_3x3(matrix):
 def _earth_fixed_solar_shadow(
     calc: EclipseCalculator,
     jd_ut: float,
+    *,
+    jd_tt: float | None = None,
 ) -> _EarthFixedSolarShadow | None:
     """Express the native reception-time shadow cone in ITRF coordinates.
 
@@ -4323,7 +4253,8 @@ def _earth_fixed_solar_shadow(
     the exact inverse staging of Moira's WGS-84 observer construction.
     """
 
-    jd_tt = _ut1_to_ephemeris_tt(jd_ut, calc._reader)
+    if jd_tt is None:
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, calc._reader)
     state = calc._native_solar_shadow_axis_state_tt(jd_tt)
     plane_point = state.fundamental_plane_point_xyz_km
     if plane_point is None:
@@ -4863,16 +4794,18 @@ def _solve_local_solar_central_duration_s(
     jd_ut: float,
     latitude: float,
     longitude: float,
+    *,
+    clip_horizon: bool = True,
 ) -> float:
-    """Solve local U2/U3 (or A2/A3) duration at one central-line site."""
+    """Solve local full-phase duration, optionally without the legacy horizon clip."""
 
     def margin(t: float) -> float:
-        _, _, central_margin = _topocentric_solar_geometry(
-            calc,
-            t,
-            latitude,
-            longitude,
-        )
+        if clip_horizon:
+            _, _, central_margin = _topocentric_solar_geometry(calc, t, latitude, longitude)
+        else:
+            _, _, central_margin = _topocentric_solar_geometry(
+                calc, t, latitude, longitude, include_below_horizon=True,
+            )
         return central_margin
 
     center_margin = margin(jd_ut)
@@ -5128,6 +5061,106 @@ def _central_generator_extrema(
     )
 
 
+def _solar_shadow_discs(
+    shadow: _EarthFixedSolarShadow,
+    surface_xyz_km: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """Return separation and Sun/Moon angular radii in the physical cone model."""
+
+    moon_xyz = _shadow_add(
+        shadow.fundamental_plane_point_xyz_km,
+        _shadow_scale(shadow.axis_unit_away_from_sun, shadow.axis_projection_km),
+    )
+    moon = _shadow_subtract(moon_xyz, surface_xyz_km)
+    sun = _shadow_subtract(shadow.sun_xyz_from_earth_itrf_km, surface_xyz_km)
+    cross = _shadow_cross(sun, moon)
+    separation_deg = math.degrees(math.atan2(
+        math.sqrt(_shadow_dot(cross, cross)),
+        _shadow_dot(sun, moon),
+    ))
+    return (
+        separation_deg,
+        _apparent_radius(SUN_RADIUS_KM, math.sqrt(_shadow_dot(sun, sun))),
+        _apparent_radius(MOON_RADIUS_KM, math.sqrt(_shadow_dot(moon, moon))),
+    )
+
+
+def _classify_solar_wgs84(
+    calc: EclipseCalculator,
+    jd_ut: float,
+    *,
+    jd_tt: float | None = None,
+) -> EclipseType:
+    """Classify exact native cone overlap with zero-elevation WGS 84.
+
+    The axis and cone boundaries are separate geometric objects. A missing
+    axis intersection admits noncentral total/annular coverage when a lawful
+    central-cone generator still crosses the ellipsoid. Positive penumbral
+    overlap alone admits a partial eclipse; exterior tangency has zero area.
+    This is first-principles cone/quadric geometry, not a catalog translation.
+    """
+
+    none = EclipseType(False, False, False, False, 0.0, 0.0)
+    shadow = _earth_fixed_solar_shadow(calc, jd_ut, jd_tt=jd_tt)
+    if shadow is None:
+        return none
+
+    axis_point = _axis_surface_point_from_shadow(shadow)
+    if axis_point is not None:
+        _, sun_radius, moon_radius = _solar_shadow_discs(
+            shadow, axis_point.xyz_itrf_km,
+        )
+        _, center_sun_radius, center_moon_radius = _solar_shadow_discs(
+            shadow, (0.0, 0.0, 0.0),
+        )
+        magnitude = moon_radius / sun_radius
+        annular = moon_radius < sun_radius
+        # Preserve the native hybrid definition at the actual surface point.
+        hybrid = not annular and center_moon_radius <= center_sun_radius
+        return EclipseType(
+            False, annular, not annular and not hybrid, hybrid,
+            magnitude, magnitude,
+        )
+
+    penumbral_azimuth, penumbral_margin = _penumbral_generator_extrema(shadow)[0]
+    if penumbral_margin <= 0.0:
+        return none
+    if _penumbral_generator_point(shadow, penumbral_azimuth) is None:
+        return none
+
+    central_azimuth, central_margin = _central_generator_extrema(shadow)[0]
+    if central_margin > 0.0:
+        origin, direction = _central_generator_line(shadow, central_azimuth)
+        _, roots = _wgs84_line_intersection_parameters(origin, direction)
+        lawful_roots = (
+            () if roots is None else tuple(
+                root for root in roots
+                if root - shadow.axis_projection_km > MOON_RADIUS_KM
+            )
+        )
+        if lawful_roots:
+            parameter = min(lawful_roots)
+            point = _shadow_add(origin, _shadow_scale(direction, parameter))
+            _, sun_radius, moon_radius = _solar_shadow_discs(shadow, point)
+            magnitude = moon_radius / sun_radius
+            total = (
+                shadow.central_radius_km - shadow.central_cone_slope * parameter
+            ) > 0.0
+            return EclipseType(
+                False, not total, total, False, magnitude, magnitude,
+            )
+
+    greatest = _solve_solar_penumbral_greatest_point(
+        calc, jd_ut, shadow=shadow, include_solar_limb=True,
+    )
+    separation, sun_radius, moon_radius = _solar_shadow_discs(
+        shadow,
+        _wgs84_surface_xyz_km(greatest.latitude_deg, greatest.longitude_deg),
+    )
+    magnitude = max(0.0, (sun_radius + moon_radius - separation) / (2.0 * sun_radius))
+    return EclipseType(True, False, False, False, magnitude, magnitude)
+
+
 def _central_generator_tangent_point(
     shadow: _EarthFixedSolarShadow,
     azimuth_rad: float,
@@ -5149,6 +5182,128 @@ def _central_generator_tangent_point(
         _shadow_scale(direction, parameter),
     )
     return _wgs84_geodetic_from_xyz_km(xyz_itrf_km)
+
+
+def _noncentral_shadow_branch(shadow: _EarthFixedSolarShadow) -> _EarthFixedSolarShadow:
+    """Express the umbra/antumbra as a positive-radius cone for surface solving.
+
+    The signed radius r(z)=r0-k*z becomes |r0|+(-sign(r0)*k)*z.
+    Generator orientation reverses for antumbra; the physical cone is unchanged.
+    An apex crossing is rejected by the materializer, never repaired by a flip.
+    """
+    sign = math.copysign(1.0, shadow.central_radius_km)
+    return replace(
+        shadow,
+        penumbral_radius_km=abs(shadow.central_radius_km),
+        penumbral_cone_slope=-sign * shadow.central_cone_slope,
+    )
+
+
+def _noncentral_shadow_boundary(
+    shadow: _EarthFixedSolarShadow,
+    jd_ut: float,
+    *,
+    arc_samples: int = 65,
+) -> SolarEclipseShadowFootprint:
+    """Join both exact generator/WGS84 roots around a noncentral shadow cap.
+
+    The discriminant's positive azimuth interval supplies both branches and
+    their independently solved tangent endpoints. Sampling changes density,
+    never the closed topology. No horizon clipping or map projection is used.
+    """
+    branch = _noncentral_shadow_branch(shadow)
+    left, right, periodic = _penumbral_lawful_azimuth_interval(branch)
+    if periodic:
+        raise ArithmeticError("noncentral shadow requires a bounded generator arc")
+    near: list[SolarEclipseFootprintPoint] = []
+    far: list[SolarEclipseFootprintPoint] = []
+    for index in range(arc_samples):
+        # Cosine spacing resolves the square-root junction at each tangency.
+        fraction = (1.0 - math.cos(math.pi * index / (arc_samples - 1))) / 2.0
+        azimuth = left + (right - left) * fraction
+        origin, direction = _penumbral_generator_line(branch, azimuth)
+        _, roots = _wgs84_line_intersection_parameters(origin, direction)
+        if index in (0, arc_samples - 1):
+            a, b, _ = _wgs84_line_quadratic_coefficients(origin, direction)
+            roots = (-b / a, -b / a)
+        if roots is None:
+            raise ArithmeticError("noncentral boundary lost its lawful generator roots")
+        for target, parameter in zip((near, far), roots):
+            if parameter - shadow.axis_projection_km <= MOON_RADIUS_KM:
+                raise ArithmeticError("noncentral cone intersection is not beyond the Moon")
+            if branch.penumbral_radius_km + branch.penumbral_cone_slope * parameter <= 0.0:
+                raise ArithmeticError("noncentral footprint crosses the central-cone apex")
+            xyz = _shadow_add(origin, _shadow_scale(direction, parameter))
+            latitude, longitude = _wgs84_geodetic_from_xyz_km(xyz)
+            target.append(SolarEclipseFootprintPoint(jd_ut, latitude, longitude))
+    boundary = tuple(near + list(reversed(far[1:-1])) + [near[0]])
+    return SolarEclipseShadowFootprint(jd_ut=jd_ut, boundary=boundary)
+
+
+def _solve_noncentral_solar_path(
+    calc: EclipseCalculator,
+    event: EclipseEvent,
+    sample_count: int,
+) -> SolarEclipsePath:
+    """Assemble a real noncentral cone sweep without a fictitious axis track."""
+    shadow = _earth_fixed_solar_shadow(calc, event.jd_ut)
+    if shadow is None:
+        raise ArithmeticError("noncentral event has no physical solar shadow")
+    greatest = _solve_solar_penumbral_greatest_point(
+        calc, event.jd_ut, shadow=_noncentral_shadow_branch(shadow),
+    )
+    contacts = _solve_solar_umbral_contacts(calc, event.jd_ut)
+    start, end = contacts.u1.epoch.jd_ut1, contacts.u4.epoch.jd_ut1
+    # Always retain both physical contacts and the native greatest epoch.
+    interior_times = _sample_interval(start, end, sample_count) if sample_count > 2 else ()
+    times = sorted(set((start, event.jd_ut, end, *interior_times)))
+    footprints: list[SolarEclipseShadowFootprint] = []
+    north: list[SolarEclipseFootprintPoint] = []
+    south: list[SolarEclipseFootprintPoint] = []
+    for epoch in times:
+        contact = contacts.u1 if epoch == start else contacts.u4 if epoch == end else None
+        if contact is not None:
+            point = SolarEclipseFootprintPoint(epoch, contact.latitude_deg, contact.longitude_deg)
+            footprints.append(SolarEclipseShadowFootprint(epoch, (point,)))
+            continue
+        state = _earth_fixed_solar_shadow(calc, epoch)
+        if state is None:
+            raise ArithmeticError("noncentral path lost its physical cone")
+        footprints.append(_noncentral_shadow_boundary(state, epoch))
+        before = _earth_fixed_solar_shadow(calc, epoch - _SOLAR_PENUMBRAL_DERIVATIVE_STEP_DAYS)
+        after = _earth_fixed_solar_shadow(calc, epoch + _SOLAR_PENUMBRAL_DERIVATIVE_STEP_DAYS)
+        if before is None or after is None:
+            raise ArithmeticError("noncentral path cannot evaluate its cone velocity")
+        limits = _penumbral_envelope_points(
+            _noncentral_shadow_branch(state),
+            _noncentral_shadow_branch(before),
+            _noncentral_shadow_branch(after),
+        )
+        for target, kind in (
+            (north, SolarEclipseFootprintBoundaryKind.PENUMBRAL_NORTH),
+            (south, SolarEclipseFootprintBoundaryKind.PENUMBRAL_SOUTH),
+        ):
+            for point in limits.get(kind, ()):
+                if _topocentric_solar_altitude_proxy(state, point.xyz_itrf_km) >= 0.0:
+                    target.append(SolarEclipseFootprintPoint(epoch, point.latitude_deg, point.longitude_deg))
+    return SolarEclipsePath(
+        central_line_lats=(), central_line_lons=(),
+        northern_limit_lats=tuple(point.latitude_deg for point in north),
+        northern_limit_lons=tuple(point.longitude_deg for point in north),
+        southern_limit_lats=tuple(point.latitude_deg for point in south),
+        southern_limit_lons=tuple(point.longitude_deg for point in south),
+        umbral_width_km=None,
+        duration_at_max_s=_solve_local_solar_central_duration_s(
+            calc, event.jd_ut, greatest.latitude_deg, greatest.longitude_deg,
+            clip_horizon=False,
+        ),
+        max_eclipse_lat=greatest.latitude_deg, max_eclipse_lon=greatest.longitude_deg,
+        eclipse_data=_solar_eclipse_data_at_location(
+            calc, event.data, event.jd_ut, greatest.latitude_deg, greatest.longitude_deg,
+            central=True,
+        ),
+        noncentral_footprints=tuple(footprints),
+    )
 
 
 def _solve_solar_umbral_contacts(
@@ -5177,10 +5332,9 @@ def _solve_solar_umbral_contacts(
         return cache[key]
 
     center_extrema = state(jd_ut)[1]
-    if center_extrema[0][1] <= 0.0 or center_extrema[1][1] <= 0.0:
+    if center_extrema[0][1] <= 0.0:
         raise ArithmeticError(
-            "central eclipse seed does not carry a closed two-limit "
-            "central-shadow footprint"
+            "eclipse seed does not carry a central-shadow footprint"
         )
 
     def solve(
@@ -5188,13 +5342,14 @@ def _solve_solar_umbral_contacts(
         *,
         direction: float,
         internal: bool,
+        seed: float = jd_ut,
     ) -> SolarEclipseUmbralContact:
         extreme_index = 1 if internal else 0
 
         def margin(epoch: float) -> float:
             return state(epoch)[1][extreme_index][1]
 
-        inside = jd_ut
+        inside = seed
         step = direction * (2.0 / 1440.0)
         for _ in range(240):
             outside = inside + step
@@ -5230,28 +5385,28 @@ def _solve_solar_umbral_contacts(
             f"{kind.value.upper()} was not bracketed within eight hours of GE"
         )
 
-    return SolarEclipseUmbralContacts(
-        u1=solve(
-            SolarEclipseUmbralContactKind.U1,
-            direction=-1.0,
-            internal=False,
-        ),
-        u2=solve(
-            SolarEclipseUmbralContactKind.U2,
-            direction=-1.0,
-            internal=True,
-        ),
-        u3=solve(
-            SolarEclipseUmbralContactKind.U3,
-            direction=1.0,
-            internal=True,
-        ),
-        u4=solve(
-            SolarEclipseUmbralContactKind.U4,
-            direction=1.0,
-            internal=False,
-        ),
-    )
+    u1 = solve(SolarEclipseUmbralContactKind.U1, direction=-1.0, internal=False)
+    u4 = solve(SolarEclipseUmbralContactKind.U4, direction=1.0, internal=False)
+    # An internal interval exists only when every generator intersects Earth.
+    # Its peak need not coincide with the native axis-distance minimum (GE).
+    times = _sample_interval(u1.epoch.jd_ut1, u4.epoch.jd_ut1, 49)
+    def minimum_margin(epoch: float) -> float:
+        return state(epoch)[1][1][1]
+    peak_index = max(range(len(times)), key=lambda i: minimum_margin(times[i]))
+    peak, value = times[peak_index], minimum_margin(times[peak_index])
+    if 0 < peak_index < len(times) - 1:
+        refined = _bounded_scalar_maximum(
+            minimum_margin, times[peak_index - 1], times[peak_index + 1],
+        )
+        if refined[1] > value:
+            peak, value = refined
+    if abs(value) <= _SOLAR_PENUMBRAL_TOPOLOGY_MARGIN_KM2:
+        raise ArithmeticError("central-shadow topology is numerically limiting at U2/U3")
+    u2 = u3 = None
+    if value > 0.0:
+        u2 = solve(SolarEclipseUmbralContactKind.U2, direction=-1.0, internal=True, seed=peak)
+        u3 = solve(SolarEclipseUmbralContactKind.U3, direction=1.0, internal=True, seed=peak)
+    return SolarEclipseUmbralContacts(u1=u1, u2=u2, u3=u3, u4=u4)
 
 
 def _penumbral_contact_point(
@@ -5862,10 +6017,20 @@ def _adaptive_azimuth_roots(
 def _solve_solar_penumbral_greatest_point(
     calc: EclipseCalculator,
     jd_ut: float,
+    *,
+    shadow: _EarthFixedSolarShadow | None = None,
+    include_solar_limb: bool = False,
 ) -> SolarEclipseFootprintPoint:
-    """Maximize physical penumbral clearance on the sunlit WGS-84 surface."""
+    """Maximize penumbral clearance in the declared geometric daylight domain.
 
-    shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+    Geographic footprints retain their Sun-centre horizon convention. Solar
+    snapshot magnitudes admit a visible upper solar limb, so positive cone
+    overlap at a graze survives a centre slightly below the horizon. There is
+    no atmospheric refraction in either domain.
+    """
+
+    if shadow is None:
+        shadow = _earth_fixed_solar_shadow(calc, jd_ut)
     if shadow is None:
         raise ArithmeticError("solar greatest epoch has no forward penumbral cone")
     cache: dict[tuple[float, float], float] = {}
@@ -5882,7 +6047,15 @@ def _solve_solar_penumbral_greatest_point(
         if value is not None:
             return value
         xyz_itrf_km = _wgs84_surface_xyz_km(latitude_deg, longitude_deg)
-        if _topocentric_solar_altitude_proxy(shadow, xyz_itrf_km) < 0.0:
+        minimum_sine_altitude = 0.0
+        if include_solar_limb:
+            sun_vector = _shadow_subtract(shadow.sun_xyz_from_earth_itrf_km, xyz_itrf_km)
+            # sin(altitude + angular radius) >= 0 is equivalent to
+            # sin(altitude) >= -R_sun / distance for a visible upper limb.
+            minimum_sine_altitude = -SUN_RADIUS_KM / math.sqrt(
+                _shadow_dot(sun_vector, sun_vector)
+            )
+        if _topocentric_solar_altitude_proxy(shadow, xyz_itrf_km) < minimum_sine_altitude:
             value = float("-inf")
         else:
             value = _penumbral_clearance_km(shadow, xyz_itrf_km)

@@ -26,6 +26,7 @@ from moira.eclipse import (
     SolarEclipseVisibilityFootprint,
     SolarEclipseGlobalCircumstances,
     SolarEclipsePath,
+    SolarEclipseShadowFootprint,
     SolarBodyCircumstances,
     SolarEclipseLocalCircumstances,
 )
@@ -85,6 +86,7 @@ from moira.void_of_course import (
 )
 
 from ..models.phenomena import (
+    SolarEclipseShadowFootprintResponse,
     HeliacalPhasisKindResponse,
     HeliacalPhasisResponse,
     CloseApproachResponse,
@@ -385,11 +387,25 @@ def serialize_solar_eclipse_path(path: SolarEclipsePath) -> SolarEclipsePathResp
     return SolarEclipsePathResponse(
         central_line_lats=list(path.central_line_lats),
         central_line_lons=list(path.central_line_lons),
+        northern_limit_lats=list(path.northern_limit_lats),
+        northern_limit_lons=list(path.northern_limit_lons),
+        southern_limit_lats=list(path.southern_limit_lats),
+        southern_limit_lons=list(path.southern_limit_lons),
         umbral_width_km=path.umbral_width_km,
         duration_at_max_s=path.duration_at_max_s,
         max_eclipse_lat=path.max_eclipse_lat,
         max_eclipse_lon=path.max_eclipse_lon,
         eclipse_data=serialize_eclipse_data(path.eclipse_data),
+        noncentral_footprints=[_serialize_shadow_footprint(item) for item in path.noncentral_footprints],
+    )
+
+
+def _serialize_shadow_footprint(footprint: SolarEclipseShadowFootprint) -> SolarEclipseShadowFootprintResponse:
+    return SolarEclipseShadowFootprintResponse(
+        jd_ut=footprint.jd_ut,
+        boundary=[serialize_solar_eclipse_footprint_point(point) for point in footprint.boundary],
+        surface_model=footprint.surface_model,
+        horizon_policy=footprint.horizon_policy,
     )
 
 
@@ -568,8 +584,8 @@ def _serialize_solar_umbral_contacts(
         return None
     return SolarEclipseUmbralContactsResponse(
         u1=_serialize_solar_umbral_contact(contacts.u1),
-        u2=_serialize_solar_umbral_contact(contacts.u2),
-        u3=_serialize_solar_umbral_contact(contacts.u3),
+        u2=_serialize_solar_umbral_contact(contacts.u2) if contacts.u2 is not None else None,
+        u3=_serialize_solar_umbral_contact(contacts.u3) if contacts.u3 is not None else None,
         u4=_serialize_solar_umbral_contact(contacts.u4),
     )
 
@@ -659,6 +675,9 @@ def serialize_solar_eclipse_global_circumstances(
         limb_model=circumstances.limb_model,
         umbral_contacts_admitted=circumstances.umbral_contacts_admitted,
         greatest_duration_admitted=circumstances.greatest_duration_admitted,
+        noncentral_footprints=[
+            _serialize_shadow_footprint(item) for item in circumstances.noncentral_footprints
+        ],
     )
 
 

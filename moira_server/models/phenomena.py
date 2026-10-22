@@ -616,14 +616,34 @@ class SolarEclipsePathRequest(_StrictModel):
     sample_count: int = 9
 
 
+class SolarEclipseShadowFootprintResponse(_StrictModel):
+    jd_ut: float = Field(allow_inf_nan=False)
+    boundary: list["SolarEclipseFootprintPointResponse"] = Field(min_length=1)
+    surface_model: Literal["WGS84_ZERO_ELEVATION"]
+    horizon_policy: Literal["UNCLIPPED_PHYSICAL_CONE"]
+
+    @model_validator(mode="after")
+    def validate_closed_snapshot(self):
+        if any(point.jd_ut != self.jd_ut for point in self.boundary):
+            raise ValueError("shadow boundary points must share the snapshot epoch")
+        if self.boundary[0] != self.boundary[-1]:
+            raise ValueError("shadow boundary must be closed")
+        return self
+
+
 class SolarEclipsePathResponse(_StrictModel):
     central_line_lats: list[float]
     central_line_lons: list[float]
-    umbral_width_km: float
+    northern_limit_lats: list[float] = Field(default_factory=list)
+    northern_limit_lons: list[float] = Field(default_factory=list)
+    southern_limit_lats: list[float] = Field(default_factory=list)
+    southern_limit_lons: list[float] = Field(default_factory=list)
+    umbral_width_km: float | None
     duration_at_max_s: float
     max_eclipse_lat: float
     max_eclipse_lon: float
     eclipse_data: EclipseDataResponse
+    noncentral_footprints: list[SolarEclipseShadowFootprintResponse] = Field(default_factory=list)
 
 
 SolarEclipseSearchKind = Literal[
@@ -763,16 +783,28 @@ class SolarEclipseUmbralContactResponse(_StrictModel):
 
 class SolarEclipseUmbralContactsResponse(_StrictModel):
     u1: SolarEclipseUmbralContactResponse
-    u2: SolarEclipseUmbralContactResponse
-    u3: SolarEclipseUmbralContactResponse
+    u2: SolarEclipseUmbralContactResponse | None = None
+    u3: SolarEclipseUmbralContactResponse | None = None
     u4: SolarEclipseUmbralContactResponse
+
+    @model_validator(mode="after")
+    def validate_contact_pair(self):
+        if (self.u2 is None) != (self.u3 is None):
+            raise ValueError("U2/U3 must be paired")
+        named = (("u1", self.u1), ("u2", self.u2), ("u3", self.u3), ("u4", self.u4))
+        if any(contact.kind != kind for kind, contact in named if contact is not None):
+            raise ValueError("umbral contacts must carry their named U kind")
+        times = [contact.epoch.jd_ut1 for _, contact in named if contact is not None]
+        if any(left >= right for left, right in zip(times, times[1:])):
+            raise ValueError("umbral contacts must be strictly ordered")
+        return self
 
 
 class SolarEclipseGreatestSiteResponse(_StrictModel):
     epoch: EclipseEpochResponse
     latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
     longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
-    path_width_km: float = Field(ge=0.0, allow_inf_nan=False)
+    path_width_km: float | None = Field(ge=0.0, allow_inf_nan=False)
     central_duration_seconds: float = Field(ge=0.0, allow_inf_nan=False)
     sun_altitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
     sun_azimuth_deg: float = Field(ge=0.0, le=360.0, allow_inf_nan=False)
@@ -824,6 +856,7 @@ class SolarEclipseGlobalCircumstancesResponse(_StrictModel):
     limb_model: Literal["SPHERICAL_MEAN_LIMB"]
     umbral_contacts_admitted: Literal[True]
     greatest_duration_admitted: Literal[True]
+    noncentral_footprints: list[SolarEclipseShadowFootprintResponse] = Field(default_factory=list)
 
 
 class SolarEclipseCartographyRequest(SolarEclipseGlobalCircumstancesRequest):
@@ -1796,6 +1829,7 @@ __all__ = [
     "StationStateResponse",
     "SolarEclipsePathRequest",
     "SolarEclipsePathResponse",
+    "SolarEclipseShadowFootprintResponse",
     "SolarEclipseSearchKind",
     "SolarEclipseFootprintBoundaryKindValue",
     "SolarEclipseFootprintRequest",

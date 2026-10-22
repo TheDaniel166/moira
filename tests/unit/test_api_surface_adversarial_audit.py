@@ -812,6 +812,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "SolarEclipseUmbralContact",
     "SolarEclipseUmbralContactKind",
     "SolarEclipseUmbralContacts",
+    "SolarEclipseShadowFootprint",
     "SolarEclipseMapSample",
     "EclipseContourComponent",
     "EclipseContourLevel",

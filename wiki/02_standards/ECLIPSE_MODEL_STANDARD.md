@@ -67,11 +67,26 @@ construction. For the current Moira standard:
 - celestial frame: true equator and equinox of date
 - stellar aberration: omitted from the physical shadow-line definition
 
-For a central event, global annular/total classification is evaluated at the
-first intersection of that shadow ray with Earth rather than at a fictitious
-nearest-side observer. A total surface intersection with an annular geocentric
-radius relation identifies a hybrid cone crossing; an annular surface
-intersection remains annular.
+Solar classification uses the exact common-tangent shadow cones and the
+zero-elevation WGS 84 ellipsoid. A two-degree geocentric conjunction window is
+only a conservative candidate filter; it never establishes eclipse existence
+or type. Positive penumbral overlap admits a solar eclipse. Positive umbral or
+antumbral overlap establishes total or annular coverage even when the axis
+misses Earth. An axis miss therefore does not imply a partial eclipse.
+
+For an axis-intersecting event, annular/total classification and the diameter
+ratio are evaluated at the first lawful axis/WGS 84 intersection. A total
+surface intersection with an annular geocentric radius relation retains the
+native hybrid criterion; an annular surface intersection remains annular.
+For noncentral coverage, the sign of the exact central cone at its first
+lawful boundary-generator intersection distinguishes umbra from antumbra.
+Pure tangency without positive cone overlap does not create a finite eclipse
+phase. Partial snapshot magnitude uses physical Sun/Moon disks at a WGS 84
+maximum-penumbral-clearance site that admits a geometrically visible upper
+solar limb. This keeps a real shallow graze whose Sun centre is slightly
+below the horizon. Geographic footprints retain their separate Sun-centre
+horizon convention; neither domain applies refraction. The `central` search
+filter requires an axis/WGS 84 intersection independently of eclipse type.
 
 This choice is not justified by NASA-catalog agreement. It is justified by
 internal coherence with Moira's own physical event model.
@@ -132,11 +147,30 @@ support span of the closed instantaneous umbral or antumbral cone footprint on
 the ellipsoid. It is not a centered spherical chord and is not derived from a
 local angular-diameter shortcut.
 
-The historical event classifier still begins from an equatorial-radius sphere.
-If that classifier labels a high-latitude grazing event central while the
-governing WGS 84 axis has no lawful intersection, path construction fails
-explicitly. It must not return a partial-shaped zero-width vessel carrying a
-central eclipse type.
+Event classification and geographic paths share the WGS 84 surface. A
+noncentral total or annular event has central-cone overlap without an axis
+intersection; its type does not establish the existence of a central line.
+`solar_eclipse_path` admits that noncentral topology: both central-line tuples
+are empty, and `umbral_width_km` is `None` (JSON `null`). It returns a real
+`noncentral_footprints` sweep rather than inventing a central line or a zero
+width. Each `SolarEclipseShadowFootprint` carries its UT1 epoch and a closed
+instantaneous cone/WGS 84 boundary. Both quadratic generator intersections
+are retained and joined at the two generator/ellipsoid tangencies. At U1/U4
+the boundary degenerates to the contact point. The sampled epochs always
+include U1, native greatest eclipse, and U4; `sample_count` controls additional
+temporal density, with 65 samples on each generator-root arc. These snapshots
+describe the physical cone, including its far intersection, and explicitly
+declare `horizon_policy="UNCLIPPED_PHYSICAL_CONE"`. They are not a daylight
+visibility polygon or an atlas-grade swept envelope. Available north/south
+limit arrays remain day-side cone-envelope samples and need not both exist.
+
+The noncentral greatest site maximizes central-cone clearance on the
+geometric Sun-centre daylight domain at the native greatest epoch. Its
+`duration_at_max_s` is the apparent-disc full-phase local duration at that
+site, without refraction or horizon truncation of the contact interval. This
+local duration is meaningful even though central-line width is absent. The
+existing central and partial path conventions are retained, including the
+partial one-point surface with zero central width and duration.
 
 Some grazing geometries have only one lawful central-shadow limit on the
 ellipsoid because the other boundary closes against the terrestrial
@@ -227,10 +261,33 @@ facade method assemble one scale-explicit DE441/LE441 event summary. The result
 contains TT/UT1 epochs and Delta T policy, apparent geocentric Sun/Moon states,
 signed Besselian gamma, exact apparent-disc magnitude and obscuration at
 greatest eclipse, P contacts by reference to the footprint, central-line
-limits, independently solved U1-U4 cone/WGS-84 contacts, apparent-geocentric
+limits, independently solved cone/WGS-84 contacts, apparent-geocentric
 equatorial and ecliptic conjunctions, greatest eclipse, and independently
 optimized greatest duration. Partial events lawfully carry no U contacts,
 central-line limits, or greatest-duration site.
+
+U1/U4 are required for total or annular cone coverage, independently of axis
+centrality. U2/U3 are a paired optional interval: they exist only when all
+central-cone generators intersect the ellipsoid. The solver maximizes the
+minimum generator discriminant within U1/U4, rather than assuming an internal
+interval at native greatest eclipse. A numerically unresolved limiting
+topology raises explicitly. Existing four-contact central events retain all
+four contacts. U1/U4 bracket greatest eclipse; the internal pair is ordered
+within U1/U4 but is not required to bracket the separately defined greatest
+epoch.
+
+Noncentral global results carry the physical shadow snapshots, absent first/
+last central-line limits, and absent `path_width_km` at both greatest sites.
+Their greatest-duration search bounds time by U1/U4, starts at the greatest
+site and sampled contour sites, and refines geographic duration maxima down
+to a 0.01 km step. The local maximum must lie on the geometric Sun-centre
+daylight domain. Reported duration is full-phase apparent-disc duration,
+without horizon truncation; it is not a central-line duration or a promise of
+continuous visibility. This bounded numerical search is regression checked
+on 2014-04-29 and 2043-04-09; it is not a global optimality proof for every
+grazing event. Ordinary central-line duration retains its established local
+solver and horizon convention. Native shadow vectors, event centering,
+classification, ephemeris, and the lunar physical-Moon model are unchanged.
 
 Greatest eclipse and greatest duration are distinct products. Greatest
 duration searches every sampled local maximum plus both central-path endpoints
@@ -372,6 +429,21 @@ refraction. This is a compatibility product definition, not a change to the
 native physical shadow-line doctrine. The earlier geometric-Sun/geometric-Moon
 and geometric-Sun/retarded-Moon method identifiers remain available as
 explicit historical experiments; neither is the default.
+
+The limiting lunar eclipse of 2015-04-04 illustrates this distinction. With
+DE441, native search returns Partial (umbral magnitude approximately
+`0.999566`), while the default NASA-compatibility search returns Total
+(approximately `1.000714`); NASA publishes `1.0008`. Both Moira paths already
+use the shared Danjon-style `1.01` shadow enlargement. Their classification
+split comes from the vector reductions, chiefly the apparent solar direction,
+and persists when the two geometries are evaluated at one shared TT epoch.
+At the native greatest epoch, the native mean lunar limb extends about
+`1.51 km` beyond the umbra, while the compatibility limb fits inside by about
+`2.23 km`. These are bounded DE441 diagnostics, not universal uncertainty
+estimates or a reason to replace the native physical-Moon policy. Each search
+also retains its own declared TT-to-UT1 reporting conversion.
+
+Source: [NASA/GSFC 2015 eclipse catalog summary](https://eclipse.gsfc.nasa.gov/OH/OH2015.html).
 
 ### 7. Validation Philosophy
 

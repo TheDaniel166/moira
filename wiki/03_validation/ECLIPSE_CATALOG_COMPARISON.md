@@ -224,6 +224,85 @@ retarded/geometric Moon change and that aligned objectives identify the same
 physical TT minimum to within one second. It does not establish historical
 event time to one-second accuracy.
 
+## Limiting solar geometry and the 2015 lunar distinction
+
+`tests/integration/test_eclipse_limiting_regressions.py` covers the eleven
+polar partial solar eclipses reported in [issue #24](https://github.com/TheDaniel166/moira/issues/24),
+the 2051-04-11 partial, the 2043-04-09 noncentral total, and the 2014-04-29
+noncentral annular. It also excludes the two false candidates on 1855-04-16
+and 1953-01-15. These are named date/type regressions against the linked NASA
+century catalogs, paired with independent cone/ellipsoid invariants; they do
+not establish a full-catalog sweep or exact NASA-model parity. The eleven
+partial rows exercise snapshots, forward/backward searches, and bulk ranges.
+
+The solar classifier uses Moira's existing exact common-tangent cones and
+zero-elevation WGS 84. Penumbral overlap establishes existence; central-cone
+overlap distinguishes partial from total or annular. A central-cone footprint
+can exist while the centerline misses Earth, so the `central` filter checks
+axis/ellipsoid intersection separately. Synthetic tests in
+`tests/unit/test_eclipse_solar_classification.py` exercise the equatorial/polar
+surface distinction and retain the native hybrid criterion. Neither a fixed
+angular cutoff nor secondary-engine labels determine the final type.
+Analytic equatorial cone/circle tangencies are also tested with one-metre
+overlap and one-metre clearance. Snapshot magnitude admits the geometrically
+visible solar upper limb, including a Sun centre just below the horizon;
+geographic footprint construction retains its separate centre-horizon domain.
+
+The lunar event of 2015-04-04 deliberately retains different native and
+NASA-compatibility classifications:
+
+| Product | Type | Approximate umbral magnitude with DE441 |
+|---|---|---:|
+| Native physical Moon and incoming solar shadow axis | Partial | 0.999566 |
+| Default apparent Sun/Moon NASA-compatibility method | Total | 1.000714 |
+| [NASA catalog](https://eclipse.gsfc.nasa.gov/OH/OH2015.html) | Total | 1.0008 |
+
+Both Moira products already share Danjon's `1.01` shadow enlargement. The
+regression evaluates the geometries at a shared TT epoch and verifies that
+the vector reduction changes the limiting classification even with the
+event-maximum and reporting-clock differences removed. At the native maximum,
+native totality clearance is approximately `-1.51 km`, while the default
+compatibility clearance is approximately `+2.23 km`. The two umbral radii
+differ by less than `0.01 km`; the axis-distance shift is about `3.7 km`,
+chiefly from the apparent solar direction. These are bounded model diagnostics,
+not limb-profile or observational uncertainty estimates. The geometric-Sun/
+geometric-Moon experiment remains close to the native axis and is not the
+compatibility default. Native search, its type filters, and its physical-Moon
+doctrine are preserved.
+
+### Noncentral path and global-circumstances regression
+
+`tests/integration/test_solar_eclipse_noncentral.py` exercises both the
+2014-04-29 annular and 2043-04-09 total events through path and global products.
+It requires an empty central line, absent central-line width/limits, positive
+local duration, U1/U4, absent U2/U3, closed physical cone snapshots, and stable
+contact/greatest epochs across temporal sample counts. Both roots of each
+cone-generator/WGS 84 quadratic are retained. Synthetic cylindrical caps
+with both umbral signs additionally prove that both sides of the ellipsoid
+are present. Cone residual ceilings are `0.2 mm` for interior snapshots and
+`1 cm` for contact snapshots; the latter accounts for approximately 40 us
+binary64 Julian-day spacing. U-contact discriminants must change sign within
+the adjacent representable epochs. These are numerical invariants, not
+physical accuracy or observational uncertainty estimates.
+
+The named primary references are Fred Espenak's NASA/GSFC
+[2014 path table](https://eclipse.gsfc.nasa.gov/SEpath/SEpath2001/SE2014Apr29Apath.html)
+(DE405, Delta T 67.3 s) and
+[2043 path table](https://eclipse.gsfc.nasa.gov/SEpath/SEpath2001/SE2043Apr09Tpath.html)
+(VSOP87/ELP2000-85, Delta T 86.4 s). Both publish no central-line width for
+these events. The 2014 06:04 UT northern cone-envelope coordinate is compared
+within `0.2 degrees` in geodetic latitude and circular longitude. The 2014
+06:04 southern and 2043 18:56 northern printed sites are horizon anchors:
+they lie inside the native physical cone and within `0.01 degrees` of its
+geometric solar horizon. They are not asserted to satisfy C=0 or to be Moira's
+greatest-clearance sites. NASA's endpoint rows named `Limits` are not compared
+to global U1/U4. These bounded checks do not establish dense-track parity,
+an observational eclipse map, or external greatest-duration accuracy.
+
+REST regressions require the same absent contacts/widths and the same closed
+physical snapshots to survive JSON serialization. The native lunar model and
+the separate 2015 lunar difference above remain intact.
+
 ## Swiss corroboration boundary
 
 `tests/integration/test_eclipse_external_reference.py` compares selected

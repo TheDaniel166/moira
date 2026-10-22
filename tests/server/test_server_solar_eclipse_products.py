@@ -24,6 +24,7 @@ def test_solar_product_server_packages_reexport_complete_surface() -> None:
         "SolarEclipseConjunctionResponse",
         "SolarEclipseUmbralContactResponse",
         "SolarEclipseUmbralContactsResponse",
+        "SolarEclipseShadowFootprintResponse",
         "SolarEclipseCartographyRequest",
         "SolarEclipseCartographyResponse",
         "EclipseContourComponentResponse",

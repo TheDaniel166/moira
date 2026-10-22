@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
+from types import SimpleNamespace
 
 import pytest
 
 from moira._eclipse_solar_geometry import _circle_overlap_fraction
 from moira.julian import julian_day
+from moira.eclipse_global import EclipseEpoch
+from moira.solar_eclipse_global import SolarEclipseUmbralContact, SolarEclipseUmbralContacts
+import moira.eclipse as eclipse
 
 
 def test_circle_overlap_fraction_covers_all_geometric_branches() -> None:
@@ -18,6 +23,42 @@ def test_circle_overlap_fraction_covers_all_geometric_branches() -> None:
     assert partial == pytest.approx(
         2.0 / 3.0 - math.sqrt(3.0) / (2.0 * math.pi)
     )
+
+
+def _ucontact(kind, jd):
+    return SolarEclipseUmbralContact(kind, EclipseEpoch(jd, jd, 0.0, "unit-test clock"), 0.0, 0.0)
+
+
+def test_umbral_contact_vessel_accepts_optional_internal_pair():
+    outer = SolarEclipseUmbralContacts(_ucontact("u1", 1.0), None, None, _ucontact("u4", 4.0))
+    full = replace(outer, u2=_ucontact("u2", 2.0), u3=_ucontact("u3", 3.0))
+    assert full.u2.epoch.jd_ut1 < full.u3.epoch.jd_ut1
+    with pytest.raises(ValueError, match="paired"):
+        replace(outer, u2=full.u2)
+    with pytest.raises(ValueError, match="ordered"):
+        replace(full, u3=_ucontact("u3", 1.5))
+    with pytest.raises(ValueError, match="named U kind"):
+        replace(outer, u1=_ucontact("u4", 1.0))
+    with pytest.raises(ValueError, match="required"):
+        replace(outer, u4=None)
+
+
+def test_internal_contact_interval_is_discovered_away_from_greatest_epoch(monkeypatch):
+    """Synthetic discriminants: U2/U3 exist entirely after the GE seed."""
+    anchor = 2451545.0
+    monkeypatch.setattr(eclipse, "_earth_fixed_solar_shadow",
+                        lambda calc, epoch: SimpleNamespace(offset=epoch-anchor))
+    monkeypatch.setattr(eclipse, "_central_generator_extrema", lambda state: (
+        (0.0, 1.0-(state.offset/0.04)**2),
+        (1.0, 0.5-((state.offset-0.015)/0.004)**2),
+    ))
+    monkeypatch.setattr(eclipse, "_central_generator_tangent_point", lambda *args: (0.0, 0.0))
+    monkeypatch.setattr(eclipse, "_ut1_to_ephemeris_tt", lambda epoch, reader: epoch+0.001)
+    contacts = eclipse._solve_solar_umbral_contacts(SimpleNamespace(_reader=None), anchor)
+    assert contacts.u1.epoch.jd_ut1 < anchor < contacts.u2.epoch.jd_ut1
+    assert contacts.u2.epoch.jd_ut1 < contacts.u3.epoch.jd_ut1 < contacts.u4.epoch.jd_ut1
+    assert contacts.u2.epoch.jd_ut1 == pytest.approx(anchor+0.015-0.004*math.sqrt(0.5), abs=1e-9, rel=0.0)
+    assert contacts.u3.epoch.jd_ut1 == pytest.approx(anchor+0.015+0.004*math.sqrt(0.5), abs=1e-9, rel=0.0)
 
 
 @pytest.mark.parametrize(
