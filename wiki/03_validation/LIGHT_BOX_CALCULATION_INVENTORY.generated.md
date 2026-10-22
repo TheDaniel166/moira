@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.10.1`
-- Surface fingerprint: `5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969`
+- Surface fingerprint: `4d96451c654d711fba94087980386781dc2def1839022a3e8da51f9c4d2fb611`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 
@@ -982,7 +982,7 @@ Every registered OpenAPI operation appears exactly once. Explicit pipeline alias
 | `rest:POST:/v1/dasha/kalachakra/chart/sequence` | `POST` | `/v1/dasha/kalachakra/chart/sequence` | `calculation` | yes | `canonical` | `KalachakraChartRequest` → `KalachakraSequenceResponse` | `moira_server/routers/kalachakra.py:34` | `wiki/02_services/KALACHAKRA_DASHA_API.md` +2 | — |
 | `rest:POST:/v1/dasha/kalachakra/current` | `POST` | `/v1/dasha/kalachakra/current` | `calculation` | yes | `canonical` | `KalachakraCurrentRequest` → `KalachakraCurrentResponse` | `moira_server/routers/kalachakra.py:40` | `wiki/02_services/KALACHAKRA_DASHA_API.md` +2 | — |
 | `rest:GET:/v1/dasha/kalachakra/profiles` | `GET` | `/v1/dasha/kalachakra/profiles` | `reference_query` | no | `canonical` | `none` → `KalachakraCatalogueResponse` | `moira_server/routers/kalachakra.py:22` | `CHANGELOG.md` +165 | `tests/integration/test_astrodynes_church_of_light_parity.py` +79 |
-| `rest:POST:/v1/dasha/kalachakra/sequence` | `POST` | `/v1/dasha/kalachakra/sequence` | `calculation` | yes | `canonical` | `KalachakraSequenceRequest` → `KalachakraSequenceResponse` | `moira_server/routers/kalachakra.py:28` | `CHANGELOG.md` +147 | `tests/conftest.py` +39 |
+| `rest:POST:/v1/dasha/kalachakra/sequence` | `POST` | `/v1/dasha/kalachakra/sequence` | `calculation` | yes | `canonical` | `KalachakraSequenceRequest` → `KalachakraSequenceResponse` | `moira_server/routers/kalachakra.py:28` | `CHANGELOG.md` +150 | `tests/conftest.py` +39 |
 | `rest:POST:/v1/dasha/vimshottari/balance` | `POST` | `/v1/dasha/vimshottari/balance` | `calculation` | yes | `canonical` | `DashaNatalRequest` → `DashaBalanceResponse` | `moira_server/routers/dasha.py:56` | `wiki/02_services/REST_API_REFERENCE.md` | `tests/server/test_server_phase8_dasha_routes.py` +1 |
 | `rest:POST:/v1/dasha/vimshottari/current` | `POST` | `/v1/dasha/vimshottari/current` | `calculation` | yes | `canonical` | `DashaCurrentRequest` → `DashaActiveLineResponse` | `moira_server/routers/dasha.py:65` | `wiki/02_services/REST_API_REFERENCE.md` | `tests/server/test_server_phase8_dasha_routes.py` +3 |
 | `rest:POST:/v1/dasha/vimshottari/lord-pair` | `POST` | `/v1/dasha/vimshottari/lord-pair` | `calculation` | yes | `canonical` | `DashaCurrentRequest` → `DashaLordPairResponse` | `moira_server/routers/dasha.py:83` | `wiki/02_services/REST_API_REFERENCE.md` | `tests/server/test_server_phase8_dasha_routes.py` +2 |

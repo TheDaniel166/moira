@@ -3,7 +3,7 @@
   "baseline_date": "2026-10-22",
   "source_parent_revision": "8c427532591c7901c8ec2d8424869b617bcb4634",
   "engine_version": "6.10.1",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "4d96451c654d711fba94087980386781dc2def1839022a3e8da51f9c4d2fb611",
   "canonical_entries": 1251,
   "minimum_partial": 209,
   "maximum_unresolved": 1042,

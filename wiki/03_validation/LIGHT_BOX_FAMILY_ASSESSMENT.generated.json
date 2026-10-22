@@ -3455,6 +3455,9 @@
         "wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md",
         "wiki/05_research/harmograms/harmograms_implementation_roadmap.md",
         "wiki/05_research/heliacal_visibility/heliacal_visibility_implementation_roadmap.md",
+        "wiki/05_research/horary/lilly_core_2026/README.md",
+        "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md",
+        "wiki/05_research/horary/lilly_core_2026/WORKED_CASES.md",
         "wiki/05_research/mundane/TRACK_B_MUNDANE_SOURCE_AND_CHART_SELECTION_DOSSIER_2026-08.md",
         "wiki/06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md",
         "wiki/06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md",
@@ -8310,7 +8313,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "4d96451c654d711fba94087980386781dc2def1839022a3e8da51f9c4d2fb611",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

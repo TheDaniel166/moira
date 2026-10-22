@@ -2853,6 +2853,7 @@
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/03_validation/YEAR_SEMANTICS_AUDIT.md",
         "wiki/05_research/MOON_LONGITUDE_RESIDUAL_INVESTIGATION_2026-05-09.md",
+        "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md",
         "wiki/06_roadmap/VEDIC_MARRIAGE_ELECTION_SOURCE_RESEARCH_2026-10-10.md",
@@ -3795,6 +3796,7 @@
         "wiki/05_research/astrodynes/astrodynes_three_chart_parity_validation_2026-07-12.md",
         "wiki/05_research/astrodynes/astrodynes_worked_examples_capture_2026-07-06.md",
         "wiki/05_research/harmograms/harmograms_implementation_roadmap.md",
+        "wiki/05_research/horary/lilly_core_2026/WORKED_CASES.md",
         "wiki/05_research/mundane/TRACK_B_MUNDANE_SOURCE_AND_CHART_SELECTION_DOSSIER_2026-08.md",
         "wiki/06_roadmap/HELLENISTIC_FREE_ENHANCED_WORKSPACE_PRODUCT_PLAN.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
@@ -16767,7 +16769,9 @@
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
-        "wiki/03_validation/WESTERN_ELECTIONAL_PHASE6_LILLY_PERFECTION_VALIDATION_2026-07-15.md"
+        "wiki/03_validation/WESTERN_ELECTIONAL_PHASE6_LILLY_PERFECTION_VALIDATION_2026-07-15.md",
+        "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md",
+        "wiki/05_research/horary/lilly_core_2026/SOURCE_INVENTORY.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "export_kind": "dataclass",
@@ -20296,6 +20300,7 @@
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_SOURCE_LEDGER_2026-07-29.md",
         "wiki/05_research/heliacal_visibility/heliacal_visibility_implementation_roadmap.md",
         "wiki/05_research/horary/TRACK_B_HORARY_SOURCE_AND_AMBIGUITY_DOSSIER_2026-08.md",
+        "wiki/05_research/horary/lilly_core_2026/SOURCE_INVENTORY.md",
         "wiki/05_research/lots/LOTS_SOURCE_VERIFICATION.md",
         "wiki/05_research/mundane/TRACK_B_MUNDANE_SOURCE_AND_CHART_SELECTION_DOSSIER_2026-08.md",
         "wiki/05_research/native_heliacal_parity_validation_2026-07-12.md",
@@ -66334,6 +66339,9 @@
         "wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md",
         "wiki/05_research/harmograms/harmograms_implementation_roadmap.md",
         "wiki/05_research/heliacal_visibility/heliacal_visibility_implementation_roadmap.md",
+        "wiki/05_research/horary/lilly_core_2026/README.md",
+        "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md",
+        "wiki/05_research/horary/lilly_core_2026/WORKED_CASES.md",
         "wiki/05_research/mundane/TRACK_B_MUNDANE_SOURCE_AND_CHART_SELECTION_DOSSIER_2026-08.md",
         "wiki/06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md",
         "wiki/06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md",
@@ -79848,5 +79856,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969"
+  "surface_fingerprint_sha256": "4d96451c654d711fba94087980386781dc2def1839022a3e8da51f9c4d2fb611"
 }
