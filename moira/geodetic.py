@@ -83,6 +83,9 @@ __all__ = [
     "GeodeticLatitudeKind",
     "GeodeticLocation",
     "GeodeticSensitivityResult",
+    "GeodeticGeometryWitness",
+    "geodetic_geometry",
+    "diagnose_geodetic_uncertainty",
     "geodetic_mc",
     "geodetic_asc",
     "geodetic_chart",
@@ -411,6 +414,8 @@ class GeodeticChart:
               geodetic/geocentric conversion.
             - Earth obliquity is finite and lies in [22°, 25°], a guarded
               envelope around the established long-term terrestrial range.
+            - The spherical geometry distinguishes a unique rising branch;
+              coincident planes and zero-rising-rate ties are refused.
         Succession stance: terminal.
 
     Canon: Sepharial, "The World Horoscope" (1910);
@@ -443,7 +448,7 @@ class GeodeticChart:
         },
         "failures": {
             "raises": ["ValueError"],
-            "policy": "construction enforces coordinate, angle, zodiac, and provenance invariants"
+            "policy": "construction enforces coordinate, angle, zodiac, branch-validity and provenance invariants"
         },
         "succession": {"stance": "terminal", "override_points": []},
         "agent": "urania"
@@ -478,6 +483,9 @@ class GeodeticChart:
                 "stored geo_longitude must be wrapped to [-180, 180], "
                 f"got {self.geo_longitude!r}"
             )
+        geometry = geodetic_geometry(self.geo_longitude, self.geo_latitude, self.obliquity)
+        if geometry.asc_deg is None:
+            raise ValueError(f"Geodetic Ascendant is undefined: {geometry.status}")
         if self.provenance is not None:
             if not isinstance(self.provenance, GeodeticChartProvenance):
                 raise TypeError("provenance must be a GeodeticChartProvenance or None")
@@ -528,12 +536,24 @@ def _armc_from_mc(mc_deg: float, obliquity: float) -> float:
     """
     l_r   = mc_deg    * DEG2RAD
     eps_r = obliquity * DEG2RAD
-    return math.atan2(math.sin(l_r) * math.cos(eps_r), math.cos(l_r)) * RAD2DEG % 360.0
+    return _normalize_angle(math.atan2(math.sin(l_r) * math.cos(eps_r), math.cos(l_r)) * RAD2DEG)
 
 
 def _validate_finite(name: str, value: float) -> None:
     if not math.isfinite(value):
         raise ValueError(f"{name} must be finite, got {value!r}")
+
+
+def _normalize_angle(value: float) -> float:
+    """Normalize a finite circular degree, including binary64 remainder ties."""
+    _validate_finite("angle", value)
+    result = value % 360.0
+    return 0.0 if result == 0.0 or result >= 360.0 else result
+
+
+def _circular_delta(value: float, reference: float) -> float:
+    """Shortest signed difference; an exact half turn is represented as -180."""
+    return (_normalize_angle(value) - _normalize_angle(reference) + 180.0) % 360.0 - 180.0
 
 
 # Same margin as the _POLAR_EPS convention declared in moira.houses: a shared
@@ -638,7 +658,10 @@ def geodetic_mc(
     """
     _validate_finite("geo_longitude", geo_longitude)
     _validate_finite("ayanamsa_deg", ayanamsa_deg)
-    return (geo_longitude - ayanamsa_deg) % 360.0
+    difference = geo_longitude - ayanamsa_deg
+    if not math.isfinite(difference):
+        difference = geo_longitude % 360.0 - ayanamsa_deg % 360.0
+    return _normalize_angle(difference)
 
 
 def geodetic_asc(
@@ -678,10 +701,10 @@ def geodetic_asc(
     mathematical extrapolation, not an observationally meaningful direction.
     """
     _validate_geodetic_inputs(geo_longitude, geo_latitude, obliquity, ayanamsa_deg)
-    tropical_mc = geodetic_mc(geo_longitude)
-    armc = _armc_from_mc(tropical_mc, obliquity)
-    tropical_asc = _asc_from_armc(armc, obliquity, geo_latitude)
-    return (tropical_asc - ayanamsa_deg) % 360.0
+    geometry = geodetic_geometry(geo_longitude, geo_latitude, obliquity)
+    if geometry.asc_deg is None:
+        raise ValueError(f"Geodetic Ascendant is undefined: {geometry.status}")
+    return geodetic_mc(geometry.asc_deg, ayanamsa_deg)
 
 
 def geodetic_chart(
@@ -895,7 +918,7 @@ def geodetic_equivalents(
         if not body:
             raise ValueError("Geodetic equivalent body names must be non-empty")
         _validate_finite(f"longitude for {body!r}", lon)
-        geo_lon = (lon + ayanamsa_deg) % 360.0
+        geo_lon = geodetic_mc(lon, -ayanamsa_deg)
         result[body] = wrap_longitude_deg(geo_lon)
     return result
 
@@ -969,11 +992,11 @@ def geodetic_equivalents_result_from_chart(
         seen.add(body)
         source_longitude = chart.planets[body].longitude
         _validate_finite(f"longitude for {body!r}", source_longitude)
-        source_tropical = source_longitude % 360.0
+        source_tropical = _normalize_angle(source_longitude)
         selected_longitude = (
-            (source_longitude - ayanamsa_deg) % 360.0
+            geodetic_mc(source_longitude, ayanamsa_deg)
             if zodiac == "sidereal"
-            else source_longitude % 360.0
+            else _normalize_angle(source_longitude)
         )
         # Keep the legacy inversion operations in the same order so its
         # floating-point result remains bit-for-bit compatible.
@@ -1023,6 +1046,9 @@ def _ascendant_local_derivatives(
     obliquity_deg: float,
 ) -> GeodeticAngleDerivatives:
     """Analytic local derivative of the rising-root angle formula."""
+    geometry = geodetic_geometry(geo_longitude_deg, geo_latitude_deg, obliquity_deg)
+    if geometry.asc_deg is None:
+        raise ValueError(f"Ascendant sensitivity is undefined: {geometry.status}")
     longitude = math.radians(geo_longitude_deg)
     latitude = math.radians(geo_latitude_deg)
     epsilon = math.radians(obliquity_deg)
@@ -1080,16 +1106,13 @@ def geodetic_chart_sensitivity(
     if not isinstance(uncertainty, GeodeticInputUncertainty):
         raise TypeError("uncertainty must be a GeodeticInputUncertainty")
 
-    latitude_low = chart.geo_latitude - uncertainty.latitude_deg
-    latitude_high = chart.geo_latitude + uncertainty.latitude_deg
-    polar_limit = 90.0 - _POLAR_REFUSAL_MARGIN_DEG
-    if latitude_low <= -polar_limit or latitude_high >= polar_limit:
+    reasons = _uncertainty_domain_reasons(chart, uncertainty)
+    if "polar_refusal" in reasons:
         raise ValueError("latitude uncertainty crosses the Geodetic polar refusal boundary")
-    if (
-        chart.obliquity - uncertainty.obliquity_deg < _EARTH_OBLIQUITY_MIN_DEG
-        or chart.obliquity + uncertainty.obliquity_deg > _EARTH_OBLIQUITY_MAX_DEG
-    ):
+    if "obliquity_envelope" in reasons:
         raise ValueError("obliquity uncertainty crosses the admitted [22, 25] degree envelope")
+    if reasons:
+        raise ValueError("uncertainty intersects an undefined rising branch: " + ", ".join(reasons))
 
     mc_derivatives = GeodeticAngleDerivatives(1.0, 0.0, 0.0)
     asc_derivatives = _ascendant_local_derivatives(
@@ -1116,3 +1139,136 @@ def geodetic_chart_sensitivity(
         asc_linearized_radius_deg=asc_radius,
         latitude_margin_to_pole_deg=90.0 - abs(chart.geo_latitude),
     )
+
+
+_GEOMETRY_ROUNDOFF_GUARD = 128.0 * math.ulp(1.0)
+
+
+@dataclass(frozen=True, slots=True)
+class GeodeticGeometryWitness:
+    """Dimensionless horizon geometry and its numerically distinguishable branch.
+
+    The rising rate is d(sin altitude)/d(local sidereal angle in radians).
+    The guards identify numerical ambiguity, not observational accuracy.
+    """
+
+    tropical_mc_deg: float
+    armc_deg: float
+    intersection_norm: float
+    meridian_altitude_sine: float
+    rising_rate: float | None
+    asc_deg: float | None
+    status: Literal["regular", "ill_conditioned", "coincident_planes", "rising_branch_tie", "polar_refusal"]
+    policy: str = "spherical_rising_branch_roundoff_v1"
+    roundoff_guard: float = _GEOMETRY_ROUNDOFF_GUARD
+
+    @property
+    def is_defined(self) -> bool:
+        """Whether the geometry distinguishes a rising ecliptic intersection."""
+        return self.asc_deg is not None
+
+
+def geodetic_geometry(
+    geo_longitude: float,
+    geo_latitude: float,
+    obliquity: float,
+) -> GeodeticGeometryWitness:
+    """Inspect the ideal spherical horizon before publishing an Ascendant.
+
+    In addition to coincident planes, a meridional intersection can have zero
+    rising rate. Its boundary is cos(phi - declination(MC)) = 0. Scalar
+    Geodetic callers refuse either undefined case; MC mapping is independent.
+    ``rising_rate`` is d(sin(altitude))/d(ARMC radians), not degrees per day;
+    it and the plane/meridian witnesses are dimensionless geometric measures.
+    """
+    # Detailed witnesses may describe the existing polar refusal domain.
+    # Scalar/chart entry points retain their original polar input refusal.
+    _validate_geodetic_inputs(geo_longitude, 0.0, obliquity, 0.0)
+    _validate_finite("geo_latitude", geo_latitude)
+    if not -90.0 <= geo_latitude <= 90.0:
+        raise ValueError("geo_latitude must be in [-90, 90]")
+    mc = geodetic_mc(geo_longitude)
+    armc = _armc_from_mc(mc, obliquity)
+    a, e, p = map(math.radians, (armc, obliquity, geo_latitude))
+    x = math.sin(a) * math.cos(e) * math.cos(p) + math.sin(e) * math.sin(p)
+    y = -math.cos(a) * math.cos(p)
+    norm = math.hypot(x, y)
+    dec_mc = math.asin(math.sin(e) * math.sin(math.radians(mc)))
+    meridian = math.cos(p - dec_mc)
+    asc = None
+    rate = None
+    if abs(geo_latitude) >= 90.0 - _POLAR_REFUSAL_MARGIN_DEG:
+        status = "polar_refusal"
+    elif norm <= _GEOMETRY_ROUNDOFF_GUARD:
+        status = "coincident_planes"
+    elif abs(meridian) <= _GEOMETRY_ROUNDOFF_GUARD:
+        status = "rising_branch_tie"
+    else:
+        asc = _asc_from_armc(armc, obliquity, geo_latitude)
+        lam = math.radians(asc)
+        ra = math.atan2(math.sin(lam) * math.cos(e), math.cos(lam))
+        dec = math.asin(math.sin(e) * math.sin(lam))
+        rate = -math.cos(p) * math.cos(dec) * math.sin(a - ra)
+        if rate <= _GEOMETRY_ROUNDOFF_GUARD:
+            status, asc = "rising_branch_tie", None
+        elif min(norm, abs(meridian), rate) < math.sqrt(math.ulp(1.0)):
+            status = "ill_conditioned"
+        else:
+            status = "regular"
+    return GeodeticGeometryWitness(mc, armc, norm, meridian, rate, asc, status)
+
+
+def _sine_interval(center_deg: float, radius_deg: float) -> tuple[float, float]:
+    """Range of sine on a closed unwrapped circular interval."""
+    if radius_deg >= 180.0:
+        return -1.0, 1.0
+    center = _normalize_angle(center_deg)
+    low, high = center - radius_deg, center + radius_deg
+    values = [math.sin(math.radians(low)), math.sin(math.radians(high))]
+    for extremum, value in ((90.0, 1.0), (270.0, -1.0)):
+        if math.ceil((low - extremum) / 360.0) <= math.floor((high - extremum) / 360.0):
+            values.append(value)
+    return min(values), max(values)
+
+
+def _uncertainty_domain_reasons(
+    chart: GeodeticChart,
+    uncertainty: GeodeticInputUncertainty,
+) -> tuple[str, ...]:
+    """Analytic rectangular-box intersection with all admitted branch boundaries."""
+    p_low = chart.geo_latitude - uncertainty.latitude_deg
+    p_high = chart.geo_latitude + uncertainty.latitude_deg
+    e_low = chart.obliquity - uncertainty.obliquity_deg
+    e_high = chart.obliquity + uncertainty.obliquity_deg
+    reasons = []
+    if p_low <= -90.0 + _POLAR_REFUSAL_MARGIN_DEG or p_high >= 90.0 - _POLAR_REFUSAL_MARGIN_DEG:
+        reasons.append("polar_refusal")
+    if e_low < _EARTH_OBLIQUITY_MIN_DEG or e_high > _EARTH_OBLIQUITY_MAX_DEG:
+        reasons.append("obliquity_envelope")
+    if reasons:
+        return tuple(reasons)
+    s_low, s_high = _sine_interval(chart.geo_longitude, uncertainty.longitude_deg)
+    products = [s * math.sin(math.radians(e)) for s in (s_low, s_high) for e in (e_low, e_high)]
+    d_low = math.degrees(math.asin(max(-1.0, min(products))))
+    d_high = math.degrees(math.asin(min(1.0, max(products))))
+    low = math.nextafter(p_low - d_high, -math.inf)
+    high = math.nextafter(p_high - d_low, math.inf)
+    guard_deg = math.degrees(_GEOMETRY_ROUNDOFF_GUARD)
+    if any(low - guard_deg <= boundary <= high + guard_deg for boundary in (-90.0, 90.0)):
+        reasons.append("rising_branch_boundary")
+        for meridian, phi_low, phi_high in (
+            (90.0, e_low - 90.0, e_high - 90.0),
+            (270.0, 90.0 - e_high, 90.0 - e_low),
+        ):
+            includes_meridian = uncertainty.longitude_deg >= 180.0 or abs(_circular_delta(meridian, chart.geo_longitude)) <= uncertainty.longitude_deg + guard_deg
+            if includes_meridian and p_low <= phi_high + guard_deg and p_high >= phi_low - guard_deg:
+                reasons.append("coincident_planes")
+                break
+    return tuple(reasons)
+
+
+def diagnose_geodetic_uncertainty(chart, uncertainty, *, policy):
+    """Return a bounded-work nonlinear diagnostic, never a guaranteed error bound."""
+    from .geodetic_uncertainty import diagnose_geodetic_uncertainty as diagnose
+
+    return diagnose(chart, uncertainty, policy=policy)

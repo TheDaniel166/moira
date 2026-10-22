@@ -469,9 +469,8 @@ class TestGeodeticSensitivity:
 
     def test_tangent_horizon_has_no_local_sensitivity(self) -> None:
         obliquity = OBL_J2000
-        chart = geo.geodetic_chart(90.0, obliquity - 90.0, obliquity)
-        with pytest.raises(ValueError, match="tangent horizon"):
-            geo.geodetic_chart_sensitivity(chart, geo.GeodeticInputUncertainty())
+        with pytest.raises(ValueError, match="coincident_planes"):
+            geo.geodetic_chart(90.0, obliquity - 90.0, obliquity)
 
 
 # ---------------------------------------------------------------------------

@@ -1,13 +1,14 @@
 # Geodetic Backend Standard
 
-Version: 0.5
+Version: 0.6
 Date: 2026-10-22
-Status: Active backend admission packet for Phase 10 REST evaluation
+Status: Active contract for the admitted Phase 10 REST subset
 Scope: `moira.geodetic`
 
-This standard records the backend truth that may be exposed by the REST server
-for P10-03 Geodetic. It is not a map-rendering standard and does not admit
-geographic search, projection, or relocation synthesis products.
+This standard records the backend truth exposed by the four bounded P10-03
+Geodetic routes. The expanded Python-only analysis surface is specified in
+[Geodetic Analysis Standard](GEODETIC_ANALYSIS_STANDARD.md). That expansion
+does not widen REST admission or add map-rendering/projection products.
 
 It is downstream of:
 
@@ -124,6 +125,12 @@ Frame doctrine:
   shared low-level helper retains its principal-root tie for callers that need
   a deterministic algebraic result. Public geodetic chart functions refuse a
   margin of `1e-6` degrees around the poles.
+- coincident ecliptic/horizon planes and zero-rising-rate meridional ties are
+  also undefined. With tropical MC `L`, the latter boundary follows from the
+  altitude equation as `cos(phi - asin(sin(epsilon) sin(L))) = 0`; it is not
+  restricted to the 90/270-degree meridians. `geodetic_geometry` retains the
+  plane-intersection and rising-rate witnesses; chart/ASC calculations refuse
+  undefined geometry while MC-only mapping remains independent.
 - the tropical lane carries no ayanamsa: neither a direct offset nor a named
   system may accompany `zodiac = tropical`.
 - the sidereal lane must name its displacement: `ayanamsa_deg` for direct
@@ -194,7 +201,10 @@ delegates to this result.
 caller-input-weighted L1 linearization for MC and ASC. The estimate is local,
 first order, and explicitly not a guaranteed error bound. Latitude or
 obliquity uncertainty ranges that cross the calculation's refusal/envelope
-boundaries are rejected. This estimate does not change the chart calculation.
+boundaries are rejected. Analytic sine/product intervals also detect branch
+boundaries anywhere inside the input box. This estimate does not change the
+chart calculation. `diagnose_geodetic_uncertainty` adds explicitly bounded
+sampled nonlinear diagnostics without claiming a guaranteed envelope.
 
 Result invariants:
 
@@ -245,6 +255,8 @@ REST transport should bound chart-backed body count before admission.
 Existing validation:
 
 - `tests/unit/test_geodetic.py`
+- `tests/unit/test_geodetic_geometry.py`
+- `tests/unit/test_geodetic_uncertainty.py`
 
 Covered invariants include:
 
@@ -296,16 +308,11 @@ Covered invariants include:
 
 ## 7. REST Admission Position
 
-P10-03 Geodetic is eligible to move from evaluation to transport design for
-bounded location-chart and equivalent-longitude products.
-
-REST design must still decide:
-
-- direct and chart-backed route shapes
-- zodiac policy schema
-- ayanamsa policy serialization
-- whether primitive MC/ASC helpers are public routes or internal only
-- maximum chart-backed body count
+P10-03 currently admits `POST /v1/geodetic/location-chart`,
+`/chart/location-chart`, `/equivalents`, and `/chart/equivalents`. Their models,
+service admission, serializers and route counts are unchanged by the Python
+analysis expansion. See `moira_server/routers/geodetic.py` and the Phase 10
+ledger for the bounded transport contract.
 
 Do not admit rendered map, projection, geographic search, relocation synthesis,
 or primitive-helper-only routes as part of first P10-03 transport.

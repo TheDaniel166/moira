@@ -491,35 +491,31 @@ def _process_aspect_hit(
     # Exact hit
     jd_exact = _find_aspect_crossing(body, target, angle, jd_lo, jd_hi, reader, policy.transit.solver_tolerance_days)
     
-    # Entering/Leaving
-    jd_ent, jd_lea = None, None
-    if orb > 0:
-        scan_horizon = 2.0 # 2 days is plenty for planets
-        
-        diff_before = _signed_diff(_resolve_longitude(body, max(jd_start, jd_exact - scan_horizon), reader), 
-                                   _resolve_longitude(target, max(jd_start, jd_exact - scan_horizon), reader) + angle)
-        diff_after = _signed_diff(_resolve_longitude(body, min(jd_end, jd_exact + scan_horizon), reader), 
-                                  _resolve_longitude(target, min(jd_end, jd_exact + scan_horizon), reader) + angle)
-        
-        if diff_before < 0 < diff_after:
-            if diff_before <= -orb:
-                jd_ent = _find_aspect_crossing(body, target, angle - orb, max(jd_start, jd_exact - scan_horizon), jd_exact, reader, policy.transit.solver_tolerance_days)
-            if diff_after >= orb:
-                jd_lea = _find_aspect_crossing(body, target, angle + orb, jd_exact, min(jd_end, jd_exact + scan_horizon), reader, policy.transit.solver_tolerance_days)
-            is_retrograde = False
-        else:
-            if diff_before >= orb:
-                jd_ent = _find_aspect_crossing(body, target, angle + orb, max(jd_start, jd_exact - scan_horizon), jd_exact, reader, policy.transit.solver_tolerance_days)
-            if diff_after <= -orb:
-                jd_lea = _find_aspect_crossing(body, target, angle - orb, jd_exact, min(jd_end, jd_exact + scan_horizon), reader, policy.transit.solver_tolerance_days)
-            is_retrograde = True
-    else:
-        l1_b = _resolve_longitude(body, jd_exact - 0.01, reader)
-        l2_b = _resolve_longitude(target, jd_exact - 0.01, reader)
-        l1_a = _resolve_longitude(body, jd_exact + 0.01, reader)
-        l2_a = _resolve_longitude(target, jd_exact + 0.01, reader)
-        speed = _signed_diff(l1_a - l2_a, l1_b - l2_b)
-        is_retrograde = speed < 0
+    # Search the connected orb window over the bounded study interval.
+    # Slow planets routinely remain in orb for far longer than two days.
+    from ._fixed_aspect_search import _bisect_scalar
+
+    def residual(jd):
+        return _signed_diff(_resolve_longitude(body, jd, reader), _resolve_longitude(target, jd, reader) + angle)
+
+    def boundary(direction):
+        previous = jd_exact
+        step = min(0.25, _auto_step(body))
+        limit = jd_start if direction < 0 else jd_end
+        while previous != limit:
+            following = max(limit, previous - step) if direction < 0 else min(limit, previous + step)
+            if abs(residual(following)) >= orb:
+                return _bisect_scalar(lambda t: abs(residual(t)) - orb,
+                                      min(previous, following), max(previous, following),
+                                      policy.transit.solver_tolerance_days, 1e-6)
+            previous = following
+            step = min(step * 2, max(0.25, _auto_step(body)))
+        return None
+
+    jd_ent = boundary(-1) if orb > 0 else None
+    jd_lea = boundary(1) if orb > 0 else None
+    before, after = max(jd_start, jd_exact - .01), min(jd_end, jd_exact + .01)
+    is_retrograde = _signed_diff(residual(after), residual(before)) < 0
 
     return AspectTransitEvent(
         body=body,
@@ -633,9 +629,10 @@ def find_aspect_transits_to_longitudes(
 ) -> list[AspectTransitEvent]:
     """Find aspect hits of *body* against many frozen ecliptic longitudes.
 
-    ``targets`` is ``(longitude_deg, aspect_angle_deg, orb_deg)``. One native
-    longitude series of *body* is scanned when available; otherwise each
-    target is searched independently.
+    ``targets`` is ``(longitude_deg, aspect_angle_deg, orb_deg)``. A shared
+    canonical longitude memo serves every target. Native/resolver series
+    retain step-selection guards; roots and connected orb boundaries are
+    confirmed canonically over the bounded study interval.
     """
 
     _require_non_empty_body(body)
@@ -645,56 +642,63 @@ def find_aspect_transits_to_longitudes(
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
-    if step_days is not None:
-        scan_step = float(step_days)
-    else:
-        scan_step = policy.transit.step_days_override or _auto_step(body)
-    series = _longitude_series(body, jd_start, jd_end, scan_step, reader)
-    events: list[AspectTransitEvent] = []
-    if series is None:
-        for longitude, angle, orb in targets:
-            events.extend(
-                find_aspect_transits(
-                    body,
-                    float(longitude),
-                    float(angle),
-                    float(orb),
-                    jd_start,
-                    jd_end,
-                    step_days=step_days,
-                    reader=reader,
-                    policy=policy,
-                    search_motion=search_motion,
-                )
-            )
-        events.sort(key=lambda event: event.jd_exact)
-        return events
+    return _find_aspect_transits_to_longitudes_core(
+        body, targets, jd_start, jd_end, step_days, reader, policy, search_motion,
+    )
 
+
+def _find_aspect_transits_to_longitudes_core(
+    body, targets, jd_start, jd_end, step_days, reader, policy, search_motion,
+    *, evaluator=None, intervals=None, scan_policy=None, rich=False,
+):
+    """Shared batch core for already admitted movers and frozen targets.
+
+    Legacy admission remains in the public wrapper. Geodetic callers supply
+    their own canonical evaluator, exact coverage intervals and finite policy.
+    Native/resolver series still choose a safe scan step; all exact residuals
+    and refined roots are confirmed through the canonical resolver.
+    """
+    from ._fixed_aspect_search import _FixedScanPolicy, _scan_fixed_aspects
+    normalized = []
     for longitude, angle, orb in targets:
         if not math.isfinite(float(longitude)) or not math.isfinite(float(angle)):
             raise ValueError("natal aspect target longitude and angle must be finite")
-        if float(orb) < 0:
-            raise ValueError("Orb must be non-negative")
-        windows = _windows_from_longitude_series(
-            series.values, series.jd_start, series.step_days, float(longitude), float(angle)
-        )
-        ordered = windows if search_motion == "forward" else list(reversed(windows))
-        pad = series.step_days
-        for jd_lo, jd_hi in ordered:
-            events.append(
-                _process_aspect_hit(
-                    body,
-                    float(longitude),
-                    float(angle),
-                    float(orb),
-                    max(jd_start, jd_lo - pad),
-                    min(jd_end, jd_hi + pad),
-                    jd_start,
-                    jd_end,
-                    reader,
-                    policy,
-                    search_motion,
-                )
-            )
-    events.sort(key=lambda event: event.jd_exact)
+        if not math.isfinite(float(orb)) or float(orb) < 0:
+            raise ValueError("Orb must be finite and non-negative")
+        normalized.append((float(longitude), float(angle), float(orb)))
+    if not normalized:
+        return [] if not rich else _scan_fixed_aspects(evaluator, (), (), scan_policy)
+    if evaluator is None:
+        scan_step = step_days if step_days is not None else policy.transit.step_days_override or _auto_step(body)
+        _require_positive(scan_step, "step_days")
+        series = _longitude_series(body, jd_start, jd_end, scan_step, reader)
+        memo = {}
+        if series is not None:
+            scan_step = series.step_days
+            if series.tier == "resolver":
+                memo.update((series.jd_start + i * series.step_days, value) for i, value in enumerate(series.values))
+
+        def evaluator(jd):
+            if jd not in memo:
+                memo[jd] = _resolve_longitude(body, jd, reader)
+            return memo[jd]
+
+        tolerance = policy.transit.solver_tolerance_days
+        scan_policy = _FixedScanPolicy(scan_step, tolerance, 1e-6, .1,
+                                      max(10000, math.ceil((jd_end - jd_start) / scan_step) * 100 + len(normalized) * 400),
+                                      100000, 12, min(.01, scan_step / 16), 1e-6)
+        intervals = ((jd_start, jd_end, "outside_study_span", "outside_study_span"),)
+    result = _scan_fixed_aspects(evaluator, tuple(normalized), intervals, scan_policy)
+    if rich:
+        return result
+    if not result.complete:
+        raise RuntimeError("fixed-target transit scan incomplete: " + ", ".join(result.reasons))
+    events = []
+    for hit in result.passes:
+        longitude, angle, orb = normalized[hit.target_index]
+        window = next((w for w in result.windows if w.target_index == hit.target_index and w.start - tolerance <= hit.jd_ut1 <= w.end + tolerance), None)
+        events.append(AspectTransitEvent(body, longitude, angle, orb, hit.jd_ut1,
+                                        window.start if window is not None and window.entry_status == "found" and orb > 0 else None,
+                                        window.end if window is not None and window.exit_status == "found" and orb > 0 else None,
+                                        hit.motion == "retrograde", search_motion))
     return events

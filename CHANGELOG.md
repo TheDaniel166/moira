@@ -11,6 +11,19 @@ Unreleased engine remediation work. No version bump, wheel
 publication, or production pin is implied by these entries.
 
 ### Added
+- **Geodetic Analysis Expansion**: added explicit immutable body snapshots,
+  full house figures, static overlays, segmented inverse angle loci, supplied-
+  place comparisons, and fixed-reference transit timing in their owning
+  Python modules. Canonical/qualified minor-body and comet identities retain
+  aliases, frames and known epochs; no catalog sweep, REST route, download
+  behavior, facade export, or package version change is introduced.
+- **Nonlinear Geodetic Uncertainty Diagnostics**: analytic whole-box branch
+  checks precede bounded deterministic sampling, circular sample arcs and
+  linearization residuals. These sampled diagnostics are not error bounds.
+- **Coverage-Aware Fixed Geodetic Timing**: explicit frozen tropical anchors,
+  directed aspect branches, stationary touches, connected orb windows with
+  repeated passes, disjoint SPK coverage and reduction padding, finite budgets,
+  and visible partial/incomplete states. Times are JD UT1, not civil UTC.
 - **Typed Geodetic Location Metadata**: added immutable `GeodeticLocation`
   input and `geodetic_chart_at_location`. Latitude kind, datum/reference
   frame, decimal-year coordinate epoch, ellipsoidal height, and source are
@@ -51,6 +64,15 @@ publication, or production pin is implied by these entries.
   with a mathematical extrapolation.
 
 ### Fixed
+- **Geodetic Undefined Geometry And Angle Ranges**: refuse coincident planes
+  and zero-rising-rate branch ties, including non-quadrant meridional ties;
+  sensitivity checks the entire uncertainty region before linearizing.
+  Normalize half-open angle results even at floating-point wrap/overflow edges.
+- **Fixed-Target Transit Orb Windows**: search connected boundaries over the
+  bounded study span rather than assuming two days is sufficient. Bulk fixed-
+  target scans share canonical samples and preserve the existing public/REST
+  mover admission; exact roots at study boundaries and stationary touches are
+  explicit numerical corrections.
 - **Vertex / Anti-Vertex Branch Selection (#23)**: Python and native house
   helpers now select the western prime-vertical/ecliptic intersection by its
   actual local hour angle. Comparing ecliptic longitude with `ARMC - 90°`

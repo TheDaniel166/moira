@@ -43,6 +43,16 @@ _DT_ISO = "2000-01-01T12:00:00Z"
 _OBLIQUITY = 23.4392911
 
 
+@pytest.mark.parametrize("longitude", [45.0, 90.0])
+def test_undefined_geodetic_geometry_uses_existing_validation_envelope(client_with_engine, longitude):
+    import math
+    declination = math.degrees(math.asin(math.sin(math.radians(_OBLIQUITY)) * math.sin(math.radians(longitude))))
+    response = client_with_engine.post("/v1/geodetic/location-chart", json={
+        "geo_longitude": longitude, "geo_latitude": declination - 90, "obliquity": _OBLIQUITY,
+    })
+    _assert_validation_envelope(response, message_fragment="undefined")
+
+
 def _assert_validation_envelope(response, *, message_fragment: str | None = None) -> None:
     assert response.status_code == 422
     body = response.json()
