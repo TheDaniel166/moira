@@ -291,6 +291,7 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/ASPECT_BACKEND_STANDARD.md",
         "wiki/02_standards/ASTEROID_FAMILIES_BACKEND_STANDARD.md",
+        "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/PATTERNS_BACKEND_STANDARD.md",
         "wiki/02_standards/STELLIUM_ANALYSIS_STANDARD.md",
         "wiki/02_standards/SYNASTRY_BACKEND_STANDARD.md",
@@ -352,6 +353,7 @@
         "tests/unit/test_categorical_boundary.py",
         "tests/unit/test_declination_aspects.py",
         "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_geodetic_analysis.py",
         "tests/unit/test_hellenistic_contract_parity.py",
         "tests/unit/test_hellenistic_relations.py",
         "tests/unit/test_moiety_orbs.py",
@@ -1950,20 +1952,19 @@
         "unresolved": 8
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
         "docs/architecture/P10-03_GEODETIC_TRANSPORT_DESIGN.md",
         "wiki/02_services/REST_API_REFERENCE.md",
-        "wiki/02_standards/GEODETIC_BACKEND_STANDARD.md"
+        "wiki/02_standards/GEODETIC_BACKEND_STANDARD.md",
+        "wiki/05_research/geodetic/GEODETIC_PHYSICAL_HORIZON_SPEC.md"
       ],
       "domain_group": "locational",
       "family_id": "geodetic",
       "family_label": "Geodetic",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
       "missing_documentation_surface_ids": [],
-      "missing_test_surface_ids": [
-        "python:moira.facade:geodetic_chart_from_chart",
-        "python:moira.facade:geodetic_equivalents_from_chart"
-      ],
+      "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/geodetic.py",
         "moira_server/routers/geodetic.py"
@@ -1981,9 +1982,16 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_geodetic_small_bodies.py",
         "tests/server/test_server_geodetic_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
-        "tests/unit/test_geodetic.py"
+        "tests/unit/test_angles_branch_doctrine.py",
+        "tests/unit/test_geodetic.py",
+        "tests/unit/test_geodetic_analysis.py",
+        "tests/unit/test_geodetic_curves.py",
+        "tests/unit/test_geodetic_geometry.py",
+        "tests/unit/test_geodetic_timing.py",
+        "tests/unit/test_geodetic_uncertainty.py"
       ]
     },
     {
@@ -2711,6 +2719,7 @@
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/GAUQUELIN_BACKEND_STANDARD.md",
+        "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
         "wiki/02_standards/STELLIUM_ANALYSIS_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_2.0.0.md",
@@ -2803,9 +2812,11 @@
         "tests/unit/test_experimental_topocentric.py",
         "tests/unit/test_experimental_validation.py",
         "tests/unit/test_gauquelin.py",
+        "tests/unit/test_geodetic_analysis.py",
         "tests/unit/test_hermetic_decans.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_house_angle_branches.py",
         "tests/unit/test_house_angularity.py",
         "tests/unit/test_house_boundary.py",
         "tests/unit/test_house_classification.py",
@@ -3093,6 +3104,7 @@
         "tests/integration/test_eclipse_footprint_2027_junction_regression.py",
         "tests/integration/test_eclipse_footprint_fold_regression.py",
         "tests/integration/test_eclipse_footprint_hybrid_junction_regression.py",
+        "tests/integration/test_eclipse_limiting_regressions.py",
         "tests/integration/test_eclipse_lunar_contacts_nasa_reference.py",
         "tests/integration/test_eclipse_nasa_reference.py",
         "tests/integration/test_eclipse_occultation_where_reference.py",
@@ -3120,6 +3132,7 @@
         "tests/integration/test_rise_set_published_reference.py",
         "tests/integration/test_solar_eclipse_global_adversarial.py",
         "tests/integration/test_solar_eclipse_global_reference.py",
+        "tests/integration/test_solar_eclipse_noncentral.py",
         "tests/integration/test_sovereign_small_body_manifest_routing.py",
         "tests/integration/test_spiceypy_phase2_time_admission.py",
         "tests/integration/test_twilight_external_reference.py",
@@ -3159,6 +3172,7 @@
         "tests/server/test_server_phase8_zr_routes.py",
         "tests/server/test_server_shadbala_service.py",
         "tests/server/test_server_small_body_list_routes.py",
+        "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
         "tests/server/test_server_stars_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -3213,6 +3227,7 @@
         "tests/unit/test_harmogram_bridges.py",
         "tests/unit/test_heliacal_visibility_policy.py",
         "tests/unit/test_hermetic_decans.py",
+        "tests/unit/test_house_angle_branches.py",
         "tests/unit/test_house_dynamics.py",
         "tests/unit/test_house_dynamics_oracle.py",
         "tests/unit/test_house_equatorial_division_geometry.py",
@@ -4749,6 +4764,7 @@
         "wiki/02_standards/BOUNDED_COMPUTATION_REUSE_STANDARD.md",
         "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/GALACTIC_BACKEND_STANDARD.md",
+        "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
         "wiki/02_standards/LOCAL_SPACE_BACKEND_STANDARD.md",
@@ -4819,6 +4835,7 @@
       "test_leads": [
         "tests/integration/test_erfa_validation.py",
         "tests/integration/test_gauquelin_external_reference.py",
+        "tests/integration/test_geodetic_small_bodies.py",
         "tests/integration/test_houses_external_reference.py",
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_mean_node_frame_consistency.py",
@@ -4848,9 +4865,11 @@
         "tests/unit/test_fixed_star_astrocartography.py",
         "tests/unit/test_galactic.py",
         "tests/unit/test_gauquelin.py",
+        "tests/unit/test_geodetic.py",
         "tests/unit/test_gochara_dated.py",
         "tests/unit/test_hermetic_decans.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_house_angle_branches.py",
         "tests/unit/test_house_dynamics.py",
         "tests/unit/test_house_dynamics_oracle.py",
         "tests/unit/test_house_equatorial_division_geometry.py",
@@ -5446,8 +5465,7 @@
       "finding": "Prioritize paired receipt or generated-documentation coverage; do not infer evidence from implementation depth alone.",
       "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [
-        "python:moira.facade:moon_phases_in_range",
-        "python:moira.facade:next_moon_phase"
+        "python:moira.facade:moon_phases_in_range"
       ],
       "ownership_sources": [
         "moira/phenomena.py",
@@ -5483,6 +5501,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_eclipse_limiting_regressions.py",
         "tests/integration/test_geometric_nodes_full_catalog.py",
         "tests/integration/test_geometric_nodes_kernels.py",
         "tests/integration/test_horizons_orbits.py",
@@ -5500,6 +5519,7 @@
         "tests/server/test_server_paran_packet.py",
         "tests/server/test_server_phenomena_routes.py",
         "tests/server/test_server_small_body_list_routes.py",
+        "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_apsidal_passages.py",
@@ -6576,6 +6596,7 @@
         "wiki/02_standards/DASHA_BACKEND_STANDARD.md",
         "wiki/02_standards/DECANS_BACKEND_STANDARD.md",
         "wiki/02_standards/ELECTIONAL_SEARCH_BACKEND_STANDARD.md",
+        "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/GEODETIC_BACKEND_STANDARD.md",
         "wiki/02_standards/GOCHARA_BACKEND_STANDARD.md",
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
@@ -8285,7 +8306,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d",
+  "inventory_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8312,7 +8333,7 @@
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
-    "families_with_missing_tests": 9,
+    "families_with_missing_tests": 8,
     "family_count": 150,
     "production_user_surface_count": 171,
     "reviewed_families": 150,

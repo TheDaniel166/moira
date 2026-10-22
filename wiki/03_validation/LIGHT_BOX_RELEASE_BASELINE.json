@@ -1,9 +1,9 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v1",
-  "baseline_date": "2026-10-15",
-  "source_parent_revision": "67d3d37528c4565a15e9c27fa03080db1fc2eeec",
+  "baseline_date": "2026-10-22",
+  "source_parent_revision": "07f0e5fa872ce43206a89206d98f169b428552dd",
   "engine_version": "6.10.1",
-  "inventory_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d",
+  "inventory_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee",
   "canonical_entries": 1251,
   "minimum_partial": 209,
   "maximum_unresolved": 1042,

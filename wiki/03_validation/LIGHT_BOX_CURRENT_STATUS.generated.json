@@ -1,5 +1,5 @@
 {
-  "artifact_status": "exact_source_revision",
+  "artifact_status": "local_unreleased_worktree",
   "claim_dispositions": [
     {
       "claim": "Transparency is the Primary Metric of Accuracy.",
@@ -28,9 +28,9 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.10.1",
-  "evidence_source_revision": "208e8a169250b5b124fca4f0eba75d1acd236ddb",
+  "evidence_source_revision": "07f0e5fa872ce43206a89206d98f169b428552dd",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d",
+  "inventory_fingerprint_sha256": "2f2ffd5be6521b123f205a33d768b61669b22486767fed47f0c4216ba2cc41ee",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Bounded replay contracts cover 209 calculations and do not generalize to their entire families.",
@@ -43,7 +43,7 @@
     "manifest": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json",
     "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
   },
-  "publication_disposition": "exact_release_status",
+  "publication_disposition": "local_unreleased_status",
   "schema_version": "moira.lightbox-current-status/v1",
   "summary": {
     "canonical_calculations": 1251,
@@ -65,8 +65,8 @@
     },
     "production_user_calculations": 171,
     "replayed_contracts": 63,
-    "replayed_contracts_passed_exact_source": 63,
-    "replayed_contracts_passed_local": 0,
+    "replayed_contracts_passed_exact_source": 0,
+    "replayed_contracts_passed_local": 63,
     "reviewed_families": 150,
     "surfaces_with_replay_contracts": 209,
     "surfaces_without_replay_contracts": 1042,
