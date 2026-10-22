@@ -786,7 +786,7 @@ def test_preflight_cli_exit_status(tmp_path: Path) -> None:
 
 
 def test_preflight_ci_blocks_builds_and_does_not_repeat_scan() -> None:
-    """Both builds wait for the dependency-free corpus scan; self-tests remain."""
+    """All native builds wait for the dependency-free scan; self-tests remain."""
     import yaml
 
     root = Path(__file__).resolve().parents[2]
@@ -797,8 +797,10 @@ def test_preflight_ci_blocks_builds_and_does_not_repeat_scan() -> None:
     assert commands == ["python tests/unit/test_docstring_governance.py"]
     assert not preflight.get("continue-on-error")
     assert all(not step.get("continue-on-error") and "if" not in step for step in preflight["steps"])
-    for job_name in ("release-hardening", "python-310-server-compatibility"):
-        assert jobs[job_name]["needs"] == "docstring-preflight"
+    for job_name in ("generated-artifacts", "release-hardening", "python-310-server-compatibility"):
+        needs = jobs[job_name]["needs"]
+        dependencies = [needs] if isinstance(needs, str) else needs
+        assert "docstring-preflight" in dependencies
         assert "if" not in jobs[job_name]
     self_tests = [step["run"] for step in jobs["release-hardening"]["steps"]
                   if "test_docstring_governance.py" in step.get("run", "")]

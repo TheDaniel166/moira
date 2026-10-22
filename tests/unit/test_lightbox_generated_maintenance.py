@@ -208,6 +208,7 @@ def test_required_gate_checks_without_refresh_and_runs_its_regressions():
     assert "python scripts/maintain_generated.py --check" in commands
     assert "--refresh" not in commands
     assert "test_lightbox_generated_maintenance.py" in commands
+    assert 'tests/unit/test_docstring_governance.py -k "test_checker or test_preflight"' in commands
     assert not any(step.get("continue-on-error") == "true" for step in steps)
 
 

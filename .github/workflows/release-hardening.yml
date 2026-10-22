@@ -53,6 +53,9 @@ jobs:
       - name: Install package and maintenance test dependencies
         run: python -m pip install -e ".[dev,server]"
 
+      - name: Check existing docstring preflight wiring
+        run: python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q
+
       - name: Check generated artifacts without rewriting them
         run: python scripts/maintain_generated.py --check
 
@@ -162,7 +165,7 @@ jobs:
 
   release-hardening:
     name: Release Hardening Gate
-    needs: generated-artifacts
+    needs: [docstring-preflight, generated-artifacts]
     runs-on: ubuntu-latest
 
     env:
