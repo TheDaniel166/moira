@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v2`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.10.1`
-- Surface fingerprint: `dd5c5ba47e6100f607f7687e468f10f26985bde671e1fba4a8ebdfa55fc5b6ab`
+- Surface fingerprint: `42469c2af9ce7e3ce974a9bd21751320e7ee5cb4eff3a792b6a5e24dee85ea97`
 - API structural fingerprint: `a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9`
 - Structural fingerprint schema: `moira.lightbox-structural-fingerprint/v1`
 - REST schema renderer: FastAPI `0.136.3`, Pydantic `2.14.1`
