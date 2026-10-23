@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 531
-- Registered OpenAPI operations: 531 (GET 48, POST 483)
+- Registered OpenAPI paths: 532
+- Registered OpenAPI operations: 532 (GET 48, POST 484)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 527
+- Versioned `/v1` paths: 528
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3796,6 +3796,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/primary-directions/profile/reduction` | primary-directions | `primary_directions_profile_reduction_route_v1_primary_directions_profile_reduction_post` |
 | `POST` | `/v1/primary-directions/relations` | primary-directions | `primary_directions_relations_route_v1_primary_directions_relations_post` |
 | `POST` | `/v1/primary-directions/speculum` | primary-directions | `primary_directions_speculum_route_v1_primary_directions_speculum_post` |
+| `POST` | `/v1/primary-directions/time-keys` | primary-directions | `primary_directions_time_keys_route_v1_primary_directions_time_keys_post` |
 | `POST` | `/v1/primary-directions/timeline` | primary-directions | `primary_directions_timeline_route_v1_primary_directions_timeline_post` |
 | `POST` | `/v1/profections/annual` | timelords | `annual_profection_route_v1_profections_annual_post` |
 | `POST` | `/v1/profections/monthly` | timelords | `monthly_profection_route_v1_profections_monthly_post` |
