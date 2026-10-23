@@ -5538,6 +5538,7 @@
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
     },
@@ -9568,6 +9569,7 @@
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrodynes.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py",
         "tests/unit/test_vedic_dignities.py"
       ]
@@ -17083,6 +17085,7 @@
         "tests/unit/test_classical_perfection.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_lilly_core_source_fixtures.py",
         "tests/unit/test_western_electional.py"
       ]
@@ -29456,6 +29459,7 @@
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
     },
@@ -31613,6 +31617,7 @@
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
     },
@@ -31686,6 +31691,7 @@
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
     },
@@ -37134,6 +37140,7 @@
       "surface_id": "python:moira.facade:TRADITIONAL_MOIETY_ORBS",
       "surface_kind": "excluded_value",
       "test_paths": [
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_lilly_core_source_fixtures.py",
         "tests/unit/test_moiety_orbs.py"
       ]
@@ -45680,6 +45687,7 @@
         "tests/test_api_reference_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_dignities_public_api.py",
+        "tests/unit/test_horary_reception.py",
         "tests/unit/test_moira_dignities_and_lots.py"
       ]
     },
@@ -53651,7 +53659,8 @@
         "wiki/02_standards/EGYPTIAN_BOUNDS_BACKEND_STANDARD.md",
         "wiki/02_standards/LONGEVITY_BACKEND_STANDARD.md",
         "wiki/02_standards/TIMELORDS_BACKEND_STANDARD.md",
-        "wiki/02_standards/TRIPLICITY_BACKEND_STANDARD.md"
+        "wiki/02_standards/TRIPLICITY_BACKEND_STANDARD.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -82605,5 +82614,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "42469c2af9ce7e3ce974a9bd21751320e7ee5cb4eff3a792b6a5e24dee85ea97"
+  "surface_fingerprint_sha256": "93a709444e1fd206f5d66765b688d68d936bcf6c7c762ed3e3c7a31599b5c197"
 }

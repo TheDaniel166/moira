@@ -38,6 +38,16 @@ source/operational decisions; it does not change v1 or admit a new production
 judgement profile. The original packet inventory and assembly receipt below
 remain historical records of the preceding checkpoint.
 
+## P2 condition and reception implementation: 2026-10-23
+
+The [P2 implementation contract](LILLY_P2_IMPLEMENTATION_2026-10-23.md)
+documents the additive Python evidence layer: essential condition snapshots,
+all five directed reception bases, same/mixed reciprocity, the selected orb
+policy, and role-qualified translation/collection reception prerequisites.
+It reuses the collated fixtures as independent tests and preserves v1.
+The earlier source-decision and fixture-admission statements remain historical
+checkpoints; their records are not rewritten as a broader judgement admission.
+
 ## Decision at this checkpoint
 
 The original 1647 photographed pages govern. OCR and modern editorial material

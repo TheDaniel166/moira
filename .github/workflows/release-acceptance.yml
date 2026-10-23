@@ -49,6 +49,7 @@ jobs:
         run: |
           python -m pytest \
             tests/unit/test_lilly_core_source_fixtures.py \
+            tests/unit/test_horary_reception.py \
             tests/unit/test_lilly_packet_validation.py \
             tests/unit/test_lilly_1647_doctrine.py \
             tests/unit/test_classical_perfection.py \

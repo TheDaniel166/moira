@@ -37646,6 +37646,12 @@
             {
               "kind": "test",
               "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/unit/test_horary_reception.py",
+              "version_identity": "6.10.1"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
               "target": "tests/unit/test_moira_dignities_and_lots.py",
               "version_identity": "6.10.1"
             },

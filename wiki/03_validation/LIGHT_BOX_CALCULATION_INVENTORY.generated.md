@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v2`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.10.1`
-- Surface fingerprint: `42469c2af9ce7e3ce974a9bd21751320e7ee5cb4eff3a792b6a5e24dee85ea97`
+- Surface fingerprint: `93a709444e1fd206f5d66765b688d68d936bcf6c7c762ed3e3c7a31599b5c197`
 - API structural fingerprint: `a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9`
 - Structural fingerprint schema: `moira.lightbox-structural-fingerprint/v1`
 - REST schema renderer: FastAPI `0.136.3`, Pydantic `2.14.1`
@@ -204,7 +204,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:calculate_lot_dependencies` | `calculate_lot_dependencies` | `calculation` | yes | `canonical` | `moira/lots.py:2853` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_lots_public_api.py` +1 |
 | `python:moira.facade:calculate_lots` | `calculate_lots` | `calculation` | yes | `canonical` | `moira/lots.py:2752` | `docs/architecture/DERIVED_CHART_POSITIONS_ANALYSIS_ARC.md` +3 | `tests/test_api_reference_validation.py` +7 |
 | `python:moira.facade:calculate_midpoints` | `calculate_midpoints` | `calculation` | yes | `canonical` | `moira/midpoints.py:544` | `docs/architecture/DERIVED_CHART_POSITIONS_ANALYSIS_ARC.md` +2 | `tests/server/test_server_relationship_routes.py` +2 |
-| `python:moira.facade:calculate_receptions` | `calculate_receptions` | `calculation` | yes | `canonical` | `moira/dignities.py:3429` | `docs/architecture/P9-04_CLASSICAL_DIGNITIES_TRANSPORT_DESIGN.md` +1 | `tests/test_api_reference_validation.py` +3 |
+| `python:moira.facade:calculate_receptions` | `calculate_receptions` | `calculation` | yes | `canonical` | `moira/dignities.py:3429` | `docs/architecture/P9-04_CLASSICAL_DIGNITIES_TRANSPORT_DESIGN.md` +1 | `tests/test_api_reference_validation.py` +4 |
 | `python:moira.facade:calculate_varga` | `calculate_varga` | `calculation` | yes | `canonical` | `moira/varga.py:388` | `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md` +10 | `tests/server/test_server_varga_routes.py` +6 |
 | `python:moira.facade:calendar_datetime_from_jd` | `calendar_datetime_from_jd` | `calculation` | yes | `canonical` | `moira/julian.py:774` | `wiki/02_services/SERVICE_LAYER_GUIDE.md` +4 | `tests/integration/test_custom_type13_toutatis_kernel.py` +7 |
 | `python:moira.facade:calendar_from_jd` | `calendar_from_jd` | `calculation` | yes | `canonical` | `moira/dispatch.py:636` | `docs/architecture/MOIRA_NATIVE_MIGRATION_TRACKER.md` +8 | `tests/harness_meta/test_reference_epoch_policy.py` +7 |
@@ -482,7 +482,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:intensity_at` | `intensity_at` | `calculation` | yes | `canonical` | `moira/huber.py:556` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_classical_facade.py` +2 |
 | `python:moira.facade:intensity_function_spectrum` | `intensity_function_spectrum` | `calculation` | yes | `canonical` | `moira/harmograms/compute.py:271` | `docs/architecture/MOIRA_NATIVE_CLOSURE_PROGRAM.md` +5 | `tests/server/test_server_harmograms_routes.py` +7 |
 | `python:moira.facade:is_besieged` | `is_besieged` | `calculation` | yes | `canonical` | `moira/dignities.py:921` | `docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md` +4 | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
-| `python:moira.facade:is_day_chart` | `is_day_chart` | `calculation` | yes | `canonical` | `moira/dignities.py:3586` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +13 | `tests/integration/test_classical_perfection_de441.py` +35 |
+| `python:moira.facade:is_day_chart` | `is_day_chart` | `calculation` | yes | `canonical` | `moira/dignities.py:3586` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +14 | `tests/integration/test_classical_perfection_de441.py` +35 |
 | `python:moira.facade:is_in_eclipse` | `is_in_eclipse` | `calculation` | yes | `canonical` | `moira/variable_stars.py:1036` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_variable_stars.py` |
 | `python:moira.facade:is_in_halb` | `is_in_halb` | `calculation` | yes | `canonical` | `moira/dignities.py:512` | `wiki/06_roadmap/hellenistic_completion/archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md` +1 | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:is_in_hayz` | `is_in_hayz` | `calculation` | yes | `canonical` | `moira/dignities.py:444` | `docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md` +4 | `tests/unit/test_api_surface_adversarial_audit.py` +4 |
