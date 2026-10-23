@@ -14,6 +14,7 @@ import ast
 import dataclasses
 import hashlib
 import importlib
+import importlib.metadata
 import importlib.util
 import inspect
 import json
@@ -43,7 +44,8 @@ CONFORMANCE_MARKDOWN_PATH = (
     REPO_ROOT / "wiki" / "03_validation" / "LIGHT_BOX_CONFORMANCE_MANIFEST.generated.md"
 )
 GENERATOR_PATH = "scripts/generate_lightbox_calculation_inventory.py"
-SCHEMA_VERSION = "moira.lightbox-calculation-inventory/v1"
+SCHEMA_VERSION = "moira.lightbox-calculation-inventory/v2"
+STRUCTURAL_FINGERPRINT_VERSION = "moira.lightbox-structural-fingerprint/v1"
 CLASSIFICATION_VERSION = "moira.lightbox-surface-classification/v1"
 HTTP_METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE")
 
@@ -480,7 +482,8 @@ def _route_reference_index(
         operation_id = str(row["operation_id"])
         identifier_ids[operation_id].add(surface_id)
         handler_name = str(row["handler_qualname"]).rsplit(".", 1)[-1]
-        if len(handler_name) >= 8:
+        # Ordinary prose about an event sequence does not identify an API.
+        if len(handler_name) >= 8 and handler_name != "sequence":
             identifier_ids[handler_name].add(surface_id)
 
     result: dict[str, list[str]] = {str(row["surface_id"]): [] for row in rows}
@@ -554,6 +557,144 @@ def _python_id(name: str) -> str:
     return f"python:moira.facade:{name}"
 
 
+def _ast_shape(value: Any) -> Any:
+    """Serialize AST data explicitly; ast.dump presentation varies by Python version."""
+    if isinstance(value, ast.AST):
+        return {
+            "node": type(value).__name__,
+            "fields": {name: _ast_shape(item) for name, item in ast.iter_fields(value)},
+        }
+    if isinstance(value, list):
+        return [_ast_shape(item) for item in value]
+    if value is None or isinstance(value, (str, bool, int, float)):
+        return value
+    return {"literal_type": type(value).__name__, "literal_repr": repr(value)}
+
+
+def _declaration(node: ast.AST) -> Any:
+    """Describe direct API declarations without locations or executable bodies."""
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return {
+            "kind": type(node).__name__,
+            "name": node.name,
+            "arguments": _ast_shape(node.args),
+            "returns": _ast_shape(node.returns),
+            "decorators": [_ast_shape(item) for item in node.decorator_list],
+            "type_params": [_ast_shape(item) for item in getattr(node, "type_params", ())],
+        }
+    if isinstance(node, ast.ClassDef):
+        declarations = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Assign, ast.AnnAssign)
+        return {
+            "kind": "ClassDef",
+            "name": node.name,
+            "bases": [_ast_shape(item) for item in node.bases],
+            "keywords": [_ast_shape(item) for item in node.keywords],
+            "decorators": [_ast_shape(item) for item in node.decorator_list],
+            "members": [_declaration(item) for item in node.body if isinstance(item, declarations)],
+            "type_params": [_ast_shape(item) for item in getattr(node, "type_params", ())],
+        }
+    return _ast_shape(node)
+
+
+def _python_api_contract(owner: Mapping[str, Any], trees: dict[str, ast.Module]) -> str:
+    relative = str(owner["source_path"])
+    if relative not in trees:
+        trees[relative] = ast.parse((REPO_ROOT / relative).read_text(encoding="utf-8"))
+    name = str(owner["owner_qualname"])
+    nodes = trees[relative].body
+    for part in name.split("."):
+        found = None
+        for node in nodes:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == part:
+                found = node
+                break
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                if any(isinstance(child, ast.Name) and child.id == part
+                       for target in targets for child in ast.walk(target)):
+                    found = node
+                    break
+        if found is None:
+            module_path = _module_path(str(owner["owner_module"]))
+            if _relative(module_path) != relative:
+                return _python_api_contract({**owner, "source_path": _relative(module_path)}, trees)
+            resolved = _resolve_imported_symbol(str(owner["owner_module"]), name.split(".")[0])
+            if resolved is not None and _relative(resolved[2]) != relative:
+                return _python_api_contract({
+                    "source_path": _relative(resolved[2]),
+                    "owner_module": resolved[0],
+                    "owner_qualname": resolved[1],
+                }, trees)
+            raise LightBoxInventoryError(f"cannot resolve API declaration: {relative}:{name}")
+        nodes = getattr(found, "body", ())
+    return _canonical_sha256(_declaration(found))
+
+
+def _openapi_contract(operation: Mapping[str, Any], schema: Mapping[str, Any]) -> str:
+    """Hash operation constraints and reachable schemas, excluding prose annotations."""
+    annotations = {"description", "summary", "title", "example", "examples", "externalDocs"}
+
+    def strip(value: Any) -> Any:
+        if isinstance(value, list):
+            return [strip(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        result = {}
+        for key, item in value.items():
+            if key in annotations:
+                continue
+            if key in {"default", "const", "enum", "security"}:
+                result[key] = item  # These may contain user keys named "description".
+            elif key in {"properties", "patternProperties", "$defs", "definitions", "headers", "content", "responses", "encoding", "links", "mapping"}:
+                result[key] = {name: strip(child) for name, child in item.items()}
+            else:
+                result[key] = strip(item)
+        return result
+
+    components: dict[str, Any] = {}
+
+    def visit(value: Any) -> None:
+        if isinstance(value, list):
+            for item in value:
+                visit(item)
+        elif isinstance(value, dict):
+            reference = value.get("$ref")
+            if isinstance(reference, str) and reference not in components:
+                if not reference.startswith("#/"):
+                    raise LightBoxInventoryError(f"unsupported external OpenAPI reference: {reference}")
+                target: Any = schema
+                for part in reference[2:].split("/"):
+                    target = target[part.replace("~1", "/").replace("~0", "~")]
+                components[reference] = strip(target)
+                visit(components[reference])
+            for key, item in value.items():
+                if key not in {"default", "const", "enum", "security"}:
+                    visit(item)
+
+    contract = strip({key: value for key, value in operation.items() if key != "tags"})
+    visit(contract)
+    return _canonical_sha256({"operation": contract, "referenced_components": components})
+
+
+def structural_payload(inventory: Mapping[str, Any], *, legacy: bool = False) -> dict[str, Any]:
+    """Project the declared public API; discovery leads never bind evidence."""
+    metadata = {"source_line", "documentation_paths", "test_paths", "owner_resolution", "classification_rationale", "exclusion_reason", "tags"}
+    if legacy:
+        metadata.add("api_contract_sha256")
+    return {
+        "fingerprint_version": STRUCTURAL_FINGERPRINT_VERSION,
+        "classification_version": inventory["classification_version"],
+        **{
+            collection: sorted(
+                ({key: value for key, value in row.items() if key not in metadata}
+                 for row in inventory[collection]),
+                key=lambda row: row["surface_id"],
+            )
+            for collection in ("python_exports", "rest_operations")
+        },
+    }
+
+
 def _rest_id(method: str, path: str) -> str:
     return f"rest:{method}:{path}"
 
@@ -583,6 +724,7 @@ def _build_python_exports(
     }
 
     rows: list[dict[str, Any]] = []
+    trees: dict[str, ast.Module] = {}
     for name in sorted(names):
         value = getattr(facade, name)
         export_kind = _export_kind(value)
@@ -623,6 +765,7 @@ def _build_python_exports(
                 "classification_rationale": rationale,
                 "exclusion_reason": exclusion_reason,
                 **owner,
+                "api_contract_sha256": _python_api_contract(owner, trees),
                 "documentation_paths": doc_index[name],
                 "test_paths": test_index[name],
             }
@@ -710,6 +853,7 @@ def _build_rest_operations(
                     "operation_id": operation_id,
                     "request_schema": _request_schema(operation),
                     "response_schema": _response_schema(operation),
+                    "api_contract_sha256": _openapi_contract(operation, schema),
                     "surface_kind": surface_kind,
                     "in_lightbox_calculation_scope": in_scope,
                     "classification_basis": basis,
@@ -773,6 +917,10 @@ def build_inventory() -> dict[str, Any]:
         "classification_version": CLASSIFICATION_VERSION,
         "generated_by": GENERATOR_PATH,
         "engine_version": moira.__version__,
+        "schema_renderer": {
+            "fastapi": importlib.metadata.version("fastapi"),
+            "pydantic": importlib.metadata.version("pydantic"),
+        },
         "authority": {
             "python": "moira.facade.__all__ plus runtime object/source ownership",
             "rest": "moira_server.app.create_app().openapi() plus FastAPI endpoint ownership",
@@ -827,6 +975,9 @@ def build_inventory() -> dict[str, Any]:
         "python_exports": python_exports,
         "rest_operations": rest_operations,
     }
+    payload["structural_fingerprint_version"] = STRUCTURAL_FINGERPRINT_VERSION
+    payload["structural_fingerprint_sha256"] = _canonical_sha256(structural_payload(payload))
+    # Retain the full-report digest separately; --check still compares every byte.
     payload["surface_fingerprint_sha256"] = _canonical_sha256(payload)
     return payload
 
@@ -871,6 +1022,9 @@ def render_markdown(payload: Mapping[str, Any] | None = None) -> str:
         f"- Classification: `{current['classification_version']}`",
         f"- Engine version: `{current['engine_version']}`",
         f"- Surface fingerprint: `{current['surface_fingerprint_sha256']}`",
+        f"- API structural fingerprint: `{current['structural_fingerprint_sha256']}`",
+        f"- Structural fingerprint schema: `{current['structural_fingerprint_version']}`",
+        f"- REST schema renderer: FastAPI `{current['schema_renderer']['fastapi']}`, Pydantic `{current['schema_renderer']['pydantic']}`",
         "- Python authority: `moira.facade.__all__` plus runtime source ownership",
         "- REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership",
         "",
@@ -1019,6 +1173,10 @@ def main() -> int:
             print(
                 "Light Box calculation inventory is stale: "
                 + ", ".join(_relative(path) for path in stale),
+                file=sys.stderr,
+            )
+            print(
+                "Current REST schema renderer: " + json.dumps(payload["schema_renderer"], sort_keys=True),
                 file=sys.stderr,
             )
             print(

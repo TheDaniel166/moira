@@ -3931,7 +3931,7 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "4d96451c654d711fba94087980386781dc2def1839022a3e8da51f9c4d2fb611",
+  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",
@@ -3952,11 +3952,16 @@
       "source_revision": "04dd54cc867fa154c0701d73e8b69f0a00755496"
     }
   ],
-  "schema_version": "moira.lightbox-product-usage/v1",
+  "schema_version": "moira.lightbox-product-usage/v2",
   "summary": {
     "callsites": 390,
     "production_user_surfaces": 171,
     "python_surfaces": 45,
     "rest_surfaces": 126
+  },
+  "fingerprint_migration": {
+    "from_schema_version": "moira.lightbox-product-usage/v1",
+    "legacy_inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+    "boundary": "Reviewed API-binding migration only; original thresholds and audit provenance are unchanged."
   }
 }

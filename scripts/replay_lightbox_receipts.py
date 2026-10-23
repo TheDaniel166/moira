@@ -26,7 +26,7 @@ INVENTORY_PATH = (
 DEFAULT_RECEIPT_PATH = (
     REPO_ROOT / "tests" / "evidence" / "lightbox" / "receipts" / "local.generated.json"
 )
-SCHEMA_VERSION = "moira.lightbox-evidence-receipts/v1"
+SCHEMA_VERSION = "moira.lightbox-evidence-receipts/v2"
 PYTEST_SUMMARY_RE = re.compile(r"(?:^|\s)(\d+) passed(?:,|\s|$)")
 
 
@@ -77,6 +77,10 @@ def load_contracts(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     contracts = _load(contracts_path)
     inventory = _load(inventory_path)
+    if inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v2":
+        raise ReceiptReplayError("unsupported inventory schema; regenerate before replay")
+    if inventory.get("structural_fingerprint_version") != "moira.lightbox-structural-fingerprint/v1":
+        raise ReceiptReplayError("unsupported structural fingerprint version")
     if contracts.get("schema_version") != "moira.lightbox-evidence-contracts/v1":
         raise ReceiptReplayError("unsupported evidence-contract schema")
     known = {
@@ -121,18 +125,85 @@ def _passed_count(output: str) -> int:
     return progress_counts[-1] if progress_counts else 0
 
 
+def validate_receipt_binding(receipt_set: Mapping[str, Any], fingerprint: str) -> None:
+    """Reject mixed bindings and retain an auditable legacy migration boundary."""
+    if receipt_set.get("schema_version") != SCHEMA_VERSION:
+        raise ReceiptReplayError("unsupported receipts schema; legacy receipts require explicit migration")
+    if receipt_set.get("inventory_fingerprint_sha256") != fingerprint:
+        raise ReceiptReplayError("receipt structural inventory drift; replay after reviewing API changes")
+    row_fingerprint = fingerprint
+    migration = receipt_set.get("binding_migration")
+    if migration is not None:
+        if not isinstance(migration, dict) or migration.get("schema_version") != "moira.lightbox-receipt-binding-migration/v1":
+            raise ReceiptReplayError("unsupported receipt binding migration")
+        header = migration.get("legacy_header", {})
+        if not isinstance(header, dict) or header.get("schema_version") != "moira.lightbox-evidence-receipts/v1":
+            raise ReceiptReplayError("invalid legacy receipt header")
+        if migration.get("legacy_inventory_fingerprint_sha256") != header.get("inventory_fingerprint_sha256"):
+            raise ReceiptReplayError("legacy inventory migration identities disagree")
+        original = {**header, "receipts": receipt_set.get("receipts", [])}
+        if _sha(original) != migration.get("legacy_receipt_set_sha256"):
+            raise ReceiptReplayError("legacy receipt execution records changed after migration")
+        for key, value in header.items():
+            if key not in {"schema_version", "inventory_fingerprint_sha256"} and receipt_set.get(key) != value:
+                raise ReceiptReplayError(f"legacy receipt header changed after migration: {key}")
+        if receipt_set.get("artifact_status") != "local_unreleased_worktree":
+            raise ReceiptReplayError("migrated legacy receipts cannot establish exact-source evidence")
+        row_fingerprint = header.get("inventory_fingerprint_sha256")
+    for row in receipt_set.get("receipts", []):
+        if row.get("inventory_fingerprint_sha256") != row_fingerprint:
+            raise ReceiptReplayError("individual receipt inventory binding differs from its set")
+        if row.get("receipt_id") != _sha({key: value for key, value in row.items() if key != "receipt_id"}):
+            raise ReceiptReplayError("individual receipt digest mismatch")
+
+
+def migrate_legacy_binding(receipt_set: Mapping[str, Any], legacy_inventory: Mapping[str, Any]) -> dict[str, Any]:
+    """Bind historical local results to reviewed API metadata without replaying them."""
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from scripts.generate_lightbox_calculation_inventory import _canonical_sha256, structural_payload
+
+    contracts, inventory = load_contracts()
+    if receipt_set.get("schema_version") != "moira.lightbox-evidence-receipts/v1":
+        raise ReceiptReplayError("migration requires legacy v1 receipts")
+    if legacy_inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v1":
+        raise ReceiptReplayError("migration requires the retained v1 inventory")
+    old_fingerprint = legacy_inventory.get("surface_fingerprint_sha256")
+    if old_fingerprint != _canonical_sha256({key: value for key, value in legacy_inventory.items() if key != "surface_fingerprint_sha256"}):
+        raise ReceiptReplayError("legacy inventory digest mismatch")
+    if receipt_set.get("inventory_fingerprint_sha256") != old_fingerprint:
+        raise ReceiptReplayError("legacy inventory does not match retained receipts")
+    if receipt_set.get("contracts_sha256") != _sha(contracts):
+        raise ReceiptReplayError("legacy receipts were produced from different contracts")
+    if structural_payload(legacy_inventory, legacy=True) != structural_payload(inventory, legacy=True):
+        raise ReceiptReplayError("legacy and current public API ownership/classification differ; review and replay")
+    if receipt_set.get("artifact_status") != "local_unreleased_worktree" or any(
+        row.get("artifact_status") != "local_unreleased_worktree" for row in receipt_set.get("receipts", [])
+    ):
+        raise ReceiptReplayError("exact-source legacy receipts require a fresh replay under v2")
+    updated = dict(receipt_set)
+    updated["schema_version"] = SCHEMA_VERSION
+    updated["inventory_fingerprint_sha256"] = inventory["structural_fingerprint_sha256"]
+    updated["binding_migration"] = {
+        "schema_version": "moira.lightbox-receipt-binding-migration/v1",
+        "legacy_inventory_fingerprint_sha256": old_fingerprint,
+        "legacy_receipt_set_sha256": _sha(receipt_set),
+        "legacy_header": {key: value for key, value in receipt_set.items() if key != "receipts"},
+        "boundary": "Reviewed current structural binding only. Legacy execution did not record Python declarations or REST schema shapes. Original receipts remain unchanged; this is not a replay or exact-source evidence.",
+    }
+    validate_receipt_binding(updated, str(inventory["structural_fingerprint_sha256"]))
+    return updated
+
+
 def reclassify_existing(receipt_set: Mapping[str, Any]) -> dict[str, Any]:
     _, inventory = load_contracts()
+    validate_receipt_binding(receipt_set, str(inventory["structural_fingerprint_sha256"]))
+    if "binding_migration" in receipt_set:
+        return dict(receipt_set)  # The retained legacy records are immutable.
     updated = dict(receipt_set)
-    updated["engine_version"] = inventory["engine_version"]
-    updated["inventory_fingerprint_sha256"] = inventory["surface_fingerprint_sha256"]
     receipts: list[dict[str, Any]] = []
     for raw in receipt_set.get("receipts", []):
         receipt = dict(raw)
-        receipt["engine_version"] = inventory["engine_version"]
-        receipt["inventory_fingerprint_sha256"] = inventory[
-            "surface_fingerprint_sha256"
-        ]
         passed = _passed_count("\n".join(map(str, receipt.get("output_tail", []))))
         receipt["passed_tests"] = passed
         receipt["status"] = (
@@ -198,7 +269,7 @@ def replay_contract(
         "exclusions": list(contract["exclusions"]),
         "contract_sha256": _sha(contract),
         "engine_version": inventory["engine_version"],
-        "inventory_fingerprint_sha256": inventory["surface_fingerprint_sha256"],
+        "inventory_fingerprint_sha256": inventory["structural_fingerprint_sha256"],
         "source_revision": source_revision,
         "working_tree_clean": working_tree_clean,
         "artifact_status": "exact_source_revision"
@@ -283,7 +354,7 @@ def build_receipt_set(
         "contracts_path": CONTRACTS_PATH.relative_to(REPO_ROOT).as_posix(),
         "contracts_sha256": _sha(contracts),
         "engine_version": inventory["engine_version"],
-        "inventory_fingerprint_sha256": inventory["surface_fingerprint_sha256"],
+        "inventory_fingerprint_sha256": inventory["structural_fingerprint_sha256"],
         "source_revision": source_revision,
         "working_tree_clean": exact_source,
         "artifact_status": artifact_status,
@@ -302,6 +373,10 @@ def main() -> int:
     parser.add_argument("--claim", action="append", default=[])
     parser.add_argument("--output", type=Path, default=DEFAULT_RECEIPT_PATH)
     parser.add_argument(
+        "--migrate-legacy-inventory", type=Path,
+        help="explicitly migrate retained v1 local receipts using their matching v1 inventory; never runs tests",
+    )
+    parser.add_argument(
         "--reclassify-existing",
         action="store_true",
         help="re-evaluate a saved receipt set without rerunning its retained pytest output",
@@ -316,13 +391,17 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
+        if args.migrate_legacy_inventory and (args.reclassify_existing or args.require_exact_source or args.claim):
+            raise ReceiptReplayError("legacy migration cannot be combined with replay or reclassification options")
         if args.reclassify_existing and args.require_exact_source:
             raise ReceiptReplayError(
                 "--require-exact-source cannot be combined with --reclassify-existing"
             )
         output = args.output.resolve()
         receipt_set = (
-            reclassify_existing(_load(output))
+            migrate_legacy_binding(_load(output), _load(args.migrate_legacy_inventory))
+            if args.migrate_legacy_inventory
+            else reclassify_existing(_load(output))
             if args.reclassify_existing
             else build_receipt_set(
                 set(args.claim) or None,
@@ -339,8 +418,9 @@ def main() -> int:
         )
         temporary.replace(output)
         summary = receipt_set["summary"]
+        action = "Migrated" if args.migrate_legacy_inventory else "Reclassified" if args.reclassify_existing else "Replayed"
         print(
-            f"Replayed {summary['contracts_run']} Light Box contract(s): "
+            f"{action} {summary['contracts_run']} Light Box contract(s): "
             f"{summary['passed']} passed, {summary['failed']} failed."
         )
         return 0 if summary["failed"] == 0 else 1

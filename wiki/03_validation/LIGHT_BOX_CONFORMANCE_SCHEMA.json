@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://moira-astro.com/schemas/light-box-conformance-manifest-v1.json",
+  "$id": "https://moira-astro.com/schemas/light-box-conformance-manifest-v2.json",
   "title": "Moira Light Box conformance manifest",
   "description": "Release-bound conformance dispositions for every calculation surface admitted by the generated Light Box inventory. Unresolved is a valid visible state, never an implicit pass.",
   "type": "object",
@@ -20,10 +20,10 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "moira.lightbox-conformance-manifest/v1"
+      "const": "moira.lightbox-conformance-manifest/v2"
     },
     "inventory_schema_version": {
-      "const": "moira.lightbox-calculation-inventory/v1"
+      "const": "moira.lightbox-calculation-inventory/v2"
     },
     "classification_version": {
       "const": "moira.lightbox-surface-classification/v1"
@@ -33,6 +33,7 @@
       "minLength": 1
     },
     "inventory_fingerprint_sha256": {
+      "description": "Structural fingerprint of the declared public API, excluding discovery metadata; not execution freshness.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },

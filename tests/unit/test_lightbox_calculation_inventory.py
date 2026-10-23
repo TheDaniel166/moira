@@ -159,5 +159,8 @@ def test_fingerprint_and_serialization_are_deterministic(generator, inventory) -
     without_fingerprint = dict(inventory)
     del without_fingerprint["surface_fingerprint_sha256"]
     assert fingerprint == generator._canonical_sha256(without_fingerprint)
+    assert inventory["structural_fingerprint_sha256"] == generator._canonical_sha256(
+        generator.structural_payload(inventory)
+    )
     loaded = json.loads(generator.render_json(inventory))
     assert loaded == inventory
