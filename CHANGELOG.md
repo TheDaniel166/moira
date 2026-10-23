@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.10.2] - 2026-10-23
+
+### Fixed
+- Primary-direction distributor boundaries use the explicit natal Sun speed
+  with the Solar key, consistently with their participating events.
+
+### Added
+- Bounded exact primary-direction arc-to-time conversion over REST, returning
+  engine ages and matching Julian/calendar dates for all six admitted keys.
+  Dynamic keys retain actual ephemeris bisection and fail closed.
+
 ## [6.10.1] - 2026-10-17
 
 ### Added

@@ -2056,6 +2056,23 @@ barycenter is exposed without a declared mass model.
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
+### Exact primary-direction time keys (6.10.2)
+
+`POST /v1/primary-directions/time-keys` converts already solved arcs without
+repeating their geometry search. Send an aware natal `dt` and `items` containing
+unique `id`, `arc_deg` (finite, 0 through 180 degrees) and unique explicit `keys`.
+The six keys are `solar_ra_dynamic`, `solar_lon_dynamic`, `naibod`, `ptolemy`,
+`cardan` and `solar`. The batch allows at most 1,024 arcs and 2,048 projections.
+
+Each item returns `projections` with `key`, `age_years`, `perfection_jd_ut` and
+`perfection_iso`. The response includes `natal_jd_ut`, the actual
+`natal_solar_rate_deg_per_day`, and the governing `engine_surface`. It uses the
+same primary-directions UT1 clock and tropical-year calendar convention as
+the timeline endpoint. Zero arc is the natal origin. Dynamic keys use actual
+solar ephemeris bisection and fail explicitly when required data is unavailable;
+no analytical approximation or different key replaces them. This operation does
+not validate the submitted arcs' original geometry.
+
 ### Progression method menus
 
 Three progression endpoints are method-dispatched: the `method` field selects

@@ -11,6 +11,9 @@ Verifies:
 from __future__ import annotations
 
 import pytest
+from datetime import datetime
+from moira.constants import TROPICAL_YEAR
+from moira.julian import jd_from_datetime
 from fastapi.testclient import TestClient
 
 from moira_server.app import create_app
@@ -209,3 +212,30 @@ def test_timeline_endpoint_validation_errors(client_with_engine: TestClient):
         json={**_TIMELINE_BASE_PAYLOAD, "bound_doctrine": "not_a_doctrine"},
     )
     assert res4.status_code == 422
+
+
+@pytest.mark.parametrize("key", [
+    "solar_ra_dynamic", "solar_lon_dynamic", "naibod", "ptolemy", "cardan", "solar",
+])
+def test_all_six_keys_return_coherent_event_and_boundary_dates(client_with_engine, key):
+    """Every admitted key keeps the returned age, JD and UTC date together."""
+    response = client_with_engine.post("/v1/primary-directions/timeline", json={
+        **_TIMELINE_BASE_PAYLOAD,
+        "dt": "1990-06-15T18:32:00Z", "latitude": 40.7128, "longitude": -74.006,
+        "observer_lat": 40.7128, "observer_lon": -74.006,
+        "bodies": ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"],
+        "significators": ["ASC", "MC", "Sun", "Moon"],
+        "max_arc": 35, "max_age_years": 40, "key": key,
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["key"] == key
+    assert data["events"] and data["distributor_periods"]
+    for event in data["events"]:
+        expected = data["natal_jd_ut"] + event["age_years"] * TROPICAL_YEAR
+        assert event["perfection_jd_ut"] == pytest.approx(expected, abs=1e-9)
+        assert jd_from_datetime(datetime.fromisoformat(event["perfection_iso"])) == pytest.approx(expected, abs=1e-8)
+    for period in data["distributor_periods"]:
+        for age_field, date_field in [("entry_age", "entry_date_utc"), ("exit_age", "exit_date_utc")]:
+            expected = data["natal_jd_ut"] + period[age_field] * TROPICAL_YEAR
+            assert jd_from_datetime(datetime.fromisoformat(period[date_field])) == pytest.approx(expected, abs=1e-8)

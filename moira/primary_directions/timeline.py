@@ -18,15 +18,12 @@ from dataclasses import dataclass, replace
 from numbers import Real
 from typing import Iterable
 
-from ..constants import TROPICAL_YEAR
 from ..julian import safe_datetime_from_jd
 from ..egyptian_bounds import EgyptianBoundsDoctrine
 from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyPolicy,
-    convert_arc_to_time,
-    invert_solar_arc_lon,
-    invert_solar_arc_ra,
+    project_primary_direction_arc_time,
 )
 from .methods import PrimaryDirectionMethod
 from .spaces import PrimaryDirectionSpace
@@ -142,12 +139,9 @@ def _project_arc_to_time(
     solar_rate: float | None = None,
 ) -> tuple[float, float]:
     """Project one arc without silently substituting another key doctrine."""
-    if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-        return invert_solar_arc_ra(natal_jd_ut, arc_deg, reader=reader)
-    if key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-        return invert_solar_arc_lon(natal_jd_ut, arc_deg, reader=reader)
-    age = convert_arc_to_time(arc_deg, key=key, solar_rate=solar_rate)
-    return age, natal_jd_ut + age * TROPICAL_YEAR
+    return project_primary_direction_arc_time(
+        natal_jd_ut, arc_deg, key, solar_rate=solar_rate, reader=reader,
+    )
 
 
 def compute_primary_directions_timeline(
@@ -261,6 +255,9 @@ def compute_primary_directions_timeline(
     # Partition bound boundaries and aspectual arcs for distributor chronology
     bound_arcs = [a for a in raw_arcs if a.relational_kind is PrimaryDirectionRelationalKind.TERM_BOUND]
     aspect_arcs = [a for a in raw_arcs if a.relational_kind is not PrimaryDirectionRelationalKind.TERM_BOUND]
+    # The arc search attaches the validated natal Sun speed to every arc.
+    # Term boundaries and participating events must use that same natal key.
+    natal_solar_rate = raw_arcs[0].solar_rate if raw_arcs else None
 
     # Resolve distributor periods for significators (all significators present if not specified)
     if significators is not None:
@@ -306,6 +303,7 @@ def compute_primary_directions_timeline(
                             key=resolved_key,
                             natal_jd_ut=chart_jd,
                             reader=reader,
+                            solar_rate=natal_solar_rate,
                         )
 
                     ext_age, ext_jd = _project_arc_to_time(
@@ -313,6 +311,7 @@ def compute_primary_directions_timeline(
                         key=resolved_key,
                         natal_jd_ut=chart_jd,
                         reader=reader,
+                        solar_rate=natal_solar_rate,
                     )
 
                     ent_iso = safe_datetime_from_jd(ent_jd).isoformat()

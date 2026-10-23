@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "families": [
     {
       "assessment_status": "partial",
@@ -3157,6 +3157,8 @@
         "tests/server/test_server_phase8_timelord_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
         "tests/server/test_server_phase8_zr_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/server/test_server_shadbala_service.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_products.py",
@@ -3249,6 +3251,7 @@
         "tests/unit/test_preservation_property_docstring_governance.py",
         "tests/unit/test_primary_direction_special_target_authority.py",
         "tests/unit/test_primary_directions_midpoints.py",
+        "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_reader_bound_sidereal_time.py",
         "tests/unit/test_relationship_forecasting.py",
@@ -5872,12 +5875,12 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 11,
+      "canonical_surface_count": 12,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 3,
+        "partial": 4,
         "unresolved": 8
       },
       "documentation_leads": [
@@ -5897,7 +5900,9 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/primary_directions/primary_directions_validation_codex.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
         "wiki/05_research/primary_directions/primary_directions_fixed_star_family_matrix.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
@@ -5916,14 +5921,15 @@
         "moira/primary_directions/__init__.py",
         "moira_server/routers/primary_directions.py"
       ],
-      "production_user_surface_count": 3,
+      "production_user_surface_count": 4,
       "production_user_surface_ids": [
         "rest:POST:/v1/primary-directions/network/reduction",
         "rest:POST:/v1/primary-directions/profile/reduction",
-        "rest:POST:/v1/primary-directions/speculum"
+        "rest:POST:/v1/primary-directions/speculum",
+        "rest:POST:/v1/primary-directions/time-keys"
       ],
       "python_surface_count": 2,
-      "rest_surface_count": 9,
+      "rest_surface_count": 10,
       "review_stages": [
         "stage_2_exemplars"
       ],
@@ -5931,6 +5937,7 @@
       "test_leads": [
         "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_phase8_primary_directions_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
         "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_primary_direction_adversarial_hardening.py",
@@ -8285,7 +8292,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "1db7b7b6dce6e608e581ed6d1299c160db04e6e57514d0365505da6277ce6b0d",
+  "inventory_fingerprint_sha256": "5ffcc8c48ffc2b72d3d7f70482f5983977b0ef73916f58ccbd1218826ccd3a38",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8297,7 +8304,7 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v1",
   "summary": {
-    "canonical_surface_count": 1251,
+    "canonical_surface_count": 1252,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
@@ -8314,12 +8321,12 @@
     "families_with_missing_documentation": 24,
     "families_with_missing_tests": 9,
     "family_count": 150,
-    "production_user_surface_count": 171,
+    "production_user_surface_count": 172,
     "reviewed_families": 150,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 209,
+      "partial": 210,
       "unresolved": 1042
     }
   }

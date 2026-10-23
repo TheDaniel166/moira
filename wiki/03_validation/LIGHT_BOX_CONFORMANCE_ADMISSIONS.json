@@ -3,6 +3,14 @@
   "boundary": "These are structural partial admissions, not numerical or release conformance certificates. Each entry is admitted only for the inspectability and semantic fields named by its reviewed contract kind; residual and exact-release verification remain unresolved.",
   "entries": [
     {
+      "surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "contract_kind": "primary_direction_time_keys_vessel",
+      "evidence_classes": [
+        "invariant",
+        "regression"
+      ]
+    },
+    {
       "surface_id": "python:moira.facade:datetime_from_jd",
       "contract_kind": "source_truth_vessel",
       "evidence_classes": ["authority", "invariant", "regression"]
