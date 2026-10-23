@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -35,6 +36,7 @@ def _exact_artifacts(
 ) -> tuple[Path, Path]:
     matrix = gate._load(gate.MATRIX_PATH)
     receipts = gate._load(gate.RECEIPTS_PATH)
+    receipts.pop("binding_migration", None)  # Model a fresh v2 execution.
     receipts["source_revision"] = source_revision
     receipts["working_tree_clean"] = True
     receipts["artifact_status"] = "exact_source_revision"
@@ -43,6 +45,11 @@ def _exact_artifacts(
         receipt["working_tree_clean"] = True
         receipt["artifact_status"] = "exact_source_revision"
         receipt["status"] = "passed"
+        receipt["inventory_fingerprint_sha256"] = receipts["inventory_fingerprint_sha256"]
+        receipt["receipt_id"] = hashlib.sha256(json.dumps(
+            {key: value for key, value in receipt.items() if key != "receipt_id"},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        ).encode("utf-8")).hexdigest()
     receipts["summary"]["contracts_run"] = len(receipts["receipts"])
     receipts["summary"]["passed"] = len(receipts["receipts"])
     receipts["summary"]["failed"] = 0

@@ -547,7 +547,7 @@ def _stub_build(
     contracts = {"contracts": [contract]}
     inventory = {
         "engine_version": "test",
-        "surface_fingerprint_sha256": "fingerprint",
+        "structural_fingerprint_sha256": "fingerprint",
     }
     snapshots_iter = iter(snapshots)
     monkeypatch.setattr(replay, "load_contracts", lambda: (contracts, inventory))

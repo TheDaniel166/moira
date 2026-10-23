@@ -30,7 +30,7 @@
   "engine_version": "6.10.1",
   "evidence_source_revision": "07f0e5fa872ce43206a89206d98f169b428552dd",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "6125fb3260b83b205ad14ad814b92438244a97375bade0ce095de836c78569c1",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Bounded replay contracts cover 209 calculations and do not generalize to their entire families.",
@@ -44,7 +44,7 @@
     "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
   },
   "publication_disposition": "local_unreleased_status",
-  "schema_version": "moira.lightbox-current-status/v1",
+  "schema_version": "moira.lightbox-current-status/v2",
   "summary": {
     "canonical_calculations": 1251,
     "conformant": 0,

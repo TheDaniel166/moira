@@ -63,6 +63,7 @@ jobs:
         run: |
           python -m pytest \
             tests/unit/test_lightbox_generated_maintenance.py \
+            tests/unit/test_lightbox_fingerprints.py \
             tests/unit/test_git_wiki_sync.py \
             tests/unit/test_hellenistic_inventory_generation.py \
             -q

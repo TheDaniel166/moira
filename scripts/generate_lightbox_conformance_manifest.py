@@ -42,7 +42,7 @@ INVENTORY_GENERATOR_PATH = (
     REPO_ROOT / "scripts" / "generate_lightbox_calculation_inventory.py"
 )
 GENERATOR_PATH = "scripts/generate_lightbox_conformance_manifest.py"
-SCHEMA_VERSION = "moira.lightbox-conformance-manifest/v1"
+SCHEMA_VERSION = "moira.lightbox-conformance-manifest/v2"
 
 CONFORMANCE_STATUSES = (
     "conformant",
@@ -2648,8 +2648,10 @@ def _summary(entries: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 
 
 def build_manifest(inventory: Mapping[str, Any]) -> dict[str, Any]:
+    if inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v2":
+        raise LightBoxConformanceError("unsupported inventory schema; regenerate v2 structural bindings")
     engine_version = str(inventory["engine_version"])
-    fingerprint = str(inventory["surface_fingerprint_sha256"])
+    fingerprint = str(inventory["structural_fingerprint_sha256"])
     admitted_rows = [
         row
         for collection in ("python_exports", "rest_operations")
@@ -2838,7 +2840,7 @@ def validate_manifest_semantics(
     if manifest.get("engine_version") != inventory.get("engine_version"):
         errors.append("$.engine_version: does not match LB-WP0 inventory")
     if manifest.get("inventory_fingerprint_sha256") != inventory.get(
-        "surface_fingerprint_sha256"
+        "structural_fingerprint_sha256"
     ):
         errors.append("$.inventory_fingerprint_sha256: does not match LB-WP0 inventory")
     return errors
@@ -2876,7 +2878,7 @@ def render_markdown(manifest: Mapping[str, Any]) -> str:
         "",
         f"- Schema: `{manifest['schema_version']}`",
         f"- Engine version: `{manifest['engine_version']}`",
-        f"- Inventory fingerprint: `{manifest['inventory_fingerprint_sha256']}`",
+        f"- Inventory structural fingerprint: `{manifest['inventory_fingerprint_sha256']}`",
         f"- Canonical schema: `{_relative(SCHEMA_PATH)}`",
         "",
         "## Boundary",

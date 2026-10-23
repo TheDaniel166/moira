@@ -1,9 +1,9 @@
 {
-  "schema_version": "moira.lightbox-release-baseline/v1",
+  "schema_version": "moira.lightbox-release-baseline/v2",
   "baseline_date": "2026-10-22",
   "source_parent_revision": "8c427532591c7901c8ec2d8424869b617bcb4634",
   "engine_version": "6.10.1",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "6125fb3260b83b205ad14ad814b92438244a97375bade0ce095de836c78569c1",
   "canonical_entries": 1251,
   "minimum_partial": 209,
   "maximum_unresolved": 1042,
@@ -11,5 +11,10 @@
   "maximum_production_user_unresolved": 0,
   "reviewed_families": 150,
   "minimum_replayed_contracts": 63,
-  "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review."
+  "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
+  "fingerprint_migration": {
+    "from_schema_version": "moira.lightbox-release-baseline/v1",
+    "legacy_inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+    "boundary": "Reviewed API-binding migration only; original thresholds and audit provenance are unchanged."
+  }
 }

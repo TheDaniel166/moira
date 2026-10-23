@@ -62,6 +62,73 @@ the generated diff, publish the nested wiki first, then commit its gitlink with
 the scoped parent changes. Use an isolated checkout when unrelated source work
 is in progress; the command performs no staging, commit, push, or evidence replay.
 
+### Separate fingerprint and execution identities
+
+The v2 inventory records two hashes:
+
+| Identity | Includes | Excludes | Used by |
+|---|---|---|---|
+| `surface_fingerprint_sha256` | The complete inventory payload, including its structural hash, engine label, discovery links, counts, and source locations | Its own hash field | Report identity and generated-artifact freshness |
+| `structural_fingerprint_sha256` | Public export/route membership, aliases, ownership paths/names, classifications, direct Python declarations, and each REST operation's reachable schema constraints | Source line numbers, Markdown/test mention paths, owner-resolution diagnostics, classification prose, REST tags/prose, engine label, discovery counts | Reviewed baseline, product-use snapshot, manifest, family reports, and receipt binding |
+
+Structural projection is versioned as
+`moira.lightbox-structural-fingerprint/v1`. All consuming artifact schemas move
+to v2; their existing `inventory_fingerprint_sha256` field now explicitly means
+the structural hash. The v1 whole-report hash is never silently reinterpreted.
+JSON hashing uses sorted object keys, compact separators, and UTF-8; surface
+collections are sorted by stable surface ID for structural hashing. Python
+declarations serialize explicit AST node fields, including empty and optional
+fields; they do not depend on interpreter-specific `ast.dump()` presentation.
+
+Python declaration hashes include parameter kinds, annotations, direct default
+expressions, decorators, class bases, and directly declared result fields and
+method signatures. They omit comments, docstrings, source positions, and function
+bodies. REST hashes include request/response constraints and transitively
+referenced schemas, including recursive schemas. Descriptions, examples, and
+titles are annotations; fields actually named `description` or `title` and
+their constraints remain part of the contract.
+
+This is API identity, not proof that implementations are equivalent. Transitive
+Python dependencies, evaluated defaults referenced through other constants,
+native code, resource contents, and function bodies still require their own
+source/resource review and appropriate execution. A stable structural hash does
+not refresh a receipt's source revision, engine version, timestamp, output,
+contract digest, or release status. Exact-source replay and release checks retain
+their existing boundary. Selective dependency-based replay is a separate task.
+
+After a documentation edit or a source-line shift, run `--refresh` normally.
+Discovery artifacts and the wiki must still be regenerated when stale;
+`--check` compares their complete rendered content. Untracked local Markdown can
+still change discovery links, so an isolated checkout remains useful for
+preserving drafts. Such metadata drift no longer requires rebinding the reviewed
+baseline, consumer audit, or execution receipts. Actual API changes still block
+those bindings and require deliberate review and the appropriate replay.
+
+#### One-time migration of retained local receipts
+
+Retain the matching v1 inventory before generating v2, then migrate explicitly:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\replay_lightbox_receipts.py --migrate-legacy-inventory C:\path\to\retained-v1-inventory.json
+```
+
+The command verifies the old inventory digest, its receipt binding, unchanged
+contracts, and matching legacy membership/classification/ownership. It preserves
+each original receipt byte-for-byte as a JSON value, including receipt IDs and
+execution history. The v2 envelope records the old header and full receipt-set
+digest so the old artifact can be reconstructed and checked. This reviewed
+current API binding does not establish declaration/schema shapes at the time of
+the old execution: v1 did not record them. Only local unreleased receipts may
+use this migration; exact-source v1 evidence requires a fresh v2 replay.
+
+Migration does not run tests. Maintenance never invokes it automatically.
+Baseline and product-use snapshot schema migration is a separate reviewed edit
+that preserves coverage thresholds, audit dates, consumer revisions, and
+callsites. `--reclassify-existing` cannot migrate schemas or rebind a changed
+structural hash; migrated execution records remain immutable. The assurance
+matrix verifies receipt digests and migration history and cannot promote a
+migration to exact-source evidence.
+
 ### Required pre-merge gate
 
 The Release Hardening workflow runs the stable, unique **Generated Artifact
@@ -90,6 +157,6 @@ The generated current-status artifacts are source-tree truth until an exact rele
 
 Exact evidence binds receipts to the inventory fingerprint and contract digest:
 
-1. `scripts/replay_lightbox_receipts.py --require-exact-source` records the clean source revision when `HEAD` and the clean worktree remain unchanged from the beginning through the end of the replay, while `--reclassify-existing` refreshes version/inventory metadata when contracts are unchanged.
+1. `scripts/replay_lightbox_receipts.py --require-exact-source` records the clean source revision when `HEAD` and the clean worktree remain unchanged from the beginning through the end of the replay. `--reclassify-existing` only re-evaluates retained results under the same structural binding; it cannot update their execution identity or supply fresh release evidence.
 2. The assurance matrix and current status are regenerated from those receipts and synchronized to `moira.wiki` via `scripts/sync_git_wiki.py`.
 3. `scripts/check_lightbox_release_gate.py --exact-release` accepts either the bounded pre-commit worktree (containing only the approved generated evidence paths and optional `moira.wiki` gitlink) or any clean committed worktree whose nested `moira.wiki` checkout is clean and matches the gitlink. It does not require a separate two-commit parent-SHA ceremony.
