@@ -27,6 +27,17 @@ complete Lilly judgement engine has been implemented.
 The JSON index is research data, not an engine input or normative policy file.
 The Markdown explains qualifications that must accompany its compact records.
 
+## Dignity, orb and reception follow-up: 2026-10-23
+
+The [decision tranche](LILLY_CORE_DECISIONS_2026-10-23.md) specifies the named
+dignity table, an explicit candidate orb policy, directed reception evidence
+and the first teaching fixtures. The
+[photograph collation](LILLY_CORE_COLLATION_2026-10-23.md) records checked
+source readings, copy annotations and witness variants. This advances selected
+source/operational decisions; it does not change v1 or admit a new production
+judgement profile. The original packet inventory and assembly receipt below
+remain historical records of the preceding checkpoint.
+
 ## Decision at this checkpoint
 
 The original 1647 photographed pages govern. OCR and modern editorial material

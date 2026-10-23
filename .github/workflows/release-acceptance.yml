@@ -45,6 +45,16 @@ jobs:
       - name: Sidereal conversion unit acceptance (51 cases)
         run: python -m pytest tests/unit/test_sidereal.py -q
 
+      - name: Lilly source fixtures and v1 horary compatibility
+        run: |
+          python -m pytest \
+            tests/unit/test_lilly_core_source_fixtures.py \
+            tests/unit/test_lilly_packet_validation.py \
+            tests/unit/test_lilly_1647_doctrine.py \
+            tests/unit/test_classical_perfection.py \
+            tests/unit/test_horary.py \
+            -q
+
       # -----------------------------------------------------------------------
       # Fixture-based integration acceptance slices (no DE441 required)
       # -----------------------------------------------------------------------

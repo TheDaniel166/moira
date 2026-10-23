@@ -2962,6 +2962,7 @@
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/03_validation/YEAR_SEMANTICS_AUDIT.md",
         "wiki/05_research/MOON_LONGITUDE_RESIDUAL_INVESTIGATION_2026-05-09.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_CORE_DECISIONS_2026-10-23.md",
         "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/VEDIC_GOCHAR_WINDOWS_IMPLEMENTATION_PLAN_2026-10-11.md",
@@ -4478,6 +4479,7 @@
         "tests/unit/test_classical_perfection.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_lilly_core_source_fixtures.py",
         "tests/unit/test_western_electional.py"
       ]
     },
@@ -17081,6 +17083,7 @@
         "tests/unit/test_classical_perfection.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_lilly_core_source_fixtures.py",
         "tests/unit/test_western_electional.py"
       ]
     },
@@ -37131,6 +37134,7 @@
       "surface_id": "python:moira.facade:TRADITIONAL_MOIETY_ORBS",
       "surface_kind": "excluded_value",
       "test_paths": [
+        "tests/unit/test_lilly_core_source_fixtures.py",
         "tests/unit/test_moiety_orbs.py"
       ]
     },
@@ -82601,5 +82605,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "dd5c5ba47e6100f607f7687e468f10f26985bde671e1fba4a8ebdfa55fc5b6ab"
+  "surface_fingerprint_sha256": "42469c2af9ce7e3ce974a9bd21751320e7ee5cb4eff3a792b6a5e24dee85ea97"
 }

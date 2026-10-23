@@ -1,0 +1,2060 @@
+{
+  "schema": "moira.research.lilly_core_decisions.v1",
+  "date": "2026-10-23",
+  "source_packet_commit": "94d4eef0b327f02ace5c8794bdba4a165611dce3",
+  "profile_id": "lilly_1647_core_candidate_2026_10_23",
+  "runtime_admitted": false,
+  "purpose": "Source-derived tables, proposed operational decisions and teaching-fixture expectations; not a new engine default",
+  "body_scope": [
+    "Sun",
+    "Moon",
+    "Mercury",
+    "Venus",
+    "Mars",
+    "Jupiter",
+    "Saturn"
+  ],
+  "source_locations": [
+    {
+      "id": "S01-P104",
+      "source_id": "S01",
+      "printed_page": 104,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0138.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0138.jp2",
+      "sha256": "2d96a1792a6f22791a05df863483a0cdc6667fb3f6acb8508651fde7fc793328",
+      "bytes": 2158789,
+      "cache_file": "pages/wellcome_p104.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P107",
+      "source_id": "S01",
+      "printed_page": 107,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0141.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0141.jp2",
+      "sha256": "4ddb9ec69c6ad5b09f25429cc46ef57ccc538b64b19b1b2e57c7274198b76283",
+      "bytes": 1802531,
+      "cache_file": "pages/wellcome_p107.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P110",
+      "source_id": "S01",
+      "printed_page": 110,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0144.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0144.jp2",
+      "sha256": "a8e14767e53e9af4b54ed20db3083779a88a9016562bfe7f814a252d35385d63",
+      "bytes": 2120231,
+      "cache_file": "pages/wellcome_p110.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P111",
+      "source_id": "S01",
+      "printed_page": 111,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0145.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0145.jp2",
+      "sha256": "b0006f01e54f63db3f791ac2fd1ab94a15fc4a50ae54bccce2293d019fae6e49",
+      "bytes": 1922727,
+      "cache_file": "pages/wellcome_p111.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P112",
+      "source_id": "S01",
+      "printed_page": 112,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0146.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0146.jp2",
+      "sha256": "908fccd4e821ab17074d6ff602451051e44a07f0fee083850ecd95565dc223ae",
+      "bytes": 2119968,
+      "cache_file": "pages/wellcome_p112.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P113",
+      "source_id": "S01",
+      "printed_page": 113,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0147.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0147.jp2",
+      "sha256": "eeb7754dbf9868c7ddf05baf942a9a631eed3e92a6762de87a0d1b7854e66d4e",
+      "bytes": 1835686,
+      "cache_file": "pages/wellcome_p113.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P114",
+      "source_id": "S01",
+      "printed_page": 114,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0148.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0148.jp2",
+      "sha256": "4e5c43da81d7ea86572d5afaec23b10ab7d45e7c64924aa654ecdec4cd3e996c",
+      "bytes": 2140696,
+      "cache_file": "pages/wellcome_p114.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P121",
+      "source_id": "S01",
+      "printed_page": 121,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0155.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0155.jp2",
+      "sha256": "d16df27e8e5d8b59914325bcb930ca7d4922a937fd9207276f15543d6a7179f7",
+      "bytes": 1716901,
+      "cache_file": "pages/wellcome_p121.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P122",
+      "source_id": "S01",
+      "printed_page": 122,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0156.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0156.jp2",
+      "sha256": "950cef4224731f3cd466cf82f1a6659e9930fcb2a5e59f58b9065f4e1c9cc82b",
+      "bytes": 2024343,
+      "cache_file": "pages/wellcome_p122.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P125",
+      "source_id": "S01",
+      "printed_page": 125,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0159.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0159.jp2",
+      "sha256": "7a44b4a145eeb5ca9bf788ad788567e5659830d716c97d57797278fd6cb279a9",
+      "bytes": 1954853,
+      "cache_file": "pages/wellcome_p125.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P126",
+      "source_id": "S01",
+      "printed_page": 126,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0160.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0160.jp2",
+      "sha256": "bc2f1c66e981a9590b0f76d07c2d75030ef40215ddc12bcf6ac0d51d4ae04471",
+      "bytes": 2053942,
+      "cache_file": "pages/wellcome_p126.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S02-P104",
+      "source_id": "S02",
+      "printed_page": 104,
+      "metadata_page_number": 106,
+      "leaf_index": 133,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0133.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "0f3965fdcfa4fe57ed727163be3b14767d2b6b7ce27b0a5ab036ead131f27d10",
+      "bytes": 1678995,
+      "cache_file": "pages/s02_p104_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P107",
+      "source_id": "S02",
+      "printed_page": 107,
+      "metadata_page_number": 109,
+      "leaf_index": 136,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0136.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "274567c00e59a7a686647538b02bab6db7aab42c1b609d6a86d14dc93e9f7c6c",
+      "bytes": 1636827,
+      "cache_file": "pages/s02_p107_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P110",
+      "source_id": "S02",
+      "printed_page": 110,
+      "metadata_page_number": 112,
+      "leaf_index": 139,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0139.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "37393be388157d51fa507a899eceeb3ec6b8f4924e1ad82c743a273ebc4e6f8b",
+      "bytes": 1710716,
+      "cache_file": "pages/s02_p110_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P111",
+      "source_id": "S02",
+      "printed_page": 111,
+      "metadata_page_number": 113,
+      "leaf_index": 140,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0140.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "5f8b8523ea46a8e939354c550a43610ccb70e5e18136a985197c84a827602b7d",
+      "bytes": 1689278,
+      "cache_file": "pages/s02_p111_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P112",
+      "source_id": "S02",
+      "printed_page": 112,
+      "metadata_page_number": 114,
+      "leaf_index": 141,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0141.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "2ffa8dbe1fbb4591022dba7846c5c5403245891abdb6097b579db04509bd1322",
+      "bytes": 1698511,
+      "cache_file": "pages/s02_p112_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P113",
+      "source_id": "S02",
+      "printed_page": 113,
+      "metadata_page_number": 115,
+      "leaf_index": 142,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0142.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "a45d176f946ec0ea2f4bc0ebf611917dfcdbf7b228c40340a276c189f2a518dd",
+      "bytes": 1693207,
+      "cache_file": "pages/s02_p113_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P114",
+      "source_id": "S02",
+      "printed_page": 114,
+      "metadata_page_number": 116,
+      "leaf_index": 143,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0143.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "b10c370f608ee34f215427d11818f4b08ba181ef6c5c8a53478445b8a2c1ce67",
+      "bytes": 1684747,
+      "cache_file": "pages/s02_p114_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P121",
+      "source_id": "S02",
+      "printed_page": 121,
+      "metadata_page_number": 123,
+      "leaf_index": 150,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0150.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "b418fe9f9fe5aacca1625c0d4d8aa84be217676b64b9c239413711c2568a0cec",
+      "bytes": 1644794,
+      "cache_file": "pages/s02_p121_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P122",
+      "source_id": "S02",
+      "printed_page": 122,
+      "metadata_page_number": 124,
+      "leaf_index": 151,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0151.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "2f7fdcc4dce1ce7ecbfc6348da28f8fd877d4cd10e491f1226f0ad919e622b2c",
+      "bytes": 1630865,
+      "cache_file": "pages/s02_p122_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P125",
+      "source_id": "S02",
+      "printed_page": 125,
+      "metadata_page_number": 127,
+      "leaf_index": 154,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0154.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "a34b6c3852c1cbd2ad93dfeae7245a8073388414d3cd3a706884e9158339a64e",
+      "bytes": 1708501,
+      "cache_file": "pages/s02_p125_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S02-P126",
+      "source_id": "S02",
+      "printed_page": 126,
+      "metadata_page_number": 128,
+      "leaf_index": 155,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0155.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "e247f47ce0c14eeb8fcc450fa38b8953060c609be07d5e68a605f19b0ca1a0b5",
+      "bytes": 1718584,
+      "cache_file": "pages/s02_p126_check.jpg",
+      "visual_status": "printed_header_and_selected_passage_checked"
+    },
+    {
+      "id": "S01-P102",
+      "source_id": "S01",
+      "printed_page": 102,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0136.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0136.jp2",
+      "sha256": "cd1abc1f58db1a73d0f026944f95f28f1cac4f5585dc65b0c9edf9560add7adb",
+      "bytes": 1966411,
+      "cache_file": "pages/wellcome_p102.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P105",
+      "source_id": "S01",
+      "printed_page": 105,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0139.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0139.jp2",
+      "sha256": "48b8cf53c03f78e86f6a4538fd17a03ea2b5b7a1fe58dfe167f6edd2ee9cb101",
+      "bytes": 1990942,
+      "cache_file": "pages/wellcome_p105.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-P115",
+      "source_id": "S01",
+      "printed_page": 115,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0149.jp2/full/3000,/0/default.jpg",
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0149.jp2",
+      "sha256": "7693112b8088018c0c1d1f5faff01cb61a6e1746f5e2b2171e2d04ceeeab7ee0",
+      "bytes": 1745426,
+      "cache_file": "pages/wellcome_p115.jpg",
+      "visual_status": "selected_passage_checked"
+    },
+    {
+      "id": "S01-TITLE",
+      "source_id": "S01",
+      "printed_page": null,
+      "url": "https://iiif.wellcomecollection.org/image/b30338724_0013.jp2/full/2000,/0/default.jpg",
+      "sha256": "37fd62522c8c1d4bfd96580fb71cc8145fa154a6c824e09da6ab456271635175",
+      "bytes": 900098,
+      "cache_file": "pages/wellcome_title_candidate_12.jpg",
+      "visual_status": "1647_imprint_visually_checked"
+    },
+    {
+      "id": "S02-TITLE",
+      "source_id": "S02",
+      "printed_page": null,
+      "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0012.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+      "sha256": "f8bbb017e909de06e2ba09c6f56fa362a500e95f886017c4e85db54a0c04eec5",
+      "bytes": 1639963,
+      "cache_file": "pages/s02_title_candidate_12.jpg",
+      "visual_status": "1647_imprint_visually_checked"
+    }
+  ],
+  "table_rows": [
+    {
+      "sign": "Aries",
+      "domicile": "Mars",
+      "house_marker_raw": "D",
+      "exaltation": {
+        "body": "Sun",
+        "degree_raw": 19
+      },
+      "triplicity_day": "Sun",
+      "triplicity_night": "Jupiter",
+      "terms_raw": [
+        {
+          "ruler": "Jupiter",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 14
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 21
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 26
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Mars",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Sun",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Venus",
+      "fall_printed": "Saturn",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Taurus",
+      "domicile": "Venus",
+      "house_marker_raw": "N",
+      "exaltation": {
+        "body": "Moon",
+        "degree_raw": 3
+      },
+      "triplicity_day": "Venus",
+      "triplicity_night": "Moon",
+      "terms_raw": [
+        {
+          "ruler": "Venus",
+          "end_degree": 8
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 15
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 22
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 26
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Mercury",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Moon",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Mars",
+      "fall_printed": null,
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Gemini",
+      "domicile": "Mercury",
+      "house_marker_raw": "D",
+      "exaltation": {
+        "body": "NorthNode",
+        "degree_raw": 3
+      },
+      "triplicity_day": "Saturn",
+      "triplicity_night": "Mercury",
+      "terms_raw": [
+        {
+          "ruler": "Mercury",
+          "end_degree": 7
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 14
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 21
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 25
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Jupiter",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Sun",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Jupiter",
+      "fall_printed": null,
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Cancer",
+      "domicile": "Moon",
+      "house_marker_raw": "N,D",
+      "exaltation": {
+        "body": "Jupiter",
+        "degree_raw": 15
+      },
+      "triplicity_day": "Mars",
+      "triplicity_night": "Mars",
+      "terms_raw": [
+        {
+          "ruler": "Mars",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 13
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 27
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Venus",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Moon",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Saturn",
+      "fall_printed": "Mars",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Leo",
+      "domicile": "Sun",
+      "house_marker_raw": "N,D",
+      "exaltation": null,
+      "triplicity_day": "Sun",
+      "triplicity_night": "Jupiter",
+      "terms_raw": [
+        {
+          "ruler": "Saturn",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 13
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 19
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 25
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Saturn",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Saturn",
+      "fall_printed": null,
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Virgo",
+      "domicile": "Mercury",
+      "house_marker_raw": "N",
+      "exaltation": {
+        "body": "Mercury",
+        "degree_raw": 15
+      },
+      "triplicity_day": "Venus",
+      "triplicity_night": "Moon",
+      "terms_raw": [
+        {
+          "ruler": "Mercury",
+          "end_degree": 7
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 13
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 18
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 24
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Sun",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Jupiter",
+      "fall_printed": "Venus",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Libra",
+      "domicile": "Venus",
+      "house_marker_raw": "D",
+      "exaltation": {
+        "body": "Saturn",
+        "degree_raw": 21
+      },
+      "triplicity_day": "Saturn",
+      "triplicity_night": "Mercury",
+      "terms_raw": [
+        {
+          "ruler": "Saturn",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 11
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 19
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 24
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Moon",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Mars",
+      "fall_printed": "Sun",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Scorpio",
+      "domicile": "Mars",
+      "house_marker_raw": "N",
+      "exaltation": null,
+      "triplicity_day": "Mars",
+      "triplicity_night": "Mars",
+      "terms_raw": [
+        {
+          "ruler": "Mars",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 14
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 21
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 27
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Mars",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Sun",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Venus",
+      "fall_printed": "Moon",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Sagittarius",
+      "domicile": "Jupiter",
+      "house_marker_raw": "D",
+      "exaltation": {
+        "body": "SouthNode",
+        "degree_raw": 3
+      },
+      "triplicity_day": "Sun",
+      "triplicity_night": "Jupiter",
+      "terms_raw": [
+        {
+          "ruler": "Jupiter",
+          "end_degree": 8
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 14
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 19
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 25
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Mercury",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Moon",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Mercury",
+      "fall_printed": null,
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Capricorn",
+      "domicile": "Saturn",
+      "house_marker_raw": "N",
+      "exaltation": {
+        "body": "Mars",
+        "degree_raw": 28
+      },
+      "triplicity_day": "Venus",
+      "triplicity_night": "Moon",
+      "terms_raw": [
+        {
+          "ruler": "Venus",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 12
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 19
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 25
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Jupiter",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Sun",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Moon",
+      "fall_printed": "Jupiter",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Aquarius",
+      "domicile": "Saturn",
+      "house_marker_raw": "D",
+      "exaltation": null,
+      "triplicity_day": "Saturn",
+      "triplicity_night": "Mercury",
+      "terms_raw": [
+        {
+          "ruler": "Saturn",
+          "end_degree": 6
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 12
+        },
+        {
+          "ruler": "Venus",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 25
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Venus",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Moon",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Sun",
+      "fall_printed": null,
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    },
+    {
+      "sign": "Pisces",
+      "domicile": "Jupiter",
+      "house_marker_raw": "N",
+      "exaltation": {
+        "body": "Venus",
+        "degree_raw": 27
+      },
+      "triplicity_day": "Mars",
+      "triplicity_night": "Mars",
+      "terms_raw": [
+        {
+          "ruler": "Venus",
+          "end_degree": 8
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 14
+        },
+        {
+          "ruler": "Mercury",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 26
+        },
+        {
+          "ruler": "Saturn",
+          "end_degree": 30
+        }
+      ],
+      "faces_raw": [
+        {
+          "ruler": "Saturn",
+          "end_degree": 10
+        },
+        {
+          "ruler": "Jupiter",
+          "end_degree": 20
+        },
+        {
+          "ruler": "Mars",
+          "end_degree": 30
+        }
+      ],
+      "detriment": "Mercury",
+      "fall_printed": "Mercury",
+      "source_ids": [
+        "S01-P104",
+        "S02-P104"
+      ]
+    }
+  ],
+  "table_collation": {
+    "method": "separate model transcription before runtime consultation, followed by parent/agent alternate-photograph comparison",
+    "independent_human_review": false,
+    "full_bibliographic_state_collation": false,
+    "shared_numeric_term_endpoints": 60,
+    "shared_numeric_face_endpoints": 36,
+    "copy_annotations": [
+      {
+        "source_id": "S01-P104",
+        "location": "Gemini fall cell",
+        "reading": "SouthNode-shaped added glyph",
+        "printed_cell_decision": null
+      },
+      {
+        "source_id": "S01-P104",
+        "location": "Sagittarius fall cell",
+        "reading": "NorthNode-shaped added glyph",
+        "printed_cell_decision": null
+      },
+      {
+        "source_id": "S01-P104",
+        "location": "bottom row",
+        "reading": "5,4,3,2,1,5,4",
+        "used_as_printed_score_authority": false
+      },
+      {
+        "source_id": "S02-P104",
+        "location": "outside bottom border",
+        "reading": "column enumeration1-14",
+        "used_as_printed_score_authority": false
+      }
+    ],
+    "annotation_attribution": "apparent added layer; bibliographic printing-state determination remains open"
+  },
+  "dignity_policy": {
+    "table_id": "lilly_1647_p104_photo_collated",
+    "longitude_domain": "finite_degrees_modulo_360",
+    "degree_intervals": "lower_inclusive_upper_exclusive",
+    "exaltation_scope": "entire_sign_for_Classical7",
+    "exaltation_degree_role": "raw_documentary_value_not_a_width_or_exact_degree_requirement",
+    "triplicity": "sect_active_no_participating_ruler",
+    "house_D_N_marks": "domicile_house_labels_not_chart_sect_filters",
+    "missing_sect": "triplicity_unresolved_unless_day_and_night_ruler_identical",
+    "nodes": "preserved_in_documentary_exaltation_cells_excluded_from_Classical7_reception",
+    "points_source_id": "S01-P115",
+    "points": {
+      "house": 5,
+      "exaltation": 4,
+      "triplicity": 3,
+      "term": 2,
+      "face": 1
+    },
+    "points_use": "individual_dignity_evidence_not_success_probability_or_reception_intensity"
+  },
+  "orb_tables_full_arcminutes": {
+    "p107_first": {
+      "Saturn": 600,
+      "Jupiter": 720,
+      "Mars": 450,
+      "Sun": 1020,
+      "Venus": 480,
+      "Mercury": 420,
+      "Moon": 750
+    },
+    "p107_second": {
+      "Saturn": 540,
+      "Jupiter": 540,
+      "Mars": 420,
+      "Sun": 900,
+      "Venus": 420,
+      "Mercury": 420,
+      "Moon": 720
+    },
+    "existing_v1_frozen": {
+      "Saturn": 600,
+      "Jupiter": 720,
+      "Mars": 420,
+      "Sun": 900,
+      "Venus": 420,
+      "Mercury": 420,
+      "Moon": 720
+    }
+  },
+  "orb_policy": {
+    "selected_table": "p107_second",
+    "source_ids": [
+      "S01-P107",
+      "S01-P110",
+      "S02-P107",
+      "S02-P110"
+    ],
+    "selection_basis": "explicit alternative corroborated by p110 full9-degree Saturn/Jupiter and13:30 Sun/Moon examples",
+    "combined_range": "sum_of_full_orbs_divided_by_two",
+    "boundary": "strict_interior_with_separate_on_boundary_state",
+    "fully_separated": "separating_and_distance_greater_than_or_equal_to_combined_range",
+    "historical_examples": "use_the_table_explicitly_instantiated_in_each_passage",
+    "legacy_default_changed": false,
+    "source_ambiguity_claim": "source_allows_both_tables; this is an explicit candidate-profile choice"
+  },
+  "reception_policy": {
+    "direction": "host_rules_a_positive_dignity_at_guest_position",
+    "bases": [
+      "house",
+      "exaltation",
+      "triplicity",
+      "term",
+      "face"
+    ],
+    "self_edge": "not_a_reception_between_distinct_planets",
+    "aspect_requirement_for_raw_dignity_edge": false,
+    "mutuality": "two_independently_derived_directed_edges; same_basis_and_mixed_basis_reported_separately",
+    "detriment_fall": "separate_guest_condition_not_negative_reception_or_desire",
+    "snapshot": "mandatory_explicit_epoch_tag; no_implicit_reuse_at_another_epoch",
+    "source_unspecified_epochs": "remain_unspecified_for_doctrine; evaluate_provided_snapshot_only",
+    "translation": {
+      "host_role": "source_principal",
+      "guest_role": "translator",
+      "allowed_bases": [
+        "house",
+        "triplicity",
+        "term"
+      ]
+    },
+    "collection": {
+      "host_roles": [
+        "principal_a",
+        "principal_b"
+      ],
+      "guest_role": "collector",
+      "allowed_bases": [
+        "house",
+        "exaltation",
+        "triplicity",
+        "term",
+        "face"
+      ]
+    },
+    "reception_without_aspect": "retain_as_p112_favorable_source_witness_not_an_unconditional_yes_no_judgement",
+    "mechanism_epoch_admission": "snapshot_evidence_specified; full_mechanism_epoch_and_precedence_admission_pending"
+  },
+  "teaching_examples": [
+    {
+      "id": "D01-PLATIC",
+      "group": "D01",
+      "source_ids": [
+        "S01-P107",
+        "S02-P107"
+      ],
+      "kind": "orb_arithmetic",
+      "given": {
+        "positions": [
+          {
+            "body": "Venus",
+            "sign": "Taurus",
+            "degree": 10,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Virgo",
+            "degree": 18,
+            "minute": 0
+          }
+        ],
+        "aspect_degrees": 120,
+        "orb_table": "p107_first"
+      },
+      "expected": {
+        "error_arcminutes": 480,
+        "combined_moiety_arcminutes": 540,
+        "in_strict_orb": true
+      },
+      "note": "The passage explicitly uses Saturn half5 and Venus half4, hence first set; do not retrofit the selected second set.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D01-EXACT",
+      "group": "D01",
+      "source_ids": [
+        "S01-P110",
+        "S02-P110"
+      ],
+      "kind": "separation",
+      "given": {
+        "positions": [
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 25
+          },
+          {
+            "body": "Jupiter",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 25
+          }
+        ],
+        "orb_table": "p107_second"
+      },
+      "expected": {
+        "error_arcminutes": 0,
+        "phase": "exact"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D01-SIX-MINUTES",
+      "group": "D01",
+      "source_ids": [
+        "S01-P110",
+        "S02-P110"
+      ],
+      "kind": "separation",
+      "given": {
+        "initial_positions": [
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 25
+          },
+          {
+            "body": "Jupiter",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 25
+          }
+        ],
+        "later_jupiter_position": {
+          "body": "Jupiter",
+          "sign": "Aries",
+          "degree": 10,
+          "minute": 31
+        },
+        "later_saturn_position": null,
+        "orb_table": "p107_second",
+        "source_motion": "Jupiter has advanced"
+      },
+      "expected": {
+        "advance_from_initial_reference_arcminutes": 6,
+        "phase": "separating",
+        "actual_later_separation_arcminutes": null,
+        "fully_separated": false
+      },
+      "note": "Source offers31 or32 minutes; this subcase retains31. Saturn's subsequent position is not supplied; six minutes is not a solver tolerance or a computed later separation.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D01-FULL-SEPARATION",
+      "group": "D01",
+      "source_ids": [
+        "S01-P110",
+        "S02-P110"
+      ],
+      "kind": "orb_arithmetic",
+      "given": {
+        "bodies": [
+          "Saturn",
+          "Jupiter"
+        ],
+        "error_arcminutes": 540,
+        "orb_table": "p107_second"
+      },
+      "expected": {
+        "combined_moiety_arcminutes": 540,
+        "on_boundary": true,
+        "in_strict_orb": false,
+        "fully_separated_if_separating": true
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D01-SUN-MOON",
+      "group": "D01",
+      "source_ids": [
+        "S01-P110",
+        "S02-P110"
+      ],
+      "kind": "orb_arithmetic",
+      "given": {
+        "bodies": [
+          "Sun",
+          "Moon"
+        ],
+        "orb_table": "p107_second"
+      },
+      "expected": {
+        "combined_moiety_arcminutes": 810
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D01-PRINTED-ARITHMETIC-CONFLICT",
+      "group": "D01",
+      "source_ids": [
+        "S02-P110"
+      ],
+      "kind": "source_conflict",
+      "given": {
+        "printed_half_orbs_arcminutes": [
+          273,
+          270
+        ],
+        "printed_full_orbs_degrees": [
+          9,
+          9
+        ],
+        "printed_claimed_sum_arcminutes": 540
+      },
+      "expected": {
+        "arithmetic_sum_arcminutes": 543,
+        "difference_from_claim_arcminutes": 3,
+        "positive_numeric_oracle": false
+      },
+      "note": "S02 reads Jupiter4:33, whereas S01 reads4:30. Both full-orb quantities and the claimed sum give9 degrees.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D02-BODILY",
+      "group": "D02",
+      "source_ids": [
+        "S01-P111",
+        "S02-P111"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Sun",
+            "sign": "Aries",
+            "degree": 6,
+            "minute": 0
+          },
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 7,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 12,
+            "minute": 0
+          }
+        ],
+        "intended_pair": [
+          "Mars",
+          "Saturn"
+        ],
+        "swifter_intervener": "Sun",
+        "ordered_contacts": [
+          [
+            "Sun",
+            "Mars",
+            "conjunction"
+          ],
+          [
+            "Sun",
+            "Saturn",
+            "conjunction"
+          ]
+        ],
+        "both_before_intended_contact": true
+      },
+      "expected": {
+        "mechanism": "prohibition",
+        "intervener": "Sun",
+        "form": "bodily"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D02-ASPECT-S01",
+      "group": "D02",
+      "source_ids": [
+        "S01-P111"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Sun",
+            "sign": "Gemini",
+            "degree": 5,
+            "minute": 0
+          },
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 7,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 15,
+            "minute": 0
+          }
+        ],
+        "intended_pair": [
+          "Mars",
+          "Saturn"
+        ],
+        "swifter_intervener": "Sun",
+        "ordered_contacts": [
+          [
+            "Sun",
+            "Mars",
+            "sextile"
+          ],
+          [
+            "Sun",
+            "Saturn",
+            "sextile"
+          ]
+        ],
+        "both_before_intended_contact": true
+      },
+      "expected": {
+        "mechanism": "prohibition",
+        "intervener": "Sun",
+        "form": "aspectual"
+      },
+      "note": "Witness-specific Saturn reading retained; no composite unique longitude.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D02-ASPECT-S02",
+      "group": "D02",
+      "source_ids": [
+        "S02-P111"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Sun",
+            "sign": "Gemini",
+            "degree": 5,
+            "minute": 0
+          },
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 7,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 13,
+            "minute": 0
+          }
+        ],
+        "intended_pair": [
+          "Mars",
+          "Saturn"
+        ],
+        "swifter_intervener": "Sun",
+        "ordered_contacts": [
+          [
+            "Sun",
+            "Mars",
+            "sextile"
+          ],
+          [
+            "Sun",
+            "Saturn",
+            "sextile"
+          ]
+        ],
+        "both_before_intended_contact": true
+      },
+      "expected": {
+        "mechanism": "prohibition",
+        "intervener": "Sun",
+        "form": "aspectual"
+      },
+      "note": "Witness-specific Saturn reading retained; no composite unique longitude.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D03-REFRANATION",
+      "group": "D03",
+      "source_ids": [
+        "S01-P111",
+        "S02-P111"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 7,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 12,
+            "minute": 0
+          }
+        ],
+        "intended_pair": [
+          "Mars",
+          "Saturn"
+        ],
+        "applying_actor": "Mars",
+        "interruption": "station_retrograde_before_contact",
+        "later_exact_contact_supplied": false,
+        "station_longitude": null
+      },
+      "expected": {
+        "mechanism": "refranation",
+        "later_exact_contact_required": false
+      },
+      "note": "The station phrase/glyph differs between witnesses; no exact station coordinate or event time is admitted.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D04-TRANSLATION",
+      "group": "D04",
+      "source_ids": [
+        "S01-P111",
+        "S02-P111"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 15,
+            "minute": 0
+          },
+          {
+            "body": "Mercury",
+            "sign": "Aries",
+            "degree": 16,
+            "minute": 0
+          },
+          {
+            "body": "Saturn",
+            "sign": "Aries",
+            "degree": 20,
+            "minute": 0
+          }
+        ],
+        "source": "Mars",
+        "translator": "Mercury",
+        "destination": "Saturn",
+        "motion": "translator_separates_source_then_joins_destination",
+        "principal_history_supplied": false
+      },
+      "expected": {
+        "mechanism": "structural_translation",
+        "receiver": "Mars",
+        "guest": "Mercury",
+        "required_known_basis": "house",
+        "full_p126_perfection_established": false
+      },
+      "note": "P.111 is structural; p.126 imposes extra conditions, not all supplied here.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-HOUSE",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "reception",
+      "given": {
+        "positions": [
+          {
+            "body": "Sun",
+            "sign": "Aries",
+            "degree": null,
+            "minute": null
+          },
+          {
+            "body": "Mars",
+            "sign": "Leo",
+            "degree": null,
+            "minute": null
+          }
+        ],
+        "is_day": null
+      },
+      "expected": {
+        "required_edges": [
+          [
+            "Mars",
+            "Sun",
+            "house"
+          ],
+          [
+            "Sun",
+            "Mars",
+            "house"
+          ]
+        ],
+        "mutual_basis": "house"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-TRIPLICITY",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "reception",
+      "given": {
+        "positions": [
+          {
+            "body": "Venus",
+            "sign": "Aries",
+            "degree": null,
+            "minute": null
+          },
+          {
+            "body": "Sun",
+            "sign": "Taurus",
+            "degree": null,
+            "minute": null
+          }
+        ],
+        "is_day": true
+      },
+      "expected": {
+        "required_edges": [
+          [
+            "Sun",
+            "Venus",
+            "triplicity"
+          ],
+          [
+            "Venus",
+            "Sun",
+            "triplicity"
+          ]
+        ],
+        "mutual_basis": "triplicity"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-TERM",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "reception",
+      "given": {
+        "positions": [
+          {
+            "body": "Venus",
+            "sign": "Aries",
+            "degree": 24,
+            "minute": 0
+          },
+          {
+            "body": "Mars",
+            "sign": "Gemini",
+            "degree": 16,
+            "minute": 0
+          }
+        ],
+        "is_day": null
+      },
+      "expected": {
+        "required_edges": [
+          [
+            "Mars",
+            "Venus",
+            "term"
+          ],
+          [
+            "Venus",
+            "Mars",
+            "term"
+          ]
+        ],
+        "mutual_basis": "term"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-PEREGRINE-10",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "peregrinity",
+      "given": {
+        "position": {
+          "body": "Saturn",
+          "sign": "Aries",
+          "degree": 10,
+          "minute": 0
+        }
+      },
+      "expected": {
+        "peregrine_both_sects": true
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-PEREGRINE-27",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "peregrinity",
+      "given": {
+        "position": {
+          "body": "Saturn",
+          "sign": "Aries",
+          "degree": 27,
+          "minute": 0
+        }
+      },
+      "expected": {
+        "peregrine_both_sects": false
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-PEREGRINE-28",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "peregrinity",
+      "given": {
+        "position": {
+          "body": "Saturn",
+          "sign": "Aries",
+          "degree": 28,
+          "minute": 0
+        }
+      },
+      "expected": {
+        "peregrine_both_sects": false
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D05-SUN-CANCER",
+      "group": "D05",
+      "source_ids": [
+        "S01-P112",
+        "S02-P112"
+      ],
+      "kind": "peregrinity",
+      "given": {
+        "position": {
+          "body": "Sun",
+          "sign": "Cancer",
+          "degree": null,
+          "minute": null
+        }
+      },
+      "expected": {
+        "peregrine_every_degree_both_sects": true
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D06-FRUSTRATION",
+      "group": "D06",
+      "source_ids": [
+        "S01-P112",
+        "S01-P113",
+        "S02-P112",
+        "S02-P113"
+      ],
+      "kind": "ordered_mechanism",
+      "given": {
+        "positions": [
+          {
+            "body": "Mercury",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 0
+          },
+          {
+            "body": "Mars",
+            "sign": "Aries",
+            "degree": 12,
+            "minute": 0
+          },
+          {
+            "body": "Jupiter",
+            "sign": "Aries",
+            "degree": 13,
+            "minute": 0
+          }
+        ],
+        "intended_pair": [
+          "Mercury",
+          "Mars"
+        ],
+        "prior_contact": [
+          "Mars",
+          "Jupiter",
+          "conjunction"
+        ]
+      },
+      "expected": {
+        "mechanism": "frustration",
+        "intercepted_significator": "Mars",
+        "form": "bodily"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D07-COMBUST",
+      "group": "D07",
+      "source_ids": [
+        "S01-P113",
+        "S01-P114",
+        "S02-P113",
+        "S02-P114"
+      ],
+      "kind": "solar_condition",
+      "given": {
+        "positions": [
+          {
+            "body": "Jupiter",
+            "sign": "Aries",
+            "degree": 10,
+            "minute": 0
+          },
+          {
+            "body": "Sun",
+            "sign": "Aries",
+            "degree": 18,
+            "minute": 0
+          }
+        ]
+      },
+      "expected": {
+        "separation_arcminutes": 480,
+        "same_sign": true,
+        "combust_under_printed_definition": true
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D07-CAZIMI",
+      "group": "D07",
+      "source_ids": [
+        "S01-P113",
+        "S02-P113"
+      ],
+      "kind": "solar_condition",
+      "given": {
+        "positions": [
+          {
+            "body": "Mercury",
+            "sign": "Taurus",
+            "degree": 15,
+            "minute": 25
+          },
+          {
+            "body": "Sun",
+            "sign": "Taurus",
+            "degree": 15,
+            "minute": 30
+          }
+        ]
+      },
+      "expected": {
+        "separation_arcminutes": 5,
+        "within_cazimi_limit": true
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D07-TEN-DEGREE-CONFLICT",
+      "group": "D07",
+      "source_ids": [
+        "S01-P113",
+        "S02-P113"
+      ],
+      "kind": "source_conflict",
+      "given": {
+        "positions": [
+          {
+            "body": "Jupiter",
+            "sign": "Aries",
+            "degree": 28,
+            "minute": 0
+          },
+          {
+            "body": "Sun",
+            "sign": "Aries",
+            "degree": 18,
+            "minute": 0
+          }
+        ],
+        "printed_combust_limit_arcminutes": 510,
+        "printed_claim_combust": true
+      },
+      "expected": {
+        "separation_arcminutes": 600,
+        "combust_under_printed_definition": false,
+        "positive_numeric_oracle": false
+      },
+      "note": "Both photographed witnesses give this10-degree example; retain the contradiction, do not emend the planet degree or threshold.",
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D08-WATER-CANCER",
+      "group": "D08",
+      "source_ids": [
+        "S01-P121",
+        "S02-P121"
+      ],
+      "kind": "hour_agreement",
+      "given": {
+        "hour_lord": "Mars",
+        "rising_sign": "Cancer",
+        "is_day": null
+      },
+      "expected": {
+        "required_agreement_basis": "triplicity"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D08-WATER-SCORPIO",
+      "group": "D08",
+      "source_ids": [
+        "S01-P121",
+        "S02-P121"
+      ],
+      "kind": "hour_agreement",
+      "given": {
+        "hour_lord": "Mars",
+        "rising_sign": "Scorpio",
+        "is_day": null
+      },
+      "expected": {
+        "required_agreement_basis": "triplicity"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D08-WATER-PISCES",
+      "group": "D08",
+      "source_ids": [
+        "S01-P121",
+        "S02-P121"
+      ],
+      "kind": "hour_agreement",
+      "given": {
+        "hour_lord": "Mars",
+        "rising_sign": "Pisces",
+        "is_day": null
+      },
+      "expected": {
+        "required_agreement_basis": "triplicity"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D08-IDENTITY",
+      "group": "D08",
+      "source_ids": [
+        "S01-P121",
+        "S02-P121"
+      ],
+      "kind": "hour_agreement",
+      "given": {
+        "hour_lord": "Mars",
+        "rising_sign": "Aries",
+        "is_day": null
+      },
+      "expected": {
+        "required_agreement_basis": "same_planet"
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    },
+    {
+      "id": "D08-NATURE",
+      "group": "D08",
+      "source_ids": [
+        "S01-P122",
+        "S02-P122"
+      ],
+      "kind": "hour_agreement",
+      "given": {
+        "hour_lord": "Mars",
+        "rising_sign": "Leo",
+        "is_day": null
+      },
+      "expected": {
+        "required_agreement_basis": "same_nature",
+        "source_nature": [
+          "hot",
+          "dry"
+        ]
+      },
+      "note": null,
+      "historical_epoch": null,
+      "predictive_admitted": false,
+      "complete_judgement_admitted": false
+    }
+  ],
+  "unresolved": [
+    "p111 refranation station sign/precise coordinate",
+    "full bibliographic explanation of witness variants",
+    "p113 ten-degree combustion inconsistency",
+    "full Moon/VOC definition and symbolic timing",
+    "full mechanism epoch/precedence and topic judgement admission"
+  ],
+  "counts": {
+    "table_rows": 12,
+    "term_segments": 60,
+    "face_segments": 36,
+    "teaching_groups": 8,
+    "teaching_subcases": 27,
+    "source_conflicts": 2,
+    "source_images": 27
+  }
+}
