@@ -29,7 +29,7 @@ INVENTORY_PATH = (
 OUTPUT_PATH = (
     REPO_ROOT / "wiki" / "03_validation" / "LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
 )
-SCHEMA_VERSION = "moira.lightbox-product-usage/v1"
+SCHEMA_VERSION = "moira.lightbox-product-usage/v2"
 SOURCE_EXTENSIONS = {".py", ".js", ".jsx", ".ts", ".tsx"}
 EXCLUDED_PARTS = {
     ".git",
@@ -296,6 +296,8 @@ def build_snapshot(
     *,
     audit_date: str,
 ) -> dict[str, Any]:
+    if inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v2":
+        raise ProductUsageError("unsupported inventory schema; regenerate v2 structural bindings")
     if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", audit_date) is None:
         raise ProductUsageError("audit date must use YYYY-MM-DD")
     rest_rows = {
@@ -390,7 +392,7 @@ def build_snapshot(
         "schema_version": SCHEMA_VERSION,
         "audit_date": audit_date,
         "engine_version": inventory["engine_version"],
-        "inventory_fingerprint_sha256": inventory["surface_fingerprint_sha256"],
+        "inventory_fingerprint_sha256": inventory["structural_fingerprint_sha256"],
         "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
         "limitations": [
             "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
@@ -413,6 +415,8 @@ def validate_snapshot(
     snapshot: Mapping[str, Any], inventory: Mapping[str, Any]
 ) -> list[str]:
     errors: list[str] = []
+    if inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v2":
+        errors.append("inventory: unsupported fingerprint schema")
     known = {
         str(row["surface_id"]): row
         for collection in ("python_exports", "rest_operations")
@@ -422,7 +426,7 @@ def validate_snapshot(
     if snapshot.get("schema_version") != SCHEMA_VERSION:
         errors.append("$.schema_version: unsupported")
     if snapshot.get("inventory_fingerprint_sha256") != inventory.get(
-        "surface_fingerprint_sha256"
+        "structural_fingerprint_sha256"
     ):
         errors.append("$.inventory_fingerprint_sha256: inventory drift")
     entries = snapshot.get("entries")

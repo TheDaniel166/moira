@@ -103,6 +103,15 @@ def _nested_wiki_errors(old_revision: str, new_revision: str) -> list[str]:
 
 def _receipt_errors(receipts: dict[str, Any], matrix: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if receipts.get("schema_version") != "moira.lightbox-evidence-receipts/v2" or receipts.get("binding_migration"):
+        errors.append("exact release: fresh v2 receipts required; legacy migration is not a replay")
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from scripts.replay_lightbox_receipts import ReceiptReplayError, validate_receipt_binding
+    try:
+        validate_receipt_binding(receipts, str(matrix.get("inventory_fingerprint_sha256")))
+    except ReceiptReplayError as exc:
+        errors.append(f"exact release: {exc}")
     source_revision = receipts.get("source_revision")
     if receipts.get("artifact_status") != "exact_source_revision":
         errors.append(
@@ -189,15 +198,21 @@ def evaluate(
     assessment = _load(ASSESSMENT_PATH)
     matrix = _load(matrix_path)
     errors: list[str] = []
-    fingerprint = inventory.get("surface_fingerprint_sha256")
-    for label, artifact in (
-        ("manifest", manifest),
-        ("family register", register),
-        ("family assessment", assessment),
-        ("assurance matrix", matrix),
+    fingerprint = inventory.get("structural_fingerprint_sha256")
+    if inventory.get("schema_version") != "moira.lightbox-calculation-inventory/v2" or inventory.get("structural_fingerprint_version") != "moira.lightbox-structural-fingerprint/v1" or not fingerprint:
+        errors.append("inventory: unsupported structural fingerprint schema")
+    for label, artifact, schema_name in (
+        ("manifest", manifest, "conformance-manifest"),
+        ("family register", register, "family-register"),
+        ("family assessment", assessment, "family-assessment"),
+        ("assurance matrix", matrix, "assurance-matrix"),
     ):
+        if artifact.get("schema_version") != f"moira.lightbox-{schema_name}/v2":
+            errors.append(f"{label}: unsupported fingerprint schema")
         if artifact.get("inventory_fingerprint_sha256") != fingerprint:
             errors.append(f"{label}: inventory fingerprint drift")
+    if baseline.get("schema_version") != "moira.lightbox-release-baseline/v2":
+        errors.append("release baseline: unsupported fingerprint schema")
     if baseline.get("inventory_fingerprint_sha256") != fingerprint:
         errors.append(
             "release baseline: public calculation surface changed; regenerate and review the baseline deliberately"

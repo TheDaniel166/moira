@@ -8310,7 +8310,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8320,7 +8320,7 @@
   "program_path": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md",
   "review_boundary": "Structural family review against the GAP-007 audit, current inventory ownership, documentation leads, test leads, response contracts, and product usage. Reviewed does not mean conformant, numerically validated, or release verified.",
   "review_date": "2026-10-12",
-  "schema_version": "moira.lightbox-family-assessment/v1",
+  "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
     "canonical_surface_count": 1251,
     "families_by_review_stage": {

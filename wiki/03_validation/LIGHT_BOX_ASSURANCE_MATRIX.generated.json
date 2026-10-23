@@ -1383,11 +1383,11 @@
   "contracts_path": "tests/evidence/lightbox/contracts.json",
   "engine_version": "6.10.1",
   "generated_by": "scripts/generate_lightbox_assurance_matrix.py",
-  "inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
+  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
   "receipt_artifact_status": "local_unreleased_worktree",
   "receipt_source_revision": "07f0e5fa872ce43206a89206d98f169b428552dd",
   "receipts_path": "tests/evidence/lightbox/receipts/local.generated.json",
-  "schema_version": "moira.lightbox-assurance-matrix/v1",
+  "schema_version": "moira.lightbox-assurance-matrix/v2",
   "summary": {
     "canonical_surfaces": 1251,
     "contracts": 63,
