@@ -7,7 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/moira-astro.svg?label=PyPI&color=orange)](https://pypi.org/project/moira-astro/)
 [![Native Core](https://img.shields.io/badge/Core-C%2B%2B17%20%2F%20pybind11-00599C.svg)](#native-c-performance)
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence-and-light-box-conformance)
-[![Light Box: P0 Receipted](https://img.shields.io/badge/Light%20Box-171%2F171%20P0%20Receipted-success.svg)](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md)
+[![Light Box: P0 Receipted](https://img.shields.io/badge/Light%20Box-172%2F172%20P0%20Receipted-success.svg)](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md)
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![AI Visibility: Optimized](https://img.shields.io/badge/AI--Visibility-Optimized-success.svg)](llms.txt)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19152528-blue.svg)](https://doi.org/10.5281/zenodo.19152528)
@@ -56,7 +56,7 @@ Astronomy is the foundation. Astrology is the purpose. Validation is the proof. 
 | **Light Box Inspectability** | Every major reduction stage—light-time iteration, gravitational deflection, relativistic aberration, IAU 2006 frame bias, P03 precession, IAU 2000A nutation, WGS-84 topocentric parallax, and refraction—is exposed as a typed breakdown or `ComputationTruth` receipt. |
 | **Explicit Doctrinal Policy** | Competing classical and modern traditions (house polar fallbacks, sect horizon conventions, Egyptian vs. Ptolemaic bounds, BPHS vs. Saravali vs. Jaimini profile lineages, Addey harmonic orbs) are represented by immutable policy objects and source-cited receipts rather than silent defaults. |
 | **Zero-Dependency Base Runtime** | Base `moira-astro` requires only the Python standard library plus its compiled `_moira_native` extension. Optional FastAPI transport (`moira-astro[server]`) and lunar-graze tooling (`moira-astro[lunar-graze]`) live behind strict feature boundaries. |
-| **Audit-Ready Conformance** | Across `1,251` canonical public calculations in `150` families, `100%` of `P0` production-user calculations (`171 / 171`) and `209` total canonical surfaces are governed by `63` exact-source replay contracts under [`LIGHT_BOX_CURRENT_STATUS.generated.md`](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md). |
+| **Audit-Ready Conformance** | Across `1,252` canonical public calculations in `150` families, `100%` of `P0` production-user calculations (`172 / 172`) and `210` total canonical surfaces are governed by `64` exact-source replay contracts under [`LIGHT_BOX_CURRENT_STATUS.generated.md`](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md). |
 
 **Who It Is For:** Developers, ephemeris engineers, historians of astronomy/astrology, and researchers who require a programmable, audit-grade engine for reproducible pipelines and rigorous comparison against primary texts and physical oracles.
 
@@ -82,7 +82,7 @@ pip install "moira-astro[lunar-graze]"
 ```
 
 > [!NOTE]
-> This README documents the current `main` branch (`6.10.1`). The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
+> This README documents the `6.10.2` patch baseline. The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
 
 ---
 
@@ -378,13 +378,13 @@ Moira is validated across a three-layer corpus—**Astronomy** (IAU ERFA/SOFA, J
 
 Beyond narrative validation ledgers, Moira enforces machine-checked **Light Box Conformance** across the entire public calculation denominator (`moira.facade.__all__` + FastAPI OpenAPI):
 
-- **Complete Public Denominator:** `1,251` canonical calculation surfaces (`1,255` total including `4` aliases) classified across `150` reviewed families.
-- **`100%` `P0` Production-User Coverage:** All `171` canonical `P0` surfaces used by production consumers—plus `38` additional `P1`/`P2` exemplar surfaces (`209` total)—are structurally admitted and bound to `63` replayable evidence contracts (`tests/evidence/lightbox/contracts.json`).
+- **Complete Public Denominator:** `1,252` canonical calculation surfaces (`1,255` total including `4` aliases) classified across `150` reviewed families.
+- **`100%` `P0` Production-User Coverage:** All `172` canonical `P0` surfaces used by production consumers—plus `38` additional `P1`/`P2` exemplar surfaces (`210` total)—are structurally admitted and bound to `64` replayable evidence contracts (`tests/evidence/lightbox/contracts.json`).
 - **Replayable Release Gate:** Exact-release receipts (`scripts/replay_lightbox_receipts.py`) and the release gate (`scripts/check_lightbox_release_gate.py`) verify contract coverage and inventory fingerprints while keeping remaining `P1`/`P2` unresolved residuals explicitly visible rather than hidden behind universal claims.
 
 | Validation / Conformance Ledger | Scope and Verification Authority |
 | :--- | :--- |
-| [`LIGHT_BOX_CURRENT_STATUS.generated.md`](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md) | Machine-generated exact-release conformance status (`1,251` canonical calculations, `171/171` `P0` partial/receipted, `63` passed replay contracts). |
+| [`LIGHT_BOX_CURRENT_STATUS.generated.md`](wiki/03_validation/LIGHT_BOX_CURRENT_STATUS.generated.md) | Machine-generated exact-release conformance status (`1,252` canonical calculations, `172/172` `P0` partial/receipted, `64` passed replay contracts). |
 | [`LIGHT_BOX_ASSURANCE_MATRIX.generated.md`](wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.md) | Per-surface, per-evidence-class matrix (`authority`, `doctrine_source`, `invariant`, `regression`, `native_parity`, `release`). |
 | [`LIGHT_BOX_CONFORMANCE_PROGRAM.md`](wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md) | Seven-stage Light Box conformance architecture and release-gate protocol. |
 | [`RELEASE_VALIDATION_6.10.0.md`](wiki/03_validation/RELEASE_VALIDATION_6.10.0.md) | Integrated `6.10` release validation receipt covering Kalachakra Dasha, Chara/Argala profiles, Yoga extensions, and `2026.10.10.1` small-body catalogs. |

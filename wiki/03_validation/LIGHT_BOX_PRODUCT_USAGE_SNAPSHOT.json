@@ -1,7 +1,7 @@
 {
   "audit_date": "2026-10-14",
   "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "entries": [
     {
       "callsites": [
@@ -3052,6 +3052,20 @@
       "callsites": [
         {
           "detection": "exact_rest_path_literal",
+          "product": "website-primary-directions-patch",
+          "source_line": 801,
+          "source_path": "server/routers/primaryDirections.ts",
+          "source_revision": "8e545a481c802998a9c00dbbc35f58cd5c90077f"
+        }
+      ],
+      "canonical_surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "transport": "rest"
+    },
+    {
+      "callsites": [
+        {
+          "detection": "exact_rest_path_literal",
           "product": "website",
           "source_line": 651,
           "source_path": "server/routers/transits.ts",
@@ -3931,12 +3945,18 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "fingerprint_migration": {
+    "boundary": "Reviewed API-binding migration only; original thresholds and audit provenance are unchanged.",
+    "from_schema_version": "moira.lightbox-product-usage/v1",
+    "legacy_inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969"
+  },
+  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",
     "Each product root is read from its recorded commit; dirty tracked files and untracked files are deliberately excluded.",
-    "Generated website Workspace source is excluded so MoiraWeb remains the sole Workspace authoring source."
+    "Generated website Workspace source is excluded so MoiraWeb remains the sole Workspace authoring source.",
+    "October 23, 2026 bounded patch: added the exact primary-direction time-key consumer from committed website source; other entries retain their original October 14 source revisions. This is not a new audit of unrelated product surfaces."
   ],
   "roots": [
     {
@@ -3950,18 +3970,20 @@
       "product": "workspace",
       "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
       "source_revision": "04dd54cc867fa154c0701d73e8b69f0a00755496"
+    },
+    {
+      "files_scanned": 1038,
+      "product": "website-primary-directions-patch",
+      "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
+      "scope": "Incremental admission of the exact time-key consumer only; prior October 14 product snapshots remain historical and are not recaptured by this patch.",
+      "source_revision": "8e545a481c802998a9c00dbbc35f58cd5c90077f"
     }
   ],
   "schema_version": "moira.lightbox-product-usage/v2",
   "summary": {
-    "callsites": 390,
-    "production_user_surfaces": 171,
+    "callsites": 391,
+    "production_user_surfaces": 172,
     "python_surfaces": 45,
-    "rest_surfaces": 126
-  },
-  "fingerprint_migration": {
-    "from_schema_version": "moira.lightbox-product-usage/v1",
-    "legacy_inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
-    "boundary": "Reviewed API-binding migration only; original thresholds and audit provenance are unchanged."
+    "rest_surfaces": 127
   }
 }

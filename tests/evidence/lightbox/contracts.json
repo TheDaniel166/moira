@@ -3,6 +3,25 @@
   "boundary": "These contracts replay bounded structural, invariant, doctrine/source, regression, authority-adjacent, and exact-source-candidate evidence for admitted exemplars. Release evidence is admitted only when the replay is bound to a clean exact source revision; it is not package-publication or deployment evidence and does not establish any claim outside the named surfaces.",
   "contracts": [
     {
+      "claim_id": "LB-PRIMARY-DIRECTION-TIME-KEYS",
+      "surface_ids": [
+        "rest:POST:/v1/primary-directions/time-keys"
+      ],
+      "evidence_classes": [
+        "invariant",
+        "regression",
+        "release"
+      ],
+      "pytest_targets": [
+        "tests/server/test_server_primary_directions_time_keys.py"
+      ],
+      "minimum_tests": 10,
+      "claim_scope": "Exact engine-owned six-key projection, matching age/JD/calendar clocks, zero origin, dynamic forward-motion residuals and fail-closed bounded transport.",
+      "exclusions": [
+        "Submitted geometry is not validated; no external astronomical or biographical predictive accuracy claim."
+      ]
+    },
+    {
       "claim_id": "LB-EXEMPLAR-CORE-REDUCTIONS",
       "surface_ids": [
         "rest:POST:/v1/chart/reduction",

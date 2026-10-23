@@ -24,6 +24,7 @@ __all__ = [
     "convert_arc_to_time",
     "invert_solar_arc_lon",
     "invert_solar_arc_ra",
+    "project_primary_direction_arc_time",
     "primary_direction_key_truth",
 ]
 
@@ -398,3 +399,38 @@ def convert_arc_to_time(
 
     truth = primary_direction_key_truth(resolved_key, solar_rate=solar_rate)
     return arc / truth.rate_degrees_per_year
+
+
+def project_primary_direction_arc_time(
+    natal_jd_ut: float,
+    arc_deg: float,
+    key: str | PrimaryDirectionKey,
+    *,
+    solar_rate: float | None = None,
+    reader: object = None,
+) -> tuple[float, float]:
+    """Return one key's age and perfection JD UT1 for an already solved arc.
+
+    Zero arc is the natal origin. Positive arcs use the admitted static law or
+    actual ephemeris inversion; unknown keys and missing resources fail closed.
+    The returned calendar JD uses the same tropical-year convention as timelines.
+    """
+    from ..constants import TROPICAL_YEAR
+
+    for value, name in ((natal_jd_ut, "natal_jd_ut"), (arc_deg, "arc_deg")):
+        if not isinstance(value, Real) or isinstance(value, bool) or not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite real")
+    if arc_deg < 0.0:
+        raise ValueError("arc_deg must be nonnegative")
+    resolved = PrimaryDirectionKey(key)
+    # Validate the explicit natal rate even for a zero Solar-key boundary.
+    if resolved is PrimaryDirectionKey.SOLAR:
+        primary_direction_key_truth(resolved, solar_rate=solar_rate)
+    if arc_deg == 0.0:
+        return 0.0, float(natal_jd_ut)
+    if resolved is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
+        return invert_solar_arc_ra(natal_jd_ut, arc_deg, reader=reader)
+    if resolved is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
+        return invert_solar_arc_lon(natal_jd_ut, arc_deg, reader=reader)
+    age = convert_arc_to_time(arc_deg, resolved, solar_rate=solar_rate)
+    return age, natal_jd_ut + age * TROPICAL_YEAR

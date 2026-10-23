@@ -6,7 +6,7 @@
     "tests": "identifier/path mentions in repository tests; a mention is not proof of coverage"
   },
   "classification_version": "moira.lightbox-surface-classification/v1",
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "generated_by": "scripts/generate_lightbox_calculation_inventory.py",
   "limitations": [
     "Inventory membership is not a correctness or validation claim.",
@@ -3122,6 +3122,7 @@
         "tests/unit/test_primary_directions_mundane_parallels.py",
         "tests/unit/test_primary_directions_neo_converse.py",
         "tests/unit/test_primary_directions_ptolemy_mundane_aspects.py",
+        "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_progressed_synastry.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
@@ -20940,6 +20941,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -20978,6 +20980,7 @@
         "wiki/03_release/RELEASE_NOTES_6.1.1.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -29707,7 +29710,7 @@
       "owner_qualname": "PrimaryDirectionTimelineEvent",
       "owner_resolution": "runtime-object",
       "public_name": "PrimaryDirectionTimelineEvent",
-      "source_line": 48,
+      "source_line": 45,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:PrimaryDirectionTimelineEvent",
       "surface_kind": "excluded_type",
@@ -29729,7 +29732,7 @@
       "owner_qualname": "PrimaryDirectionsTimeline",
       "owner_resolution": "runtime-object",
       "public_name": "PrimaryDirectionsTimeline",
-      "source_line": 101,
+      "source_line": 98,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:PrimaryDirectionsTimeline",
       "surface_kind": "excluded_type",
@@ -41752,7 +41755,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "a0afa9f6013568064a4f8a63cff7acc273330b62104ddd97e7c3f5e0ece9296a",
+      "api_contract_sha256": "5d85452440e7fa9f8c030fd9fa088a059f5ab52b0b49803c566b3c3f469ec87e",
       "canonical_id": "python:moira.facade:__version__",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public constant or immutable value; not an executable calculation",
@@ -46630,7 +46633,7 @@
       "owner_qualname": "compute_primary_directions_timeline",
       "owner_resolution": "runtime-object",
       "public_name": "compute_primary_directions_timeline",
-      "source_line": 153,
+      "source_line": 147,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:compute_primary_directions_timeline",
       "surface_kind": "calculation",
@@ -54152,6 +54155,8 @@
         "tests/server/test_server_phase8_timelord_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
         "tests/server/test_server_phase8_zr_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_stars_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -60986,7 +60991,8 @@
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
-        "tests/unit/test_julian_delta_t.py"
+        "tests/unit/test_julian_delta_t.py",
+        "tests/unit/test_primary_directions_timeline.py"
       ]
     },
     {
@@ -64036,6 +64042,7 @@
         "tests/server/test_server_phase8_house_frame_routes.py",
         "tests/server/test_server_phase8_primary_directions_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
         "tests/server/test_server_shadbala_service.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -78008,7 +78015,7 @@
       "path": "/v1/primary-directions/arcs",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsArcsResponse",
-      "source_line": 61,
+      "source_line": 72,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/arcs",
       "surface_kind": "calculation",
@@ -78041,7 +78048,7 @@
       "path": "/v1/primary-directions/arcs/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsArcsReductionResponse",
-      "source_line": 73,
+      "source_line": 84,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/arcs/reduction",
       "surface_kind": "calculation",
@@ -78074,7 +78081,7 @@
       "path": "/v1/primary-directions/network",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsNetworkResponse",
-      "source_line": 121,
+      "source_line": 132,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/network",
       "surface_kind": "composition_profile",
@@ -78107,7 +78114,7 @@
       "path": "/v1/primary-directions/network/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsNetworkReductionResponse",
-      "source_line": 133,
+      "source_line": 144,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/network/reduction",
       "surface_kind": "composition_profile",
@@ -78140,7 +78147,7 @@
       "path": "/v1/primary-directions/profile",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsProfileResponse",
-      "source_line": 89,
+      "source_line": 100,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/profile",
       "surface_kind": "composition_profile",
@@ -78173,7 +78180,7 @@
       "path": "/v1/primary-directions/profile/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsProfileReductionResponse",
-      "source_line": 103,
+      "source_line": 114,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/profile/reduction",
       "surface_kind": "composition_profile",
@@ -78206,7 +78213,7 @@
       "path": "/v1/primary-directions/relations",
       "request_schema": "PrimaryDirectionsRelationsRequest",
       "response_schema": "array[PrimaryDirectionRelationProfileResponse]",
-      "source_line": 149,
+      "source_line": 160,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/relations",
       "surface_kind": "calculation",
@@ -78239,7 +78246,7 @@
       "path": "/v1/primary-directions/speculum",
       "request_schema": "PrimaryDirectionsBaseRequest",
       "response_schema": "PrimaryDirectionsSpeculumResponse",
-      "source_line": 53,
+      "source_line": 64,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/speculum",
       "surface_kind": "calculation",
@@ -78249,6 +78256,38 @@
       "test_paths": [
         "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_phase8_primary_directions_routes.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "api_contract_sha256": "385383827574b922a7194891a9c484a30ee463705cad1f05fed0d9bde8d6593c",
+      "canonical_id": "rest:POST:/v1/primary-directions/time-keys",
+      "classification_basis": "conservative-operation-default",
+      "classification_rationale": "conservative default for a versioned non-GET operation",
+      "documentation_paths": [
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md"
+      ],
+      "exclusion_reason": null,
+      "handler_module": "moira_server.routers.primary_directions",
+      "handler_qualname": "primary_directions_time_keys_route",
+      "in_lightbox_calculation_scope": true,
+      "method": "POST",
+      "operation_id": "primary_directions_time_keys_route_v1_primary_directions_time_keys_post",
+      "path": "/v1/primary-directions/time-keys",
+      "request_schema": "PrimaryDirectionsTimeKeysRequest",
+      "response_schema": "PrimaryDirectionsTimeKeysResponse",
+      "source_line": 56,
+      "source_path": "moira_server/routers/primary_directions.py",
+      "surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "surface_kind": "calculation",
+      "tags": [
+        "primary-directions"
+      ],
+      "test_paths": [
+        "tests/server/test_primary_directions_transport_contract.py",
+        "tests/server/test_server_primary_directions_time_keys.py"
       ]
     },
     {
@@ -78271,7 +78310,7 @@
       "path": "/v1/primary-directions/timeline",
       "request_schema": "PrimaryDirectionsTimelineRequest",
       "response_schema": "PrimaryDirectionsTimelineResponse",
-      "source_line": 170,
+      "source_line": 181,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/timeline",
       "surface_kind": "calculation",
@@ -82566,9 +82605,9 @@
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
     "python_surface_ids_sha256": "ece9522f8622421befb658055662d0ce6365285ba1908100280e893b4b743244",
-    "rest_surface_ids_sha256": "39fa90142439d629a3decd55ffd0fa5c444416f6476b770e6a0e55472e6f6dab"
+    "rest_surface_ids_sha256": "cd4455b17c2e3ea7b9b48749067e69a8f9e1d037e89af6bb58b6ee1dd3750ef8"
   },
-  "structural_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "structural_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "structural_fingerprint_version": "moira.lightbox-structural-fingerprint/v1",
   "summary": {
     "python_aliases": 2,
@@ -82594,16 +82633,16 @@
     "python_in_scope_without_test_mentions": 4,
     "rest_aliases": 3,
     "rest_by_surface_kind": {
-      "calculation": 425,
+      "calculation": 426,
       "composition_profile": 51,
       "operational_meta": 5,
       "reference_query": 43,
       "transport_adapter": 7
     },
-    "rest_in_scope": 483,
+    "rest_in_scope": 484,
     "rest_in_scope_without_documentation_mentions": 0,
     "rest_in_scope_without_test_mentions": 9,
-    "rest_operations": 531
+    "rest_operations": 532
   },
-  "surface_fingerprint_sha256": "42469c2af9ce7e3ce974a9bd21751320e7ee5cb4eff3a792b6a5e24dee85ea97"
+  "surface_fingerprint_sha256": "952974c0489b7a9842a051d4c9406abeb1afc2df702bd9dff4e5aa1249dd2c63"
 }
