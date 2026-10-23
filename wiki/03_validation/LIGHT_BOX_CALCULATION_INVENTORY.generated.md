@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.10.2`
-- Surface fingerprint: `5ffcc8c48ffc2b72d3d7f70482f5983977b0ef73916f58ccbd1218826ccd3a38`
+- Surface fingerprint: `4bfe790abdb9aee5bbe951e3da88be1595196356da724948b910e0cbade3de05`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 
@@ -1284,7 +1284,7 @@ Every registered OpenAPI operation appears exactly once. Explicit pipeline alias
 | `rest:POST:/v1/primary-directions/profile/reduction` | `POST` | `/v1/primary-directions/profile/reduction` | `composition_profile` | yes | `canonical` | `PrimaryDirectionsSearchRequest` → `PrimaryDirectionsProfileReductionResponse` | `moira_server/routers/primary_directions.py:114` | `docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md` +3 | `tests/server/test_primary_directions_transport_contract.py` +1 |
 | `rest:POST:/v1/primary-directions/relations` | `POST` | `/v1/primary-directions/relations` | `calculation` | yes | `canonical` | `PrimaryDirectionsRelationsRequest` → `array[PrimaryDirectionRelationProfileResponse]` | `moira_server/routers/primary_directions.py:160` | `docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md` +3 | `tests/server/test_primary_directions_transport_contract.py` +1 |
 | `rest:POST:/v1/primary-directions/speculum` | `POST` | `/v1/primary-directions/speculum` | `calculation` | yes | `canonical` | `PrimaryDirectionsBaseRequest` → `PrimaryDirectionsSpeculumResponse` | `moira_server/routers/primary_directions.py:64` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +3 | `tests/server/test_primary_directions_transport_contract.py` +1 |
-| `rest:POST:/v1/primary-directions/time-keys` | `POST` | `/v1/primary-directions/time-keys` | `calculation` | yes | `canonical` | `PrimaryDirectionsTimeKeysRequest` → `PrimaryDirectionsTimeKeysResponse` | `moira_server/routers/primary_directions.py:56` | `wiki/02_services/REST_API_REFERENCE.md` +2 | `tests/server/test_server_primary_directions_time_keys.py` |
+| `rest:POST:/v1/primary-directions/time-keys` | `POST` | `/v1/primary-directions/time-keys` | `calculation` | yes | `canonical` | `PrimaryDirectionsTimeKeysRequest` → `PrimaryDirectionsTimeKeysResponse` | `moira_server/routers/primary_directions.py:56` | `wiki/02_services/REST_API_REFERENCE.md` +2 | `tests/server/test_primary_directions_transport_contract.py` +1 |
 | `rest:POST:/v1/primary-directions/timeline` | `POST` | `/v1/primary-directions/timeline` | `calculation` | yes | `canonical` | `PrimaryDirectionsTimelineRequest` → `PrimaryDirectionsTimelineResponse` | `moira_server/routers/primary_directions.py:181` | `CHANGELOG.md` +2 | `tests/server/test_primary_directions_transport_contract.py` +1 |
 | `rest:POST:/v1/profections/annual` | `POST` | `/v1/profections/annual` | `calculation` | yes | `canonical` | `AnnualProfectionRequest` → `ProfectionResultResponse` | `moira_server/routers/timelords.py:105` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +2 | `tests/server/test_server_timelord_routes.py` |
 | `rest:POST:/v1/profections/monthly` | `POST` | `/v1/profections/monthly` | `calculation` | yes | `canonical` | `MonthlyProfectionRequest` → `MonthlyProfectionResponse` | `moira_server/routers/timelords.py:113` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +2 | `tests/server/test_server_timelord_routes.py` |

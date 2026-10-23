@@ -31762,7 +31762,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "5ffcc8c48ffc2b72d3d7f70482f5983977b0ef73916f58ccbd1218826ccd3a38",
+  "inventory_fingerprint_sha256": "4bfe790abdb9aee5bbe951e3da88be1595196356da724948b910e0cbade3de05",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

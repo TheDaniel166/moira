@@ -75575,6 +75575,7 @@
         "primary-directions"
       ],
       "test_paths": [
+        "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_primary_directions_time_keys.py"
       ]
     },
@@ -79787,5 +79788,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 532
   },
-  "surface_fingerprint_sha256": "5ffcc8c48ffc2b72d3d7f70482f5983977b0ef73916f58ccbd1218826ccd3a38"
+  "surface_fingerprint_sha256": "4bfe790abdb9aee5bbe951e3da88be1595196356da724948b910e0cbade3de05"
 }
