@@ -68421,7 +68421,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "667f1deb5c492688710510206432f82a1ef7f2faf5054040ff8f810c6b839e3d",
+      "api_contract_sha256": "d3abecef792d2d9f3f359e4aaec368e9755ea6f3cec0d524d8b4db46d1cdf26a",
       "canonical_id": "rest:GET:/v1/dasha/kalachakra/profiles",
       "classification_basis": "get-reference-route",
       "classification_rationale": "GET reference/catalog/discovery surface; explicitly outside the calculation denominator",
@@ -73080,7 +73080,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "601a5e6c70544941a9f6799d7366ad8710f2d6e09ae730988b92a8dea09c879b",
+      "api_contract_sha256": "40ad6fb51a60ebd06d3818f37dda9a9330459b08e8086cb49aac96baac2a3bf2",
       "canonical_id": "rest:POST:/v1/jaimini/extended/argala",
       "classification_basis": "conservative-operation-default",
       "classification_rationale": "conservative default for a versioned non-GET operation",
@@ -73110,7 +73110,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "3c91060e983bf5d286ddc6e6cea1f428a1315882d7536c75c37590fb74013f43",
+      "api_contract_sha256": "371d1ac7765271fa186228b7483d33b1090c7495d943c280b16c55b33665020e",
       "canonical_id": "rest:POST:/v1/jaimini/extended/argala/assessment",
       "classification_basis": "composition-route-segment",
       "classification_rationale": "typed composition/profile/network/context/receipt result",
@@ -73202,7 +73202,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "541e011a519942a80155959686e5c233b4bc184b5f0503e9a4dcfd66e599d834",
+      "api_contract_sha256": "bcfa73a1625dc90634e723797478bfae82fcc60fd49cc4aa395036065b4c9d7c",
       "canonical_id": "rest:POST:/v1/jaimini/extended/chara-dasha/profile",
       "classification_basis": "composition-route-segment",
       "classification_rationale": "typed composition/profile/network/context/receipt result",
@@ -73264,7 +73264,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "af87175664f70cf294821af79d6d6e1d927cd93d0cd4993d78eb9fb32624cf23",
+      "api_contract_sha256": "768f2312a8350e09f5ebd8399a9e9606085d50f4a8119d52d981b4dd1c8c0007",
       "canonical_id": "rest:GET:/v1/jaimini/extended/profiles",
       "classification_basis": "get-reference-route",
       "classification_rationale": "GET reference/catalog/discovery surface; explicitly outside the calculation denominator",
@@ -82732,13 +82732,17 @@
       ]
     }
   ],
+  "schema_renderer": {
+    "fastapi": "0.136.3",
+    "pydantic": "2.14.1"
+  },
   "schema_version": "moira.lightbox-calculation-inventory/v2",
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
     "python_surface_ids_sha256": "ece9522f8622421befb658055662d0ce6365285ba1908100280e893b4b743244",
     "rest_surface_ids_sha256": "39fa90142439d629a3decd55ffd0fa5c444416f6476b770e6a0e55472e6f6dab"
   },
-  "structural_fingerprint_sha256": "6125fb3260b83b205ad14ad814b92438244a97375bade0ce095de836c78569c1",
+  "structural_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
   "structural_fingerprint_version": "moira.lightbox-structural-fingerprint/v1",
   "summary": {
     "python_aliases": 2,
@@ -82775,5 +82779,5 @@
     "rest_in_scope_without_test_mentions": 9,
     "rest_operations": 531
   },
-  "surface_fingerprint_sha256": "de4c018f81b78e1d30f6af279efdaab97524531d5b5099516629d0e543b8bfbc"
+  "surface_fingerprint_sha256": "7d395ce8721f674ea9334ba4f78c3b998f100083ea9490ec5c97050ab322b767"
 }

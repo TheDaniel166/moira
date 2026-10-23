@@ -153,6 +153,20 @@ def test_unreferenced_rest_schemas_do_not_rebind_unrelated_operations(generator)
     assert generator._openapi_contract(operation, schema) == generator._openapi_contract(operation, changed)
 
 
+def test_closed_object_constraints_are_api_changes(generator):
+    operation, schema = api_schema()
+    changed = deepcopy(schema)
+    changed["components"]["schemas"]["Input"]["additionalProperties"] = False
+    assert generator._openapi_contract(operation, schema) != generator._openapi_contract(operation, changed)
+
+
+def test_schema_renderer_versions_do_not_rebind_unchanged_api(generator, inventory):
+    changed = deepcopy(inventory)
+    changed["schema_renderer"] = {"fastapi": "future", "pydantic": "future"}
+    assert digest(generator, changed) == digest(generator, inventory)
+    assert generator.render_json(changed) != generator.render_json(inventory)
+
+
 def test_generated_check_still_detects_stale_discovery_without_writing(generator, inventory, tmp_path, monkeypatch):
     changed = deepcopy(inventory)
     changed["python_exports"][0]["source_line"] += 100

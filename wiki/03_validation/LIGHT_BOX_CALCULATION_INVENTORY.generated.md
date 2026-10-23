@@ -5,9 +5,10 @@
 - Schema: `moira.lightbox-calculation-inventory/v2`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.10.1`
-- Surface fingerprint: `de4c018f81b78e1d30f6af279efdaab97524531d5b5099516629d0e543b8bfbc`
-- API structural fingerprint: `6125fb3260b83b205ad14ad814b92438244a97375bade0ce095de836c78569c1`
+- Surface fingerprint: `7d395ce8721f674ea9334ba4f78c3b998f100083ea9490ec5c97050ab322b767`
+- API structural fingerprint: `a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9`
 - Structural fingerprint schema: `moira.lightbox-structural-fingerprint/v1`
+- REST schema renderer: FastAPI `0.136.3`, Pydantic `2.14.1`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 

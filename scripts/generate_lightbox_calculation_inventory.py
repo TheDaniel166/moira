@@ -14,6 +14,7 @@ import ast
 import dataclasses
 import hashlib
 import importlib
+import importlib.metadata
 import importlib.util
 import inspect
 import json
@@ -915,6 +916,10 @@ def build_inventory() -> dict[str, Any]:
         "classification_version": CLASSIFICATION_VERSION,
         "generated_by": GENERATOR_PATH,
         "engine_version": moira.__version__,
+        "schema_renderer": {
+            "fastapi": importlib.metadata.version("fastapi"),
+            "pydantic": importlib.metadata.version("pydantic"),
+        },
         "authority": {
             "python": "moira.facade.__all__ plus runtime object/source ownership",
             "rest": "moira_server.app.create_app().openapi() plus FastAPI endpoint ownership",
@@ -1018,6 +1023,7 @@ def render_markdown(payload: Mapping[str, Any] | None = None) -> str:
         f"- Surface fingerprint: `{current['surface_fingerprint_sha256']}`",
         f"- API structural fingerprint: `{current['structural_fingerprint_sha256']}`",
         f"- Structural fingerprint schema: `{current['structural_fingerprint_version']}`",
+        f"- REST schema renderer: FastAPI `{current['schema_renderer']['fastapi']}`, Pydantic `{current['schema_renderer']['pydantic']}`",
         "- Python authority: `moira.facade.__all__` plus runtime source ownership",
         "- REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership",
         "",
@@ -1166,6 +1172,10 @@ def main() -> int:
             print(
                 "Light Box calculation inventory is stale: "
                 + ", ".join(_relative(path) for path in stale),
+                file=sys.stderr,
+            )
+            print(
+                "Current REST schema renderer: " + json.dumps(payload["schema_renderer"], sort_keys=True),
                 file=sys.stderr,
             )
             print(

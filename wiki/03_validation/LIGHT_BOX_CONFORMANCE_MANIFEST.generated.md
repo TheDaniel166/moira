@@ -4,7 +4,7 @@
 
 - Schema: `moira.lightbox-conformance-manifest/v2`
 - Engine version: `6.10.1`
-- Inventory structural fingerprint: `6125fb3260b83b205ad14ad814b92438244a97375bade0ce095de836c78569c1`
+- Inventory structural fingerprint: `a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9`
 - Canonical schema: `wiki/03_validation/LIGHT_BOX_CONFORMANCE_SCHEMA.json`
 
 ## Boundary

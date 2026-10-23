@@ -88,6 +88,18 @@ referenced schemas, including recursive schemas. Descriptions, examples, and
 titles are annotations; fields actually named `description` or `title` and
 their constraints remain part of the contract.
 
+The inventory records FastAPI and Pydantic renderer versions as discovery
+provenance, outside the structural hash. Use the recorded renderer profile when
+reproducing a committed snapshot. The current snapshot uses FastAPI 0.136.3 and
+Pydantic 2.14.1. A dependency upgrade that changes actual emitted constraints
+still changes API identity and requires review; it must not be normalized away
+as documentation drift. For example, Pydantic 2.14.1 adds
+`additionalProperties: false` to eleven dataclass response schemas across five
+routes. Those closed-object constraints are retained in the structural hash.
+An unchanged API under a different renderer version retains its structural hash,
+while the complete report records the new provenance. Validate such upgrades in
+an isolated project environment to preserve concurrent work's dependencies.
+
 This is API identity, not proof that implementations are equivalent. Transitive
 Python dependencies, evaluated defaults referenced through other constants,
 native code, resource contents, and function bodies still require their own
