@@ -1,0 +1,3750 @@
+{
+  "schema": "moira.research.lilly_core_packet.v1",
+  "packet_id": "lilly_core_2026_10_22",
+  "date": "2026-10-22",
+  "scope": "Western horary; selected Lilly 1647 general doctrine and worked-figure catalogue",
+  "state": "research_packet_for_review_new_executable_doctrine_unadmitted",
+  "code_inspection_baseline": "d6d43a1c9f52e5349eff4f8286dacb1bc1446332",
+  "preceding_horary_fix_commit": "8c427532591c7901c8ec2d8424869b617bcb4634",
+  "code_baseline_note": "Inspected horary files unchanged across intervening generated-maintenance work",
+  "new_executable_admission": false,
+  "new_predictive_admission": false,
+  "sources": [
+    {
+      "id": "S01",
+      "kind": "governing_photographed_1647_witness",
+      "author": "William Lilly",
+      "title": "Christian Astrology",
+      "edition": "London, 1647, first edition",
+      "publisher": "Thomas Brudenell for John Partridge and Humphrey Blunden",
+      "language": "English",
+      "url": "https://wellcomecollection.org/works/s7z7c46y",
+      "scan_url": "https://archive.org/details/b30338724",
+      "manifest_url": "https://iiif.wellcomecollection.org/presentation/b30338724",
+      "rights": "http://creativecommons.org/publicdomain/mark/1.0/",
+      "canvas_count": 894,
+      "copy_note": "Last leaf wanting, per catalogue; selected pages present"
+    },
+    {
+      "id": "S02",
+      "kind": "alternate_scan_same_edition_not_independent_doctrine",
+      "url": "https://archive.org/details/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647",
+      "inspection": "metadata_OCR_scandata_acquired_not_full_visual_collation"
+    },
+    {
+      "id": "S03",
+      "kind": "modern_navigation_only",
+      "url": "https://www.skyscript.co.uk/CA/",
+      "modern_editorial_material_reproduced": false
+    },
+    {
+      "id": "S04",
+      "kind": "existing_Moira_admission_evidence_not_primary_authority",
+      "documents": [
+        "../TRACK_B_HORARY_SOURCE_AND_AMBIGUITY_DOSSIER_2026-08.md",
+        "../../../03_validation/WESTERN_ELECTIONAL_PHASE6_LILLY_PERFECTION_VALIDATION_2026-07-15.md"
+      ]
+    }
+  ],
+  "source_units": [
+    {
+      "id": "U01",
+      "title": "Erection, clocks and interpolation",
+      "source_id": "S01",
+      "page_ids": [
+        "P025",
+        "P033",
+        "P035",
+        "P039",
+        "P040",
+        "P041",
+        "P042",
+        "P047"
+      ],
+      "inspection_state": "selected_passages_and_exercises"
+    },
+    {
+      "id": "U02",
+      "title": "House foundations and topics",
+      "source_id": "S01",
+      "page_ids": [
+        "P047",
+        "P048",
+        "P049",
+        "P050",
+        "P051",
+        "P052",
+        "P053",
+        "P054",
+        "P055",
+        "P056"
+      ],
+      "inspection_state": "selected_passages_visual_not_full_topic_admission"
+    },
+    {
+      "id": "U03",
+      "title": "Named dignity table",
+      "source_id": "S01",
+      "page_ids": [
+        "P104"
+      ],
+      "inspection_state": "table_visual_not_double_transcribed"
+    },
+    {
+      "id": "U04",
+      "title": "Aspects, reception, condition",
+      "source_id": "S01",
+      "page_ids": [
+        "P107",
+        "P108",
+        "P109",
+        "P110",
+        "P111",
+        "P112",
+        "P113",
+        "P114",
+        "P115"
+      ],
+      "inspection_state": "selected_passages_visual"
+    },
+    {
+      "id": "U05",
+      "title": "Considerations",
+      "source_id": "S01",
+      "page_ids": [
+        "P121",
+        "P122",
+        "P123"
+      ],
+      "inspection_state": "selected_passages_visual"
+    },
+    {
+      "id": "U06",
+      "title": "Roles and perfection",
+      "source_id": "S01",
+      "page_ids": [
+        "P123",
+        "P124",
+        "P125",
+        "P126",
+        "P127"
+      ],
+      "inspection_state": "selected_passages_visual"
+    },
+    {
+      "id": "U07",
+      "title": "Turning",
+      "source_id": "S01",
+      "page_ids": [
+        "P127",
+        "P128"
+      ],
+      "inspection_state": "selected_passages_visual"
+    },
+    {
+      "id": "U08",
+      "title": "Worked case groups",
+      "source_id": "S01",
+      "page_ids": [
+        "P135",
+        "P152",
+        "P162",
+        "P165",
+        "P177",
+        "P196",
+        "P200",
+        "P219",
+        "P238",
+        "P240",
+        "P286",
+        "P289",
+        "P385",
+        "P389",
+        "P390",
+        "P392",
+        "P395",
+        "P397",
+        "P399",
+        "P401",
+        "P415",
+        "P417",
+        "P419",
+        "P421",
+        "P436",
+        "P437",
+        "P439",
+        "P442",
+        "P452",
+        "P455",
+        "P456",
+        "P467",
+        "P468",
+        "P470",
+        "P471",
+        "P473"
+      ],
+      "inspection_state": "heading_and_figure_relationship_visual"
+    },
+    {
+      "id": "U09",
+      "title": "Book III house-policy context",
+      "source_id": "S01",
+      "page_ids": [
+        "P491"
+      ],
+      "inspection_state": "auxiliary_selected_passage_visual"
+    },
+    {
+      "id": "U10",
+      "title": "Remaining prerequisites and detailed topic doctrine",
+      "source_id": "S01",
+      "page_ids": [],
+      "inspection_state": "deferred_not_fully_collated"
+    }
+  ],
+  "acquisition": {
+    "source_acquired_utc": "2026-10-22T23:07:07.974506+00:00",
+    "pages_acquired_utc": "2026-10-22T23:12:49.960119+00:00",
+    "cache_root": "C:\\dev\\outputs\\lilly-core-admission-20261022",
+    "source_file_count": 8,
+    "selected_image_count": 79,
+    "errors": [],
+    "full_pdf_downloaded": false
+  },
+  "source_assets": [
+    {
+      "id": "X01",
+      "source_id": "S01",
+      "cache_path": "sources/wellcome_iiif.json",
+      "url": "https://iiif.wellcomecollection.org/presentation/b30338724",
+      "bytes": 2475516,
+      "sha256": "f4be9922729c2fa99711d189cf485e96f4dd1508972ed32c00eb748063011e19"
+    },
+    {
+      "id": "X02",
+      "source_id": "S01",
+      "cache_path": "sources/wellcome_metadata.json",
+      "url": "https://archive.org/metadata/b30338724",
+      "bytes": 162240,
+      "sha256": "71c45d81ae062d9b91fe229ba6c665464fce9b5d28d6e715206c29b2568801dd"
+    },
+    {
+      "id": "X03",
+      "source_id": "S02",
+      "cache_path": "sources/eebo_metadata.json",
+      "url": "https://archive.org/metadata/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647",
+      "bytes": 249580,
+      "sha256": "19c508d729d06a2319a0e46c215a449db44c4f4f47eecda942d99049578ba048"
+    },
+    {
+      "id": "X04",
+      "source_id": "S01",
+      "cache_path": "sources/wellcome_page_numbers.json",
+      "url": "https://archive.org/download/b30338724/b30338724_page_numbers.json",
+      "bytes": 152109,
+      "sha256": "00c46b66e5510cda342edad0c3bef3cd93349b94510c73bd09f0df41954d2428"
+    },
+    {
+      "id": "X05",
+      "source_id": "S01",
+      "cache_path": "sources/wellcome_scandata.xml",
+      "url": "https://archive.org/download/b30338724/b30338724_scandata.xml",
+      "bytes": 914360,
+      "sha256": "8af7a3decdf9a2072f76c8c35816705047d171b4f49630740402bbcaf39e4ee3"
+    },
+    {
+      "id": "X06",
+      "source_id": "S01",
+      "cache_path": "sources/wellcome_ocr.txt",
+      "url": "https://archive.org/download/b30338724/b30338724_djvu.txt",
+      "bytes": 2005702,
+      "sha256": "7c08b55359c41049c5d43901b8da869a326f8eb852e4a30603a4b698533626aa"
+    },
+    {
+      "id": "X07",
+      "source_id": "S02",
+      "cache_path": "sources/eebo_ocr.txt",
+      "url": "https://archive.org/download/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_djvu.txt",
+      "bytes": 1681858,
+      "sha256": "f661a0a140950cc53be09a8400ba87578f35b74b8724818b9f356cf6dd155e4d"
+    },
+    {
+      "id": "X08",
+      "source_id": "S02",
+      "cache_path": "sources/eebo_scandata.xml",
+      "url": "https://archive.org/download/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647/bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_scandata.xml",
+      "bytes": 314261,
+      "sha256": "6d2f01a2e6c87f77903e80c69d154cb8045a2a3c9fef1edacc58c077df8f04a7"
+    }
+  ],
+  "page_images": [
+    {
+      "printed_page": 25,
+      "canvas_index_zero_based": 58,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0059.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0059.jp2/full/1800,/0/default.jpg",
+      "bytes": 828391,
+      "sha256": "c3687af21e0e992e2532a79af06a14f25e7e0e9718e60defdd868b7b7f7afff8",
+      "id": "P025",
+      "source_id": "S01",
+      "cache_path": "pages/p025.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 33,
+      "canvas_index_zero_based": 66,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0067.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0067.jp2/full/1800,/0/default.jpg",
+      "bytes": 757587,
+      "sha256": "30b4f565cf3d71d63d94f300a84816218fd94fbfee5c93fe9f56ea28ebac455b",
+      "id": "P033",
+      "source_id": "S01",
+      "cache_path": "pages/p033.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 35,
+      "canvas_index_zero_based": 68,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0069.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0069.jp2/full/1800,/0/default.jpg",
+      "bytes": 827437,
+      "sha256": "bcdb08b0c5eb974b80efcc34b0f47f183746aa1831e98f58dd02d43e91f5ffda",
+      "id": "P035",
+      "source_id": "S01",
+      "cache_path": "pages/p035.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 39,
+      "canvas_index_zero_based": 72,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0073.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0073.jp2/full/1800,/0/default.jpg",
+      "bytes": 790806,
+      "sha256": "7a356f2daa3fbf53703f9a9c8b89f3edf92cd8c98df3bac1903df7302926c5ff",
+      "id": "P039",
+      "source_id": "S01",
+      "cache_path": "pages/p039.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 40,
+      "canvas_index_zero_based": 73,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0074.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0074.jp2/full/1800,/0/default.jpg",
+      "bytes": 880353,
+      "sha256": "3a85bbfd1ddef7abdd93c070ef259f3d00a3a2b13962cd640cf15aef05eb38c5",
+      "id": "P040",
+      "source_id": "S01",
+      "cache_path": "pages/p040.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 41,
+      "canvas_index_zero_based": 74,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0075.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0075.jp2/full/1800,/0/default.jpg",
+      "bytes": 739901,
+      "sha256": "d27c2a6cb97758f594f1e251ae6fca7fd5999bf56c51789cb07d9f676291e02d",
+      "id": "P041",
+      "source_id": "S01",
+      "cache_path": "pages/p041.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 42,
+      "canvas_index_zero_based": 75,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0076.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0076.jp2/full/1800,/0/default.jpg",
+      "bytes": 909871,
+      "sha256": "1f7e8650b6673da05ff0819792a73d2a7f266112e368faceb40b16da7b25690a",
+      "id": "P042",
+      "source_id": "S01",
+      "cache_path": "pages/p042.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 47,
+      "canvas_index_zero_based": 80,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0081.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0081.jp2/full/1800,/0/default.jpg",
+      "bytes": 807611,
+      "sha256": "9afca94b2a601bd58d14233b5f30fd687301a538ef3f6a78e0f569aeb04424cf",
+      "id": "P047",
+      "source_id": "S01",
+      "cache_path": "pages/p047.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 48,
+      "canvas_index_zero_based": 81,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0082.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0082.jp2/full/1800,/0/default.jpg",
+      "bytes": 888085,
+      "sha256": "2be39e90e0cb8b4a5d6d6af3630911a7e6901864f4e9e4d4a7188459853749f6",
+      "id": "P048",
+      "source_id": "S01",
+      "cache_path": "pages/p048.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 49,
+      "canvas_index_zero_based": 82,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0083.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0083.jp2/full/1800,/0/default.jpg",
+      "bytes": 779159,
+      "sha256": "bca9bc936dd811171736e8b4eefa6a4baba35cdb80206e57f418ceceac8252ec",
+      "id": "P049",
+      "source_id": "S01",
+      "cache_path": "pages/p049.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 50,
+      "canvas_index_zero_based": 83,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0084.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0084.jp2/full/1800,/0/default.jpg",
+      "bytes": 883084,
+      "sha256": "55ae722394f7b7169fb18de3a69687115448b33d48cbbfedfc4ad783cf97d267",
+      "id": "P050",
+      "source_id": "S01",
+      "cache_path": "pages/p050.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 51,
+      "canvas_index_zero_based": 84,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0085.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0085.jp2/full/1800,/0/default.jpg",
+      "bytes": 797972,
+      "sha256": "058aae0fb6158b6b92e0cb3a6fbdfb742c9595b7f1f1e3c94765f3dd87887e6a",
+      "id": "P051",
+      "source_id": "S01",
+      "cache_path": "pages/p051.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 52,
+      "canvas_index_zero_based": 85,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0086.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0086.jp2/full/1800,/0/default.jpg",
+      "bytes": 906754,
+      "sha256": "ff3de57d77132081eb9e380ac006e55a946fa13a9ae0417a67e56958ae6d1adf",
+      "id": "P052",
+      "source_id": "S01",
+      "cache_path": "pages/p052.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 53,
+      "canvas_index_zero_based": 86,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0087.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0087.jp2/full/1800,/0/default.jpg",
+      "bytes": 814167,
+      "sha256": "b3134fd55983f190bf55afff51820b53480c0cf9681abf4488c17924b37131c1",
+      "id": "P053",
+      "source_id": "S01",
+      "cache_path": "pages/p053.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 54,
+      "canvas_index_zero_based": 87,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0088.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0088.jp2/full/1800,/0/default.jpg",
+      "bytes": 859658,
+      "sha256": "282879b08fe18d74cd2fdce5cdf1b95f70e2c26d858080dc1a9380f8ba4bfee3",
+      "id": "P054",
+      "source_id": "S01",
+      "cache_path": "pages/p054.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 55,
+      "canvas_index_zero_based": 88,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0089.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0089.jp2/full/1800,/0/default.jpg",
+      "bytes": 731514,
+      "sha256": "79fa6a91c53fd2d8b6048c0ebaae6015a06fae694e859718e212de1b2eb4278c",
+      "id": "P055",
+      "source_id": "S01",
+      "cache_path": "pages/p055.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 56,
+      "canvas_index_zero_based": 89,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0090.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0090.jp2/full/1800,/0/default.jpg",
+      "bytes": 857807,
+      "sha256": "a1e02a37338e10598ef59451993d89a3fabf72f4db93f967cee73596f335d257",
+      "id": "P056",
+      "source_id": "S01",
+      "cache_path": "pages/p056.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 104,
+      "canvas_index_zero_based": 137,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0138.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0138.jp2/full/1800,/0/default.jpg",
+      "bytes": 948945,
+      "sha256": "18c0e92898334f74aa2fdd09cd08afc5fa553a0989d6fa7d0bc21650cdb0839b",
+      "id": "P104",
+      "source_id": "S01",
+      "cache_path": "pages/p104.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 107,
+      "canvas_index_zero_based": 140,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0141.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0141.jp2/full/1800,/0/default.jpg",
+      "bytes": 804607,
+      "sha256": "38c8a023d9785efbe4c4b030f7a31c9cc24621e75758eebecbe6dcbfd8ee81bb",
+      "id": "P107",
+      "source_id": "S01",
+      "cache_path": "pages/p107.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 108,
+      "canvas_index_zero_based": 141,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0142.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0142.jp2/full/1800,/0/default.jpg",
+      "bytes": 921623,
+      "sha256": "805d9f80bbf16ec3433c897542f54589b6bc4efe0dcebc1b1b88e5844723e9c9",
+      "id": "P108",
+      "source_id": "S01",
+      "cache_path": "pages/p108.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 109,
+      "canvas_index_zero_based": 142,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0143.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0143.jp2/full/1800,/0/default.jpg",
+      "bytes": 772959,
+      "sha256": "1359801cf6b9ab38ec6b0dce307d621752a6c649ef92bf5346a4639ade63dc13",
+      "id": "P109",
+      "source_id": "S01",
+      "cache_path": "pages/p109.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 110,
+      "canvas_index_zero_based": 143,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0144.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0144.jp2/full/1800,/0/default.jpg",
+      "bytes": 943882,
+      "sha256": "00ae656067fc8551bb7d56dc98886366c54f72c239f2bd9ee16c142613e89412",
+      "id": "P110",
+      "source_id": "S01",
+      "cache_path": "pages/p110.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 111,
+      "canvas_index_zero_based": 144,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0145.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0145.jp2/full/1800,/0/default.jpg",
+      "bytes": 861350,
+      "sha256": "189c2b5836f55e1ab6640dea510c146a7fae7e2fdc0b6a6ed69bb23a3b236b00",
+      "id": "P111",
+      "source_id": "S01",
+      "cache_path": "pages/p111.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 112,
+      "canvas_index_zero_based": 145,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0146.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0146.jp2/full/1800,/0/default.jpg",
+      "bytes": 943377,
+      "sha256": "3fcb3249b6eb20927c6d533eb5f4ef63d8aabcf9dbdfce7fbbdc05d5f3369dc2",
+      "id": "P112",
+      "source_id": "S01",
+      "cache_path": "pages/p112.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 113,
+      "canvas_index_zero_based": 146,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0147.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0147.jp2/full/1800,/0/default.jpg",
+      "bytes": 825951,
+      "sha256": "08d7d8c4eab1d5d46a12d38baea24aa57337f04b37431952b617ac376c6806b1",
+      "id": "P113",
+      "source_id": "S01",
+      "cache_path": "pages/p113.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 114,
+      "canvas_index_zero_based": 147,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0148.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0148.jp2/full/1800,/0/default.jpg",
+      "bytes": 947806,
+      "sha256": "dd015585fdeab28e06668d728e246b59a085e553c0011b16ca96ab1f9f140d9f",
+      "id": "P114",
+      "source_id": "S01",
+      "cache_path": "pages/p114.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 115,
+      "canvas_index_zero_based": 148,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0149.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0149.jp2/full/1800,/0/default.jpg",
+      "bytes": 766795,
+      "sha256": "ad20709bb04d6aa81de844c08c4e28d8c79ec8e3d5ca69fe6025d2bafedd72af",
+      "id": "P115",
+      "source_id": "S01",
+      "cache_path": "pages/p115.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 116,
+      "canvas_index_zero_based": 149,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0150.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0150.jp2/full/1800,/0/default.jpg",
+      "bytes": 832820,
+      "sha256": "7065115e02d9300158d922402305a5d678221e6eeb9d1bab687fadb835a156fd",
+      "id": "P116",
+      "source_id": "S01",
+      "cache_path": "pages/p116.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 117,
+      "canvas_index_zero_based": 150,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0151.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0151.jp2/full/1800,/0/default.jpg",
+      "bytes": 813876,
+      "sha256": "dbd898b2c220b693f0fdf984f99c80eb230c268b29dced6dd685c91edc827d4e",
+      "id": "P117",
+      "source_id": "S01",
+      "cache_path": "pages/p117.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 118,
+      "canvas_index_zero_based": 151,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0152.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0152.jp2/full/1800,/0/default.jpg",
+      "bytes": 913666,
+      "sha256": "ae46842f3d5fcab4c02a88428a7d36061680e2ef593ec5f8a636f5f3b5003618",
+      "id": "P118",
+      "source_id": "S01",
+      "cache_path": "pages/p118.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 119,
+      "canvas_index_zero_based": 152,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0153.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0153.jp2/full/1800,/0/default.jpg",
+      "bytes": 745969,
+      "sha256": "79d11b4fc0286c61907f9f12588e3028695396d6ab2693009a231f982dc745af",
+      "id": "P119",
+      "source_id": "S01",
+      "cache_path": "pages/p119.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 120,
+      "canvas_index_zero_based": 153,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0154.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0154.jp2/full/1800,/0/default.jpg",
+      "bytes": 834691,
+      "sha256": "1d31997b1eb0e63691d3f7a89066f6401374319239e463b4daef87ae5815e404",
+      "id": "P120",
+      "source_id": "S01",
+      "cache_path": "pages/p120.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 121,
+      "canvas_index_zero_based": 154,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0155.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0155.jp2/full/1800,/0/default.jpg",
+      "bytes": 775534,
+      "sha256": "10d838336485c7445ae1810efdf0d4d9828eb8a3feafd5b6d266c38d32106911",
+      "id": "P121",
+      "source_id": "S01",
+      "cache_path": "pages/p121.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 122,
+      "canvas_index_zero_based": 155,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0156.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0156.jp2/full/1800,/0/default.jpg",
+      "bytes": 893501,
+      "sha256": "d113234f0445c7dec355edca1b230908ab63dc8461a8e716f39aebeed34f466b",
+      "id": "P122",
+      "source_id": "S01",
+      "cache_path": "pages/p122.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 123,
+      "canvas_index_zero_based": 156,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0157.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0157.jp2/full/1800,/0/default.jpg",
+      "bytes": 773921,
+      "sha256": "9793d78417da1ac1e58fcb3c8a2c67ac3656ed3f3e79d28606e0a68e07a98075",
+      "id": "P123",
+      "source_id": "S01",
+      "cache_path": "pages/p123.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 124,
+      "canvas_index_zero_based": 157,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0158.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0158.jp2/full/1800,/0/default.jpg",
+      "bytes": 914046,
+      "sha256": "8cd568ea1fa53858e69e9a05af1837499455632235896239801987de2f12d058",
+      "id": "P124",
+      "source_id": "S01",
+      "cache_path": "pages/p124.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 125,
+      "canvas_index_zero_based": 158,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0159.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0159.jp2/full/1800,/0/default.jpg",
+      "bytes": 875886,
+      "sha256": "1a3987d0f5a40ef7c55f8cee1fa95cf2590abd0cce869d2b6252ead34251373e",
+      "id": "P125",
+      "source_id": "S01",
+      "cache_path": "pages/p125.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 126,
+      "canvas_index_zero_based": 159,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0160.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0160.jp2/full/1800,/0/default.jpg",
+      "bytes": 909928,
+      "sha256": "df68a17cadfbf3bd5151c200fe698756928645b84f8b4ca0ddd827d993f5b858",
+      "id": "P126",
+      "source_id": "S01",
+      "cache_path": "pages/p126.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 127,
+      "canvas_index_zero_based": 160,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0161.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0161.jp2/full/1800,/0/default.jpg",
+      "bytes": 796690,
+      "sha256": "22504a5e35d4284a02a6a8d163713fc3fcc49420e7dab370d383fa956302191f",
+      "id": "P127",
+      "source_id": "S01",
+      "cache_path": "pages/p127.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 128,
+      "canvas_index_zero_based": 161,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0162.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0162.jp2/full/1800,/0/default.jpg",
+      "bytes": 753379,
+      "sha256": "63e2091c87431d6c80a41333c624aea012aa19c9db047960b88815a739cb2bbe",
+      "id": "P128",
+      "source_id": "S01",
+      "cache_path": "pages/p128.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    },
+    {
+      "printed_page": 135,
+      "canvas_index_zero_based": 168,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0169.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0169.jp2/full/1300,/0/default.jpg",
+      "bytes": 451807,
+      "sha256": "6f9f91ec7b930ad80e64898c4b80170c8f225e7c13e8fda19f5548d4a418e111",
+      "id": "P135",
+      "source_id": "S01",
+      "cache_path": "pages/p135.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 152,
+      "canvas_index_zero_based": 185,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0186.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0186.jp2/full/1300,/0/default.jpg",
+      "bytes": 495272,
+      "sha256": "433f96bb5813a37729743324b8bd60deabbe76315417c8d30ae264e0f64b1a6a",
+      "id": "P152",
+      "source_id": "S01",
+      "cache_path": "pages/p152.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 162,
+      "canvas_index_zero_based": 195,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0196.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0196.jp2/full/1300,/0/default.jpg",
+      "bytes": 541674,
+      "sha256": "52e120ae2a30e37457d54490912ab95cb5d378f78db47aea3b9d17d25a9164c7",
+      "id": "P162",
+      "source_id": "S01",
+      "cache_path": "pages/p162.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 165,
+      "canvas_index_zero_based": 198,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0199.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0199.jp2/full/1300,/0/default.jpg",
+      "bytes": 512857,
+      "sha256": "6629cc0fc53e8acdb51b810e54aec6b102a153ae6a01cc41594ec4b3fc1ca63c",
+      "id": "P165",
+      "source_id": "S01",
+      "cache_path": "pages/p165.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 177,
+      "canvas_index_zero_based": 210,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0211.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0211.jp2/full/1300,/0/default.jpg",
+      "bytes": 415700,
+      "sha256": "f4725e98b4c48e2df15b0164dd084b61e69ad691e98aae1b787da544f4a31688",
+      "id": "P177",
+      "source_id": "S01",
+      "cache_path": "pages/p177.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 196,
+      "canvas_index_zero_based": 229,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0230.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0230.jp2/full/1300,/0/default.jpg",
+      "bytes": 440670,
+      "sha256": "a25ed730bce219b9609ab7150356ed6130ffde565e03cf17705658a5ac8e2221",
+      "id": "P196",
+      "source_id": "S01",
+      "cache_path": "pages/p196.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 197,
+      "canvas_index_zero_based": 230,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0231.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0231.jp2/full/1300,/0/default.jpg",
+      "bytes": 499467,
+      "sha256": "df29d8f36e0816362770a4d178bbde53bc7395b5e40dced61175031b27408ceb",
+      "id": "P197",
+      "source_id": "S01",
+      "cache_path": "pages/p197.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 200,
+      "canvas_index_zero_based": 233,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0234.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0234.jp2/full/1300,/0/default.jpg",
+      "bytes": 497944,
+      "sha256": "35a4e9a1addad0108f6ca0ac57356d2493acf5d8abeded7effecf368249e13c1",
+      "id": "P200",
+      "source_id": "S01",
+      "cache_path": "pages/p200.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 219,
+      "canvas_index_zero_based": 252,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0253.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0253.jp2/full/1300,/0/default.jpg",
+      "bytes": 425723,
+      "sha256": "85931983def8d0b7f6a3d5a70e38018b5e6770247ee27cd8c6102cf55cd06189",
+      "id": "P219",
+      "source_id": "S01",
+      "cache_path": "pages/p219.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 238,
+      "canvas_index_zero_based": 271,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0272.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0272.jp2/full/1300,/0/default.jpg",
+      "bytes": 482039,
+      "sha256": "57ba46f4c967f15579e96c8a58aa6e117a00d60a4d03e263caf750e8f96ef568",
+      "id": "P238",
+      "source_id": "S01",
+      "cache_path": "pages/p238.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 240,
+      "canvas_index_zero_based": 273,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0274.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0274.jp2/full/1300,/0/default.jpg",
+      "bytes": 516672,
+      "sha256": "61fe91839cf5cd237a0fdff1ae499b47f754ceb277ee9e84a6920a03d00fad46",
+      "id": "P240",
+      "source_id": "S01",
+      "cache_path": "pages/p240.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 286,
+      "canvas_index_zero_based": 319,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0320.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0320.jp2/full/1300,/0/default.jpg",
+      "bytes": 403737,
+      "sha256": "3a36250d6f42954001409d392c80dd1732a72651ae9f489b3b72ab8f83e783e2",
+      "id": "P286",
+      "source_id": "S01",
+      "cache_path": "pages/p286.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 289,
+      "canvas_index_zero_based": 322,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0323.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0323.jp2/full/1300,/0/default.jpg",
+      "bytes": 418150,
+      "sha256": "3a99ee88b5bb5939fbfa5f8ab84072da68423604b7899c38e1d5588124150e94",
+      "id": "P289",
+      "source_id": "S01",
+      "cache_path": "pages/p289.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 385,
+      "canvas_index_zero_based": 418,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0419.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0419.jp2/full/1300,/0/default.jpg",
+      "bytes": 457325,
+      "sha256": "fa6afc7fec58efee70411705a801449e077156cfccfee7bfbd618f516015458e",
+      "id": "P385",
+      "source_id": "S01",
+      "cache_path": "pages/p385.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 389,
+      "canvas_index_zero_based": 422,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0423.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0423.jp2/full/1300,/0/default.jpg",
+      "bytes": 459928,
+      "sha256": "91fbed5b2f08701d778dfc04910b2130d176ebb5caf0924b3f1380913dd30dd8",
+      "id": "P389",
+      "source_id": "S01",
+      "cache_path": "pages/p389.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 390,
+      "canvas_index_zero_based": 423,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0424.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0424.jp2/full/1300,/0/default.jpg",
+      "bytes": 471599,
+      "sha256": "61affec9cd5ca274711e4f7380f6b748b32b0e5c3b657740b3e0281861d81536",
+      "id": "P390",
+      "source_id": "S01",
+      "cache_path": "pages/p390.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 392,
+      "canvas_index_zero_based": 425,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0426.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0426.jp2/full/1300,/0/default.jpg",
+      "bytes": 473766,
+      "sha256": "7c076127c875555c1f63a8a78c861910151586a8f94578ed9fb504d53ebefbe3",
+      "id": "P392",
+      "source_id": "S01",
+      "cache_path": "pages/p392.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 395,
+      "canvas_index_zero_based": 428,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0429.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0429.jp2/full/1300,/0/default.jpg",
+      "bytes": 439394,
+      "sha256": "2161c5cfd89755d9abdbf512c6e26e7f59e615ab3e4984a8410667ee3e5da4fa",
+      "id": "P395",
+      "source_id": "S01",
+      "cache_path": "pages/p395.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 397,
+      "canvas_index_zero_based": 430,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0431.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0431.jp2/full/1300,/0/default.jpg",
+      "bytes": 464011,
+      "sha256": "0e84b18e022ca62cdc4cb26ebaef0d47b04252db308994e21ab3bef9ad641693",
+      "id": "P397",
+      "source_id": "S01",
+      "cache_path": "pages/p397.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 399,
+      "canvas_index_zero_based": 432,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0433.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0433.jp2/full/1300,/0/default.jpg",
+      "bytes": 464043,
+      "sha256": "f3aa24bc8b7bada3c00bea31bf4945c967887b5785563d43ce264af8869d02bd",
+      "id": "P399",
+      "source_id": "S01",
+      "cache_path": "pages/p399.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 400,
+      "canvas_index_zero_based": 433,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0434.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0434.jp2/full/1300,/0/default.jpg",
+      "bytes": 515098,
+      "sha256": "cef9d0b8bc8fe337e09378e1433958fc363d6771c56cb101067b5fab1aa88f05",
+      "id": "P400",
+      "source_id": "S01",
+      "cache_path": "pages/p400.jpg",
+      "inspection": [
+        "acquired_navigation_only"
+      ]
+    },
+    {
+      "printed_page": 401,
+      "canvas_index_zero_based": 434,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0435.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0435.jp2/full/1300,/0/default.jpg",
+      "bytes": 482828,
+      "sha256": "925f5cdae6ec90a55e244e68d4ae19eb74a121aafa767c6930aa21f028180a37",
+      "id": "P401",
+      "source_id": "S01",
+      "cache_path": "pages/p401.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 415,
+      "canvas_index_zero_based": 448,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0449.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0449.jp2/full/1300,/0/default.jpg",
+      "bytes": 466267,
+      "sha256": "936ef31e374dae5f6e584a4e081a37fa7e53fbb6559d134e5a1e692042e849ce",
+      "id": "P415",
+      "source_id": "S01",
+      "cache_path": "pages/p415.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 417,
+      "canvas_index_zero_based": 450,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0451.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0451.jp2/full/1300,/0/default.jpg",
+      "bytes": 500686,
+      "sha256": "16eac94d9144c95f6ff456b510e4691c1d40711f3bf586480f087930497c2c05",
+      "id": "P417",
+      "source_id": "S01",
+      "cache_path": "pages/p417.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 419,
+      "canvas_index_zero_based": 452,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0453.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0453.jp2/full/1300,/0/default.jpg",
+      "bytes": 485474,
+      "sha256": "2181aa91aee93834ce51f03b11019a8a987bb557f9bdfe3c80c52109fd4bdbf0",
+      "id": "P419",
+      "source_id": "S01",
+      "cache_path": "pages/p419.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 421,
+      "canvas_index_zero_based": 454,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0455.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0455.jp2/full/1300,/0/default.jpg",
+      "bytes": 481651,
+      "sha256": "42f527e3e3db7250c15fe5c13e17b060fab59ffa877dc9e0a7c64ba4fc9c6e2a",
+      "id": "P421",
+      "source_id": "S01",
+      "cache_path": "pages/p421.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 436,
+      "canvas_index_zero_based": 469,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0470.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0470.jp2/full/1300,/0/default.jpg",
+      "bytes": 455562,
+      "sha256": "9702ade64c622fd35505cb1ed2e04eb90793cc8fcac3685fbe29a3047d347f18",
+      "id": "P436",
+      "source_id": "S01",
+      "cache_path": "pages/p436.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 437,
+      "canvas_index_zero_based": 470,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0471.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0471.jp2/full/1300,/0/default.jpg",
+      "bytes": 433539,
+      "sha256": "4774d09e5392f27d299a97b078e4d749a31fa784fdd96be07ba5b16cd5ab0b21",
+      "id": "P437",
+      "source_id": "S01",
+      "cache_path": "pages/p437.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 439,
+      "canvas_index_zero_based": 472,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0473.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0473.jp2/full/1300,/0/default.jpg",
+      "bytes": 441819,
+      "sha256": "cba319eedf00218f13e0ea568bdb7bdfc64faf812fc0f95486b810e3dcab0811",
+      "id": "P439",
+      "source_id": "S01",
+      "cache_path": "pages/p439.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 442,
+      "canvas_index_zero_based": 475,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0476.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0476.jp2/full/1300,/0/default.jpg",
+      "bytes": 453568,
+      "sha256": "ca63806444df7203b0a7eeedaba2639a250ad09d5e1f342b9a75395e4d087627",
+      "id": "P442",
+      "source_id": "S01",
+      "cache_path": "pages/p442.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 452,
+      "canvas_index_zero_based": 485,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0486.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0486.jp2/full/1300,/0/default.jpg",
+      "bytes": 445934,
+      "sha256": "631ac082d7f597b3720f8f579975cd6817b7df5c79898103ae339bc042853d5b",
+      "id": "P452",
+      "source_id": "S01",
+      "cache_path": "pages/p452.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 455,
+      "canvas_index_zero_based": 488,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0489.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0489.jp2/full/1300,/0/default.jpg",
+      "bytes": 493178,
+      "sha256": "276a9a5353d6d5561860f57e2f0d4da95ba13218b7ba7d75714284c6bf691d7f",
+      "id": "P455",
+      "source_id": "S01",
+      "cache_path": "pages/p455.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 456,
+      "canvas_index_zero_based": 489,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0490.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0490.jp2/full/1300,/0/default.jpg",
+      "bytes": 497605,
+      "sha256": "667d18c55f095e296a5a698fb0ba14d13650adba8c7e3f868f60618e2b2077e0",
+      "id": "P456",
+      "source_id": "S01",
+      "cache_path": "pages/p456.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 467,
+      "canvas_index_zero_based": 500,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0501.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0501.jp2/full/1300,/0/default.jpg",
+      "bytes": 523822,
+      "sha256": "f22da548ad2f89f3e61de2a0ae11e56f080e3481c3488fd43e07fd8077c5c306",
+      "id": "P467",
+      "source_id": "S01",
+      "cache_path": "pages/p467.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 468,
+      "canvas_index_zero_based": 501,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0502.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0502.jp2/full/1300,/0/default.jpg",
+      "bytes": 475216,
+      "sha256": "d368bfc5913006ed53daf02f5819edfdcb2eeb5d8f1047b87a7432a2ff11cec8",
+      "id": "P468",
+      "source_id": "S01",
+      "cache_path": "pages/p468.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 470,
+      "canvas_index_zero_based": 503,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0504.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0504.jp2/full/1300,/0/default.jpg",
+      "bytes": 436887,
+      "sha256": "fcfa114dd729402aa2c7ce043889a3bc635c06352bdacab16db7d690b74771da",
+      "id": "P470",
+      "source_id": "S01",
+      "cache_path": "pages/p470.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 471,
+      "canvas_index_zero_based": 504,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0505.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0505.jp2/full/1300,/0/default.jpg",
+      "bytes": 395152,
+      "sha256": "882413e68d962773f756beae8ca3a0b279f2db8d545486e97a3642db40f6d5e6",
+      "id": "P471",
+      "source_id": "S01",
+      "cache_path": "pages/p471.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 473,
+      "canvas_index_zero_based": 506,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0507.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0507.jp2/full/1300,/0/default.jpg",
+      "bytes": 456544,
+      "sha256": "b5eaaad2dbdc98bbcf8f4ee3495e6db271086477e93fb848ecc9d96b886e0641",
+      "id": "P473",
+      "source_id": "S01",
+      "cache_path": "pages/p473.jpg",
+      "inspection": [
+        "case_heading_and_figure_relationship_visual"
+      ]
+    },
+    {
+      "printed_page": 491,
+      "canvas_index_zero_based": 524,
+      "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0525.jp2",
+      "image_url": "https://iiif.wellcomecollection.org/image/b30338724_0525.jp2/full/1800,/0/default.jpg",
+      "bytes": 763439,
+      "sha256": "277306adc04cfebc94057705a80b9486f82e02743f9665688815f83d9a1e71fc",
+      "id": "P491",
+      "source_id": "S01",
+      "cache_path": "pages/p491.jpg",
+      "inspection": [
+        "selected_passage_visual"
+      ]
+    }
+  ],
+  "rule_families": [
+    {
+      "id": "R01",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U01"
+      ],
+      "page_ids": [
+        "P035",
+        "P039",
+        "P040",
+        "P041",
+        "P042",
+        "P047"
+      ],
+      "paraphrase": "Erection depends on the stated date, clock and local ephemeris procedure. P.41 explicitly converts a morning to hours after the preceding noon.",
+      "required_evidence_and_limits": "Literal date/time; calendar, year start, clock origin, locality, conversion receipt. Never treat printed P.M. automatically as modern civil PM.",
+      "ambiguity_ids": [
+        "A01",
+        "A24"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R02",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U02"
+      ],
+      "page_ids": [
+        "P047",
+        "P048",
+        "P049",
+        "P050",
+        "P051",
+        "P052",
+        "P053",
+        "P054",
+        "P055",
+        "P056"
+      ],
+      "paraphrase": "Houses have distinct topics, angular/succedent/cadent condition and source-specific strength.",
+      "required_evidence_and_limits": "Caller-confirmed question facts, actual cusp/placement geometry and topic passage; a house label is not a complete judgement.",
+      "ambiguity_ids": [
+        "A02",
+        "A25"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R03",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U07"
+      ],
+      "page_ids": [
+        "P127",
+        "P128"
+      ],
+      "paraphrase": "A related person's house becomes their first; other houses are counted from it. Who asks can change the perspective.",
+      "required_evidence_and_limits": "Explicit entity/relationship path and inclusive count, with the radical anchor retained.",
+      "ambiguity_ids": [
+        "A02"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R04",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U02",
+        "U06"
+      ],
+      "page_ids": [
+        "P049",
+        "P123",
+        "P124"
+      ],
+      "paraphrase": "The querent is represented by the Ascendant/lord; the thing demanded by its appropriate house/lord. Other planets can contribute.",
+      "required_evidence_and_limits": "Question context, cusp-sign rulers, descriptive/co-significator evidence; do not silently replace a collided principal.",
+      "ambiguity_ids": [
+        "A03",
+        "A24"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R05",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P124"
+      ],
+      "paraphrase": "Moon is co-significator of the querent; Lilly rejects making its last separated planet co-significator by that fact alone.",
+      "required_evidence_and_limits": "Moon's roles and sequence independent of the principal pair. The following next-applying/co-quesited discussion needs contextual resolution.",
+      "ambiguity_ids": [
+        "A03",
+        "A15"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R06",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U03",
+        "U04"
+      ],
+      "page_ids": [
+        "P104",
+        "P112",
+        "P115"
+      ],
+      "paraphrase": "Dignity and peregrinity depend on specific essential dignities at a place; reception also enters the fortitude table.",
+      "required_evidence_and_limits": "Versioned Lilly table, sect and degree bounds; do not substitute a generic term/triplicity table or turn fortitude into probability.",
+      "ambiguity_ids": [
+        "A04",
+        "A08",
+        "A25"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R07",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P107",
+        "P110"
+      ],
+      "paraphrase": "Planetary full orbs have two printed alternatives; contact range uses the sum of their halves.",
+      "required_evidence_and_limits": "Named selected table and exact boundary policy. Current fixed values are not the sole table allowed by this source.",
+      "ambiguity_ids": [
+        "A05"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R08",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P107",
+        "P108",
+        "P109"
+      ],
+      "paraphrase": "Application has direct/direct, retrograde/retrograde and mixed-motion forms; partile, dexter/sinister and sign-beholding are distinct notions.",
+      "required_evidence_and_limits": "Directed separation, relative motion, aspect branch, orb and sign relation. Planetary weight is not automatically instantaneous speed.",
+      "ambiguity_ids": [
+        "A06",
+        "A07"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R09",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P110"
+      ],
+      "paraphrase": "Separation begins at six arcminutes in the description, but complete separation is beyond the combined moieties.",
+      "required_evidence_and_limits": "Distinguish exact root, partile status, initial separation and full departure from an orb.",
+      "ambiguity_ids": [
+        "A06"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R10",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P112"
+      ],
+      "paraphrase": "Reception is described through mutual dignity, with examples in several bases, and can assist without an aspect or through adverse aspects.",
+      "required_evidence_and_limits": "Directed dignity relations, mutuality, basis, context and epoch; mechanism-specific reception requirements must remain distinct.",
+      "ambiguity_ids": [
+        "A08",
+        "A09"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R11",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04",
+        "U05"
+      ],
+      "page_ids": [
+        "P112",
+        "P122"
+      ],
+      "paraphrase": "VOC concerns separation followed by no further application during the sign; p.122 qualifies the consequence by principal strength and signs.",
+      "required_evidence_and_limits": "Source definition of application, lunar sequence/sign boundary, and separately encoded exceptions; no automatic universal denial.",
+      "ambiguity_ids": [
+        "A10",
+        "A11"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R12",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P113",
+        "P114"
+      ],
+      "paraphrase": "Combustion is described as corporal proximity in the same sign within 8 degrees 30 minutes; beams and cazimi have distinct thresholds.",
+      "required_evidence_and_limits": "Sun/planet longitudes and signs, direction if relevant, endpoint policy; record the apparent inconsistent numerical example.",
+      "ambiguity_ids": [
+        "A12",
+        "A13"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R13",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U05"
+      ],
+      "page_ids": [
+        "P121",
+        "P122"
+      ],
+      "paraphrase": "Hour agreement can concern lord identity, triplicity or nature; the question and erection context matter.",
+      "required_evidence_and_limits": "Bound question-time/location receipt, day/night hour, sign lord/triplicity/nature and the source examples.",
+      "ambiguity_ids": [],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R14",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U05"
+      ],
+      "page_ids": [
+        "P122"
+      ],
+      "paraphrase": "Early/late Ascendant cautions include descriptive/age exceptions; the late caution also distinguishes known-event figures.",
+      "required_evidence_and_limits": "Degree, caller-supplied age/description and figure purpose; lack of context is not proof that an exception fails.",
+      "ambiguity_ids": [
+        "A14"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R15",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U05"
+      ],
+      "page_ids": [
+        "P122"
+      ],
+      "paraphrase": "Late Moon and Via Combusta are cautions with source qualifications. VOC is mitigated in named signs and by strong principals.",
+      "required_evidence_and_limits": "Moon sign/degree, strength evidence and source hedge; avoid treating all cautions as strict prohibitions.",
+      "ambiguity_ids": [
+        "A11",
+        "A14"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R16",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U05"
+      ],
+      "page_ids": [
+        "P122",
+        "P123"
+      ],
+      "paraphrase": "Saturn and seventh-house/lord warnings concern different risks; the artist/seventh caution depends on question context.",
+      "required_evidence_and_limits": "Actual placements/condition and whether the matter concerns the seventh. Keep judgement reliability and matter difficulty separate.",
+      "ambiguity_ids": [
+        "A14"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R17",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U05"
+      ],
+      "page_ids": [
+        "P123"
+      ],
+      "paraphrase": "Balanced fortunate and unfortunate testimonies counsel deferral; combust Ascendant lord and other conditions add cautions.",
+      "required_evidence_and_limits": "Source-defined testimony types, not a count of arbitrary votes or a fabricated confidence threshold.",
+      "ambiguity_ids": [
+        "A14"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R18",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P125"
+      ],
+      "paraphrase": "Conjunction can perfect under conditions of placement, strength/motion and no interruption; house class modifies the account.",
+      "required_evidence_and_limits": "Exact contact plus role-specific condition and intervening events. Contact alone is not the complete proposition.",
+      "ambiguity_ids": [
+        "A16",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R19",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P125"
+      ],
+      "paraphrase": "Sextile/trine perfection is qualified by good houses, dignity and absence of intervening malefic testimony.",
+      "required_evidence_and_limits": "Qualifiers and their epochs; distinguish the astronomical aspect from the source judgement.",
+      "ambiguity_ids": [
+        "A16"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R20",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P125"
+      ],
+      "paraphrase": "Square perfection is possible with dignity and suitable houses.",
+      "required_evidence_and_limits": "Explicit source-conditioned route; neither unconditional success nor unconditional failure follows from square alone.",
+      "ambiguity_ids": [
+        "A16"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R21",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P125"
+      ],
+      "paraphrase": "Opposition requires additional reception/house/Moon conditions in this discussion and can lead to regret or expense.",
+      "required_evidence_and_limits": "Mutual domicile reception, house and Moon sequence evidence; completion and desirability are separate propositions.",
+      "ambiguity_ids": [
+        "A16"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R22",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04",
+        "U06"
+      ],
+      "page_ids": [
+        "P111",
+        "P126"
+      ],
+      "paraphrase": "Translation joins significators through a lighter intermediary; the fuller perfection passage adds reception and contact/history conditions.",
+      "required_evidence_and_limits": "Two directed legs, source receiving translator in house/triplicity/term, no intervening contact, principal relationship history and epochs.",
+      "ambiguity_ids": [
+        "A07",
+        "A08",
+        "A17",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R23",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P126"
+      ],
+      "paraphrase": "Collection concerns principals that do not behold one another, both contacting a heavier collector which each receives.",
+      "required_evidence_and_limits": "Both principal-to-collector applications, directed reception by each principal, heaviness, chronology and beholding definition.",
+      "ambiguity_ids": [
+        "A07",
+        "A08",
+        "A18",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R24",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P110",
+        "P111"
+      ],
+      "paraphrase": "Prohibition is an intervening action preventing the intended completion; the source distinguishes bodily and aspectual forms.",
+      "required_evidence_and_limits": "Intended application and relevant third-party sequence; do not assume every intervening contact is prohibition.",
+      "ambiguity_ids": [
+        "A07",
+        "A19",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R25",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P111"
+      ],
+      "paraphrase": "Refranation interrupts an intended application by reversal before completion.",
+      "required_evidence_and_limits": "Application, station/reversal and failure to complete; an actual later exact aspect is not a necessary historical premise.",
+      "ambiguity_ids": [
+        "A07",
+        "A19",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R26",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U04"
+      ],
+      "page_ids": [
+        "P112",
+        "P113"
+      ],
+      "paraphrase": "Frustration describes an intended bodily conjunction defeated when the heavier significator first joins another.",
+      "required_evidence_and_limits": "Conjunction-specific intended and intervening relationships; do not generalize automatically to every aspect.",
+      "ambiguity_ids": [
+        "A07",
+        "A19",
+        "A20",
+        "A21"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R27",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P126",
+        "P127"
+      ],
+      "paraphrase": "Dwelling in the relevant house is attributed to earlier authorities, but Lilly declines to rely on it without the Moon carrying the virtue.",
+      "required_evidence_and_limits": "Preserve the author's rejection/qualification; do not add an unconditional seventh success mechanism.",
+      "ambiguity_ids": [
+        "A22"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R28",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U06"
+      ],
+      "page_ids": [
+        "P125"
+      ],
+      "paraphrase": "Angular/succedent/cadent contexts modify speed/ease of accomplishment in the general perfection discussion.",
+      "required_evidence_and_limits": "Qualitative timing only here. An exact aspect timestamp does not determine symbolic weeks, months or years.",
+      "ambiguity_ids": [
+        "A23",
+        "A24"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R29",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U02",
+        "U04"
+      ],
+      "page_ids": [
+        "P048",
+        "P113",
+        "P114",
+        "P115"
+      ],
+      "paraphrase": "House strength, Hayz, oriental/occidental condition, besiegement and the fortitude table supply distinct condition evidence.",
+      "required_evidence_and_limits": "Separate definitions, sect, body group and table entries. Table scores and ordered comparisons are not one interchangeable judgement scale.",
+      "ambiguity_ids": [
+        "A25"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "R30",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U09"
+      ],
+      "page_ids": [
+        "P491"
+      ],
+      "paraphrase": "Book III recommends exact Regiomontanus construction for nativities and describes it as more scrupulous than ordinary questions need.",
+      "required_evidence_and_limits": "Auxiliary scope evidence; it does not impose one universal horary house-method default.",
+      "ambiguity_ids": [
+        "A02"
+      ],
+      "source_state": "selected_passage_visually_checked",
+      "operational_state": "candidate_family_requires_atomic_specification",
+      "executable_admitted": false,
+      "document": "RULES_AND_AMBIGUITIES.md"
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "A01",
+      "category": "historical input",
+      "rule_ids": [
+        "R01"
+      ],
+      "issue": "Noon-origin hours, AM/PM wording, Julian/Gregorian calendar and year-start style are separate axes.",
+      "disposition_and_closure": "Preserve raw strings. Per-case conversion must explain date rollover, year and locality before a JD/UT value is allowed; use E03 as an independent clock fixture.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A02",
+      "category": "computational policy",
+      "rule_ids": [
+        "R02",
+        "R03",
+        "R30"
+      ],
+      "issue": "Source houses, current house API policy and boundary/placement rules need a named contract. P.491 does not settle all ordinary-question defaults.",
+      "disposition_and_closure": "Preserve supplied house policy; no silent method substitution. Document planet/cusp boundary and turning behavior separately.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A03",
+      "category": "role model",
+      "rule_ids": [
+        "R04",
+        "R05"
+      ],
+      "issue": "Two entities can have one planetary lord; Moon and other source roles can overlap.",
+      "disposition_and_closure": "Preserve collisions and candidate roles. Require a source-specific alternative rule rather than inventing a replacement significator.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A04",
+      "category": "table identity",
+      "rule_ids": [
+        "R06"
+      ],
+      "issue": "Labels such as Ptolemaic, Egyptian or traditional can conceal different cells, sect handling or endpoint conventions.",
+      "disposition_and_closure": "Bind the actual p.104 table and double-enter every cell needed by fixtures. Current policy already names Lilly; old validation prose is stale.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A05",
+      "category": "genuine source alternatives",
+      "rule_ids": [
+        "R07"
+      ],
+      "issue": "P.107 prints two orb sets; p.110's Saturn/Jupiter example uses the second. The current fixed table mixes values from these alternatives.",
+      "disposition_and_closure": "Preserve all three tables below as separately identified data. Selecting a future table needs an explicit profile decision and paired boundary fixtures.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A06",
+      "category": "definition versus numerical tolerance",
+      "rule_ids": [
+        "R08",
+        "R09"
+      ],
+      "issue": "Six-arcminute separation, partile equality, orbital contact and a solver's root tolerance answer different questions.",
+      "disposition_and_closure": "Specify separate fields and endpoint tests; never use a historical arc threshold as a root-finding error tolerance.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A07",
+      "category": "terminology",
+      "rule_ids": [
+        "R08",
+        "R22",
+        "R23",
+        "R24",
+        "R25",
+        "R26"
+      ],
+      "issue": "Lighter/heavier can mean traditional planetary order; the implementation uses absolute instantaneous speed. Stations can change their relation.",
+      "disposition_and_closure": "Collate mechanism examples and practice; specify which notion each mechanism requires, including direct/retrograde motion.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A08",
+      "category": "reception semantics",
+      "rule_ids": [
+        "R06",
+        "R10",
+        "R22",
+        "R23"
+      ],
+      "issue": "Mutual reception, directed reception and mechanism-specific bases differ; current generic and perfection APIs use incompatible receiver vocabulary.",
+      "disposition_and_closure": "Define host as dignity ruler and guest as occupant in plain terms. Explicit adapters and same-/mixed-basis tests precede reuse.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A09",
+      "category": "doctrine scope",
+      "rule_ids": [
+        "R10"
+      ],
+      "issue": "P.112 permits reception to assist even without an aspect; the broad statement does not fully operationalize every outcome.",
+      "disposition_and_closure": "Keep a reception-without-aspect candidate route, unadmitted until context and counterexamples are collated. Do not infer universal success.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A10",
+      "category": "lunar definition",
+      "rule_ids": [
+        "R11"
+      ],
+      "issue": "P.112's application during a sign can be read through orb/application or exact-completion criteria; these differ near an ingress.",
+      "disposition_and_closure": "Preserve alternatives; specify event universe, bounds and what counts as application. The generic VOC helper is not automatically Lilly's definition.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A11",
+      "category": "qualitative exception",
+      "rule_ids": [
+        "R11",
+        "R15"
+      ],
+      "issue": "P.122's strong principals and sign exceptions do not supply a universal numeric strength threshold.",
+      "disposition_and_closure": "Encode named qualitative evidence and unknown context. A threshold needs source/practice support, not an arbitrary score.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A12",
+      "category": "solar policy",
+      "rule_ids": [
+        "R12"
+      ],
+      "issue": "Same-sign combustion differs from a distance-only band, especially across a sign boundary; threshold inclusivity is not fully formalized.",
+      "disposition_and_closure": "Test equal distance in same/different signs; maintain source and geometric evidence separately. Cazimi/beams need their own endpoint decisions.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A13",
+      "category": "apparent printed inconsistency",
+      "rule_ids": [
+        "R12"
+      ],
+      "issue": "P.113 defines 8 degrees 30 minutes but appears to call Jupiter 28 Aries with Sun 18 Aries combust.",
+      "disposition_and_closure": "Retain literal readings; collate alternate photograph before proposing an erratum. Do not silently change 28 to 26 or widen the threshold.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A14",
+      "category": "context and force",
+      "rule_ids": [
+        "R14",
+        "R15",
+        "R16",
+        "R17"
+      ],
+      "issue": "Early/late exceptions, artist/seventh warnings and Via Combusta's qualified attribution resist universal boolean denial.",
+      "disposition_and_closure": "Require context inputs and distinguish caution, exception, unknown and not applicable. Preserve the source hedge.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A15",
+      "category": "authorial stance",
+      "rule_ids": [
+        "R05"
+      ],
+      "issue": "P.124 rejects the Moon's last-separated planet as co-querent; the ensuing next-applying/co-quesited passage needs contextual reading.",
+      "disposition_and_closure": "Record those as different propositions. Check worked practice before admitting an automatic new role.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A16",
+      "category": "judgement conditions",
+      "rule_ids": [
+        "R18",
+        "R19",
+        "R20",
+        "R21"
+      ],
+      "issue": "Good/friendly houses, strong planets, malefic intervention and opposition regret need definitions and scope.",
+      "disposition_and_closure": "Separate R18-R21; give every qualifier a predicate or typed unresolved state. An exact contact cannot stand in for all of them.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A17",
+      "category": "translation scope and epoch",
+      "rule_ids": [
+        "R22"
+      ],
+      "issue": "P.111 gives a structural definition; p.126 adds principal-history and reception conditions. When must reception/strength hold?",
+      "disposition_and_closure": "Keep both source contexts. Test history, allowed bases, direction, intervening contacts and initial versus event-time changes.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A18",
+      "category": "collection scope and epoch",
+      "rule_ids": [
+        "R23"
+      ],
+      "issue": "Not beholding may concern sign relation rather than present orb; reception of the collector and heavier status need explicit epochs.",
+      "disposition_and_closure": "Preserve the source's reception direction. Compare sign/aspect alternatives and changing dignity before the last contact.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A19",
+      "category": "implementation admission gap",
+      "rule_ids": [
+        "R24",
+        "R25",
+        "R26"
+      ],
+      "issue": "Current blockers require an eligible actual future pair contact. A reversal can prevent the contact altogether.",
+      "disposition_and_closure": "Specify intended application independently from completed event search. Add blocked/no-exact fixtures before expanding admission. No repair is made here.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A20",
+      "category": "implementation admission gap",
+      "rule_ids": [
+        "R18",
+        "R22",
+        "R23",
+        "R24",
+        "R25",
+        "R26"
+      ],
+      "issue": "Current prior-event filters exclude events within the advertised one-second tie band before the tie predicate examines them.",
+      "disposition_and_closure": "Add independent exact/near-simultaneous station, ingress and third-contact fixtures. Treat this as a code gap, not a historical ambiguity.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A21",
+      "category": "completeness and coverage",
+      "rule_ids": [
+        "R18",
+        "R22",
+        "R23",
+        "R24",
+        "R25",
+        "R26"
+      ],
+      "issue": "Current witnesses retain the first translation/collection candidate; a 31-day boundary is a safety limit, not doctrine.",
+      "disposition_and_closure": "Future output must preserve all candidates, dependencies and unresolved frontier. Do not chain windows while discarding cross-boundary state.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A22",
+      "category": "attribution",
+      "rule_ids": [
+        "R27"
+      ],
+      "issue": "A catalogue that lists the dwelling shortcut without Lilly's rejection would misattribute earlier doctrine to him.",
+      "disposition_and_closure": "Source handling resolved: record as rejected/qualified in Lilly. Any positive mechanism still requires Moon evidence under the admitted rule.",
+      "state": "source_handling_resolved_runtime_unadmitted",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A23",
+      "category": "timing",
+      "rule_ids": [
+        "R28"
+      ],
+      "issue": "Event time, qualitative speed, symbolic units and a reported historical duration have different evidence.",
+      "disposition_and_closure": "No universal degree-to-unit conversion in the core. Later timing admission must state context, alternatives and uncertainty.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A24",
+      "category": "historical corpus",
+      "rule_ids": [
+        "R01",
+        "R04",
+        "R28"
+      ],
+      "issue": "Printed coordinates, modern reconstructions, author-reported outcomes and independent outcomes are different records. Fish years differ; some epochs are absent.",
+      "disposition_and_closure": "Null normalized fields, record variants and source qualification; separate reused/hypothetical/event cases and exclude leakage from predictive sets.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    },
+    {
+      "id": "A25",
+      "category": "condition aggregation",
+      "rule_ids": [
+        "R02",
+        "R06",
+        "R29"
+      ],
+      "issue": "P.48 orders house strength; p.115 gives grouped point values and extra conditions. Their granularity and purpose differ.",
+      "disposition_and_closure": "Keep ordered comparison and tabulated fortitude separate. Double-enter the table before any computation; never turn its sum into a universal verdict.",
+      "state": "open",
+      "document": "RULES_AND_AMBIGUITIES.md"
+    }
+  ],
+  "cases": [
+    {
+      "id": "C01",
+      "book": 2,
+      "normalized_title": "Longevity, life direction, past and future circumstances",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P135",
+      "record_page_ids": [
+        "P135"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "14 March 1632; 2:15 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "First house; multiple demands share a figure; year-start policy",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C02",
+      "book": 2,
+      "normalized_title": "Mother asks whether son is at home or with his master",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P152",
+      "record_page_ids": [
+        "P152"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "19 July 1638; 23h45 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "First-house section; son fifth, mother's home fourth, master tenth; noon clock and hypothetical reuse",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C03",
+      "book": 2,
+      "normalized_title": "Merchant's ship: lost or surviving",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P162",
+      "record_page_ids": [
+        "P162"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "28 December 1644; 3:20 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "First house, ship; observer and ship locations must remain distinct",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C04",
+      "book": 2,
+      "normalized_title": "Another ship: condition and possible loss",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P165",
+      "record_page_ids": [
+        "P165"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "9 March 1646; 10:15 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "First house, ship; OCR suggests 1645 incorrectly; year-start policy",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C05",
+      "book": 2,
+      "normalized_title": "Tradesman's wealth, means, timing and continuance",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P177",
+      "record_page_ids": [
+        "P177"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "16 July 1634; 11:00 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Second house; several demands and a strength-table dependency",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C06",
+      "book": 2,
+      "normalized_title": "Absent brother: life, whereabouts, news and return",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P196",
+      "record_page_ids": [
+        "P196"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "Friday 7 November 1645; hora meridiana",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Third house; judgement begins p.197; printed noon requires time policy",
+      "judgement_pages_checked": {
+        "start": 197,
+        "end": null
+      },
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C07",
+      "book": 2,
+      "normalized_title": "Report that Cambridge was captured",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P200",
+      "record_page_ids": [
+        "P200"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "11 April 1643; 4:31 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Third, reports; first Parliament/seventh opponents; separate hypothetical sibling adaptation",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C08",
+      "book": 2,
+      "normalized_title": "Lilly's purchase of Master B.'s houses",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P219",
+      "record_page_ids": [
+        "P219"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "31 March 1634; 6 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Fourth, property; self-question; purchase, financing and descriptions are separate claims",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C09",
+      "book": 2,
+      "normalized_title": "Whether querent will ever have children",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P238",
+      "record_page_ids": [
+        "P238"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "11 June 1635; 2:30 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Fifth; separate fertility judgement, descriptions and later natal-policy discussion",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C10",
+      "book": 2,
+      "normalized_title": "Expected child's sex and delivery timing",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P240",
+      "record_page_ids": [
+        "P240"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "7 April 1645; 2:15 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Fifth; sex testimonies, timing and reported delivery need separate records",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C11",
+      "book": 2,
+      "normalized_title": "Sick doctor: illness, affected parts and prognosis",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P286",
+      "record_page_ids": [
+        "P286"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "8 May 1645; 6:15 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Sixth; historical medical interpretation is doctrine, not clinical validation",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C12",
+      "book": 2,
+      "normalized_title": "Sick person: disease and survival",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P289",
+      "record_page_ids": [
+        "P289"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "16 July 1645; 7:22 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Sixth; later crisis arithmetic supposes this epoch as disease onset",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C13",
+      "book": 2,
+      "normalized_title": "Lady seeks marriage to previously rejected suitor",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P385",
+      "record_page_ids": [
+        "P385"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "16 June 1646; 19:26 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh; noon clock, intervention advice and hypothetical extensions",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C14",
+      "book": 2,
+      "normalized_title": "Woman asks about marrying desired man",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P389",
+      "record_page_ids": [
+        "P389"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "11 June 1646; 10:38 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh; separate consultation from C13",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C15",
+      "book": 2,
+      "normalized_title": "Fugitive servant: direction and return",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P390",
+      "record_page_ids": [
+        "P390"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": null,
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh-house section, servant through sixth lord; judgement p.391; no readily stated epoch",
+      "judgement_pages_checked": {
+        "start": 391,
+        "end": null
+      },
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C16",
+      "book": 2,
+      "normalized_title": "Missing dog: location and recovery",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P392",
+      "record_page_ids": [
+        "P392"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "29 August 1646; 4:05 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh-house section; dog assigned sixth as small animal",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C17",
+      "book": 2,
+      "normalized_title": "Missing money: thief and recovery",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P395",
+      "record_page_ids": [
+        "P395"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "24 May 1647; 5 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh-house theft section; peregrine-planet selection is not simply seventh lord",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C18",
+      "book": 2,
+      "normalized_title": "Lilly's stolen fish",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P397",
+      "record_page_ids": [
+        "P397"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "Chart 10 February 1638; 8:45 A.M.; narrative year 1637",
+      "raw_date_variants": [
+        "10 February 1638 (figure)",
+        "1637 (narrative)"
+      ],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Theft; retain both years; possible chronology explanation remains unadmitted",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C19",
+      "book": 2,
+      "normalized_title": "Waller versus Hopton near Alresford",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P399",
+      "record_page_ids": [
+        "P399"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "29 March 1644; 10:12 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh, conflict; diagram p.399, continuation p.400",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C20",
+      "book": 2,
+      "normalized_title": "Essex's siege of Reading",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P401",
+      "record_page_ids": [
+        "P401"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "17 April 1643; 6:50 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Seventh, siege; town fourth/king tenth; separate hypothetical lawsuit adaptation",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C21",
+      "book": 2,
+      "normalized_title": "Whether husband or wife dies first",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P415",
+      "record_page_ids": [
+        "P415"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "6 February 1644; 9:10 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Eighth-house section, wife seventh; year-start and outcome-source review",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C22",
+      "book": 2,
+      "normalized_title": "Woman asks about husband at sea",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P417",
+      "record_page_ids": [
+        "P417"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "15 April 1645; 1:10 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Eighth section, also ninth; source assigns quesited eleventh; preserve actual role reasoning",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C23",
+      "book": 2,
+      "normalized_title": "Canterbury's manner of death",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P419",
+      "record_page_ids": [
+        "P419"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "3 December 1644; 2:24 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Eighth topic, churchman ninth; turning and retrospective political evidence",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C24",
+      "book": 2,
+      "normalized_title": "Payment of promised marriage portion",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P421",
+      "record_page_ids": [
+        "P421"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "15 July 1634; 6:15 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Eighth, woman's substance; payment and descriptions differ",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C25",
+      "book": 2,
+      "normalized_title": "Disturbing dreams",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P436",
+      "record_page_ids": [
+        "P436"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "26 January 1643; 9:27 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Ninth; year start; dream interpretation and reported financial circumstances differ",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C26",
+      "book": 2,
+      "normalized_title": "Obtaining a parsonage",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P437",
+      "record_page_ids": [
+        "P437"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "6 August 1644; 8:24 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Ninth, ecclesiastical preferment; do not automatically recast as tenth",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C27",
+      "book": 2,
+      "normalized_title": "Whether Presbytery will endure",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P439",
+      "record_page_ids": [
+        "P439"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "11 March 1646/7; 4:45 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Ninth, religious government; retain dual year and Lilly's conjectural qualification",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": "Lilly presents the judgement as conjectural",
+      "outcome_review_state": "qualification_only",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C28",
+      "book": 2,
+      "normalized_title": "Attaining the philosopher's stone",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P442",
+      "record_page_ids": [
+        "P442"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "27 May 1647; 10:45 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Ninth, knowledge/art; existing fixture is assignment-only; subsequent attainment not established here",
+      "judgement_pages_checked": {
+        "start": 442,
+        "end": 445
+      },
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": "No subsequent attainment established in consulted passage",
+      "outcome_review_state": "qualification_only",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C29",
+      "book": 2,
+      "normalized_title": "Prince Rupert's honour, conflict with Essex and fate",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P452",
+      "record_page_ids": [
+        "P452"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "28 November 1642; 9:23 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Tenth section; Lilly acknowledges an interpretive error; do not erase it",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": "Lilly acknowledges an interpretive error",
+      "outcome_review_state": "qualification_only",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C30",
+      "book": 2,
+      "normalized_title": "Irish aid for king; queen's advance and meeting",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P455",
+      "record_page_ids": [
+        "P455"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": null,
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Tenth king, fourth queen as seventh from tenth, eleventh aid; no readily printed epoch",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C31",
+      "book": 2,
+      "normalized_title": "Gentleman's desired office",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P455",
+      "record_page_ids": [
+        "P455",
+        "P456"
+      ],
+      "new_printed_figure": false,
+      "shared_figure_case_id": "C30",
+      "figure_relationship_note": "Separate question four or five minutes apart; offset direction unadmitted",
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": null,
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Separate question, text pp.456-457; four/five-minute difference with unknown direction; no new diagram",
+      "judgement_pages_checked": {
+        "start": 456,
+        "end": 457
+      },
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C32",
+      "book": 2,
+      "normalized_title": "Lost or stolen horse near Henley",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P467",
+      "record_page_ids": [
+        "P467"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "11 January 1646; 2:39 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Twelfth, horse; year start; source acknowledges a timing discrepancy",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": "Source acknowledges a timing discrepancy",
+      "outcome_review_state": "qualification_only",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C33",
+      "book": 2,
+      "normalized_title": "Whether patient is bewitched",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P468",
+      "record_page_ids": [
+        "P468"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "13 March 1646; 8:05 A.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Twelfth/sixth; year start; distinguish rejected witchcraft explanation from historical medical explanation",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C34",
+      "book": 2,
+      "normalized_title": "Escaped prisoner: route and recapture",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P470",
+      "record_page_ids": [
+        "P470"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "6 June 1647; 8 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Twelfth; several status, location, news and recapture claims",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C35",
+      "book": 2,
+      "normalized_title": "Lady's imprisoned husband: release",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P471",
+      "record_page_ids": [
+        "P471"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "question_case_group",
+      "raw_epoch_reading": "19 October 1645; 7:20 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Twelfth topic, husband seventh; source says release occurred before question: no prospective-prediction label",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": "Source says release had already occurred before the question",
+      "outcome_review_state": "qualification_only",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    },
+    {
+      "id": "C36",
+      "book": 2,
+      "normalized_title": "Essex's final departure westward",
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U08"
+      ],
+      "figure_page_id": "P473",
+      "record_page_ids": [
+        "P473"
+      ],
+      "new_printed_figure": true,
+      "shared_figure_case_id": null,
+      "figure_relationship_note": null,
+      "case_kind": "inception_event",
+      "raw_epoch_reading": "Monday 13 May 1644; 12:29 P.M.",
+      "raw_date_variants": [],
+      "normalized_epoch": null,
+      "source_context_and_additional_blocker": "Inception/event; journey ninth, commander first; noon clock and chart-purpose classification",
+      "judgement_pages_checked": null,
+      "catalogue_state": "original_heading_and_figure_relationship_visually_checked",
+      "numeric_transcription_complete": false,
+      "reconstruction_verified": false,
+      "full_judgement_collated": false,
+      "reported_outcome": null,
+      "outcome_qualification": null,
+      "outcome_review_state": "pending",
+      "independently_verified_outcome": null,
+      "executable_admitted": false,
+      "predictive_admitted": false,
+      "document": "WORKED_CASES.md"
+    }
+  ],
+  "erection_exercises": [
+    {
+      "id": "E01",
+      "book": 1,
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U01"
+      ],
+      "description": "Filled figure p.35; discussion pp.34-39",
+      "page_ids": [
+        "P035",
+        "P039"
+      ],
+      "raw_epoch_reading": "Tuesday 6 January 1646; one hour thirty minutes P.M.",
+      "normalized_epoch": null,
+      "new_printed_figure": true,
+      "admission_concern": "P.39 explains that the first figure's planetary positions were not fully rectified to its hour. Printed-chart and modern-reconstruction expectations must differ.",
+      "executable_admitted": false,
+      "predictive_admitted": false
+    },
+    {
+      "id": "E02",
+      "book": 1,
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U01"
+      ],
+      "description": "Text pp.39-40; no new figure",
+      "page_ids": [
+        "P039",
+        "P040"
+      ],
+      "raw_epoch_reading": "Saturday 17 January 1646; eleven o'clock and twenty after noon",
+      "normalized_epoch": null,
+      "new_printed_figure": false,
+      "admission_concern": "House-erection arithmetic; preserve the noon-based statement before conversion.",
+      "executable_admitted": false,
+      "predictive_admitted": false
+    },
+    {
+      "id": "E03",
+      "book": 1,
+      "source_id": "S01",
+      "source_unit_ids": [
+        "U01"
+      ],
+      "description": "Text pp.41-42; no new figure",
+      "page_ids": [
+        "P041",
+        "P042"
+      ],
+      "raw_epoch_reading": "Monday 26 January 1646; 9:45 before noon",
+      "normalized_epoch": null,
+      "new_printed_figure": false,
+      "admission_concern": "P.41 explicitly equates this with Sunday 25 January, 21h45 after noon. This is an independent historical-clock control.",
+      "executable_admitted": false,
+      "predictive_admitted": false
+    }
+  ],
+  "didactic_examples": [
+    {
+      "id": "D01",
+      "source_id": "S01",
+      "page_ids": [
+        "P110"
+      ],
+      "description": "Jupiter/Saturn application with nine-degree full orbs each",
+      "fixture_purpose": "Named orb choice, summed halves and complete separation",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D02",
+      "source_id": "S01",
+      "page_ids": [
+        "P110",
+        "P111"
+      ],
+      "description": "Bodily and aspectual prohibition examples",
+      "fixture_purpose": "Role orientation, intended contact and third-party sequence",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D03",
+      "source_id": "S01",
+      "page_ids": [
+        "P111"
+      ],
+      "description": "Mars/Saturn intended conjunction interrupted by Mars reversal",
+      "fixture_purpose": "Refranation without requiring a later exact conjunction",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D04",
+      "source_id": "S01",
+      "page_ids": [
+        "P111"
+      ],
+      "description": "Mercury 16 Aries separating from Mars 15 and joining Saturn 20",
+      "fixture_purpose": "Structural translation; p.126's fuller qualifications remain separate",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D05",
+      "source_id": "S01",
+      "page_ids": [
+        "P112"
+      ],
+      "description": "Mutual reception examples by dignity",
+      "fixture_purpose": "Host/guest direction and same/mixed basis; uncertain glyphs still need collation",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D06",
+      "source_id": "S01",
+      "page_ids": [
+        "P112",
+        "P113"
+      ],
+      "description": "Mercury 10 Aries, Mars 12, Jupiter 13",
+      "fixture_purpose": "Frustration's bodily conjunction scope",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D07",
+      "source_id": "S01",
+      "page_ids": [
+        "P113",
+        "P114"
+      ],
+      "description": "Combustion, beams and cazimi examples",
+      "fixture_purpose": "Same-sign condition; apparent p.113 numeric inconsistency is not a golden",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    },
+    {
+      "id": "D08",
+      "source_id": "S01",
+      "page_ids": [
+        "P121",
+        "P122"
+      ],
+      "description": "Planetary-hour identity, triplicity and nature examples",
+      "fixture_purpose": "Preserve Lilly's distinct agreement paths",
+      "numeric_transcription_complete": false,
+      "executable_admitted": false
+    }
+  ],
+  "counts": {
+    "rule_families": 30,
+    "ambiguities": 25,
+    "book_ii_case_groups": 36,
+    "book_ii_distinct_printed_figures": 35,
+    "book_i_erection_exercises": 3,
+    "books_i_ii_distinct_filled_figures": 36,
+    "didactic_example_groups": 8
+  },
+  "orb_tables_full_degrees": {
+    "p107_first": {
+      "Saturn": 10,
+      "Jupiter": 12,
+      "Mars": 7.5,
+      "Sun": 17,
+      "Venus": 8,
+      "Mercury": 7,
+      "Moon": 12.5
+    },
+    "p107_second": {
+      "Saturn": 9,
+      "Jupiter": 9,
+      "Mars": 7,
+      "Sun": 15,
+      "Venus": 7,
+      "Mercury": 7,
+      "Moon": 12
+    },
+    "current_fixed_constant_at_baseline": {
+      "Saturn": 10,
+      "Jupiter": 12,
+      "Mars": 7,
+      "Sun": 15,
+      "Venus": 7,
+      "Mercury": 7,
+      "Moon": 12
+    }
+  },
+  "excluded_from_case_denominator": [
+    "p33 empty schematic",
+    "hypothetical adaptations",
+    "unillustrated anecdotes",
+    "numerical definitions",
+    "1644 gentlewoman/aged-man material outside CA1647 lineage"
+  ],
+  "validation_limits": [
+    "No full coordinate double transcription",
+    "No completed historical UT/JD reconstruction",
+    "No complete judgement or independent outcome audit",
+    "No engine tests rerun for this documentation-only task",
+    "No new executable or predictive goldens"
+  ]
+}

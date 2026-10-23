@@ -482,7 +482,8 @@ def _route_reference_index(
         operation_id = str(row["operation_id"])
         identifier_ids[operation_id].add(surface_id)
         handler_name = str(row["handler_qualname"]).rsplit(".", 1)[-1]
-        if len(handler_name) >= 8:
+        # Ordinary prose about an event sequence does not identify an API.
+        if len(handler_name) >= 8 and handler_name != "sequence":
             identifier_ids[handler_name].add(surface_id)
 
     result: dict[str, list[str]] = {str(row["surface_id"]): [] for row in rows}
