@@ -11,7 +11,11 @@ from moira.constants import Body, SIGNS
 from moira.egyptian_bounds import (
     EgyptianBoundsDoctrine,
     BOUND_RULERS,
-    egyptian_bound_of,
+    EGYPTIAN_BOUNDS,
+    PTOLEMAIC_BOUNDS,
+    CHALDEAN_DAY_BOUNDS,
+    CHALDEAN_NIGHT_BOUNDS,
+    WILLIAM_LILLY_1647_TERMS,
 )
 from moira.primary_directions import (
     PrimaryArc,
@@ -88,6 +92,7 @@ def test_resolve_primary_direction_bound_targets_across_doctrines() -> None:
         EgyptianBoundsDoctrine.PTOLEMAIC,
         EgyptianBoundsDoctrine.CHALDEAN_DAY,
         EgyptianBoundsDoctrine.CHALDEAN_NIGHT,
+        EgyptianBoundsDoctrine.WILLIAM_LILLY_1647,
     ):
         targets = resolve_primary_direction_bound_targets(doctrine=doctrine)
         assert len(targets) == 60
@@ -100,6 +105,61 @@ def test_resolve_primary_direction_bound_targets_across_doctrines() -> None:
             assert target.name.startswith("Term of ")
             truth = primary_direction_target_truth(target.name)
             assert truth.target_class is PrimaryDirectionTargetClass.BOUND_BOUNDARY
+
+
+_SOURCE_TABLES = [
+    (EgyptianBoundsDoctrine.EGYPTIAN, EGYPTIAN_BOUNDS),
+    (EgyptianBoundsDoctrine.PTOLEMAIC, PTOLEMAIC_BOUNDS),
+    (EgyptianBoundsDoctrine.CHALDEAN_DAY, CHALDEAN_DAY_BOUNDS),
+    (EgyptianBoundsDoctrine.CHALDEAN_NIGHT, CHALDEAN_NIGHT_BOUNDS),
+    (EgyptianBoundsDoctrine.WILLIAM_LILLY_1647, WILLIAM_LILLY_1647_TERMS),
+]
+
+
+@pytest.mark.parametrize("doctrine,table", _SOURCE_TABLES)
+def test_bound_targets_preserve_every_registered_source_segment(doctrine, table):
+    """Wiring covenant against the bounds owner's source-identified tables."""
+    actual = resolve_primary_direction_bound_targets(doctrine)
+    expected = [(sign, ruler, start, index * 30 + start)
+                for index, sign in enumerate(SIGNS) for ruler, start, _ in table[sign]]
+    assert [(t.sign, t.ruler, t.degree_in_sign, t.absolute_longitude) for t in actual] == expected
+    assert all(t.doctrine is doctrine for t in actual)
+
+
+@pytest.mark.parametrize("doctrine,table", _SOURCE_TABLES)
+@pytest.mark.parametrize("motion", list(PrimaryDirectionMotion))
+def test_distributor_enters_the_correct_side_of_all_sixty_boundaries(doctrine, table, motion):
+    """Exact term adjacency, including the zodiac wrap, independent of arc geometry."""
+    segments = [(sign, ruler, start, end) for sign in SIGNS for ruler, start, end in table[sign]]
+    for index, (sign, ruler, start, _) in enumerate(segments):
+        boundary = SIGNS.index(sign) * 30 + start
+        reverse = motion is PrimaryDirectionMotion.CONVERSE
+        expected = segments[(index - 1) % 60] if reverse else segments[index]
+        arc = PrimaryArc(significator="ASC", promissor=f"Term of {ruler} ({start:02d}°00' {sign[:3]})",
+                         arc=1.0, direction="C" if reverse else "D", motion=motion,
+                         relational_kind=PrimaryDirectionRelationalKind.TERM_BOUND)
+        periods = resolve_distributor_chronology(
+            "ASC", (boundary + (0.25 if reverse else -0.25)) % 360,
+            [arc], doctrine=doctrine, motion=motion, max_arc=2,
+        )
+        entered = periods[-1]
+        assert (entered.sign, entered.ruler, entered.bound_start_deg, entered.bound_end_deg) == expected
+        assert [(p.entry_arc_deg, p.exit_arc_deg) for p in periods] == [(0, 1), (1, 2)]
+        # At an exact natal boundary, the first positive-time interval already
+        # belongs to the entered side; no zero-width initial period is needed.
+        natal = resolve_distributor_chronology("ASC", boundary, [], doctrine=doctrine, motion=motion, max_arc=2)[0]
+        assert (natal.sign, natal.ruler, natal.bound_start_deg, natal.bound_end_deg) == expected
+
+
+def test_lilly_mercury_boundary_and_reverse_libra_witnesses():
+    """Source facts: Lilly Aries Mercury 14-21; Egyptian Libra Mercury 6-14."""
+    arc = PrimaryArc("ASC", "Term of Mercury (14°00' Ari)", 2, "D")
+    periods = resolve_distributor_chronology("ASC", 13, [arc],
+        doctrine=EgyptianBoundsDoctrine.WILLIAM_LILLY_1647, max_arc=5)
+    assert [(p.ruler, p.entry_arc_deg, p.exit_arc_deg) for p in periods] == [("Venus", 0, 2), ("Mercury", 2, 5)]
+    reverse = PrimaryArc("ASC", "Term of Jupiter (14°00' Lib)", 0.1, "C", motion=PrimaryDirectionMotion.CONVERSE)
+    periods = resolve_distributor_chronology("ASC", 194.1, [reverse], motion=PrimaryDirectionMotion.CONVERSE, max_arc=1)
+    assert [p.ruler for p in periods] == ["Jupiter", "Mercury"]
 
 
 def test_primary_direction_bound_targets_in_policy_and_arcs() -> None:

@@ -39,8 +39,10 @@ def test_six_keys_satisfy_their_laws_and_calendar_invariants(client, moira_engin
     reader = moira_engine._reader_obj
     for key, row in rows.items():
         age = row["age_years"]
+        # The JD is UT1; the ISO timestamp is the same instant labelled UTC.
+        civil_jd = jd_from_datetime(datetime.fromisoformat(row["perfection_iso"]))
+        assert utc_to_ut1(civil_jd) == pytest.approx(row["perfection_jd_ut"], abs=1e-8)
         assert row["perfection_jd_ut"] == pytest.approx(natal + age * TROPICAL_YEAR, abs=1e-9)
-        assert jd_from_datetime(datetime.fromisoformat(row["perfection_iso"])) == pytest.approx(row["perfection_jd_ut"], abs=1e-8)
         if key in expected:
             assert age == pytest.approx(expected[key], abs=1e-12)
         else:
@@ -51,6 +53,7 @@ def test_six_keys_satisfy_their_laws_and_calendar_invariants(client, moira_engin
     for row in data["items"][1]["projections"]:
         assert row["age_years"] == 0
         assert row["perfection_jd_ut"] == natal
+        assert utc_to_ut1(jd_from_datetime(datetime.fromisoformat(row["perfection_iso"]))) == natal
 
 
 @pytest.mark.parametrize("item", [

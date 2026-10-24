@@ -37,10 +37,13 @@ For primary directions, a target family is only counted as live when it has:
 | `zodiacal aspect-points` | derived promissors | explicit, relation-gated | `implemented_validated` | active on admitted zodiacal aspect branches |
 | `parallels / contra-parallels` | relation-first branch | explicit across Ptolemaic and Placidian | `implemented_validated` | admitted on Ptolemaic declination and Placidian mundane reflection branches |
 | `rapt parallels` | relation-first branch | explicit but method-bound | `implemented_validated_narrow_family` | closed for now on admitted Placidian branches |
-| `fixed stars` | sovereign catalog-backed targets | explicit, conjunction-only | `implemented_validated_narrow_family` | closed for now on angle-and-planet conjunctions |
+| `fixed stars` | sovereign catalog-backed targets | explicit, conjunction-only | `implemented_validated_narrow_family` | angle/planet and explicitly configured typed-derived significators; nodes/cusps and wider stellar relations remain excluded |
 | `antiscia / contra-antiscia` | reflected targets | explicit on the current narrow Ptolemaic zodiacal branch | `implemented_validated_narrow_family` | closed for now on the current recoverable Ptolemaic branch; wider non-Ptolemaic doctrine still deferred |
 | `mundane aspects` | proportional semi-arc aspect points | explicit on Placidus and Ptolemy semi-arc branches | `implemented_validated` | admitted under `PLACIDUS_MUNDANE_ASPECT` and `PTOLEMY_MUNDANE_ASPECT` |
 | `midpoints` | derived sensitive points (A/B) | shortest-arc circular midpoint perfection | `implemented_validated` | admitted across all 8 directional methods, direct/converse/neo-converse, and life timeline integration |
+| `Fortune` | typed derived significator | explicit Ptolemaic or separately selected sect-reversed formula; zero ecliptic latitude | `implemented_validated_narrow_family` | opt-in across all eight methods and 28 presets; no Fortune promissor or derived-source admission |
+| `existing predominator` | typed composition retaining selected identity | existing Ptolemy determination, checked against natal coordinates | `implemented_validated_narrow_family` | all eight methods; selected planet retains native latitude; ASC/Fortune remain explicit; unresolved office raises with original reason |
+| `catalogue lots` | typed derived significators | existing lots recipes, projectors, arc/reversal and dependency policies | `implemented_validated_narrow_family` | all eight methods and 28 presets; zero ecliptic latitude; namespaced identity; selected batch evaluation; missing ingredients fail explicitly |
 | `generic folklore stars` | loose named targets | no sovereign doctrine | `rejected` | violates provenance law |
 
 
@@ -60,17 +63,25 @@ The currently closed and verified target families are:
 - mundane aspects (Placidus mundane and Ptolemaic proportional semi-arc)
 - zodiacal midpoints across all 8 projection systems
 
-This marks the definitive closure of the core primary directions target surface.
+These are bounded runtime admissions, not closure of every historical target
+family. Fortune and existing-predominator composition now have an explicit
+admission packet in `primary_directions_derived_points.md`.
 
 
 ## Remaining Research Candidates
 
-Any future primary directions target research would require novel sovereign astronomical doctrine:
+Further target research includes established historical families as well as
+new mathematical proposals:
 
+- wider lot roles, other derived-point families and custom-formula admission,
+  each requiring explicit source and latitude contracts
+- broader Fortune/lot roles and source-based historical validation beyond the
+  current mathematical significator composition
 - a wider non-Ptolemaic reflected family only if a rigorous non-zodiacal antiscia doctrine appears
 - 3D spatial skew-direction promissors outside standard semi-arc and quadrant systems
 
 
 ## Present Declaration
 
-Moira's primary-direction target families are now mathematically complete and fully verified across all historical and mathematical branches.
+Moira validates the named admitted branches. The target inventory does not
+establish completeness across all historical schools or mathematical branches.

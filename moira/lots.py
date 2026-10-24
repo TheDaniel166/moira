@@ -1941,136 +1941,13 @@ class ArabicPartsService:
         Computable entries are returned as ``parts``. Every skipped catalogue
         definition is returned as a typed ``LotNotEvaluable`` receipt.
         """
-        policy = self._validate_policy(policy)
-        planet_longitudes = self._validate_planet_longitudes(planet_longitudes)
-        house_cusps = self._validate_house_cusps(house_cusps)
-        refs, ref_truths = self._build_refs(
-            planet_longitudes, house_cusps, is_day_chart,
-            syzygy, prenatal_new_moon, prenatal_full_moon, lord_of_hour,
-            asc_longitude=asc_longitude,
-            mc_longitude=mc_longitude,
-            policy=policy,
+        return _evaluate_lot_definitions(
+            self, PARTS_DEFINITIONS, planet_longitudes, house_cusps, is_day_chart, policy,
+            asc_longitude=asc_longitude, mc_longitude=mc_longitude,
+            syzygy=syzygy, prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon, lord_of_hour=lord_of_hour,
         )
 
-        results: list[ArabicPart] = []
-        not_evaluable: list[LotNotEvaluable] = []
-        for pdef in PARTS_DEFINITIONS:
-            requested_add_key = pdef.day_add
-            requested_sub_key = pdef.day_sub
-            projector_key = pdef.projector
-            add_key = requested_add_key
-            sub_key = requested_sub_key
-            reversed_for_chart = pdef.reverse_at_night and not is_day_chart
-            if reversed_for_chart:
-                add_key, sub_key = sub_key, add_key
-
-            add_val = refs.get(add_key)
-            sub_val = refs.get(sub_key)
-            projector_val = refs.get(projector_key)
-            if add_val is None or sub_val is None or projector_val is None:
-                missing_references = tuple(
-                    dict.fromkeys(
-                        key
-                        for key, value in (
-                            (projector_key, projector_val),
-                            (add_key, add_val),
-                            (sub_key, sub_val),
-                        )
-                        if value is None
-                    )
-                )
-                if policy.unresolved_reference_mode is LotsReferenceFailureMode.RAISE:
-                    raise ValueError(
-                        "Unresolved lot ingredient reference: "
-                        f"{missing_references[0]}"
-                    )
-                not_evaluable.append(
-                    LotNotEvaluable(
-                        name=pdef.name,
-                        category=pdef.category,
-                        projector_key=projector_key,
-                        requested_add_key=requested_add_key,
-                        requested_sub_key=requested_sub_key,
-                        effective_add_key=add_key,
-                        effective_sub_key=sub_key,
-                        missing_references=missing_references,
-                    )
-                )
-                continue
-
-            directed_arc = (add_val - sub_val) % 360.0
-            if pdef.arc_policy is LotArcPolicy.SHORTEST:
-                projected_arc = min(directed_arc, (-directed_arc) % 360.0)
-                formula = f"{projector_key} + shortest_arc({add_key}, {sub_key})"
-            else:
-                projected_arc = directed_arc
-                formula = f"{projector_key} + {add_key} - {sub_key}"
-            lon = (projector_val + projected_arc) % 360.0
-            computation_truth = ArabicPartComputationTruth(
-                asc_longitude=refs["Asc"],
-                projector_key=projector_key,
-                projector_reference=ref_truths[projector_key],
-                arc_policy=pdef.arc_policy,
-                requested_add_key=requested_add_key,
-                requested_sub_key=requested_sub_key,
-                effective_add_key=add_key,
-                effective_sub_key=sub_key,
-                reversed_at_night=pdef.reverse_at_night,
-                reversed_for_chart=reversed_for_chart,
-                add_reference=ref_truths[add_key],
-                sub_reference=ref_truths[sub_key],
-                formula=formula,
-            )
-            all_dependencies = self._build_part_dependencies(
-                part_name=pdef.name,
-                computation_truth=computation_truth,
-            )
-            classification = self._classify_part(
-                category=pdef.category,
-                reversed_at_night=pdef.reverse_at_night,
-                reversed_for_chart=reversed_for_chart,
-                projector_reference=ref_truths[projector_key],
-                add_reference=ref_truths[add_key],
-                sub_reference=ref_truths[sub_key],
-            )
-            dependency_completeness = LotDependencyCompletenessTruth(
-                status=LotEvaluationStatus.EVALUATED,
-                expected_roles=(
-                    LotDependencyRole.PROJECTOR,
-                    LotDependencyRole.ADD_OPERAND,
-                    LotDependencyRole.SUB_OPERAND,
-                ),
-                resolved_roles=tuple(
-                    dependency.role for dependency in all_dependencies
-                ),
-            )
-
-            results.append(ArabicPart(
-                name=pdef.name,
-                longitude=lon,
-                formula=formula,
-                category=pdef.category,
-                description=pdef.description,
-                computation_truth=computation_truth,
-                classification=classification,
-                all_dependencies=all_dependencies,
-                dependencies=list(all_dependencies),
-                dependency_completeness=dependency_completeness,
-                astrological_condition_truth=LotAstrologicalConditionTruth(),
-                condition_profile=self._build_condition_profile(
-                    part_name=pdef.name,
-                    classification=classification,
-                    all_dependencies=all_dependencies,
-                    dependencies=list(all_dependencies),
-                ),
-            ))
-
-        first_cat = lambda c: min(
-            (_CATEGORY_ORDER.get(x.strip(), 99) for x in c.split(",")), default=99
-        )
-        results.sort(key=lambda p: (first_cat(p.category), p.name))
-        not_evaluable.sort(key=lambda item: (first_cat(item.category), item.name))
-        return LotsEvaluation(parts=results, not_evaluable=not_evaluable)
 
     def calculate_parts(
         self,
@@ -2740,6 +2617,160 @@ class ArabicPartsService:
                 raise ValueError(f"Lot house cusp {number} must be finite")
             normalized[number] = cusp % 360.0
         return normalized
+
+
+def _evaluate_lot_definitions(
+    service: ArabicPartsService,
+    definitions: list[PartDefinition] | tuple[PartDefinition, ...],
+    planet_longitudes: dict[str, float],
+    house_cusps: dict[int, float] | list[float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> LotsEvaluation:
+    """Shared evaluator for the catalogue and bounded engine composition.
+
+    Callers select existing definitions without changing global catalogue
+    state. Reference construction, arithmetic, truth and failure policy
+    remain identical to the complete-catalogue public operation.
+    """
+    policy = service._validate_policy(policy)
+    planet_longitudes = service._validate_planet_longitudes(planet_longitudes)
+    house_cusps = service._validate_house_cusps(house_cusps)
+    refs, ref_truths = service._build_refs(
+        planet_longitudes, house_cusps, is_day_chart,
+        syzygy, prenatal_new_moon, prenatal_full_moon, lord_of_hour,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
+        policy=policy,
+    )
+
+    results: list[ArabicPart] = []
+    not_evaluable: list[LotNotEvaluable] = []
+    for pdef in definitions:
+        requested_add_key = pdef.day_add
+        requested_sub_key = pdef.day_sub
+        projector_key = pdef.projector
+        add_key = requested_add_key
+        sub_key = requested_sub_key
+        reversed_for_chart = pdef.reverse_at_night and not is_day_chart
+        if reversed_for_chart:
+            add_key, sub_key = sub_key, add_key
+
+        add_val = refs.get(add_key)
+        sub_val = refs.get(sub_key)
+        projector_val = refs.get(projector_key)
+        if add_val is None or sub_val is None or projector_val is None:
+            missing_references = tuple(
+                dict.fromkeys(
+                    key
+                    for key, value in (
+                        (projector_key, projector_val),
+                        (add_key, add_val),
+                        (sub_key, sub_val),
+                    )
+                    if value is None
+                )
+            )
+            if policy.unresolved_reference_mode is LotsReferenceFailureMode.RAISE:
+                raise ValueError(
+                    "Unresolved lot ingredient reference: "
+                    f"{missing_references[0]}"
+                )
+            not_evaluable.append(
+                LotNotEvaluable(
+                    name=pdef.name,
+                    category=pdef.category,
+                    projector_key=projector_key,
+                    requested_add_key=requested_add_key,
+                    requested_sub_key=requested_sub_key,
+                    effective_add_key=add_key,
+                    effective_sub_key=sub_key,
+                    missing_references=missing_references,
+                )
+            )
+            continue
+
+        directed_arc = (add_val - sub_val) % 360.0
+        if pdef.arc_policy is LotArcPolicy.SHORTEST:
+            projected_arc = min(directed_arc, (-directed_arc) % 360.0)
+            formula = f"{projector_key} + shortest_arc({add_key}, {sub_key})"
+        else:
+            projected_arc = directed_arc
+            formula = f"{projector_key} + {add_key} - {sub_key}"
+        lon = (projector_val + projected_arc) % 360.0
+        computation_truth = ArabicPartComputationTruth(
+            asc_longitude=refs["Asc"],
+            projector_key=projector_key,
+            projector_reference=ref_truths[projector_key],
+            arc_policy=pdef.arc_policy,
+            requested_add_key=requested_add_key,
+            requested_sub_key=requested_sub_key,
+            effective_add_key=add_key,
+            effective_sub_key=sub_key,
+            reversed_at_night=pdef.reverse_at_night,
+            reversed_for_chart=reversed_for_chart,
+            add_reference=ref_truths[add_key],
+            sub_reference=ref_truths[sub_key],
+            formula=formula,
+        )
+        all_dependencies = service._build_part_dependencies(
+            part_name=pdef.name,
+            computation_truth=computation_truth,
+        )
+        classification = service._classify_part(
+            category=pdef.category,
+            reversed_at_night=pdef.reverse_at_night,
+            reversed_for_chart=reversed_for_chart,
+            projector_reference=ref_truths[projector_key],
+            add_reference=ref_truths[add_key],
+            sub_reference=ref_truths[sub_key],
+        )
+        dependency_completeness = LotDependencyCompletenessTruth(
+            status=LotEvaluationStatus.EVALUATED,
+            expected_roles=(
+                LotDependencyRole.PROJECTOR,
+                LotDependencyRole.ADD_OPERAND,
+                LotDependencyRole.SUB_OPERAND,
+            ),
+            resolved_roles=tuple(
+                dependency.role for dependency in all_dependencies
+            ),
+        )
+
+        results.append(ArabicPart(
+            name=pdef.name,
+            longitude=lon,
+            formula=formula,
+            category=pdef.category,
+            description=pdef.description,
+            computation_truth=computation_truth,
+            classification=classification,
+            all_dependencies=all_dependencies,
+            dependencies=list(all_dependencies),
+            dependency_completeness=dependency_completeness,
+            astrological_condition_truth=LotAstrologicalConditionTruth(),
+            condition_profile=service._build_condition_profile(
+                part_name=pdef.name,
+                classification=classification,
+                all_dependencies=all_dependencies,
+                dependencies=list(all_dependencies),
+            ),
+        ))
+
+    first_cat = lambda c: min(
+        (_CATEGORY_ORDER.get(x.strip(), 99) for x in c.split(",")), default=99
+    )
+    results.sort(key=lambda p: (first_cat(p.category), p.name))
+    not_evaluable.sort(key=lambda item: (first_cat(item.category), item.name))
+    return LotsEvaluation(parts=results, not_evaluable=not_evaluable)
+
 
 
 # ---------------------------------------------------------------------------

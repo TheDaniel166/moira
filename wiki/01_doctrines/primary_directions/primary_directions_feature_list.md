@@ -25,6 +25,38 @@ It answers one question:
 - integrated chronological timelines with terms/bounds, distributors, and
   participators
 
+Term targets and distributor segments use the selected bounds owner's table,
+including Lilly's printed terms. Direct crossings enter the segment beginning
+at the boundary; converse crossings enter the preceding segment, including
+the Pisces/Aries wrap and an exact natal boundary. Chronological intervals
+remain distinct even when a ruler or bound identity repeats.
+
+Timeline event filters do not remove the structural bound crossings used by
+distributor chronology. Supplied bound targets must match the complete canonical
+table selected by `bound_doctrine`; mixed, partial or conflicting tables are
+rejected. Relation-specific direct/converse rapt events use the matching motion
+of the existing ordinary bound law. Configured direct fixed-star events retain
+their own direct chronology. Missing converse context never borrows a direct
+period.
+
+Automatic timeline horizons use the selected key's forward law, including
+ephemeris solar progress for dynamic keys. Automatic requests beyond one
+primary rotation are rejected; an explicit `max_arc` remains the caller's
+bounded search domain. Requested coordinate dependencies are materialized before
+semi-arc checks, so an unrelated circumpolar object cannot invalidate a valid
+filtered pair. A requested object with no real semi-arcs still fails closed.
+
+Direction calculations and returned Julian dates use UT1; calendar strings use
+the engine's UTC conversion. Facade `Chart` snapshots carry civil UTC in their
+legacy `jd_ut` field and are normalized internally. Explicit UT1/TT direction
+snapshots keep their declared clocks, and TT-only fixed-star snapshots remain
+supported. Delta-T is applied only to UT1, never added to civil UTC.
+
+Meridian and the admitted under-the-pole methods retain their existing
+circumpolar allowance through derived targets and timeline assembly. This does
+not supply rise/set semi-arcs where none exist, or relax the requirements of
+semi-arc methods or the standalone semi-arc speculum endpoint.
+
 
 ## Geometry Families
 
@@ -120,9 +152,10 @@ Derived or narrow admitted families:
 - zodiacal aspect-point promissors
 - Ptolemaic zodiacal parallels / contra-parallels
 - Placidian direct and converse rapt parallels
-- catalog-backed fixed-star conjunctions to angles and planets
+- catalog-backed fixed-star conjunctions to angles, planets and explicitly
+  configured typed derived significators
 - Ptolemaic zodiacal antiscia / contra-antiscia
-- Egyptian, Ptolemaic, and Chaldean term/bound boundaries for timeline
+- Egyptian, Ptolemaic, Chaldean day/night, and William Lilly 1647 term/bound boundaries for timeline
   chronology
 - method-scoped Placidian and Ptolemaic mundane aspect points
 - Placidian mundane parallels / contra-parallels
@@ -137,6 +170,7 @@ Current admitted fixed-star branch:
 - explicit star projection through the active speculum
 - conjunction to angles
 - conjunction to planets
+- conjunction to explicitly configured typed Fortune/lot significators
 
 Deferred:
 
@@ -179,6 +213,31 @@ Validated narrow families include:
 - neo-converse and dynamic solar-key invariants
 
 
+## Typed Fortune and existing predominator
+
+The engine admits opt-in typed Fortune significators across all eight existing
+methods and 28 presets, with separate Ptolemaic and sect-reversed formula choices. The
+Ptolemaic formula remains unreversed at night. An existing selected Ptolemy
+predominator can be composed as a typed target, preserving planet/ASC/Fortune
+identity and native planetary latitude; unresolved determinations keep their
+original reason and do not select a fallback.
+
+Typed targets retain coordinate-source checks through the complete bound
+chronology and all six time keys. No arbitrary point coordinates or new REST
+fields are admitted. Scope, examples, source binding and validation limits are
+in `wiki/05_research/primary_directions/primary_directions_derived_points.md`.
+
+Catalogue lots now use the same typed system through
+`PrimaryDirectionLotTarget`. Existing formula variants, projectors, shortest
+arcs, sect reversal and dependency policy remain with the lots owner. Targets
+are evaluated from the current figure in context-specific batches and retain
+complete bound chronology under all six keys. Roles remain significators with
+zero ecliptic latitude. Method-specific space, motion and domain restrictions
+remain explicit. See
+`wiki/05_research/primary_directions/primary_directions_catalogue_lots.md`.
+The cross-method contract is in
+`wiki/05_research/primary_directions/primary_directions_derived_method_admission.md`.
+
 ## Explicit Omissions
 
 Not currently admitted:
@@ -190,6 +249,9 @@ Not currently admitted:
 - wider mundane-aspect laws outside the admitted Placidian and Ptolemaic
   branches
 - wider midpoint doctrine beyond the admitted shortest-arc target construction
+- arbitrary custom formulas or custom derived points
+- Fortune/lot promissors, Fortune/lot-derived aspect/reflection/parallel/midpoint
+  sources
 
 
 ## Present Summary

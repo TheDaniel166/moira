@@ -2656,7 +2656,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2882,
+        "source_line": 2913,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3018,7 +3018,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2938,
+        "source_line": 2969,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3043,7 +3043,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2967,
+        "source_line": 2998,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3068,7 +3068,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2909,
+        "source_line": 2940,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3093,7 +3093,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2853,
+        "source_line": 2884,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3118,7 +3118,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2752,
+        "source_line": 2783,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -4001,7 +4001,7 @@
       "family_id": "primary-directions-timeline",
       "family_label": "Primary Directions Timeline",
       "ownership": {
-        "source_line": 147,
+        "source_line": 151,
         "source_path": "moira/primary_directions/timeline.py"
       },
       "priority": "P2",
@@ -6686,7 +6686,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2777,
+        "source_line": 2808,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -6936,7 +6936,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2813,
+        "source_line": 2844,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -7911,7 +7911,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 2626,
+        "source_line": 2711,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "priority": "P2",
@@ -16160,7 +16160,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2824,
+        "source_line": 2855,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -16785,7 +16785,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 2569,
+        "source_line": 2683,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "priority": "P2",

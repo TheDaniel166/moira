@@ -189,6 +189,49 @@ def _get_reader(reader: object = None) -> object:
     return None
 
 
+def _arc_for_age(
+    natal_jd_ut: float,
+    age_years: float,
+    key: PrimaryDirectionKey,
+    *,
+    solar_rate: float | None,
+    reader: object,
+) -> float:
+    """Forward key law for an exact automatic, single-rotation search horizon."""
+    from ..constants import TROPICAL_YEAR
+
+    if key in (PrimaryDirectionKey.SOLAR_RA_DYNAMIC, PrimaryDirectionKey.SOLAR_LON_DYNAMIC):
+        active_reader = _get_reader(reader)
+        if active_reader is None:
+            raise RuntimeError("A planetary kernel reader is required for a dynamic search horizon")
+        invert = invert_solar_arc_ra if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC else invert_solar_arc_lon
+        # Establish the supported cycle before querying an arbitrarily remote
+        # ephemeris epoch. The inversion and this forward law use UT1.
+        cycle_tolerance_days = 1e-6
+        cycle_age, _ = invert(natal_jd_ut, 360., reader=active_reader,
+                              tol_days=cycle_tolerance_days)
+        # The inverted cycle is a midpoint, not an upper bound. Admit its
+        # stopping-width neighbourhood to the forward test below, which
+        # decides the actual 360-degree domain without clipping the result.
+        if age_years > cycle_age + cycle_tolerance_days:
+            raise ValueError("automatic timeline horizon exceeds one primary rotation")
+        from .._solar import _solar_declination_ra, _solar_longitude
+
+        def coordinate(jd):
+            return (_solar_declination_ra(jd, active_reader)[1]
+                    if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC
+                    else _solar_longitude(jd, active_reader))
+
+        raw = (coordinate(natal_jd_ut + age_years) - coordinate(natal_jd_ut)) % 360.
+        mean = age_years * 360. / TROPICAL_YEAR
+        arc = raw + 360. * round((mean - raw) / 360.)
+    else:
+        arc = age_years * primary_direction_key_truth(key, solar_rate=solar_rate).rate_degrees_per_year
+    if not math.isfinite(arc) or not 0. < arc <= 360.:
+        raise ValueError("automatic timeline horizon must fit within one primary rotation")
+    return arc
+
+
 def invert_solar_arc_ra(
     natal_jd_ut: float,
     arc_deg: float,

@@ -45,6 +45,17 @@ from .fixed_stars import (
     resolve_primary_direction_fixed_star_point,
 )
 from .geometry import compute_primary_direction_arc, compute_primary_direction_arcs
+from .derived_points import (
+    PrimaryDirectionFortuneDoctrine,
+    PrimaryDirectionFortuneTarget,
+    PrimaryDirectionLotTarget,
+    PrimaryDirectionPredominatorTarget,
+    PrimaryDirectionDerivedPointTarget,
+    resolve_primary_direction_derived_point,
+    _resolve_primary_direction_derived_points,
+    _is_derived_point_name,
+)
+from ._chart_time import _chart_tt
 from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
@@ -128,6 +139,12 @@ from .timeline import (
 )
 
 __all__ = [
+    "PrimaryDirectionFortuneDoctrine",
+    "PrimaryDirectionFortuneTarget",
+    "PrimaryDirectionLotTarget",
+    "PrimaryDirectionPredominatorTarget",
+    "PrimaryDirectionDerivedPointTarget",
+    "resolve_primary_direction_derived_point",
     "DIRECT",
     "CONVERSE",
     "PrimaryDirectionSpace",
@@ -295,6 +312,7 @@ class PrimaryDirectionsPolicy:
     mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...] = ()
     midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...] = ()
     placidian_rapt_parallel_motion: PrimaryDirectionMotion | None = None
+    derived_point_targets: tuple[PrimaryDirectionDerivedPointTarget, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.include_converse, bool):
@@ -323,6 +341,8 @@ class PrimaryDirectionsPolicy:
                 )
 
         sequence_fields = (
+            ("derived_point_targets", self.derived_point_targets,
+             (PrimaryDirectionFortuneTarget, PrimaryDirectionPredominatorTarget, PrimaryDirectionLotTarget)),
             ("morinus_aspect_contexts", self.morinus_aspect_contexts, MorinusAspectContext),
             ("antiscia_targets", self.antiscia_targets, PrimaryDirectionAntisciaTarget),
             (
@@ -363,8 +383,12 @@ class PrimaryDirectionsPolicy:
                     f"PrimaryDirectionsPolicy {name} must be an iterable of vessels"
                 ) from exc
             if any(not isinstance(value, expected_type) for value in normalized):
+                expected_name = (
+                    "PrimaryDirectionFortuneTarget, PrimaryDirectionPredominatorTarget or PrimaryDirectionLotTarget"
+                    if isinstance(expected_type, tuple) else expected_type.__name__
+                )
                 raise ValueError(
-                    f"PrimaryDirectionsPolicy {name} requires {expected_type.__name__} values"
+                    f"PrimaryDirectionsPolicy {name} requires {expected_name} values"
                 )
             object.__setattr__(self, name, normalized)
 
@@ -486,13 +510,18 @@ class PrimaryDirectionsPolicy:
                 raise ValueError(
                     "PrimaryDirectionsPolicy invariant failed: signed primary motion is admitted only for the zero-latitude Topocentric zodiacal projected branch"
                 )
+            signed_target_policy = _aspect_target_policy(
+                fixed_star_targets=bool(self.fixed_star_targets)
+            )
+            if any(_is_derived_point_name(target.name) for target in self.derived_point_targets):
+                signed_target_policy = PrimaryDirectionTargetPolicy(
+                    signed_target_policy.admitted_significator_classes | {PrimaryDirectionTargetClass.DERIVED_POINT},
+                    signed_target_policy.admitted_promissor_classes,
+                )
             if (
                 self.relation_policy.admitted_kinds
                 != zodiacal_aspect_relation_policy().admitted_kinds
-                or self.target_policy
-                != _aspect_target_policy(
-                    fixed_star_targets=bool(self.fixed_star_targets)
-                )
+                or self.target_policy != signed_target_policy
             ):
                 raise ValueError(
                     "PrimaryDirectionsPolicy invariant failed: signed primary motion requires the admitted Topocentric zodiacal-aspect relation and target policy"
@@ -511,6 +540,25 @@ class PrimaryDirectionsPolicy:
                 raise ValueError(
                     "PrimaryDirectionsPolicy invariant failed: signed primary motion does not admit non-fixed-star advanced target or context vessels"
                 )
+        point_names = [target.name for target in self.derived_point_targets]
+        if len(set(point_names)) != len(point_names):
+            raise ValueError("derived_point_targets must be unique by canonical identity")
+        if PrimaryDirectionTargetClass.DERIVED_POINT in self.target_policy.admitted_promissor_classes:
+            raise ValueError("derived points are currently admitted as significators only")
+        if any(_is_derived_point_name(name) for name in point_names) and (
+            PrimaryDirectionTargetClass.DERIVED_POINT not in self.target_policy.admitted_significator_classes
+        ):
+            raise ValueError("Fortune and lots require explicit derived-point significator admission")
+        point_source_targets = (
+            self.morinus_aspect_contexts + self.antiscia_targets
+            + self.ptolemaic_parallel_targets + self.placidian_rapt_parallel_targets
+            + self.mundane_aspect_targets + self.mundane_parallel_targets
+        )
+        if any(_is_derived_point_name(target.source_name) for target in point_source_targets) or any(
+            any(_is_derived_point_name(name) for name in (target.source_a_name, target.source_b_name))
+            for target in self.midpoint_targets
+        ):
+            raise ValueError("Fortune and lots are not yet admitted as a derived-promissor source")
         source_names = [context.source_name for context in self.morinus_aspect_contexts]
         if len(set(source_names)) != len(source_names):
             raise ValueError(
@@ -557,7 +605,8 @@ class PrimaryDirectionsPolicy:
                 "PrimaryDirectionsPolicy invariant failed: midpoint_targets must be unique by name"
             )
         derived_target_names = (
-            antiscia_names
+            point_names
+            + antiscia_names
             + parallel_names
             + rapt_names
             + fixed_star_names
@@ -578,10 +627,14 @@ class PrimaryDirectionsPolicy:
                     PrimaryDirectionTargetClass.ANGLE,
                     PrimaryDirectionTargetClass.PLANET,
                 }
+                | ({PrimaryDirectionTargetClass.DERIVED_POINT}
+                   if any(_is_derived_point_name(name) for name in point_names) else set())
             )
         ):
             raise ValueError(
-                "PrimaryDirectionsPolicy invariant failed: current fixed_star_targets admission is limited to angle and planet significators"
+                "PrimaryDirectionsPolicy invariant failed: fixed_star_targets admit angle, planet and explicitly configured typed-point significators"
+                if any(_is_derived_point_name(name) for name in point_names)
+                else "PrimaryDirectionsPolicy invariant failed: current fixed_star_targets admission is limited to angle and planet significators"
             )
         if (
             self.fixed_star_targets
@@ -826,7 +879,17 @@ def primary_directions_policy_preset(
     mundane_aspect_targets: tuple[PrimaryDirectionMundaneAspectTarget, ...] = (),
     mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...] = (),
     midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...] = (),
+    derived_point_targets: tuple[PrimaryDirectionDerivedPointTarget, ...] = (),
 ) -> PrimaryDirectionsPolicy:
+    if isinstance(derived_point_targets, (str, bytes)):
+        raise ValueError("derived_point_targets must be an iterable of typed targets")
+    try:
+        derived_point_targets = tuple(derived_point_targets)
+    except TypeError as exc:
+        raise ValueError("derived_point_targets must be an iterable of typed targets") from exc
+    if any(not isinstance(target, (PrimaryDirectionFortuneTarget, PrimaryDirectionPredominatorTarget, PrimaryDirectionLotTarget))
+           for target in derived_point_targets):
+        raise ValueError("derived_point_targets requires typed Fortune, predominator or catalogue-lot targets")
     if converse_doctrine is not None:
         if not isinstance(converse_doctrine, PrimaryDirectionConverseDoctrine):
             raise ValueError(
@@ -850,6 +913,7 @@ def primary_directions_policy_preset(
         "mundane_aspect_targets": mundane_aspect_targets,
         "mundane_parallel_targets": mundane_parallel_targets,
         "midpoint_targets": midpoint_targets,
+        "derived_point_targets": derived_point_targets,
     }
     if fixed_star_targets:
         base_kwargs["target_policy"] = _fixed_star_target_policy()
@@ -892,6 +956,12 @@ def primary_directions_policy_preset(
             admitted_promissor_classes=frozenset(prom_classes),
         )
     base_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(base_rel_kinds))
+    if any(_is_derived_point_name(target.name) for target in derived_point_targets):
+        current_target_pol = base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        base_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            current_target_pol.admitted_significator_classes | {PrimaryDirectionTargetClass.DERIVED_POINT},
+            current_target_pol.admitted_promissor_classes,
+        )
 
     aspect_kwargs = dict(base_kwargs)
     aspect_rel_kinds = set(base_rel_kinds) | set(zodiacal_aspect_relation_policy().admitted_kinds)
@@ -906,6 +976,11 @@ def primary_directions_policy_preset(
         base_asp_target_pol = PrimaryDirectionTargetPolicy(
             admitted_significator_classes=base_asp_target_pol.admitted_significator_classes,
             admitted_promissor_classes=frozenset(prom_classes),
+        )
+    if any(_is_derived_point_name(target.name) for target in derived_point_targets):
+        base_asp_target_pol = PrimaryDirectionTargetPolicy(
+            base_asp_target_pol.admitted_significator_classes | {PrimaryDirectionTargetClass.DERIVED_POINT},
+            base_asp_target_pol.admitted_promissor_classes,
         )
     aspect_kwargs["target_policy"] = base_asp_target_pol
     if preset is PrimaryDirectionsPreset.PLACIDUS_MUNDANE:
@@ -1021,6 +1096,7 @@ def primary_directions_policy_preset(
             fixed_star_targets=base_kwargs["fixed_star_targets"],
             antiscia_targets=antiscia_targets,
             bound_targets=base_kwargs["bound_targets"],
+            derived_point_targets=derived_point_targets,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
             ),
@@ -2127,6 +2203,7 @@ def _project_zodiacal_point(
     armc: float,
     obliquity: float,
     geo_lat: float,
+    allow_circumpolar: bool = False,
 ) -> SpeculumEntry:
     """Project one explicit zodiacal point into the active equatorial/mundane frame."""
     return SpeculumEntry.build(
@@ -2136,6 +2213,7 @@ def _project_zodiacal_point(
         armc,
         obliquity,
         geo_lat,
+        allow_circumpolar=allow_circumpolar,
     )
 
 
@@ -2146,6 +2224,7 @@ def _house_cusp_entries(
     armc: float,
     obliquity: float,
     geo_lat: float,
+    allow_circumpolar: bool = False,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for name in requested_names:
@@ -2163,6 +2242,7 @@ def _house_cusp_entries(
             armc,
             obliquity,
             geo_lat,
+            allow_circumpolar=allow_circumpolar,
         )
     return derived
 
@@ -2228,6 +2308,7 @@ def _zodiacal_promissor_entries(
     latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
     latitude_source: PrimaryDirectionLatitudeSource,
     morinus_contexts: dict[str, MorinusAspectContext] | None = None,
+    allow_circumpolar: bool = False,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for name in requested_names:
@@ -2247,6 +2328,7 @@ def _zodiacal_promissor_entries(
                 armc=armc,
                 obliquity=obliquity,
                 geo_lat=geo_lat,
+                allow_circumpolar=allow_circumpolar,
             )
             continue
         try:
@@ -2284,6 +2366,7 @@ def _zodiacal_promissor_entries(
                 armc=armc,
                 obliquity=obliquity,
                 geo_lat=geo_lat,
+                allow_circumpolar=allow_circumpolar,
             )
             continue
         latitude = source.lat if latitude_source is PrimaryDirectionLatitudeSource.ASPECT_INHERITED else 0.0
@@ -2294,6 +2377,7 @@ def _zodiacal_promissor_entries(
             armc=armc,
             obliquity=obliquity,
             geo_lat=geo_lat,
+            allow_circumpolar=allow_circumpolar,
         )
     return derived
 
@@ -2308,6 +2392,7 @@ def _zodiacal_pairwise_promissor(
     geo_lat: float,
     latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
     latitude_source: PrimaryDirectionLatitudeSource,
+    allow_circumpolar: bool = False,
 ) -> SpeculumEntry | None:
     if latitude_doctrine is not PrimaryDirectionLatitudeDoctrine.ZODIACAL_SIGNIFICATOR_CONDITIONED:
         return None
@@ -2324,6 +2409,7 @@ def _zodiacal_pairwise_promissor(
             armc=armc,
             obliquity=obliquity,
             geo_lat=geo_lat,
+            allow_circumpolar=allow_circumpolar,
         )
     truth = primary_direction_target_truth(prom_name)
     if truth.target_class is not PrimaryDirectionTargetClass.ASPECTUAL_POINT:
@@ -2340,6 +2426,7 @@ def _zodiacal_pairwise_promissor(
         armc=armc,
         obliquity=obliquity,
         geo_lat=geo_lat,
+        allow_circumpolar=allow_circumpolar,
     )
 
 
@@ -2437,6 +2524,7 @@ def _bound_promissor_entries(
     armc: float,
     obliquity: float,
     geo_lat: float,
+    allow_circumpolar: bool = False,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
@@ -2447,6 +2535,7 @@ def _bound_promissor_entries(
             armc=armc,
             obliquity=obliquity,
             geo_lat=geo_lat,
+            allow_circumpolar=allow_circumpolar,
         )
     return derived
 
@@ -2529,6 +2618,7 @@ def _midpoint_promissor_entries(
     armc: float,
     obliquity: float,
     geo_lat: float,
+    allow_circumpolar: bool = False,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
@@ -2548,6 +2638,7 @@ def _midpoint_promissor_entries(
             armc=armc,
             obliquity=obliquity,
             geo_lat=geo_lat,
+            allow_circumpolar=allow_circumpolar,
         )
     return derived
 
@@ -2564,6 +2655,29 @@ def _state_for_arcs(arcs: tuple[PrimaryArc, ...]) -> PrimaryDirectionsConditionS
 
 def _sorted_profiles(profiles: Iterable[PrimaryDirectionsSignificatorProfile]) -> tuple[PrimaryDirectionsSignificatorProfile, ...]:
     return tuple(sorted(profiles, key=lambda profile: (profile.significator, profile.nearest_arc)))
+
+
+def _natal_speculum_entries(
+    chart: object,
+    houses: object,
+    geo_lat: float,
+    obliquity: float,
+    planet_names: Iterable[str],
+    *,
+    allow_circumpolar: bool,
+    required_names: set[str] | None = None,
+) -> list[SpeculumEntry]:
+    """Materialize only the requested natal coordinates and source dependencies."""
+    points = [(name, chart.planets[name].longitude, chart.planets[name].latitude)
+              for name in planet_names if required_names is None or name in required_names]
+    points.extend((name, node.longitude, 0.0) for name, node in chart.nodes.items()
+                  if required_names is None or name in required_names)
+    points.extend((("ASC", houses.asc, 0.0), ("MC", houses.mc, 0.0),
+                   ("DSC", houses.dsc, 0.0), ("IC", houses.ic, 0.0)))
+    return [SpeculumEntry.build(name, lon, lat, houses.armc, obliquity, geo_lat,
+                               allow_circumpolar=allow_circumpolar)
+            for name, lon, lat in points
+            if required_names is None or name in required_names]
 
 
 def speculum(
@@ -2584,43 +2698,14 @@ def speculum(
     )
     if not 0.0 <= obl < 90.0:
         raise ValueError("speculum requires obliquity in [0, 90)")
-    armc = houses.armc
-
-    entries: list[SpeculumEntry] = []
     normalized_bodies = _identity_tuple(bodies, "speculum bodies")
     planet_names = normalized_bodies if normalized_bodies is not None else tuple(chart.planets)
     if normalized_bodies is not None:
         missing = tuple(name for name in normalized_bodies if name not in chart.planets)
         if missing:
             raise ValueError(f"speculum requested unavailable chart bodies: {missing!r}")
-    for name in planet_names:
-        p = chart.planets[name]
-        entries.append(
-            SpeculumEntry.build(
-                name, p.longitude, p.latitude, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
-            )
-        )
-
-    for name, nd in chart.nodes.items():
-        entries.append(
-            SpeculumEntry.build(
-                name, nd.longitude, 0.0, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
-            )
-        )
-
-    for ang_name, ang_lon in [
-        ("ASC", houses.asc),
-        ("MC", houses.mc),
-        ("DSC", houses.dsc),
-        ("IC", houses.ic),
-    ]:
-        entries.append(
-            SpeculumEntry.build(
-                ang_name, ang_lon, 0.0, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
-            )
-        )
-
-    return entries
+    return _natal_speculum_entries(chart, houses, geo_lat, obl, planet_names,
+                                   allow_circumpolar=allow_circumpolar)
 
 
 def find_primary_arcs(
@@ -2695,15 +2780,15 @@ def find_primary_arcs(
         PrimaryDirectionMethod.MORINUS,
         PrimaryDirectionMethod.CAMPANUS,
     )
-    spec = speculum(chart, houses, geo_lat, obliquity=obl, allow_circumpolar=allow_circumpolar)
-    sp_map = {e.name: e for e in spec}
     # Oblique ascension of the eastern horizon is an equatorial coordinate:
     # OA(ASC) = local sidereal time + 90 degrees.  It is not the right
     # ascension of the ecliptic Ascendant, which differs at non-zero obliquity
     # and would miswire the Placidian-classic endpoint law.
     oa_asc = (houses.armc + 90.0) % 360.0
 
-    all_names = list(sp_map.keys())
+    all_names = list(dict.fromkeys((*chart.planets, *chart.nodes, "ASC", "MC", "DSC", "IC")))
+    all_names.extend(target.name for target in resolved_policy.derived_point_targets
+                     if target.name not in all_names)
     sig_candidates = (
         set(normalized_significators)
         if normalized_significators is not None
@@ -2787,7 +2872,7 @@ def find_primary_arcs(
             | midpoint_names
         )
     )
-    candidate_names = set(all_names) | sig_candidates | prom_candidates
+    candidate_names = sig_candidates | prom_candidates
     relational_kind_by_name: dict[str, PrimaryDirectionRelationalKind] = {
         target.name: (
             PrimaryDirectionRelationalKind.ANTISCION
@@ -2855,7 +2940,9 @@ def find_primary_arcs(
         }
     )
     required_relation_kinds = (
-        _required_relation_kinds_for_requested_promissors(normalized_promissors)
+        _required_relation_kinds_for_requested_promissors(
+            name for name in normalized_promissors if name not in relational_kind_by_name
+        )
         if normalized_promissors is not None
         else set()
     )
@@ -2919,20 +3006,54 @@ def find_primary_arcs(
                 aspect_source_names.add(truth.source_name)
             if truth.source_b_name is not None:
                 aspect_source_names.add(truth.source_b_name)
+    source_targets = (tuple(antiscia_targets) + tuple(ptolemaic_parallel_targets)
+                      + tuple(placidian_rapt_parallel_targets)
+                      + tuple(mundane_aspect_targets) + tuple(mundane_parallel_targets))
+    for name in normalized_significators or ():
+        truth = target_truths.get(name)
+        if truth is not None and truth.target_class not in resolved_policy.target_policy.admitted_significator_classes:
+            raise ValueError(f"find_primary_arcs requested significator {name!r} is not admitted by policy")
+    admitted_natal_names = {
+        name for name, truth in target_truths.items()
+        if (name in sig_candidates and truth.target_class
+            in resolved_policy.target_policy.admitted_significator_classes)
+        or (name in prom_candidates and resolved_policy.placidian_rapt_parallel_motion is None
+            and truth.target_class in resolved_policy.target_policy.admitted_promissor_classes)
+    }
+    required_names = admitted_natal_names | aspect_source_names | {
+        target.source_name for target in source_targets
+    } | {name for target in midpoint_targets
+         for name in (target.source_a_name, target.source_b_name)}
+    native_required_names = required_names - {
+        name for name, truth in target_truths.items()
+        if truth.target_class is PrimaryDirectionTargetClass.DERIVED_POINT
+    }
+    spec = _natal_speculum_entries(chart, houses, geo_lat, obl, chart.planets,
+                                   allow_circumpolar=allow_circumpolar,
+                                   required_names=native_required_names)
+    sp_map = {entry.name: entry for entry in spec}
+    active_points = (target for target in resolved_policy.derived_point_targets
+                     if target.name in sig_candidates and target.name in admitted_natal_names)
+    for name, longitude, latitude in _resolve_primary_direction_derived_points(active_points, chart, houses).values():
+        # A selected planet/ASC keeps its ordinary entry and native latitude.
+        # Fortune/catalogue lots add zero-latitude ecliptic points.
+        if name not in sp_map:
+            entry = SpeculumEntry.build(name, longitude, latitude, houses.armc, obl, geo_lat,
+                                        allow_circumpolar=allow_circumpolar)
+            sp_map[name] = entry
+            spec.append(entry)
     derived_cusps = _house_cusp_entries(
-        candidate_names | aspect_source_names,
+        required_names,
         houses,
         armc=houses.armc,
         obliquity=obl,
         geo_lat=geo_lat,
+        allow_circumpolar=allow_circumpolar,
     )
     if derived_cusps:
         sp_map.update(derived_cusps)
         spec.extend(derived_cusps.values())
-    _jd_tt = getattr(chart, "jd_tt", None)
-    if _jd_tt is None:
-        _delta_t = getattr(chart, "delta_t", 0.0)
-        _jd_tt = getattr(chart, "jd_ut", 2451545.0) + _delta_t / 86400.0
+    _jd_tt = _chart_tt(chart) if fixed_star_targets else 0.0
     derived_fixed_stars = _fixed_star_promissor_entries(
         fixed_star_targets,
         jd_tt=_jd_tt,
@@ -2949,6 +3070,7 @@ def find_primary_arcs(
         armc=houses.armc,
         obliquity=obl,
         geo_lat=geo_lat,
+        allow_circumpolar=allow_circumpolar,
     )
     if derived_bounds:
         sp_map.update(derived_bounds)
@@ -2975,6 +3097,7 @@ def find_primary_arcs(
         armc=houses.armc,
         obliquity=obl,
         geo_lat=geo_lat,
+        allow_circumpolar=allow_circumpolar,
     )
     if derived_midpoints:
         sp_map.update(derived_midpoints)
@@ -3020,6 +3143,7 @@ def find_primary_arcs(
                 latitude_doctrine=resolved_policy.latitude_policy.doctrine,
                 latitude_source=resolved_policy.latitude_source_policy.source,
                 morinus_contexts=morinus_context_map,
+                allow_circumpolar=allow_circumpolar,
             )
             if antiscia_targets:
                 prom_map.update(
@@ -3145,6 +3269,7 @@ def find_primary_arcs(
                         geo_lat=geo_lat,
                         latitude_doctrine=resolved_policy.latitude_policy.doctrine,
                         latitude_source=resolved_policy.latitude_source_policy.source,
+                        allow_circumpolar=allow_circumpolar,
                     ),
                 )
                 for prom_name in prom_set

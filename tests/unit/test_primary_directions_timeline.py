@@ -11,7 +11,7 @@ import moira.primary_directions.keys as key_module
 from datetime import datetime, timezone
 
 from moira.constants import Body, HouseSystem, TROPICAL_YEAR
-from moira.julian import safe_datetime_from_jd
+from moira.julian import safe_datetime_from_jd, utc_to_ut1, _ut1_to_utc
 from moira.egyptian_bounds import EgyptianBoundsDoctrine
 from moira.primary_directions import (
     PrimaryDirectionKey,
@@ -182,16 +182,16 @@ def test_natal_solar_key_uses_one_rate_for_boundaries_and_events(moira_engine) -
     assert timeline.events and timeline.distributor_periods
     for event in timeline.events:
         assert event.age_years == pytest.approx(event.arc_deg / solar_rate, abs=1e-10)
-        jd = chart.jd_ut + event.age_years * TROPICAL_YEAR
+        jd = utc_to_ut1(chart.jd_ut) + event.age_years * TROPICAL_YEAR
         assert event.perfection_jd_ut == pytest.approx(jd, abs=1e-9)
-        assert event.perfection_iso == safe_datetime_from_jd(jd).isoformat()
+        assert event.perfection_iso == safe_datetime_from_jd(_ut1_to_utc(jd)).isoformat()
     for period in timeline.distributor_periods:
         for arc, age, stamp in [
             (period.entry_arc_deg, period.entry_age, period.entry_date_utc),
             (period.exit_arc_deg, period.exit_age, period.exit_date_utc),
         ]:
             assert age == pytest.approx(max(0, arc) / solar_rate, abs=1e-10)
-            assert stamp == safe_datetime_from_jd(chart.jd_ut + age * TROPICAL_YEAR).isoformat()
+            assert stamp == safe_datetime_from_jd(_ut1_to_utc(utc_to_ut1(chart.jd_ut) + age * TROPICAL_YEAR)).isoformat()
 
 
 def test_facade_primary_directions_timeline(moira_engine) -> None:

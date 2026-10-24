@@ -1457,6 +1457,8 @@
         "wiki/02_standards/TRIPLICITY_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
         "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md",
         "wiki/06_roadmap/hellenistic_completion/archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md",
@@ -1534,6 +1536,8 @@
         "tests/unit/test_lord_of_the_turn.py",
         "tests/unit/test_moira_almutens.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
         "tests/unit/test_progressed_astrodynes.py",
         "tests/unit/test_ptolemy_predominator.py",
         "tests/unit/test_rule_engine_validation.py",
@@ -2508,7 +2512,8 @@
         "unresolved": 1
       },
       "documentation_leads": [
-        "wiki/03_release/RELEASE_NOTES_6.3.0.md"
+        "wiki/03_release/RELEASE_NOTES_6.3.0.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md"
       ],
       "domain_group": "specialist-and-compositional",
       "family_id": "hellenistic-offices",
@@ -3267,6 +3272,7 @@
         "tests/unit/test_polar_house_breadth_gauntlet.py",
         "tests/unit/test_preservation_property_docstring_governance.py",
         "tests/unit/test_primary_direction_special_target_authority.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_r2b_additive_truth.py",
@@ -3663,7 +3669,9 @@
         "tests/unit/test_hellenistic_supporting_lots.py",
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
-        "tests/unit/test_paulus_lots.py"
+        "tests/unit/test_paulus_lots.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_lots.py"
       ]
     },
     {
@@ -3897,6 +3905,7 @@
         "tests/unit/test_primary_direction_antiscia.py",
         "tests/unit/test_primary_direction_relations.py",
         "tests/unit/test_primary_directions.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_rule_engine_validation.py"
       ]
     },
@@ -5744,6 +5753,8 @@
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.2.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/05_research/primary_directions/primary_directions_fixed_star_family_matrix.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/HELLENISTIC_FREE_ENHANCED_WORKSPACE_PRODUCT_PLAN.md",
@@ -5786,6 +5797,10 @@
         "tests/unit/test_primary_direction_fixed_stars.py",
         "tests/unit/test_primary_directions.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
@@ -5827,6 +5842,10 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/unit/test_primary_direction_adversarial_hardening.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_timeline.py"
       ]

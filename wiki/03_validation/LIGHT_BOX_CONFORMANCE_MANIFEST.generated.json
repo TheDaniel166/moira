@@ -30393,7 +30393,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2882,
+        "source_line": 2913,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -30485,7 +30485,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2882",
+            "target": "moira/lots.py#L2913",
             "version_identity": "6.10.2"
           }
         ],
@@ -36703,7 +36703,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2938,
+        "source_line": 2969,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -36795,7 +36795,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2938",
+            "target": "moira/lots.py#L2969",
             "version_identity": "6.10.2"
           }
         ],
@@ -36856,7 +36856,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2967,
+        "source_line": 2998,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -36948,7 +36948,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2967",
+            "target": "moira/lots.py#L2998",
             "version_identity": "6.10.2"
           }
         ],
@@ -37009,7 +37009,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2909,
+        "source_line": 2940,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -37101,7 +37101,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2909",
+            "target": "moira/lots.py#L2940",
             "version_identity": "6.10.2"
           }
         ],
@@ -37162,7 +37162,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2853,
+        "source_line": 2884,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -37254,7 +37254,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2853",
+            "target": "moira/lots.py#L2884",
             "version_identity": "6.10.2"
           }
         ],
@@ -37315,7 +37315,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2752,
+        "source_line": 2783,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -37407,7 +37407,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2752",
+            "target": "moira/lots.py#L2783",
             "version_identity": "6.10.2"
           }
         ],
@@ -44663,7 +44663,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 147,
+        "source_line": 151,
         "source_path": "moira/primary_directions/timeline.py"
       },
       "public_exposure": {
@@ -44755,7 +44755,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/primary_directions/timeline.py#L147",
+            "target": "moira/primary_directions/timeline.py#L151",
             "version_identity": "6.10.2"
           }
         ],
@@ -65596,7 +65596,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2777,
+        "source_line": 2808,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -65688,7 +65688,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2777",
+            "target": "moira/lots.py#L2808",
             "version_identity": "6.10.2"
           }
         ],
@@ -67126,7 +67126,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2813,
+        "source_line": 2844,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -67218,7 +67218,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2813",
+            "target": "moira/lots.py#L2844",
             "version_identity": "6.10.2"
           }
         ],
@@ -73093,7 +73093,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2626,
+        "source_line": 2711,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "public_exposure": {
@@ -73185,7 +73185,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/primary_directions/__init__.py#L2626",
+            "target": "moira/primary_directions/__init__.py#L2711",
             "version_identity": "6.10.2"
           }
         ],
@@ -135318,7 +135318,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2824,
+        "source_line": 2855,
         "source_path": "moira/lots.py"
       },
       "public_exposure": {
@@ -135410,7 +135410,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/lots.py#L2824",
+            "target": "moira/lots.py#L2855",
             "version_identity": "6.10.2"
           }
         ],
@@ -140069,7 +140069,7 @@
         "Unresolved is visible and is not a pass, partial pass, or failure."
       ],
       "ownership": {
-        "source_line": 2569,
+        "source_line": 2683,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "public_exposure": {
@@ -140161,7 +140161,7 @@
           {
             "kind": "source",
             "label": "WP0 ownership pointer; presence is not conformance evidence.",
-            "target": "moira/primary_directions/__init__.py#L2569",
+            "target": "moira/primary_directions/__init__.py#L2683",
             "version_identity": "6.10.2"
           }
         ],
@@ -154424,6 +154424,12 @@
             {
               "kind": "test",
               "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/unit/test_primary_directions_integrity.py",
+              "version_identity": "6.10.2"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
               "target": "tests/unit/test_r2b_additive_truth.py",
               "version_identity": "6.10.2"
             },
@@ -155382,6 +155388,12 @@
             {
               "kind": "test",
               "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/server/test_server_primary_directions_timeline_routes.py",
+              "version_identity": "6.10.2"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
               "target": "tests/server/test_server_shadbala_service.py",
               "version_identity": "6.10.2"
             },
@@ -155521,6 +155533,18 @@
               "kind": "test",
               "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
               "target": "tests/unit/test_planetary_frame_contracts.py",
+              "version_identity": "6.10.2"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/unit/test_primary_directions_integrity.py",
+              "version_identity": "6.10.2"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/unit/test_primary_directions_timeline.py",
               "version_identity": "6.10.2"
             },
             {
@@ -254822,6 +254846,12 @@
               "kind": "test",
               "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
               "target": "tests/server/test_server_primary_directions_time_keys.py",
+              "version_identity": "6.10.2"
+            },
+            {
+              "kind": "test",
+              "label": "Inventory-linked test source reviewed as an evidence lead; it is not an exact release receipt.",
+              "target": "tests/server/test_server_primary_directions_timeline_routes.py",
               "version_identity": "6.10.2"
             },
             {
