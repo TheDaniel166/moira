@@ -121,6 +121,42 @@ At session start:
 6. Confirm the smallest relevant test, parity, or validation command before
    editing. Do not begin with the full suite.
 
+### Routine engine work and releases
+
+Routine work follows: implement the scoped change, run focused tests, inspect
+the diff, then commit and push directly to `main` when the user requests it.
+Create a pull request only when the user explicitly asks for one. Do not add
+required PRs, reviews, status checks, or other repository protections without
+an explicit request to change those settings.
+
+Choose validation from the behavior and dependencies actually changed:
+
+- Run the affected unit/regression tests and relevant contract tests. Numerical,
+  doctrinal, time/frame, native-boundary, or shared-service changes also need
+  the affected independent geometry, source, oracle, or parity evidence.
+- Run lint and docstring checks on touched files. Broaden the selected checks
+  when shared dependencies, a failure, or an unresolved risk justify it.
+- Preserve the Protected Zones, scientific tolerances, source provenance,
+  missing-resource disclosures, and read-only golden/snapshot rules below.
+  Focused verification is not permission to defer an in-scope scientific defect.
+- Update documentation that explains changed behavior. Repository-wide
+  inventories, conformance summaries, website bundles, and the Git wiki mirror
+  may wait until release or explicit documentation publication. Their freshness
+  is not a prerequisite for a routine commit or push; do not claim deferred
+  artifacts describe the current worktree.
+
+Full generated-artifact maintenance and the broad acceptance/hardening suites
+belong to release preparation or an explicitly requested audit. Use
+`scripts/maintain_generated.py --refresh` for mechanical release metadata, then
+review its diff. It must not refresh scientific receipts, reviewed admissions,
+product-use snapshots, or release baselines to absorb a failure.
+
+The acceptance and hardening workflows are manual/reusable release checks.
+Tag-triggered PyPI publication requires both before building distributions.
+Kernel-dependent scientific validation still runs locally with its actual
+resources before release; kernel-free hosted checks do not replace it. A push
+to `main` is source publication, not a package release or a wiki/website publish.
+
 Use this import/native smoke when installation state is relevant:
 
     .\.venv\Scripts\python.exe -c "import moira; from moira import moira_native as mn; print(moira.__version__, mn.__backend_file__)"
@@ -219,13 +255,13 @@ extension.
     # All declared optional surfaces when the task requires them
     .\.venv\Scripts\python.exe -m pip install -e ".[dev,server,lunar-graze]"
 
-Normal local tests should be deterministic, no-download, strict about known
+Focused local tests should be deterministic, no-download, strict about known
 issue expiry, and network-excluding unless the selected validation explicitly
-requires network access:
+requires network access. Select the tests for the changed behavior, for example:
 
     $env:MOIRA_TEST_MODE = "1"
     $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
-    .\.venv\Scripts\python.exe -m pytest -m "not external_network"
+    .\.venv\Scripts\python.exe -m pytest tests\unit\test_conftest_smoke.py -m "not external_network" -q
 
 The literal full configured suite is
 `.\.venv\Scripts\python.exe -m pytest`; external-network cases are held in deny
@@ -257,22 +293,27 @@ Product-specific validation examples:
     # Release-facing documentation guard
     .\.venv\Scripts\python.exe scripts\check_doc_consistency.py
 
-    # Fast, stdlib-only engine docstring preflight (no engine import or pytest)
+    # Focused engine docstring check; pass the engine files actually touched
+    .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py moira\horary_reception.py
+
+    # Full engine docstring preflight for release preparation (no engine import)
     .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py
 
-Before pushing CI, governance, or evidence changes, run the complete local CI
-verification plan after focused tests:
+For release preparation or an explicitly requested CI audit, the complete
+local release-verification plan is available after focused tests:
 
     .\.venv\Scripts\python.exe scripts\check_ci.py
 
 This reads both release workflows directly, including all Light Box regression
-modules. Different-runtime jobs are reported as CI-only; verify those on GitHub
-before reporting the full CI result. `--list` inspects the plan without execution.
+modules. It is not a routine commit/push prerequisite. Different-runtime jobs
+are reported as CI-only; verify those on GitHub before reporting the full CI
+result. `--list` inspects the plan without execution.
 
 The docstring preflight also accepts explicit Python file paths for a focused
 authoring check. With no paths, it checks the entire `moira/` tree and reports
-all violations together. CI runs that full scan before native builds; checker
-self-tests run separately, not as a second corpus scan.
+all violations together. Release CI runs that full scan before its native
+builds; routine authoring uses the touched-file form. Checker self-tests run
+separately, not as a second corpus scan.
 
 Ruff is configured for Python 3.10-compatible correctness checks (`E4`, `E7`,
 `E9`, and `F`). The repository-wide result is currently an audit baseline, not
@@ -390,11 +431,14 @@ renewed by its owner; never leave it as a silent warning.
 
 ### Completion Receipt
 
+Keep the completion report proportional to the change. Routine work needs a
+concise answer; a separate receipt file or repository-wide audit is not required.
 At completion, report:
 
 - files changed and what changed in each
 - what was intentionally left untouched, including unrelated work
-- exact commands run and their outcomes, skips, prerequisites, and scope
+- checks run and their outcomes, relevant skips, prerequisites, and scope;
+  include exact commands for releases, audits, or nonstandard validation
 - which authority, fixture, corpus, tolerance, and native/Python path were
   actually exercised
 - unresolved risks, assumptions, divergences, or validation gaps
@@ -728,8 +772,10 @@ classes under `moira/`; this requirement applies to internal helpers too.
   with `state.mutable: true` and named nonempty `state.owners`. Do not claim
   shared-instance safety for mutable request-owned caches or counters.
 - Before handing off, committing, or pushing engine class changes, run the
-  fast preflight once. If the user restricts local verification, obey that
-  restriction and explicitly report the unverified gate; never imply green CI
+  fast preflight once on the touched engine files. The full corpus scan belongs
+  to release preparation or an explicitly requested audit. If the user restricts
+  local verification, obey that restriction and explicitly report the unverified
+  gate; never imply green CI
   from reading this file. Do not bypass the checker or update scientific
   evidence to absorb a documentation failure.
 

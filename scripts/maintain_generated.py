@@ -1,5 +1,7 @@
-"""Check or refresh generated governance artifacts in dependency order.
+"""Prepare release metadata by checking or refreshing generated artifacts.
 
+Routine engine changes use focused tests; this repository-wide command is for
+release preparation or an explicit metadata audit/publication, not every push.
 Refresh writes mechanical generator outputs. Reviewed baselines, product-use
 snapshots, conformance admissions, and execution receipts retain their existing
 review/replay workflows. A blocked stage stops the command with its repair hint.
@@ -42,7 +44,7 @@ STAGES = (
     Stage("Light Box assurance", "generate_lightbox_assurance_matrix.py", "Review receipt bindings and replay scripts/replay_lightbox_receipts.py when fresh execution evidence is required. Retain each execution's original source identity."),
     Stage("Light Box public status", "generate_lightbox_public_status.py", "Regenerate status from the reviewed manifest and actual assurance receipts."),
     Stage("Light Box source gate", "check_lightbox_release_gate.py", "Review LIGHT_BOX_RELEASE_BASELINE.json deliberately, including its identity and coverage thresholds. Review stale receipt or snapshot bindings; baseline and evidence inputs are not rewritten by this command.", check_arguments=()),
-    Stage("Git wiki mirror", "sync_git_wiki.py", "Stage newly authored canonical wiki pages for discovery, synchronize the mirror, and publish the wiki before its parent gitlink.", refresh_arguments=("--no-prune",)),
+    Stage("Git wiki mirror", "sync_git_wiki.py", "Register newly authored canonical wiki pages for discovery and synchronize the mirror. Publish the wiki before committing an updated parent gitlink; routine source commits need no wiki publication.", refresh_arguments=("--no-prune",)),
 )
 
 
@@ -72,11 +74,11 @@ def run_stages(*, check: bool) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run an explicit read-only check or refresh followed by a complete check."""
+    """Run release metadata checks or a mechanical refresh plus complete checks."""
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--check", action="store_true", help="Check all generated artifacts without writing them.")
-    mode.add_argument("--refresh", action="store_true", help="Refresh mechanical outputs, stop on review/replay blockers, then check everything again.")
+    mode.add_argument("--check", action="store_true", help="Check release metadata without writing it; not a routine push prerequisite.")
+    mode.add_argument("--refresh", action="store_true", help="Prepare mechanical release metadata, stop on review/replay blockers, then check everything again.")
     args = parser.parse_args(argv)
     try:
         if args.refresh:

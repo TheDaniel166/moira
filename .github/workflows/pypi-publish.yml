@@ -22,9 +22,17 @@ jobs:
       - name: Match tag, package, changelog, and release documents
         run: python scripts/check_release_identity.py --tag "$GITHUB_REF_NAME"
 
+  release-hardening:
+    needs: validate-release
+    uses: ./.github/workflows/release-hardening.yml
+
+  release-acceptance:
+    needs: validate-release
+    uses: ./.github/workflows/release-acceptance.yml
+
   build-wheels:
     name: Build wheels on ${{ matrix.os }}
-    needs: validate-release
+    needs: [validate-release, release-hardening, release-acceptance]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -52,7 +60,7 @@ jobs:
 
   build-sdist:
     name: Build source distribution
-    needs: validate-release
+    needs: [validate-release, release-hardening, release-acceptance]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,7 +108,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: [build-wheels, build-sdist, website-publication]
+    needs: [release-hardening, release-acceptance, build-wheels, build-sdist, website-publication]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

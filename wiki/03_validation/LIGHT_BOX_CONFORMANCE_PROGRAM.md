@@ -23,8 +23,15 @@ Family review uses `strong_exemplar`, `partial`, `mixed`, `major_gap`, and `unre
 
 ## Generated-artifact maintenance
 
-Use the project interpreter with the optional development and server dependencies
-installed. From the repository root on Windows:
+Repository-wide maintenance belongs to release preparation or explicit metadata
+audits/documentation publication. Routine engine development uses focused tests
+and the relevant scientific evidence, with direct commits/pushes when requested.
+Source documentation can change without regenerating global inventories or
+publishing the Git wiki. Deferred artifacts retain their earlier evidence
+identity; they must not be described as current-worktree validation.
+
+For release maintenance, use the project interpreter with the optional
+development and server dependencies installed. From the repository root on Windows:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\maintain_generated.py --check
@@ -141,27 +148,26 @@ structural hash; migrated execution records remain immutable. The assurance
 matrix verifies receipt digests and migration history and cannot promote a
 migration to exact-source evidence.
 
-### Required pre-merge gate
+### Release checks and optional PRs
 
-The Release Hardening workflow runs the stable, unique **Generated Artifact
-Gate** job for every pull request and every push to `main`, with no changed-path
-filter. It checks the published wiki submodule, runs the read-only maintenance
-command and its regression tests, and gates the larger release-hardening suites.
+Release Hardening and Release Acceptance are manual/reusable workflows. They
+do not run automatically for ordinary main pushes or PRs. PyPI's tag workflow
+calls both from the same source commit and waits for both to succeed before
+building distributions or publishing. No failure is ignored: docstring,
+generated-artifact, minimum-Python compatibility, source/contract and scientific
+regression checks remain part of release validation.
 
-Repository branch protection for `main` requires a pull request, an up-to-date
-branch, administrator enforcement, and these stable check names:
+The **Generated Artifact Gate** still checks the read-only maintenance command,
+its regression tests and the published wiki submodule at release time. The
+full native/docstring and broader test jobs retain their dependency ordering.
+Kernel-dependent checks still require their local resources and evidence;
+hosted kernel-free acceptance is not a substitute.
 
-- **Engine Docstring Preflight**
-- **Generated Artifact Gate**
-- **Python 3.10 Server Compatibility Gate**
-- **Release Hardening Gate**
-
-Requiring the prerequisite checks also blocks a failed prerequisite from being
-hidden by a skipped dependent job. The solo-maintainer configuration requires
-zero approving reviews while retaining the pull-request and status-check
-requirements. This server-side setting is separate from the workflow file:
-publishing YAML alone does not make a check required. Preserve any additional
-existing repository protections when configuring it.
+The maintainer's normal workflow is focused local validation followed by a
+direct commit/push when requested. Open PRs only on explicit request. Do not
+introduce mandatory PRs or pre-push status checks as part of feature work.
+GitHub protections are separate from workflow YAML; preserve force-push and
+deletion safeguards and change settings only when explicitly authorized.
 
 ## Release boundary
 

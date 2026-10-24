@@ -1,10 +1,11 @@
 name: Release Hardening
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   docstring-preflight:
@@ -28,7 +29,7 @@ jobs:
         run: python tests/unit/test_docstring_governance.py
 
   generated-artifacts:
-    # Stable branch-protection context; keep this name unique across workflows.
+    # Release metadata gate; routine pushes do not invoke this workflow.
     name: Generated Artifact Gate
     needs: docstring-preflight
     runs-on: ubuntu-latest

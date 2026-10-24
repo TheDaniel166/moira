@@ -1,4 +1,4 @@
-"""Regression contracts for generated-artifact maintenance and its merge gate."""
+"""Release metadata remains enforced without imposing a routine PR workflow."""
 
 from __future__ import annotations
 
@@ -158,7 +158,7 @@ def test_mode_must_be_explicit_and_unambiguous(arguments):
 
 
 def test_new_public_type_requires_refresh_and_check_does_not_write(tmp_path, monkeypatch):
-    """A passive export still changes inventory membership and must block CI."""
+    """Release checks still reject stale membership and preserve reviewed inputs."""
     scripts = tmp_path / "scripts"
     scripts.mkdir()
     (scripts / "inventory_fixture.py").write_text(
@@ -184,20 +184,38 @@ def test_new_public_type_requires_refresh_and_check_does_not_write(tmp_path, mon
     assert all(path.read_bytes() == b"preserve reviewed input\n" for path in protected)
 
 
-def _workflow():
+def _workflow(name="release-hardening.yml"):
     # BaseLoader retains GitHub's YAML `on` key instead of treating it as bool.
-    return yaml.load((ROOT / ".github/workflows/release-hardening.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    return yaml.load((ROOT / ".github/workflows" / name).read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
 
 
-def test_generated_gate_runs_for_every_pr_and_main_push():
-    events = _workflow()["on"]
-    assert "pull_request" in events
-    assert "paths" not in (events["pull_request"] or {})
-    assert "paths-ignore" not in (events["pull_request"] or {})
-    assert events["push"]["branches"] == ["main"]
+@pytest.mark.parametrize("name", ["release-hardening.yml", "release-acceptance.yml"])
+def test_broad_suites_are_manual_and_reusable_not_routine_push_requirements(name):
+    events = _workflow(name)["on"]
+    assert set(events) == {"workflow_dispatch", "workflow_call"}
 
 
-def test_required_gate_checks_without_refresh_and_runs_its_regressions():
+def test_tag_builds_and_publication_require_both_same_commit_release_suites():
+    workflow = _workflow("pypi-publish.yml")
+    assert workflow["on"] == {"push": {"tags": ["v*"]}}
+    jobs = workflow["jobs"]
+    gates = {"release-hardening", "release-acceptance"}
+    for gate in gates:
+        job = jobs[gate]
+        assert job["uses"] == f"./.github/workflows/{gate}.yml"
+        assert job["needs"] == "validate-release"
+        assert "if" not in job and "continue-on-error" not in job
+        # No ref override: the reusable suites and checkout use the tagged source.
+        assert "with" not in job
+    for name in ("build-wheels", "build-sdist", "publish"):
+        job = jobs[name]
+        assert gates <= set(job["needs"])
+        assert "if" not in job and "continue-on-error" not in job
+    assert {"build-wheels", "build-sdist", "website-publication"} <= set(jobs["publish"]["needs"])
+    assert workflow["permissions"] == {"contents": "read"}
+
+
+def test_release_generated_gate_checks_without_refresh_and_runs_its_regressions():
     job = _workflow()["jobs"]["generated-artifacts"]
     assert job["name"] == "Generated Artifact Gate"
     assert "if" not in job
@@ -217,7 +235,7 @@ def test_full_release_hardening_waits_for_generated_gate():
     assert "generated-artifacts" in ([needs] if isinstance(needs, str) else needs)
 
 
-def test_required_context_is_unique_across_workflows():
+def test_generated_release_context_is_unique_across_workflows():
     names = []
     for path in sorted(path for path in (ROOT / ".github/workflows").iterdir() if path.suffix.lower() in {".yml", ".yaml"}):
         workflow = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
@@ -225,7 +243,7 @@ def test_required_context_is_unique_across_workflows():
     assert names.count("Generated Artifact Gate") == 1
 
 
-def test_required_context_names_keep_existing_failure_checks_enforceable():
+def test_release_context_names_keep_failures_identifiable():
     jobs = _workflow()["jobs"]
     assert {key: jobs[key]["name"] for key in ("docstring-preflight", "generated-artifacts", "python-310-server-compatibility", "release-hardening")} == {
         "docstring-preflight": "Engine Docstring Preflight",

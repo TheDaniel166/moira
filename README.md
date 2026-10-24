@@ -407,14 +407,16 @@ Moira is structured for high-integrity discovery and collaboration with AI codin
 
 ## Project Documentation and Artifact Governance
 
-Before pushing, run the checked-in CI verification steps from the project environment:
+For release preparation or an explicitly requested CI audit, run the checked-in
+release verification steps from the project environment:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/check_ci.py
 ```
 
 This reads `release-hardening.yml` and `release-acceptance.yml` directly, including
-the complete `test_lightbox_*.py` suite and generated-artifact checks. Install the
+the complete `test_lightbox_*.py` suite and generated-artifact checks. It is not
+required for routine engine commits or pushes. Install the
 project's `dev` and `server` extras beforehand and initialize the wiki submodule.
 The `dev` extra supplies IANA timezone data on Windows, matching the resource
 provided by Ubuntu CI; the runner checks its availability before the long gates.
@@ -428,15 +430,34 @@ catalogues; DE441 alone does not provide comet trajectories such as Halley's.
 
 The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wiki mirror is synchronized from `wiki/` and should not be edited by hand in isolation. Website-publishable documents are governed by `website_docs/publication_sources.json`.
 
-Refresh affected generated artifacts in dependency order using the project `.venv` (`.\.venv\Scripts\python.exe`) before pushing:
+Routine engine development uses focused tests for the changed behavior, relevant
+scientific/compatibility evidence, and lint/docstring checks on touched files.
+Commit and push directly to `main` when requested. Pull requests are used only
+when the maintainer asks for one; CI does not impose a PR workflow.
 
-1. `scripts/generate_hellenistic_inventory.py` when admitted Hellenistic families change.
-2. `scripts/sync_rest_api_reference.py` after server route changes.
-3. `scripts/generate_lightbox_calculation_inventory.py`, `scripts/generate_lightbox_conformance_manifest.py`, `scripts/generate_lightbox_family_register.py`, `scripts/generate_lightbox_family_assessment.py`, `scripts/replay_lightbox_receipts.py`, `scripts/generate_lightbox_assurance_matrix.py`, and `scripts/generate_lightbox_public_status.py` when public calculation surfaces or admissions change.
-4. `scripts/sync_git_wiki.py` after canonical documentation changes.
-5. `scripts/build_website_docs_bundle.py` after public exports, route references, or allowlisted documents change.
+Update the source documentation needed to explain the change. Global generated
+metadata and the Git wiki mirror may wait until release or explicit documentation
+publication; they do not block routine commits or pushes. Deferred artifacts
+retain their previous evidence identity and must not be presented as current.
 
-Before publishing, run the consistency, release-identity, and generated-artifact gates defined in [Release Hardening](.github/workflows/release-hardening.yml) (`scripts/check_doc_consistency.py` and `scripts/check_release_identity.py`).
+For release preparation, use the project `.venv`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\maintain_generated.py --refresh
+```
+
+This refreshes mechanical outputs in dependency order and checks the result.
+Scientific receipt replay, reviewed admissions, product-use audits and release
+baselines retain their separate evidence requirements; they are never silently
+rewritten by this command. See the [conformance program](wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md).
+
+[Release Hardening](.github/workflows/release-hardening.yml) and
+[Release Acceptance](.github/workflows/release-acceptance.yml) run on manual
+request and as required prerequisites of tag-triggered PyPI builds. Routine
+main pushes and optional PRs do not trigger these broad suites. Release work
+also requires the relevant local kernel-backed validation; hosted checks do not
+substitute for those resources. Wiki and website publication remain explicit,
+separate actions.
 
 | Document | Contents |
 | :--- | :--- |
