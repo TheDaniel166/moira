@@ -407,6 +407,25 @@ Moira is structured for high-integrity discovery and collaboration with AI codin
 
 ## Project Documentation and Artifact Governance
 
+Before pushing, run the checked-in CI verification steps from the project environment:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/check_ci.py
+```
+
+This reads `release-hardening.yml` and `release-acceptance.yml` directly, including
+the complete `test_lightbox_*.py` suite and generated-artifact checks. Install the
+project's `dev` and `server` extras beforehand and initialize the wiki submodule.
+The `dev` extra supplies IANA timezone data on Windows, matching the resource
+provided by Ubuntu CI; the runner checks its availability before the long gates.
+Use `--list` to inspect the plan. The command stops on the first failure, writes
+website candidate artifacts only to a temporary directory, and performs no
+installation, upload, release, or deployment. Jobs for a different Python version
+(including the Python 3.10 compatibility gate) are explicitly reported as CI-only.
+Kernel-backed cases use the harness's normal resource admission. When planetary
+data is installed, the selected small-body cases also need their complete
+catalogues; DE441 alone does not provide comet trajectories such as Halley's.
+
 The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wiki mirror is synchronized from `wiki/` and should not be edited by hand in isolation. Website-publishable documents are governed by `website_docs/publication_sources.json`.
 
 Refresh affected generated artifacts in dependency order using the project `.venv` (`.\.venv\Scripts\python.exe`) before pushing:

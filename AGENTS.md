@@ -148,7 +148,8 @@ claiming validation against current source.
   boundary.
 - **Development/test:** `[project.optional-dependencies].dev` declares
   `build`, `cmake`, `pybind11`, `twine`, `pytest`, `pytest-cov`,
-  `pytest-xdist`, `ruff`, `pyyaml`, `hypothesis`, `pyerfa`, and `astropy`.
+  `pytest-xdist`, `ruff`, `pyyaml`, `hypothesis`, `pyerfa`, `astropy`, and
+  Windows-only `tzdata` for the IANA zones supplied by Ubuntu CI.
   Their presence in `.venv` is not permission to import them from base engine
   paths.
 - **Build isolation:** `[build-system].requires` declares setuptools, wheel,
@@ -258,6 +259,15 @@ Product-specific validation examples:
 
     # Fast, stdlib-only engine docstring preflight (no engine import or pytest)
     .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py
+
+Before pushing CI, governance, or evidence changes, run the complete local CI
+verification plan after focused tests:
+
+    .\.venv\Scripts\python.exe scripts\check_ci.py
+
+This reads both release workflows directly, including all Light Box regression
+modules. Different-runtime jobs are reported as CI-only; verify those on GitHub
+before reporting the full CI result. `--list` inspects the plan without execution.
 
 The docstring preflight also accepts explicit Python file paths for a focused
 authoring check. With no paths, it checks the entire `moira/` tree and reports

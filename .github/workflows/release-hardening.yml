@@ -194,6 +194,9 @@ jobs:
       - name: Run docstring checker self-tests without repeating the corpus scan
         run: python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q
 
+      - name: Check local CI verification parity and failure propagation
+        run: python -m pytest tests/unit/test_ci_verification.py -q
+
       - name: Check release-facing doc consistency
         run: python scripts/check_doc_consistency.py
 
