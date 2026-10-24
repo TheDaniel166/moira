@@ -42,6 +42,8 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
 ### Core Arithmetic
 
 - core speculum arithmetic
+- filtered searches retain the complete source dependency closure and do not
+  project unrelated circumpolar planets, nodes or angles
 - geometry-law routing
 - arc computation
 - key conversion behavior
@@ -58,10 +60,37 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
 - Placidian-classic `OA(ASC) = (ARMC + 90 degrees) mod 360` wiring
 - relation gating
 - target-family gating
+- typed Fortune formula/sect selection, zero ecliptic latitude, and
+  all-method significator admission without implicit promissor-source widening
+- existing predominator composition preserves selected planet/ASC/Fortune
+  identity, native planetary latitude, source-coordinate binding, and original
+  not-evaluable reasons; it does not rerun selection or create a fallback
+- typed target configuration survives every admitted preset and the separate
+  timeline bound search, including all-six-key event-filter invariance
+- catalogue-lot composition retains owner recipes, projectors, shortest arcs,
+  reversal, explicit sect/external context and dependency policy; selected
+  batches do not evaluate unrelated catalogue entries or cache coordinates
+- synthetic natal-body entries cannot substitute for typed point coordinates
+  or bypass lot-derived-reference policy
+- all 28 presets retain typed Fortune/lot/predominator configuration, preserving
+  native identity/latitude, method-specific orientation, polar limits, rapt
+  motion and signed-primary-motion target/relation/timeline restrictions
+- fixed-star conjunctions admit typed derived significators only with explicit
+  configuration, while retaining node/cusp and wider-relation rejection
 - preset integrity
 - finite/range/type validation and immutable, defensive result vessels
 - positional relation truth distinct from perfection-kind compatibility fields
 - relation/perfection space agreement and profile arc ownership/order
+- timeline distributor partitions and event context invariant under event
+  promissor filters, with single-consumption iterable semantics
+- complete, single-doctrine canonical bound targets for timeline chronology
+- relation-specific rapt motion retains matching ordinary bound chronology,
+  including composition with direct fixed stars and no cross-motion fallback
+- automatic timeline horizon derived from each of the six key laws, with
+  explicit rejection beyond one primary rotation rather than silent truncation
+- facade civil-UTC chart clocks normalized to UT1 and TT, explicit UT1/TT and
+  TT-only stellar snapshots preserved, and UTC display dates round-trip to the
+  returned UT1 perfection instant
 - explicit-versus-compatibility solar-rate provenance
 - named house-cusp source materialization for aspectual points
 - strict supplied Morinus-context source identity and impossible-context
@@ -183,6 +212,18 @@ Run the corresponding fixture-backed families:
 - `test_primary_direction_placidus.py`
 - `test_primary_direction_fixed_stars.py`
 - `test_primary_direction_antiscia.py`
+- `test_primary_directions_derived_points.py` and
+  `test_ptolemy_predominator.py` for Fortune formula choice, source binding,
+  independent equatorial-limit arcs and existing-office composition
+- `test_primary_directions_lots.py`, plus the existing lots public, formula,
+  Paulus and supporting-lot suites for catalogue composition and preservation
+  of the lots owner's public behavior
+- `test_primary_directions_derived_methods.py` for all-method/preset admission,
+  native/Python parity, independent equatorial limits, polar domains and
+  all-six-key filter-invariant timeline composition
+- `test_primary_directions_integrity.py` for source-dependency and clock
+  composition, timeline filters, rapt motions, bounds identity and all-six-key
+  horizon coverage
 
 ### If presets or relation doctrine change
 

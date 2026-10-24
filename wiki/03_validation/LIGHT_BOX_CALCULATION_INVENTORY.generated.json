@@ -6,7 +6,7 @@
     "tests": "identifier/path mentions in repository tests; a mention is not proof of coverage"
   },
   "classification_version": "moira.lightbox-surface-classification/v1",
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "generated_by": "scripts/generate_lightbox_calculation_inventory.py",
   "limitations": [
     "Inventory membership is not a correctness or validation claim.",
@@ -808,6 +808,7 @@
         "docs/architecture/P9-05_LOTS_TRANSPORT_DESIGN.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/LOTS_BACKEND_STANDARD.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
         "wiki/06_roadmap/nine_parts/nine_parts_roadmap.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -3117,11 +3118,14 @@
         "tests/unit/test_primary_direction_targets.py",
         "tests/unit/test_primary_directions.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
         "tests/unit/test_primary_directions_neo_converse.py",
         "tests/unit/test_primary_directions_ptolemy_mundane_aspects.py",
+        "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_progressed_synastry.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_rise_set.py",
@@ -3439,7 +3443,7 @@
       "owner_qualname": "CONVERSE",
       "owner_resolution": "symbol-definition",
       "public_name": "CONVERSE",
-      "source_line": 221,
+      "source_line": 238,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:CONVERSE",
       "surface_kind": "excluded_value",
@@ -3451,6 +3455,11 @@
         "tests/unit/test_primary_direction_converse.py",
         "tests/unit/test_primary_direction_presets.py",
         "tests/unit/test_primary_directions.py",
+        "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
@@ -3883,6 +3892,7 @@
         "wiki/01_doctrines/hellenistic_6_3/assemble_condition_admission.md",
         "wiki/01_doctrines/hellenistic_6_3/sect_authority_admission.md",
         "wiki/01_doctrines/lord_of_the_turn/lord_of_the_turn_doctrine.md",
+        "wiki/01_doctrines/primary_directions/primary_directions_feature_list.md",
         "wiki/02_services/KALACHAKRA_DASHA_API.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/REST_PROFILE_BUNDLE_PLAN.md",
@@ -5476,7 +5486,7 @@
       "owner_qualname": "DIRECT",
       "owner_resolution": "symbol-definition",
       "public_name": "DIRECT",
-      "source_line": 220,
+      "source_line": 237,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:DIRECT",
       "surface_kind": "excluded_value",
@@ -5501,7 +5511,11 @@
         "tests/unit/test_primary_direction_presets.py",
         "tests/unit/test_primary_directions.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
         "tests/unit/test_primary_directions_dynamic_keys.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
@@ -9956,6 +9970,7 @@
         "tests/unit/test_hellenistic_source_goldens.py",
         "tests/unit/test_lilly_1647_doctrine.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_public_doctrine_surfaces.py"
       ]
@@ -13001,7 +13016,7 @@
       "owner_qualname": "HELLENISTIC_SUPPORTING_LOTS",
       "owner_resolution": "symbol-definition",
       "public_name": "HELLENISTIC_SUPPORTING_LOTS",
-      "source_line": 2806,
+      "source_line": 2837,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:HELLENISTIC_SUPPORTING_LOTS",
       "surface_kind": "excluded_value",
@@ -15510,6 +15525,10 @@
         "tests/unit/test_polar_house_breadth_gauntlet.py",
         "tests/unit/test_preservation_property_docstring_governance.py",
         "tests/unit/test_primary_direction_adversarial_hardening.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_progressed_synastry.py",
         "tests/unit/test_pullen_houses.py",
@@ -18176,7 +18195,8 @@
       "documentation_paths": [
         "docs/architecture/P9-05_LOTS_TRANSPORT_DESIGN.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/LOTS_BACKEND_STANDARD.md"
+        "wiki/02_standards/LOTS_BACKEND_STANDARD.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "export_kind": "dataclass",
@@ -18194,6 +18214,7 @@
         "tests/unit/test_hellenistic_profile.py",
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_public_doctrine_surfaces.py"
       ]
     },
@@ -18221,6 +18242,7 @@
       "test_paths": [
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_public_doctrine_surfaces.py"
       ]
     },
@@ -18277,6 +18299,7 @@
       "test_paths": [
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_public_doctrine_surfaces.py"
       ]
     },
@@ -18304,7 +18327,8 @@
         "tests/unit/test_astrology_adversarial_gauntlet.py",
         "tests/unit/test_hellenistic_profile.py",
         "tests/unit/test_lots_public_api.py",
-        "tests/unit/test_moira_dignities_and_lots.py"
+        "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_lots.py"
       ]
     },
     {
@@ -20554,6 +20578,8 @@
         "tests/unit/test_house_boundary.py",
         "tests/unit/test_midpoints.py",
         "tests/unit/test_phase2_helpers.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py"
       ]
     },
@@ -20943,6 +20969,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -20981,6 +21008,7 @@
         "wiki/03_release/RELEASE_NOTES_6.1.1.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -29675,6 +29703,7 @@
         "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/primary_directions/primary_directions_invariant_register.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/primary_directions/primary_directions_roadmap.md"
       ],
@@ -29685,7 +29714,7 @@
       "owner_qualname": "PrimaryArc",
       "owner_resolution": "runtime-object",
       "public_name": "PrimaryArc",
-      "source_line": 1454,
+      "source_line": 1530,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:PrimaryArc",
       "surface_kind": "excluded_type",
@@ -29711,7 +29740,7 @@
       "owner_qualname": "PrimaryDirectionTimelineEvent",
       "owner_resolution": "runtime-object",
       "public_name": "PrimaryDirectionTimelineEvent",
-      "source_line": 48,
+      "source_line": 49,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:PrimaryDirectionTimelineEvent",
       "surface_kind": "excluded_type",
@@ -29733,7 +29762,7 @@
       "owner_qualname": "PrimaryDirectionsTimeline",
       "owner_resolution": "runtime-object",
       "public_name": "PrimaryDirectionsTimeline",
-      "source_line": 101,
+      "source_line": 102,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:PrimaryDirectionsTimeline",
       "surface_kind": "excluded_type",
@@ -35720,7 +35749,7 @@
       "owner_qualname": "SpeculumEntry",
       "owner_resolution": "runtime-object",
       "public_name": "SpeculumEntry",
-      "source_line": 1207,
+      "source_line": 1283,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:SpeculumEntry",
       "surface_kind": "excluded_type",
@@ -41759,7 +41788,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "a0afa9f6013568064a4f8a63cff7acc273330b62104ddd97e7c3f5e0ece9296a",
+      "api_contract_sha256": "5d85452440e7fa9f8c030fd9fa088a059f5ab52b0b49803c566b3c3f469ec87e",
       "canonical_id": "python:moira.facade:__version__",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public constant or immutable value; not an executable calculation",
@@ -43123,6 +43152,7 @@
         "tests/unit/test_primary_direction_antiscia.py",
         "tests/unit/test_primary_direction_relations.py",
         "tests/unit/test_primary_directions.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_rule_engine_validation.py"
       ]
     },
@@ -45049,7 +45079,7 @@
       "owner_qualname": "calculate_all_lot_dependencies",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_all_lot_dependencies",
-      "source_line": 2882,
+      "source_line": 2913,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_all_lot_dependencies",
       "surface_kind": "calculation",
@@ -45512,7 +45542,7 @@
       "owner_qualname": "calculate_lot_chart_condition_profile",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_lot_chart_condition_profile",
-      "source_line": 2938,
+      "source_line": 2969,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_lot_chart_condition_profile",
       "surface_kind": "composition_profile",
@@ -45538,7 +45568,7 @@
       "owner_qualname": "calculate_lot_condition_network_profile",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_lot_condition_network_profile",
-      "source_line": 2967,
+      "source_line": 2998,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_lot_condition_network_profile",
       "surface_kind": "composition_profile",
@@ -45565,7 +45595,7 @@
       "owner_qualname": "calculate_lot_condition_profiles",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_lot_condition_profiles",
-      "source_line": 2909,
+      "source_line": 2940,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_lot_condition_profiles",
       "surface_kind": "composition_profile",
@@ -45591,7 +45621,7 @@
       "owner_qualname": "calculate_lot_dependencies",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_lot_dependencies",
-      "source_line": 2853,
+      "source_line": 2884,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_lot_dependencies",
       "surface_kind": "calculation",
@@ -45619,7 +45649,7 @@
       "owner_qualname": "calculate_lots",
       "owner_resolution": "runtime-object",
       "public_name": "calculate_lots",
-      "source_line": 2752,
+      "source_line": 2783,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:calculate_lots",
       "surface_kind": "calculation",
@@ -45631,7 +45661,8 @@
         "tests/unit/test_hellenistic_source_goldens.py",
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
-        "tests/unit/test_paulus_lots.py"
+        "tests/unit/test_paulus_lots.py",
+        "tests/unit/test_primary_directions_derived_points.py"
       ]
     },
     {
@@ -46638,12 +46669,16 @@
       "owner_qualname": "compute_primary_directions_timeline",
       "owner_resolution": "runtime-object",
       "public_name": "compute_primary_directions_timeline",
-      "source_line": 153,
+      "source_line": 151,
       "source_path": "moira/primary_directions/timeline.py",
       "surface_id": "python:moira.facade:compute_primary_directions_timeline",
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_primary_direction_adversarial_hardening.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_timeline.py"
       ]
@@ -48288,6 +48323,7 @@
         "tests/unit/test_moira_bce_time_support.py",
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_native_runtime_verification.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_relationship_forecasting.py"
       ]
@@ -49711,7 +49747,7 @@
       "owner_qualname": "evaluate_lots",
       "owner_resolution": "runtime-object",
       "public_name": "evaluate_lots",
-      "source_line": 2777,
+      "source_line": 2808,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:evaluate_lots",
       "surface_kind": "calculation",
@@ -49721,7 +49757,8 @@
         "tests/unit/test_hellenistic_profile.py",
         "tests/unit/test_hellenistic_supporting_lots.py",
         "tests/unit/test_lots_public_api.py",
-        "tests/unit/test_moira_dignities_and_lots.py"
+        "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_lots.py"
       ]
     },
     {
@@ -49979,7 +50016,7 @@
       "owner_qualname": "exaltation_lot_name",
       "owner_resolution": "runtime-object",
       "public_name": "exaltation_lot_name",
-      "source_line": 2813,
+      "source_line": 2844,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:exaltation_lot_name",
       "surface_kind": "calculation",
@@ -51061,6 +51098,8 @@
         "docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
       "exclusion_reason": null,
@@ -51070,7 +51109,7 @@
       "owner_qualname": "find_primary_arcs",
       "owner_resolution": "runtime-object",
       "public_name": "find_primary_arcs",
-      "source_line": 2626,
+      "source_line": 2711,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:find_primary_arcs",
       "surface_kind": "calculation",
@@ -51083,6 +51122,10 @@
         "tests/unit/test_primary_direction_fixed_stars.py",
         "tests/unit/test_primary_directions.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
@@ -53393,7 +53436,8 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
-        "wiki/03_release/RELEASE_NOTES_6.3.0.md"
+        "wiki/03_release/RELEASE_NOTES_6.3.0.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -53660,7 +53704,9 @@
         "wiki/02_standards/LONGEVITY_BACKEND_STANDARD.md",
         "wiki/02_standards/TIMELORDS_BACKEND_STANDARD.md",
         "wiki/02_standards/TRIPLICITY_BACKEND_STANDARD.md",
-        "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md"
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -53705,6 +53751,8 @@
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
         "tests/unit/test_ptolemy_predominator.py",
         "tests/unit/test_rule_engine_validation.py",
         "tests/unit/test_timelords.py",
@@ -54161,6 +54209,8 @@
         "tests/server/test_server_phase8_timelord_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
         "tests/server/test_server_phase8_zr_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_stars_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -55128,7 +55178,7 @@
       "owner_qualname": "list_parts",
       "owner_resolution": "runtime-object",
       "public_name": "list_parts",
-      "source_line": 2996,
+      "source_line": 3027,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:list_parts",
       "surface_kind": "reference_query",
@@ -60995,7 +61045,9 @@
       "surface_kind": "calculation",
       "test_paths": [
         "tests/unit/test_api_surface_adversarial_audit.py",
-        "tests/unit/test_julian_delta_t.py"
+        "tests/unit/test_julian_delta_t.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_timeline.py"
       ]
     },
     {
@@ -61390,7 +61442,7 @@
       "owner_qualname": "select_supporting_hellenistic_lots",
       "owner_resolution": "runtime-object",
       "public_name": "select_supporting_hellenistic_lots",
-      "source_line": 2824,
+      "source_line": 2855,
       "source_path": "moira/lots.py",
       "surface_id": "python:moira.facade:select_supporting_hellenistic_lots",
       "surface_kind": "calculation",
@@ -62153,6 +62205,8 @@
         "wiki/02_standards/primary_directions/primary_directions_validation_codex.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/05_research/primary_directions/primary_directions_fixed_star_family_matrix.md",
         "wiki/06_roadmap/HELLENISTIC_FREE_ENHANCED_WORKSPACE_PRODUCT_PLAN.md",
         "wiki/06_roadmap/primary_directions/primary_directions_roadmap.md",
@@ -62165,7 +62219,7 @@
       "owner_qualname": "speculum",
       "owner_resolution": "runtime-object",
       "public_name": "speculum",
-      "source_line": 2569,
+      "source_line": 2683,
       "source_path": "moira/primary_directions/__init__.py",
       "surface_id": "python:moira.facade:speculum",
       "surface_kind": "calculation",
@@ -63969,6 +64023,7 @@
         "tests/unit/test_local_space.py",
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_r2b_additive_truth.py"
       ]
     },
@@ -64045,6 +64100,8 @@
         "tests/server/test_server_phase8_house_frame_routes.py",
         "tests/server/test_server_phase8_primary_directions_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/server/test_server_shadbala_service.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -64069,6 +64126,8 @@
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_pancha_pakshi_astronomical_paksha.py",
         "tests/unit/test_planetary_frame_contracts.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_varshaphal.py",
         "tests/unit/test_vedic_facade.py",
@@ -78017,7 +78076,7 @@
       "path": "/v1/primary-directions/arcs",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsArcsResponse",
-      "source_line": 61,
+      "source_line": 72,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/arcs",
       "surface_kind": "calculation",
@@ -78026,7 +78085,8 @@
       ],
       "test_paths": [
         "tests/server/test_primary_directions_transport_contract.py",
-        "tests/server/test_server_phase8_primary_directions_routes.py"
+        "tests/server/test_server_phase8_primary_directions_routes.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py"
       ]
     },
     {
@@ -78050,7 +78110,7 @@
       "path": "/v1/primary-directions/arcs/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsArcsReductionResponse",
-      "source_line": 73,
+      "source_line": 84,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/arcs/reduction",
       "surface_kind": "calculation",
@@ -78083,7 +78143,7 @@
       "path": "/v1/primary-directions/network",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsNetworkResponse",
-      "source_line": 121,
+      "source_line": 132,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/network",
       "surface_kind": "composition_profile",
@@ -78116,7 +78176,7 @@
       "path": "/v1/primary-directions/network/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsNetworkReductionResponse",
-      "source_line": 133,
+      "source_line": 144,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/network/reduction",
       "surface_kind": "composition_profile",
@@ -78149,7 +78209,7 @@
       "path": "/v1/primary-directions/profile",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsProfileResponse",
-      "source_line": 89,
+      "source_line": 100,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/profile",
       "surface_kind": "composition_profile",
@@ -78182,7 +78242,7 @@
       "path": "/v1/primary-directions/profile/reduction",
       "request_schema": "PrimaryDirectionsSearchRequest",
       "response_schema": "PrimaryDirectionsProfileReductionResponse",
-      "source_line": 103,
+      "source_line": 114,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/profile/reduction",
       "surface_kind": "composition_profile",
@@ -78215,7 +78275,7 @@
       "path": "/v1/primary-directions/relations",
       "request_schema": "PrimaryDirectionsRelationsRequest",
       "response_schema": "array[PrimaryDirectionRelationProfileResponse]",
-      "source_line": 149,
+      "source_line": 160,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/relations",
       "surface_kind": "calculation",
@@ -78248,7 +78308,7 @@
       "path": "/v1/primary-directions/speculum",
       "request_schema": "PrimaryDirectionsBaseRequest",
       "response_schema": "PrimaryDirectionsSpeculumResponse",
-      "source_line": 53,
+      "source_line": 64,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/speculum",
       "surface_kind": "calculation",
@@ -78258,6 +78318,39 @@
       "test_paths": [
         "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_phase8_primary_directions_routes.py"
+      ]
+    },
+    {
+      "alias_of": null,
+      "api_contract_sha256": "385383827574b922a7194891a9c484a30ee463705cad1f05fed0d9bde8d6593c",
+      "canonical_id": "rest:POST:/v1/primary-directions/time-keys",
+      "classification_basis": "conservative-operation-default",
+      "classification_rationale": "conservative default for a versioned non-GET operation",
+      "documentation_paths": [
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md"
+      ],
+      "exclusion_reason": null,
+      "handler_module": "moira_server.routers.primary_directions",
+      "handler_qualname": "primary_directions_time_keys_route",
+      "in_lightbox_calculation_scope": true,
+      "method": "POST",
+      "operation_id": "primary_directions_time_keys_route_v1_primary_directions_time_keys_post",
+      "path": "/v1/primary-directions/time-keys",
+      "request_schema": "PrimaryDirectionsTimeKeysRequest",
+      "response_schema": "PrimaryDirectionsTimeKeysResponse",
+      "source_line": 56,
+      "source_path": "moira_server/routers/primary_directions.py",
+      "surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "surface_kind": "calculation",
+      "tags": [
+        "primary-directions"
+      ],
+      "test_paths": [
+        "tests/server/test_primary_directions_transport_contract.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py"
       ]
     },
     {
@@ -78280,7 +78373,7 @@
       "path": "/v1/primary-directions/timeline",
       "request_schema": "PrimaryDirectionsTimelineRequest",
       "response_schema": "PrimaryDirectionsTimelineResponse",
-      "source_line": 170,
+      "source_line": 181,
       "source_path": "moira_server/routers/primary_directions.py",
       "surface_id": "rest:POST:/v1/primary-directions/timeline",
       "surface_kind": "calculation",
@@ -82575,9 +82668,9 @@
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
   "source_contract": {
     "python_surface_ids_sha256": "ece9522f8622421befb658055662d0ce6365285ba1908100280e893b4b743244",
-    "rest_surface_ids_sha256": "39fa90142439d629a3decd55ffd0fa5c444416f6476b770e6a0e55472e6f6dab"
+    "rest_surface_ids_sha256": "cd4455b17c2e3ea7b9b48749067e69a8f9e1d037e89af6bb58b6ee1dd3750ef8"
   },
-  "structural_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "structural_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "structural_fingerprint_version": "moira.lightbox-structural-fingerprint/v1",
   "summary": {
     "python_aliases": 2,
@@ -82603,16 +82696,16 @@
     "python_in_scope_without_test_mentions": 4,
     "rest_aliases": 3,
     "rest_by_surface_kind": {
-      "calculation": 425,
+      "calculation": 426,
       "composition_profile": 51,
       "operational_meta": 5,
       "reference_query": 43,
       "transport_adapter": 7
     },
-    "rest_in_scope": 483,
+    "rest_in_scope": 484,
     "rest_in_scope_without_documentation_mentions": 0,
     "rest_in_scope_without_test_mentions": 9,
-    "rest_operations": 531
+    "rest_operations": 532
   },
-  "surface_fingerprint_sha256": "93a709444e1fd206f5d66765b688d68d936bcf6c7c762ed3e3c7a31599b5c197"
+  "surface_fingerprint_sha256": "c482923b6e42d7dad7430e8825adf54f8f228accf99dfd1a810d38fd2b2f15bf"
 }

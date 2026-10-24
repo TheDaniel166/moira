@@ -24,6 +24,7 @@ __all__ = [
     "convert_arc_to_time",
     "invert_solar_arc_lon",
     "invert_solar_arc_ra",
+    "project_primary_direction_arc_time",
     "primary_direction_key_truth",
 ]
 
@@ -186,6 +187,49 @@ def _get_reader(reader: object = None) -> object:
     except Exception:
         pass
     return None
+
+
+def _arc_for_age(
+    natal_jd_ut: float,
+    age_years: float,
+    key: PrimaryDirectionKey,
+    *,
+    solar_rate: float | None,
+    reader: object,
+) -> float:
+    """Forward key law for an exact automatic, single-rotation search horizon."""
+    from ..constants import TROPICAL_YEAR
+
+    if key in (PrimaryDirectionKey.SOLAR_RA_DYNAMIC, PrimaryDirectionKey.SOLAR_LON_DYNAMIC):
+        active_reader = _get_reader(reader)
+        if active_reader is None:
+            raise RuntimeError("A planetary kernel reader is required for a dynamic search horizon")
+        invert = invert_solar_arc_ra if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC else invert_solar_arc_lon
+        # Establish the supported cycle before querying an arbitrarily remote
+        # ephemeris epoch. The inversion and this forward law use UT1.
+        cycle_tolerance_days = 1e-6
+        cycle_age, _ = invert(natal_jd_ut, 360., reader=active_reader,
+                              tol_days=cycle_tolerance_days)
+        # The inverted cycle is a midpoint, not an upper bound. Admit its
+        # stopping-width neighbourhood to the forward test below, which
+        # decides the actual 360-degree domain without clipping the result.
+        if age_years > cycle_age + cycle_tolerance_days:
+            raise ValueError("automatic timeline horizon exceeds one primary rotation")
+        from .._solar import _solar_declination_ra, _solar_longitude
+
+        def coordinate(jd):
+            return (_solar_declination_ra(jd, active_reader)[1]
+                    if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC
+                    else _solar_longitude(jd, active_reader))
+
+        raw = (coordinate(natal_jd_ut + age_years) - coordinate(natal_jd_ut)) % 360.
+        mean = age_years * 360. / TROPICAL_YEAR
+        arc = raw + 360. * round((mean - raw) / 360.)
+    else:
+        arc = age_years * primary_direction_key_truth(key, solar_rate=solar_rate).rate_degrees_per_year
+    if not math.isfinite(arc) or not 0. < arc <= 360.:
+        raise ValueError("automatic timeline horizon must fit within one primary rotation")
+    return arc
 
 
 def invert_solar_arc_ra(
@@ -398,3 +442,38 @@ def convert_arc_to_time(
 
     truth = primary_direction_key_truth(resolved_key, solar_rate=solar_rate)
     return arc / truth.rate_degrees_per_year
+
+
+def project_primary_direction_arc_time(
+    natal_jd_ut: float,
+    arc_deg: float,
+    key: str | PrimaryDirectionKey,
+    *,
+    solar_rate: float | None = None,
+    reader: object = None,
+) -> tuple[float, float]:
+    """Return one key's age and perfection JD UT1 for an already solved arc.
+
+    Zero arc is the natal origin. Positive arcs use the admitted static law or
+    actual ephemeris inversion; unknown keys and missing resources fail closed.
+    The returned calendar JD uses the same tropical-year convention as timelines.
+    """
+    from ..constants import TROPICAL_YEAR
+
+    for value, name in ((natal_jd_ut, "natal_jd_ut"), (arc_deg, "arc_deg")):
+        if not isinstance(value, Real) or isinstance(value, bool) or not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite real")
+    if arc_deg < 0.0:
+        raise ValueError("arc_deg must be nonnegative")
+    resolved = PrimaryDirectionKey(key)
+    # Validate the explicit natal rate even for a zero Solar-key boundary.
+    if resolved is PrimaryDirectionKey.SOLAR:
+        primary_direction_key_truth(resolved, solar_rate=solar_rate)
+    if arc_deg == 0.0:
+        return 0.0, float(natal_jd_ut)
+    if resolved is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
+        return invert_solar_arc_ra(natal_jd_ut, arc_deg, reader=reader)
+    if resolved is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
+        return invert_solar_arc_lon(natal_jd_ut, arc_deg, reader=reader)
+    age = convert_arc_to_time(arc_deg, resolved, solar_rate=solar_rate)
+    return age, natal_jd_ut + age * TROPICAL_YEAR

@@ -1,5 +1,5 @@
 {
-  "artifact_status": "local_unreleased_worktree",
+  "artifact_status": "exact_source_revision",
   "claim_dispositions": [
     {
       "claim": "Transparency is the Primary Metric of Accuracy.",
@@ -27,14 +27,14 @@
     }
   ],
   "doctrine_text_changed": false,
-  "engine_version": "6.10.1",
-  "evidence_source_revision": "07f0e5fa872ce43206a89206d98f169b428552dd",
+  "engine_version": "6.10.2",
+  "evidence_source_revision": "15902e2462ce939e233cab607106637a8a37d830",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
-    "Bounded replay contracts cover 209 calculations and do not generalize to their entire families.",
-    "All 1251 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
+    "Bounded replay contracts cover 210 calculations and do not generalize to their entire families.",
+    "All 1252 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
   ],
   "links": {
     "assurance_matrix": "wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.json",
@@ -43,10 +43,10 @@
     "manifest": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json",
     "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
   },
-  "publication_disposition": "local_unreleased_status",
+  "publication_disposition": "exact_release_status",
   "schema_version": "moira.lightbox-current-status/v2",
   "summary": {
-    "canonical_calculations": 1251,
+    "canonical_calculations": 1252,
     "conformant": 0,
     "family_dispositions": {
       "major_gap": 11,
@@ -56,19 +56,19 @@
       "unresolved": 0
     },
     "not_applicable": 0,
-    "partial": 209,
+    "partial": 210,
     "production_user_by_status": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 171,
+      "partial": 172,
       "unresolved": 0
     },
-    "production_user_calculations": 171,
-    "replayed_contracts": 63,
-    "replayed_contracts_passed_exact_source": 0,
-    "replayed_contracts_passed_local": 63,
+    "production_user_calculations": 172,
+    "replayed_contracts": 64,
+    "replayed_contracts_passed_exact_source": 64,
+    "replayed_contracts_passed_local": 0,
     "reviewed_families": 150,
-    "surfaces_with_replay_contracts": 209,
+    "surfaces_with_replay_contracts": 210,
     "surfaces_without_replay_contracts": 1042,
     "unresolved": 1042
   },

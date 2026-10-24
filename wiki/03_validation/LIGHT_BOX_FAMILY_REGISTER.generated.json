@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "entries": [
     {
       "assessment_status": "partial",
@@ -2656,7 +2656,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2882,
+        "source_line": 2913,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3018,7 +3018,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2938,
+        "source_line": 2969,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3043,7 +3043,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2967,
+        "source_line": 2998,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3068,7 +3068,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2909,
+        "source_line": 2940,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3093,7 +3093,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2853,
+        "source_line": 2884,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -3118,7 +3118,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2752,
+        "source_line": 2783,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -4001,7 +4001,7 @@
       "family_id": "primary-directions-timeline",
       "family_label": "Primary Directions Timeline",
       "ownership": {
-        "source_line": 153,
+        "source_line": 151,
         "source_path": "moira/primary_directions/timeline.py"
       },
       "priority": "P2",
@@ -6686,7 +6686,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2777,
+        "source_line": 2808,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -6936,7 +6936,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2813,
+        "source_line": 2844,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -7911,7 +7911,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 2626,
+        "source_line": 2711,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "priority": "P2",
@@ -16160,7 +16160,7 @@
       "family_id": "lots",
       "family_label": "Lots",
       "ownership": {
-        "source_line": 2824,
+        "source_line": 2855,
         "source_path": "moira/lots.py"
       },
       "priority": "P2",
@@ -16785,7 +16785,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 2569,
+        "source_line": 2683,
         "source_path": "moira/primary_directions/__init__.py"
       },
       "priority": "P2",
@@ -28228,7 +28228,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 61,
+        "source_line": 72,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -28253,7 +28253,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 73,
+        "source_line": 84,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -28278,7 +28278,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 121,
+        "source_line": 132,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -28303,7 +28303,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 133,
+        "source_line": 144,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P0",
@@ -28330,7 +28330,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 89,
+        "source_line": 100,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -28355,7 +28355,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 103,
+        "source_line": 114,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P0",
@@ -28382,7 +28382,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 149,
+        "source_line": 160,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -28407,7 +28407,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 53,
+        "source_line": 64,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P0",
@@ -28427,6 +28427,33 @@
     {
       "assessment_status": "partial",
       "assignment_basis": "primary OpenAPI tag 'primary-directions'",
+      "canonical_surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "domain_group": "predictive-and-time",
+      "entry_role": "canonical",
+      "exposure": "production_user",
+      "family_id": "primary-directions",
+      "family_label": "Primary Directions",
+      "ownership": {
+        "source_line": 56,
+        "source_path": "moira_server/routers/primary_directions.py"
+      },
+      "priority": "P0",
+      "product_usage": {
+        "matched_surface_count": 1,
+        "products": [
+          "website-primary-directions-patch"
+        ],
+        "snapshot_path": "wiki/03_validation/LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json"
+      },
+      "review_stage": "stage_2_exemplars",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/primary-directions/time-keys",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'primary-directions'",
       "canonical_surface_id": "rest:POST:/v1/primary-directions/timeline",
       "domain_group": "predictive-and-time",
       "entry_role": "canonical",
@@ -28434,7 +28461,7 @@
       "family_id": "primary-directions",
       "family_label": "Primary Directions",
       "ownership": {
-        "source_line": 170,
+        "source_line": 181,
         "source_path": "moira_server/routers/primary_directions.py"
       },
       "priority": "P1",
@@ -31735,7 +31762,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -31763,6 +31790,13 @@
         "product": "workspace",
         "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
         "source_revision": "04dd54cc867fa154c0701d73e8b69f0a00755496"
+      },
+      {
+        "files_scanned": 1038,
+        "product": "website-primary-directions-patch",
+        "root_record": "Local path deliberately omitted; product name and the exact committed Git tree are the portable identity.",
+        "scope": "Incremental admission of the exact time-key consumer only; prior October 14 product snapshots remain historical and are not recaptured by this patch.",
+        "source_revision": "8e545a481c802998a9c00dbbc35f58cd5c90077f"
       }
     ]
   },
@@ -31779,30 +31813,30 @@
       "astronomy-and-chart-core": 132,
       "locational": 58,
       "phenomena-and-visibility": 126,
-      "predictive-and-time": 165,
+      "predictive-and-time": 166,
       "relationship": 42,
       "specialist-and-compositional": 318,
       "traditional-western": 129,
       "vedic-and-electional": 281
     },
     "canonical_by_exposure": {
-      "production_user": 171,
+      "production_user": 172,
       "public_api": 354,
       "source_only": 726
     },
     "canonical_by_priority": {
-      "P0": 171,
+      "P0": 172,
       "P1": 354,
       "P2": 726
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1251,
+      "reviewed": 1252,
       "seeded": 0
     },
-    "canonical_entries": 1251,
+    "canonical_entries": 1252,
     "cross_transport_families": 53,
-    "entries_total": 1255,
+    "entries_total": 1256,
     "family_count": 150
   }
 }

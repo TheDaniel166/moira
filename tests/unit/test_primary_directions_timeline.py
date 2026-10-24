@@ -6,11 +6,12 @@ from __future__ import annotations
 
 import math
 import pytest
-import moira.primary_directions.timeline as timeline_module
+import moira.primary_directions.keys as key_module
 
 from datetime import datetime, timezone
 
-from moira.constants import HouseSystem
+from moira.constants import Body, HouseSystem, TROPICAL_YEAR
+from moira.julian import safe_datetime_from_jd, utc_to_ut1, _ut1_to_utc
 from moira.egyptian_bounds import EgyptianBoundsDoctrine
 from moira.primary_directions import (
     PrimaryDirectionKey,
@@ -139,7 +140,7 @@ def test_timeline_dynamic_key_propagates_inversion_failure(
         raise RuntimeError("dynamic inversion unavailable")
 
     monkeypatch.setattr(
-        timeline_module,
+        key_module,
         "invert_solar_arc_ra",
         _raise_inversion_failure,
     )
@@ -163,6 +164,34 @@ def test_timeline_input_invariants() -> None:
             geo_lat=51.5,
             max_age_years=-10.0,
         )
+
+
+def test_natal_solar_key_uses_one_rate_for_boundaries_and_events(moira_engine) -> None:
+    """Natal Sun speed, not a default mean rate, governs the entire chronology."""
+    dt = datetime(1990, 6, 15, 18, 32, tzinfo=timezone.utc)
+    chart = moira_engine.chart(dt)
+    houses = moira_engine.houses(dt, 40.7128, -74.006, system=HouseSystem.PLACIDUS)
+    solar_rate = abs(chart.planets[Body.SUN].speed)
+    timeline = compute_primary_directions_timeline(
+        chart, houses, 40.7128,
+        key=PrimaryDirectionKey.SOLAR,
+        max_age_years=95,
+        significators=["ASC", "MC", "Sun", "Moon"],
+        reader=moira_engine._reader_obj,
+    )
+    assert timeline.events and timeline.distributor_periods
+    for event in timeline.events:
+        assert event.age_years == pytest.approx(event.arc_deg / solar_rate, abs=1e-10)
+        jd = utc_to_ut1(chart.jd_ut) + event.age_years * TROPICAL_YEAR
+        assert event.perfection_jd_ut == pytest.approx(jd, abs=1e-9)
+        assert event.perfection_iso == safe_datetime_from_jd(_ut1_to_utc(jd)).isoformat()
+    for period in timeline.distributor_periods:
+        for arc, age, stamp in [
+            (period.entry_arc_deg, period.entry_age, period.entry_date_utc),
+            (period.exit_arc_deg, period.exit_age, period.exit_date_utc),
+        ]:
+            assert age == pytest.approx(max(0, arc) / solar_rate, abs=1e-10)
+            assert stamp == safe_datetime_from_jd(_ut1_to_utc(utc_to_ut1(chart.jd_ut) + age * TROPICAL_YEAR)).isoformat()
 
 
 def test_facade_primary_directions_timeline(moira_engine) -> None:

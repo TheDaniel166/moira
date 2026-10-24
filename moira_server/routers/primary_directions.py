@@ -1,4 +1,4 @@
-"""FastAPI routes for the nine admitted primary-directions surfaces."""
+"""FastAPI routes for the admitted primary-directions surfaces."""
 
 from __future__ import annotations
 
@@ -21,6 +21,8 @@ from ..models.primary_directions import (
     PrimaryDirectionsSpeculumResponse,
     PrimaryDirectionsTimelineRequest,
     PrimaryDirectionsTimelineResponse,
+    PrimaryDirectionsTimeKeysRequest,
+    PrimaryDirectionsTimeKeysResponse,
 )
 from ..serializers.primary_directions import (
     _serialize_relation_profile,
@@ -44,10 +46,19 @@ from ..services.primary_directions import (
     compute_speculum_service,
     compute_timeline_service,
     resolve_primary_directions_policy,
+    compute_time_keys_service,
 )
 
 
 router = APIRouter(prefix="/v1", tags=["primary-directions"])
+
+
+@router.post("/primary-directions/time-keys", response_model=PrimaryDirectionsTimeKeysResponse)
+def primary_directions_time_keys_route(
+    request: PrimaryDirectionsTimeKeysRequest,
+    engine: Moira = Depends(get_engine),
+) -> PrimaryDirectionsTimeKeysResponse:
+    return compute_time_keys_service(engine, request)
 
 
 @router.post("/primary-directions/speculum", response_model=PrimaryDirectionsSpeculumResponse)

@@ -11,6 +11,9 @@ Verifies:
 from __future__ import annotations
 
 import pytest
+from datetime import datetime
+from moira.constants import TROPICAL_YEAR
+from moira.julian import jd_from_datetime, utc_to_ut1
 from fastapi.testclient import TestClient
 
 from moira_server.app import create_app
@@ -40,6 +43,55 @@ _TIMELINE_BASE_PAYLOAD = {
     "observer_lon": _NATAL_LON,
     "max_age_years": 80.0,
 }
+
+
+def test_polar_meridian_timeline_preserves_an_admitted_non_semiarc_event(client_with_engine):
+    """A valid equatorial Meridian event must survive chronological assembly."""
+    payload = {
+        "dt": "1990-06-15T18:32:00Z", "latitude": 75, "longitude": 20,
+        "observer_lat": 75, "observer_lon": 20, "house_system": "MERIDIAN",
+        "bodies": ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"],
+        "significators": ["IC"], "promissors": ["Sun"], "max_arc": 90,
+        "policy": {"preset": "meridian_mundane", "key": "naibod", "include_converse": True},
+    }
+    arcs = client_with_engine.post("/v1/primary-directions/arcs", json=payload)
+    timeline = client_with_engine.post("/v1/primary-directions/timeline", json={**payload, "max_age_years": 95})
+    assert arcs.status_code == 200
+    assert timeline.status_code == 200, timeline.text
+    arc = next(a for a in arcs.json()["arcs"] if a["promissor"] == "Sun")
+    event = next(e for e in timeline.json()["events"] if e["promissor"] == "Sun")
+    assert event["arc_deg"] == pytest.approx(arc["arc"], abs=1e-10)
+    assert event["age_years"] == pytest.approx(arc["years"], abs=1e-10)
+    assert event["motion"] == "converse"
+    # This is method admission, not an artificial rise/set fallback.
+    rejected = client_with_engine.post("/v1/primary-directions/timeline", json={
+        **payload, "max_age_years": 95,
+        "policy": {"preset": "placidus_mundane", "key": "naibod"},
+    })
+    assert rejected.status_code == 422
+    assert "semi-arc" in rejected.json()["message"]
+
+
+@pytest.mark.parametrize("preset", ["meridian_mundane", "meridian_zodiacal_aspect"])
+def test_polar_meridian_keeps_derived_bounds_and_aspect_targets(client_with_engine, preset):
+    payload = {
+        "dt": "1990-06-15T18:32:00Z", "latitude": 75, "longitude": 20,
+        "observer_lat": 75, "observer_lon": 20, "house_system": "MERIDIAN",
+        "bodies": ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"],
+        "significators": ["ASC", "MC", "Sun", "Moon"], "max_arc": 95,
+        "max_age_years": 95, "policy": {"preset": preset, "key": "naibod"},
+    }
+    response = client_with_engine.post("/v1/primary-directions/timeline", json=payload)
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert any(e["is_bound_boundary"] for e in data["events"])
+    assert any(not e["is_bound_boundary"] for e in data["events"])
+    for sig in payload["significators"]:
+        for motion in ("direct", "converse"):
+            periods = sorted((p for p in data["distributor_periods"] if p["significator"] == sig and p["motion"] == motion), key=lambda p: p["entry_arc_deg"])
+            assert periods[0]["entry_arc_deg"] == 0
+            assert periods[-1]["exit_arc_deg"] == 95
+            assert all(left["exit_arc_deg"] == right["entry_arc_deg"] for left, right in zip(periods, periods[1:]))
 
 
 def test_timeline_endpoint_default(client_with_engine: TestClient):
@@ -209,3 +261,40 @@ def test_timeline_endpoint_validation_errors(client_with_engine: TestClient):
         json={**_TIMELINE_BASE_PAYLOAD, "bound_doctrine": "not_a_doctrine"},
     )
     assert res4.status_code == 422
+
+
+@pytest.mark.parametrize("key", [
+    "solar_ra_dynamic", "solar_lon_dynamic", "naibod", "ptolemy", "cardan", "solar",
+])
+def test_all_six_keys_return_coherent_event_and_boundary_dates(client_with_engine, key):
+    """Every admitted key keeps the returned age, JD and UTC date together."""
+    response = client_with_engine.post("/v1/primary-directions/timeline", json={
+        **_TIMELINE_BASE_PAYLOAD,
+        "dt": "1990-06-15T18:32:00Z", "latitude": 40.7128, "longitude": -74.006,
+        "observer_lat": 40.7128, "observer_lon": -74.006,
+        "bodies": ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"],
+        "significators": ["ASC", "MC", "Sun", "Moon"],
+        "max_arc": 35, "max_age_years": 40, "key": key,
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["key"] == key
+    assert data["events"] and data["distributor_periods"]
+    for event in data["events"]:
+        expected = data["natal_jd_ut"] + event["age_years"] * TROPICAL_YEAR
+        assert event["perfection_jd_ut"] == pytest.approx(expected, abs=1e-9)
+        assert utc_to_ut1(jd_from_datetime(datetime.fromisoformat(event["perfection_iso"]))) == pytest.approx(expected, abs=1e-8)
+    for period in data["distributor_periods"]:
+        for age_field, date_field in [("entry_age", "entry_date_utc"), ("exit_age", "exit_date_utc")]:
+            expected = data["natal_jd_ut"] + period[age_field] * TROPICAL_YEAR
+            assert utc_to_ut1(jd_from_datetime(datetime.fromisoformat(period[date_field]))) == pytest.approx(expected, abs=1e-8)
+    sample = data["events"][0]
+    projection = client_with_engine.post("/v1/primary-directions/time-keys", json={
+        "dt": "1990-06-15T18:32:00Z",
+        "items": [{"id": "timeline", "arc_deg": sample["arc_deg"], "keys": [key]}],
+    })
+    assert projection.status_code == 200, projection.text
+    same_arc = projection.json()["items"][0]["projections"][0]
+    assert same_arc["age_years"] == pytest.approx(sample["age_years"], abs=1e-10)
+    assert same_arc["perfection_jd_ut"] == sample["perfection_jd_ut"]
+    assert same_arc["perfection_iso"] == sample["perfection_iso"]

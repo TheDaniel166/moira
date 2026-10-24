@@ -37,6 +37,70 @@ from .common import _StrictModel
 from .positions import PositionObserverContextResponse
 
 
+class PrimaryDirectionTimeKeyItemRequest(_StrictModel):
+    """One solved arc and the explicitly requested conversion keys."""
+
+    id: str = Field(min_length=1, max_length=160)
+    arc_deg: float = Field(ge=0, le=180, allow_inf_nan=False)
+    keys: list[PrimaryDirectionKey] = Field(min_length=1, max_length=6)
+
+    @field_validator("arc_deg", mode="before")
+    @classmethod
+    def _real_arc(cls, value):
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("arc_deg must be a real number")
+        return value
+
+    @field_validator("keys")
+    @classmethod
+    def _unique_keys(cls, values):
+        if len(set(values)) != len(values):
+            raise ValueError("time keys must be unique")
+        return values
+
+
+class PrimaryDirectionsTimeKeysRequest(_StrictModel):
+    """Bounded conversion of solved arcs without repeating their geometry search."""
+
+    dt: datetime
+    items: list[PrimaryDirectionTimeKeyItemRequest] = Field(min_length=1, max_length=1024)
+
+    @field_validator("items")
+    @classmethod
+    def _unique_ids_and_budget(cls, values):
+        if len({item.id for item in values}) != len(values):
+            raise ValueError("time-key item ids must be unique")
+        if sum(len(item.keys) for item in values) > 2048:
+            raise ValueError("time-key conversion budget exceeds 2048 projections")
+        return values
+
+
+class PrimaryDirectionTimeKeyResponse(_StrictModel):
+    """One engine-computed age and its matching calendar instant."""
+
+    key: PrimaryDirectionKey
+    age_years: float
+    perfection_jd_ut: float
+    perfection_iso: str
+
+
+class PrimaryDirectionTimeKeyItemResponse(_StrictModel):
+    """Exact time-key projections for one supplied arc."""
+
+    id: str
+    arc_deg: float
+    projections: list[PrimaryDirectionTimeKeyResponse]
+
+
+class PrimaryDirectionsTimeKeysResponse(_StrictModel):
+    """Natal clock and solar-rate provenance for the bounded conversion batch."""
+
+    natal_jd_ut: float
+    natal_solar_rate_deg_per_day: float
+    engine_surface: Literal["moira.primary_directions.keys.project_primary_direction_arc_time"]
+    items: list[PrimaryDirectionTimeKeyItemResponse]
+
+
 # ---------------------------------------------------------------------------
 # Base request (shared by all primary directions endpoints)
 # ---------------------------------------------------------------------------

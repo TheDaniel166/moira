@@ -12,8 +12,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from moira import Moira
-from moira.constants import HouseSystem
-from moira.julian import utc_to_tt, utc_to_ut1
+from moira.constants import Body, HouseSystem
+from moira.julian import safe_datetime_from_jd, utc_to_tt, utc_to_ut1, _ut1_to_utc
+from moira.primary_directions.keys import project_primary_direction_arc_time
 from moira.primary_directions import (
     PLACIDIAN_MUNDANE_ASPECT_OFFSETS,
     MorinusAspectContext,
@@ -46,8 +47,48 @@ from ..models.primary_directions import (
     PrimaryDirectionsSearchRequest,
     PrimaryDirectionsTimelineRequest,
     SubmittedArc,
+    PrimaryDirectionsTimeKeysRequest,
+    PrimaryDirectionsTimeKeysResponse,
+    PrimaryDirectionTimeKeyItemResponse,
+    PrimaryDirectionTimeKeyResponse,
 )
 from ._shared import require_aware_datetime, require_supported_chart_bodies
+
+
+def compute_time_keys_service(
+    engine: Moira, request: PrimaryDirectionsTimeKeysRequest,
+) -> PrimaryDirectionsTimeKeysResponse:
+    """Resolve the natal context once and delegate each conversion to the engine."""
+    require_aware_datetime(request.dt)
+    chart = _PrimaryDirectionsChartClock(engine.chart(request.dt, bodies=[Body.SUN], include_nodes=False))
+    rate = abs(chart.planets[Body.SUN].speed)
+    cache: dict[tuple[float, PrimaryDirectionKey], PrimaryDirectionTimeKeyResponse] = {}
+    items = []
+    for item in request.items:
+        projections = []
+        for key in item.keys:
+            identity = (item.arc_deg, key)
+            if identity not in cache:
+                age, jd = project_primary_direction_arc_time(
+                    chart.jd_ut, item.arc_deg, key,
+                    solar_rate=rate, reader=engine._reader_obj,
+                )
+                stamp = safe_datetime_from_jd(_ut1_to_utc(jd))
+                if stamp is None:
+                    raise ValueError("The time-key perfection lies outside the supported calendar")
+                cache[identity] = PrimaryDirectionTimeKeyResponse(
+                    key=key, age_years=age, perfection_jd_ut=jd,
+                    perfection_iso=stamp.isoformat(),
+                )
+            projections.append(cache[identity])
+        items.append(PrimaryDirectionTimeKeyItemResponse(
+            id=item.id, arc_deg=item.arc_deg, projections=projections,
+        ))
+    return PrimaryDirectionsTimeKeysResponse(
+        natal_jd_ut=chart.jd_ut, natal_solar_rate_deg_per_day=rate,
+        engine_surface="moira.primary_directions.keys.project_primary_direction_arc_time",
+        items=items,
+    )
 
 if TYPE_CHECKING:
     from moira.primary_directions import (

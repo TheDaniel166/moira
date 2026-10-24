@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.10.1",
+  "engine_version": "6.10.2",
   "families": [
     {
       "assessment_status": "partial",
@@ -1458,6 +1458,8 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
         "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
         "wiki/06_roadmap/hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md",
         "wiki/06_roadmap/hellenistic_completion/archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md",
@@ -1536,6 +1538,8 @@
         "tests/unit/test_lord_of_the_turn.py",
         "tests/unit/test_moira_almutens.py",
         "tests/unit/test_moira_dignities_and_lots.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
         "tests/unit/test_progressed_astrodynes.py",
         "tests/unit/test_ptolemy_predominator.py",
         "tests/unit/test_rule_engine_validation.py",
@@ -2510,7 +2514,8 @@
         "unresolved": 1
       },
       "documentation_leads": [
-        "wiki/03_release/RELEASE_NOTES_6.3.0.md"
+        "wiki/03_release/RELEASE_NOTES_6.3.0.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md"
       ],
       "domain_group": "specialist-and-compositional",
       "family_id": "hellenistic-offices",
@@ -3174,6 +3179,8 @@
         "tests/server/test_server_phase8_timelord_routes.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
         "tests/server/test_server_phase8_zr_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
+        "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/server/test_server_shadbala_service.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_noncentral.py",
@@ -3267,7 +3274,9 @@
         "tests/unit/test_polar_house_breadth_gauntlet.py",
         "tests/unit/test_preservation_property_docstring_governance.py",
         "tests/unit/test_primary_direction_special_target_authority.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_primary_directions_midpoints.py",
+        "tests/unit/test_primary_directions_timeline.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_reader_bound_sidereal_time.py",
         "tests/unit/test_relationship_forecasting.py",
@@ -3662,7 +3671,9 @@
         "tests/unit/test_hellenistic_supporting_lots.py",
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
-        "tests/unit/test_paulus_lots.py"
+        "tests/unit/test_paulus_lots.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_lots.py"
       ]
     },
     {
@@ -3896,6 +3907,7 @@
         "tests/unit/test_primary_direction_antiscia.py",
         "tests/unit/test_primary_direction_relations.py",
         "tests/unit/test_primary_directions.py",
+        "tests/unit/test_primary_directions_integrity.py",
         "tests/unit/test_rule_engine_validation.py"
       ]
     },
@@ -5714,12 +5726,12 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 11,
+      "canonical_surface_count": 12,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 3,
+        "partial": 4,
         "unresolved": 8
       },
       "documentation_leads": [
@@ -5739,8 +5751,12 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/primary_directions/primary_directions_validation_codex.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.10.2.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
+        "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/05_research/primary_directions/primary_directions_fixed_star_family_matrix.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/HELLENISTIC_FREE_ENHANCED_WORKSPACE_PRODUCT_PLAN.md",
@@ -5758,14 +5774,15 @@
         "moira/primary_directions/__init__.py",
         "moira_server/routers/primary_directions.py"
       ],
-      "production_user_surface_count": 3,
+      "production_user_surface_count": 4,
       "production_user_surface_ids": [
         "rest:POST:/v1/primary-directions/network/reduction",
         "rest:POST:/v1/primary-directions/profile/reduction",
-        "rest:POST:/v1/primary-directions/speculum"
+        "rest:POST:/v1/primary-directions/speculum",
+        "rest:POST:/v1/primary-directions/time-keys"
       ],
       "python_surface_count": 2,
-      "rest_surface_count": 9,
+      "rest_surface_count": 10,
       "review_stages": [
         "stage_2_exemplars"
       ],
@@ -5773,6 +5790,7 @@
       "test_leads": [
         "tests/server/test_primary_directions_transport_contract.py",
         "tests/server/test_server_phase8_primary_directions_routes.py",
+        "tests/server/test_server_primary_directions_time_keys.py",
         "tests/server/test_server_primary_directions_timeline_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_primary_direction_adversarial_hardening.py",
@@ -5781,6 +5799,10 @@
         "tests/unit/test_primary_direction_fixed_stars.py",
         "tests/unit/test_primary_directions.py",
         "tests/unit/test_primary_directions_bounds.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_mundane_aspects.py",
         "tests/unit/test_primary_directions_mundane_parallels.py",
@@ -5822,6 +5844,10 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/unit/test_primary_direction_adversarial_hardening.py",
+        "tests/unit/test_primary_directions_derived_methods.py",
+        "tests/unit/test_primary_directions_derived_points.py",
+        "tests/unit/test_primary_directions_integrity.py",
+        "tests/unit/test_primary_directions_lots.py",
         "tests/unit/test_primary_directions_midpoints.py",
         "tests/unit/test_primary_directions_timeline.py"
       ]
@@ -8129,7 +8155,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "a26c6fe0798bb90f563ca529100cd077b0d57dcd70eccfda72da5738acc7f9f9",
+  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8141,7 +8167,7 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
-    "canonical_surface_count": 1251,
+    "canonical_surface_count": 1252,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 43,
@@ -8158,12 +8184,12 @@
     "families_with_missing_documentation": 24,
     "families_with_missing_tests": 8,
     "family_count": 150,
-    "production_user_surface_count": 171,
+    "production_user_surface_count": 172,
     "reviewed_families": 150,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 209,
+      "partial": 210,
       "unresolved": 1042
     }
   }

@@ -318,6 +318,25 @@
   ],
   "release_summaries": [
     {
+      "version": "6.10.2",
+      "date": "2026-10-23",
+      "title": "Exact Primary-Direction Time Keys",
+      "added": [
+        "Bounded exact arc-to-time REST conversion for all six primary-direction keys, preserving engine ages and matching Julian/calendar timestamps."
+      ],
+      "changed": [
+        "None of the unrelated unreleased development-main geometry changes are included in this bounded patch."
+      ],
+      "fixed": [
+        "Natal Solar Rate distributor boundaries now receive the same explicit natal Sun speed as participating events."
+      ],
+      "validation": [
+        "Kernel-backed six-key, forward-motion, calendar-coherence, input-budget and failure-propagation tests."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.10.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md"
+    },
+    {
       "version": "6.10.1",
       "date": "2026-10-17",
       "title": "Light Box Conformance (100% P0) and Natal Discovery",

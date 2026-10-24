@@ -18,21 +18,22 @@ from dataclasses import dataclass, replace
 from numbers import Real
 from typing import Iterable
 
-from ..constants import TROPICAL_YEAR
-from ..julian import safe_datetime_from_jd
+from ..julian import safe_datetime_from_jd, _ut1_to_utc
+from ..constants import Body
+from ._chart_time import _chart_ut1
+from .derived_points import _resolve_primary_direction_derived_points
 from ..egyptian_bounds import EgyptianBoundsDoctrine
 from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyPolicy,
-    convert_arc_to_time,
-    invert_solar_arc_lon,
-    invert_solar_arc_ra,
+    project_primary_direction_arc_time,
+    _arc_for_age,
 )
 from .methods import PrimaryDirectionMethod
 from .spaces import PrimaryDirectionSpace
-from .converse import PrimaryDirectionMotion
+from .converse import PrimaryDirectionMotion, PrimaryDirectionConverseDoctrine
 from .relations import PrimaryDirectionRelationalKind
-from .targets import resolve_primary_direction_bound_targets
+from .targets import resolve_primary_direction_bound_targets, primary_direction_target_truth
 from .distributor import (
     DistributorPeriod,
     resolve_distributor_chronology,
@@ -105,7 +106,7 @@ class PrimaryDirectionsTimeline:
 
     Attributes:
         chart_id: Identifier or label of the source natal chart.
-        natal_jd_ut: Julian Date (UT) of the natal origin.
+        natal_jd_ut: Julian Date (UT1) of the natal origin; display dates use UTC.
         max_age_years: Upper bound age for timeline inclusion.
         key: Primary direction time-key used for arc-to-time projection.
         bound_doctrine: Bounds table used for distributor chronology.
@@ -142,12 +143,9 @@ def _project_arc_to_time(
     solar_rate: float | None = None,
 ) -> tuple[float, float]:
     """Project one arc without silently substituting another key doctrine."""
-    if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-        return invert_solar_arc_ra(natal_jd_ut, arc_deg, reader=reader)
-    if key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-        return invert_solar_arc_lon(natal_jd_ut, arc_deg, reader=reader)
-    age = convert_arc_to_time(arc_deg, key=key, solar_rate=solar_rate)
-    return age, natal_jd_ut + age * TROPICAL_YEAR
+    return project_primary_direction_arc_time(
+        natal_jd_ut, arc_deg, key, solar_rate=solar_rate, reader=reader,
+    )
 
 
 def compute_primary_directions_timeline(
@@ -195,17 +193,25 @@ def compute_primary_directions_timeline(
         PrimaryDirectionsPreset,
         find_primary_arcs,
         primary_directions_policy_preset,
-        speculum,
+        _identity_tuple,
+        _finite_real,
     )
 
     resolved_key = PrimaryDirectionKey(str(key).lower()) if not isinstance(key, PrimaryDirectionKey) else key
 
-    # Derive safe angular search arc to cover max_age_years
+    sig_names = _identity_tuple(significators, "timeline significators")
+    prom_names = _identity_tuple(promissors, "timeline promissors")
+    chart_jd = _chart_ut1(chart)
+    sun = chart.planets.get(Body.SUN)
+    natal_solar_rate = (abs(_finite_real(sun.speed, "timeline natal Sun speed"))
+                        if sun is not None else None)
     if max_arc is None:
-        # Solar RA velocity can reach ~1.15 deg/day; allow 15% margin + 2 deg
-        resolved_max_arc = min(180.0, float(max_age_years) * 1.15 + 2.0)
+        resolved_max_arc = _arc_for_age(chart_jd, float(max_age_years), resolved_key,
+                                       solar_rate=natal_solar_rate, reader=reader)
     else:
-        resolved_max_arc = float(max_arc)
+        resolved_max_arc = _finite_real(max_arc, "timeline max_arc")
+        if not 0. < resolved_max_arc <= 360.:
+            raise ValueError("timeline max_arc must be in (0, 360]")
 
     # Policy setup: ensure bound targets are present if not explicitly populated
     if policy is None:
@@ -220,20 +226,16 @@ def compute_primary_directions_timeline(
 
     from .relations import PrimaryDirectionRelationPolicy, PrimaryDirectionRelationalKind
 
-    if not base_policy.bound_targets:
-        generated_bounds = resolve_primary_direction_bound_targets(doctrine=bound_doctrine)
-        admitted = set(base_policy.relation_policy.admitted_kinds) | {PrimaryDirectionRelationalKind.TERM_BOUND}
-        effective_policy = replace(
-            base_policy,
-            bound_targets=generated_bounds,
-            relation_policy=PrimaryDirectionRelationPolicy(frozenset(admitted)),
-        )
-    else:
-        admitted = set(base_policy.relation_policy.admitted_kinds) | {PrimaryDirectionRelationalKind.TERM_BOUND}
-        effective_policy = replace(
-            base_policy,
-            relation_policy=PrimaryDirectionRelationPolicy(frozenset(admitted)),
-        )
+    generated_bounds = resolve_primary_direction_bound_targets(doctrine=bound_doctrine)
+    if base_policy.bound_targets and set(base_policy.bound_targets) != set(generated_bounds):
+        raise ValueError("timeline bound targets must be the complete canonical table for bound_doctrine")
+    if base_policy.converse_doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
+        raise ValueError("timeline bound chronology does not admit the signed-primary-motion preset")
+    admitted = set(base_policy.relation_policy.admitted_kinds) | {PrimaryDirectionRelationalKind.TERM_BOUND}
+    effective_policy = replace(
+        base_policy, bound_targets=generated_bounds,
+        relation_policy=PrimaryDirectionRelationPolicy(frozenset(admitted)),
+    )
 
     # Search directional arcs
     raw_arcs = find_primary_arcs(
@@ -242,47 +244,76 @@ def compute_primary_directions_timeline(
         geo_lat=geo_lat,
         max_arc=resolved_max_arc,
         include_converse=effective_policy.include_converse,
-        significators=list(significators) if significators is not None else None,
-        promissors=list(promissors) if promissors is not None else None,
+        significators=sig_names,
+        promissors=prom_names,
         obliquity=obliquity,
         policy=effective_policy,
     )
 
-    # Obtain natal time
-    chart_jd = getattr(chart, "jd_ut", getattr(chart, "jd", None))
-    if chart_jd is None or not math.isfinite(chart_jd):
-        raise ValueError("chart must expose a finite natal jd_ut or jd")
-
-    # Speculum mapping for natal longitudes
-    obl = obliquity if obliquity is not None else getattr(chart, "obliquity", 23.4392911)
-    spec_entries = speculum(chart, houses, geo_lat, obliquity=obl)
-    sp_map = {entry.name: entry for entry in spec_entries}
-
-    # Partition bound boundaries and aspectual arcs for distributor chronology
-    bound_arcs = [a for a in raw_arcs if a.relational_kind is PrimaryDirectionRelationalKind.TERM_BOUND]
-    aspect_arcs = [a for a in raw_arcs if a.relational_kind is not PrimaryDirectionRelationalKind.TERM_BOUND]
-
-    # Resolve distributor periods for significators (all significators present if not specified)
-    if significators is not None:
-        sig_order = tuple(dict.fromkeys(significators))
+    # Natal longitude lookup needs no rise/set projection of unrelated bodies.
+    natal_longitudes = {name: point.longitude for name, point in chart.planets.items()}
+    natal_longitudes.update({name: point.longitude for name, point in chart.nodes.items()})
+    natal_longitudes.update({"ASC": houses.asc, "MC": houses.mc, "DSC": houses.dsc, "IC": houses.ic})
+    active_points = (target for target in effective_policy.derived_point_targets
+                     if primary_direction_target_truth(target.name).target_class
+                     in effective_policy.target_policy.admitted_significator_classes
+                     and (sig_names is None or target.name in sig_names))
+    natal_longitudes.update({name: longitude for name, longitude, _ in
+                            _resolve_primary_direction_derived_points(active_points, chart, houses).values()})
+    if sig_names is not None:
+        sig_order = sig_names
+        for name in sig_order:
+            if name.startswith("H") and name[1:].isdigit() and 1 <= int(name[1:]) <= 12:
+                natal_longitudes[name] = houses.cusps[int(name[1:]) - 1]
     else:
-        sig_order = tuple(sorted({a.significator for a in raw_arcs}))
-    if not sig_order:
-        sig_order = ("Ascendant",)
+        available = []
+        for name in natal_longitudes:
+            try:
+                truth = primary_direction_target_truth(name)
+            except ValueError:
+                continue
+            if truth.target_class in effective_policy.target_policy.admitted_significator_classes:
+                available.append(name)
+        sig_order = tuple(sorted(available))
 
-    admitted_distributor_motions = [PrimaryDirectionMotion.DIRECT]
-    if effective_policy.include_converse:
-        admitted_distributor_motions.append(PrimaryDirectionMotion.CONVERSE)
+    if effective_policy.placidian_rapt_parallel_motion is not None:
+        # Rapt motion is relation-specific; the ambient converse boolean is
+        # deliberately false. Use the already admitted ordinary bound law in
+        # the matching motion, retaining direct context for configured stars.
+        admitted_distributor_motions = [effective_policy.placidian_rapt_parallel_motion]
+        if effective_policy.fixed_star_targets and PrimaryDirectionMotion.DIRECT not in admitted_distributor_motions:
+            admitted_distributor_motions.insert(0, PrimaryDirectionMotion.DIRECT)
+    else:
+        admitted_distributor_motions = list(effective_policy.admitted_motions)
+    has_converse = PrimaryDirectionMotion.CONVERSE in admitted_distributor_motions
+    bound_policy = PrimaryDirectionsPolicy(
+        method=effective_policy.method, space=effective_policy.space,
+        latitude_policy=effective_policy.latitude_policy,
+        latitude_source_policy=effective_policy.latitude_source_policy,
+        perfection_policy=effective_policy.perfection_policy,
+        target_policy=effective_policy.target_policy,
+        key_policy=effective_policy.key_policy,
+        include_converse=has_converse,
+        converse_doctrine=(effective_policy.converse_doctrine if has_converse
+                          else PrimaryDirectionConverseDoctrine.DIRECT_ONLY),
+        bound_targets=generated_bounds,
+        derived_point_targets=effective_policy.derived_point_targets,
+        relation_policy=PrimaryDirectionRelationPolicy(frozenset({PrimaryDirectionRelationalKind.TERM_BOUND})),
+    )
+    # Structural crossings are independent of event filters and target-family
+    # gates. Empty requested significators produce an empty timeline.
+    bound_arcs = find_primary_arcs(
+        chart, houses, geo_lat, policy=bound_policy, max_arc=resolved_max_arc,
+        significators=sig_order, promissors=tuple(b.name for b in generated_bounds),
+        obliquity=obliquity,
+    ) if sig_order else []
+    bound_arcs = [a for a in bound_arcs if a.motion in admitted_distributor_motions]
+    aspect_arcs = [a for a in raw_arcs if a.relational_kind is not PrimaryDirectionRelationalKind.TERM_BOUND]
+    raw_arcs = aspect_arcs + [a for a in bound_arcs if prom_names is None or a.promissor in prom_names]
 
     distributor_periods_by_sig_motion: dict[tuple[str, PrimaryDirectionMotion], list[DistributorPeriod]] = {}
     for sig in sig_order:
-        natal_lon = None
-        if sig in sp_map:
-            natal_lon = getattr(sp_map[sig], "lon", getattr(sp_map[sig], "longitude", None))
-        elif sig == "Ascendant" and hasattr(houses, "asc"):
-            natal_lon = houses.asc
-        elif sig == "Midheaven" and hasattr(houses, "mc"):
-            natal_lon = houses.mc
+        natal_lon = natal_longitudes.get(sig)
 
         if natal_lon is not None:
             for mot in admitted_distributor_motions:
@@ -306,6 +337,7 @@ def compute_primary_directions_timeline(
                             key=resolved_key,
                             natal_jd_ut=chart_jd,
                             reader=reader,
+                            solar_rate=natal_solar_rate,
                         )
 
                     ext_age, ext_jd = _project_arc_to_time(
@@ -313,10 +345,11 @@ def compute_primary_directions_timeline(
                         key=resolved_key,
                         natal_jd_ut=chart_jd,
                         reader=reader,
+                        solar_rate=natal_solar_rate,
                     )
 
-                    ent_iso = safe_datetime_from_jd(ent_jd).isoformat()
-                    ext_iso = safe_datetime_from_jd(ext_jd).isoformat()
+                    ent_iso = safe_datetime_from_jd(_ut1_to_utc(ent_jd)).isoformat()
+                    ext_iso = safe_datetime_from_jd(_ut1_to_utc(ext_jd)).isoformat()
 
                     enriched_periods.append(
                         replace(
@@ -343,7 +376,7 @@ def compute_primary_directions_timeline(
         if not (0.0 < age <= max_age_years):
             continue
 
-        perf_iso = safe_datetime_from_jd(perf_jd).isoformat()
+        perf_iso = safe_datetime_from_jd(_ut1_to_utc(perf_jd)).isoformat()
 
         # Check distributor and bound context
         is_bound_boundary = arc.relational_kind is PrimaryDirectionRelationalKind.TERM_BOUND
@@ -352,8 +385,6 @@ def compute_primary_directions_timeline(
         participator = None
 
         sig_periods = distributor_periods_by_sig_motion.get((arc.significator, arc.motion))
-        if sig_periods is None and arc.motion is not None:
-            sig_periods = distributor_periods_by_sig_motion.get((arc.significator, PrimaryDirectionMotion.DIRECT))
         if sig_periods:
             covering_period = None
             for idx, p in enumerate(sig_periods):

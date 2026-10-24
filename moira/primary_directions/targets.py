@@ -17,14 +17,13 @@ from numbers import Real
 from typing import Iterable
 
 from ._ordered_network import validate_ordered_transition_counts
+from .derived_points import _is_derived_point_name
 
 from ..constants import Body, SIGNS
 from ..egyptian_bounds import (
     EgyptianBoundsDoctrine,
-    EGYPTIAN_BOUNDS,
-    PTOLEMAIC_BOUNDS,
-    CHALDEAN_DAY_BOUNDS,
-    CHALDEAN_NIGHT_BOUNDS,
+    EgyptianBoundsPolicy,
+    egyptian_bound_of,
 )
 
 __all__ = [
@@ -88,6 +87,7 @@ class PrimaryDirectionTargetClass(StrEnum):
     MUNDANE_ASPECT = "mundane_aspect"
     MUNDANE_PARALLEL = "mundane_parallel"
     MIDPOINT = "midpoint"
+    DERIVED_POINT = "derived_point"
 
 
 PLACIDIAN_MUNDANE_ASPECT_OFFSETS: tuple[tuple[str, float], ...] = (
@@ -416,6 +416,12 @@ class PrimaryDirectionTargetTruth:
                 raise ValueError(
                     "PrimaryDirectionTargetTruth invariant failed: midpoint target name does not match its metadata"
                 )
+        elif self.target_class is PrimaryDirectionTargetClass.DERIVED_POINT:
+            if not _is_derived_point_name(self.name) or any(value is not None for value in (
+                self.source_name, self.aspect_name, self.aspect_angle,
+                self.fraction_offset, self.source_b_name, self.parallel_kind,
+            )):
+                raise ValueError("Derived-point truth requires a canonical Fortune or catalogue-lot identity")
         elif any(
             value is not None
             for value in (
@@ -864,6 +870,8 @@ class PrimaryDirectionTargetsNetworkProfile:
 def _target_class_for_name(name: str) -> PrimaryDirectionTargetClass:
     if not isinstance(name, str) or not name.strip():
         raise ValueError("Primary-direction target identity must be a non-empty string")
+    if name.startswith("Lot: "):
+        raise ValueError("Catalogue lots are not admitted as derived-promissor sources")
     if name.startswith("Term of ") or name.startswith("Bound: "):
         return PrimaryDirectionTargetClass.BOUND_BOUNDARY
     if _mundane_aspect_target_components(name) is not None:
@@ -981,6 +989,11 @@ def _condition_state(relation_kind: PrimaryDirectionTargetRelationKind) -> Prima
 def primary_direction_target_truth(name: str) -> PrimaryDirectionTargetTruth:
     if not isinstance(name, str) or not name.strip():
         raise ValueError("Primary-direction target identity must be a non-empty string")
+    if _is_derived_point_name(name):
+        # Identity is distinct from admission and coordinate construction.
+        # Keep it out of _target_class_for_name so it cannot become an
+        # unadmitted aspect, midpoint, or mundane-parallel source by parsing.
+        return PrimaryDirectionTargetTruth(name, PrimaryDirectionTargetClass.DERIVED_POINT)
     mundane_parallel_components = _mundane_parallel_target_components(name)
     if mundane_parallel_components is not None:
         source_name, parallel_kind = mundane_parallel_components
@@ -1218,20 +1231,14 @@ def resolve_primary_direction_bound_targets(
     """
     if not isinstance(doctrine, EgyptianBoundsDoctrine):
         raise ValueError(f"doctrine must be an EgyptianBoundsDoctrine member, got {doctrine!r}")
-    if doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
-        table = PTOLEMAIC_BOUNDS
-    elif doctrine is EgyptianBoundsDoctrine.CHALDEAN_DAY:
-        table = CHALDEAN_DAY_BOUNDS
-    elif doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
-        table = CHALDEAN_NIGHT_BOUNDS
-    else:
-        table = EGYPTIAN_BOUNDS
-
+    policy = EgyptianBoundsPolicy(doctrine=doctrine)
     targets: list[PrimaryDirectionBoundTarget] = []
     for sign_idx, sign in enumerate(SIGNS):
-        bounds = table[sign]
-        for ruler, start_deg, _ in bounds:
+        start_deg = 0.0
+        while start_deg < 30.0:
             abs_lon = (sign_idx * 30.0 + start_deg) % 360.0
+            segment = egyptian_bound_of(abs_lon, policy=policy).segment
+            ruler = segment.ruler
             name = f"Term of {ruler} ({int(start_deg):02d}°00' {sign[:3]})"
             targets.append(
                 PrimaryDirectionBoundTarget(
@@ -1243,6 +1250,7 @@ def resolve_primary_direction_bound_targets(
                     doctrine=doctrine,
                 )
             )
+            start_deg = segment.end_degree
     return tuple(targets)
 
 

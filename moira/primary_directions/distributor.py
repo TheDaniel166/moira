@@ -1,6 +1,6 @@
 """
 Moira -- primary_directions/distributor.py
-Distributor (Particeps) & Partner (Participator / Socius) Chronology Subsystem.
+Distributor (Divisor) & Participator (Particeps) Chronology Subsystem.
 
 Boundary
 --------
@@ -8,13 +8,14 @@ Owns the chronological distribution of primary direction arcs through the
 terms/bounds of the zodiac. Traditional predictive methodology (Ptolemy Tetrabiblos
 III.10, Dorotheus, Valens, Lilly) directs the significator (most notably the Ascendant)
 through the bounds. The ruler of the bound occupied by the directed significator is
-the Distributor (Particeps); any planet casting a primary aspect to the significator
-during that bound's arc interval is the Partner / Participator (Socius).
+the Distributor (Divisor); any planet casting a primary aspect to the significator
+during that bound's arc interval is the Participator (Particeps).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Iterable
 
 from ..constants import SIGNS
@@ -22,10 +23,6 @@ from ..egyptian_bounds import (
     EgyptianBoundsDoctrine,
     EgyptianBoundsPolicy,
     egyptian_bound_of,
-    EGYPTIAN_BOUNDS,
-    PTOLEMAIC_BOUNDS,
-    CHALDEAN_DAY_BOUNDS,
-    CHALDEAN_NIGHT_BOUNDS,
 )
 from .converse import PrimaryDirectionMotion
 
@@ -93,16 +90,6 @@ class DistributorPeriod:
         object.__setattr__(self, "participators", participators)
 
 
-def _table_for_doctrine(doctrine: EgyptianBoundsDoctrine) -> dict[str, list[tuple[str, float, float]]]:
-    if doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
-        return PTOLEMAIC_BOUNDS
-    if doctrine is EgyptianBoundsDoctrine.CHALDEAN_DAY:
-        return CHALDEAN_DAY_BOUNDS
-    if doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
-        return CHALDEAN_NIGHT_BOUNDS
-    return EGYPTIAN_BOUNDS
-
-
 _SIGN_LOOKUP: dict[str, str] = {
     # Full names
     "Aries": "Aries", "Taurus": "Taurus", "Gemini": "Gemini", "Cancer": "Cancer",
@@ -168,7 +155,7 @@ def resolve_distributor_chronology(
         natal_longitude: Ecliptic longitude of the significator at birth [0, 360).
         bound_arcs: Primary direction arcs directed to bound boundaries.
         participating_arcs: Aspectual primary direction arcs directed to the significator.
-        doctrine: Egyptian, Ptolemaic, or Chaldean bounds table.
+        doctrine: An admitted bounds table, including Lilly's printed terms.
         motion: Direction motion (DIRECT or CONVERSE).
         max_arc: Maximum directional arc to consider.
 
@@ -182,17 +169,26 @@ def resolve_distributor_chronology(
     if max_arc <= 0.0:
         raise ValueError(f"max_arc must be positive, got {max_arc}")
 
-    table = _table_for_doctrine(doctrine)
+    if not isinstance(doctrine, EgyptianBoundsDoctrine):
+        raise ValueError("doctrine must be an EgyptianBoundsDoctrine")
+    if not isinstance(motion, PrimaryDirectionMotion):
+        raise ValueError("motion must be a PrimaryDirectionMotion")
+    bounds_policy = EgyptianBoundsPolicy(doctrine=doctrine)
+
+    def entered_segment(longitude: float):
+        # Bounds are [start, end). Reverse motion enters the left-hand limit,
+        # including at birth and across 0 Aries. Use the adjacent representable
+        # longitude, not an assumed ruler sequence or a finite angular offset.
+        if motion is PrimaryDirectionMotion.CONVERSE:
+            longitude = math.nextafter(longitude or 360.0, -math.inf)
+        return egyptian_bound_of(longitude, policy=bounds_policy).segment
 
     # 1. Initial natal bound
-    initial_truth = egyptian_bound_of(
-        natal_longitude,
-        policy=EgyptianBoundsPolicy(doctrine=doctrine),
-    )
-    current_ruler = initial_truth.segment.ruler
-    current_sign = initial_truth.segment.sign
-    current_start_deg = initial_truth.segment.start_degree
-    current_end_deg = initial_truth.segment.end_degree
+    initial_segment = entered_segment(natal_longitude)
+    current_ruler = initial_segment.ruler
+    current_sign = initial_segment.sign
+    current_start_deg = initial_segment.start_degree
+    current_end_deg = initial_segment.end_degree
     current_entry_arc = 0.0
 
     # 2. Filter and sort bound arcs
@@ -212,14 +208,14 @@ def resolve_distributor_chronology(
         parsed = _parse_bound_promissor(arc_prom)
         if parsed is None:
             continue
-        ruler, sign, deg = parsed
-        # Find the segment in table[sign] that begins at deg
-        segments = table[sign]
-        seg_match = next((seg for seg in segments if abs(seg[1] - deg) < 1e-4), None)
-        if seg_match is None:
+        _, sign, deg = parsed
+        longitude = SIGNS.index(sign) * 30.0 + deg
+        boundary = egyptian_bound_of(longitude, policy=bounds_policy).segment
+        if boundary.sign != sign or abs(boundary.start_degree - deg) >= 1e-4:
             continue
-        seg_ruler, seg_start, seg_end = seg_match
-        valid_bound_arcs.append((float(arc_val), seg_ruler, sign, float(seg_start), float(seg_end)))
+        segment = entered_segment(longitude)
+        valid_bound_arcs.append((float(arc_val), segment.ruler, segment.sign,
+                                 float(segment.start_degree), float(segment.end_degree)))
 
     # Sort strictly by arc value ascending
     valid_bound_arcs.sort(key=lambda item: item[0])
