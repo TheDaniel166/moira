@@ -47,6 +47,8 @@ from .houses import (
 
 # ── Aspects (full) ───────────────────────────────────────────────────────
 from .aspects import (
+    ASPECT_ALIASES,
+    resolve_aspect,
     AspectDefinition, ASPECT_TIERS,
     CANONICAL_ASPECTS,
     AspectDirection, HellenisticAspectEvaluationStatus,
@@ -323,7 +325,7 @@ _CLASSICAL_OWN: list[str] = [
     "DiurnalQuadrant", "DiurnalPosition", "DiurnalEmphasisProfile",
     "diurnal_position", "diurnal_emphasis",
     # Aspects full
-    "AspectDefinition", "ASPECT_TIERS", "CANONICAL_ASPECTS",
+    "AspectDefinition", "ASPECT_TIERS", "CANONICAL_ASPECTS", "ASPECT_ALIASES", "resolve_aspect",
     "AspectDirection", "HellenisticAspectEvaluationStatus",
     "HellenisticOvercomingRelation",
     "AspectDomain", "AspectFamily", "LegacyAspectPattern", "AspectPatternKind", "AspectTier", "MotionState",

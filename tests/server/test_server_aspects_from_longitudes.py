@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from moira.aspects import aspects_from_longitudes
+from moira.constants import Aspect
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -126,6 +127,24 @@ def test_positions_in_route_excludes_just_outside_boundary(client_and_engine) ->
 
     assert response.status_code == 200
     assert response.json()["events"] == []
+
+
+def test_positions_in_route_reaches_all_canonical_targets(client_and_engine):
+    client, _ = client_and_engine
+    for definition in Aspect.ALL:
+        response = client.post(
+            "/v1/aspects/from-longitudes",
+            json={"longitudes": {"Sun": 355, "Moon": (355 + definition.angle) % 360}, "tier": 2},
+        )
+        assert response.status_code == 200
+        matches = [a for a in response.json()["events"] if a["aspect"] == definition.name]
+        assert len(matches) == 1
+        assert matches[0]["angle"] == definition.angle
+        assert matches[0]["orb"] == pytest.approx(0, abs=1e-12)
+        assert matches[0]["classification"]["tier"] == (
+            "major" if definition in Aspect.MAJOR else
+            "common_minor" if definition in Aspect.COMMON_MINOR else "extended_minor"
+        )
 
 
 @pytest.mark.parametrize(

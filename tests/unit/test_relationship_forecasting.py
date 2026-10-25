@@ -425,7 +425,9 @@ def test_relationship_transit_direction_filter_and_backward_order(
      (2, "Hexadecile", [32.5, 347.5]),
      (2, "Seminovile", [30.0, 350.0]),
      (2, "Untion", [25.0, 355.0]),
-     (2, "Quindecile", [34.0, 346.0])],
+     (2, "Quindecile", [34.0, 346.0]),
+     (2, "Tridecile", [118.0, 262.0]),
+     (2, "Quindecile (165°)", [175.0, 205.0])],
 )
 def test_relationship_transits_accept_an_explicit_aspect_subset(
     monkeypatch: pytest.MonkeyPatch, tier, name, targets,
@@ -449,7 +451,8 @@ def test_relationship_transits_accept_an_explicit_aspect_subset(
     )
 
     assert sorted(calls) == targets
-    assert result.computation_truth.aspect_names == (name,)
+    canonical = {"Tridecile": "Tredecile", "Quindecile (165°)": "Tao"}.get(name, name)
+    assert result.computation_truth.aspect_names == (canonical,)
     assert result.computation_truth.search_call_count == 2
 
 

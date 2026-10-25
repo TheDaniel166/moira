@@ -86,9 +86,9 @@ This module has thirteen distinct concerns, kept intentionally separate:
    search for a future perfection or station.
 
 10. **Canonical configuration** — ``CANONICAL_ASPECTS``.
-   The complete, explicitly declared set of all 28 aspect types recognised
-   and detectable by this engine: 26 zodiacal aspects (5 major, 6
-   common-minor, 15 extended-minor) plus 2 declination aspects (Parallel,
+   The complete, explicitly declared set of all 48 aspect types recognised
+   and detectable by this engine: 46 zodiacal aspects (5 major, 6
+   common-minor, 35 extended-minor) plus 2 declination aspects (Parallel,
    Contra-Parallel).  ``CANONICAL_ASPECTS`` makes the full set inspectable
    at import time without requiring knowledge of ``moira.constants``.
 
@@ -172,7 +172,9 @@ Public surface
 ``AspectMotionStationaryReason`` — typed body-station or relative-standstill reason.
 ``AspectMotionWitness``      — immutable instantaneous signed-error/rate witness.
 ``aspect_motion_witness``    — build the witness from caller-supplied longitudes and speeds.
-``CANONICAL_ASPECTS``        — tuple of all 28 canonical aspect names (26 zodiacal + 2 declination).
+``CANONICAL_ASPECTS``        — tuple of all 48 canonical aspect names (46 zodiacal + 2 declination).
+``ASPECT_ALIASES``           — read-only mapping of alternative longitude names to canonical names.
+``resolve_aspect``           — resolve a canonical name or registered alias to its unique definition.
 ``AspectPatternKind``        — enum: STELLIUM, T_SQUARE, GRAND_TRINE, GRAND_CROSS, YOD.
 ``AspectPattern``            — frozen dataclass: kind, bodies (frozenset), aspects (tuple).
 ``find_patterns``            — detect multi-body patterns from a list of admitted AspectData.
@@ -227,6 +229,7 @@ from ._aspect_types import (
     AspectTier,
 )
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, TRADITIONAL_MOIETY_ORBS, Body
+from .aspect_registry import ASPECT_ALIASES, resolve_aspect
 from .coordinates import angular_distance, normalize_degrees
 from .declination_aspects import (
     DeclinationAspect,
@@ -245,6 +248,7 @@ from .declination_aspects import (
 __all__ = [
     # Constants
     "CANONICAL_ASPECTS",
+    "ASPECT_ALIASES",
     "DEFAULT_POLICY",
     "TRADITIONAL_MOIETY_ORBS",
     # Enums
@@ -284,6 +288,7 @@ __all__ = [
     "DeclinationAspectMotionWitness",
     "DeclinationAspectPolicy",
     # Entry points
+    "resolve_aspect",
     "aspect_harmonic_profile",
     "aspect_motion_witness",
     "aspect_motion_state",
@@ -646,6 +651,26 @@ _FAMILY_BY_NAME: dict[str, AspectFamily] = {
     "Hexadecile":      AspectFamily.HEXADECILE,
     "Seminovile":      AspectFamily.SEMINOVILE,
     "Untion":          AspectFamily.UNTION,
+    "Biundecile":      AspectFamily.UNDECILE,
+    "Triundecile":     AspectFamily.UNDECILE,
+    "Quadriundecile":  AspectFamily.UNDECILE,
+    "Quinqueundecile": AspectFamily.UNDECILE,
+    "Biquindecile":    AspectFamily.QUINDECILE,
+    "Quadraquindecile": AspectFamily.QUINDECILE,
+    "Septaquindecile": AspectFamily.QUINDECILE,
+    "Sesquioctile":    AspectFamily.HEXADECILE,
+    "Quinsemioctile":  AspectFamily.HEXADECILE,
+    "Septsemioctile":  AspectFamily.HEXADECILE,
+    "Quinseminovile":  AspectFamily.SEMINOVILE,
+    "Septseminovile":  AspectFamily.SEMINOVILE,
+    "Trivigintile":    AspectFamily.VIGINTILE,
+    "Septvigintile":   AspectFamily.VIGINTILE,
+    "Nonavigintile":   AspectFamily.VIGINTILE,
+    "Squile":          AspectFamily.UNTION,
+    "Squine":          AspectFamily.UNTION,
+    "Semiseptile":     AspectFamily.SEMISEPTILE,
+    "Trisemiseptile":  AspectFamily.SEMISEPTILE,
+    "Quinsemiseptile": AspectFamily.SEMISEPTILE,
 }
 
 _EXTENDED_MINOR_NAMES: frozenset[str] = frozenset(
@@ -1288,7 +1313,7 @@ CANONICAL_ASPECTS: tuple[str, ...] = (
     "Quincunx",
     "Quintile",
     "Biquintile",
-    # Extended Minor (15) — harmonic-series aspects
+    # Extended Minor (35) — harmonic-series aspects
     "Septile",
     "Biseptile",
     "Triseptile",
@@ -1304,23 +1329,44 @@ CANONICAL_ASPECTS: tuple[str, ...] = (
     "Hexadecile",
     "Seminovile",
     "Untion",
+    "Biundecile",
+    "Triundecile",
+    "Quadriundecile",
+    "Quinqueundecile",
+    "Biquindecile",
+    "Quadraquindecile",
+    "Septaquindecile",
+    "Sesquioctile",
+    "Quinsemioctile",
+    "Septsemioctile",
+    "Quinseminovile",
+    "Septseminovile",
+    "Trivigintile",
+    "Septvigintile",
+    "Nonavigintile",
+    "Squile",
+    "Squine",
+    "Semiseptile",
+    "Trisemiseptile",
+    "Quinsemiseptile",
     # Declination (2) — out-of-plane dimension
     "Parallel",
     "Contra-Parallel",
 )
 """
-The complete set of 28 aspect names recognised and detectable by this engine.
+The complete set of 48 aspect names recognised and detectable by this engine.
 
 Composition
 -----------
 - 5 major (Ptolemaic): Conjunction, Sextile, Square, Trine, Opposition
 - 6 common-minor: Semisextile, Semisquare, Sesquiquadrate, Quincunx,
   Quintile, Biquintile
-- 15 extended-minor: Septile series (3), Novile series (3), Decile
-  series (2), Undecile, Quindecile, Vigintile, Tao, Hexadecile, Seminovile, Untion
+- 35 extended-minor: Septile (3), Novile (3), Decile (2), Undecile (5),
+  Quindecile (4), Vigintile (4), Untion including Tao (4), Hexadecile (4),
+  Seminovile (3), and Semiseptile (3) series
 - 2 declination: Parallel, Contra-Parallel
 
-The 26 zodiacal names correspond 1-to-1 with entries in ``Aspect.ALL``
+The 46 zodiacal names correspond 1-to-1 with entries in ``Aspect.ALL``
 from ``moira.constants``.  The 2 declination names are produced exclusively
 by ``find_declination_aspects``.
 
@@ -2913,6 +2959,8 @@ def aspect_motion_witness(
     speeds are caller-owned inputs; ``reference_frame`` and ``timescale`` are
     therefore required provenance rather than inferred defaults.  The aspect
     target and default orb come from :class:`moira.constants.Aspect`.
+    Canonical names and registered aliases resolve through ``resolve_aspect``;
+    results always carry the canonical name.
 
     Exactness takes precedence over motion classification.  Away from exact,
     missing speeds produce ``indeterminate``; a body below Moira's existing
@@ -2926,11 +2974,7 @@ def aspect_motion_witness(
             raise ValueError(f"{field_name} must be a non-empty trimmed string")
     if body1 == body2:
         raise ValueError("body1 and body2 must identify distinct points")
-    if not isinstance(aspect, str):
-        raise ValueError("aspect must name one canonical longitude aspect")
-    definition = next((item for item in Aspect.ALL if item.name == aspect), None)
-    if definition is None:
-        raise ValueError(f"unknown canonical longitude aspect {aspect!r}")
+    definition = resolve_aspect(aspect)
 
     def finite_number(name: str, value: float) -> float:
         if isinstance(value, bool):

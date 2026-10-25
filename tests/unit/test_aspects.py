@@ -1591,9 +1591,9 @@ def test_motion_state_detection_semantics_unchanged() -> None:
 # Phase 7 — canonical configuration tests
 # ---------------------------------------------------------------------------
 
-def test_canonical_aspects_has_exactly_28_members() -> None:
-    """CANONICAL_ASPECTS declares exactly 28 aspect names."""
-    assert len(CANONICAL_ASPECTS) == 28
+def test_canonical_aspects_has_exactly_48_members() -> None:
+    """CANONICAL_ASPECTS declares exactly 48 aspect names."""
+    assert len(CANONICAL_ASPECTS) == 48
 
 
 def test_canonical_aspects_contains_all_five_major_aspects() -> None:
@@ -1609,13 +1609,19 @@ def test_canonical_aspects_contains_all_six_common_minor_aspects() -> None:
         assert name in CANONICAL_ASPECTS, f"{name} missing from CANONICAL_ASPECTS"
 
 
-def test_canonical_aspects_contains_all_fifteen_extended_minor_aspects() -> None:
-    """All fifteen extended-minor aspects are present in CANONICAL_ASPECTS."""
+def test_canonical_aspects_contains_all_thirty_five_extended_minor_aspects() -> None:
+    """All thirty-five extended-minor aspects are present in CANONICAL_ASPECTS."""
     for name in ("Septile", "Biseptile", "Triseptile",
                  "Novile", "Binovile", "Quadnovile",
                  "Decile", "Tredecile",
                  "Undecile", "Quindecile", "Vigintile",
-                 "Tao", "Hexadecile", "Seminovile", "Untion"):
+                 "Tao", "Hexadecile", "Seminovile", "Untion",
+                 "Biundecile", "Triundecile", "Quadriundecile", "Quinqueundecile",
+                 "Biquindecile", "Quadraquindecile", "Septaquindecile",
+                 "Sesquioctile", "Quinsemioctile", "Septsemioctile",
+                 "Quinseminovile", "Septseminovile", "Trivigintile",
+                 "Septvigintile", "Nonavigintile", "Squile", "Squine",
+                 "Semiseptile", "Trisemiseptile", "Quinsemiseptile"):
         assert name in CANONICAL_ASPECTS, f"{name} missing from CANONICAL_ASPECTS"
 
 
@@ -1702,15 +1708,15 @@ def test_canonical_detection_vigintile() -> None:
     assert vigintile[0].classification.family is AspectFamily.VIGINTILE
 
 
-# --- All 26 zodiacal aspects detectable via Aspect.ALL (tier=2) ------------
+# --- All 46 zodiacal aspects detectable via Aspect.ALL (tier=2) ------------
 
-def test_all_26_zodiacal_canonical_aspects_are_detectable() -> None:
+def test_all_46_zodiacal_canonical_aspects_are_detectable() -> None:
     """Every zodiacal name in CANONICAL_ASPECTS is detectable via aspects_between(tier=2)."""
     from moira.constants import Aspect as _Aspect
     angle_by_name = {adef.name: adef.angle for adef in _Aspect.ALL}
     zodiacal_names = [n for n in CANONICAL_ASPECTS
                       if n not in ("Parallel", "Contra-Parallel")]
-    assert len(zodiacal_names) == 26
+    assert len(zodiacal_names) == 46
     for name in zodiacal_names:
         angle = angle_by_name[name]
         results = aspects_between("Sun", 0.0, "Moon", angle, tier=2)
@@ -3964,6 +3970,8 @@ def test_aspect_direction_sinister_dexter() -> None:
 # ===========================================================================
 
 _EXPECTED_PUBLIC = {
+    "ASPECT_ALIASES",
+    "resolve_aspect",
     "CANONICAL_ASPECTS",
     "DEFAULT_POLICY",
     "AspectDirection",
@@ -4091,7 +4099,7 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 55
+    assert len(_aspects_module.__all__) == 57
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

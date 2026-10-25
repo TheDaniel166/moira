@@ -585,8 +585,13 @@ def normalize_degrees(angle: float) -> float:
 
 
 def angular_distance(a: float, b: float) -> float:
-    """Shortest angular distance between two longitudes (0–180°)."""
-    diff = abs((a - b) % 360.0)
+    """Shortest unsigned arc between two longitudes (0–180°).
+
+    Reduce the magnitude of the difference before folding at 180 degrees.
+    A negative remainder would first add 360 and then subtract it again,
+    introducing avoidable rounding at closed aspect-orb boundaries.
+    """
+    diff = abs(a - b) % 360.0
     return diff if diff <= 180.0 else 360.0 - diff
 
 

@@ -67,6 +67,12 @@ def test_harmonic_presets_route_preserves_catalog_truth(client: TestClient) -> N
     assert response.status_code == 200
     body = response.json()
     assert body["count"] == len(HARMONIC_PRESETS)
+    assert body["count"] == 18
+    by_harmonic = {p["harmonic"]: p["name"] for p in body["presets"]}
+    assert {h: by_harmonic[h] for h in (6, 10, 14, 15, 16, 18, 20, 24)} == {
+        6: "Sextile", 10: "Decile", 14: "Semiseptile", 15: "Quindecile",
+        16: "Hexadecile", 18: "Seminovile", 20: "Vigintile", 24: "Untion",
+    }
     assert body["presets"] == [
         {
             "harmonic": harmonic,

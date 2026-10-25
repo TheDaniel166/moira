@@ -5,6 +5,7 @@ from __future__ import annotations
 from moira import Body, Moira
 from moira.astrocartography import fixed_star_astrocartography
 from moira.constants import ASPECT_TIERS
+from moira.aspect_registry import resolve_aspect
 from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.locational_forecasting import (
     relocated_lunar_return,
@@ -90,6 +91,9 @@ def _selected_server_aspects(tier: int, aspect_names: list[str] | None):
     aspects = tuple(ASPECT_TIERS[tier])
     if aspect_names is None:
         return aspects
+    aspect_names = [resolve_aspect(name).name for name in aspect_names]
+    if len(set(aspect_names)) != len(aspect_names):
+        raise ValueError("relationship aspect_names must be unique after alias resolution")
     by_name = {aspect.name: aspect for aspect in aspects}
     missing = [name for name in aspect_names if name not in by_name]
     if missing:

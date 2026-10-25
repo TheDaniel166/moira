@@ -12,7 +12,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from moira.constants import HouseSystem
+from moira.constants import HouseSystem, Aspect
+from moira.aspect_registry import resolve_aspect
 
 from .astrocartography import (
     AstrocartographyLineResponse,
@@ -21,6 +22,7 @@ from .astrocartography import (
 from .chart import HousePolicyRequest, HousesResponse, NodePositionResponse
 from .positions import PlanetPositionResponse
 from .relationship import (
+    AspectMotionInputValue,
     CompositeChartRequest,
     CompositeComputationTruthResponse,
     DavisonChartRequest,
@@ -47,7 +49,10 @@ class _RelationshipTransitRequest(_StrictModel):
     jd_start: float
     jd_end: float
     tier: Literal[0, 1, 2] = 0
-    aspect_names: list[str] | None = Field(default=None, min_length=1, max_length=16)
+    aspect_names: list[AspectMotionInputValue] | None = Field(
+        default=None, min_length=1, max_length=len(Aspect.ALL),
+        description="Canonical longitude aspects or registered aliases; unique after resolution.",
+    )
     include_nodes: bool = True
     include_angles: bool = False
     include_cusps: bool = False
@@ -93,6 +98,16 @@ class _RelationshipTransitRequest(_StrictModel):
         if not isinstance(value, bool):
             raise ValueError("relationship target inclusion flags must be booleans")
         return value
+
+    @field_validator("aspect_names", mode="before")
+    @classmethod
+    def _canonical_aspects(cls, value: Any) -> Any:
+        if value is None or not isinstance(value, list):
+            return value
+        names = [resolve_aspect(item).name for item in value]
+        if len(set(names)) != len(names):
+            raise ValueError("forecast aspect names must be unique after alias resolution")
+        return names
 
     @field_validator("moving_bodies", "target_names", "aspect_names")
     @classmethod

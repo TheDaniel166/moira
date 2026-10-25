@@ -508,6 +508,29 @@ _TAO   = AspectDefinition("Tao",         165.0,    1.0, "Tao", False)
 _HXDEC = AspectDefinition("Hexadecile",   22.5,    1.0, "Hx", False)
 _SNOVL = AspectDefinition("Seminovile",   20.0,    1.0, "sN", False)
 _UNT   = AspectDefinition("Untion",       15.0,    1.0, "Un", False)
+# Additional irreducible circle fractions in the admitted harmonic families.
+# Names follow the source collation in ASPECT_BACKEND_STANDARD.md; 1-degree
+# orbs and text abbreviations are explicit Moira policy, not source constants.
+_BUNDC = AspectDefinition("Biundecile",       720/11, 1.0, "bU", False)
+_TUNDC = AspectDefinition("Triundecile",     1080/11, 1.0, "tU", False)
+_QUNDC = AspectDefinition("Quadriundecile",  1440/11, 1.0, "qU", False)
+_QUUNDC = AspectDefinition("Quinqueundecile",1800/11, 1.0, "quU", False)
+_BQNDC = AspectDefinition("Biquindecile",      48.0, 1.0, "bQd", False)
+_QQNDC = AspectDefinition("Quadraquindecile",  96.0, 1.0, "qQd", False)
+_SQNDC = AspectDefinition("Septaquindecile",  168.0, 1.0, "sQd", False)
+_SQOCT = AspectDefinition("Sesquioctile",      67.5, 1.0, "sO", False)
+_QSOCT = AspectDefinition("Quinsemioctile",   112.5, 1.0, "qO", False)
+_SSOCT = AspectDefinition("Septsemioctile",   157.5, 1.0, "spO", False)
+_QSNOV = AspectDefinition("Quinseminovile",   100.0, 1.0, "qSN", False)
+_SSNOV = AspectDefinition("Septseminovile",   140.0, 1.0, "sSN", False)
+_TVGNT = AspectDefinition("Trivigintile",      54.0, 1.0, "tV", False)
+_SVGNT = AspectDefinition("Septvigintile",    126.0, 1.0, "sV", False)
+_NVGNT = AspectDefinition("Nonavigintile",    162.0, 1.0, "nV", False)
+_SQUILE = AspectDefinition("Squile",           75.0, 1.0, "SqL", False)
+_SQUINE = AspectDefinition("Squine",          105.0, 1.0, "SqN", False)
+_SSEPT = AspectDefinition("Semiseptile",      360/14, 1.0, "sS", False)
+_TSSEPT = AspectDefinition("Trisemiseptile", 1080/14, 1.0, "tsS", False)
+_QSSEPT = AspectDefinition("Quinsemiseptile", 1800/14, 1.0, "qsS", False)
 
 
 class Aspect:
@@ -561,6 +584,12 @@ class Aspect:
           "BIQUINTILE", "TREDECILE", "SEPTILE", "BISEPTILE", "TRISEPTILE",
           "NOVILE", "BINOVILE", "QUADNOVILE", "DECILE", "UNDECILE",
           "QUINDECILE", "VIGINTILE", "TAO", "HEXADECILE", "SEMINOVILE", "UNTION",
+          "BIUNDECILE", "TRIUNDECILE", "QUADRIUNDECILE", "QUINQUEUNDECILE",
+          "BIQUINDECILE", "QUADRAQUINDECILE", "SEPTAQUINDECILE",
+          "SESQUIOCTILE", "QUINSEMIOCTILE", "SEPTSEMIOCTILE",
+          "QUINSEMINOVILE", "SEPTSEMINOVILE", "TRIVIGINTILE", "SEPTVIGINTILE",
+          "NONAVIGINTILE", "SQUILE", "SQUINE", "SEMISEPTILE",
+          "TRISEMISEPTILE", "QUINSEMISEPTILE",
           "MAJOR", "COMMON_MINOR", "EXTENDED_MINOR", "MINOR", "ALL"
         ],
         "internal": []
@@ -600,6 +629,26 @@ class Aspect:
     HEXADECILE     = _HXDEC
     SEMINOVILE     = _SNOVL
     UNTION         = _UNT
+    BIUNDECILE     = _BUNDC
+    TRIUNDECILE    = _TUNDC
+    QUADRIUNDECILE = _QUNDC
+    QUINQUEUNDECILE = _QUUNDC
+    BIQUINDECILE   = _BQNDC
+    QUADRAQUINDECILE = _QQNDC
+    SEPTAQUINDECILE = _SQNDC
+    SESQUIOCTILE   = _SQOCT
+    QUINSEMIOCTILE = _QSOCT
+    SEPTSEMIOCTILE = _SSOCT
+    QUINSEMINOVILE = _QSNOV
+    SEPTSEMINOVILE = _SSNOV
+    TRIVIGINTILE   = _TVGNT
+    SEPTVIGINTILE  = _SVGNT
+    NONAVIGINTILE  = _NVGNT
+    SQUILE         = _SQUILE
+    SQUINE         = _SQUINE
+    SEMISEPTILE    = _SSEPT
+    TRISEMISEPTILE = _TSSEPT
+    QUINSEMISEPTILE = _QSSEPT
 
     MAJOR: list[AspectDefinition] = [_CONJ, _SEXT, _SQR, _TRIN, _OPP]
 
@@ -613,6 +662,11 @@ class Aspect:
         _DECL, _TRDEC,
         _UNDEC, _QNDEC, _VGNT,
         _TAO, _HXDEC, _SNOVL, _UNT,
+        _BUNDC, _TUNDC, _QUNDC, _QUUNDC,
+        _BQNDC, _QQNDC, _SQNDC,
+        _SQOCT, _QSOCT, _SSOCT, _QSNOV, _SSNOV,
+        _TVGNT, _SVGNT, _NVGNT, _SQUILE, _SQUINE,
+        _SSEPT, _TSSEPT, _QSSEPT,
     ]
 
     # Backward-compat alias

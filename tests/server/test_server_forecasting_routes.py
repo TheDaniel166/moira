@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from moira.constants import Body
+from moira.constants import Body, Aspect
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 from moira_server.models.forecasting import (
@@ -199,6 +199,25 @@ def test_relationship_transit_request_admits_all_ten_planets_as_movers() -> None
 
     with pytest.raises(ValueError):
         _composite_request(moving_bodies=[*Body.ALL_PLANETS, "Chiron"])
+
+
+def test_forecasting_admits_full_catalog_normalizes_aliases_and_preserves_budgets():
+    names = [a.name for a in Aspect.ALL]
+    assert len(names) == 46
+    request = _composite_request(tier=2, aspect_names=names)
+    assert request.aspect_names == names
+    assert service._directional_branch_count(2, request.aspect_names) == 90
+    request = _composite_request(tier=2, aspect_names=["Tridecile", "Quindecile (165°)"])
+    assert request.aspect_names == ["Tredecile", "Tao"]
+    assert [a.name for a in service._selected_server_aspects(2, ["Tridecile"])] == ["Tredecile"]
+    with pytest.raises(ValueError, match="unique"):
+        _composite_request(tier=2, aspect_names=["Octile", "Semisquare"])
+    with pytest.raises(ValueError, match="unique"):
+        service._selected_server_aspects(2, ["Octile", "Semisquare"])
+    with pytest.raises(ValueError, match="unavailable"):
+        service._selected_server_aspects(0, ["Semioctile"])
+    with pytest.raises(ValidationError):
+        _composite_request(tier=2, aspect_names=["NotAnAspect"])
 
 
 def test_relationship_server_budget_rejects_expansive_search_before_solver(

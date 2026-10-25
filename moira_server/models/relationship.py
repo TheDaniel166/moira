@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 import math
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import Body
+from moira.aspect_registry import ASPECT_ALIASES, resolve_aspect
 
 from .chart import ChartResponse, HousesResponse
 
@@ -394,7 +395,30 @@ AspectMotionNameValue = Literal[
     "Hexadecile",
     "Seminovile",
     "Untion",
+    "Biundecile",
+    "Triundecile",
+    "Quadriundecile",
+    "Quinqueundecile",
+    "Biquindecile",
+    "Quadraquindecile",
+    "Septaquindecile",
+    "Sesquioctile",
+    "Quinsemioctile",
+    "Septsemioctile",
+    "Quinseminovile",
+    "Septseminovile",
+    "Trivigintile",
+    "Septvigintile",
+    "Nonavigintile",
+    "Squile",
+    "Squine",
+    "Semiseptile",
+    "Trisemiseptile",
+    "Quinsemiseptile",
 ]
+
+# Inputs advertise aliases; responses retain the canonical-only enum.
+AspectMotionInputValue = Literal[tuple(get_args(AspectMotionNameValue)) + tuple(ASPECT_ALIASES)]
 
 AspectMotionStationaryReasonValue = Literal[
     "body1_below_stationary_threshold",
@@ -408,7 +432,13 @@ class AspectMotionWitnessRequest(_StrictModel):
     longitude1_deg: float
     body2: str = Field(min_length=1, max_length=128)
     longitude2_deg: float
-    aspect: AspectMotionNameValue
+    aspect: AspectMotionInputValue = Field(
+        description=(
+            "Canonical longitude aspect or registered alias; case, spaces, hyphens, "
+            "and underscores normalize to one canonical response name. "
+            "Quindecile means 24 degrees; Tao means 165 degrees."
+        )
+    )
     speed1_deg_per_day: float | None = None
     speed2_deg_per_day: float | None = None
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
@@ -416,6 +446,11 @@ class AspectMotionWitnessRequest(_StrictModel):
     rate_tolerance_deg_per_day: float = Field(default=1e-12, ge=0.0, le=1.0)
     reference_frame: str = Field(min_length=1, max_length=128)
     timescale: str = Field(min_length=1, max_length=32)
+
+    @field_validator("aspect", mode="before")
+    @classmethod
+    def _canonical_aspect(cls, value: Any) -> str:
+        return resolve_aspect(value).name
 
     @field_validator("body1", "body2", "reference_frame", "timescale")
     @classmethod

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from moira.aspects import aspect_motion_witness
+from moira.aspect_registry import ASPECT_ALIASES
 from moira.constants import Aspect
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -207,10 +208,29 @@ def test_motion_route_openapi_is_fully_typed(monkeypatch: pytest.MonkeyPatch) ->
     aspect_schema = schema["components"]["schemas"]["AspectMotionWitnessRequest"][
         "properties"
     ]["aspect"]
-    assert set(aspect_schema["enum"]) == {definition.name for definition in Aspect.ALL}
+    assert set(aspect_schema["enum"]) == {definition.name for definition in Aspect.ALL} | set(ASPECT_ALIASES)
+    output_aspect = schema["components"]["schemas"]["AspectMotionWitnessResponse"]["properties"]["aspect"]
+    assert set(output_aspect["enum"]) == {definition.name for definition in Aspect.ALL}
 
 
 def test_transport_aspect_enum_matches_engine_registry_exactly() -> None:
     assert set(get_args(AspectMotionNameValue)) == {
         definition.name for definition in Aspect.ALL
     }
+
+
+def test_motion_route_accepts_every_definition_and_alias_with_canonical_output(client_and_engine):
+    client, _ = client_and_engine
+    names = [(a.name, a) for a in Aspect.ALL]
+    by_name = {a.name: a for a in Aspect.ALL}
+    names += [(alias, by_name[canonical]) for alias, canonical in ASPECT_ALIASES.items()]
+    for name, definition in names:
+        response = client.post(
+            "/v1/aspects/motion-witness",
+            json=_payload(longitude1_deg=0, longitude2_deg=definition.angle, aspect=name),
+        )
+        assert response.status_code == 200, name
+        witness = response.json()["witness"]
+        assert witness["aspect"] == definition.name
+        assert witness["angle_deg"] == definition.angle
+        assert witness["state"] == "exact"

@@ -27,6 +27,7 @@ from dataclasses import asdict, dataclass
 
 from ._strenum import StrEnum
 from .constants import ASPECT_TIERS, AspectDefinition
+from .aspect_registry import resolve_aspect
 from .spk_reader import SpkReader
 from .synastry import (
     CompositeChart,
@@ -644,6 +645,9 @@ def _selected_aspects(
         raise ValueError("relationship aspect_names must contain non-empty strings")
     if len(set(requested)) != len(requested):
         raise ValueError("relationship aspect_names must be unique")
+    requested = tuple(resolve_aspect(name).name for name in requested)
+    if len(set(requested)) != len(requested):
+        raise ValueError("relationship aspect_names must be unique after alias resolution")
     by_name = {aspect.name: aspect for aspect in aspects}
     missing = [name for name in requested if name not in by_name]
     if missing:

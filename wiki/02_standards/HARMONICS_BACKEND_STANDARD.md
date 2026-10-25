@@ -79,6 +79,27 @@ fractional harmonic requests.
 
 ## Harmonic-Orb Doctrine
 
+The preset catalog contains 18 named integer harmonics. Alongside the existing
+H1, H2, H3, H4, H5, H7, H8, H9, H11, and H12 entries it includes:
+
+| Harmonic | Preset name | Primitive angle |
+|---|---|---|
+| 6 | Sextile | 60° |
+| 10 | Decile | 36° |
+| 14 | Semiseptile | 360/14° |
+| 15 | Quindecile | 24° |
+| 16 | Hexadecile | 22.5° |
+| 18 | Seminovile | 20° |
+| 20 | Vigintile | 18° |
+| 24 | Untion | 15° |
+
+Tao is 11/24 of a turn (165°), so it is not the name of the primitive H24
+division. Existing preset labels, including Octile and Semi-sextile, remain
+compatible. New descriptions are geometric rather than interpretive. The
+catalog and computed REST preset names use the same entries; computed payloads
+continue to omit the editorial description. Canonical longitude aliases are
+owned by `moira.aspect_registry`, as described in the Aspect Backend Standard.
+
 `HarmonicOrbPolicy` is the immutable, provenance-bearing conjunction-orb
 policy. The admitted scaling mode is
 `HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC`, expressed as:

@@ -347,6 +347,8 @@ from .huber import (
 from .transits_aspects import AspectTransitEvent, find_aspect_transits, find_aspect_transits_to_longitudes
 from .transits_equatorial import EquatorialTransitEvent, find_declination_transits
 from .aspects import (
+    ASPECT_ALIASES,
+    resolve_aspect,
     CANONICAL_ASPECTS,
     DEFAULT_POLICY,
     TRADITIONAL_MOIETY_ORBS,
@@ -2411,7 +2413,7 @@ __all__ = [
     "tropical_to_sidereal", "tropical_to_sidereal_with_truth",
     "sidereal_to_tropical", "sidereal_to_tropical_with_truth",
     "list_ayanamsa_systems",
-    "AspectDefinition", "ASPECT_TIERS",
+    "AspectDefinition", "ASPECT_TIERS", "ASPECT_ALIASES", "resolve_aspect",
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY", "TRADITIONAL_MOIETY_ORBS",
     "AspectDomain", "AspectDirection", "HellenisticAspectEvaluationStatus",

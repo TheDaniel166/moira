@@ -41,8 +41,9 @@ Public surface / exports:
 
     # Constants
     HARMONIC_PRESETS      — dict of harmonic number → (name, description);
-                            the descriptions are unsourced Moira editorial
-                            keywords, not computed truth
+                            descriptions are catalog text, including legacy
+                            unsourced editorial keywords and geometric labels,
+                            not computed truth
     DEFAULT_HARMONIC_REFERENCE_ORB_DEG — default conjunction orb on the
                             harmonic wheel (12°, Hamblin)
 
@@ -299,8 +300,9 @@ def _resolve_orb_truth(
 # Preset harmonic names
 #
 # The names are the conventional aspect names for the 360/H division.  The
-# second element of each tuple is a short Moira editorial keyword gloss; it
-# is NOT sourced to a harmonic author and is not computed truth.  Computed
+# second element is catalog display text: legacy editorial keyword glosses
+# are NOT sourced to a harmonic author; additions state the circle geometry.
+# Neither kind is computed interpretive truth. Computed
 # REST payloads do not carry it (6.9.9); only the /presets catalogue
 # returns it, labelled as unsourced editorial.
 # ---------------------------------------------------------------------------
@@ -311,11 +313,19 @@ HARMONIC_PRESETS: dict[int, tuple[str, str]] = {
     3:  ("Trine",        "Ease, flow, integration"),
     4:  ("Square",       "Tension, challenges, action"),
     5:  ("Quintile",     "Creativity, talent, gifts"),
+    6:  ("Sextile",      "60-degree division (1/6 of the circle)"),
     7:  ("Septile",      "Destiny, fate, karma"),
     8:  ("Octile",       "Stress, power, material"),
     9:  ("Novile",       "Spiritual gifts, gestation"),
+    10: ("Decile",       "36-degree division (1/10 of the circle)"),
     11: ("Undecile",     "Rhythm, pattern, timing"),
     12: ("Semi-sextile", "Integration, adjustment"),
+    14: ("Semiseptile",  "360/14-degree division (1/14 of the circle)"),
+    15: ("Quindecile",   "24-degree division (1/15 of the circle)"),
+    16: ("Hexadecile",   "22.5-degree division (1/16 of the circle)"),
+    18: ("Seminovile",   "20-degree division (1/18 of the circle)"),
+    20: ("Vigintile",    "18-degree division (1/20 of the circle)"),
+    24: ("Untion",       "15-degree division (1/24 of the circle); Tao is 11/24"),
 }
 
 

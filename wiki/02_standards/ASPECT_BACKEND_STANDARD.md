@@ -147,7 +147,7 @@ The aspect engine delegates to external modules without redefining them:
 | Concern | Delegated to | Convention |
 |---|---|---|
 | Angular distance arithmetic | `moira.coordinates.angular_distance` | Returns `[0, 180]`, fold at 180° |
-| Canonical aspect definitions | `moira.constants.Aspect.ALL` | 26 zodiacal aspects |
+| Canonical aspect definitions | `moira.constants.Aspect.ALL` | 46 zodiacal aspects |
 | Default orb table | `moira.constants.DEFAULT_ORBS` | `{angle: max_orb}` |
 | Aspect tier lists | `moira.constants.ASPECT_TIERS` | Major / Common Minor / Extended Minor |
 
@@ -159,18 +159,18 @@ propagate automatically.
 ### 4. Canonical Aspect Set
 
 The complete set of recognised and detectable aspect types is declared in
-`CANONICAL_ASPECTS` — a module-level tuple of 28 names, frozen at import time.
+`CANONICAL_ASPECTS` — a module-level tuple of 48 names, frozen at import time.
 
 | Tier | Count | Names |
 |---|---|---|
 | Major | 5 | Conjunction, Sextile, Square, Trine, Opposition |
 | Common Minor | 6 | Semisextile, Semisquare, Sesquiquadrate, Quincunx, Quintile, Biquintile |
-| Extended Minor | 15 | Septile, Biseptile, Triseptile, Novile, Binovile, Quadnovile, Decile, Tredecile, Undecile, Quindecile, Vigintile, Tao, Hexadecile, Seminovile, Untion |
+| Extended Minor | 35 | Septile (3), Novile (3), Decile (2), Undecile (5), Quindecile (4), Vigintile (4), Untion including Tao (4), Hexadecile (4), Seminovile (3), and Semiseptile (3) series; members below |
 | Declination | 2 | Parallel, Contra-Parallel |
 
 Rules:
 
-- The 26 zodiacal names correspond 1-to-1 with entries in `Aspect.ALL`.
+- The 46 zodiacal names correspond 1-to-1 with entries in `Aspect.ALL`.
 - The 2 declination names are produced exclusively by `find_declination_aspects`.
 - `CANONICAL_ASPECTS` carries no detection logic; it is a declaration only.
 - No aspect not in `CANONICAL_ASPECTS` can be produced by any detection function.
@@ -202,6 +202,68 @@ doctrine retain their existing aspect sets. Calls that select all aspects,
 including the default `aspects_between()`, include the additions. Tao and Untion
 share the `UNTION` family because they are the 11/24 and 1/24 members of the
 24th-harmonic series.
+
+#### Completion of the admitted harmonic families
+
+These twenty additional targets are irreducible circle fractions. Every angle
+is computed as `360 * numerator / denominator`, without rounding the repeating
+fractions printed by some references. They are all extended minor aspects with
+configurable 1° default orbs. Existing definitions and their orbs are preserved.
+
+| Family | Canonical names, in corresponding order | Fractions of a turn |
+|---|---|---|
+| Undecile | Biundecile, Triundecile, Quadriundecile, Quinqueundecile | 2/11, 3/11, 4/11, 5/11 |
+| Quindecile | Biquindecile, Quadraquindecile, Septaquindecile | 2/15, 4/15, 7/15 |
+| Hexadecile | Sesquioctile, Quinsemioctile, Septsemioctile | 3/16, 5/16, 7/16 |
+| Seminovile | Quinseminovile, Septseminovile | 5/18, 7/18 |
+| Vigintile | Trivigintile, Septvigintile, Nonavigintile | 3/20, 7/20, 9/20 |
+| Untion | Squile, Squine | 5/24, 7/24 |
+| Semiseptile | Semiseptile, Trisemiseptile, Quinsemiseptile | 1/14, 3/14, 5/14 |
+
+Naming evidence: [Aureas's version-12 aspect catalog](https://www.aureas-astrology.com/contents/en-us/d1_News.html),
+[Astrolog's author-maintained aspect table](https://www.astrolog.org/astrolog/astdist.htm),
+and [Philip Graves's aspect table](https://www.astrolearn.com/astrology-articles/aspects2/).
+These sources establish terminology and published usage; Moira owns the
+explicit orb and display-abbreviation policy. Numerical verification derives
+the target angles independently from the exact fractions.
+
+The unsigned angular-distance primitive reduces `abs(a-b)` modulo 360 before
+folding at 180°. This keeps argument reversal symmetric and avoids adding and
+subtracting 360 for a negative remainder, which can move repeating-fraction
+targets across an otherwise exact closed orb boundary. The orb ceiling itself
+is unchanged. Exact-rational and closed-boundary tests cover this primitive.
+
+#### Canonical identities and aliases
+
+`moira.aspect_registry.ASPECT_ALIASES` is a read-only mapping from declared
+alternative spellings to canonical longitude-aspect names. `resolve_aspect()`
+returns the existing `AspectDefinition` object. Both are also exposed through
+`moira.aspects`, `moira.classical`, `moira.predictive`, `moira.facade`, and `moira`.
+Resolution ignores case and internal ASCII spaces, hyphens, and underscores;
+leading/trailing whitespace and unknown names raise `ValueError`. Geometry,
+classification, canonical counts, and graph edges never gain duplicate entries
+because an aspect has multiple names.
+
+Examples include Octile → Semisquare, Tridecile/Sesquiquintile → Tredecile,
+Nonile → Novile, Semioctile/Sexdecile → Hexadecile, Semidecile → Vigintile,
+Semiduodecile/Quartisextile → Untion, and published spelling variants of the
+new multiples. `Quindecile` always means 24°. The explicitly qualified
+`Quindecile (165°)`, `Quindecile (Tyl)`, `Contraquindecile`, and
+`Undecaquartisextile` resolve to Tao at 165° under those named conventions.
+`Tredecile` remains 108°; no 13th-harmonic meaning is inferred. Ambiguous or
+unadmitted labels such as Sentagon and GoldenRatio are not aliases.
+
+Motion witnesses and relationship-transit selection accept the registry's
+aliases and emit canonical names. REST motion input schemas advertise both
+canonical names and declared aliases; output schemas enumerate canonical
+names only. Relationship REST requests can explicitly select up to all 46
+aspects, reject duplicates after alias resolution, and retain the existing
+branch, scan, and search-work budgets. Alias resolution never widens a tier.
+
+`HARMONIC_PRESETS` now covers the admitted primitive divisions with H6,
+H10, H14, H15, H16, H18, H20, and H24 added. H24 is named Untion (1/24),
+not Tao (11/24). Existing preset labels are retained; new descriptions state
+geometry without adding interpretive doctrine. See the Harmonics Backend Standard.
 
 ---
 
@@ -238,12 +300,13 @@ Aspects in the same harmonic series share a family:
 | `SEPTILE` | Septile, Biseptile, Triseptile |
 | `NOVILE` | Novile, Binovile, Quadnovile |
 | `DECILE` | Decile, Tredecile |
-| `UNDECILE` | Undecile |
-| `QUINDECILE` | Quindecile |
-| `VIGINTILE` | Vigintile |
-| `HEXADECILE` | Hexadecile |
-| `SEMINOVILE` | Seminovile |
-| `UNTION` | Untion, Tao |
+| `UNDECILE` | Undecile, Biundecile, Triundecile, Quadriundecile, Quinqueundecile |
+| `QUINDECILE` | Quindecile, Biquindecile, Quadraquindecile, Septaquindecile |
+| `VIGINTILE` | Vigintile, Trivigintile, Septvigintile, Nonavigintile |
+| `HEXADECILE` | Hexadecile, Sesquioctile, Quinsemioctile, Septsemioctile |
+| `SEMINOVILE` | Seminovile, Quinseminovile, Septseminovile |
+| `UNTION` | Untion, Tao, Squile, Squine |
+| `SEMISEPTILE` | Semiseptile, Trisemiseptile, Quinsemiseptile |
 | `DECLINATION` | Parallel, Contra-Parallel |
 
 ---
@@ -779,7 +842,8 @@ structural invariants explicitly in their class docstrings.
 
 | Name | Type | Content |
 |---|---|---|
-| `CANONICAL_ASPECTS` | `tuple[str, ...]` | 28 canonical aspect names |
+| `CANONICAL_ASPECTS` | `tuple[str, ...]` | 48 canonical aspect names |
+| `ASPECT_ALIASES` | read-only `Mapping[str, str]` | Declared alternatives resolving to canonical longitude names |
 | `DEFAULT_POLICY` | `AspectPolicy` | Policy matching historical detection defaults |
 
 #### Detection functions
