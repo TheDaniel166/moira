@@ -129,6 +129,34 @@ def test_positions_in_route_excludes_just_outside_boundary(client_and_engine) ->
 
 
 @pytest.mark.parametrize(
+    ("name", "angle", "family"),
+    [("Tao", 165.0, "untion"), ("Hexadecile", 22.5, "hexadecile"),
+     ("Seminovile", 20.0, "seminovile"), ("Untion", 15.0, "untion"),
+     ("Quindecile", 24.0, "quindecile")],
+)
+def test_positions_in_route_serializes_extended_aspect_geometry_and_family(
+    client_and_engine, name, angle, family,
+) -> None:
+    client, _ = client_and_engine
+    response = client.post(
+        "/v1/aspects/from-longitudes",
+        json={"longitudes": {"Sun": 355.0, "Moon": (355 + angle) % 360}, "tier": 2},
+    )
+    assert response.status_code == 200
+    matches = [event for event in response.json()["events"] if event["aspect"] == name]
+    assert len(matches) == 1
+    event = matches[0]
+    assert event["angle"] == angle
+    assert event["orb"] == 0.0
+    assert event["allowed_orb"] == 1.0
+    assert event["classification"] == {
+        "domain": "zodiacal", "tier": "extended_minor", "family": family,
+    }
+    assert event["applying"] is None
+    assert event["motion_state"] == "exact"
+
+
+@pytest.mark.parametrize(
     "payload",
     [
         {"longitudes": {"Sun": 0.0}},

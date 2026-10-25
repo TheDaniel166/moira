@@ -46,6 +46,9 @@ class AspectFamily(str, Enum):
     UNDECILE = "undecile"
     QUINDECILE = "quindecile"
     VIGINTILE = "vigintile"
+    HEXADECILE = "hexadecile"
+    SEMINOVILE = "seminovile"
+    UNTION = "untion"
     DECLINATION = "declination"
     UNKNOWN = "unknown"
 

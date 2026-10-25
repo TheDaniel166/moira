@@ -501,6 +501,13 @@ _TRDEC = AspectDefinition("Tredecile",   108.0,    1.5, "Td", False)
 _UNDEC = AspectDefinition("Undecile",    360/11,   1.0, "U",  False)
 _QNDEC = AspectDefinition("Quindecile",   24.0,    1.0, "Qd", False)
 _VGNT  = AspectDefinition("Vigintile",    18.0,    1.0, "V",  False)
+# Distinct named harmonic angles; Quindecile retains its 1/15-circle meaning.
+# Naming/geometry provenance and Moira's orb/abbreviation policy are recorded
+# in wiki/02_standards/ASPECT_BACKEND_STANDARD.md, "Canonical Aspect Set".
+_TAO   = AspectDefinition("Tao",         165.0,    1.0, "Tao", False)
+_HXDEC = AspectDefinition("Hexadecile",   22.5,    1.0, "Hx", False)
+_SNOVL = AspectDefinition("Seminovile",   20.0,    1.0, "sN", False)
+_UNT   = AspectDefinition("Untion",       15.0,    1.0, "Un", False)
 
 
 class Aspect:
@@ -553,7 +560,7 @@ class Aspect:
           "TRINE", "SESQUIQUADRATE", "QUINCUNX", "OPPOSITION", "QUINTILE",
           "BIQUINTILE", "TREDECILE", "SEPTILE", "BISEPTILE", "TRISEPTILE",
           "NOVILE", "BINOVILE", "QUADNOVILE", "DECILE", "UNDECILE",
-          "QUINDECILE", "VIGINTILE",
+          "QUINDECILE", "VIGINTILE", "TAO", "HEXADECILE", "SEMINOVILE", "UNTION",
           "MAJOR", "COMMON_MINOR", "EXTENDED_MINOR", "MINOR", "ALL"
         ],
         "internal": []
@@ -589,6 +596,10 @@ class Aspect:
     UNDECILE       = _UNDEC
     QUINDECILE     = _QNDEC
     VIGINTILE      = _VGNT
+    TAO            = _TAO
+    HEXADECILE     = _HXDEC
+    SEMINOVILE     = _SNOVL
+    UNTION         = _UNT
 
     MAJOR: list[AspectDefinition] = [_CONJ, _SEXT, _SQR, _TRIN, _OPP]
 
@@ -601,6 +612,7 @@ class Aspect:
         _NOVL, _BNOVL, _QNOVL,
         _DECL, _TRDEC,
         _UNDEC, _QNDEC, _VGNT,
+        _TAO, _HXDEC, _SNOVL, _UNT,
     ]
 
     # Backward-compat alias

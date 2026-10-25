@@ -418,8 +418,17 @@ def test_relationship_transit_direction_filter_and_backward_order(
     assert result.computation_truth.transit_policy_source == "caller_supplied"
 
 
+@pytest.mark.parametrize(
+    ("tier", "name", "targets"),
+    [(0, "Square", [100.0, 280.0]),
+     (2, "Tao", [175.0, 205.0]),
+     (2, "Hexadecile", [32.5, 347.5]),
+     (2, "Seminovile", [30.0, 350.0]),
+     (2, "Untion", [25.0, 355.0]),
+     (2, "Quindecile", [34.0, 346.0])],
+)
 def test_relationship_transits_accept_an_explicit_aspect_subset(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tier, name, targets,
 ) -> None:
     calls: list[float] = []
 
@@ -435,12 +444,12 @@ def test_relationship_transits_accept_an_explicit_aspect_subset(
         2_460_100.0,
         target_names=["Sun"],
         include_nodes=False,
-        tier=0,
-        aspect_names=["Square"],
+        tier=tier,
+        aspect_names=[name],
     )
 
-    assert sorted(calls) == [100.0, 280.0]
-    assert result.computation_truth.aspect_names == ("Square",)
+    assert sorted(calls) == targets
+    assert result.computation_truth.aspect_names == (name,)
     assert result.computation_truth.search_call_count == 2
 
 

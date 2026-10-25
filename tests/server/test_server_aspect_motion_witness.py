@@ -122,6 +122,29 @@ def test_motion_route_preserves_exact_truth_without_speeds(client_and_engine) ->
     assert witness["body2_stationary"] is None
 
 
+@pytest.mark.parametrize(
+    ("name", "angle"),
+    [("Tao", 165.0), ("Hexadecile", 22.5), ("Seminovile", 20.0),
+     ("Untion", 15.0), ("Quindecile", 24.0)],
+)
+def test_motion_route_accepts_distinct_extended_aspect_targets(
+    client_and_engine, name, angle,
+) -> None:
+    client, engine = client_and_engine
+    response = client.post(
+        "/v1/aspects/motion-witness",
+        json=_payload(longitude1_deg=0.0, longitude2_deg=angle, aspect=name),
+    )
+    assert response.status_code == 200
+    witness = response.json()["witness"]
+    assert witness["aspect"] == name
+    assert witness["angle_deg"] == angle
+    assert witness["orb_deg"] == 0.0
+    assert witness["allowed_orb_deg"] == 1.0
+    assert witness["state"] == "exact"
+    assert engine.calls[0]["aspect"] == name
+
+
 def test_motion_route_exposes_station_reason(client_and_engine) -> None:
     client, _ = client_and_engine
 
@@ -184,13 +207,7 @@ def test_motion_route_openapi_is_fully_typed(monkeypatch: pytest.MonkeyPatch) ->
     aspect_schema = schema["components"]["schemas"]["AspectMotionWitnessRequest"][
         "properties"
     ]["aspect"]
-    assert set(aspect_schema["enum"]) >= {
-        "Conjunction",
-        "Sextile",
-        "Square",
-        "Trine",
-        "Opposition",
-    }
+    assert set(aspect_schema["enum"]) == {definition.name for definition in Aspect.ALL}
 
 
 def test_transport_aspect_enum_matches_engine_registry_exactly() -> None:

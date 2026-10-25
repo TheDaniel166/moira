@@ -1591,9 +1591,9 @@ def test_motion_state_detection_semantics_unchanged() -> None:
 # Phase 7 — canonical configuration tests
 # ---------------------------------------------------------------------------
 
-def test_canonical_aspects_has_exactly_24_members() -> None:
-    """CANONICAL_ASPECTS declares exactly 24 aspect names."""
-    assert len(CANONICAL_ASPECTS) == 24
+def test_canonical_aspects_has_exactly_28_members() -> None:
+    """CANONICAL_ASPECTS declares exactly 28 aspect names."""
+    assert len(CANONICAL_ASPECTS) == 28
 
 
 def test_canonical_aspects_contains_all_five_major_aspects() -> None:
@@ -1609,12 +1609,13 @@ def test_canonical_aspects_contains_all_six_common_minor_aspects() -> None:
         assert name in CANONICAL_ASPECTS, f"{name} missing from CANONICAL_ASPECTS"
 
 
-def test_canonical_aspects_contains_all_eleven_extended_minor_aspects() -> None:
-    """All eleven extended-minor aspects are present in CANONICAL_ASPECTS."""
+def test_canonical_aspects_contains_all_fifteen_extended_minor_aspects() -> None:
+    """All fifteen extended-minor aspects are present in CANONICAL_ASPECTS."""
     for name in ("Septile", "Biseptile", "Triseptile",
                  "Novile", "Binovile", "Quadnovile",
                  "Decile", "Tredecile",
-                 "Undecile", "Quindecile", "Vigintile"):
+                 "Undecile", "Quindecile", "Vigintile",
+                 "Tao", "Hexadecile", "Seminovile", "Untion"):
         assert name in CANONICAL_ASPECTS, f"{name} missing from CANONICAL_ASPECTS"
 
 
@@ -1701,15 +1702,15 @@ def test_canonical_detection_vigintile() -> None:
     assert vigintile[0].classification.family is AspectFamily.VIGINTILE
 
 
-# --- All 22 zodiacal aspects detectable via Aspect.ALL (tier=2) ------------
+# --- All 26 zodiacal aspects detectable via Aspect.ALL (tier=2) ------------
 
-def test_all_22_zodiacal_canonical_aspects_are_detectable() -> None:
+def test_all_26_zodiacal_canonical_aspects_are_detectable() -> None:
     """Every zodiacal name in CANONICAL_ASPECTS is detectable via aspects_between(tier=2)."""
     from moira.constants import Aspect as _Aspect
     angle_by_name = {adef.name: adef.angle for adef in _Aspect.ALL}
     zodiacal_names = [n for n in CANONICAL_ASPECTS
                       if n not in ("Parallel", "Contra-Parallel")]
-    assert len(zodiacal_names) == 22
+    assert len(zodiacal_names) == 26
     for name in zodiacal_names:
         angle = angle_by_name[name]
         results = aspects_between("Sun", 0.0, "Moon", angle, tier=2)

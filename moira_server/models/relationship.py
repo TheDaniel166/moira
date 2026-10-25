@@ -390,6 +390,10 @@ AspectMotionNameValue = Literal[
     "Undecile",
     "Quindecile",
     "Vigintile",
+    "Tao",
+    "Hexadecile",
+    "Seminovile",
+    "Untion",
 ]
 
 AspectMotionStationaryReasonValue = Literal[

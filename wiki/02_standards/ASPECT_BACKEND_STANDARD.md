@@ -147,7 +147,7 @@ The aspect engine delegates to external modules without redefining them:
 | Concern | Delegated to | Convention |
 |---|---|---|
 | Angular distance arithmetic | `moira.coordinates.angular_distance` | Returns `[0, 180]`, fold at 180° |
-| Canonical aspect definitions | `moira.constants.Aspect.ALL` | 22 zodiacal aspects |
+| Canonical aspect definitions | `moira.constants.Aspect.ALL` | 26 zodiacal aspects |
 | Default orb table | `moira.constants.DEFAULT_ORBS` | `{angle: max_orb}` |
 | Aspect tier lists | `moira.constants.ASPECT_TIERS` | Major / Common Minor / Extended Minor |
 
@@ -159,21 +159,49 @@ propagate automatically.
 ### 4. Canonical Aspect Set
 
 The complete set of recognised and detectable aspect types is declared in
-`CANONICAL_ASPECTS` — a module-level tuple of 24 names, frozen at import time.
+`CANONICAL_ASPECTS` — a module-level tuple of 28 names, frozen at import time.
 
 | Tier | Count | Names |
 |---|---|---|
 | Major | 5 | Conjunction, Sextile, Square, Trine, Opposition |
 | Common Minor | 6 | Semisextile, Semisquare, Sesquiquadrate, Quincunx, Quintile, Biquintile |
-| Extended Minor | 11 | Septile, Biseptile, Triseptile, Novile, Binovile, Quadnovile, Decile, Tredecile, Undecile, Quindecile, Vigintile |
+| Extended Minor | 15 | Septile, Biseptile, Triseptile, Novile, Binovile, Quadnovile, Decile, Tredecile, Undecile, Quindecile, Vigintile, Tao, Hexadecile, Seminovile, Untion |
 | Declination | 2 | Parallel, Contra-Parallel |
 
 Rules:
 
-- The 22 zodiacal names correspond 1-to-1 with entries in `Aspect.ALL`.
+- The 26 zodiacal names correspond 1-to-1 with entries in `Aspect.ALL`.
 - The 2 declination names are produced exclusively by `find_declination_aspects`.
 - `CANONICAL_ASPECTS` carries no detection logic; it is a declaration only.
 - No aspect not in `CANONICAL_ASPECTS` can be produced by any detection function.
+
+#### Additional extended-minor geometry and naming
+
+| Attribute | Name | Angle | Circle fraction | Default orb | Display abbreviation |
+|---|---|---|---|---|---|
+| `Aspect.TAO` | Tao | 165° | 11/24 | 1° | `Tao` |
+| `Aspect.HEXADECILE` | Hexadecile | 22.5° | 1/16 | 1° | `Hx` |
+| `Aspect.SEMINOVILE` | Seminovile | 20° | 1/18 | 1° | `sN` |
+| `Aspect.UNTION` | Untion | 15° | 1/24 | 1° | `Un` |
+
+Quindecile remains 24° (1/15 of the circle). The 165° convention sometimes
+called Quindecile is named **Tao** here to keep both geometries unambiguous;
+the bare name `Quindecile` always selects 24°, including motion-witness requests.
+[Astrodienst's Tao entry](https://www.astro.com/astrowiki/en/Tao) records this
+alternative name. Michel Suignard's 2017
+[Unicode working document N4811, Table 1](https://www.unicode.org/wg2/docs/n4811-fdbk-extra-aspect-sym.pdf)
+records Hexadecile, Seminovile, Untion, and Quindecile at their respective
+fractions; it is naming evidence, not a source for orbs or dedicated glyphs.
+
+The 1° default orbs are explicit Moira policy, following the nearby extended
+minor definitions; they are configurable through the existing orb table and
+`orb_factor`. The text abbreviations above are Moira display labels, not claims
+of standardized Unicode symbols. All four belong exclusively to the extended
+minor tier (`tier=2`); tiers 0/1, common-minor defaults, and whole-sign/moiety
+doctrine retain their existing aspect sets. Calls that select all aspects,
+including the default `aspects_between()`, include the additions. Tao and Untion
+share the `UNTION` family because they are the 11/24 and 1/24 members of the
+24th-harmonic series.
 
 ---
 
@@ -213,6 +241,9 @@ Aspects in the same harmonic series share a family:
 | `UNDECILE` | Undecile |
 | `QUINDECILE` | Quindecile |
 | `VIGINTILE` | Vigintile |
+| `HEXADECILE` | Hexadecile |
+| `SEMINOVILE` | Seminovile |
+| `UNTION` | Untion, Tao |
 | `DECLINATION` | Parallel, Contra-Parallel |
 
 ---
@@ -748,7 +779,7 @@ structural invariants explicitly in their class docstrings.
 
 | Name | Type | Content |
 |---|---|---|
-| `CANONICAL_ASPECTS` | `tuple[str, ...]` | 24 canonical aspect names |
+| `CANONICAL_ASPECTS` | `tuple[str, ...]` | 28 canonical aspect names |
 | `DEFAULT_POLICY` | `AspectPolicy` | Policy matching historical detection defaults |
 
 #### Detection functions

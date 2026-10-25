@@ -86,9 +86,9 @@ This module has thirteen distinct concerns, kept intentionally separate:
    search for a future perfection or station.
 
 10. **Canonical configuration** — ``CANONICAL_ASPECTS``.
-   The complete, explicitly declared set of all 24 aspect types recognised
-   and detectable by this engine: 22 zodiacal aspects (5 major, 6
-   common-minor, 11 extended-minor) plus 2 declination aspects (Parallel,
+   The complete, explicitly declared set of all 28 aspect types recognised
+   and detectable by this engine: 26 zodiacal aspects (5 major, 6
+   common-minor, 15 extended-minor) plus 2 declination aspects (Parallel,
    Contra-Parallel).  ``CANONICAL_ASPECTS`` makes the full set inspectable
    at import time without requiring knowledge of ``moira.constants``.
 
@@ -172,7 +172,7 @@ Public surface
 ``AspectMotionStationaryReason`` — typed body-station or relative-standstill reason.
 ``AspectMotionWitness``      — immutable instantaneous signed-error/rate witness.
 ``aspect_motion_witness``    — build the witness from caller-supplied longitudes and speeds.
-``CANONICAL_ASPECTS``        — tuple of all 24 canonical aspect names (22 zodiacal + 2 declination).
+``CANONICAL_ASPECTS``        — tuple of all 28 canonical aspect names (26 zodiacal + 2 declination).
 ``AspectPatternKind``        — enum: STELLIUM, T_SQUARE, GRAND_TRINE, GRAND_CROSS, YOD.
 ``AspectPattern``            — frozen dataclass: kind, bodies (frozenset), aspects (tuple).
 ``find_patterns``            — detect multi-body patterns from a list of admitted AspectData.
@@ -642,6 +642,10 @@ _FAMILY_BY_NAME: dict[str, AspectFamily] = {
     "Undecile":        AspectFamily.UNDECILE,
     "Quindecile":      AspectFamily.QUINDECILE,
     "Vigintile":       AspectFamily.VIGINTILE,
+    "Tao":             AspectFamily.UNTION,
+    "Hexadecile":      AspectFamily.HEXADECILE,
+    "Seminovile":      AspectFamily.SEMINOVILE,
+    "Untion":          AspectFamily.UNTION,
 }
 
 _EXTENDED_MINOR_NAMES: frozenset[str] = frozenset(
@@ -1284,7 +1288,7 @@ CANONICAL_ASPECTS: tuple[str, ...] = (
     "Quincunx",
     "Quintile",
     "Biquintile",
-    # Extended Minor (11) — harmonic-series aspects
+    # Extended Minor (15) — harmonic-series aspects
     "Septile",
     "Biseptile",
     "Triseptile",
@@ -1296,23 +1300,27 @@ CANONICAL_ASPECTS: tuple[str, ...] = (
     "Undecile",
     "Quindecile",
     "Vigintile",
+    "Tao",
+    "Hexadecile",
+    "Seminovile",
+    "Untion",
     # Declination (2) — out-of-plane dimension
     "Parallel",
     "Contra-Parallel",
 )
 """
-The complete set of 24 aspect names recognised and detectable by this engine.
+The complete set of 28 aspect names recognised and detectable by this engine.
 
 Composition
 -----------
 - 5 major (Ptolemaic): Conjunction, Sextile, Square, Trine, Opposition
 - 6 common-minor: Semisextile, Semisquare, Sesquiquadrate, Quincunx,
   Quintile, Biquintile
-- 11 extended-minor: Septile series (3), Novile series (3), Decile
-  series (2), Undecile, Quindecile, Vigintile
+- 15 extended-minor: Septile series (3), Novile series (3), Decile
+  series (2), Undecile, Quindecile, Vigintile, Tao, Hexadecile, Seminovile, Untion
 - 2 declination: Parallel, Contra-Parallel
 
-The 22 zodiacal names correspond 1-to-1 with entries in ``Aspect.ALL``
+The 26 zodiacal names correspond 1-to-1 with entries in ``Aspect.ALL``
 from ``moira.constants``.  The 2 declination names are produced exclusively
 by ``find_declination_aspects``.
 
