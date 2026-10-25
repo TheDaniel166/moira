@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.10.2] - 2026-10-23
+## [6.11.0] - 2026-10-25
 
 ### Fixed
 - Primary-direction distributor boundaries use the explicit natal Sun speed

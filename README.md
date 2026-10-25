@@ -82,7 +82,7 @@ pip install "moira-astro[lunar-graze]"
 ```
 
 > [!NOTE]
-> This README documents the `6.10.2` patch baseline. The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
+> This README documents the `6.11.0` minor-release baseline. The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
 
 ---
 

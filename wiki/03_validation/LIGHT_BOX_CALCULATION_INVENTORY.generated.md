@@ -4,8 +4,8 @@
 
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
-- Engine version: `6.10.2`
-- Surface fingerprint: `4bfe790abdb9aee5bbe951e3da88be1595196356da724948b910e0cbade3de05`
+- Engine version: `6.11.0`
+- Surface fingerprint: `78d580c4275d5755137109e951ebd77320fa66b09d35036fb642b34bf4746de6`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 

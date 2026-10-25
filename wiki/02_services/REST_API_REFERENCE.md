@@ -2056,7 +2056,7 @@ barycenter is exposed without a declared mass model.
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
-### Exact primary-direction time keys (6.10.2)
+### Exact primary-direction time keys (6.11.0)
 
 `POST /v1/primary-directions/time-keys` converts already solved arcs without
 repeating their geometry search. Send an aware natal `dt` and `items` containing
