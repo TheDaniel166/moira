@@ -79,6 +79,10 @@ fractional harmonic requests.
 
 ## Harmonic-Orb Doctrine
 
+The [Complete Aspect Catalog](ASPECT_CATALOG.md) provides the full 22-preset
+table and every standard/optional longitude member with exact fractions,
+registered aliases, and its separate longitude-orb default.
+
 The preset catalog contains 22 named integer harmonics. Alongside the existing
 H1, H2, H3, H4, H5, H7, H8, H9, H11, and H12 entries it includes:
 

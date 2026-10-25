@@ -9,6 +9,10 @@ here and are frozen until explicitly superseded by a revision to this document.
 This document reflects current implementation truth. Focused verification
 counts belong in completion receipts rather than frozen doctrine.
 
+The [Complete Aspect Catalog](ASPECT_CATALOG.md) lists all 46 standard and 28
+optional longitude targets, both declination relationships, every registered
+alias, exact turn fractions, default orbs, selection rules, and harmonic presets.
+
 ---
 
 ## Part I — Architecture Standard

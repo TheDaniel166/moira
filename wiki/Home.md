@@ -20,6 +20,7 @@ for its doctrines, standards, and mathematical validation.
 The engine is composed of sovereign, constitutionalized subsystems:
 - **[Planetary Reduction](02_standards/PLANETARY_REDUCTION_PIPELINE.md)**
 - **[Aspects & Orbs](02_standards/ASPECT_BACKEND_STANDARD.md)**
+- **[Complete Aspect Catalog](02_standards/ASPECT_CATALOG.md)**: All 74 longitude targets and two declination relationships, exact fractions, aliases, default orbs, optional sets, and harmonic presets.
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**
 - **[Dignities & Sect](02_standards/DIGNITIES_BACKEND_STANDARD.md)**
 - **[Church of Light Astrodynes](02_standards/ASTRODYNES_BACKEND_STANDARD.md)**

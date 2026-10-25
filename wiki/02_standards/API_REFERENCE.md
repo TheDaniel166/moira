@@ -452,15 +452,37 @@ Ayanamsa.SASSANIAN
 
 ### `AspectDefinition` and `ASPECT_TIERS`
 
-`AspectDefinition` specifies a single aspect angle with its name, symbol, orb, and tier. Used to add custom aspects or override defaults.
+The [Complete Aspect Catalog](ASPECT_CATALOG.md) lists all 74 registered
+longitude aspects and two declination relationships with degrees, exact turn
+fractions, every registered alias, default orbs, and optional-set membership.
+Quindecile is 24°, Tao is 165°, and unqualified Tredecile is 108°.
+
+`AspectDefinition(name, angle, default_orb, symbol, is_major)` is the immutable
+geometry record. Obtain an existing definition through `resolve_aspect()`:
 
 ```python
-from moira.facade import AspectDefinition, ASPECT_TIERS
+from moira.facade import ASPECT_TIERS, resolve_aspect
 
-custom = AspectDefinition(name="Quintile", symbol="Q", angle=72.0, orb=2.0, tier=3)
+definition = resolve_aspect("Octile")
+assert definition.name == "Semisquare"
+assert definition.angle == 45.0
+assert definition.default_orb == 2.0
+assert [len(ASPECT_TIERS[tier]) for tier in (0, 1, 2)] == [5, 11, 46]
 ```
 
-`ASPECT_TIERS`: `dict[int, str]` mapping tier number → descriptive label (e.g. `{1: "Major", 2: "Minor", 3: "Harmonic"}`). Used to filter aspects by significance level via `AspectPolicy`.
+`ASPECT_TIERS` maps integers to lists of definitions: `0` selects five major
+aspects, `1` selects eleven major/common minor aspects, and `2` selects all
+46 standard longitude aspects. `ASPECT_DEFINITIONS` is the combined tuple of
+74 longitude definitions; `ASPECT_ALIASES` maps 97 declared aliases to their
+canonical names. Alias resolution emits canonical identities.
+
+`OPTIONAL_ASPECT_SETS` and `OPTIONAL_ASPECT_FRACTIONS` expose immutable H13,
+H32, H36, and H40 member metadata and exact integer fractions. Enable any of
+those sets explicitly with `optional_sets=("H13", "H32", "H36", "H40")`, or
+the equivalent `AspectPolicy` field. Selection is empty by default, including
+at `tier=2`. Optional longitude default orbs are `12/H` degrees; caller orb
+overrides retain their existing meaning. `GET /v1/aspects/optional-sets`
+exposes the four sets, exact fractions, aliases, and default orbs over REST.
 
 ### `Chart` — planetary snapshot vessel
 
@@ -580,7 +602,7 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `aspects(chart, orbs=None, include_minor=True, *, tier=None, orb_factor=1.0, policy=None)` | `list[AspectData]` | All natal aspects with the complete owning-module policy surface forwarded |
+| `aspects(chart, orbs=None, include_minor=True, *, tier=None, orb_factor=1.0, policy=None, optional_sets=())` | `list[AspectData]` | Natal aspects under the standard tier and explicitly enabled optional sets; an explicit policy takes precedence |
 | `hellenistic_superiority_truth(longitude1, longitude2, aspect_angle=None, *, body1="body1", body2="body2")` | `HellenisticSuperiorityTruth` | Raw direction applicability plus tenth-sign overcoming for one ordered pair |
 | `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects, with optional maximal-structure filtering |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
@@ -688,11 +710,11 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-aspects between two natal charts (default tier 0: the five major aspects; 6.9.9) |
+| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True, optional_sets=())` | `list[AspectData]` | Inter-aspects between two natal charts; default tier 0 selects the five major aspects, with optional sets explicitly enabled |
 | `house_overlay(chart_source, target_houses, include_nodes=True, source_label="A", target_label="B")` | `SynastryHouseOverlay` | Place chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, include_nodes=True)` | `MutualHouseOverlay` | Both overlay directions in one call |
 | `composite_chart(chart_a, chart_b, houses_a=None, houses_b=None)` | `CompositeChart` | Midpoint composite |
-| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True)` | `LongitudeAspectAnalysis` | Canonical position-only aspect analysis for a derived chart; no speeds or moment inferred |
+| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True, optional_sets=())` | `LongitudeAspectAnalysis` | Position-only aspect analysis with selected sets preserved in the receipt; no speeds or moment inferred |
 | `composite_chart_reference_place(chart_a, chart_b, houses_a, houses_b, reference_latitude, house_system=..., policy=None)` | `CompositeChart` | Reference-place composite house method with explicit synastry policy when supplied |
 | `davison_chart(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b, house_system=..., policy=None)` | `DavisonChart` | Davison Relationship Chart (spherical midpoint time + location) |
 | `davison_chart_uncorrected(...)` | `DavisonChart` | Davison with arithmetic midpoints |
@@ -706,8 +728,8 @@ message.
 
 The REST forms `POST /v1/composite/chart` and `POST /v1/davison/chart` include
 a required `aspects` analysis of the returned chart's own longitudes. The
-request's `tier`, `orb_factor`, and `include_nodes` fields govern that nested
-analysis, whose computation truth preserves the absence of speed-derived
+request's `tier`, `orb_factor`, `include_nodes`, and `optional_sets` fields
+govern that nested analysis, whose computation truth preserves the absence of speed-derived
 motion semantics.
 
 ### Geography
@@ -1405,6 +1427,8 @@ from moira.facade import (
     AspectFamily, AspectDomain, AspectTier, MotionState,
     AspectGraph, AspectGraphNode, AspectFamilyProfile, AspectHarmonicProfile,
     CANONICAL_ASPECTS, DEFAULT_POLICY,
+    ASPECT_DEFINITIONS, ASPECT_ALIASES, resolve_aspect,
+    OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS,
 )
 ```
 
