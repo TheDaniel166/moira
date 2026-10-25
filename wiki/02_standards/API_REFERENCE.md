@@ -604,7 +604,7 @@ message.
 |---|---|---|
 | `aspects(chart, orbs=None, include_minor=True, *, tier=None, orb_factor=1.0, policy=None, optional_sets=())` | `list[AspectData]` | Natal aspects under the standard tier and explicitly enabled optional sets; an explicit policy takes precedence |
 | `hellenistic_superiority_truth(longitude1, longitude2, aspect_angle=None, *, body1="body1", body2="body2")` | `HellenisticSuperiorityTruth` | Raw direction applicability plus tenth-sign overcoming for one ordered pair |
-| `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects, with optional maximal-structure filtering |
+| `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named patterns using all 46 standard longitude aspects, including Septile Triangle; optional maximal-structure filtering |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
 | `midpoints_to_point(chart, longitude, orb=1.5)` | `list[tuple[Midpoint, float]]` | Midpoints falling at a given longitude, paired with absolute orb |
 | `harmonic(chart, number)` | `list[HarmonicPosition]` | Integer cyclic harmonic or zero-Aries-anchored positive-real continuous multiplier |
@@ -1479,17 +1479,17 @@ recomputing or flattening the receipt.
 
 | Function | Returns | Description |
 |---|---|---|
-| `find_aspects(longitudes, orbs=None, include_minor=True, speeds=None, tier=None, orb_factor=1.0, policy=None)` | `list[AspectData]` | Low-level detector over a longitude dict with optional speed and policy inputs |
-| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True)` | `LongitudeAspectAnalysis` | Validated first-class derived-position analysis; normalized deterministic inputs plus canonical `AspectData` results |
-| `aspects_between(lons_a, lons_b, orbs=None, include_minor=True)` | `list[AspectData]` | Cross-set aspects (synastry / transits) |
-| `aspects_to_point(longitudes, point, orbs=None)` | `list[AspectData]` | Aspects to a single longitude |
+| `find_aspects(positions, orbs=None, include_minor=True, speeds=None, tier=None, orb_factor=1.0, policy=None, optional_sets=())` | `list[AspectData]` | Longitude detector with speed, orb policy, and explicit optional-set inputs |
+| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True, optional_sets=())` | `LongitudeAspectAnalysis` | Validated derived-position analysis; normalized deterministic inputs and selected-set receipt |
+| `aspects_between(body_a, lon_a, body_b, lon_b, tier=2, ..., optional_sets=())` | `list[AspectData]` | Aspects between two named points; accepts custom orbs, speeds, and an explicit policy |
+| `aspects_to_point(point_longitude, positions, point_name="Point", ..., optional_sets=())` | `list[AspectData]` | Aspects from a position mapping to one named longitude |
 | `find_declination_aspects(bodies_dec, orb=1.0)` | `list[DeclinationAspect]` | Parallel and contra-parallel aspects |
 | `declination_aspects_from_declinations(bodies_dec, *, reference_frame, timescale, orb=1.0)` | `DeclinationAspectAnalysis` | Validated deterministic caller-supplied declination analysis with explicit coordinate provenance |
 | `declination_aspect_motion_witness(body1, dec1, body2, dec2, aspect, *, speed1_deg_per_day=None, speed2_deg_per_day=None, orb=1.0, exact_tolerance_deg=1e-9, rate_tolerance_deg_per_day=1e-12, reference_frame, timescale)` | `DeclinationAspectMotionWitness` | Instantaneous signed declination error/rate witness for applying, exact, separating, stationary, or indeterminate truth |
-| `build_aspect_graph(aspects)` | `AspectGraph` | Graph structure of the aspect network |
+| `build_aspect_graph(aspects, bodies=None)` | `AspectGraph` | Graph of admitted aspects, including optional explicitly supplied isolated bodies |
 | `aspect_strength(aspect)` | `AspectStrength` | Geometric orb exactness, or categorical whole-sign exactness |
 | `aspect_motion_state(aspect)` | `MotionState` | APPLYING / EXACT / SEPARATING / STATIONARY / INDETERMINATE / NONE |
-| `aspect_harmonic_profile(longitudes, harmonic)` | `AspectHarmonicProfile` | Aspects visible at a given harmonic |
+| `aspect_harmonic_profile(aspects)` | `AspectHarmonicProfile` | Family distribution of admitted aspects, including optional harmonic families |
 
 `aspects_from_longitudes` and `LongitudeAspectAnalysis` are exported from both
 the curated package root and `moira.facade`. `Moira.aspects_from_longitudes`
@@ -3567,8 +3567,8 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `synastry_aspects(chart_a, chart_b, tier=0, orbs=None, orb_factor=1.0, include_nodes=True)` | `list[AspectData]` | Inter-chart aspects (default tier 0: major aspects) |
-| `synastry_contacts(chart_a, chart_b, ...)` | `list[SynastryAspectContact]` | Contacts with classification |
+| `synastry_aspects(chart_a, chart_b, tier=None, orbs=None, orb_factor=None, include_nodes=None, policy=None, optional_sets=None)` | `list[AspectData]` | Inter-chart aspects; omitted overrides use the synastry policy, whose default selects tier 0 |
+| `synastry_contacts(chart_a, chart_b, ..., optional_sets=None)` | `list[SynastryAspectContact]` | Contacts with classification and resolved optional-set truth |
 | `house_overlay(chart_source, target_houses, ...)` | `SynastryHouseOverlay` | chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, ...)` | `MutualHouseOverlay` | Both overlay directions |
 

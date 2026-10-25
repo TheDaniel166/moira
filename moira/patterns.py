@@ -26,9 +26,9 @@ pre-computed aspect lists and position dicts.
 
 Orb doctrine
 ------------
-All base orbs derive from ``moira.constants.DEFAULT_ORBS``, the same table
-used by the aspect engine.  Pattern-specific orbs are listed in each detector
-docstring and are scaled by the caller-supplied ``orb_factor``.
+Automatic aspect admission uses the standard catalog's default orbs.
+Pattern-specific edge ceilings, including narrower limits for some templates,
+are listed in each detector docstring and scaled by ``orb_factor``.
 
     Conjunction / Opposition : 8.0°
     Trine                    : 7.0°
@@ -2196,7 +2196,8 @@ def find_all_patterns(
     Parameters
     ----------
     positions   : dict of body name -> longitude
-    aspects     : pre-computed aspects (computed via find_aspects if None)
+    aspects     : pre-computed aspects; if None, scan all 46 standard longitude
+                  aspects so every registered template has its required edges
     orb_factor  : multiplier applied to all orbs
     include     : list of pattern names to detect (all patterns if None).
                   Valid names: see _PATTERN_REGISTRY keys.
@@ -2228,7 +2229,9 @@ def find_all_patterns(
     dominant_only = policy.dominant_only
 
     if aspects is None:
-        aspects = find_aspects(positions, orb_factor=orb_factor)
+        # The registry includes Septile Triangle, which requires extended
+        # standard members. Optional sets add no named templates here.
+        aspects = find_aspects(positions, tier=2, orb_factor=orb_factor)
     else:
         aspects = _validate_aspects(aspects)
 

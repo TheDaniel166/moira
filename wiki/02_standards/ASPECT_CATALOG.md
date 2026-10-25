@@ -241,6 +241,10 @@ not automatically enable an optional longitude-aspect set. H1 is the identity
 projection (Natal); the other rows show the primitive `360/H` division.
 Harmonic-chart conjunction orbs have their own projected/reference-orb policy;
 the longitude defaults above do not replace that policy.
+The ordinary harmonic-chart default reference is 12°; the separate sampled
+mixed-origin harmonic-transit forecast retains its explicit 1° default.
+Range products default to a maximum harmonic of 32, so request
+`max_harmonic=40` or higher to include H36 and H40 in those sweeps.
 
 | Harmonic | Preset name | Primitive angle | Primitive turn fraction | Optional longitude set |
 |---|---|---:|---:|---|
@@ -268,6 +272,10 @@ the longitude defaults above do not replace that policy.
 | H40 | H40 1/40 | 9° | 1/40 | H40 |
 
 ## Source ownership and related references
+
+The [engine and REST consumer audit](../07_audit/ASPECT_CONSUMER_AUDIT_2026-10-25.md)
+records the checked entry points, fixes, numeric-only adapters, and
+technique-specific aspect domains.
 
 The tables follow the actual registry, rather than inferring aliases from
 names or importing rounded angles from external reference tables:

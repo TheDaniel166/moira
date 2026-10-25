@@ -1145,12 +1145,23 @@ astrometric longitude-rate product used for motion, engine/facade entry points, 
 `none_geometry_only` interpretation semantics.
 
 `POST /v1/composite/chart` and `POST /v1/davison/chart` also return this same
-analysis under their required `aspects` member. Their existing `tier`,
-`orb_factor`, and `include_nodes` request fields govern the nested analysis;
-omitted or null values resolve to tier `1`, orb factor `1.0`, and node
-inclusion. The composite and Davison chart vessels remain distinct, but REST
+analysis under their required `aspects` member. Their `tier`, `orb_factor`,
+`include_nodes`, and `optional_sets` fields govern the nested analysis;
+omitted or null tier/orb/node overrides resolve to tier `0`, orb factor `1.0`,
+and node inclusion. Optional sets default to an empty selection. The composite
+and Davison chart vessels remain distinct, but REST
 consumers no longer need a second request to analyze the positions returned by
 those relationship-chart routes.
+
+`GET /v1/aspects/optional-sets` exposes H13, H32, H36, and H40 member names,
+exact integer fractions, aliases, and default orbs. The
+[Complete Aspect Catalog](../02_standards/ASPECT_CATALOG.md) lists all 74
+longitude targets and both declination relationships. Named motion requests
+and relationship-transit filters normalize the registry's aliases to canonical
+response names; forecast filters additionally require the requested tier and
+optional sets to admit those names. Invalid selections are rejected before
+chart construction. Aspect-policy tiers, multipliers, and inclusion flags use
+strict types rather than implicit boolean/string coercion.
 
 ## Panchanga Routes
 

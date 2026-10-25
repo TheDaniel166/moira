@@ -27,7 +27,7 @@ from dataclasses import asdict, dataclass
 
 from ._strenum import StrEnum
 from .constants import ASPECT_TIERS, AspectDefinition
-from .aspect_registry import resolve_aspect
+from .aspect_registry import _select_aspects
 from .optional_aspects import _normalized_optional_sets, _optional_definitions
 from .spk_reader import SpkReader
 from .synastry import (
@@ -634,32 +634,7 @@ def _selected_aspects(
     aspect_names: Sequence[str] | None = None,
     optional_sets: tuple[str, ...] = (),
 ) -> tuple[AspectDefinition, ...]:
-    if isinstance(tier, bool) or tier not in ASPECT_TIERS:
-        raise ValueError("relationship transit tier must be 0, 1, or 2")
-    aspects = tuple(ASPECT_TIERS[tier]) + _optional_definitions(optional_sets)
-    if aspect_names is None:
-        return aspects
-    if isinstance(aspect_names, (str, bytes)):
-        raise ValueError("relationship aspect_names must be a sequence of names")
-    requested = tuple(aspect_names)
-    if not requested or any(
-        not isinstance(name, str) or not name.strip()
-        for name in requested
-    ):
-        raise ValueError("relationship aspect_names must contain non-empty strings")
-    if len(set(requested)) != len(requested):
-        raise ValueError("relationship aspect_names must be unique")
-    requested = tuple(resolve_aspect(name).name for name in requested)
-    if len(set(requested)) != len(requested):
-        raise ValueError("relationship aspect_names must be unique after alias resolution")
-    by_name = {aspect.name: aspect for aspect in aspects}
-    missing = [name for name in requested if name not in by_name]
-    if missing:
-        raise ValueError(
-            f"relationship aspect_names are unavailable at tier {tier}: "
-            f"{', '.join(missing)}"
-        )
-    return tuple(by_name[name] for name in requested)
+    return _select_aspects(tier, aspect_names, optional_sets)
 
 
 def find_relationship_transits(

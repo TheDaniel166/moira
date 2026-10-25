@@ -142,7 +142,10 @@ an explicit Moira continuous extension of the cited integer-harmonic rule, not
 an attribution of fractional doctrine to the source.
 
 Callers may use the legacy `orb` argument or `orb_policy`, but not both in the
-same engine call. The default reference orb remains `1.0` degree.
+same engine call. The default projected/H1 reference orb is `12.0` degrees,
+as declared by `DEFAULT_HARMONIC_REFERENCE_ORB_DEG`; its source-circle
+allowance is `12/H` degrees. Caller-supplied policies can select another
+non-negative reference orb.
 
 ## Governing Objects
 

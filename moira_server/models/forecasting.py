@@ -13,7 +13,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import HouseSystem
-from moira.aspect_registry import resolve_aspect, ASPECT_DEFINITIONS
+from moira.aspect_registry import resolve_aspect, ASPECT_DEFINITIONS, _select_aspects
 
 from .astrocartography import (
     AstrocartographyLineResponse,
@@ -102,8 +102,10 @@ class _RelationshipTransitRequest(_OptionalAspectSetsRequest):
     @field_validator("aspect_names", mode="before")
     @classmethod
     def _canonical_aspects(cls, value: Any) -> Any:
-        if value is None or not isinstance(value, list):
+        if value is None:
             return value
+        if not isinstance(value, (list, tuple)):
+            raise ValueError("forecast aspect names must be a list or tuple")
         names = [resolve_aspect(item).name for item in value]
         if len(set(names)) != len(names):
             raise ValueError("forecast aspect names must be unique after alias resolution")
@@ -126,6 +128,7 @@ class _RelationshipTransitRequest(_OptionalAspectSetsRequest):
             raise ValueError("jd_end must be greater than jd_start")
         if self.jd_end - self.jd_start > 36_525.0:
             raise ValueError("relationship transit windows may not exceed 36525 days")
+        _select_aspects(self.tier, self.aspect_names, self.optional_sets)
         return self
 
 

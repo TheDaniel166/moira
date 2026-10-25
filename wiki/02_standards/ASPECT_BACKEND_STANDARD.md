@@ -340,6 +340,20 @@ preserve the enabled sets. These members are `extended_minor`, with distinct
 and harmonic profiles consume that classification without another admission.
 Orb overrides and `orb_factor` retain their existing meaning.
 
+Detectors, relationship forecasts, REST selection validation, and forecast
+work budgets share the registry's selection resolver. REST aspect tiers and
+orb multipliers reject implicit boolean/string coercion and non-finite
+values. Forecast names unavailable under the requested tier/optional sets
+are rejected before derived-chart construction.
+
+Automatic named-pattern searches scan all 46 standard longitude aspects,
+including the septile edges required by the registered Septile Triangle.
+They retain template-specific edge ceilings and the named pattern registry;
+the optional harmonic sets do not introduce new pattern templates. Pattern
+REST computation truth identifies the standard catalog and tier 2. See the
+[consumer audit](../07_audit/ASPECT_CONSUMER_AUDIT_2026-10-25.md) for the complete
+scope and the deliberate technique-specific and numeric API boundaries.
+
 `OPTIONAL_ASPECT_SETS`, `OPTIONAL_ASPECT_FRACTIONS`, and `ASPECT_DEFINITIONS`
 are re-exported through the same public namespaces as `ASPECT_ALIASES`.
 `GET /v1/aspects/optional-sets` exposes canonical names, exact numerators and

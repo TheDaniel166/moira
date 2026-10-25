@@ -10,9 +10,9 @@ wiki/02_standards/ASPECT_BACKEND_STANDARD.md.
 """
 
 from types import MappingProxyType
-from typing import Mapping
+from typing import Mapping, Sequence
 
-from .constants import Aspect, AspectDefinition
+from .constants import Aspect, AspectDefinition, ASPECT_TIERS
 from .optional_aspects import OPTIONAL_ASPECT_SETS, _optional_definitions
 
 __all__ = ["ASPECT_ALIASES", "ASPECT_DEFINITIONS", "resolve_aspect"]
@@ -117,3 +117,36 @@ def resolve_aspect(name: str) -> AspectDefinition:
     if canonical is None:
         raise ValueError(f"unknown canonical longitude aspect {name!r}")
     return _DEFINITIONS[canonical]
+
+
+def _select_aspects(
+    tier: int,
+    aspect_names: Sequence[str] | None = None,
+    optional_sets: Sequence[str] = (),
+) -> tuple[AspectDefinition, ...]:
+    """Resolve one catalog selection for detectors, forecasts, and REST budgets.
+
+    Aliases never widen the selected tier or optional sets. Explicit names
+    preserve caller order and must be unique after canonical resolution.
+    """
+    if isinstance(tier, bool) or not isinstance(tier, int) or tier not in ASPECT_TIERS:
+        raise ValueError("aspect tier must be 0, 1, or 2")
+    aspects = tuple(ASPECT_TIERS[tier]) + _optional_definitions(optional_sets)
+    if aspect_names is None:
+        return aspects
+    if isinstance(aspect_names, (str, bytes)):
+        raise ValueError("aspect_names must be a sequence of names")
+    try:
+        requested = tuple(aspect_names)
+    except TypeError as exc:
+        raise ValueError("aspect_names must be a sequence of names") from exc
+    if not requested or any(not isinstance(name, str) or not name.strip() for name in requested):
+        raise ValueError("aspect_names must contain non-empty strings")
+    requested = tuple(resolve_aspect(name).name for name in requested)
+    if len(set(requested)) != len(requested):
+        raise ValueError("aspect_names must be unique after alias resolution")
+    by_name = {aspect.name: aspect for aspect in aspects}
+    missing = [name for name in requested if name not in by_name]
+    if missing:
+        raise ValueError(f"aspect_names are unavailable at tier {tier}: {', '.join(missing)}")
+    return tuple(by_name[name] for name in requested)

@@ -328,6 +328,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         asps = facade.find_aspects(
             positions,
             speeds=chart.speeds(),
+            tier=2,
             orb_factor=orb_factor,
         )
         return facade.find_all_patterns(

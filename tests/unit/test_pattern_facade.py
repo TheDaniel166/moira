@@ -24,11 +24,12 @@ def test_pattern_facade_forwards_opt_in_dominance(monkeypatch) -> None:
     observed: dict[str, object] = {}
     aspects = [object()]
 
-    def _find_aspects(positions, *, speeds, orb_factor):
+    def _find_aspects(positions, *, speeds, tier, orb_factor):
         observed.update(
             aspect_positions=positions,
             speeds=speeds,
             aspect_orb_factor=orb_factor,
+            aspect_tier=tier,
         )
         return aspects
 
@@ -57,6 +58,7 @@ def test_pattern_facade_forwards_opt_in_dominance(monkeypatch) -> None:
         "aspect_positions": {"A": 0.0, "B": 120.0, "C": 240.0, "D": 60.0},
         "speeds": {"A": 1.0, "B": 1.0, "C": 1.0, "D": 1.0},
         "aspect_orb_factor": 1.25,
+        "aspect_tier": 2,
         "positions": {"A": 0.0, "B": 120.0, "C": 240.0, "D": 60.0},
         "aspects": aspects,
         "orb_factor": 1.25,

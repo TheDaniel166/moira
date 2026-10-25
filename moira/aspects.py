@@ -232,10 +232,10 @@ from ._aspect_types import (
     AspectTier,
 )
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, TRADITIONAL_MOIETY_ORBS, Body
-from .aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect
+from .aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect, _select_aspects
 from .optional_aspects import (
     OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS,
-    _normalized_optional_sets, _optional_definitions,
+    _normalized_optional_sets,
 )
 from .coordinates import angular_distance, normalize_degrees
 from .declination_aspects import (
@@ -2848,11 +2848,10 @@ def _resolve_aspects(
             or tier not in ASPECT_TIERS
         ):
             raise ValueError(f"aspect tier must be 0, 1, or 2, got {tier!r}")
-        return ASPECT_TIERS[tier] + list(_optional_definitions(optional_sets))
+        return list(_select_aspects(tier, optional_sets=optional_sets))
     if not isinstance(include_minor, bool):
         raise ValueError("include_minor must be a boolean")
-    standard = Aspect.MAJOR + Aspect.COMMON_MINOR if include_minor else Aspect.MAJOR
-    return standard + list(_optional_definitions(optional_sets))
+    return list(_select_aspects(1 if include_minor else 0, optional_sets=optional_sets))
 
 
 # ---------------------------------------------------------------------------
@@ -2985,7 +2984,8 @@ def aspect_motion_witness(
     The computation is kernel-free and instantaneous.  Longitudes and daily
     speeds are caller-owned inputs; ``reference_frame`` and ``timescale`` are
     therefore required provenance rather than inferred defaults.  The aspect
-    target and default orb come from :class:`moira.constants.Aspect`.
+    target and default orb come from ``ASPECT_DEFINITIONS``, including
+    explicitly named optional members.
     Canonical names and registered aliases resolve through ``resolve_aspect``;
     results always carry the canonical name.
 

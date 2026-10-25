@@ -53,6 +53,30 @@ class _OptionalAspectSetsRequest(_StrictModel):
     def _known_unique_sets(cls, value: Any) -> list[str]:
         return list(_normalized_optional_sets(value))
 
+    @field_validator("tier", "aspect_tier", mode="before", check_fields=False)
+    @classmethod
+    def _integer_aspect_tier(cls, value: Any) -> Any:
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+            raise ValueError("aspect tier must be an integer")
+        return value
+
+    @field_validator("orb_factor", mode="before", check_fields=False)
+    @classmethod
+    def _finite_orb_factor(cls, value: Any) -> Any:
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+        ):
+            raise ValueError("orb_factor must be a finite number")
+        return value
+
+    @field_validator("include_nodes", "include_minor", "include_aspects", mode="before", check_fields=False)
+    @classmethod
+    def _boolean_aspect_flags(cls, value: Any) -> Any:
+        if value is not None and not isinstance(value, bool):
+            raise ValueError("aspect inclusion flags must be booleans")
+        return value
+
 
 class RelationshipPartyRequest(_StrictModel):
     dt: datetime
@@ -72,8 +96,8 @@ class SynastryPairRequest(_OptionalAspectSetsRequest):
     second: RelationshipPartyRequest
     first_label: str = "A"
     second_label: str = "B"
-    tier: int | None = None
-    orb_factor: float | None = None
+    tier: Literal[0, 1, 2] | None = None
+    orb_factor: float | None = Field(default=None, gt=0.0)
     include_nodes: bool | None = None
 
 
@@ -1140,6 +1164,8 @@ class AspectPatternResponse(_StrictModel):
 
 
 class PatternSearchComputationTruthResponse(_StrictModel):
+    aspect_catalog: Literal["standard_longitude"] = "standard_longitude"
+    aspect_tier: Literal[2] = 2
     source_module: Literal["moira.patterns"] = "moira.patterns"
     engine_entrypoint: Literal["find_all_patterns"] = "find_all_patterns"
     position_source: Literal["chart_longitudes"] = "chart_longitudes"

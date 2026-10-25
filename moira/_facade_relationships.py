@@ -88,7 +88,7 @@ Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
             orbs=orbs,
             orb_factor=orb_factor,
             include_nodes=include_nodes,
-            **({"optional_sets": optional_sets} if optional_sets else {}),
+            **({"optional_sets": optional_sets} if optional_sets != () else {}),
         )
 
     def house_overlay(

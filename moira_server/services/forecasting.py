@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from moira import Body, Moira
 from moira.astrocartography import fixed_star_astrocartography
-from moira.constants import ASPECT_TIERS
-from moira.aspect_registry import resolve_aspect
-from moira.optional_aspects import _optional_definitions
+from moira.aspect_registry import _select_aspects
 from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.locational_forecasting import (
     relocated_lunar_return,
@@ -89,20 +87,7 @@ def _house_policy(request: RelocatedReturnRequest) -> HousePolicy | None:
 
 
 def _selected_server_aspects(tier: int, aspect_names: list[str] | None, optional_sets=()):
-    aspects = tuple(ASPECT_TIERS[tier]) + _optional_definitions(optional_sets)
-    if aspect_names is None:
-        return aspects
-    aspect_names = [resolve_aspect(name).name for name in aspect_names]
-    if len(set(aspect_names)) != len(aspect_names):
-        raise ValueError("relationship aspect_names must be unique after alias resolution")
-    by_name = {aspect.name: aspect for aspect in aspects}
-    missing = [name for name in aspect_names if name not in by_name]
-    if missing:
-        raise ValueError(
-            f"relationship aspect_names are unavailable at tier {tier}: "
-            f"{', '.join(missing)}"
-        )
-    return tuple(by_name[name] for name in aspect_names)
+    return _select_aspects(tier, aspect_names, optional_sets)
 
 
 def _directional_branch_count(tier: int, aspect_names: list[str] | None, optional_sets=()) -> int:
