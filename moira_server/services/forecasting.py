@@ -6,6 +6,7 @@ from moira import Body, Moira
 from moira.astrocartography import fixed_star_astrocartography
 from moira.constants import ASPECT_TIERS
 from moira.aspect_registry import resolve_aspect
+from moira.optional_aspects import _optional_definitions
 from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.locational_forecasting import (
     relocated_lunar_return,
@@ -87,8 +88,8 @@ def _house_policy(request: RelocatedReturnRequest) -> HousePolicy | None:
     )
 
 
-def _selected_server_aspects(tier: int, aspect_names: list[str] | None):
-    aspects = tuple(ASPECT_TIERS[tier])
+def _selected_server_aspects(tier: int, aspect_names: list[str] | None, optional_sets=()):
+    aspects = tuple(ASPECT_TIERS[tier]) + _optional_definitions(optional_sets)
     if aspect_names is None:
         return aspects
     aspect_names = [resolve_aspect(name).name for name in aspect_names]
@@ -104,10 +105,10 @@ def _selected_server_aspects(tier: int, aspect_names: list[str] | None):
     return tuple(by_name[name] for name in aspect_names)
 
 
-def _directional_branch_count(tier: int, aspect_names: list[str] | None) -> int:
+def _directional_branch_count(tier: int, aspect_names: list[str] | None, optional_sets=()) -> int:
     return sum(
         1 if aspect.angle in {0.0, 180.0} else 2
-        for aspect in _selected_server_aspects(tier, aspect_names)
+        for aspect in _selected_server_aspects(tier, aspect_names, optional_sets)
     )
 
 
@@ -121,8 +122,9 @@ def _guard_relationship_search(
     jd_start: float,
     jd_end: float,
     step_days: float | None,
+    optional_sets=(),
 ) -> None:
-    branch_count = _directional_branch_count(tier, aspect_names)
+    branch_count = _directional_branch_count(tier, aspect_names, optional_sets)
     projected_calls = target_count * moving_body_count * branch_count
     if projected_calls > _MAX_RELATIONSHIP_SEARCH_CALLS:
         raise ValueError(
@@ -173,6 +175,7 @@ def compute_composite_transits(engine: Moira, request: CompositeTransitRequest):
         moving_body_count=len(request.moving_bodies),
         tier=request.tier,
         aspect_names=request.aspect_names,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         moving_bodies=request.moving_bodies,
         jd_start=request.jd_start,
         jd_end=request.jd_end,
@@ -185,6 +188,7 @@ def compute_composite_transits(engine: Moira, request: CompositeTransitRequest):
         request.jd_end,
         tier=request.tier,
         aspect_names=request.aspect_names,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         include_nodes=request.include_nodes,
         include_angles=request.include_angles,
         include_cusps=request.include_cusps,
@@ -215,6 +219,7 @@ def compute_davison_transits(engine: Moira, request: DavisonTransitRequest):
         moving_body_count=len(request.moving_bodies),
         tier=request.tier,
         aspect_names=request.aspect_names,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         moving_bodies=request.moving_bodies,
         jd_start=request.jd_start,
         jd_end=request.jd_end,
@@ -227,6 +232,7 @@ def compute_davison_transits(engine: Moira, request: DavisonTransitRequest):
         request.jd_end,
         tier=request.tier,
         aspect_names=request.aspect_names,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         include_nodes=request.include_nodes,
         include_angles=request.include_angles,
         include_cusps=request.include_cusps,

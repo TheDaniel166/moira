@@ -28,6 +28,7 @@ from dataclasses import asdict, dataclass
 from ._strenum import StrEnum
 from .constants import ASPECT_TIERS, AspectDefinition
 from .aspect_registry import resolve_aspect
+from .optional_aspects import _normalized_optional_sets, _optional_definitions
 from .spk_reader import SpkReader
 from .synastry import (
     CompositeChart,
@@ -267,8 +268,10 @@ class RelationshipTransitSearchTruth:
     event_kind: str = "exact_aspect_perfection"
     orb_window_policy: str = "not_computed"
     interpretation: str = "none_geometry_only"
+    optional_sets: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "optional_sets", _normalized_optional_sets(self.optional_sets))
         if not self.chart_id or not self.moving_bodies or not self.target_names:
             raise ValueError("relationship transit search identity sets must not be empty")
         if len(set(self.moving_bodies)) != len(self.moving_bodies):
@@ -279,7 +282,7 @@ class RelationshipTransitSearchTruth:
             raise ValueError("relationship transit tier must be 0, 1, or 2")
         if not self.aspect_names:
             raise ValueError("relationship transit aspect_names must not be empty")
-        available_aspects = {aspect.name for aspect in ASPECT_TIERS[self.tier]}
+        available_aspects = {aspect.name for aspect in tuple(ASPECT_TIERS[self.tier]) + _optional_definitions(self.optional_sets)}
         if len(set(self.aspect_names)) != len(self.aspect_names) or any(
             name not in available_aspects
             for name in self.aspect_names
@@ -349,7 +352,7 @@ class RelationshipTransitSearchResult:
             raise ValueError("relationship search event_count must match events")
         aspect_by_name = {
             aspect.name: aspect
-            for aspect in ASPECT_TIERS[self.computation_truth.tier]
+            for aspect in tuple(ASPECT_TIERS[self.computation_truth.tier]) + _optional_definitions(self.computation_truth.optional_sets)
             if aspect.name in self.computation_truth.aspect_names
         }
         expected_search_calls = (
@@ -629,10 +632,11 @@ def _event_sort_key(event: RelationshipTransitEvent) -> tuple[float, str, str, f
 def _selected_aspects(
     tier: int,
     aspect_names: Sequence[str] | None = None,
+    optional_sets: tuple[str, ...] = (),
 ) -> tuple[AspectDefinition, ...]:
     if isinstance(tier, bool) or tier not in ASPECT_TIERS:
         raise ValueError("relationship transit tier must be 0, 1, or 2")
-    aspects = tuple(ASPECT_TIERS[tier])
+    aspects = tuple(ASPECT_TIERS[tier]) + _optional_definitions(optional_sets)
     if aspect_names is None:
         return aspects
     if isinstance(aspect_names, (str, bytes)):
@@ -666,6 +670,7 @@ def find_relationship_transits(
     *,
     tier: int = 0,
     aspect_names: Sequence[str] | None = None,
+    optional_sets: tuple[str, ...] = (),
     include_nodes: bool = True,
     include_angles: bool = False,
     include_cusps: bool = False,
@@ -701,7 +706,8 @@ def find_relationship_transits(
     if search_motion not in {"forward", "backward"}:
         raise ValueError("relationship transit search_motion must be forward or backward")
 
-    aspects = _selected_aspects(tier, aspect_names)
+    optional_sets = _normalized_optional_sets(optional_sets)
+    aspects = _selected_aspects(tier, aspect_names, optional_sets)
     resolved_policy = policy or TransitComputationPolicy()
     target_set = relationship_chart_targets(
         chart,
@@ -764,6 +770,7 @@ def find_relationship_transits(
         target_names=tuple(target.name for target in target_set.targets),
         tier=tier,
         aspect_names=tuple(aspect.name for aspect in aspects),
+        optional_sets=optional_sets,
         jd_start=jd_start,
         jd_end=jd_end,
         step_days=step_days,

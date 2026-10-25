@@ -134,6 +134,7 @@ def serialize_relationship_transit_search(
             target_names=list(truth.target_names),
             tier=truth.tier,
             aspect_names=list(truth.aspect_names),
+            optional_sets=list(truth.optional_sets),
             jd_start=truth.jd_start,
             jd_end=truth.jd_end,
             step_days=truth.step_days,

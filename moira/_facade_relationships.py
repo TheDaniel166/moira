@@ -75,6 +75,7 @@ Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
         orbs: dict[float, float] | None = None,
         orb_factor: float = 1.0,
         include_nodes: bool = True,
+        optional_sets: tuple[str, ...] = (),
     ):
         """Find inter-aspects between two natal charts.
 
@@ -87,6 +88,7 @@ Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
             orbs=orbs,
             orb_factor=orb_factor,
             include_nodes=include_nodes,
+            **({"optional_sets": optional_sets} if optional_sets else {}),
         )
 
     def house_overlay(

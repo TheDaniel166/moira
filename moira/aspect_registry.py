@@ -1,6 +1,7 @@
 """Canonical longitude-aspect names and explicit, immutable spelling aliases.
 
-Geometry remains owned by moira.constants. Resolution ignores case, ASCII
+Standard geometry remains owned by moira.constants; optional exact-fraction
+sets are owned by moira.optional_aspects. Resolution ignores case, ASCII
 spaces, hyphens, and underscores; it never infers an angle from a name or
 adds a second definition. Unknown names raise ValueError. Quindecile always
 means 24 degrees; the explicitly qualified 165-degree convention resolves
@@ -12,11 +13,16 @@ from types import MappingProxyType
 from typing import Mapping
 
 from .constants import Aspect, AspectDefinition
+from .optional_aspects import OPTIONAL_ASPECT_SETS, _optional_definitions
 
-__all__ = ["ASPECT_ALIASES", "resolve_aspect"]
+__all__ = ["ASPECT_ALIASES", "ASPECT_DEFINITIONS", "resolve_aspect"]
+
+ASPECT_DEFINITIONS: tuple[AspectDefinition, ...] = (
+    tuple(Aspect.ALL) + _optional_definitions(tuple(OPTIONAL_ASPECT_SETS))
+)
 
 
-ASPECT_ALIASES: Mapping[str, str] = MappingProxyType({
+_ALIASES = {
     "Inconjunct": "Quincunx",
     "Octile": "Semisquare",
     "Sesquisquare": "Sesquiquadrate",
@@ -63,14 +69,33 @@ ASPECT_ALIASES: Mapping[str, str] = MappingProxyType({
     "Tresemiseptile": "Trisemiseptile",
     "Sesquiseptile": "Trisemiseptile",
     "Quintasemiseptile": "Quinsemiseptile",
-})
+}
+_PUBLISHED_OPTIONAL_ALIASES = {
+    13: ("Tredecile", "Bitredecile", "Tritredecile", "Quadratredecile", "Quintatredecile", "Sextatredecile"),
+    32: ("Quartisemisquare", "Triquartisemisquare", "Quintaquartisemisquare", "Septaquartisemisquare",
+         "Nonaquartisemisquare", "Undecaquartisemisquare", "Tredecaquartisemisquare", "Quindecaquartisemisquare"),
+    36: ("Sextisextile", "Quintasextisextile", "Septasextisextile", "Undecasextisextile",
+         "Tredecasextisextile", "Septendecasextisextile"),
+}
+for _set, _members in OPTIONAL_ASPECT_SETS.items():
+    for _index, _member in enumerate(_members):
+        _name = _member.definition.name
+        _ALIASES[f"{_member.numerator}/{_member.denominator}"] = _name
+        if _member.denominator in _PUBLISHED_OPTIONAL_ALIASES:
+            _published = _PUBLISHED_OPTIONAL_ALIASES[_member.denominator][_index]
+            # The existing unqualified Tredecile remains the 108-degree aspect.
+            _alias = f"{_published} (13th harmonic)" if _member.denominator == 13 else _published
+            _ALIASES[_alias] = _name
+_ALIASES.update({"Semivigintile": "H40 1/40", "Quadragintile": "H40 1/40",
+                 "Trigintasextile": "H36 1/36"})
+ASPECT_ALIASES: Mapping[str, str] = MappingProxyType(_ALIASES)
 
 
 def _name_key(name: str) -> str:
     return name.casefold().replace(" ", "").replace("-", "").replace("_", "")
 
 
-_DEFINITIONS = {definition.name: definition for definition in Aspect.ALL}
+_DEFINITIONS = {definition.name: definition for definition in ASPECT_DEFINITIONS}
 _NAMES = {_name_key(name): name for name in _DEFINITIONS}
 for _alias, _canonical in ASPECT_ALIASES.items():
     _key = _name_key(_alias)

@@ -71,6 +71,7 @@ import math
 from numbers import Real
 
 from .constants import TROPICAL_YEAR, sign_of
+from .optional_aspects import OPTIONAL_ASPECT_SETS
 
 __all__ = [
     # Result types
@@ -327,6 +328,13 @@ HARMONIC_PRESETS: dict[int, tuple[str, str]] = {
     20: ("Vigintile",    "18-degree division (1/20 of the circle)"),
     24: ("Untion",       "15-degree division (1/24 of the circle); Tao is 11/24"),
 }
+HARMONIC_PRESETS.update({
+    members[0].denominator: (
+        members[0].definition.name,
+        f"Optional {key} set: primitive fractions of a turn; explicitly selected in longitude aspects",
+    )
+    for key, members in OPTIONAL_ASPECT_SETS.items()
+})
 
 
 # ---------------------------------------------------------------------------

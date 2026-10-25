@@ -3970,6 +3970,7 @@ def test_aspect_direction_sinister_dexter() -> None:
 # ===========================================================================
 
 _EXPECTED_PUBLIC = {
+    "ASPECT_DEFINITIONS", "OPTIONAL_ASPECT_SETS", "OPTIONAL_ASPECT_FRACTIONS",
     "ASPECT_ALIASES",
     "resolve_aspect",
     "CANONICAL_ASPECTS",
@@ -4099,7 +4100,7 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 57
+    assert len(_aspects_module.__all__) == 60
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

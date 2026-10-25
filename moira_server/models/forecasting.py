@@ -12,8 +12,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from moira.constants import HouseSystem, Aspect
-from moira.aspect_registry import resolve_aspect
+from moira.constants import HouseSystem
+from moira.aspect_registry import resolve_aspect, ASPECT_DEFINITIONS
 
 from .astrocartography import (
     AstrocartographyLineResponse,
@@ -22,7 +22,7 @@ from .astrocartography import (
 from .chart import HousePolicyRequest, HousesResponse, NodePositionResponse
 from .positions import PlanetPositionResponse
 from .relationship import (
-    AspectMotionInputValue,
+    AspectMotionInputValue, OptionalAspectSetValue, _OptionalAspectSetsRequest,
     CompositeChartRequest,
     CompositeComputationTruthResponse,
     DavisonChartRequest,
@@ -42,7 +42,7 @@ class _StrictModel(BaseModel):
 RELATIONSHIP_TRANSIT_MAX_MOVING_BODIES = 10
 
 
-class _RelationshipTransitRequest(_StrictModel):
+class _RelationshipTransitRequest(_OptionalAspectSetsRequest):
     moving_bodies: list[str] = Field(
         min_length=1, max_length=RELATIONSHIP_TRANSIT_MAX_MOVING_BODIES
     )
@@ -50,7 +50,7 @@ class _RelationshipTransitRequest(_StrictModel):
     jd_end: float
     tier: Literal[0, 1, 2] = 0
     aspect_names: list[AspectMotionInputValue] | None = Field(
-        default=None, min_length=1, max_length=len(Aspect.ALL),
+        default=None, min_length=1, max_length=len(ASPECT_DEFINITIONS),
         description="Canonical longitude aspects or registered aliases; unique after resolution.",
     )
     include_nodes: bool = True
@@ -187,6 +187,7 @@ class RelationshipTransitEventResponse(_StrictModel):
 
 
 class RelationshipTransitSearchTruthResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     chart_id: str
     moving_bodies: list[str]
     target_names: list[str]

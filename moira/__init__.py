@@ -455,6 +455,7 @@ from .planets import (
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import (
     ASPECT_ALIASES,
+    ASPECT_DEFINITIONS, OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS,
     resolve_aspect,
     AspectData,
     AspectDirection,
@@ -1769,7 +1770,7 @@ __all__ = [
     "AspectMotionState",
     "AspectMotionStationaryReason",
     "AspectMotionWitness",
-    "AspectPolicy", "ASPECT_ALIASES", "resolve_aspect",
+    "AspectPolicy", "ASPECT_ALIASES", "ASPECT_DEFINITIONS", "OPTIONAL_ASPECT_SETS", "OPTIONAL_ASPECT_FRACTIONS", "resolve_aspect",
     "LongitudeAspectAnalysis",
     "aspect_motion_witness",
     "declination_aspect_motion_witness",

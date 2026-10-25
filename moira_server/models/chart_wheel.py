@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .chart import ChartRequest, ChartResponse, HousePolicyResponse, HousesResponse
+from .relationship import OptionalAspectSetValue, _OptionalAspectSetsRequest
 
 
 class _StrictModel(BaseModel):
@@ -19,7 +20,7 @@ class ChartWheelHousesRequest(_StrictModel):
     system: str | None = None
 
 
-class ChartWheelConfig(_StrictModel):
+class ChartWheelConfig(_OptionalAspectSetsRequest):
     orientation: str = "aries_left"
     preset: str = "classic"
     include_aspects: bool = True
@@ -166,6 +167,7 @@ class ChartWheelOrientationTruthResponse(_StrictModel):
 
 
 class ChartWheelAspectPolicyTruthResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     include_aspects_requested: bool
     included: bool
     tier: int | None = None

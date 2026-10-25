@@ -338,6 +338,10 @@ from .primary_directions import (
     SpeculumEntryResponse,
 )
 from .relationship import (
+    OptionalAspectCatalogResponse,
+    OptionalAspectSetResponse,
+    OptionalAspectMemberResponse,
+    OptionalAspectSetValue,
     AspectMotionAnalysisResponse,
     AspectMotionComputationTruthResponse,
     AspectMotionNameValue,
@@ -1559,6 +1563,10 @@ __all__ = [
     "AspectMotionAnalysisResponse",
     "AspectMotionComputationTruthResponse",
     "AspectMotionNameValue",
+    "OptionalAspectCatalogResponse",
+    "OptionalAspectSetResponse",
+    "OptionalAspectMemberResponse",
+    "OptionalAspectSetValue",
     "AspectMotionStationaryReasonValue",
     "AspectMotionWitnessRequest",
     "AspectMotionWitnessResponse",

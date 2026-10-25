@@ -12,7 +12,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from moira.aspect_registry import ASPECT_ALIASES, resolve_aspect
+from moira.aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect
+from moira.optional_aspects import OPTIONAL_ASPECT_FRACTIONS, OPTIONAL_ASPECT_SETS
 from moira.aspects import (
     CANONICAL_ASPECTS, AspectFamily, AspectTier, AspectMotionState, AspectPolicy,
     aspect_harmonic_profile, aspect_motion_witness, aspects_between,
@@ -132,7 +133,9 @@ def test_alias_resolution_preserves_one_definition_and_canonical_motion_name(ali
         assert witness.aspect == canonical
         assert witness.angle_deg == definition.angle
         assert witness.state is AspectMotionState.EXACT
-    assert _selected_aspects(2, [alias]) == (definition,)
+    fraction = OPTIONAL_ASPECT_FRACTIONS.get(canonical)
+    selected_sets = () if fraction is None else (f"H{fraction[1]}",)
+    assert _selected_aspects(2, [alias], selected_sets) == (definition,)
 
 
 def test_alias_registry_is_read_only_and_never_changes_ambiguous_quindecile():
@@ -158,15 +161,20 @@ def test_registry_is_exposed_through_every_admitted_public_layer(module):
     surface = importlib.import_module(module)
     assert surface.resolve_aspect is resolve_aspect
     assert surface.ASPECT_ALIASES is ASPECT_ALIASES
-    assert {"resolve_aspect", "ASPECT_ALIASES"} <= set(surface.__all__)
+    for name, value in {"OPTIONAL_ASPECT_FRACTIONS": OPTIONAL_ASPECT_FRACTIONS,
+                        "OPTIONAL_ASPECT_SETS": OPTIONAL_ASPECT_SETS,
+                        "ASPECT_DEFINITIONS": ASPECT_DEFINITIONS}.items():
+        assert getattr(surface, name) is value
+    assert {"resolve_aspect", "ASPECT_ALIASES", "ASPECT_DEFINITIONS",
+            "OPTIONAL_ASPECT_SETS", "OPTIONAL_ASPECT_FRACTIONS"} <= set(surface.__all__)
 
 
 def test_presets_cover_every_registered_primitive_harmonic_without_renaming_old_entries():
-    assert len(HARMONIC_PRESETS) == 18
+    assert len(HARMONIC_PRESETS) == 22
     for h, name in _PRESETS.items():
         assert HARMONIC_PRESETS[h][0] == HarmonicsService.get_preset_info(h)[0] == name
         assert resolve_aspect(name).angle == pytest.approx(360/h, abs=1e-12)
     assert HARMONIC_PRESETS[8][0] == "Octile"
     assert HARMONIC_PRESETS[12][0] == "Semi-sextile"
     assert HARMONIC_PRESETS[24][0] != "Tao"
-    assert HarmonicsService.get_preset_info(13)[0] == "H13"
+    assert HarmonicsService.get_preset_info(99)[0] == "H99"

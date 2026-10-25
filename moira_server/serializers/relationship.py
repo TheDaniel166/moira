@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from moira.constants import Aspect
+from moira.aspect_registry import ASPECT_ALIASES
+from moira.optional_aspects import OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS
+from ..models.relationship import (
+    OptionalAspectCatalogResponse, OptionalAspectSetResponse, OptionalAspectMemberResponse,
+)
+
 from moira.aspects import (
     AspectClassification,
     AspectData,
@@ -136,6 +143,28 @@ def serialize_aspect_classification(classification: AspectClassification) -> Asp
     )
 
 
+def serialize_optional_aspect_catalog() -> OptionalAspectCatalogResponse:
+    """Serialize engine-owned optional sets without deriving new geometry."""
+    return OptionalAspectCatalogResponse(
+        sets=[
+            OptionalAspectSetResponse(
+                key=key, harmonic=members[0].denominator,
+                members=[
+                    OptionalAspectMemberResponse(
+                        name=member.definition.name,
+                        numerator=member.numerator, denominator=member.denominator,
+                        angle_deg=member.definition.angle,
+                        default_orb_deg=member.definition.default_orb,
+                        aliases=[alias for alias, name in ASPECT_ALIASES.items() if name == member.definition.name],
+                    ) for member in members
+                ],
+            ) for key, members in OPTIONAL_ASPECT_SETS.items()
+        ],
+        standard_aspect_count=len(Aspect.ALL),
+        optional_aspect_count=sum(len(members) for members in OPTIONAL_ASPECT_SETS.values()),
+    )
+
+
 def serialize_aspect(aspect: AspectData) -> AspectDataResponse:
     return AspectDataResponse(
         body1=aspect.body1,
@@ -169,6 +198,10 @@ def serialize_aspects_from_longitudes(
             motion_semantics=analysis.motion_semantics,
             normalized_longitudes=analysis.longitudes,
             tier=analysis.tier,
+            optional_sets=list(analysis.optional_sets),
+            aspect_policy_authority=(
+                "moira.aspect_registry.ASPECT_DEFINITIONS" if analysis.optional_sets else "moira.constants.Aspect"
+            ),
             orb_factor=analysis.orb_factor,
             include_nodes=analysis.include_nodes,
             excluded_node_names=list(analysis.excluded_node_names),
@@ -290,7 +323,11 @@ def serialize_aspect_motion_witness(
             provenance=witness.provenance,
             evaluation_scope=witness.evaluation_scope,
         ),
-        computation_truth=AspectMotionComputationTruthResponse(),
+        computation_truth=AspectMotionComputationTruthResponse(
+            orb_policy_authority=(
+                "moira.aspect_registry.ASPECT_DEFINITIONS" if witness.aspect in OPTIONAL_ASPECT_FRACTIONS else "moira.constants.Aspect"
+            ),
+        ),
     )
 
 
@@ -370,6 +407,7 @@ def serialize_synastry_aspect_truth(truth: SynastryAspectTruth) -> SynastryAspec
         source_body=truth.source_body,
         target_body=truth.target_body,
         tier=truth.tier,
+        optional_sets=list(truth.optional_sets),
         include_nodes=truth.include_nodes,
         orb_factor=truth.orb_factor,
         custom_orbs=truth.custom_orbs,
@@ -449,6 +487,7 @@ def serialize_synastry_search_truth(
         source_label=request.first_label,
         target_label=request.second_label,
         tier=defaults.tier if request.tier is None else request.tier,
+        optional_sets=list(request.optional_sets),
         orb_factor=(
             defaults.orb_factor
             if request.orb_factor is None
@@ -1039,6 +1078,7 @@ def serialize_midpoint_cluster(cluster: MidpointCluster) -> MidpointClusterRespo
 
 
 __all__ = [
+    "serialize_optional_aspect_catalog",
     "serialize_aspect",
     "serialize_aspect_motion_witness",
     "serialize_aspects_from_longitudes",

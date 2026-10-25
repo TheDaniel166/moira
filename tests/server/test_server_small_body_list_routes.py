@@ -583,9 +583,14 @@ def test_asteroid_families_in_chart_route_rejects_invalid_numbers(
     assert oversized.status_code == 422
 
 
+@pytest.mark.parametrize(("optional_sets", "offset", "aspect_name", "family"), [
+    ([], 0.5, "Conjunction", "conjunction"),
+    (["H40"], 9.0, "H40 1/40", "harmonic_40"),
+])
 def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
     client_with_small_body_reader: TestClient,
     monkeypatch: pytest.MonkeyPatch,
+    optional_sets, offset, aspect_name, family,
 ) -> None:
     expected_jd = utc_to_ut1(
         jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
@@ -608,7 +613,7 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
             return AsteroidData(
                 name="Ausonia",
                 naif_id=ASTEROID_NAIF["Ausonia"],
-                longitude=10.5,
+                longitude=10.0 + offset,
                 latitude=-0.2,
                 distance=275_000_000.0,
                 speed=0.08,
@@ -624,6 +629,7 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
             "dt": "2026-06-13T12:00:00+00:00",
             "numbers": [4, 63],
             "aspect_tier": 0,
+            "optional_sets": optional_sets,
         },
     )
 
@@ -648,9 +654,10 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
     assert edge["family_name"] == "Vesta"
     assert edge["body1_number"] == 4
     assert edge["body2_number"] == 63
-    assert edge["aspect"]["aspect"] == "Conjunction"
-    assert edge["aspect"]["orb"] == pytest.approx(0.5)
-    assert edge["aspect"]["classification"]["family"] == "conjunction"
+    assert edge["aspect"]["aspect"] == aspect_name
+    assert edge["aspect"]["orb"] == pytest.approx(0.5 if not optional_sets else 0.0)
+    assert edge["aspect"]["classification"]["family"] == family
+    assert body["provenance"]["optional_sets"] == optional_sets
     assert body["network"]["Vesta"] == [edge]
     assert body["provenance"]["identity_source"] == "mpc_catalog_number"
     assert body["provenance"]["requested_bodies"] == ["4", "63"]

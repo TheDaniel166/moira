@@ -116,6 +116,7 @@ def compute_synastry_aspects(engine: Moira, request: SynastryPairRequest):
         chart_a,
         chart_b,
         tier=request.tier,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
     )
@@ -128,6 +129,7 @@ def compute_aspects_from_longitudes(
     return engine.aspects_from_longitudes(
         request.longitudes,
         tier=request.tier,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
     )
@@ -233,6 +235,7 @@ def _compute_derived_chart_aspects(
         engine,
         AspectsFromLongitudesRequest(
             longitudes=longitudes,
+            optional_sets=request.optional_sets,
             # Same default as synastry (moira.synastry.SynastryAspectPolicy):
             # tier 0, the five major Ptolemaic aspects (6.9.9; was 1).
             tier=0 if request.tier is None else request.tier,
@@ -248,6 +251,7 @@ def compute_synastry_contacts(engine: Moira, request: SynastryPairRequest):
         chart_a,
         chart_b,
         tier=request.tier,
+        **({"optional_sets": tuple(request.optional_sets)} if request.optional_sets else {}),
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
         source_label=request.first_label,

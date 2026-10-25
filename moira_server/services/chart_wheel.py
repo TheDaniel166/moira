@@ -574,6 +574,7 @@ def compute_chart_wheel_packet(
             speeds=speeds,
             tier=config.aspect_tier,
             orb_factor=config.orb_factor,
+            optional_sets=tuple(config.optional_sets),
         ):
             start_angle = _angle_for_longitude(positions[aspect.body1], offset)
             end_angle = _angle_for_longitude(positions[aspect.body2], offset)
@@ -666,6 +667,7 @@ def compute_chart_wheel_packet(
                 included=config.include_aspects,
                 tier=config.aspect_tier,
                 orb_factor=config.orb_factor,
+                optional_sets=config.optional_sets,
                 positions_include_nodes=config.include_nodes,
                 returned_count=len(aspects),
             ),

@@ -9,13 +9,49 @@ from typing import Any, Literal, get_args
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import Body
-from moira.aspect_registry import ASPECT_ALIASES, resolve_aspect
+from moira.aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect
+from moira.optional_aspects import _normalized_optional_sets
 
 from .chart import ChartResponse, HousesResponse
 
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+OptionalAspectSetValue = Literal["H13", "H32", "H36", "H40"]
+
+
+class OptionalAspectMemberResponse(_StrictModel):
+    name: str
+    numerator: int
+    denominator: int
+    angle_deg: float
+    default_orb_deg: float
+    aliases: list[str]
+
+
+class OptionalAspectSetResponse(_StrictModel):
+    key: OptionalAspectSetValue
+    harmonic: int
+    members: list[OptionalAspectMemberResponse]
+
+
+class OptionalAspectCatalogResponse(_StrictModel):
+    sets: list[OptionalAspectSetResponse]
+    standard_aspect_count: int
+    optional_aspect_count: int
+    default_selection: list[OptionalAspectSetValue] = Field(default_factory=list)
+    orb_policy: Literal["12_degrees_divided_by_harmonic"] = "12_degrees_divided_by_harmonic"
+
+
+class _OptionalAspectSetsRequest(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list, max_length=4)
+
+    @field_validator("optional_sets", mode="before")
+    @classmethod
+    def _known_unique_sets(cls, value: Any) -> list[str]:
+        return list(_normalized_optional_sets(value))
 
 
 class RelationshipPartyRequest(_StrictModel):
@@ -31,7 +67,7 @@ class RelationshipPartyRequest(_StrictModel):
     house_system: str | None = None
 
 
-class SynastryPairRequest(_StrictModel):
+class SynastryPairRequest(_OptionalAspectSetsRequest):
     first: RelationshipPartyRequest
     second: RelationshipPartyRequest
     first_label: str = "A"
@@ -76,7 +112,7 @@ class AspectDataResponse(_StrictModel):
     ]
 
 
-class AspectsFromLongitudesRequest(_StrictModel):
+class AspectsFromLongitudesRequest(_OptionalAspectSetsRequest):
     longitudes: dict[str, float] = Field(min_length=2, max_length=64)
     tier: Literal[0, 1, 2] = 1
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
@@ -125,6 +161,7 @@ class AspectsFromLongitudesRequest(_StrictModel):
 
 
 class LongitudeAspectComputationTruthResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     source_module: Literal["moira.aspects"] = "moira.aspects"
     engine_entrypoint: Literal["aspects_from_longitudes"] = "aspects_from_longitudes"
     facade_entrypoint: Literal["Moira.aspects_from_longitudes"] = "Moira.aspects_from_longitudes"
@@ -135,7 +172,9 @@ class LongitudeAspectComputationTruthResponse(_StrictModel):
     ordering: Literal["orb_ascending_stable_over_point_name_order"] = (
         "orb_ascending_stable_over_point_name_order"
     )
-    aspect_policy_authority: Literal["moira.constants.Aspect"] = "moira.constants.Aspect"
+    aspect_policy_authority: Literal[
+        "moira.constants.Aspect", "moira.aspect_registry.ASPECT_DEFINITIONS"
+    ] = "moira.constants.Aspect"
     normalized_longitudes: dict[str, float]
     tier: Literal[0, 1, 2]
     orb_factor: float
@@ -368,54 +407,7 @@ class DeclinationAspectMotionAnalysisResponse(_StrictModel):
     computation_truth: DeclinationAspectMotionComputationTruthResponse
 
 
-AspectMotionNameValue = Literal[
-    "Conjunction",
-    "Semisextile",
-    "Semisquare",
-    "Sextile",
-    "Square",
-    "Trine",
-    "Sesquiquadrate",
-    "Quincunx",
-    "Opposition",
-    "Quintile",
-    "Biquintile",
-    "Tredecile",
-    "Septile",
-    "Biseptile",
-    "Triseptile",
-    "Novile",
-    "Binovile",
-    "Quadnovile",
-    "Decile",
-    "Undecile",
-    "Quindecile",
-    "Vigintile",
-    "Tao",
-    "Hexadecile",
-    "Seminovile",
-    "Untion",
-    "Biundecile",
-    "Triundecile",
-    "Quadriundecile",
-    "Quinqueundecile",
-    "Biquindecile",
-    "Quadraquindecile",
-    "Septaquindecile",
-    "Sesquioctile",
-    "Quinsemioctile",
-    "Septsemioctile",
-    "Quinseminovile",
-    "Septseminovile",
-    "Trivigintile",
-    "Septvigintile",
-    "Nonavigintile",
-    "Squile",
-    "Squine",
-    "Semiseptile",
-    "Trisemiseptile",
-    "Quinsemiseptile",
-]
+AspectMotionNameValue = Literal[tuple(d.name for d in ASPECT_DEFINITIONS)]
 
 # Inputs advertise aliases; responses retain the canonical-only enum.
 AspectMotionInputValue = Literal[tuple(get_args(AspectMotionNameValue)) + tuple(ASPECT_ALIASES)]
@@ -548,7 +540,9 @@ class AspectMotionComputationTruthResponse(_StrictModel):
     stationary_policy: Literal[
         "body_specific_threshold_or_relative_rate_tolerance"
     ] = "body_specific_threshold_or_relative_rate_tolerance"
-    orb_policy_authority: Literal["moira.constants.Aspect"] = "moira.constants.Aspect"
+    orb_policy_authority: Literal[
+        "moira.constants.Aspect", "moira.aspect_registry.ASPECT_DEFINITIONS"
+    ] = "moira.constants.Aspect"
     provenance_semantics: Literal["caller_declared_frame_and_timescale"] = (
         "caller_declared_frame_and_timescale"
     )
@@ -683,6 +677,7 @@ class MoonConnectionFlowAnalysisResponse(_StrictModel):
 
 
 class SynastryAspectTruthResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     source_label: str
     target_label: str
     source_body: str
@@ -733,6 +728,7 @@ class SynastryContactResponse(_StrictModel):
 
 
 class SynastrySearchComputationTruthResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     source_module: Literal["moira.synastry"] = "moira.synastry"
     engine_entrypoint: Literal["synastry_aspects", "synastry_contacts"]
     position_source: Literal["independent_chart_longitudes"] = (
@@ -1344,6 +1340,8 @@ class MidpointClusterRequest(MidpointRequest):
 
 
 __all__ = [
+    "OptionalAspectCatalogResponse", "OptionalAspectSetResponse", "OptionalAspectMemberResponse",
+    "OptionalAspectSetValue",
     "AspectDataResponse",
     "AspectMotionAnalysisResponse",
     "AspectMotionComputationTruthResponse",

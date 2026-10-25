@@ -50,6 +50,10 @@ class AspectFamily(str, Enum):
     SEMINOVILE = "seminovile"
     UNTION = "untion"
     SEMISEPTILE = "semiseptile"
+    HARMONIC_13 = "harmonic_13"
+    HARMONIC_32 = "harmonic_32"
+    HARMONIC_36 = "harmonic_36"
+    HARMONIC_40 = "harmonic_40"
     DECLINATION = "declination"
     UNKNOWN = "unknown"
 

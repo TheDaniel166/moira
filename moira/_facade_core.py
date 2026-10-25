@@ -212,6 +212,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         tier: int | None = None,
         orb_factor: float = 1.0,
         policy=None,
+        optional_sets: tuple[str, ...] = (),
     ):
         """Find all aspects in a chart under the complete aspect policy surface."""
         facade = _facade_module()
@@ -225,6 +226,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             tier=tier,
             orb_factor=orb_factor,
             policy=policy,
+            **({"optional_sets": optional_sets} if optional_sets != () else {}),
         )
 
     def aspects_from_longitudes(
@@ -234,6 +236,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         tier: int = 1,
         orb_factor: float = 1.0,
         include_nodes: bool = True,
+        optional_sets: tuple[str, ...] = (),
     ):
         """Analyze a derived chart's supplied ecliptic longitudes."""
 
@@ -242,6 +245,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             tier=tier,
             orb_factor=orb_factor,
             include_nodes=include_nodes,
+            **({"optional_sets": optional_sets} if optional_sets != () else {}),
         )
 
     def hellenistic_superiority_truth(

@@ -1,7 +1,7 @@
 # Harmonics Backend Standard
 
-Version: 0.2
-Date: 2026-07-19
+Version: 0.3
+Date: 2026-10-25
 Status: admitted backend standard
 
 ## Scope
@@ -79,7 +79,7 @@ fractional harmonic requests.
 
 ## Harmonic-Orb Doctrine
 
-The preset catalog contains 18 named integer harmonics. Alongside the existing
+The preset catalog contains 22 named integer harmonics. Alongside the existing
 H1, H2, H3, H4, H5, H7, H8, H9, H11, and H12 entries it includes:
 
 | Harmonic | Preset name | Primitive angle |
@@ -92,6 +92,17 @@ H1, H2, H3, H4, H5, H7, H8, H9, H11, and H12 entries it includes:
 | 18 | Seminovile | 20° |
 | 20 | Vigintile | 18° |
 | 24 | Untion | 15° |
+| 13 | H13 1/13 | 360/13° |
+| 32 | H32 1/32 | 11.25° |
+| 36 | H36 1/36 | 10° |
+| 40 | H40 1/40 | 9° |
+
+The last four entries also identify optional longitude-aspect sets. Presets
+describe harmonic projections; they do not enable those sets automatically.
+See `ASPECT_BACKEND_STANDARD.md` for exact member fractions, alias conventions,
+the `optional_sets` selector, and `GET /v1/aspects/optional-sets`. Optional
+longitude targets use explicit `12/H` degree default orbs; this does not alter
+the harmonic-chart policy or its caller-configurable projected reference orb.
 
 Tao is 11/24 of a turn (165°), so it is not the name of the primitive H24
 division. Existing preset labels, including Octile and Semi-sextile, remain

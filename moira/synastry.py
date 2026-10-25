@@ -53,6 +53,7 @@ from .constants import Body, DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial
 from .midpoints import _midpoint
 from .aspects import AspectData, aspects_between
+from .optional_aspects import _normalized_optional_sets
 from .julian import jd_from_datetime, datetime_from_jd, utc_to_tt, utc_to_ut1
 from .planets import all_planets_at
 from .nodes import true_node, mean_node, mean_lilith
@@ -198,7 +199,7 @@ Canon: Moira Synastry Architecture; moira.aspects doctrine.
     "scope": "class",
     "id": "moira.synastry.SynastryAspectTruth",
     "risk": "low",
-    "api": {"frozen": ["source_label", "target_label", "source_body", "target_body", "tier", "include_nodes", "orb_factor", "custom_orbs", "source_speed", "target_speed", "custom_orb_table"], "internal": []},
+    "api": {"frozen": ["source_label", "target_label", "source_body", "target_body", "tier", "include_nodes", "orb_factor", "custom_orbs", "source_speed", "target_speed", "custom_orb_table", "optional_sets"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -220,10 +221,12 @@ Canon: Moira Synastry Architecture; moira.aspects doctrine.
     source_speed: float | None
     target_speed: float | None
     custom_orb_table: tuple[tuple[float, float], ...] | None = None
+    optional_sets: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.source_label.strip() or not self.target_label.strip():
             raise ValueError("synastry aspect truth labels must be non-empty")
+        object.__setattr__(self, "optional_sets", _normalized_optional_sets(self.optional_sets))
         if not self.source_body.strip() or not self.target_body.strip():
             raise ValueError("synastry aspect truth bodies must be non-empty")
         if isinstance(self.tier, bool) or self.tier not in {0, 1, 2}:
@@ -1525,7 +1528,7 @@ Canon: Moira Synastry Architecture; aspect policy doctrine.
     "scope": "class",
     "id": "moira.synastry.SynastryAspectPolicy",
     "risk": "low",
-    "api": {"frozen": ["tier", "orbs", "orb_factor", "include_nodes"], "internal": []},
+    "api": {"frozen": ["tier", "orbs", "orb_factor", "include_nodes", "optional_sets"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -1540,8 +1543,10 @@ Canon: Moira Synastry Architecture; aspect policy doctrine.
     orbs: Mapping[float, float] | None = None
     orb_factor: float = 1.0
     include_nodes: bool = True
+    optional_sets: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "optional_sets", _normalized_optional_sets(self.optional_sets))
         if isinstance(self.tier, bool) or self.tier not in {0, 1, 2}:
             raise ValueError("synastry aspect policy tier must be 0, 1, or 2")
         if not math.isfinite(self.orb_factor) or self.orb_factor <= 0.0:
@@ -2031,6 +2036,7 @@ def synastry_aspects(
     orb_factor: float | None = None,
     include_nodes: bool | None = None,
     policy: SynastryComputationPolicy | None = None,
+    optional_sets: tuple[str, ...] | None = None,
 ) -> list[AspectData]:
     """
     Find all inter-aspects between two natal charts (synastry).
@@ -2058,6 +2064,7 @@ def synastry_aspects(
         raise TypeError("chart_b must be a Chart or ProgressedChart instance")
 
     active_policy = _resolve_synastry_policy(policy).aspects
+    optional_sets = _normalized_optional_sets(active_policy.optional_sets if optional_sets is None else optional_sets)
     tier = active_policy.tier if tier is None else tier
     orbs = active_policy.orbs if orbs is None else orbs
     orb_factor = active_policy.orb_factor if orb_factor is None else orb_factor
@@ -2086,6 +2093,7 @@ def synastry_aspects(
                 tier=tier,
                 orbs=orbs,
                 orb_factor=orb_factor,
+                optional_sets=optional_sets,
             )
             results.extend(found)
 
@@ -2103,6 +2111,7 @@ def synastry_contacts(
     source_label: str = "A",
     target_label: str = "B",
     policy: SynastryComputationPolicy | None = None,
+    optional_sets: tuple[str, ...] | None = None,
 ) -> list[SynastryAspectContact]:
     """Return additive synastry contact vessels over the current aspect engine."""
 
@@ -2112,6 +2121,7 @@ def synastry_contacts(
         raise TypeError("chart_b must be a Chart or ProgressedChart instance")
 
     active_policy = _resolve_synastry_policy(policy).aspects
+    optional_sets = _normalized_optional_sets(active_policy.optional_sets if optional_sets is None else optional_sets)
     tier = active_policy.tier if tier is None else tier
     orbs = active_policy.orbs if orbs is None else orbs
     orb_factor = active_policy.orb_factor if orb_factor is None else orb_factor
@@ -2145,6 +2155,7 @@ def synastry_contacts(
                 tier=tier,
                 orbs=orbs,
                 orb_factor=orb_factor,
+                optional_sets=optional_sets,
             )
             for aspect in found:
                 truth = SynastryAspectTruth(
@@ -2153,6 +2164,7 @@ def synastry_contacts(
                     source_body=name_a,
                     target_body=name_b,
                     tier=tier,
+                    optional_sets=optional_sets,
                     include_nodes=include_nodes,
                     orb_factor=orb_factor,
                     custom_orbs=orbs is not None,

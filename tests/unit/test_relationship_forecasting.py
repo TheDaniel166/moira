@@ -283,6 +283,42 @@ def _patch_single_target_solver(monkeypatch: pytest.MonkeyPatch, fake_find_trans
     monkeypatch.setattr(forecasting, "_find_transits_to_targets", fake_multi)
 
 
+@pytest.mark.parametrize(("q", "p"), [(13, 6), (32, 15), (36, 17), (40, 19)])
+def test_optional_fraction_forecasts_preserve_both_branches_and_selection_truth(monkeypatch, q, p):
+    from fractions import Fraction
+
+    calls = []
+
+    def fake_find(body, target_lon, jd_start, jd_end, **kwargs):
+        calls.append(target_lon)
+        return [_canonical_event(body, target_lon, jd_start + 0.5)]
+
+    _patch_single_target_solver(monkeypatch, fake_find)
+    key, name = f"H{q}", f"H{q} {p}/{q}"
+    result = forecasting.find_composite_transits(
+        _composite(), ["Mars"], 2_460_000.0, 2_460_100.0,
+        target_names=["Sun"], tier=0,
+        optional_sets=(key,), aspect_names=[f"{p}/{q}"],
+    )
+    angle = float(360 * Fraction(p, q))
+    assert sorted(calls) == pytest.approx(sorted([(10 + angle) % 360, (10 - angle) % 360]), abs=1e-12)
+    assert result.computation_truth.optional_sets == (key,)
+    assert result.computation_truth.aspect_names == (name,)
+    assert result.computation_truth.search_call_count == 2
+    assert result.event_count == 2
+    assert all(event.aspect_name == name for event in result.events)
+    with pytest.raises(ValueError, match="unavailable"):
+        forecasting.find_composite_transits(
+            _composite(), ["Mars"], 2_460_000.0, 2_460_100.0,
+            target_names=["Sun"], tier=2, aspect_names=[name],
+        )
+    with pytest.raises(ValueError, match="unique"):
+        forecasting.find_composite_transits(
+            _composite(), ["Mars"], 2_460_000.0, 2_460_100.0,
+            target_names=["Sun"], optional_sets=(key,), aspect_names=[name, f"{p}/{q}"],
+        )
+
+
 def test_exact_relationship_transits_search_both_symmetric_aspect_branches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

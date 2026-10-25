@@ -605,6 +605,7 @@ def compute_asteroid_family_resonance_network(
         tier=request.aspect_tier,
         include_minor=request.include_minor,
         orb_factor=request.orb_factor,
+        optional_sets=tuple(request.optional_sets),
     )
     resonant_aspects = find_resonant_aspects(aspects, body_catalog_numbers)
     network = resonance_network(resonant_aspects)
@@ -636,6 +637,7 @@ def compute_asteroid_family_resonance_network(
             aspect_tier=request.aspect_tier,
             include_minor=request.include_minor,
             orb_factor=request.orb_factor,
+            optional_sets=request.optional_sets,
             stage_sequence=[
                 "datetime_validation",
                 "julian_day_conversion",

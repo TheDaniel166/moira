@@ -27,7 +27,7 @@ An **ecliptic aspect** in Moira is:
 |---|---|
 | *two distinct bodies* | `body1 != body2`; no self-aspects |
 | *angular separation* | `angular_distance(lon1, lon2)` → `[0, 180]` degrees, folded at 180° |
-| *canonical aspect angle* | An angle from `moira.constants.Aspect.ALL` |
+| *canonical aspect angle* | A standard angle from `moira.constants.Aspect.ALL`, or an explicitly enabled member of `moira.optional_aspects.OPTIONAL_ASPECT_SETS` |
 | *orb* | `abs(separation - angle)` |
 | *within declared orb* | `orb <= allowed_orb` |
 | *allowed_orb* | `default_orb * orb_factor`, or the caller-supplied override for that angle |
@@ -148,6 +148,7 @@ The aspect engine delegates to external modules without redefining them:
 |---|---|---|
 | Angular distance arithmetic | `moira.coordinates.angular_distance` | Returns `[0, 180]`, fold at 180° |
 | Canonical aspect definitions | `moira.constants.Aspect.ALL` | 46 zodiacal aspects |
+| Optional exact-fraction definitions | `moira.optional_aspects.OPTIONAL_ASPECT_SETS` | 28 additional targets in four opt-in sets |
 | Default orb table | `moira.constants.DEFAULT_ORBS` | `{angle: max_orb}` |
 | Aspect tier lists | `moira.constants.ASPECT_TIERS` | Major / Common Minor / Extended Minor |
 
@@ -158,8 +159,11 @@ propagate automatically.
 
 ### 4. Canonical Aspect Set
 
-The complete set of recognised and detectable aspect types is declared in
-`CANONICAL_ASPECTS` — a module-level tuple of 48 names, frozen at import time.
+The standard aspect set is declared in `CANONICAL_ASPECTS` — a module-level
+tuple of 48 names, frozen at import time. It preserves the standard 46 zodiacal
+names and two declination names. Optional zodiacal additions are declared
+separately in `OPTIONAL_ASPECT_SETS`; `ASPECT_DEFINITIONS` combines all 74
+zodiacal definitions for identity resolution without enabling optional detection.
 
 | Tier | Count | Names |
 |---|---|---|
@@ -173,7 +177,8 @@ Rules:
 - The 46 zodiacal names correspond 1-to-1 with entries in `Aspect.ALL`.
 - The 2 declination names are produced exclusively by `find_declination_aspects`.
 - `CANONICAL_ASPECTS` carries no detection logic; it is a declaration only.
-- No aspect not in `CANONICAL_ASPECTS` can be produced by any detection function.
+- Standard detection produces only names in `CANONICAL_ASPECTS`; optional
+  detection additionally produces names from the explicitly selected sets.
 
 #### Additional extended-minor geometry and naming
 
@@ -256,14 +261,88 @@ unadmitted labels such as Sentagon and GoldenRatio are not aliases.
 Motion witnesses and relationship-transit selection accept the registry's
 aliases and emit canonical names. REST motion input schemas advertise both
 canonical names and declared aliases; output schemas enumerate canonical
-names only. Relationship REST requests can explicitly select up to all 46
-aspects, reject duplicates after alias resolution, and retain the existing
+names only. Relationship REST requests can explicitly select up to all 74
+zodiacal aspects when all four optional sets are enabled, reject duplicates
+after alias resolution, and retain the existing
 branch, scan, and search-work budgets. Alias resolution never widens a tier.
 
 `HARMONIC_PRESETS` now covers the admitted primitive divisions with H6,
 H10, H14, H15, H16, H18, H20, and H24 added. H24 is named Untion (1/24),
 not Tao (11/24). Existing preset labels are retained; new descriptions state
 geometry without adding interpretive doctrine. See the Harmonics Backend Standard.
+
+#### Optional H13, H32, H36, and H40 sets
+
+These four sets add 28 primitive, irreducible fractions below half a turn.
+Reducible members already belong to lower harmonic families and are not
+duplicated. Angles use `360 * numerator / denominator` without rounding source
+tables; exact integer fractions remain available in immutable metadata.
+
+| Set | Numerators (denominator equals harmonic) | Primitive angle | Default orb |
+|---|---|---|---|
+| H13 | 1, 2, 3, 4, 5, 6 | 360/13° | 12/13° |
+| H32 | 1, 3, 5, 7, 9, 11, 13, 15 | 11.25° | 0.375° |
+| H36 | 1, 5, 7, 11, 13, 17 | 10° | 1/3° |
+| H40 | 1, 3, 7, 9, 11, 13, 17, 19 | 9° | 0.3° |
+
+Canonical labels are `H13 1/13`, `H32 3/32`, etc. Every member has its exact
+`p/q` alias. H32 additionally admits the published Quartisemisquare series;
+H36 admits the Sextisextile series and Trigintasextile for 1/36; H40 admits
+Semivigintile and Quadragintile for 1/40. All six H13 published names are
+explicitly qualified, such as `Tredecile (13th harmonic)` and
+`Bitredecile (13th harmonic)`. Bare Tredecile stays 108°, Quindecile stays
+24°, and Tao stays 165°.
+
+[Philip Graves's authored table](https://www.astrolearn.com/astrology-articles/aspects2/)
+provides the H13, H32, and H36 series terminology (with rounded source angles).
+[David Cochrane's *The First 32 Harmonics*](https://www.astrosoftware.com/cpnew/a_and_v/pdf/harmonicfirst32.pdf)
+documents research use of higher harmonics. These are naming and practice
+sources, not precision or interpretive validation. Moira's exact rational
+construction and configurable `12/H` degree default orbs are explicit engine
+policy. These optional longitude defaults do not change the independent
+projected-orb defaults of the harmonic-chart API.
+
+```python
+from moira import OPTIONAL_ASPECT_FRACTIONS, aspects_from_longitudes, resolve_aspect
+
+analysis = aspects_from_longitudes(
+    {"Sun": 0.0, "Moon": 360 / 13}, tier=0, optional_sets=("H13",),
+)
+assert analysis.optional_sets == ("H13",)
+assert OPTIONAL_ASPECT_FRACTIONS["H13 1/13"] == (1, 13)
+assert resolve_aspect("1/13").name == "H13 1/13"
+```
+
+`optional_sets=()` preserves existing detection defaults. Set names are case
+insensitive and normalized in catalog order; unknown, repeated, non-string,
+or untrimmed selectors fail closed. `AspectPolicy` freezes the selection.
+The selected sets extend the requested tier or legacy `include_minor` set;
+they never populate `Aspect.ALL`, `ASPECT_TIERS`, or `CANONICAL_ASPECTS`.
+The moiety policy remains restricted to the five traditional major aspects.
+
+The selector is available on `find_aspects`, `aspects_between`,
+`aspects_to_point`, `aspects_from_longitudes`, synastry aspect/contact calls,
+and relationship transit searches, including their facade and REST entry
+points. Chart-wheel config and asteroid-family resonance requests expose the
+same selector and preserve it in policy/provenance receipts. Explicit
+`AspectPolicy` still takes precedence over legacy keyword
+arguments. Synastry explicit selectors override its policy selector. Forecast
+name filtering requires a matching enabled optional set; naming one specific
+motion witness is itself an explicit opt-in. Aliases do not widen detection.
+
+Position-only, synastry, derived-chart, and relationship-forecast receipts
+preserve the enabled sets. These members are `extended_minor`, with distinct
+`harmonic_13`, `harmonic_32`, `harmonic_36`, and `harmonic_40` families; graph
+and harmonic profiles consume that classification without another admission.
+Orb overrides and `orb_factor` retain their existing meaning.
+
+`OPTIONAL_ASPECT_SETS`, `OPTIONAL_ASPECT_FRACTIONS`, and `ASPECT_DEFINITIONS`
+are re-exported through the same public namespaces as `ASPECT_ALIASES`.
+`GET /v1/aspects/optional-sets` exposes canonical names, exact numerators and
+denominators, angles, orbs, and declared aliases. REST selection uses e.g.
+`"optional_sets": ["H13", "H40"]`. The harmonic preset catalog additionally
+contains H13, H32, H36, and H40, named after their primitive canonical members.
+Selecting or listing a harmonic preset alone does not enable longitude sets.
 
 ---
 
@@ -274,7 +353,7 @@ geometry without adding interpretive doctrine. See the Harmonics Backend Standar
 | Axis | Type | Rule |
 |---|---|---|
 | `domain` | `AspectDomain` | `ZODIACAL` for ecliptic; `DECLINATION` for parallels |
-| `tier` | `AspectTier` | Derived from `AspectDefinition.is_major` and membership in `Aspect.EXTENDED_MINOR` |
+| `tier` | `AspectTier` | Derived from `AspectDefinition.is_major`, `Aspect.EXTENDED_MINOR`, and optional-set membership |
 | `family` | `AspectFamily` | Derived from `_FAMILY_BY_NAME`; maps each aspect name to its harmonic family |
 
 Classification is **descriptive only**. It describes what was detected, not

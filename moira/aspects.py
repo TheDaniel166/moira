@@ -86,10 +86,10 @@ This module has thirteen distinct concerns, kept intentionally separate:
    search for a future perfection or station.
 
 10. **Canonical configuration** — ``CANONICAL_ASPECTS``.
-   The complete, explicitly declared set of all 48 aspect types recognised
-   and detectable by this engine: 46 zodiacal aspects (5 major, 6
-   common-minor, 35 extended-minor) plus 2 declination aspects (Parallel,
-   Contra-Parallel).  ``CANONICAL_ASPECTS`` makes the full set inspectable
+   The standard, explicitly declared set of 48 aspect types: 46 zodiacal
+   aspects (5 major, 6 common-minor, 35 extended-minor) plus 2 declination
+   aspects (Parallel,
+   Contra-Parallel).  ``CANONICAL_ASPECTS`` makes the standard set inspectable
    at import time without requiring knowledge of ``moira.constants``.
 
 11. **Multi-body pattern layer** — ``AspectPatternKind``, ``AspectPattern``,
@@ -172,7 +172,10 @@ Public surface
 ``AspectMotionStationaryReason`` — typed body-station or relative-standstill reason.
 ``AspectMotionWitness``      — immutable instantaneous signed-error/rate witness.
 ``aspect_motion_witness``    — build the witness from caller-supplied longitudes and speeds.
-``CANONICAL_ASPECTS``        — tuple of all 48 canonical aspect names (46 zodiacal + 2 declination).
+``CANONICAL_ASPECTS``        — tuple of 48 standard aspect names (46 zodiacal + 2 declination).
+``ASPECT_DEFINITIONS``       — 74 zodiacal definitions including 28 optional targets.
+``OPTIONAL_ASPECT_SETS``     — immutable H13, H32, H36, H40 member metadata.
+``OPTIONAL_ASPECT_FRACTIONS`` — exact integer numerator/denominator pairs by name.
 ``ASPECT_ALIASES``           — read-only mapping of alternative longitude names to canonical names.
 ``resolve_aspect``           — resolve a canonical name or registered alias to its unique definition.
 ``AspectPatternKind``        — enum: STELLIUM, T_SQUARE, GRAND_TRINE, GRAND_CROSS, YOD.
@@ -229,7 +232,11 @@ from ._aspect_types import (
     AspectTier,
 )
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, TRADITIONAL_MOIETY_ORBS, Body
-from .aspect_registry import ASPECT_ALIASES, resolve_aspect
+from .aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect
+from .optional_aspects import (
+    OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS,
+    _normalized_optional_sets, _optional_definitions,
+)
 from .coordinates import angular_distance, normalize_degrees
 from .declination_aspects import (
     DeclinationAspect,
@@ -249,6 +256,9 @@ __all__ = [
     # Constants
     "CANONICAL_ASPECTS",
     "ASPECT_ALIASES",
+    "ASPECT_DEFINITIONS",
+    "OPTIONAL_ASPECT_SETS",
+    "OPTIONAL_ASPECT_FRACTIONS",
     "DEFAULT_POLICY",
     "TRADITIONAL_MOIETY_ORBS",
     # Enums
@@ -621,7 +631,7 @@ class HellenisticSuperiorityTruth:
 
 
 # ---------------------------------------------------------------------------
-# Module-level classification lookup (built once from Aspect.ALL)
+# Module-level classification lookup (standard and optional longitude definitions)
 # ---------------------------------------------------------------------------
 
 _FAMILY_BY_NAME: dict[str, AspectFamily] = {
@@ -676,6 +686,10 @@ _FAMILY_BY_NAME: dict[str, AspectFamily] = {
 _EXTENDED_MINOR_NAMES: frozenset[str] = frozenset(
     adef.name for adef in Aspect.EXTENDED_MINOR
 )
+_FAMILY_BY_NAME.update({
+    member.definition.name: AspectFamily(f"harmonic_{member.denominator}")
+    for members in OPTIONAL_ASPECT_SETS.values() for member in members
+})
 _COMMON_MINOR_NAMES: frozenset[str] = frozenset(
     adef.name for adef in Aspect.COMMON_MINOR
 )
@@ -684,7 +698,7 @@ _COMMON_MINOR_NAMES: frozenset[str] = frozenset(
 def _tier_for(adef: AspectDefinition) -> AspectTier:
     if adef.is_major:
         return AspectTier.MAJOR
-    if adef.name in _EXTENDED_MINOR_NAMES:
+    if adef.name in _EXTENDED_MINOR_NAMES or adef.name in OPTIONAL_ASPECT_FRACTIONS:
         return AspectTier.EXTENDED_MINOR
     return AspectTier.COMMON_MINOR
 
@@ -695,7 +709,7 @@ _ASPECT_CLASSIFICATION: dict[str, AspectClassification] = {
         tier=_tier_for(adef),
         family=_FAMILY_BY_NAME[adef.name],
     )
-    for adef in Aspect.ALL
+    for adef in ASPECT_DEFINITIONS
 }
 
 def _finite_number(name: str, value: object) -> float:
@@ -940,6 +954,11 @@ class AspectPolicy:
                       body = ``full_orb / 2``; combined allowed orb for a pair
                       = ``moiety(A) + moiety(B)``.
 
+    optional_sets   : explicitly enabled H13, H32, H36, H40 sets, added to the
+                      selected standard tier. Empty by default. Names are
+                      normalized and frozen; unknown or repeated keys fail.
+                      Moiety mode still admits only the five major aspects.
+
     All fields are optional; the defaults reproduce the historical default
     behaviour of all four detection functions.
 
@@ -961,8 +980,10 @@ class AspectPolicy:
     declination_orb: float                     = 1.0
     orb_mode:        str                       = "fixed"
     moiety_orbs:     Mapping[str, float] | None = None
+    optional_sets:   tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "optional_sets", _normalized_optional_sets(self.optional_sets))
         if self.tier is not None and (
             isinstance(self.tier, bool)
             or not isinstance(self.tier, int)
@@ -1354,7 +1375,7 @@ CANONICAL_ASPECTS: tuple[str, ...] = (
     "Contra-Parallel",
 )
 """
-The complete set of 48 aspect names recognised and detectable by this engine.
+The standard set of 48 aspect names; optional harmonic sets are separate.
 
 Composition
 -----------
@@ -1371,6 +1392,9 @@ from ``moira.constants``.  The 2 declination names are produced exclusively
 by ``find_declination_aspects``.
 
 This tuple is declaration-only; it carries no detection logic.
+``ASPECT_DEFINITIONS`` additionally includes the 28 optional longitude targets
+with exact identities declared in ``OPTIONAL_ASPECT_FRACTIONS``. Detection
+requires an explicit ``optional_sets`` selection; standard defaults are stable.
 """
 
 
@@ -2739,6 +2763,7 @@ class LongitudeAspectAnalysis:
     include_nodes: bool
     excluded_node_names: tuple[str, ...]
     motion_semantics: str = "not_computed_without_speeds"
+    optional_sets: tuple[str, ...] = ()
 
     @property
     def longitudes(self) -> dict[str, float]:
@@ -2813,6 +2838,7 @@ class AspectMotionWitness:
 def _resolve_aspects(
     tier: int | None,
     include_minor: bool,
+    optional_sets: tuple[str, ...] = (),
 ) -> list[AspectDefinition]:
     """Return the aspect list for the given tier / include_minor flag."""
     if tier is not None:
@@ -2822,10 +2848,11 @@ def _resolve_aspects(
             or tier not in ASPECT_TIERS
         ):
             raise ValueError(f"aspect tier must be 0, 1, or 2, got {tier!r}")
-        return ASPECT_TIERS[tier]
+        return ASPECT_TIERS[tier] + list(_optional_definitions(optional_sets))
     if not isinstance(include_minor, bool):
         raise ValueError("include_minor must be a boolean")
-    return Aspect.MAJOR + Aspect.COMMON_MINOR if include_minor else Aspect.MAJOR
+    standard = Aspect.MAJOR + Aspect.COMMON_MINOR if include_minor else Aspect.MAJOR
+    return standard + list(_optional_definitions(optional_sets))
 
 
 # ---------------------------------------------------------------------------
@@ -3162,6 +3189,7 @@ def find_aspects(
     tier: int | None = None,
     orb_factor: float = 1.0,
     policy: AspectPolicy | None = None,
+    optional_sets: tuple[str, ...] = (),
 ) -> list[AspectData]:
     """
     Find all aspects between a set of planetary longitudes.
@@ -3211,13 +3239,15 @@ def find_aspects(
                    Required for accurate applying/separating detection.
     tier         : 0/1/2 aspect tier; overrides include_minor when set
     orb_factor   : multiplier for default orbs; ignored when orbs is provided
-    policy       : when supplied, overrides tier/include_minor/orbs/orb_factor
+    policy       : when supplied, overrides tier/include_minor/orbs/orb_factor/optional_sets
+    optional_sets: opt-in H13/H32/H36/H40 targets, appended to the standard set
 
     Returns
     -------
     List of AspectData sorted by orb (tightest first).
     """
     resolved_policy = policy or AspectPolicy(
+        optional_sets=optional_sets,
         tier=tier,
         include_minor=include_minor,
         orbs=orbs,
@@ -3236,7 +3266,7 @@ def find_aspects(
     positions = _normalized_named_values(positions, quantity="longitude")
     if speeds is not None:
         speeds = _normalized_named_values(speeds, quantity="speed")
-    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
+    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor, resolved_policy.optional_sets)
     bodies = list(positions.keys())
     results: list[AspectData] = []
 
@@ -3296,8 +3326,12 @@ def aspects_from_longitudes(
     tier: int = 1,
     orb_factor: float = 1.0,
     include_nodes: bool = True,
+    optional_sets: tuple[str, ...] = (),
 ) -> LongitudeAspectAnalysis:
     """Analyze supplied ecliptic longitudes under canonical aspect doctrine.
+
+    ``optional_sets`` enables additional exact-fraction H13/H32/H36/H40
+    targets and is preserved in the analysis receipt. It is empty by default.
 
     This is the position-only entry point for composite, harmonic, progressed,
     and other derived charts that do not represent an ephemeris moment.  It
@@ -3342,17 +3376,20 @@ def aspects_from_longitudes(
     if len(normalized) < 2:
         raise ValueError("at least two included longitude points are required")
 
+    optional_sets = _normalized_optional_sets(optional_sets)
     ordered = dict(sorted(normalized.items()))
     aspects = find_aspects(
         ordered,
         tier=tier,
         orb_factor=resolved_orb_factor,
+        optional_sets=optional_sets,
     )
     return LongitudeAspectAnalysis(
         positions=tuple(ordered.items()),
         aspects=tuple(aspects),
         tier=tier,
         orb_factor=resolved_orb_factor,
+        optional_sets=optional_sets,
         include_nodes=include_nodes,
         excluded_node_names=tuple(sorted(excluded)),
     )
@@ -3369,6 +3406,7 @@ def aspects_between(
     speed_a: float | None = None,
     speed_b: float | None = None,
     policy: AspectPolicy | None = None,
+    optional_sets: tuple[str, ...] = (),
 ) -> list[AspectData]:
     """
     Find all aspects between two specific bodies.
@@ -3402,7 +3440,7 @@ def aspects_between(
 
     Doctrine inputs (current policy knobs)
     ---------------------------------------
-    tier       : aspect set (default 2 = all aspects)
+    tier       : standard aspect set (default 2 = all 46 standard aspects)
     orbs       : custom orb table {angle: max_orb}
     orb_factor : multiplier for default orbs; ignored when orbs is provided
 
@@ -3410,17 +3448,19 @@ def aspects_between(
     ----------
     body_a / lon_a    : first body name and longitude
     body_b / lon_b    : second body name and longitude
-    tier              : aspect set (default 2 = all aspects)
+    tier              : standard aspect set (default 2 = all 46 standard aspects)
     orbs              : custom orb table
     orb_factor        : multiplier for default orbs
     speed_a / speed_b : daily motion (for applying/separating)
-    policy            : when supplied, overrides tier/orbs/orb_factor
+    policy            : when supplied, overrides tier/orbs/orb_factor/optional_sets
+    optional_sets     : opt-in H13/H32/H36/H40 targets, appended to the standard set
 
     Returns
     -------
     List of AspectData sorted by orb.
     """
     resolved_policy = policy or AspectPolicy(
+        optional_sets=optional_sets,
         tier=tier,
         orbs=orbs,
         orb_factor=orb_factor,
@@ -3436,9 +3476,9 @@ def aspects_between(
     if _use_moiety:
         aspect_list = Aspect.MAJOR
     elif resolved_policy.tier is not None:
-        aspect_list = _resolve_aspects(resolved_policy.tier, True)
+        aspect_list = _resolve_aspects(resolved_policy.tier, True, resolved_policy.optional_sets)
     else:
-        aspect_list = _resolve_aspects(None, resolved_policy.include_minor)
+        aspect_list = _resolve_aspects(None, resolved_policy.include_minor, resolved_policy.optional_sets)
     for field_name, value in (("body_a", body_a), ("body_b", body_b)):
         if not isinstance(value, str) or not value or value != value.strip():
             raise ValueError(f"{field_name} must be a non-empty trimmed string")
@@ -3505,6 +3545,7 @@ def aspects_to_point(
     tier: int | None = None,
     orb_factor: float = 1.0,
     policy: AspectPolicy | None = None,
+    optional_sets: tuple[str, ...] = (),
 ) -> list[AspectData]:
     """
     Find all aspects from a set of planets to a single point longitude.
@@ -3555,13 +3596,15 @@ def aspects_to_point(
     include_minor   : include common minor aspects (ignored when tier is set)
     tier            : 0/1/2 aspect tier
     orb_factor      : multiplier for default orbs
-    policy          : when supplied, overrides tier/include_minor/orbs/orb_factor
+    policy          : when supplied, overrides tier/include_minor/orbs/orb_factor/optional_sets
+    optional_sets   : opt-in H13/H32/H36/H40 targets, appended to the standard set
 
     Returns
     -------
     List of AspectData sorted by orb.
     """
     resolved_policy = policy or AspectPolicy(
+        optional_sets=optional_sets,
         tier=tier,
         include_minor=include_minor,
         orbs=orbs,
@@ -3585,7 +3628,7 @@ def aspects_to_point(
     ):
         raise ValueError("point_name must be a non-empty trimmed string")
     positions = _normalized_named_values(positions, quantity="longitude")
-    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
+    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor, resolved_policy.optional_sets)
     results: list[AspectData] = []
 
     for body, lon in positions.items():

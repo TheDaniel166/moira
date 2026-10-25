@@ -8,6 +8,7 @@ from moira import Moira
 
 from ..dependencies import get_engine
 from ..models.relationship import (
+    OptionalAspectCatalogResponse,
     AspectMotionAnalysisResponse,
     AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
@@ -47,6 +48,7 @@ from ..models.relationship import (
     ChartShapeResponse,
 )
 from ..serializers.relationship import (
+    serialize_optional_aspect_catalog,
     serialize_aspect,
     serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
@@ -97,6 +99,12 @@ from ..services.relationship import (
 
 
 router = APIRouter(prefix="/v1", tags=["relationship"])
+
+
+@router.get("/aspects/optional-sets", response_model=OptionalAspectCatalogResponse)
+def optional_aspect_sets_route() -> OptionalAspectCatalogResponse:
+    """List the opt-in harmonic sets with exact fraction metadata and aliases."""
+    return serialize_optional_aspect_catalog()
 
 
 @router.post(

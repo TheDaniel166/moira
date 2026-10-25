@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from moira._strenum import StrEnum
 from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
 
-from .relationship import AspectDataResponse
+from .relationship import AspectDataResponse, OptionalAspectSetValue, _OptionalAspectSetsRequest
 
 
 ASTEROIDS_BULK_MAX_ITEMS = 500
@@ -328,7 +328,7 @@ class AsteroidFamiliesInChartResponse(_StrictModel):
     provenance: AsteroidFamiliesInChartProvenanceResponse
 
 
-class AsteroidFamilyResonanceNetworkRequest(_StrictModel):
+class AsteroidFamilyResonanceNetworkRequest(_OptionalAspectSetsRequest):
     dt: datetime
     bodies: list[str | int] | None = Field(
         default=None,
@@ -434,6 +434,7 @@ class AsteroidFamilyResonanceEdgeResponse(_StrictModel):
 
 
 class AsteroidFamilyResonanceNetworkProvenanceResponse(_StrictModel):
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
     catalog_source: str = ASTEROID_FAMILY_CATALOG_SOURCE
     number_system: str = "MPC_catalog_number"
     lookup_source_module: str = "moira.asteroid_families"
