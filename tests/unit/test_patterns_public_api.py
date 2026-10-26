@@ -62,6 +62,13 @@ _CURATED_PUBLIC_NAMES = [
     "find_grand_quintiles",
     "find_quintile_triangles",
     "find_septile_triangles",
+    "find_small_learning_triangles", "find_medium_learning_triangles",
+    "find_large_learning_triangles", "find_search_triangles",
+    "find_irritation_rectangles", "find_sextile_chains",
+    "GeometricPatternTemplate", "PatternGeometryTruth", "HARMONIC_PATTERN_PRESETS",
+    "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
+    "PATTERN_ALIASES", "resolve_pattern",
+    "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
 ]
 
 _INTERNAL_NAMES = [
@@ -94,5 +101,5 @@ class TestModuleAgreement:
                 f"moira.patterns.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_46(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 46
+    def test_curated_count_is_62(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 62

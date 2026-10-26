@@ -24,23 +24,24 @@ def test_pattern_facade_forwards_opt_in_dominance(monkeypatch) -> None:
     observed: dict[str, object] = {}
     aspects = [object()]
 
-    def _find_aspects(positions, *, speeds, tier, orb_factor):
+    def _find_aspects(positions, *, speeds, tier, orb_factor, optional_sets):
         observed.update(
             aspect_positions=positions,
             speeds=speeds,
             aspect_orb_factor=orb_factor,
             aspect_tier=tier,
+            optional_sets=optional_sets,
         )
         return aspects
 
     monkeypatch.setattr(facade_module, "find_aspects", _find_aspects)
 
-    def _find_all_patterns(positions, *, aspects, orb_factor, dominant_only):
+    def _find_all_patterns(positions, *, aspects, policy):
         observed.update(
             positions=positions,
             aspects=aspects,
-            orb_factor=orb_factor,
-            dominant_only=dominant_only,
+            orb_factor=policy.orb_factor,
+            dominant_only=policy.dominant_only,
         )
         return ["result"]
 
@@ -59,6 +60,7 @@ def test_pattern_facade_forwards_opt_in_dominance(monkeypatch) -> None:
         "speeds": {"A": 1.0, "B": 1.0, "C": 1.0, "D": 1.0},
         "aspect_orb_factor": 1.25,
         "aspect_tier": 2,
+        "optional_sets": (),
         "positions": {"A": 0.0, "B": 120.0, "C": 240.0, "D": 60.0},
         "aspects": aspects,
         "orb_factor": 1.25,
@@ -81,3 +83,18 @@ def test_pattern_facade_widened_orb_reaches_initial_aspect_admission() -> None:
 
     assert "Grand Trine" not in default_names
     assert "Grand Trine" in widened_names
+
+
+def test_pattern_facade_exposes_optional_harmonic_geometry() -> None:
+    class Chart13:
+        def longitudes(self):
+            return {"A": 0.0, "B": 360 / 13, "C": 720 / 13}
+
+        def speeds(self):
+            return {}
+
+    matches = SpecialTopicsFacadeMixin.patterns(
+        object(), Chart13(), include=[], optional_sets=("H13",), harmonic_presets=("H13",),
+    )
+    assert len(matches) == 1
+    assert matches[0].geometry.template.harmonic == 13

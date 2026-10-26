@@ -321,21 +321,34 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         chart,
         orb_factor: float = 1.0,
         dominant_only: bool = False,
+        *,
+        include=None,
+        optional_sets=(),
+        templates=(),
+        harmonic_presets=(),
+        policy=None,
     ):
-        """Find chart aspect patterns, optionally retaining only maximal structures."""
+        """Find named and opt-in exact geometric patterns using one explicit policy."""
+        from .patterns import PatternComputationPolicy, PatternSelectionPolicy, _validate_policy
+
         facade = _facade_module()
+        resolved = _validate_policy(policy if policy is not None else PatternComputationPolicy(
+            orb_factor=orb_factor, dominant_only=dominant_only,
+            selection=PatternSelectionPolicy(None if include is None else tuple(include)),
+            optional_sets=optional_sets, templates=templates, harmonic_presets=harmonic_presets,
+        ))
         positions = chart.longitudes()
         asps = facade.find_aspects(
             positions,
             speeds=chart.speeds(),
             tier=2,
-            orb_factor=orb_factor,
+            orb_factor=resolved.orb_factor,
+            optional_sets=resolved.optional_sets,
         )
         return facade.find_all_patterns(
             positions,
             aspects=asps,
-            orb_factor=orb_factor,
-            dominant_only=dominant_only,
+            policy=resolved,
         )
 
     def analyze_stelliums(self, positions, *, policy=None, selection=None,

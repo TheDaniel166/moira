@@ -115,6 +115,7 @@ from ..models.relationship import (
     PatternDetectionTruthResponse,
     PatternRequiredAspectLedgerResponse,
     PatternRequest,
+    PatternGeometryResponse,
     PatternSearchComputationTruthResponse,
     PlanetaryPictureResponse,
     SynastryAspectClassificationResponse,
@@ -887,6 +888,18 @@ def serialize_aspect_pattern(
         bodies=list(pattern.bodies),
         aspects=[serialize_aspect(aspect) for aspect in pattern.aspects],
         apex=pattern.apex,
+        geometry=(
+            PatternGeometryResponse(
+                template_name=pattern.geometry.template.name,
+                phases=[(phase.numerator, phase.denominator)
+                        for phase in pattern.geometry.template.phases],
+                vertex_bodies=list(pattern.geometry.vertex_bodies),
+                orientation=pattern.geometry.orientation,
+                harmonic=pattern.geometry.template.harmonic,
+                source=pattern.geometry.template.source,
+                required_optional_sets=list(pattern.geometry.template.required_optional_sets),
+            ) if pattern.geometry is not None else None
+        ),
         detection_truth=(
             serialize_pattern_detection_truth(pattern.detection_truth)
             if pattern.detection_truth is not None
@@ -927,7 +940,10 @@ def serialize_pattern_search_truth(
 ) -> PatternSearchComputationTruthResponse:
     """Expose pattern selection and coherence inputs beside the result list."""
 
+    policy = request.engine_policy()
     return PatternSearchComputationTruthResponse(
+        aspect_catalog=("standard_plus_optional_longitude" if policy.optional_sets
+                        else "standard_longitude"),
         include_nodes=request.include_nodes,
         orb_factor=request.orb_factor,
         selection_mode=(
@@ -936,6 +952,10 @@ def serialize_pattern_search_truth(
             else "explicit_pattern_names"
         ),
         requested_patterns=[] if request.include is None else list(request.include),
+        resolved_patterns=[] if policy.selection.include is None else list(policy.selection.include),
+        optional_sets=list(policy.optional_sets),
+        harmonic_presets=list(policy.harmonic_presets),
+        requested_templates=[template.name for template in policy.templates],
         dominant_only=request.dominant_only,
         pattern_count=pattern_count,
     )

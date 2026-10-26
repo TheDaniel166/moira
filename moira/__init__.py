@@ -7,6 +7,16 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 
 from __future__ import annotations
 
+from .patterns import (
+    GeometricPatternTemplate, PatternGeometryTruth, HARMONIC_PATTERN_PRESETS,
+    harmonic_pattern_templates, triangle_template, find_geometric_patterns,
+    PATTERN_ALIASES, resolve_pattern,
+    find_small_learning_triangles, find_medium_learning_triangles,
+    find_large_learning_triangles, find_search_triangles,
+    find_irritation_rectangles, find_sextile_chains,
+    MATHEMATICAL_PATTERN_TEMPLATES, find_mathematical_patterns,
+)
+
 from .hypothetical import (
     ConventionClock, ProserpinaRule, LongitudeConvention, ArtaFourPoints,
     ArtaOsculatingSet, HistoricalRealization, PrescribedHypotheticalOrbit,
@@ -1506,6 +1516,13 @@ from .mundane import (
 )
 
 __all__ = [
+    "GeometricPatternTemplate", "PatternGeometryTruth", "HARMONIC_PATTERN_PRESETS",
+    "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
+    "PATTERN_ALIASES", "resolve_pattern",
+    "find_small_learning_triangles", "find_medium_learning_triangles",
+    "find_large_learning_triangles", "find_search_triangles",
+    "find_irritation_rectangles", "find_sextile_chains",
+    "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
     "ConventionClock", "ProserpinaRule", "LongitudeConvention", "ArtaFourPoints",
     "ArtaOsculatingSet", "HistoricalRealization", "PrescribedHypotheticalOrbit",
     "HypotheticalGeometry", "hypothetical_catalog", "arta_four_points",

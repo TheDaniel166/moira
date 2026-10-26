@@ -7,8 +7,9 @@ definitions, layer boundaries, terminology, invariants, failure doctrine, and
 determinism rules are stated here and are frozen until explicitly superseded by
 a revision to this document.
 
-This document reflects current implementation truth through the structural-role
-and dominant-containment admission. It
+This document includes the 2026-10-26 source-qualified geometric repairs,
+Huber additions, alias reconciliation, exact harmonic template admission, and
+the ten approved mathematical constructions. It
 describes the subsystem that actually exists in `moira/patterns.py`; it does
 not describe aspirational future capabilities.
 
@@ -194,10 +195,162 @@ The current subsystem includes:
 
 - classical and mainstream pattern detectors
 - extended geometric / Huber-recognized detectors already implemented
-- harmonic 5th- and 7th-harmonic detectors already implemented
+- harmonic 5th- and 7th-harmonic named detectors
+- explicit exact geometric templates and harmonic presets
 - stellium position clustering doctrine
 
-No additional detector doctrine is implied by this document.
+There are **37 canonical named patterns**: the 27 below and the ten mathematical
+constructions in the following section. Aliases select the same detector and
+never create another result name. Default searches cover the 35 names whose
+targets are standard; enabling H13 additionally admits its two Spectrum layouts.
+Geometric presets remain independent opt-ins.
+
+| Canonical pattern | Required angles in degrees, unless indicated |
+|---|---|
+| T-Square | 90, 90, 180 |
+| Grand Trine | 120, 120, 120 |
+| Grand Cross | four 90 and two 180 |
+| Yod | 60, 150, 150 |
+| Mystic Rectangle | two each of 60, 120, 180 |
+| Kite | two 60, three 120, one 180 |
+| Stellium | Legacy centroid cluster: at least three bodies within 8 degrees of centroid |
+| Minor Grand Trine | 60, 60, 120 |
+| Grand Sextile | Six cyclic 60 edges; admitted implied trines/oppositions are also preserved |
+| Thor's Hammer | 90, 135, 135 |
+| Boomerang Yod | Yod plus opposition to its apex |
+| Wedge | 60, 120, 180 |
+| Cradle | Three 60, two 120, one 180 |
+| Trapeze | 60, 90, 90, 120, 150, 150 |
+| Eye | 30, 30, 60 |
+| Irritation Triangle | 30, 150, 180 |
+| Hard Wedge | 45, 135, 180 |
+| Dominant Triangle | 90, 120, 150 |
+| Grand Quintile | Five 72 and five 144: the complete regular-pentagon pair ledger |
+| Quintile Triangle | 72, 144, 144 |
+| Septile Triangle | Exact turn fractions 1/7, 2/7, 3/7 |
+| Sextile Chain | Three-sextile chain plus opposition between its endpoints |
+| Small Learning Triangle | 30, 60, 90 |
+| Medium Learning Triangle | 30, 90, 120 |
+| Large Learning Triangle | 60, 90, 150 |
+| Search Triangle | 30, 120, 150 |
+| Irritation Rectangle | Two each of 30, 150, 180 |
+
+The Huber geometries are transcribed from the 30-degree tick diagrams in the
+[APA Diploma Course, Figure 2.3.41, printed p. 93](https://astrologicalpsychology.org/wp-content/uploads/2023/12/33ea1-figures_2.3.40-43_aspect_figures.pdf).
+The three learning-size names follow the revised edition described on the
+[publisher's Aspect Pattern Astrology page](https://astrologicalpsychology.org/books/huber-books/aspect-pattern-astrology-2/).
+These are geometric detectors over caller-selected points. They do not claim
+to implement the full Huber interpretation method, its planet-only eligibility,
+or its planet-specific orb system. Moira's declared geometric orb policy applies.
+
+#### Name reconciliation and migration
+
+`PATTERN_ALIASES` is immutable; `resolve_pattern` accepts canonical names and
+declared aliases, ignoring case, ASCII spaces, hyphens and underscores. Leading
+or trailing whitespace and unknown names are rejected. Selecting both an alias
+and its canonical name is rejected as duplicate selection.
+
+| Alias | Canonical detector |
+|---|---|
+| Ear; Information Triangle; Cosmic Eye | Eye |
+| Ambivalence Triangle; Single Ambivalence Figure; Arrowhead | Wedge |
+| Projection Triangle; Finger of God | Yod |
+| Star of David | Grand Sextile |
+| God's Fist; Thors Hammer | Thor's Hammer |
+| Small Talent Triangle | Minor Grand Trine |
+| Large Talent Triangle | Grand Trine |
+| Efficiency Triangle; Achievement Triangle | T-Square |
+| Efficiency Square; Achievement Square | Grand Cross |
+| Righteousness Rectangle; Righteous Rectangle | Mystic Rectangle |
+| Huber Trapeze | Trapeze |
+| Legacy Trapeze; Trapeze (legacy) | Sextile Chain |
+
+This intentionally supersedes the former non-closing Eye (120/150/150),
+Irritation Triangle (180/150/150), and Dominant Triangle (90/150/180) definitions.
+The former all-mutual-72 Grand Quintile requirement is replaced by a realizable
+pentagon. `find_trapezes` now detects the distinct Huber figure. Callers relying
+on the old three-sextile-chain definition must select `Sextile Chain` or its
+legacy alias, or call `find_sextile_chains`.
+
+#### Mathematical constructions
+
+`MATHEMATICAL_PATTERN_TEMPLATES` is the immutable registry of these ten exact
+layouts. Names are Moira geometric labels; they assert neither historical
+astrological tradition nor an assigned psychological interpretation.
+Every pair of vertices is required, including all diagonals.
+
+Notation `(a,b,c)/H` means phases `a/H`, `b/H`, `c/H` of one turn; degrees are
+`360 * phase`. The exact fractions govern repeating decimals shown approximately.
+
+| Canonical name | Exact phases in turns | Longitudes in degrees | Required optional set |
+|---|---|---|---|
+| H13 Spectrum A | `(0,1,3,9)/13` | approximately 0, 27.692308, 83.076923, 249.230769 | H13 |
+| H13 Spectrum B | `(0,2,5,6)/13` | approximately 0, 55.384615, 138.461538, 166.153846 | H13 |
+| H11 Balanced Spectrum | `(0,2,3,4,8)/11` | approximately 0, 65.454545, 98.181818, 130.909091, 261.818182 | None |
+| Interval Prism A | `(0,1,4,6)/12` | 0, 30, 120, 180 | None |
+| Interval Prism B | `(0,1,3,7)/12` | 0, 30, 90, 210 | None |
+| Fibonacci Fan | `(0,1,2,4,7)/12` | 0, 30, 60, 120, 210 | None |
+| Fibonacci Crown | `(0,1,2,4,7,12)/20` | 0, 18, 36, 72, 126, 216 | None |
+| Triadic Braid | `(0,1,5,6,10,11)/15` | 0, 24, 120, 144, 240, 264 | None |
+| Split Cross | `(0,1,4,5,8,9,12,13)/16` | 0, 22.5, 90, 112.5, 180, 202.5, 270, 292.5 | None |
+| Harmonic Bridge | `(0,2,5)/30` | 0, 24, 60 | None |
+
+Their mathematical definitions are independently testable:
+
+- The H13 Spectra each use all six minor H13 intervals exactly once. Their
+  twelve directed differences cover every nonzero residue modulo 13 once.
+  Exhaustive four-point enumeration yields exactly these two geometries modulo
+  rotation and reflection; their identical interval inventories do not merge them.
+- H11 Balanced Spectrum uses each of the five H11 minor intervals exactly twice.
+  Its shifted `(11,5,2)` difference set comes from the flat interval distribution
+  example in section 4.3 of [Amiot and Sethares, An Algebra for Periodic Rhythms
+  and Scales (2009)](https://sethares.engr.wisc.edu/paperspdf/AlgofScales.pdf).
+- The Prisms each contain 30, 60, 90, 120, 150 and 180 exactly once, but their
+  arrangements differ. They adapt the homometric pair in that paper's Example 9.
+  Full pair assignments, not angle counts alone, determine admission.
+- Fibonacci Fan has cyclic gap steps `1,1,2,3,5` on H12; Crown has
+  `1,1,2,3,5,8` on H20. Crown contains every minor H20 angle, with its repeated
+  interval steps exactly `1,2,3,5,8`.
+- Triadic Braid superposes two regular triangles offset by 24 degrees;
+  Split Cross superposes two squares offset by 22.5 degrees.
+- Harmonic Bridge closes with intervals `2/30,3/30,5/30` turns: 24, 36, 60
+  degrees. The incomplete H30 grid needs no new aspect target or full H30 preset.
+
+Default edge orbs are those of the existing catalog, scaled by `orb_factor`.
+H13 links use `12/13` degrees; H11 links use 1 degree. Prism and Fan links use
+the standard 30/60/90/120/150/180 defaults. Crown uses all ten H20 angle types
+with their existing individual defaults. Braid's 24/96/120/144 links use
+1/1/7/2 degrees; Split Cross's 22.5/67.5/90/112.5/157.5/180 links use
+1/1/7/1/1/8 degrees; Bridge's 24/36/60 links use 1/1.5/5 degrees.
+No separate interpretive strength or orb scale is invented for these names.
+
+| Additional alias | Canonical construction |
+|---|---|
+| H13 Perfect Spectrum A | H13 Spectrum A |
+| H13 Perfect Spectrum B | H13 Spectrum B |
+| Undecile Balanced Spectrum | H11 Balanced Spectrum |
+| Prism A; Prism B | Interval Prism A; Interval Prism B, respectively |
+| Fibonacci Gap Fan; Fibonacci Gap Crown | Fibonacci Fan; Fibonacci Crown, respectively |
+| Quindecile-Trine Braid | Triadic Braid |
+| Hexadecile Split Cross | Split Cross |
+| H30 Bridge | Harmonic Bridge |
+
+Use `find_all_patterns(..., include=[name])`, the shared facade/REST selector,
+or `find_mathematical_patterns(positions, *, include=None, optional_sets=(),
+orb_factor=1.0, aspects=None, dominant_only=False)`. The dedicated finder selects
+only mathematical constructions and accepts their registered aliases. Its
+default covers the eight standard constructions; H13 selection adds both
+Spectra. Explicitly requesting an H13 name without `optional_sets=("H13",)`
+raises `ValueError` (HTTP 422) before chart access, including with precomputed
+H13 aspects. `include=[]` selects none in this dedicated finder.
+
+Registered templates may also be passed directly to `find_geometric_patterns`;
+their exact registered definitions are accepted. Altered custom templates
+cannot replace a registered name. Reusing the same registered definition in
+named and explicit-template search returns one result per name/body set.
+`GeometricPatternTemplate.required_optional_sets` exposes required catalog
+membership without silently enabling a set. Geometry responses preserve this
+property alongside their fractions, vertex assignment, source and orientation.
 
 #### 4.2 Orb doctrine
 
@@ -207,8 +360,8 @@ Pattern orb doctrine is embodied by:
 - the caller-visible `orb_factor`
 - current Stellium `orb` and `min_bodies` doctrine
 
-The default policy preserves unfiltered detector admission: all registered
-detectors are selected and cross-detector containment is disabled.
+The default policy selects all available named detectors, with cross-detector
+containment disabled. Optional targets remain explicitly selected.
 
 #### 4.3 Policy doctrine
 
@@ -217,15 +370,20 @@ default result.
 
 | Policy area | Type | Current default |
 |---|---|---|
-| named detector selection | `PatternSelectionPolicy` | all registered patterns admitted |
+| named detector selection | `PatternSelectionPolicy` | all available names; 35 with standard targets |
 | Stellium doctrine | `StelliumPolicy` | `min_bodies=3`, `orb=8.0` |
 | global orb scaling | `PatternComputationPolicy.orb_factor` | `1.0` |
 | cross-detector containment | `PatternComputationPolicy.dominant_only` | `False` |
+| optional longitude targets | `optional_sets` | `()` |
+| caller-supplied exact layouts | `templates` | `()` |
+| harmonic geometric families | `harmonic_presets` | `()` |
 
 The normative default is:
 
-> `PatternComputationPolicy()` must preserve the current unfiltered admission
-> behavior exactly.
+> `PatternComputationPolicy()` selects the 35 standard-target names, with no
+> optional targets, harmonic presets, or custom templates. H13 selection adds
+> its two Spectrum names. This revision includes the four repairs, five Huber
+> additions, and ten mathematical constructions.
 
 #### 4.4 Dominant-containment doctrine
 
@@ -241,13 +399,101 @@ a strict structural subgraph of another admitted aspect pattern. This requires:
 
 Body count alone is not containment. Equal-body patterns remain present when
 their aspect surfaces are equal or incomparable, but an equal-body strict edge
-subgraph such as Trapeze inside Cradle is omitted. Position-sourced Stelliums
+subgraph such as Sextile Chain inside Cradle is omitted. Position-sourced Stelliums
 remain incomparable with aspect patterns and retain their detector-local
 maximal-group rule. Dominance is evaluated only among detectors admitted by the
 current selection policy, so an excluded container cannot hide a requested
 subpattern.
 
 ---
+
+#### 4.5 Exact geometric layouts and harmonic families
+
+`GeometricPatternTemplate(name, phases, apex_index=None, source=...)` declares
+3–40 distinct vertices in strictly increasing exact fractions of a turn,
+starting at zero and ending below one. Phases accept `Fraction` values,
+integers, or integer `(numerator, denominator)` pairs; floats are rejected.
+Every unordered vertex pair is required. Its target is
+`min(abs(phase_i - phase_j), 1 - abs(phase_i - phase_j))` turns. Non-closing
+collections of edges cannot be represented by a layout.
+
+`triangle_template(name, (aspect_name, aspect_name, aspect_name))` resolves
+canonical aspect names or registered aspect aliases and constructs a layout
+only when those three minor angles close on a longitude circle. Quindecile
+remains 24 degrees and Tao remains 165 degrees.
+
+`find_geometric_patterns(positions, templates, *, aspects=None,
+optional_sets=(), orb_factor=1.0)` requires every pair to be admitted within
+the selected catalog's default orb multiplied by `orb_factor`, and within
+the supplied aspect's `allowed_orb`. Precomputed separations must agree with
+the supplied positions. Unknown edge fractions and optional edges without
+their explicit set selection raise `ValueError`; they are not silently dropped.
+
+For the repaired/new named layouts, default edge ceilings are: semisextile
+2 degrees, sextile 5, square/trine 7, quincunx 3, opposition 8, and
+quintile/biquintile 2. Generic templates use the complete
+[aspect catalog's defaults](ASPECT_CATALOG.md), including `12/H` degrees for
+the optional primitive harmonic targets. These are Moira orb policies.
+
+`harmonic_pattern_templates(H, shapes=("triangle",))` generates all distinct
+triangle layouts on that grid. `shapes` may additionally select
+`"opposition_rectangle"` and `"polygon"`. Rectangles require two oppositions
+and the complementary `alpha` / `180-alpha` pairs; unavailable complementary
+targets are excluded. The regular polygon requires every diagonal as well as
+the perimeter. Reducible layouts use their primitive grid name.
+
+`HARMONIC_PATTERN_PRESETS` contains H3, H4, H5, H6, H7, H8, H9, H10, H11,
+H12, H13, H14, H15, H16, H18, H20, H24, H32, H36 and H40. Passing a key in
+`harmonic_presets` requests all three shape categories. Overlapping preset
+geometry is collapsed by exact cyclic-gap identity modulo rotation/reflection.
+Custom names must not override a registered name or alias. Explicit templates
+and preset geometry are independent of `include`, which selects named detectors.
+Use `include=[]` to request geometry alone. A deliberately requested geometric
+template can describe the same shape as a named detector; the two remain
+separately identified by name and source.
+
+H13, H32, H36 and H40 require the matching `optional_sets` entry. Selecting a
+set makes its registered named constructions available; generic harmonic
+presets still require `harmonic_presets`. Mixed-family triangles can
+be supplied through `triangle_template` without requiring a complete harmonic
+grid. The matcher supports all 174 exact standard-catalog triangle geometries,
+or 436 with every optional set. These are unlabelled mathematical shapes,
+excluding conjunctions and ignoring body identity/orbs, not additional named
+astrological traditions.
+
+`AspectPattern.geometry` preserves the exact template, the body assignment in
+vertex order, and orientation. `forward` and `reflected` refer to increasing
+longitude relative to that template; they are not planetary motion states.
+`symmetric` identifies an ideal layout with reflection symmetry; `ambiguous`
+retains broad-orb orientation ambiguity. Individual aspect-list detectors have
+no position witness and therefore report orientation as `None`. Results,
+contributions, structural condition, dominance and networks use the existing
+`AspectPattern` pipeline. No new qualitative grading is introduced.
+For non-apex layouts, perimeter edges are `cycle_link`, opposition diagonals
+are `axis_link`, and other diagonals are `support_link`; apex layouts retain
+the existing apex/base roles. Thus a pentagon preserves its five biquintile
+diagonals without mislabelling them as perimeter edges.
+
+```python
+from fractions import Fraction
+from moira.patterns import (
+    GeometricPatternTemplate, find_all_patterns, find_geometric_patterns,
+    harmonic_pattern_templates, triangle_template,
+)
+
+two_quintiles = triangle_template(
+    "Two quintiles", ("Quintile", "Quintile", "Biquintile"),
+)
+tao_rectangle = GeometricPatternTemplate(
+    "Untion-Tao rectangle", (Fraction(0), Fraction(1, 24), Fraction(1, 2), Fraction(13, 24)),
+)
+matches = find_geometric_patterns(longitudes, (two_quintiles, tao_rectangle))
+h7_triangles = harmonic_pattern_templates(7)  # four distinct geometries
+optional_matches = find_all_patterns(
+    longitudes, include=[], harmonic_presets=("H13", "H32", "H36", "H40"),
+    optional_sets=("H13", "H32", "H36", "H40"),
+)
+```
 
 ### 5. Classification
 
@@ -268,9 +514,9 @@ labels:
 - Minor Grand Trine preserves its public symmetric/no-apex contract: the trine
   endpoints are `base`, the two-sextile focus is `support`, and its links are
   one `base_link` plus two `support_link` records.
-- Cradle and Trapeze opposition endpoints are `axis`; the remaining bodies are
+- Cradle and Sextile Chain opposition endpoints are `axis`; the remaining bodies are
   `support`, producing one `axis_link` and structured support links.
-  The admitted Trapeze graph is specifically a three-sextile chain with its
+  The admitted Sextile Chain graph is specifically a three-sextile chain with its
   two end bodies in opposition; it is not the six-edge Cradle graph.
 - Grand Cross and Mystic Rectangle bodies are `cycle_member`; opposition
   diagonals are `axis_link` and perimeter relations are `cycle_link`.

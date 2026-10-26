@@ -39,7 +39,7 @@ from moira.patterns import (
     find_septile_triangles,
     find_stelliums,
     find_t_squares,
-    find_trapezes,
+    find_sextile_chains,
     find_yods,
 )
 
@@ -580,7 +580,7 @@ def test_symmetric_detector_roles_are_structural_and_reinforced() -> None:
         _sext("Zulu", "Beta"),
         _sext("Alpha", "Yankee"),
     ])[0]
-    trapeze = find_trapezes([
+    trapeze = find_sextile_chains([
         _opp("Zulu", "Yankee"),
         _sext("Zulu", "Alpha"),
         _sext("Alpha", "Beta"),
@@ -627,7 +627,7 @@ def test_symmetric_detector_roles_are_structural_and_reinforced() -> None:
     assert sum(pattern.condition_profile.structured_contribution_count for pattern in patterns) == 16  # type: ignore[union-attr]
 
 
-def test_cradle_and_trapeze_roles_do_not_depend_on_aspect_order() -> None:
+def test_cradle_and_legacy_sextile_chain_roles_do_not_depend_on_aspect_order() -> None:
     cradle_aspects = [
         _opp("Zulu", "Yankee"),
         _trine("Zulu", "Alpha"),
@@ -644,7 +644,7 @@ def test_cradle_and_trapeze_roles_do_not_depend_on_aspect_order() -> None:
     ]
 
     assert find_cradles(cradle_aspects) == find_cradles(list(reversed(cradle_aspects)))
-    assert find_trapezes(trapeze_aspects) == find_trapezes(list(reversed(trapeze_aspects)))
+    assert find_sextile_chains(trapeze_aspects) == find_sextile_chains(list(reversed(trapeze_aspects)))
 
 
 def test_other_coherent_symmetric_detectors_preserve_edge_orbits() -> None:
@@ -881,11 +881,11 @@ def test_dominant_only_requires_aspect_subgraph_containment() -> None:
     patterns = find_all_patterns(
         positions,
         aspects=aspects,
-        include=["Minor Grand Trine", "Trapeze"],
+        include=["Minor Grand Trine", "Sextile Chain"],
         dominant_only=True,
     )
 
-    assert [pattern.name for pattern in patterns] == ["Minor Grand Trine", "Trapeze"]
+    assert [pattern.name for pattern in patterns] == ["Minor Grand Trine", "Sextile Chain"]
 
 
 def test_dominant_only_suppresses_same_body_edge_subgraph_and_preserves_disjoint_patterns() -> None:
@@ -901,12 +901,12 @@ def test_dominant_only_suppresses_same_body_edge_subgraph_and_preserves_disjoint
     equal_body_unfiltered = find_all_patterns(
         equal_body_positions,
         aspects=cradle_aspects,
-        include=["Cradle", "Trapeze"],
+        include=["Cradle", "Sextile Chain"],
     )
     equal_body = find_all_patterns(
         equal_body_positions,
         aspects=cradle_aspects,
-        include=["Cradle", "Trapeze"],
+        include=["Cradle", "Sextile Chain"],
         dominant_only=True,
     )
 
@@ -937,7 +937,7 @@ def test_dominant_only_suppresses_same_body_edge_subgraph_and_preserves_disjoint
         dominant_only=True,
     )
 
-    assert [pattern.name for pattern in equal_body_unfiltered] == ["Cradle", "Trapeze"]
+    assert [pattern.name for pattern in equal_body_unfiltered] == ["Cradle", "Sextile Chain"]
     assert [pattern.name for pattern in equal_body] == ["Cradle"]
     assert [(pattern.name, pattern.bodies) for pattern in disjoint] == [
         ("Grand Trine", ("E", "F", "G")),

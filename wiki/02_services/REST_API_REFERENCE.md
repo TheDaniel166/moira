@@ -969,7 +969,9 @@ contract.
 The shared `PatternRequest` for `/v1/patterns/find`, `/v1/patterns/coherence`,
 `/v1/patterns/chart-profile`, and `/v1/patterns/network` accepts `chart`,
 `include_nodes`, finite `orb_factor` in `(0, 10]`, optional detector-name
-`include`, and `dominant_only` (default `false`). The routes use the same
+`include` (canonical names or registered aliases), and `dominant_only` (default
+`false`). It also accepts `optional_sets`, `harmonic_presets`, and `templates`,
+all empty by default. The routes use the same
 filtered pattern set so their events, chart condition, network views, and
 coherence evaluations cannot drift. `dominant_only` must be an actual JSON
 boolean, and `orb_factor` must be a JSON number; coercive strings and booleans
@@ -978,7 +980,7 @@ are rejected.
 `dominant_only=true` retains maximal structural aspect patterns. A candidate is
 contained only when its bodies and full preserved aspect signatures are both
 subsets of another admitted aspect-sourced pattern, with at least one strict
-inclusion. Thus a Grand Trine inside a Kite and a same-body Trapeze edge-subgraph
+inclusion. Thus a Grand Trine inside a Kite and a same-body Sextile Chain edge-subgraph
 inside a Cradle are suppressed, while a pattern with a different relation, an
 equal-body equal-edge overlap, or a position-based Stellium is retained.
 Selection happens first: an excluded Kite cannot hide an explicitly requested
@@ -986,9 +988,64 @@ Grand Trine.
 
 Pattern response `condition_profile.state` is role-resolution completeness,
 not applying/separating motion or astrological strength. The structured role
-repair means canonical Grand Trine, Minor Grand Trine, Cradle, and Trapeze
+repair means canonical Grand Trine, Minor Grand Trine, Cradle, and Sextile Chain
 responses no longer report `mixed` solely because their detectors lacked role
 labels.
+
+`include` selects the 37 named patterns independently of explicitly requested
+geometric templates/presets. Use `include: []` for geometry alone. Harmonic keys
+are H3, H4, H5, H6, H7, H8, H9, H10, H11, H12, H13, H14, H15, H16, H18, H20,
+H24, H32, H36 and H40. Each requests triangles, available complementary
+opposition rectangles, and a regular polygon. Duplicate geometry across
+presets is collapsed. H13/H32/H36/H40 require the matching `optional_sets`
+selection; the server returns 422 if a template needs an unselected target.
+
+Custom `templates` contain a unique `name`, exact `phases` as JSON integer
+`[numerator, denominator]` pairs, optional `apex_index`, and optional `source`.
+Three to forty phases must increase strictly from zero to below one turn.
+Floats, booleans, zero/negative denominators, duplicate phases, unknown names,
+duplicate alias selections, and custom names overriding named detectors are
+rejected. Geometry is validated before calculating the chart. For example,
+add these fields to a normal chart request:
+
+```json
+{
+  "include": [],
+  "optional_sets": ["H13"],
+  "templates": [
+    {"name": "My H13 triple", "phases": [[0, 1], [1, 13], [2, 13]]}
+  ]
+}
+```
+
+Template-backed events include `geometry` with exact `phases`, `vertex_bodies`,
+`orientation`, primitive `harmonic`, `template_name`, `source`, and
+`required_optional_sets`. Orientation
+describes increasing-longitude geometry, not planetary retrograde motion.
+Search `computation_truth` preserves requested versus resolved named selectors,
+optional sets, harmonic keys, and custom template names. Its `aspect_catalog`
+is `standard_plus_optional_longitude` when optional targets are selected.
+Pairwise default orbs and optional-set membership remain owned by the
+[aspect catalog](../02_standards/ASPECT_CATALOG.md).
+
+The corrected named geometries, aliases, full catalog and Trapeze migration
+are specified in the [Patterns Backend Standard](../02_standards/PATTERNS_BACKEND_STANDARD.md).
+`Trapeze` now selects the Huber figure; `Legacy Trapeze` selects `Sextile Chain`.
+
+The named catalog includes ten mathematical constructions: H13 Spectrum A/B,
+H11 Balanced Spectrum, Interval Prism A/B, Fibonacci Fan, Fibonacci Crown,
+Triadic Braid, Split Cross and Harmonic Bridge. They use the normal `include`
+selector and registered aliases such as `Prism A`, `Fibonacci Gap Crown`, and
+`H30 Bridge`. Default named search covers 35 standard-target names. Selecting
+`optional_sets: ["H13"]` makes both H13 Spectra available in a default search;
+explicitly requesting either without H13 returns 422 before chart calculation.
+No generic harmonic preset is needed for a registered mathematical name.
+
+For example, add `"include": ["H13 Spectrum A", "H13 Spectrum B"]` and
+`"optional_sets": ["H13"]` to a normal chart request. The four pattern routes
+share this selection, exact geometry, catalog orbs, and contribution truth.
+Mathematical source labels distinguish these constructions from traditional
+named figures; no new interpretive scoring is attached to them.
 
 ### Aspect Pattern Qualitative Scoring And Coherence Policy
 

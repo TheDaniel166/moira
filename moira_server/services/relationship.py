@@ -412,9 +412,7 @@ def compute_chart_shape(engine: Moira, request: SingleChartAnalysisRequest):
 def _find_patterns_for_positions(request: PatternRequest, positions: dict[str, float]):
     return find_all_patterns(
         positions,
-        orb_factor=request.orb_factor,
-        include=request.include,
-        dominant_only=request.dominant_only,
+        policy=request.engine_policy(),
     )
 
 

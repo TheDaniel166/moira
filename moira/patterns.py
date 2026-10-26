@@ -8,7 +8,7 @@ Purpose
 -------
 Governs detection of classical and modern multi-body aspect configurations
 within a natal chart, including T-Squares, Grand Trines, Yods, Kites,
-Stelliums, and seventeen additional pattern types.
+Stelliums, source-qualified Huber figures, and opt-in exact harmonic layouts.
 
 Boundary declaration
 --------------------
@@ -68,18 +68,33 @@ Public surface
 ``find_quintile_triangles`` — detect Quintile Triangle configurations.
 ``find_septile_triangles``  — detect Septile Triangle configurations.
 ``find_all_patterns``       — detect all registered patterns in one call.
+``find_sextile_chains``     — retain the explicitly named legacy Trapeze geometry.
+``find_*_learning_triangles`` — detect the three Huber learning sizes.
+``find_search_triangles``   — detect the Huber Search Triangle.
+``find_irritation_rectangles`` — detect the Huber Irritation Rectangle.
+``find_geometric_patterns`` — match opt-in exact layouts and harmonic templates.
+``find_mathematical_patterns`` — detect the ten registered mathematical constructions.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from fractions import Fraction
 from itertools import combinations, permutations
+from types import MappingProxyType
 from typing import Mapping
 from ._strenum import StrEnum
 
 from .aspects import AspectData, find_aspects
 from .coordinates import angular_distance
+from .constants import Aspect
+from .optional_aspects import _normalized_optional_sets, _optional_definitions
+from .pattern_templates import (
+    GeometricPatternTemplate, PatternGeometryTruth, HARMONIC_PATTERN_PRESETS,
+    harmonic_pattern_templates, triangle_template, _aspect_turn,
+    MATHEMATICAL_PATTERN_TEMPLATES, _MATHEMATICAL_PATTERN_ALIASES,
+)
 from .pattern_coherence import (
     FROZEN_REFERENCE_ORBS,
     POLICY_ID as PATTERN_COHERENCE_POLICY_ID,
@@ -138,6 +153,13 @@ __all__ = [
     "find_quintile_triangles",
     "find_septile_triangles",
     "find_all_patterns",
+    "find_small_learning_triangles", "find_medium_learning_triangles",
+    "find_large_learning_triangles", "find_search_triangles",
+    "find_irritation_rectangles", "find_sextile_chains",
+    "GeometricPatternTemplate", "PatternGeometryTruth", "HARMONIC_PATTERN_PRESETS",
+    "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
+    "PATTERN_ALIASES", "resolve_pattern",
+    "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
     "FROZEN_REFERENCE_ORBS",
     "PATTERN_COHERENCE_POLICY_ID",
     "PatternCoherenceBand",
@@ -220,14 +242,19 @@ class PatternComputationPolicy:
     """
     Lean backend policy surface for the pattern engine.
 
-    The default policy is intentionally identical to the current engine
-    behavior.
+    Available named detectors are enabled by default. H13 mathematical names
+    require the H13 optional set. Caller-supplied geometric templates, harmonic
+    presets, and optional aspect sets require explicit selection. ``selection``
+    filters named detectors; requested templates and presets are independent.
     """
 
     orb_factor: float = 1.0
     selection: PatternSelectionPolicy = field(default_factory=PatternSelectionPolicy)
     stellium: StelliumPolicy = field(default_factory=StelliumPolicy)
     dominant_only: bool = False
+    optional_sets: tuple[str, ...] = ()
+    templates: tuple[GeometricPatternTemplate, ...] = ()
+    harmonic_presets: tuple[str, ...] = ()
 
     @property
     def is_default(self) -> bool:
@@ -596,12 +623,31 @@ class AspectPattern:
     all_contributions: tuple[PatternAspectContribution, ...] = ()
     contributions: tuple[PatternAspectContribution, ...] = ()
     condition_profile: PatternConditionProfile | None = None
+    geometry: PatternGeometryTruth | None = None
 
     def __post_init__(self) -> None:
         if not self.bodies:
             raise ValueError("AspectPattern invariant failed: bodies must not be empty")
         if self.apex is not None and self.apex not in self.bodies:
             raise ValueError("AspectPattern invariant failed: apex must be one of bodies")
+        if self.geometry is not None:
+            if not isinstance(self.geometry, PatternGeometryTruth):
+                raise ValueError("AspectPattern geometry must preserve template truth")
+            if (self.geometry.template.name != self.name
+                    or frozenset(self.geometry.vertex_bodies) != frozenset(self.bodies)):
+                raise ValueError("AspectPattern geometry must match name and bodies")
+            template = self.geometry.template
+            vertices = self.geometry.vertex_bodies
+            expected_apex = None if template.apex_index is None else vertices[template.apex_index]
+            if self.apex != expected_apex:
+                raise ValueError("AspectPattern apex must match its geometric vertex")
+            if len(self.aspects) != len(template.edges) or any(
+                sum({aspect.body1, aspect.body2} == {vertices[i], vertices[j]}
+                    and abs(aspect.angle - float(turn * 360)) <= 1e-6
+                    for aspect in self.aspects) != 1
+                for i, j, turn in template.edges
+            ):
+                raise ValueError("AspectPattern aspects must cover the complete geometric layout")
         if self.detection_truth is not None:
             if self.detection_truth.pattern_name != self.name:
                 raise ValueError("AspectPattern invariant failed: detection_truth pattern_name must match name")
@@ -914,7 +960,7 @@ def _validate_positions(positions: dict[str, float]) -> dict[str, float]:
         if normalized_name in normalized:
             raise ValueError("Pattern positions must not repeat body names")
         normalized[normalized_name] = float(longitude)
-    return normalized
+    return dict(sorted(normalized.items()))
 
 
 def _validate_aspects(aspects: list[AspectData]) -> list[AspectData]:
@@ -1087,6 +1133,7 @@ def _make_pattern(
     centroid_longitude: float | None = None,
     max_body_distance: float | None = None,
     orb_limit: float | None = None,
+    geometry: PatternGeometryTruth | None = None,
 ) -> AspectPattern:
     """Construct an AspectPattern with preserved detector-path truth."""
 
@@ -1123,6 +1170,7 @@ def _make_pattern(
         all_contributions=contributions,
         contributions=contributions,
         condition_profile=condition_profile,
+        geometry=geometry,
     )
 
 
@@ -1204,6 +1252,271 @@ def _build_pattern_contributions(
         )
         for aspect in aspects
     )
+
+
+# ---------------------------------------------------------------------------
+# Exact geometric template matching
+# ---------------------------------------------------------------------------
+
+_HUBER_SOURCE = (
+    "APA Diploma Course, Figure 2.3.41, p. 93; "
+    "https://astrologicalpsychology.org/wp-content/uploads/2023/12/"
+    "33ea1-figures_2.3.40-43_aspect_figures.pdf"
+)
+_NAMED_LAYOUTS = {
+    "Eye": ((0, 30, 60), 1),
+    "Irritation Triangle": ((0, 30, 180), 1),
+    "Dominant Triangle": ((0, 90, 210), None),
+    "Trapeze": ((0, 90, 150, 240), None),
+    "Small Learning Triangle": ((0, 30, 90), None),
+    "Medium Learning Triangle": ((0, 30, 120), None),
+    "Large Learning Triangle": ((0, 60, 150), None),
+    "Search Triangle": ((0, 30, 150), None),
+    "Irritation Rectangle": ((0, 30, 180, 210), None),
+    "Grand Quintile": ((0, 72, 144, 216, 288), None),
+}
+_NAMED_TEMPLATES = {
+    name: GeometricPatternTemplate(
+        name, tuple(Fraction(degree, 360) for degree in degrees), apex,
+        "regular pentagon geometry" if name == "Grand Quintile" else _HUBER_SOURCE,
+    )
+    for name, (degrees, apex) in _NAMED_LAYOUTS.items()
+}
+_NAMED_TEMPLATES.update(MATHEMATICAL_PATTERN_TEMPLATES)
+
+
+def _template_catalog(optional_sets: tuple[str, ...]):
+    """Index only explicitly selected catalog members by exact turn fraction."""
+    return {_aspect_turn(definition.name): definition
+            for definition in tuple(Aspect.ALL) + _optional_definitions(optional_sets)}
+
+
+def _check_templates(templates, catalog) -> None:
+    """Reject malformed, repeated, or unavailable template definitions before matching."""
+    if not isinstance(templates, tuple) or any(
+        not isinstance(template, GeometricPatternTemplate) for template in templates
+    ):
+        raise ValueError("templates must be a tuple of GeometricPatternTemplate values")
+    if len({_pattern_name_key(template.name) for template in templates}) != len(templates):
+        raise ValueError("Template names must be unique")
+    for template in templates:
+        missing = sorted({turn for _, _, turn in template.edges if turn not in catalog})
+        if missing:
+            raise ValueError(
+                f"Template {template.name!r} requires unavailable aspect fractions "
+                f"{', '.join(map(str, missing))}; enable the required optional_sets"
+            )
+
+
+def _geometry_orientation(template, assigned, positions, catalog, orb_factor):
+    """Describe orientation against increasing longitude, retaining broad-orb ambiguity."""
+    if positions is None:
+        return None
+    if template.reflection_symmetric:
+        return "symmetric"
+    forward = reflected = True
+    origin = positions[assigned[0]]
+    for index, body in enumerate(assigned[1:], 1):
+        phase = template.phases[index]
+        delta = (positions[body] - origin) % 360
+        limit = catalog[min(phase, 1 - phase)].default_orb * orb_factor
+        forward &= angular_distance(delta, float(phase * 360)) <= limit + 1e-9
+        reflected &= angular_distance(delta, float((1 - phase) * 360)) <= limit + 1e-9
+    if forward != reflected:
+        return "forward" if forward else "reflected"
+    return "ambiguous"
+
+
+def _match_geometric_template(
+    template, aspect_map, bodies, catalog, orb_factor, positions, detector, edge_cache,
+) -> list[AspectPattern]:
+    """Backtrack over compatible edges, requiring the complete geometric pair ledger."""
+    count = len(template.phases)
+    if len(bodies) < count:
+        return []
+    edge_turns = {(i, j): turn for i, j, turn in template.edges}
+    neighbors = {}
+    for turn in set(edge_turns.values()):
+        definition = catalog[turn]
+        for first in bodies:
+            compatible = set()
+            for second in bodies:
+                if first == second:
+                    continue
+                key = (turn, *sorted((first, second)))
+                if key not in edge_cache:
+                    aspect = _get_aspect(
+                        aspect_map, first, second, definition.angle,
+                        definition.default_orb * orb_factor,
+                    )
+                    if aspect is not None and aspect.orb > aspect.allowed_orb + 1e-9:
+                        aspect = None
+                    if aspect is not None and positions is not None:
+                        separation = angular_distance(positions[first], positions[second])
+                        if (abs(separation - aspect.separation) > 1e-7
+                                or abs(abs(separation - definition.angle) - aspect.orb) > 1e-7):
+                            aspect = None
+                    edge_cache[key] = aspect
+                if edge_cache[key] is not None:
+                    compatible.add(second)
+            neighbors[turn, first] = compatible
+    results = []
+    seen = set()
+
+    def visit(assigned):
+        """Extend one deterministic vertex assignment using all previously bound edges."""
+        index = len(assigned)
+        if index == count:
+            body_set = frozenset(assigned)
+            if body_set in seen:
+                return
+            seen.add(body_set)
+            aspects = tuple(edge_cache[(turn, *sorted((assigned[i], assigned[j])))]
+                            for i, j, turn in template.edges)
+            apex = None if template.apex_index is None else assigned[template.apex_index]
+            ordered = tuple(sorted(body_set - {apex})) + ((apex,) if apex is not None else ())
+            roles = {body: "cycle_member" if apex is None else "base" for body in assigned}
+            aspect_roles = None
+            if apex is not None:
+                roles[apex] = "apex"
+            else:
+                aspect_roles = {
+                    _aspect_endpoint_signature(aspect): (
+                        PatternAspectRoleKind.CYCLE_LINK
+                        if j == i + 1 or (i == 0 and j == count - 1)
+                        else (PatternAspectRoleKind.AXIS_LINK if turn == Fraction(1, 2)
+                              else PatternAspectRoleKind.SUPPORT_LINK)
+                    )
+                    for (i, j, turn), aspect in zip(template.edges, aspects)
+                }
+            results.append(_make_pattern(
+                name=template.name, bodies=ordered, aspects=aspects, apex=apex,
+                detector=detector, orb_factor=orb_factor, role_overrides=roles,
+                aspect_role_overrides=aspect_roles,
+                geometry=PatternGeometryTruth(
+                    template, tuple(assigned),
+                    _geometry_orientation(template, assigned, positions, catalog, orb_factor),
+                ),
+            ))
+            return
+        candidates = set(bodies) - set(assigned)
+        for previous, body in enumerate(assigned):
+            candidates &= neighbors[edge_turns[previous, index], body]
+        for body in sorted(candidates):
+            visit((*assigned, body))
+
+    visit(())
+    return results
+
+
+def find_geometric_patterns(
+    positions: dict[str, float],
+    templates: tuple[GeometricPatternTemplate, ...],
+    *,
+    aspects: list[AspectData] | None = None,
+    optional_sets: tuple[str, ...] = (),
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """Match exact closed layouts using selected catalog aspects and their default orbs.
+
+    Every pair must be admitted within both its catalog orb times orb_factor
+    and its supplied allowed_orb, with separation truth consistent with the
+    positions. Optional aspects are never enabled implicitly by a template.
+    Results preserve exact phases, the body-to-vertex mapping, and orientation;
+    no qualitative or interpretive strength is assigned.
+    """
+    positions = _validate_positions(positions)
+    policy = _validate_policy(PatternComputationPolicy(
+        orb_factor=orb_factor, optional_sets=optional_sets, templates=templates,
+    ))
+    catalog = _template_catalog(policy.optional_sets)
+    _check_templates(templates, catalog)
+    if aspects is None:
+        aspects = find_aspects(positions, tier=2, optional_sets=policy.optional_sets,
+                               orb_factor=orb_factor)
+    else:
+        aspects = _validate_aspects(aspects)
+    aspect_map = _build_aspect_map(aspects)
+    cache = {}
+    found = []
+    for template in templates:
+        found.extend(_match_geometric_template(
+            template, aspect_map, sorted(positions), catalog, orb_factor, positions,
+            "find_geometric_patterns", cache,
+        ))
+    return sorted(found, key=lambda pattern: (pattern.name, pattern.bodies))
+
+
+def _find_named_template(aspects, name, orb_factor, detector, positions=None, optional_sets=()):
+    """Use shared geometry for a source-qualified built-in detector."""
+    _validate_policy(PatternComputationPolicy(orb_factor=orb_factor))
+    aspects = _validate_aspects(aspects)
+    bodies = _bodies_from(aspects) if positions is None else sorted(positions)
+    catalog = _template_catalog(optional_sets)
+    _check_templates((_NAMED_TEMPLATES[name],), catalog)
+    return _match_geometric_template(
+        _NAMED_TEMPLATES[name], _build_aspect_map(aspects), bodies,
+        catalog, orb_factor, positions, detector, {},
+    )
+
+
+def find_mathematical_patterns(
+    positions: dict[str, float],
+    *,
+    include: list[str] | None = None,
+    optional_sets: tuple[str, ...] = (),
+    orb_factor: float = 1.0,
+    aspects: list[AspectData] | None = None,
+    dominant_only: bool = False,
+) -> list[AspectPattern]:
+    """Find the ten named mathematical constructions, subject to catalog availability.
+
+    Eight use standard aspects. The two H13 Spectrum layouts require explicit
+    H13 selection; default searches omit unavailable layouts. An explicit
+    request without the required set raises ValueError. Names describe exact
+    geometric constructions, with no assigned interpretive meaning.
+    """
+    optional_sets = _normalized_optional_sets(optional_sets)
+    if include is None:
+        names = [name for name, template in MATHEMATICAL_PATTERN_TEMPLATES.items()
+                 if set(template.required_optional_sets) <= set(optional_sets)]
+    else:
+        names = [resolve_pattern(name) for name in include]
+        if any(name not in MATHEMATICAL_PATTERN_TEMPLATES for name in names):
+            raise ValueError("Mathematical pattern selection must name a mathematical construction")
+    return find_all_patterns(
+        positions, aspects=aspects, include=names, optional_sets=optional_sets,
+        orb_factor=orb_factor, dominant_only=dominant_only,
+    )
+
+
+def find_small_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+    """Huber Small Learning Triangle: 30, 60, 90 degrees; catalog orbs times orb_factor."""
+    return _find_named_template(aspects, "Small Learning Triangle", orb_factor,
+                                "find_small_learning_triangles")
+
+
+def find_medium_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+    """Huber Medium Learning Triangle: 30, 90, 120 degrees; catalog orbs times orb_factor."""
+    return _find_named_template(aspects, "Medium Learning Triangle", orb_factor,
+                                "find_medium_learning_triangles")
+
+
+def find_large_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+    """Huber Large Learning Triangle: 60, 90, 150 degrees; catalog orbs times orb_factor."""
+    return _find_named_template(aspects, "Large Learning Triangle", orb_factor,
+                                "find_large_learning_triangles")
+
+
+def find_search_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+    """Huber Search Triangle: 30, 120, 150 degrees; catalog orbs times orb_factor."""
+    return _find_named_template(aspects, "Search Triangle", orb_factor, "find_search_triangles")
+
+
+def find_irritation_rectangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+    """Huber Irritation Rectangle: two each of 30, 150, 180 degrees; catalog orbs."""
+    return _find_named_template(aspects, "Irritation Rectangle", orb_factor,
+                                "find_irritation_rectangles")
 
 
 # ---------------------------------------------------------------------------
@@ -1804,12 +2117,12 @@ def find_cradles(
     return _dedup_patterns(results)
 
 
-def find_trapezes(
+def find_sextile_chains(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Trapeze (Trapezoid): four planets form a three-sextile chain whose end
+    Sextile Chain (legacy Trapeze): four planets form a three-sextile chain whose end
     planets are in opposition.
     Structure: A sext B, B sext C, C sext D, and A opp D.
 
@@ -1834,10 +2147,10 @@ def find_trapezes(
                 sx_rs = _get_aspect(aspect_map, r, s, 60.0, sext_orb)
                 if sx_pq and sx_qr and sx_rs:
                     results.append(_make_pattern(
-                        name="Trapeze",
+                        name="Sextile Chain",
                         bodies=tuple(sorted(group)),
                         aspects=(sx_pq, sx_qr, sx_rs, opp),
-                        detector="find_trapezes",
+                        detector="find_sextile_chains",
                         orb_factor=orb_factor,
                         role_overrides={p: "axis", s: "axis", q: "support", r: "support"},
                     ))
@@ -1849,76 +2162,29 @@ def find_trapezes(
     return _dedup_patterns(results)
 
 
-def find_eyes(
-    aspects: list[AspectData],
-    orb_factor: float = 1.0,
+def find_trapezes(
+    aspects: list[AspectData], orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
+    """Huber Trapeze: 60, 90, 90, 120, 150, 150 degrees; catalog orbs.
+
+    The historical three-sextile-chain implementation remains available as
+    find_sextile_chains, selected by Sextile Chain or Legacy Trapeze.
     """
-    Eye (Cosmic Eye): two quincunxes (150°) meeting at an apex, with the
-    base planets in trine (120°).  The soft analog of the Yod.
+    return _find_named_template(aspects, "Trapeze", orb_factor, "find_trapezes")
 
-    Orbs: quincunx 3°, trine 7° — all * orb_factor.
-    """
-    qncx_orb  = 3.0 * orb_factor
-    trine_orb = 7.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
-    bodies = _bodies_from(aspects)
-    results: list[AspectPattern] = []
 
-    for a, b, c in combinations(bodies, 3):
-        for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
-            q1    = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
-            q2    = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
-            trine = _get_aspect(aspect_map, p1, p2,  120.0, trine_orb)
-            if q1 and q2 and trine:
-                results.append(_make_pattern(
-                    name="Eye",
-                    bodies=(*sorted([p1, p2]), apex),
-                    aspects=(q1, q2, trine),
-                    apex=apex,
-                    detector="find_eyes",
-                    orb_factor=orb_factor,
-                    role_overrides={p1: "base", p2: "base"},
-                ))
-                break
-
-    return _dedup_patterns(results)
+def find_eyes(
+    aspects: list[AspectData], orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """Huber Eye / Ear / Information Triangle: 30, 30, 60 degrees; catalog orbs."""
+    return _find_named_template(aspects, 'Eye', orb_factor, 'find_eyes')
 
 
 def find_irritation_triangles(
-    aspects: list[AspectData],
-    orb_factor: float = 1.0,
+    aspects: list[AspectData], orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
-    """
-    Irritation Triangle (Ambivalence Triangle): one opposition with both
-    planets quincunx (150°) a third.  The all-tension analog of the Eye.
-
-    Orbs: opposition 8°, quincunx 3° — all * orb_factor.
-    """
-    opp_orb  = 8.0 * orb_factor
-    qncx_orb = 3.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
-    bodies = _bodies_from(aspects)
-    results: list[AspectPattern] = []
-
-    for a, b, c in combinations(bodies, 3):
-        for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
-            opp = _get_aspect(aspect_map, p1, p2,   180.0, opp_orb)
-            q1  = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
-            q2  = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
-            if opp and q1 and q2:
-                results.append(_make_pattern(
-                    name="Irritation Triangle",
-                    bodies=(*sorted([p1, p2]), apex),
-                    aspects=(opp, q1, q2),
-                    apex=apex,
-                    detector="find_irritation_triangles",
-                    orb_factor=orb_factor,
-                    role_overrides={p1: "base", p2: "base"},
-                ))
-                break
-
-    return _dedup_patterns(results)
+    """Huber Irritation Triangle: 30, 150, 180 degrees; catalog orbs."""
+    return _find_named_template(aspects, 'Irritation Triangle', orb_factor, 'find_irritation_triangles')
 
 
 def find_hard_wedges(
@@ -1960,38 +2226,10 @@ def find_hard_wedges(
 
 
 def find_dominant_triangles(
-    aspects: list[AspectData],
-    orb_factor: float = 1.0,
+    aspects: list[AspectData], orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
-    """
-    Dominant Triangle (Huber): one opposition + one square + one quincunx
-    (150°), forming a mixed-tension three-planet figure.
-
-    Orbs: opposition 8°, square 7°, quincunx 3° — all * orb_factor.
-    """
-    opp_orb  = 8.0 * orb_factor
-    sq_orb   = 7.0 * orb_factor
-    qncx_orb = 3.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
-    bodies = _bodies_from(aspects)
-    results: list[AspectPattern] = []
-
-    for a, b, c in combinations(bodies, 3):
-        for p1, p2, p3 in [(a, b, c), (a, c, b), (b, c, a)]:
-            opp  = _get_aspect(aspect_map, p1, p2,  180.0, opp_orb)
-            sq   = _get_aspect(aspect_map, p1, p3,   90.0, sq_orb)
-            qncx = _get_aspect(aspect_map, p2, p3,  150.0, qncx_orb)
-            if opp and sq and qncx:
-                results.append(_make_pattern(
-                    name="Dominant Triangle",
-                    bodies=tuple(sorted([a, b, c])),
-                    aspects=(opp, sq, qncx),
-                    detector="find_dominant_triangles",
-                    orb_factor=orb_factor,
-                ))
-                break
-
-    return _dedup_patterns(results)
+    """Huber Dominant Triangle: 90, 120, 150 degrees; catalog orbs."""
+    return _find_named_template(aspects, 'Dominant Triangle', orb_factor, 'find_dominant_triangles')
 
 
 # ---------------------------------------------------------------------------
@@ -1999,39 +2237,10 @@ def find_dominant_triangles(
 # ---------------------------------------------------------------------------
 
 def find_grand_quintiles(
-    aspects: list[AspectData],
-    orb_factor: float = 1.0,
+    aspects: list[AspectData], orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
-    """
-    Grand Quintile: five planets all in mutual quintile (72°), forming a
-    regular pentagon.  A pure 5th-harmonic figure.
-
-    Orb: 2° * orb_factor.
-    """
-    q_orb = 2.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
-    bodies = _bodies_from(aspects)
-    results: list[AspectPattern] = []
-
-    for group in combinations(bodies, 5):
-        group_aspects: list[AspectData] = []
-        valid = True
-        for b1, b2 in combinations(group, 2):
-            asp = _get_aspect(aspect_map, b1, b2, 72.0, q_orb)
-            if asp is None:
-                valid = False
-                break
-            group_aspects.append(asp)
-        if valid:
-            results.append(_make_pattern(
-                name="Grand Quintile",
-                bodies=tuple(sorted(group)),
-                aspects=tuple(group_aspects),
-                detector="find_grand_quintiles",
-                orb_factor=orb_factor,
-            ))
-
-    return _dedup_patterns(results)
+    """Regular pentagon: five quintiles and five biquintiles, each within 2 * orb_factor degrees."""
+    return _find_named_template(aspects, 'Grand Quintile', orb_factor, 'find_grand_quintiles')
 
 
 def find_quintile_triangles(
@@ -2135,7 +2344,69 @@ _PATTERN_REGISTRY: dict[str, str] = {
     "Grand Quintile":       "find_grand_quintiles",
     "Quintile Triangle":    "find_quintile_triangles",
     "Septile Triangle":     "find_septile_triangles",
+    "Sextile Chain":        "find_sextile_chains",
+    "Small Learning Triangle": "find_small_learning_triangles",
+    "Medium Learning Triangle": "find_medium_learning_triangles",
+    "Large Learning Triangle": "find_large_learning_triangles",
+    "Search Triangle":      "find_search_triangles",
+    "Irritation Rectangle": "find_irritation_rectangles",
 }
+_PATTERN_REGISTRY.update({name: "find_mathematical_patterns"
+                          for name in MATHEMATICAL_PATTERN_TEMPLATES})
+
+PATTERN_ALIASES: Mapping[str, str] = MappingProxyType({
+    **_MATHEMATICAL_PATTERN_ALIASES,
+    "Ear": "Eye", "Information Triangle": "Eye", "Cosmic Eye": "Eye",
+    "Ambivalence Triangle": "Wedge", "Single Ambivalence Figure": "Wedge",
+    "Arrowhead": "Wedge", "Projection Triangle": "Yod", "Finger of God": "Yod",
+    "Star of David": "Grand Sextile", "God's Fist": "Thor's Hammer",
+    "Thors Hammer": "Thor's Hammer",
+    "Small Talent Triangle": "Minor Grand Trine", "Large Talent Triangle": "Grand Trine",
+    "Efficiency Triangle": "T-Square", "Achievement Triangle": "T-Square",
+    "Efficiency Square": "Grand Cross", "Achievement Square": "Grand Cross",
+    "Righteousness Rectangle": "Mystic Rectangle", "Righteous Rectangle": "Mystic Rectangle",
+    "Huber Trapeze": "Trapeze", "Legacy Trapeze": "Sextile Chain",
+    "Trapeze (legacy)": "Sextile Chain",
+})
+
+
+def _pattern_name_key(name: str) -> str:
+    """Normalize explicitly registered spellings without inventing synonyms."""
+    if not isinstance(name, str) or not name or name != name.strip():
+        raise ValueError("Pattern names must be non-empty trimmed strings")
+    key = name.casefold().translate(str.maketrans("", "", " -_"))
+    if not key:
+        raise ValueError("Pattern names must contain a visible name")
+    return key
+
+
+_PATTERN_NAMES = {
+    _pattern_name_key(name): canonical
+    for name, canonical in {**{name: name for name in _PATTERN_REGISTRY}, **PATTERN_ALIASES}.items()
+}
+
+
+def resolve_pattern(name: str) -> str:
+    """Resolve a registered pattern name or explicit alias to one canonical name."""
+    try:
+        return _PATTERN_NAMES[_pattern_name_key(name)]
+    except KeyError:
+        raise ValueError(f"Unsupported pattern name: {name!r}") from None
+
+
+def _selected_geometric_templates(policy):
+    """Combine explicit layouts with deduplicated harmonic preset geometry."""
+    templates = list(policy.templates)
+    known = {template.geometry_key for template in templates}
+    for key in policy.harmonic_presets:
+        for template in harmonic_pattern_templates(
+            HARMONIC_PATTERN_PRESETS[key], ("triangle", "opposition_rectangle", "polygon"),
+        ):
+            if template.geometry_key not in known:
+                known.add(template.geometry_key)
+                templates.append(template)
+    _check_templates(tuple(templates), _template_catalog(policy.optional_sets))
+    return tuple(templates)
 
 
 def _is_structurally_contained(
@@ -2189,6 +2460,10 @@ def find_all_patterns(
     include: list[str] | None = None,
     policy: PatternComputationPolicy | None = None,
     dominant_only: bool = False,
+    *,
+    optional_sets: tuple[str, ...] = (),
+    templates: tuple[GeometricPatternTemplate, ...] = (),
+    harmonic_presets: tuple[str, ...] = (),
 ) -> list[AspectPattern]:
     """
     Detect all aspect patterns in a chart.
@@ -2196,17 +2471,23 @@ def find_all_patterns(
     Parameters
     ----------
     positions   : dict of body name -> longitude
-    aspects     : pre-computed aspects; if None, scan all 46 standard longitude
-                  aspects so every registered template has its required edges
+    aspects     : pre-computed aspects; if None, scan the 46 standard longitude
+                  aspects plus explicitly selected optional sets
     orb_factor  : multiplier applied to all orbs
-    include     : list of pattern names to detect (all patterns if None).
-                  Valid names: see _PATTERN_REGISTRY keys.
+    include     : list of pattern names to detect (all available patterns if None).
+                  Accepts registered names and PATTERN_ALIASES. This selector
+                  filters named detectors, independently of requested geometry.
     policy      : optional explicit backend policy. When supplied it takes
                   precedence over `orb_factor` and `include`.
     dominant_only : when true, retain only aspect patterns that are not strict
                     structural subgraphs of another admitted pattern. Position-
                     based Stelliums remain governed by their own maximal-group
                     doctrine. An explicit `policy` takes precedence.
+    optional_sets : explicit H13/H32/H36/H40 selections, empty by default.
+    templates   : caller-supplied exact layouts, empty by default.
+    harmonic_presets : H-prefixed keys from HARMONIC_PATTERN_PRESETS; requests
+                       triangles, available opposition rectangles, and polygons.
+                       Reducible preset geometry is deduplicated across keys.
 
     Returns
     -------
@@ -2220,6 +2501,7 @@ def find_all_patterns(
                 include=tuple(include) if include is not None else None,
             ),
             dominant_only=dominant_only,
+            optional_sets=optional_sets, templates=templates, harmonic_presets=harmonic_presets,
         ))
     else:
         policy = _validate_policy(policy)
@@ -2228,67 +2510,41 @@ def find_all_patterns(
     include = list(policy.selection.include) if policy.selection.include is not None else None
     dominant_only = policy.dominant_only
 
+    geometric_templates = _selected_geometric_templates(policy)
     if aspects is None:
-        # The registry includes Septile Triangle, which requires extended
-        # standard members. Optional sets add no named templates here.
-        aspects = find_aspects(positions, tier=2, orb_factor=orb_factor)
+        aspects = find_aspects(positions, tier=2, orb_factor=orb_factor,
+                               optional_sets=policy.optional_sets)
     else:
         aspects = _validate_aspects(aspects)
 
-    wanted: set[str] = set(include) if include is not None else set(_PATTERN_REGISTRY)
+    wanted: set[str] = set(include) if include is not None else {
+        name for name in _PATTERN_REGISTRY
+        if name not in MATHEMATICAL_PATTERN_TEMPLATES
+        or set(MATHEMATICAL_PATTERN_TEMPLATES[name].required_optional_sets) <= set(policy.optional_sets)
+    }
 
     all_found: list[AspectPattern] = []
 
-    if "T-Square" in wanted:
-        all_found.extend(find_t_squares(aspects, orb_factor=orb_factor))
-    if "Grand Trine" in wanted:
-        all_found.extend(find_grand_trines(aspects, orb_factor=orb_factor))
-    if "Grand Cross" in wanted:
-        all_found.extend(find_grand_crosses(aspects, orb_factor=orb_factor))
-    if "Yod" in wanted:
-        all_found.extend(find_yods(aspects, orb_factor=orb_factor))
-    if "Mystic Rectangle" in wanted:
-        all_found.extend(find_mystic_rectangles(aspects, orb_factor=orb_factor))
-    if "Kite" in wanted:
-        all_found.extend(find_kites(aspects, orb_factor=orb_factor))
-    if "Stellium" in wanted:
-        all_found.extend(
-            find_stelliums(
-                positions,
-                min_bodies=policy.stellium.min_bodies,
-                orb=policy.stellium.orb,
-                orb_factor=orb_factor,
-            )
-        )
-    if "Minor Grand Trine" in wanted:
-        all_found.extend(find_minor_grand_trines(aspects, orb_factor=orb_factor))
-    if "Grand Sextile" in wanted:
-        all_found.extend(find_grand_sextiles(aspects, orb_factor=orb_factor))
-    if "Thor's Hammer" in wanted:
-        all_found.extend(find_thors_hammers(aspects, orb_factor=orb_factor))
-    if "Boomerang Yod" in wanted:
-        all_found.extend(find_boomerang_yods(aspects, orb_factor=orb_factor))
-    if "Wedge" in wanted:
-        all_found.extend(find_wedges(aspects, orb_factor=orb_factor))
-    if "Cradle" in wanted:
-        all_found.extend(find_cradles(aspects, orb_factor=orb_factor))
-    if "Trapeze" in wanted:
-        all_found.extend(find_trapezes(aspects, orb_factor=orb_factor))
-    if "Eye" in wanted:
-        all_found.extend(find_eyes(aspects, orb_factor=orb_factor))
-    if "Irritation Triangle" in wanted:
-        all_found.extend(find_irritation_triangles(aspects, orb_factor=orb_factor))
-    if "Hard Wedge" in wanted:
-        all_found.extend(find_hard_wedges(aspects, orb_factor=orb_factor))
-    if "Dominant Triangle" in wanted:
-        all_found.extend(find_dominant_triangles(aspects, orb_factor=orb_factor))
-    if "Grand Quintile" in wanted:
-        all_found.extend(find_grand_quintiles(aspects, orb_factor=orb_factor))
-    if "Quintile Triangle" in wanted:
-        all_found.extend(find_quintile_triangles(aspects, orb_factor=orb_factor))
-    if "Septile Triangle" in wanted:
-        all_found.extend(find_septile_triangles(aspects, orb_factor=orb_factor))
+    for name in sorted(wanted):
+        detector = _PATTERN_REGISTRY[name]
+        if name == "Stellium":
+            all_found.extend(find_stelliums(
+                positions, min_bodies=policy.stellium.min_bodies,
+                orb=policy.stellium.orb, orb_factor=orb_factor,
+            ))
+        elif name in _NAMED_TEMPLATES:
+            all_found.extend(_find_named_template(
+                aspects, name, orb_factor, detector, positions, policy.optional_sets,
+            ))
+        else:
+            all_found.extend(globals()[detector](aspects, orb_factor=orb_factor))
+    if geometric_templates:
+        all_found.extend(find_geometric_patterns(
+            positions, geometric_templates, aspects=aspects,
+            optional_sets=policy.optional_sets, orb_factor=orb_factor,
+        ))
 
+    all_found = _dedup_patterns(all_found)
     if dominant_only:
         all_found = _retain_dominant_patterns(all_found)
 
@@ -2474,6 +2730,8 @@ def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputat
 
     if policy is None:
         policy = PatternComputationPolicy()
+    if not isinstance(policy, PatternComputationPolicy):
+        raise ValueError("Unsupported pattern computation policy")
     if not isinstance(policy.selection, PatternSelectionPolicy):
         raise ValueError("Unsupported pattern selection policy")
     if not isinstance(policy.stellium, StelliumPolicy):
@@ -2496,7 +2754,33 @@ def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputat
     if policy.selection.include is not None:
         if len(set(policy.selection.include)) != len(policy.selection.include):
             raise ValueError("Pattern selection include must not repeat names")
-        unknown = [name for name in policy.selection.include if name not in _PATTERN_REGISTRY]
-        if unknown:
-            raise ValueError("Unsupported pattern names in selection include")
+        try:
+            names = tuple(resolve_pattern(name) for name in policy.selection.include)
+        except ValueError as exc:
+            raise ValueError("Unsupported pattern names in selection include") from exc
+        if len(set(names)) != len(names):
+            raise ValueError("Pattern selection include must not repeat names or aliases")
+        policy = replace(policy, selection=PatternSelectionPolicy(names))
+    optional = _normalized_optional_sets(policy.optional_sets)
+    if policy.selection.include is not None:
+        mathematical = tuple(MATHEMATICAL_PATTERN_TEMPLATES[name]
+                             for name in policy.selection.include
+                             if name in MATHEMATICAL_PATTERN_TEMPLATES)
+        _check_templates(mathematical, _template_catalog(optional))
+    if not isinstance(policy.harmonic_presets, tuple):
+        raise ValueError("harmonic_presets must be a tuple")
+    keys = []
+    for key in policy.harmonic_presets:
+        if not isinstance(key, str) or key != key.strip() or key.upper() not in HARMONIC_PATTERN_PRESETS:
+            raise ValueError("Unsupported harmonic pattern preset")
+        keys.append(key.upper())
+    if len(set(keys)) != len(keys):
+        raise ValueError("harmonic_presets must be unique")
+    keys = tuple(key for key in HARMONIC_PATTERN_PRESETS if key in keys)
+    _check_templates(policy.templates, _template_catalog(optional))
+    for template in policy.templates:
+        if (_pattern_name_key(template.name) in _PATTERN_NAMES
+                and template != MATHEMATICAL_PATTERN_TEMPLATES.get(template.name)):
+            raise ValueError("Custom template names must not replace a registered pattern or alias")
+    policy = replace(policy, optional_sets=optional, harmonic_presets=keys)
     return policy

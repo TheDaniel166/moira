@@ -618,7 +618,7 @@ message.
 |---|---|---|
 | `aspects(chart, orbs=None, include_minor=True, *, tier=None, orb_factor=1.0, policy=None, optional_sets=())` | `list[AspectData]` | Natal aspects under the standard tier and explicitly enabled optional sets; an explicit policy takes precedence |
 | `hellenistic_superiority_truth(longitude1, longitude2, aspect_angle=None, *, body1="body1", body2="body2")` | `HellenisticSuperiorityTruth` | Raw direction applicability plus tenth-sign overcoming for one ordered pair |
-| `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named patterns using all 46 standard longitude aspects, including Septile Triangle; optional maximal-structure filtering |
+| `patterns(chart, orb_factor=1.0, dominant_only=False, *, include=None, optional_sets=(), templates=(), harmonic_presets=(), policy=None)` | `list[AspectPattern]` | 37 named patterns: 35 standard-target names and two H13 names requiring H13; opt-in exact layouts and explicit policy |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
 | `midpoints_to_point(chart, longitude, orb=1.5)` | `list[tuple[Midpoint, float]]` | Midpoints falling at a given longitude, paired with absolute orb |
 | `harmonic(chart, number)` | `list[HarmonicPosition]` | Integer cyclic harmonic or zero-Aries-anchored positive-real continuous multiplier |
@@ -1563,7 +1563,7 @@ See [the complete stellium contract](STELLIUM_ANALYSIS_STANDARD.md) for
 same-frame houses, partial coverage, associations, IDs and legacy migration.
 Existing centroid/clique stellium APIs below retain their old semantics.
 
-### Legacy Aspect Patterns
+### Aspect Patterns and Exact Geometric Templates
 
 ```python
 from moira.facade import (
@@ -1574,6 +1574,13 @@ from moira.facade import (
     find_eyes, find_irritation_triangles, find_hard_wedges,
     find_dominant_triangles, find_grand_quintiles, find_quintile_triangles,
     find_septile_triangles,
+    find_sextile_chains, find_small_learning_triangles,
+    find_medium_learning_triangles, find_large_learning_triangles,
+    find_search_triangles, find_irritation_rectangles,
+    GeometricPatternTemplate, PatternGeometryTruth, find_geometric_patterns,
+    triangle_template, harmonic_pattern_templates, HARMONIC_PATTERN_PRESETS,
+    PATTERN_ALIASES, resolve_pattern,
+    MATHEMATICAL_PATTERN_TEMPLATES, find_mathematical_patterns,
     AspectPattern, PatternClassification,
 )
 ```
@@ -1582,16 +1589,48 @@ The individual detectors accept their documented aspect list (or positions for
 Stellium) and orb policy. They return `list[AspectPattern]`.
 
 `find_all_patterns(longitudes, aspects=None, orb_factor=1.0, include=None,
-policy=None, dominant_only=False)` runs the registered detectors in one call.
-An explicit `PatternComputationPolicy` takes precedence over the legacy direct
-policy arguments. `Moira.patterns(chart, orb_factor=1.0,
-dominant_only=False)` exposes the same opt-in containment choice.
+policy=None, dominant_only=False, *, optional_sets=(), templates=(),
+harmonic_presets=())` runs the registered detectors and requested geometric
+layouts. `include` accepts canonical names and aliases and filters named
+detectors; explicit templates/presets remain selected independently.
+`include=[]` requests geometric results alone. `PatternComputationPolicy`
+exposes the same selectors and takes precedence over direct arguments.
+`Moira.patterns` forwards them with one consistent aspect/orb policy.
+
+Exact templates use `Fraction` phases of a turn, starting at zero. The matcher
+requires every pair to exist in the selected aspect catalog and to fit its
+declared default orb times `orb_factor`. Harmonic presets are opt-in; H13,
+H32, H36 and H40 additionally require their corresponding optional aspect sets.
+See the [complete catalog, aliases, source and migration rules](PATTERNS_BACKEND_STANDARD.md).
+In particular, `Trapeze` now means the Huber figure; the historical detector
+remains available as `Sextile Chain` / `Legacy Trapeze`.
+
+`MATHEMATICAL_PATTERN_TEMPLATES` holds the ten named mathematical constructions:
+H13 Spectrum A/B, H11 Balanced Spectrum, Interval Prism A/B, Fibonacci Fan,
+Fibonacci Crown, Triadic Braid, Split Cross, and Harmonic Bridge. Each template
+preserves exact phases, its mathematical source, and `required_optional_sets`.
+The two H13 Spectra require explicit H13 selection; the other eight use standard
+targets. Names label geometry without assigning interpretive meaning.
+
+`find_mathematical_patterns(longitudes, *, include=None, optional_sets=(),
+orb_factor=1.0, aspects=None, dominant_only=False)` limits detection to these
+constructions, with the same aliases, orbs and structural result semantics.
+
+```python
+ordinary = find_mathematical_patterns(
+    longitudes, include=["Fibonacci Crown", "Prism A"],
+)
+spectra = find_all_patterns(
+    longitudes, include=["H13 Spectrum A", "H13 Spectrum B"],
+    optional_sets=("H13",),
+)
+```
 
 With `dominant_only=True`, a smaller aspect pattern is removed only when its
 body set and preserved aspect set are both contained in another admitted
 aspect pattern, with at least one of those inclusions strict. For example, an
 embedded Grand Trine is omitted when its Kite is admitted, and a same-body
-Trapeze edge-subgraph is omitted when its Cradle is admitted. Equal-body
+Sextile Chain edge-subgraph is omitted when its Cradle is admitted. Equal-body
 patterns with equal or incomparable edge sets remain; position-based Stelliums
 retain their independent maximal-cluster doctrine.
 
@@ -1608,13 +1647,14 @@ retain their independent maximal-cluster doctrine.
 | `all_contributions` | `list[PatternAspectContribution]` | Full aspect/body contribution set |
 | `contributions` | `list[PatternAspectContribution]` | Primary contribution set used for display |
 | `condition_profile` | `PatternConditionProfile` | Consolidated pattern condition profile |
+| `geometry` | `PatternGeometryTruth \| None` | Exact template with required optional sets, vertex assignment, source, primitive harmonic and orientation |
 
 Pattern condition is structural role-resolution truth. `reinforced` means all
 preserved aspect contributions have detector-owned roles, `mixed` means at
 least one remains `member_link`, and `weakened` means there are no aspect
 contributions. These states do not report aspect motion, exactness, harmony, or
 interpretive strength. Grand Trine uses `cycle_member`/`cycle_link`; Minor
-Grand Trine uses `base`/`support`; and Cradle/Trapeze use `axis`/`support`
+Grand Trine uses `base`/`support`; and Cradle/Sextile Chain use `axis`/`support`
 roles without arbitrary left/right labels.
 
 ### Chart shape (Jones types)

@@ -6,11 +6,16 @@ from datetime import datetime
 import math
 from typing import Any, Literal, get_args
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 from moira.constants import Body
 from moira.aspect_registry import ASPECT_ALIASES, ASPECT_DEFINITIONS, resolve_aspect
 from moira.optional_aspects import _normalized_optional_sets
+from moira.patterns import (
+    PatternComputationPolicy, PatternSelectionPolicy, _validate_policy,
+    _selected_geometric_templates,
+)
+from moira.pattern_templates import GeometricPatternTemplate
 
 from .chart import ChartResponse, HousesResponse
 
@@ -1046,12 +1051,56 @@ class ChartShapeResponse(_StrictModel):
     computation_truth: ChartShapeComputationTruthResponse
 
 
+class GeometricTemplateRequest(_StrictModel):
+    """Caller-supplied exact vertex phases, encoded as integer fraction pairs."""
+
+    name: str = Field(min_length=1, max_length=120)
+    phases: list[tuple[StrictInt, StrictInt]] = Field(min_length=3, max_length=40)
+    apex_index: StrictInt | None = None
+    source: str = "caller-supplied exact geometry"
+
+    def to_template(self) -> GeometricPatternTemplate:
+        """Delegate exact geometry validation to its engine owner."""
+        return GeometricPatternTemplate(
+            self.name, tuple(self.phases), self.apex_index, self.source,
+        )
+
+    @model_validator(mode="after")
+    def _valid_geometry(self):
+        self.to_template()
+        return self
+
+
 class PatternRequest(_StrictModel):
     chart: RelationshipPartyRequest
     include_nodes: bool = False
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
     include: list[str] | None = None
     dominant_only: bool = False
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
+    harmonic_presets: list[str] = Field(default_factory=list)
+    templates: list[GeometricTemplateRequest] = Field(default_factory=list, max_length=128)
+
+    @field_validator("optional_sets", mode="before")
+    @classmethod
+    def _pattern_optional_sets(cls, value):
+        return list(_normalized_optional_sets(value))
+
+    def engine_policy(self) -> PatternComputationPolicy:
+        """Preserve one validated engine policy across every pattern consumer."""
+        return _validate_policy(PatternComputationPolicy(
+            orb_factor=self.orb_factor,
+            selection=PatternSelectionPolicy(None if self.include is None else tuple(self.include)),
+            dominant_only=self.dominant_only,
+            optional_sets=tuple(self.optional_sets),
+            harmonic_presets=tuple(self.harmonic_presets),
+            templates=tuple(template.to_template() for template in self.templates),
+        ))
+
+    @model_validator(mode="after")
+    def _valid_pattern_selection(self):
+        _selected_geometric_templates(self.engine_policy())
+        return self
 
     @field_validator("orb_factor", mode="before")
     @classmethod
@@ -1150,6 +1199,16 @@ class PatternCoherenceResponse(_StrictModel):
     is_assessed: bool
 
 
+class PatternGeometryResponse(_StrictModel):
+    template_name: str
+    phases: list[tuple[int, int]]
+    vertex_bodies: list[str]
+    orientation: Literal["forward", "reflected", "symmetric", "ambiguous"] | None
+    harmonic: int
+    source: str
+    required_optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
+
+
 class AspectPatternResponse(_StrictModel):
     name: str
     bodies: list[str]
@@ -1161,10 +1220,11 @@ class AspectPatternResponse(_StrictModel):
     contributions: list[PatternAspectContributionResponse]
     condition_profile: PatternConditionProfileResponse | None = None
     coherence: PatternCoherenceResponse | None = None
+    geometry: PatternGeometryResponse | None = None
 
 
 class PatternSearchComputationTruthResponse(_StrictModel):
-    aspect_catalog: Literal["standard_longitude"] = "standard_longitude"
+    aspect_catalog: Literal["standard_longitude", "standard_plus_optional_longitude"] = "standard_longitude"
     aspect_tier: Literal[2] = 2
     source_module: Literal["moira.patterns"] = "moira.patterns"
     engine_entrypoint: Literal["find_all_patterns"] = "find_all_patterns"
@@ -1176,6 +1236,10 @@ class PatternSearchComputationTruthResponse(_StrictModel):
     orb_factor: float
     selection_mode: Literal["all_registered_patterns", "explicit_pattern_names"]
     requested_patterns: list[str]
+    resolved_patterns: list[str] = Field(default_factory=list)
+    optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
+    harmonic_presets: list[str] = Field(default_factory=list)
+    requested_templates: list[str] = Field(default_factory=list)
     dominant_only: bool
     ordering: Literal["pattern_name_then_body_names"] = (
         "pattern_name_then_body_names"
@@ -1366,6 +1430,7 @@ class MidpointClusterRequest(MidpointRequest):
 
 
 __all__ = [
+    "GeometricTemplateRequest", "PatternGeometryResponse",
     "OptionalAspectCatalogResponse", "OptionalAspectSetResponse", "OptionalAspectMemberResponse",
     "OptionalAspectSetValue",
     "AspectDataResponse",

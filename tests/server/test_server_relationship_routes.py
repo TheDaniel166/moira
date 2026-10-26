@@ -366,6 +366,7 @@ def test_lightbox_synastry_routes_expose_effective_search_truth(
     assert truth == {
         "source_module": "moira.synastry",
         "engine_entrypoint": entrypoint,
+        "optional_sets": [],
         "position_source": "independent_chart_longitudes",
         "source_label": "source",
         "target_label": "target",
@@ -494,6 +495,8 @@ def test_lightbox_pattern_route_exposes_selection_truth(
     truth = body["computation_truth"]
     assert truth == {
         "source_module": "moira.patterns",
+        "aspect_catalog": "standard_longitude",
+        "aspect_tier": 2,
         "engine_entrypoint": "find_all_patterns",
         "position_source": "chart_longitudes",
         "motion_source": "chart_longitude_rates_for_coherence",
@@ -501,6 +504,10 @@ def test_lightbox_pattern_route_exposes_selection_truth(
         "orb_factor": 0.8,
         "selection_mode": "explicit_pattern_names",
         "requested_patterns": ["T-Square", "Grand Trine"],
+        "resolved_patterns": ["T-Square", "Grand Trine"],
+        "optional_sets": [],
+        "harmonic_presets": [],
+        "requested_templates": [],
         "dominant_only": True,
         "ordering": "pattern_name_then_body_names",
         "pattern_count": len(body["events"]),
