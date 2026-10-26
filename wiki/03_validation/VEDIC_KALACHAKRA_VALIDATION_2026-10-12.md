@@ -177,3 +177,118 @@ were preserved. Shared app/OpenAPI diffs include their independent hunks; this
 package owns only Kalachakra registration. No protected baseline, tolerance,
 kernel, catalogue, native implementation or release version was changed for
 Kalachakra. No commit, push, tag, release or website deployment was performed.
+
+## Rao 2000 extension - 26 October 2026
+
+This additive checkpoint follows the authorized review repair and expansion.
+The preceding sections retain the original 12 October scope and results.
+The working tree is engine `main` at `caec99b`, package/native version 6.10.1,
+using project Python 3.14.8 on Windows. Unrelated staged and unstaged work was
+preserved. No version, native numerical implementation or tolerance changed.
+
+### Delivered scope and source decisions
+
+`rao_2000_longitude_continuous_v1` / `ved014.rao2000.1` is admitted alongside
+the unchanged Santhanam calculation identity. Catalogue `ved014.2` adds explicit
+per-profile sources, rules, decisions, namespace, continuation and Deha/Jeeva
+reference. All public export surfaces, Moira methods and existing calculation
+routes select either profile; selection remains mandatory.
+
+The private immutable recipe owner separates doctrine from exact interval
+materialization. Rao advances through the eight same-family rows, uses each
+parent's nine forward AD weights and denominator, and derives Deha/Jeeva from
+the emitted nine-MD window. `R2000/` rows cannot be substituted for Santhanam
+rows. Rao's directed gati includes markati and continuous seams; Santhanam's
+unresolved KC-10 and unclassified row seams remain unchanged. Nine MDs, levels
+1-2, full-parent construction before birth clipping, common-origin projection
+and half-open bounded lookup retain their existing product limits.
+
+The [author's textbook](https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf)
+and local `Good books/vedic_astro_textbook.pdf` were rechecked, including printed
+pages 294, 295 and 297 visually. Local source SHA-256 remains
+`2971851a3cda30929cf5b1ec56b88902bd4a141c8d5479599573ddf1c5f78242`.
+The existing research ledger supplies chapter/table coordinates. Discoverable
+`R2000-01` through `R2000-09` explicitly preserve the reconciled KC-03 membership,
+weight-derived totals, continuous family progression, recomputed AD denominator,
+Deha/Jeeva/gati ownership, nine-MD product limit, author's savana preference and
+unevaluated eligibility. The ten-entry exercise witness is preserved outside
+the nine-entry output bound. A 365.25-day projection is a Moira option, not a
+claim to reproduce the author's calendar dates or later Rao formulations.
+
+### Independent evidence and compatibility
+
+`tests/fixtures/kalachakra/rao_2000_source_cases.json` passed four independent
+source tests before runtime implementation. It freezes printed Examples 95-97
+and Exercise 34, with derived coverage/AD fractions and the BPHS-input
+discriminator separately labelled. Its SHA-256 is
+`99075505715be0a25da0bdd2116e327474d19eee66b0c9918308885951e461bb`.
+The oracle imports no Moira code and traverses separately transcribed 24-position
+Table 43 rings. The runtime instead advances through source rows. Tests cover
+all 108 padas and binary64 edge neighbours, all 144 within-row occurrence
+starts, exact full/visible partitions, denominator conservation, directed
+gati, both clocks and active-boundary ownership. Sexagesimal source values and
+binary64 public inputs retain an explicit mathematical conversion bound.
+
+The original source fixture remains unchanged at
+`f646f4ab82907988da8cdff128785a62e0c9502a66019c15c70885505952f823`.
+The separately frozen pre-extension Santhanam transport fixture has SHA-256
+`e7d22d56e104cc180aa344bb7886d45e7271b6f29ba37c1b35177082cf95d7ba`.
+Its 648 cases span all pada midpoints, levels 1/2 and source-only/both clocks;
+projected cases also freeze current results at birth and the final endpoint.
+All payload hashes match. This fixture is regression evidence generated from
+the previous engine, not independent doctrinal authority.
+
+### Final validation
+
+The combined run passed **1,115 tests in 110.69 seconds**, with zero failures,
+errors or skips: **1,072 Kalachakra tests plus 43 public API/discovery checks**.
+Harness receipts report seven DE441 uses, all successful, with one content
+probe. Direct, tropical and date-derived composition, facade and actual HTTP
+responses agree. These comparisons validate composition using the same
+astronomy owner; they are not an independent planetary-position oracle.
+
+```powershell
+$env:MOIRA_NO_DOWNLOAD='1'
+$env:MOIRA_TEST_MODE='1'
+$env:MOIRA_STRICT_KNOWN_ISSUES='1'
+$env:HYPOTHESIS_PROFILE='moira-ci'
+.\.venv\Scripts\python.exe -m pytest `
+  tests/unit/test_kalachakra.py tests/unit/test_kalachakra_sources.py `
+  tests/unit/test_kalachakra_admission.py tests/unit/test_kalachakra_projection.py `
+  tests/unit/test_kalachakra_astronomy.py tests/unit/test_kalachakra_public_api.py `
+  tests/unit/test_kalachakra_rao_sources.py tests/unit/test_kalachakra_rao.py `
+  tests/unit/test_kalachakra_compatibility.py `
+  tests/server/test_server_kalachakra.py tests/server/test_server_kalachakra_openapi.py `
+  tests/server/test_server_kalachakra_rao.py `
+  tests/unit/test_public_api_contract.py tests/unit/test_public_api_drift.py `
+  tests/server/test_server_route_discoverability.py `
+  -o addopts=-ra -q --tb=short `
+  --junitxml=C:/dev/outputs/ved014-rao-2026-10-26/validation.xml
+```
+
+Focused Ruff checks and five-file engine docstring preflight passed. All three
+Python API examples executed, including the real-reader example. The workflow
+YAML parses and its Kalachakra/minimum-version gates cover both profiles.
+Python 3.10 grammar checks passed for six runtime/transport files; no local
+Python 3.10 runtime or remote CI execution is claimed. Release-facing doc
+consistency also passed.
+
+Malformed profile/row metadata, invalid denominators and unsupported hybrids
+are rejected. Forged sequence/current engine results return sanitized,
+request-correlated 500 responses; unrepresentable projections remain explicit
+422s. The preceding astronomy repair limits missing-anchor KeyError handling
+to the resource lookup, so internal lookup failures remain invariant 500s.
+
+### Remaining limits and publication
+
+No version/settings-pinned JHora export was available. The registered-application
+check found no JHora/Jagannatha Hora entry; that is not an exhaustive portable
+installation search. No external-software parity or predictive validation is
+claimed. Other traditions, deeper periods, eligibility and further gati policies
+remain separately scoped. This package makes no change to alternate-dasha
+arithmetic or other Vedic doctrine.
+
+The review repair and extension are locally complete and uncommitted. No push,
+release, tag, website or service deployment occurred. Canonical API/standard,
+fixture documentation and the remaining-work register are reconciled; generated
+publication inventories and wiki mirroring remain publication-stage work.

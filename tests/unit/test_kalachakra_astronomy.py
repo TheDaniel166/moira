@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 from moira.kalachakra import (
     KalachakraSeed, KalachakraEpoch, KalachakraProjection, KalachakraInputError,
-    KalachakraResourceError, KalachakraCoverageError, kalachakra_sequence,
+    KalachakraResourceError, KalachakraCoverageError, KalachakraInvariantError, kalachakra_sequence,
     kalachakra_for_datetime,
 )
 from moira.kalachakra_policy import PROFILE_ID
@@ -79,13 +79,29 @@ def test_typed_resource_translation(monkeypatch,exc,expected):
         kalachakra_for_datetime(DT,profile_id=PROFILE_ID,ayanamsa_system='Lahiri',reader=object())
 
 
-def test_live_anchor_never_falls_back(fake_astronomy,monkeypatch):
+@pytest.mark.parametrize('error',[KeyError,FileNotFoundError,ValueError])
+def test_live_anchor_never_falls_back(fake_astronomy,monkeypatch,error):
     def missing(*args):
-        raise FileNotFoundError('private catalogue path')
+        raise error('private catalogue path')
     monkeypatch.setattr(astronomy,'star_at',missing)
     with pytest.raises(KalachakraResourceError):
         kalachakra_for_datetime(DT,profile_id=PROFILE_ID,ayanamsa_system=next(iter(astronomy._STAR_ANCHORED)),reader=object())
     assert fake_astronomy['ayanamsa']==0 and fake_astronomy['moon']==0
+
+
+@pytest.mark.parametrize('stage,error',[
+    (stage,error)
+    for stage in ('_bind_ephemeris_time','_ayanamsa_at_tt','planet_at','star_at')
+    for error in (KeyError,IndexError)
+    if (stage,error) != ('star_at',KeyError)
+])
+def test_internal_lookup_failure_is_not_resource_unavailable(fake_astronomy,monkeypatch,stage,error):
+    def corrupt(*args,**kwargs):
+        raise error('private generated astronomical field')
+    monkeypatch.setattr(astronomy,stage,corrupt)
+    system = next(iter(astronomy._STAR_ANCHORED)) if stage == 'star_at' else 'Lahiri'
+    with pytest.raises(KalachakraInvariantError):
+        kalachakra_for_datetime(DT,profile_id=PROFILE_ID,ayanamsa_system=system,reader=object())
 
 
 def test_missing_time_identity(fake_astronomy,monkeypatch):

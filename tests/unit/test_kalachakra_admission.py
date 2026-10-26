@@ -24,7 +24,9 @@ def test_bad_depth_before_resources(bad,monkeypatch):
 
 
 def test_candidates_and_incompatible_branches():
-    for p in kalachakra_profiles().profiles[1:]:
+    for p in kalachakra_profiles().profiles:
+        if p.selectable:
+            continue
         assert not p.selectable
         with pytest.raises(KalachakraInputError):
             kalachakra_sequence(KalachakraSeed('sidereal',0),profile_id=p.profile_id)

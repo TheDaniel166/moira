@@ -1,0 +1,48 @@
+{
+  "evidence_class": "Manual transcription and independent rational derivation, frozen before Rao runtime implementation",
+  "source": {
+    "id": "L02",
+    "title": "PVR Narasimha Rao, Vedic Astrology: An Integrated Approach, first published 2000",
+    "local_path": "Good books/vedic_astro_textbook.pdf",
+    "sha256": "2971851a3cda30929cf5b1ec56b88902bd4a141c8d5479599573ddf1c5f78242",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "coordinates": "Local PDF 301-309 / printed 289-297, chapter 24; PDF 321-322 / printed 309-310, Exercise 34 answer",
+    "visual_recheck": "2026-10-26: printed 294, 295 and 297; source hash unchanged from original visually collated packet"
+  },
+  "signs": "Ar Ta Ge Cn Le Vi Li Sc Sg Cp Aq Pi",
+  "weights": [7,16,9,21,5,9,16,7,10,4,4,10],
+  "rings": {
+    "S": "Ar Ta Ge Cn Le Vi Li Sc Sg Cp Aq Pi Sc Li Vi Cn Le Ge Ta Ar Pi Aq Cp Sg",
+    "A": "Sg Cp Aq Pi Ar Ta Ge Le Cn Vi Li Sc Pi Aq Cp Sg Sc Li Vi Le Cn Ge Ta Ar"
+  },
+  "groups": {"S1": [1,3,7,9,13,15,19,21,25,27], "S2": [2,8,14,20,26], "A1": [4,10,16,22], "A2": [5,6,11,12,17,18,23,24]},
+  "source_decisions": {
+    "R2000-01": "Carry the explicitly reconciled KC-03 membership: Revati=S1, Uttara Bhadrapada=S2; Table 45's literal heading is not silently copied.",
+    "R2000-02": "Calculate row totals from the sign weights; S2 totals are 100,85,83,86. No numeral overrides proportional conservation.",
+    "R2000-03": "Rule 4 advances within the same Savya/Apasavya family, including subgroup rollover; not physical nakshatra order.",
+    "R2000-04": "Rule 5 and Example 97 use nine forward occurrences and their recomputed denominator; full-parent construction precedes clipping.",
+    "R2000-05": "Section 24.3.2 uses first/ninth MDs of the birth window, reversed in Apasavya.",
+    "R2000-06": "Section 24.3.3 directed gati readings belong to Rao only; they do not resolve KC-10 for Santhanam.",
+    "R2000-07": "Footnote 64 supplies nine-MD bound; preserve Exercise 34's tenth printed entry as evidence outside that bound.",
+    "R2000-08": "Footnote 65 prefers savana years. Both explicit Moira clocks remain available; 365.25 is not claimed as textbook date parity.",
+    "R2000-09": "Calculation availability does not evaluate eligibility or import prediction prose. Rao 2018 and Rath are separate candidates."
+  },
+  "balances": [
+    {"id":"example95", "dms":[45,50,0], "group":"A1", "pada":2, "position":7, "elapsed":"249/4", "balance":"19/4", "sequence":"Sc Li Vi Le Cn Ge Ta Ar Sg", "deha":"Sg", "jeeva":"Sc", "coverage":"391/4", "evidence":"printed balance, continuation and Deha/Jeeva; coverage derived"},
+    {"id":"example96", "dms":[93,0,0], "group":"S1", "pada":4, "position":8, "elapsed":"387/5", "balance":"43/5", "sequence":"Pi Sc Li Vi Cn Le Ge Ta Ar", "deha":"Pi", "jeeva":"Ar", "coverage":"493/5", "evidence":"printed balance, continuation and Deha/Jeeva; coverage derived"},
+    {"id":"exercise34", "dms":[305,50,0], "group":"A2", "pada":4, "position":6, "elapsed":"75", "balance":"2", "sequence":"Ge Ta Ar Sg Cp Aq Pi Ar Ta", "deha":"Ta", "jeeva":"Ge", "coverage":"76", "printed_sequence":"Ge Ta Ar Sg Cp Aq Pi Ar Ta Ge", "evidence":"printed ten-entry witness retained; first nine selected by explicit bound; labels and coverage derived"},
+    {"id":"bphs_input_discriminator", "dms":[34,50,0], "group":"S1", "pada":3, "position":4, "elapsed":"747/20", "balance":"73/20", "sequence":"Cp Sg Ar Ta Ge Cn Le Vi Li", "deha":"Cp", "jeeva":"Li", "coverage":"1933/20", "evidence":"independent derivation from Rao rules using BPHS input, not a printed Rao example"}
+  ],
+  "antardashas": [
+    {"group":"A1", "pada":2, "position":7, "sequence":"Sc Li Vi Le Cn Ge Ta Ar Sg", "denominator":100, "first_years":"49/100", "evidence":"Example 97 printed sequence; fraction derived"},
+    {"group":"A1", "pada":2, "position":8, "sequence":"Li Vi Le Cn Ge Ta Ar Sg Cp", "denominator":97, "first_years":"256/97", "evidence":"Example 97 printed sequence; fraction derived"},
+    {"group":"A1", "pada":3, "position":0, "sequence":"Vi Le Cn Ge Ta Ar Sg Cp Aq", "denominator":85, "first_years":"81/85", "evidence":"Example 97 printed sequence; fraction derived"},
+    {"group":"A1", "pada":3, "position":1, "sequence":"Le Cn Ge Ta Ar Sg Cp Aq Pi", "denominator":86, "first_years":"25/86", "evidence":"Example 97 printed sequence, denominator and proportional allocation"},
+    {"group":"S1", "pada":1, "position":1, "sequence":"Ta Ge Cn Le Vi Li Sc Sg Cp", "denominator":97, "first_years":"256/97", "evidence":"independently derived Santhanam denominator discriminator"}
+  ],
+  "clipping": {"case":"example95", "elapsed_md":"9/4", "first_four_cumulative_full_ends":["49/100","161/100","56/25","259/100"], "active_child_ordinal":3, "active_sign":"Le", "remaining":"17/50", "evidence":"derived from Examples 95/97 and footnote 66; not an independently printed AD balance"},
+  "gati": {
+    "S": {"simhavlokan":[["Sg","Ar"],["Pi","Sc"]], "markati":[["Cn","Le"]], "mandooki":[["Vi","Cn"],["Le","Ge"]]},
+    "A": {"simhavlokan":[["Ar","Sg"],["Sc","Pi"]], "markati":[["Le","Cn"]], "mandooki":[["Ge","Le"],["Cn","Vi"]]}
+  }
+}

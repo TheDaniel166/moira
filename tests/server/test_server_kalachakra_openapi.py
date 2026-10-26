@@ -36,9 +36,9 @@ def test_openapi_bounds_and_discovery(monkeypatch):
         r = c.get('/v1/dasha/kalachakra/profiles')
         assert r.status_code==200,r.text
         data = r.json()
-        assert len(data['conflicts'])==14 and data['maximum_period_nodes']==90
+        assert len(data['conflicts'])==23 and data['maximum_period_nodes']==90
         assert data['ayanamsa_systems']==list(Ayanamsa.ALL)
-        assert sum(p['selectable'] for p in data['profiles'])==1
+        assert sum(p['selectable'] for p in data['profiles'])==2
         discovered = c.get('/v1/meta/routes')
         assert discovered.status_code==200
         for path in paths:

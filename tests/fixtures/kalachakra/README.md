@@ -15,3 +15,25 @@ ADs and ten-entry exercise are competing-method evidence, not expectations for
 Santhanam. Source witnesses are exact sexagesimal rationals; public binary64
 inputs have separately bounded conversion error. No empirical calendar/date
 oracle or software-export parity is asserted by these source-year fixtures.
+
+## Rao 2000 extension, 26 October 2026
+
+`rao_2000_source_cases.json` was frozen and passed its independent arithmetic
+checks before the profile runtime was added. SHA-256:
+`99075505715be0a25da0bdd2116e327474d19eee66b0c9918308885951e461bb`.
+Its owner is `tests/unit/test_kalachakra_rao_sources.py`, which imports no Moira
+code. The oracle traverses the separately transcribed 24-position Table 43
+rings; the implementation advances through the sixteen nine-occurrence rows.
+The packet distinguishes printed Examples 95-97 / Exercise 34 from derived
+fractions and the cross-profile input discriminator. KC-03's membership
+correction remains explicit. The original fixture above is unchanged.
+
+`santhanam_compatibility_2026_10_26.json` freezes 648 pre-extension transport
+cases at engine `caec99b` plus the local error-classification repair: all 108
+pada midpoints, levels 1/2, and source-only / 360-day / 365.25-day output.
+Projected cases include current results at birth and the final endpoint.
+SHA-256:
+`e7d22d56e104cc180aa344bb7886d45e7271b6f29ba37c1b35177082cf95d7ba`.
+This is compatibility evidence generated from the previous engine, not an
+independent source or astronomy oracle. Neither fixture may be regenerated
+from the new runtime to resolve a disagreement.

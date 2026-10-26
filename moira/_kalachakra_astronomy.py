@@ -31,9 +31,11 @@ def derive(epoch, ayanamsa_system, tropical, reader):
             if ayanamsa_system in _STAR_ANCHORED:
                 anchor,target = _STAR_ANCHORED[ayanamsa_system]
                 try:
-                    offset = (star_at(anchor,bound.epoch_tt).longitude-target)%360
-                except ValueError as exc:
-                    raise KalachakraResourceError("required live anchor catalogue is invalid") from exc
+                    star = star_at(anchor,bound.epoch_tt)
+                except (KeyError,ValueError) as exc:
+                    # These errors belong to the anchor lookup/catalogue contract.
+                    raise KalachakraResourceError("required live anchor catalogue is unavailable or invalid") from exc
+                offset = (star.longitude-target)%360
             else:
                 offset = _ayanamsa_at_tt(bound.epoch_tt,ayanamsa_system,"true")
             if derived:
@@ -47,13 +49,11 @@ def derive(epoch, ayanamsa_system, tropical, reader):
                 identity.lunar_tidal_acceleration_arcsec_per_cy2,ayanamsa_system,offset,anchor)
     except OutOfRangeError as exc:
         raise KalachakraCoverageError("birth epoch is outside serving ephemeris coverage") from exc
-    except IndexError as exc:
-        # IndexError is also a LookupError, but a broken generated buffer is
-        # an internal defect rather than an absent resource or catalogue key.
-        raise KalachakraInvariantError("invalid generated Kalachakra astronomical context") from exc
-    except (MissingKernelError,_EphemerisTimeBasisError,LookupError,FileNotFoundError) as exc:
+    except (MissingKernelError,_EphemerisTimeBasisError,FileNotFoundError) as exc:
         raise KalachakraResourceError("required Kalachakra ephemeris, time identity or live anchor is unavailable") from exc
-    except (ValueError,TypeError,AttributeError,KeyError) as exc:
+    except (ValueError,TypeError,AttributeError,LookupError) as exc:
+        # Missing anchor keys were translated at their lookup above. Elsewhere,
+        # KeyError and IndexError describe generated-state defects, not outages.
         raise KalachakraInvariantError("invalid generated Kalachakra astronomical context") from exc
     try:
         normalized = KalachakraEpoch(epoch.kind,epoch.value).value.isoformat() if epoch.kind == "datetime" else None
