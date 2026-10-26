@@ -71,6 +71,8 @@ from .routers import (
     jaimini_extended_router,
     kalachakra_router,
     nodes_router,
+    derived_points_router,
+    hypothetical_router,
     nine_parts_router,
     almuten_router,
     hyleg_router,
@@ -235,6 +237,8 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(jaimini_extended_router)  # Vedic Phase-2: arudhas, argala, karakamsa, Chara Dasha
     app.include_router(kalachakra_router)  # VED-014 named source profile and bounded period transport
     app.include_router(nodes_router)        # Phase-11 planetary and small-body orbital node surface
+    app.include_router(derived_points_router)
+    app.include_router(hypothetical_router)
     app.include_router(orbits_router)       # P-GAP-03 heliocentric osculating elements and distance extrema
     app.include_router(uranian_router)      # Phase-12 Uranian/Hamburg School hypothetical-body surface
     app.include_router(harmonics_router)    # Phase-12 direct harmonic projection surface

@@ -13,6 +13,8 @@ from .dasha import router as dasha_router
 from .decans import decanates_router
 from .deep_sky import router as deep_sky_router
 from .dignities import router as dignities_router
+from .derived_points import router as derived_points_router
+from .hypothetical import router as hypothetical_router
 from .draconic import router as draconic_router
 from .egyptian_bounds import router as egyptian_bounds_router
 from .electional import router as electional_router
@@ -87,6 +89,8 @@ from .western_profile import router as western_profile_router
 from .western_electional import router as western_electional_router
 
 __all__ = [
+    "derived_points_router",
+    "hypothetical_router",
     "kalachakra_router",
     "ashtakavarga_router",
     "alternate_dashas_router",

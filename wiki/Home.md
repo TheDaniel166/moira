@@ -19,6 +19,8 @@ for its doctrines, standards, and mathematical validation.
 ### 📜 Backend Standards
 The engine is composed of sovereign, constitutionalized subsystems:
 - **[Planetary Reduction](02_standards/PLANETARY_REDUCTION_PIPELINE.md)**
+- **[Named Derived Points](02_standards/DERIVED_POINTS.md)**: Baker Vulcan, mean/osculating Priapus, and orbital second-focus geometry with explicit model boundaries.
+- **[Source-Qualified Hypothetical Constructions](02_standards/HYPOTHETICAL_MODELS.md)**: Arta, Selena, Abramov Proserpina, prescribed orbits and historical prediction realizations.
 - **[Aspects & Orbs](02_standards/ASPECT_BACKEND_STANDARD.md)**
 - **[Complete Aspect Catalog](02_standards/ASPECT_CATALOG.md)**: All 74 longitude targets and two declination relationships, exact fractions, aliases, default orbs, optional sets, and harmonic presets.
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**

@@ -44,6 +44,21 @@ Moira, Chart, and all re-exported symbols in __all__.
 
 from __future__ import annotations
 
+from .hypothetical import (
+    ConventionClock, ProserpinaRule, LongitudeConvention, ArtaFourPoints,
+    ArtaOsculatingSet, HistoricalRealization, PrescribedHypotheticalOrbit,
+    HypotheticalGeometry, hypothetical_catalog, arta_four_points,
+    arta_osculating_set_at, selena_seven_year_at, abramov_proserpina_at,
+    koch_waldemath_orbit, weston_stahl_vulcan_orbit, harrington_1988_orbit,
+    adams_1846_orbit, leverrier_1846_orbit, hypothetical_orbit_at,
+    PlanetNineScenario, fienga_2016_planet_nine_scenario,
+)
+from .derived_points import (
+    DerivedPointDefinition, BakerVulcanPoint, PriapusPoint,
+    SecondFocusStatus, OrbitalSecondFocus, derived_point_catalog,
+    baker_vulcan_from_longitudes, baker_vulcan_at, mean_priapus,
+    osculating_priapus, second_focus_from_elements, orbital_second_focus,
+)
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -2190,6 +2205,17 @@ from .sayanadi_dated import (
 )
 
 __all__ = [
+    "ConventionClock", "ProserpinaRule", "LongitudeConvention", "ArtaFourPoints",
+    "ArtaOsculatingSet", "HistoricalRealization", "PrescribedHypotheticalOrbit",
+    "HypotheticalGeometry", "hypothetical_catalog", "arta_four_points",
+    "arta_osculating_set_at", "selena_seven_year_at", "abramov_proserpina_at",
+    "koch_waldemath_orbit", "weston_stahl_vulcan_orbit", "harrington_1988_orbit",
+    "adams_1846_orbit", "leverrier_1846_orbit", "hypothetical_orbit_at",
+    "PlanetNineScenario", "fienga_2016_planet_nine_scenario",
+    "DerivedPointDefinition", "BakerVulcanPoint", "PriapusPoint",
+    "SecondFocusStatus", "OrbitalSecondFocus", "derived_point_catalog",
+    "baker_vulcan_from_longitudes", "baker_vulcan_at", "mean_priapus",
+    "osculating_priapus", "second_focus_from_elements", "orbital_second_focus",
     # VED-013 source-scoped profiles and immutable evidence.
     'JaiminiChart', 'ArgalaReference', 'CharaProjection', 'JaiminiSource', 'JaiminiRule', 'JaiminiConflict', 'JaiminiProfile', 'JaiminiProfileCatalogue', 'list_jaimini_profiles', 'CharaArithmeticRow', 'CharaProfileInterval', 'CharaProfileSchedule', 'CharaArithmeticResult', 'evaluate_chara_profile', 'ArgalaCharacter', 'ArgalaCountGrade', 'ArgalaQuarterWitness', 'ArgalaEligibleBlockers', 'ArgalaStrengthFactors', 'ArgalaPairAssessment', 'ArgalaSpecialThird', 'ArgalaReferenceAssessment', 'ArgalaAssessmentResult', 'assess_argala', 'ArgalaComputation',
     'YogaExtensionSource', 'YogaExtensionRule', 'YogaExtensionProfile', 'YogaExtensionPolicy', 'YogaExtensionCatalogue', 'list_yoga_extension_rules', 'YogaExtensionPosition', 'YogaExtensionClause', 'YogaExtensionBranch', 'YogaExtensionQualification', 'YogaExtensionResult', 'YogaExtensionChartResult', 'evaluate_yoga_extensions',

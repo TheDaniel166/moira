@@ -9,6 +9,20 @@
 This is the Python engine/import reference. The HTTP transport surface is
 documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
 
+The [hypothetical construction standard](HYPOTHETICAL_MODELS.md) describes the
+additional `moira.hypothetical` root/facade exports, Arta fourfold sets,
+anchor-dependent Selena, explicitly selected Abramov approximations, prescribed
+Waldemath and Weston/Stahl orbit constructors, historical orbit realizations,
+and the epoch-free Fienga Planet Nine scenario. Missing source policies remain
+required arguments and survive result transport.
+
+The [named derived-point standard](DERIVED_POINTS.md) documents
+`baker_vulcan_from_longitudes()`, `baker_vulcan_at()`, `mean_priapus()`,
+`osculating_priapus()`, `second_focus_from_elements()`,
+`orbital_second_focus()`, and `derived_point_catalog()`. Their typed results
+are exported from root and facade; the `Moira` instance provides dated wrappers
+with UTC-to-UT1 conversion and instance-owned kernel binding.
+
 VED-013 adds `JaiminiChart`, `ArgalaReference`, `CharaProjection`,
 `list_jaimini_profiles()`, `evaluate_chara_profile()` and `assess_argala()` with
 their immutable evidence vessels to root, facade and `moira.vedic`.

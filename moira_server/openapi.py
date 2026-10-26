@@ -487,6 +487,18 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "catalogs",
     },
     {
+        "name": "derived-points",
+        "x-displayName": "Derived Points",
+        "description": "Named Baker Vulcan, mean/osculating lunar perigee, and geometric second-focus models.",
+        "x-family": "catalogs",
+    },
+    {
+        "name": "hypothetical",
+        "x-displayName": "Hypothetical Constructions",
+        "description": "Source-qualified Arta, Selena, Proserpina, prescribed orbits and historical predictions with explicit realization choices.",
+        "x-family": "catalogs",
+    },
+    {
         "name": "batch",
         "x-displayName": "Batch",
         "description": "Batch chart, transit, return, event, and progression surfaces.",

@@ -19,6 +19,15 @@ def _facade_module() -> Any:
     return sys.modules[f"{__package__}.facade"]
 
 
+def _convention_epoch(dt: datetime, timescale: str) -> float:
+    """Convert UTC once into the explicitly selected source realization clock."""
+    facade = _facade_module()
+    clock = facade.ConventionClock(timescale)
+    jd_utc = facade.jd_from_datetime(dt)
+    return (facade.utc_to_tt(jd_utc) if clock is facade.ConventionClock.TT
+            else facade.utc_to_ut1(jd_utc))
+
+
 class AstronomyFacadeMixin:
     """RITE: The Sky-Reader — the layer that bridges the public Moira surface
     to heliocentric positions, fixed-star lookups, visibility conditions,
@@ -54,7 +63,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     "scope": "class",
     "id": "moira._facade_astronomy.AstronomyFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["heliocentric", "star_at", "heliacal_rising", "nakshatra", "antiscia"], "internal": []},
+    "api": {"frozen": ["heliocentric", "star_at", "heliacal_rising", "nakshatra", "antiscia", "baker_vulcan", "mean_priapus", "osculating_priapus", "orbital_second_focus", "arta_osculating_set", "selena", "abramov_proserpina", "hypothetical_orbit"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -64,6 +73,66 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
 }
 [/MACHINE_CONTRACT]
     """
+
+    def baker_vulcan(self, dt: datetime):
+        """Return Baker's symbolic longitude from ordinary planetary inputs."""
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.baker_vulcan_at(jd_ut1, reader=self._reader)
+
+    def arta_osculating_set(self, dt: datetime, *, frame: str):
+        """Return the fourfold Arta construction using owned geometric inputs."""
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.arta_osculating_set_at(jd_ut1, frame=frame, reader=self._reader)
+
+    def selena(
+        self, dt: datetime, *, anchor_jd: float, anchor_longitude: float,
+        year_days: float, timescale: str, frame: str,
+    ):
+        """Return seven-year Selena with the caller's complete anchor policy."""
+        facade = _facade_module()
+        return facade.selena_seven_year_at(
+            _convention_epoch(dt, timescale), anchor_jd=anchor_jd,
+            anchor_longitude=anchor_longitude, year_days=year_days,
+            timescale=timescale, frame=frame,
+        )
+
+    def abramov_proserpina(self, dt: datetime, *, rule: str, timescale: str, frame: str):
+        """Return the selected source approximation with explicit clock/frame."""
+        facade = _facade_module()
+        return facade.abramov_proserpina_at(
+            _convention_epoch(dt, timescale), rule=rule, timescale=timescale, frame=frame,
+        )
+
+    def hypothetical_orbit(self, orbit, dt: datetime, *, frame: str):
+        """Return geometric prescribed-orbit coordinates using its selected clock."""
+        facade = _facade_module()
+        return facade.hypothetical_orbit_at(
+            orbit, _convention_epoch(dt, orbit.timescale), frame=frame,
+        )
+
+    def mean_priapus(self, dt: datetime, *, nutation: bool = True):
+        """Return the explicitly selected mean lunar perigee model."""
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.mean_priapus(jd_ut1, nutation=nutation)
+
+    def osculating_priapus(self, dt: datetime):
+        """Return lunar perigee with the parent osculating-apogee receipt."""
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.osculating_priapus(jd_ut1, reader=self._reader)
+
+    def orbital_second_focus(
+        self, body: str | int, dt: datetime, *, center: str, frame: str,
+    ):
+        """Return central-focus-relative geometry in an explicit orbital frame."""
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.orbital_second_focus(
+            body, jd_ut1, center=center, frame=frame, reader=self._reader,
+        )
 
     def heliocentric(self, dt: datetime, bodies: list[str] | None = None):
         """Return heliocentric ecliptic positions for all or specified planets."""

@@ -21,16 +21,30 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 532
-- Registered OpenAPI operations: 532 (GET 48, POST 484)
+- Registered OpenAPI paths: 546
+- Registered OpenAPI operations: 546 (GET 51, POST 495)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 528
+- Versioned `/v1` paths: 542
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+Seven [source-qualified hypothetical routes](../02_standards/HYPOTHETICAL_MODELS.md)
+are available under `/v1/hypothetical`: catalog, supplied and geometric
+osculating Arta, anchored Selena, selected Abramov Proserpina, five-model
+prescribed orbital geometry, and an epoch-free Planet Nine scenario. The
+discriminated orbit request requires each model's reconstruction choices;
+geometric source centers and model/frame provenance remain explicit.
+
+The [named derived-point standard](../02_standards/DERIVED_POINTS.md) adds six
+`/v1/derived-points` routes: kernel-free catalog, supplied Baker longitudes and
+mean Priapus, plus kernel-bound Baker Vulcan, osculating Priapus and orbital
+second focus. Model identities, parent-apogee truth, strict orbital provenance
+and undefined geometry survive transport; center and frame are required for
+second-focus requests.
 
 VED-013 adds `GET /v1/jaimini/extended/profiles`,
 `POST /v1/jaimini/extended/chara-dasha/profile`, and
@@ -3441,6 +3455,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/aspects/hellenistic/whole-sign` | hellenistic-aspects | `whole_sign_aspects_route_v1_aspects_hellenistic_whole_sign_post` |
 | `POST` | `/v1/aspects/moon-connection-flow` | relationship | `moon_connection_flow_route_v1_aspects_moon_connection_flow_post` |
 | `POST` | `/v1/aspects/motion-witness` | relationship | `aspect_motion_witness_route_v1_aspects_motion_witness_post` |
+| `GET` | `/v1/aspects/optional-sets` | relationship | `optional_aspect_sets_route_v1_aspects_optional_sets_get` |
 | `POST` | `/v1/asteroids/bulk` | asteroids (fast small-body) | `asteroids_bulk_v1_asteroids_bulk_post` |
 | `GET` | `/v1/asteroids/families/by-number/{number}` | asteroids (fast small-body) | `asteroid_family_by_number_v1_asteroids_families_by_number__number__get` |
 | `POST` | `/v1/asteroids/families/chart` | asteroids (fast small-body) | `asteroid_families_in_chart_v1_asteroids_families_chart_post` |
@@ -3522,6 +3537,12 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/deep-sky/bulk` | deep-sky | `deep_sky_bulk_v1_deep_sky_bulk_post` |
 | `GET` | `/v1/deep-sky/list` | deep-sky | `deep_sky_list_v1_deep_sky_list_get` |
 | `POST` | `/v1/deep-sky/position` | deep-sky | `deep_sky_position_v1_deep_sky_position_post` |
+| `POST` | `/v1/derived-points/baker-vulcan` | derived-points | `baker_route_v1_derived_points_baker_vulcan_post` |
+| `POST` | `/v1/derived-points/baker-vulcan/from-longitudes` | derived-points | `baker_longitudes_route_v1_derived_points_baker_vulcan_from_longitudes_post` |
+| `GET` | `/v1/derived-points/catalog` | derived-points | `catalog_route_v1_derived_points_catalog_get` |
+| `POST` | `/v1/derived-points/priapus/mean` | derived-points | `mean_priapus_route_v1_derived_points_priapus_mean_post` |
+| `POST` | `/v1/derived-points/priapus/osculating` | derived-points | `osculating_priapus_route_v1_derived_points_priapus_osculating_post` |
+| `POST` | `/v1/derived-points/second-focus` | derived-points | `second_focus_route_v1_derived_points_second_focus_post` |
 | `POST` | `/v1/dignities/chart` | dignities | `dignities_chart_route_v1_dignities_chart_post` |
 | `POST` | `/v1/dignities/chart/condition` | dignities | `dignities_chart_condition_route_v1_dignities_chart_condition_post` |
 | `POST` | `/v1/dignities/chart/conditions` | dignities | `dignities_chart_conditions_route_v1_dignities_chart_conditions_post` |
@@ -3633,6 +3654,13 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/huber/intensity-at` | huber | `huber_intensity_at_route_v1_huber_intensity_at_post` |
 | `POST` | `/v1/hyleg/lilly-1647` | hyleg | `hyleg_lilly_1647_route_v1_hyleg_lilly_1647_post` |
 | `POST` | `/v1/hyleg/lilly-1647/alcocoden` | hyleg | `alcocoden_lilly_1647_route_v1_hyleg_lilly_1647_alcocoden_post` |
+| `POST` | `/v1/hypothetical/arta/from-longitudes` | hypothetical | `arta_inputs_route_v1_hypothetical_arta_from_longitudes_post` |
+| `POST` | `/v1/hypothetical/arta/osculating` | hypothetical | `arta_osculating_route_v1_hypothetical_arta_osculating_post` |
+| `GET` | `/v1/hypothetical/catalog` | hypothetical | `catalog_route_v1_hypothetical_catalog_get` |
+| `POST` | `/v1/hypothetical/orbit` | hypothetical | `orbit_route_v1_hypothetical_orbit_post` |
+| `POST` | `/v1/hypothetical/planet-nine-scenario` | hypothetical | `planet_nine_scenario_route_v1_hypothetical_planet_nine_scenario_post` |
+| `POST` | `/v1/hypothetical/proserpina` | hypothetical | `proserpina_route_v1_hypothetical_proserpina_post` |
+| `POST` | `/v1/hypothetical/selena` | hypothetical | `selena_route_v1_hypothetical_selena_post` |
 | `POST` | `/v1/jaimini/chart/condition` | jaimini | `jaimini_chart_condition_route_v1_jaimini_chart_condition_post` |
 | `POST` | `/v1/jaimini/chart/karakas` | jaimini | `jaimini_chart_karakas_route_v1_jaimini_chart_karakas_post` |
 | `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |
