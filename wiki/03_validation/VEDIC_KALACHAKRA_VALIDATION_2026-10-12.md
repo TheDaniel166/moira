@@ -292,3 +292,81 @@ The review repair and extension are locally complete and uncommitted. No push,
 release, tag, website or service deployment occurred. Canonical API/standard,
 fixture documentation and the remaining-work register are reconciled; generated
 publication inventories and wiki mirroring remain publication-stage work.
+
+## Markati context repair - 26 October 2026
+
+The preceding extension was committed locally as
+`affd8fd6478e3c827c46392e3eea1bd394322634`, then reviewed adversarially. One P1
+was reproduced: the pair-only Rao classifier marked ordinary Savya Cancer-to-Leo
+and Apasavya Leo-to-Cancer movement as Markati. Section 24.3.3(2) requires a
+temporary reversal. The original fixture's pair list and its consuming gati
+test shared that incomplete reading. No period arithmetic defect was identified.
+
+The user authorized this repair. Source Table 43 and section 24.3.3(2) were
+rechecked in the author's online textbook; the local PDF retains its recorded
+SHA-256. The new `rao_2000_markati_contexts.json` supplement distinguishes the
+two reversing contexts from their two ordinary counterparts. Its frozen hash is
+`9bded4c5fc07341c350dc5d5967fc657f9cce8b0d1ae104b2104cee6dc1e5450`.
+The independently derived test-input ordinals were checked against exact source
+arithmetic before freezing; an initial candidate's 54-degree ordinal was
+corrected to 5 (elapsed row 86/5 years, birth at row position 2).
+All three pre-existing JSON fixtures and their fingerprints remain unchanged.
+
+The runtime receives the source row position and reads its predecessor and
+successor using the admitted continuous-row owner. Only the central edge of
+`Vi Cn Le Ge` / `Ge Le Cn Vi` is Markati, for Savya / Apasavya respectively.
+Context is available across row boundaries and outside returned/clipped
+windows without emitting more periods. The independent oracle instead locates
+the occurrence in Table 43's 24-position ring. Its source-only check separately
+verifies the direction reversal and all four derived input/path mappings.
+
+Before changing runtime, the 27 targeted tests produced **13 failures and 14
+passes**: all ordinary-path negatives and the forged false-label HTTP check
+failed, while the positive reversals and independent supplement checks passed.
+After repair, the focused context/gati slice passed **29 tests**. Its exhaustive
+check covers all 144 source-row positions and 11,520 MD/AD transitions, including
+contexts across seams and outside the visible window. Module/facade and actual
+direct/chart-derived HTTP paths are tested at levels 1 and 2. A forged ordinary
+Markati result is rejected as a request-correlated invariant 500.
+
+The final twelve-module Kalachakra run passed **1,099 tests in 116.30 seconds**,
+with no failures/errors/skips, seven successful DE441 resource uses and one
+content probe. All 648 frozen Santhanam sequence/current cases still match.
+It used the same feature modules and strict environment settings in the command
+above, excluding the three general public-surface modules, with JUnit at
+`C:/dev/outputs/ved014-markati-repair-2026-10-26/feature.xml`.
+The original external review probes separately passed **16/16 in 14.38 seconds**;
+the three originally failing probes now pass without changing their expectations.
+
+```powershell
+# Original review probes, using the project harness and the same strict environment.
+$env:PYTHONPATH='C:\dev\moira;C:\dev\moira\tests'
+.\.venv\Scripts\python.exe -m pytest -c pyproject.toml -p tests.conftest `
+  C:/dev/outputs/ved014-adversarial-2026-10-26/test_review_probes.py `
+  --confcutdir=C:/dev/outputs/ved014-adversarial-2026-10-26 `
+  -o addopts=-ra -q --tb=short `
+  --junitxml=C:/dev/outputs/ved014-markati-repair-2026-10-26/adversarial.xml
+```
+
+Scoped Ruff and three-file engine docstring preflight passed. The API, backend
+standard, fixture documentation and remaining-work register now state the
+context requirement. Existing route/schema shapes and the unreleased Rao profile
+identity are retained; the discovery rule/decision descriptions are clarified.
+The P1 is closed locally. This repair is uncommitted/unpushed, with no version
+release, external-software comparison or deployment. Unrelated work is preserved.
+
+### Source-publication validation
+
+The user subsequently authorized commit and push. Upstream had already
+reconciled the extension into `main` at `146d495` with package version 6.10.2.
+The local editable/native build was refreshed and stale repository egg-info
+regenerated; package and distribution metadata now agree on 6.10.2.
+The same twelve-module feature command passed **1,099 tests in 136.78 seconds**
+on this reconciled source, with no failures/errors/skips, seven successful
+DE441 resource uses and all 648 Santhanam compatibility cases unchanged.
+JUnit is retained at
+`C:/dev/outputs/ved014-markati-publish-2026-10-26/feature.xml`.
+Scoped Ruff/docstring checks passed. The earlier uncommitted/unpushed statements
+are historical checkpoints. This authorized thirteen-path source-publication
+package does not release a version or deploy a service/site; exact commit and
+remote verification are recorded in the adjacent publication receipt.

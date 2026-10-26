@@ -8,6 +8,8 @@ DATA_PATH = Path(__file__).parents[1]/'fixtures/kalachakra/rao_2000_source_cases
 DATA = json.loads(DATA_PATH.read_text())
 SIGNS = DATA['signs'].split()
 WEIGHTS = dict(zip(SIGNS, DATA['weights']))
+GATI_PATH = DATA_PATH.with_name('rao_2000_markati_contexts.json')
+GATI_CONTEXTS = json.loads(GATI_PATH.read_text())['cases']
 
 
 def source_window(group, pada, position, count=9):
@@ -15,6 +17,20 @@ def source_window(group, pada, position, count=9):
     ring = DATA['rings'][group[0]].split()
     origin = (4*(int(group[1])-1)+pada-1)*9+position
     return tuple(ring[(origin+i)%24] for i in range(count))
+
+
+def source_gati(group, pada, position):
+    """Classify a ring occurrence; Markati's repeated pair needs source context."""
+    family = group[0]
+    ring_position = ((4*(int(group[1])-1)+pada-1)*9+position)%24
+    pair = source_window(group,pada,position,2)
+    for case in GATI_CONTEXTS:
+        if (family,ring_position) == (case['family'],case['source_ring_position']):
+            return case['classification']
+    for label,pairs in DATA['gati'][family].items():
+        if label != 'markati' and pair in map(tuple,pairs):
+            return label
+    return None
 
 
 def source_seed(longitude):
@@ -90,3 +106,28 @@ def test_all_memberships_rows_denominators_and_directed_gati():
 def test_source_fixture_is_frozen():
     fingerprint = '99075505715be0a25da0bdd2116e327474d19eee66b0c9918308885951e461bb'
     assert hashlib.sha256(DATA_PATH.read_bytes()).hexdigest() == fingerprint
+
+
+def test_markati_source_contexts_distinguish_reversal_from_regular_progression():
+    for family in ('S','A'):
+        ring = DATA['rings'][family].split()
+        cases = [c for c in GATI_CONTEXTS if c['family']==family]
+        assert len(cases)==2 and {c['classification'] for c in cases}=={None,'markati'}
+        pair = tuple(cases[0]['context'].split()[1:3])
+        positions = {i for i in range(24) if (ring[i],ring[(i+1)%24])==pair}
+        assert positions == {c['source_ring_position'] for c in cases}
+        for case in cases:
+            pos = case['source_ring_position']
+            context = tuple(ring[(pos+offset)%24] for offset in (-1,0,1,2))
+            assert context == tuple(case['context'].split())
+            # Independent zodiac-direction check of the printed temporary reversal.
+            steps = [(SIGNS.index(b)-SIGNS.index(a)+6)%12-6 for a,b in zip(context,context[1:])]
+            reversal = steps[0]*steps[1] < 0 and steps[1]*steps[2] < 0
+            assert reversal == (case['classification']=='markati')
+            seed = source_seed(F(case['moon_sidereal_lon']))
+            assert source_window(seed['group'],seed['pada'],seed['position']+case['md_source_ordinal']-1,4) == context
+            assert source_gati(seed['group'],seed['pada'],seed['position']+case['md_source_ordinal']) == case['classification']
+
+
+def test_markati_context_fixture_is_frozen():
+    assert hashlib.sha256(GATI_PATH.read_bytes()).hexdigest() == '9bded4c5fc07341c350dc5d5967fc657f9cce8b0d1ae104b2104cee6dc1e5450'

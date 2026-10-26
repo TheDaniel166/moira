@@ -14,7 +14,9 @@ from moira.kalachakra import (
 )
 from moira.kalachakra_policy import PROFILE_ID,RAO_PROFILE_ID
 from moira_server.serializers.kalachakra import serialize_sequence,serialize_current
-from tests.unit.test_kalachakra_rao_sources import DATA,SIGNS,WEIGHTS,source_seed,source_window
+from tests.unit.test_kalachakra_rao_sources import (
+    DATA,SIGNS,WEIGHTS,GATI_CONTEXTS,source_seed,source_window,source_gati,
+)
 
 
 def sequence(lon,levels=2):
@@ -133,19 +135,45 @@ def test_projected_endpoints_current_and_profile_preservation(basis):
 
 def test_directed_gati_belongs_to_selected_profile():
     seen = {'S':set(),'A':set()}
+    regular = {'S':set(),'A':set()}
     for group,members in DATA['groups'].items():
-        for pada in range(4):
-            r = sequence(float(F(10*((members[0]-1)*4+pada)+5,3)))
-            labels = {tuple(pair):name for name,pairs in DATA['gati'][group[0]].items() for pair in pairs}
-            for edge in r.transitions:
-                pair = (SIGNS[edge.source_sign_index],SIGNS[edge.destination_sign_index])
-                assert edge.rule_id == 'R2000_GATI' and not edge.conflict_ids
-                assert edge.classification == labels.get(pair)
-                assert edge.classification_status == ('classified' if pair in labels else 'not_classified_by_profile')
-                seen[group[0]].add(pair)
-        assert set(labels) <= seen[group[0]]
+        for pada in range(1,5):
+            start = F(10*((members[0]-1)*4+pada-1),3)
+            row = source_window(group,pada,0)
+            total = sum(WEIGHTS[s] for s in row)
+            elapsed = F(0)
+            for pos,sign in enumerate(row):
+                lon = float(start+F(10,3)*(elapsed+F(WEIGHTS[sign],2))/total)
+                r = sequence(lon)
+                assert r.birth.birth_row_position == pos
+                for edge in r.transitions:
+                    pair = (SIGNS[edge.source_sign_index],SIGNS[edge.destination_sign_index])
+                    label = source_gati(group,pada,pos+sum(edge.source_path))
+                    assert edge.rule_id == 'R2000_GATI' and not edge.conflict_ids
+                    assert edge.classification == label
+                    assert edge.classification_status == ('classified' if label else 'not_classified_by_profile')
+                    (seen if label else regular)[group[0]].add(pair)
+                elapsed += WEIGHTS[sign]
+    for family,readings in DATA['gati'].items():
+        assert {tuple(pair) for pairs in readings.values() for pair in pairs} <= seen[family]
+        assert {tuple(pair) for pair in readings['markati']} <= regular[family]
     old = kalachakra_sequence(KalachakraSeed('sidereal',0),profile_id=PROFILE_ID)
     assert any(e.classification_status=='unresolved_source_conflict' and e.conflict_ids==('KC-10',) for e in old.transitions)
+
+
+@pytest.mark.parametrize('case',GATI_CONTEXTS,ids=lambda c:c['id'])
+@pytest.mark.parametrize('levels',[1,2])
+def test_markati_context_at_md_and_ad_levels(case,levels):
+    r = sequence(case['moon_sidereal_lon'],levels)
+    assert Moira.kalachakra_sequence(object(),KalachakraSeed('sidereal',case['moon_sidereal_lon']),
+        profile_id=RAO_PROFILE_ID,levels=levels) == r
+    ordinal = case['md_source_ordinal']
+    paths = [(ordinal,)] + ([(0,ordinal)] if levels==2 else [])
+    for path in paths:
+        edge = next(e for e in r.transitions if e.source_path==path)
+        assert (SIGNS[edge.source_sign_index],SIGNS[edge.destination_sign_index]) == tuple(case['context'].split()[1:3])
+        assert edge.classification == case['classification']
+        assert edge.classification_status == ('classified' if case['classification'] else 'not_classified_by_profile')
 
 
 @pytest.mark.parametrize('field,value',[

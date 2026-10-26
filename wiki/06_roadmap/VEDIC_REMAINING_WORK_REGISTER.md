@@ -74,7 +74,7 @@ contract. VED-010 Lagna-strength composition is locally complete for its named p
 | --- | --- | --- | --- |
 | VED-012 | Locally complete for the selected 21 source entries: separate JP 7.14 and Raman no. 252 Navamsa profiles, fourteen BPHS wealth rules and five selected royal entries. Legacy admission, missing-motion evidence and applied-policy transport repairs are also complete. BPHS 39.35 needs source resolution of aspect targets/type; broader chapter-specific and unidentified Raman source leads remain separate extensions. | [Standard](../02_standards/YOGA_EXTENSION_STANDARD.md), [executed plan](VEDIC_YOGA_EXTENSION_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/YOGA_EXTENSION_VALIDATION_2026-10-12.md): 573 passing selected tests, 44 independent source cases across all public/HTTP paths, 144-chart regression and bounded resource-free cost. See sections 51-52 for closure and source publication; the former global docstring findings are resolved. | `LOCAL_COMPLETE`; authorized engine/wiki source-publication package in section 52; release/deployment separate |
 | VED-013 | Locally complete for three Rangacharya Chara recipes, separate optional calendar projection and BPHS/PVR/Rath Argala assessments. Existing Chara and valid legacy Argala arithmetic are preserved; direct-input and lineage/receipt repairs are complete. Full BPHS/PVR Chara, Narayana, Yogada and general Argala strength retain explicit admission gates. | [Source packet](VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md), [standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md), [executed seven-stage plan](VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md): 951 passing selected tests after three adversarial repairs, independent printed tables and boundary arithmetic, all public/HTTP surfaces and bounded cost. Source conflicts remain visible. See sections 54–57. | `LOCAL_COMPLETE` for the selected six profiles; original engine/wiki publication in section 55; validated repair publication in section 57; release/deployment separate |
-| VED-014 | Locally complete for `bphs_santhanam_longitude_row_cycle_v1` and `rao_2000_longitude_continuous_v1`: exact source arithmetic, profile-owned continuation/ADs/Deha-Jeeva/gati, explicit calendar clocks, reader-bound Moon composition, bounded active lookup and equally capable Python/facade/REST. Other traditions, deeper levels and eligibility evaluation remain separate capabilities. | [Source research](VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md), [original seven-stage plan](VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md), [backend standard](../02_standards/KALACHAKRA_DASHA_STANDARD.md), [API](../02_services/KALACHAKRA_DASHA_API.md) and [validation receipt](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md): latest extension 1,072 feature + 43 public-surface tests passed, seven real DE441 resource uses, independent Rao source arithmetic and 648 unchanged Santhanam transport cases. See section 61. | `LOCAL_COMPLETE` for both selected profiles; Rao extension not yet source-published; release/deployment separate |
+| VED-014 | Locally complete for `bphs_santhanam_longitude_row_cycle_v1` and `rao_2000_longitude_continuous_v1`: exact source arithmetic, profile-owned continuation/ADs/Deha-Jeeva/gati, explicit calendar clocks, reader-bound Moon composition, bounded active lookup and equally capable Python/facade/REST. Other traditions, deeper levels and eligibility evaluation remain separate capabilities. | [Source research](VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md), [original seven-stage plan](VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md), [backend standard](../02_standards/KALACHAKRA_DASHA_STANDARD.md), [API](../02_services/KALACHAKRA_DASHA_API.md) and [validation receipt](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md): latest Markati repair 1,099 feature tests and 16 adversarial probes passed, seven real DE441 resource uses, independent context evidence and 648 unchanged Santhanam transport cases. See sections 61-63. | `LOCAL_COMPLETE` for both selected profiles; authorized Markati source-publication package in section 63; release/deployment separate |
 | VED-015 | Completed local daily contract: local date/zone/location, sunrise-owned Vara, retained sunrise/sunset crossings, solved angular limb endings, repeated/skipped sunrise evidence, half-open coverage, and unavailable solar states. | [Daily engine](../../moira/daily_panchanga.py), curated root/facade/Vedic exports and `POST /v1/panchanga/day`; [source/policy/validation standard](../02_standards/DAILY_PANCHANGA_STANDARD.md). Three named sunrise conventions and existing ayanamsa choices are explicit. Lunar months/festivals remain separate scope. | `LOCAL_COMPLETE`; engine/wiki source published, release/deployment separate |
 | VED-016 | Source and admit special Lagnas as distinct products, beginning with selected Bhava/Hora/Ghati Lagna traditions. Define sunrise/elapsed-time ownership, units, sidereal frame and lineage differences; provide typed results and transport provenance. | No first-class Bhava/Hora/Ghati Lagna implementation was found in the inspected engine/server tree. Ordinary chart Lagna, vargas and Pancha Pakshi clock inputs do not supply these definitions. | `SOURCE_RESEARCH`, P3 |
 
@@ -1494,3 +1494,45 @@ remain sanitized 500 errors.
 Unrelated working-tree changes are preserved. The selected repair and extension
 are uncommitted; this checkpoint does not publish, release, deploy or modify a
 website. Generated publication inventories remain for the publication workflow.
+
+## 62. VED-014 adversarial Markati repair - 26 October 2026
+
+The user authorized a local commit and adversarial review of the extension.
+Commit `affd8fd6478e3c827c46392e3eea1bd394322634` contains that package and was
+not pushed. The review found one P1: Rao's sign-pair lookup also labelled
+ordinary Cancer/Leo progression as Markati. Its source definition requires
+temporary reversal in the surrounding sequence. Three probes reproduced the
+defect across both families and HTTP; the old pair-only oracle shared the error.
+
+The user then authorized repair. The classifier now receives source row position
+and reads the preceding/following occurrences, including beyond a returned or
+clipped window. Markati is limited to `Vi Cn Le Ge` in Savya and `Ge Le Cn Vi`
+in Apasavya. Normal `Ge Cn Le Vi` and `Vi Le Cn Ge` remain unclassified by this
+rule. Discovery exposes that distinction; Santhanam's KC-10 is unchanged.
+
+A separately sourced, frozen context supplement preserves the original fixture
+and corrects its incomplete Markati oracle. The [validation receipt](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md#markati-context-repair---26-october-2026)
+records 1,099 passing feature tests and all 16 passing original adversarial
+probes, with no failures/errors/skips. Coverage includes 144 source-row
+positions and 11,520 MD/AD transitions, direct and chart-derived HTTP at both
+depths, forged-result rejection, seven successful DE441 resource uses and 648
+unchanged Santhanam transport cases. The confirmed P1 is closed locally.
+
+The repair is uncommitted and unpushed; no release or deployment occurred.
+Unrelated work remains preserved. Feature counts and the remaining expansion
+boundaries in section 61 are unchanged.
+
+## 63. VED-014 Markati source-publication package - 26 October 2026
+
+The user authorized commit and push of the P1 repair. This package contains
+only the thirteen repair-owned engine, fixture, test and canonical documentation
+paths. The original extension commit `affd8fd` is already included in reconciled
+`main` at `146d495`; unrelated pending work and the nested wiki remain separate.
+The local/uncommitted statements in sections 61-62 describe their earlier
+checkpoints, not this publication package.
+
+Publication validation uses the reconciled 6.10.2 source and rebuilt editable
+installation. The scoped validation and remote-verification receipt is retained
+under `C:/dev/outputs/ved014-markati-publish-2026-10-26/`. This is engine source
+publication; it does not tag or publish a package release, mirror the wiki,
+regenerate release inventories, or deploy the website/service.

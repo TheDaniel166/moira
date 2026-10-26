@@ -21,6 +21,14 @@ record membership correction, source choices, clock and product-bound decisions.
 Rao's own gati classification does not overwrite the Santhanam conflict record.
 The 2018 Rao reformulation is a separate research candidate.
 
+Rao 24.3.3(2) defines Markati by temporary reversal, so a sign pair alone is
+insufficient. The occurrence's full source neighbors must establish
+`Vi Cn Le Ge` (Savya) or `Ge Le Cn Vi` (Apasavya); ordinary progression through
+the same central pair remains unclassified by this rule. Row position, not
+the visible window's endpoints, determines that context. The separate frozen
+Markati supplement and ring-position oracle validate both readings and their
+absence in ordinary progression. Santhanam's KC-10 remains unresolved.
+
 `_kalachakra_recipes.py` owns immutable admitted recipe identities and occurrence
 progression. Namespace-free rows belong to Santhanam; `R2000/` rows belong to
 Rao. Both constructors and aggregate validators enforce that ownership, weights,

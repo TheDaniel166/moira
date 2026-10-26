@@ -139,7 +139,7 @@ RAO_RULES = (
     KalachakraRule("R2000_CONTINUATION", ("L02",), "Rule 4: advance through four padas then the other subgroup in the same family"),
     KalachakraRule("R2000_AD", ("L02",), "Rule 5 / Example 97: nine forward occurrences from parent; recompute denominator; full axis before clipping"),
     KalachakraRule("R2000_DEHA_JEEVA", ("L02",), "24.3.2: first/ninth birth MDs, reversed in Apasavya"),
-    KalachakraRule("R2000_GATI", ("L02",), "24.3.3 directed gati readings, including continuous row seams; no predictive prose"),
+    KalachakraRule("R2000_GATI", ("L02",), "24.3.3 directed gati readings, including continuous row seams; Markati requires the occurrence's temporary-reversal context; no predictive prose"),
 )
 _RAO_DECISIONS = (
     ("Table 45 vs L01/L09; KC-03", "Revati=S1, Uttara Bhadrapada=S2; retain explicit membership correction"),
@@ -147,7 +147,7 @@ _RAO_DECISIONS = (
     ("Rule 4 and Example 96", "Continue through rows/subgroups in the same family, not physical nakshatra order"),
     ("Rule 5 / Example 97 / footnote 66", "Nine forward ADs; recomputed denominator; full-parent birth clipping"),
     ("24.3.2", "Deha/Jeeva reference is birth_nine_md_window"),
-    ("24.3.3 vs KC-10", "Rao directed gati readings do not resolve Santhanam's conflicting reading"),
+    ("24.3.3 vs KC-10", "Markati requires Vi-Cn-Le-Ge in Savya or Ge-Le-Cn-Vi in Apasavya, not the same pair in ordinary progression; Rao does not resolve Santhanam's conflicting reading"),
     ("Footnote 64 vs Exercise 34 answer", "Nine-MD product; retain tenth printed entry outside admitted coverage"),
     ("Footnote 65", "360 is the author's preferred clock; explicit 365.25 remains a Moira projection, not textbook date parity"),
     ("Chapter 24 and separately identified later schools", "Eligibility not evaluated; no prediction prose; Rao 2018/Rath remain separate"),

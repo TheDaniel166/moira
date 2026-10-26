@@ -86,7 +86,7 @@ def birth_window(row_id, position):
     return sum(WEIGHTS[s] for s in signs),deha,jeeva,recipe.deha_jeeva_reference
 
 
-def transition_reading(row_id, pair, seam):
+def transition_reading(row_id, source_position, pair, seam):
     """Classify only the source owner's directed edges, with explicit conflict status."""
     recipe = recipe_for_row(row_id)
     if recipe.profile_id == PROFILE_ID:
@@ -98,9 +98,19 @@ def transition_reading(row_id, pair, seam):
         rule_id = "KC_GATI"
     else:
         family = row_id[len(recipe.namespace):][0]
-        labels = ({(5,3):"mandooki",(4,2):"mandooki",(11,7):"simhavlokan",(8,0):"simhavlokan",(3,4):"markati"}
+        labels = ({(5,3):"mandooki",(4,2):"mandooki",(11,7):"simhavlokan",(8,0):"simhavlokan"}
             if family == 'S' else
-            {(3,5):"mandooki",(2,4):"mandooki",(7,11):"simhavlokan",(0,8):"simhavlokan",(4,3):"markati"})
+            {(3,5):"mandooki",(2,4):"mandooki",(7,11):"simhavlokan",(0,8):"simhavlokan"})
+        # Rao 24.3.3(2): Vi-Cn-Le-Ge / Ge-Le-Cn-Vi are temporary
+        # reversals. The central pairs also occur in ordinary progression.
+        # Read the source neighbours even outside a returned/clipped window.
+        reversal = (5,3,4,2) if family == 'S' else (2,4,3,5)
+        if pair == reversal[1:3]:
+            before_row,before_pos,_ = advance(row_id,source_position,-1)
+            after_row,after_pos,_ = advance(row_id,source_position,2)
+            context = (source_row(before_row)[before_pos],*pair,source_row(after_row)[after_pos])
+            if context == reversal:
+                labels[pair] = "markati"
         rule_id = "R2000_GATI"
     label = labels.get(pair)
     return ("classified" if label else "not_classified_by_profile"),label,(),rule_id

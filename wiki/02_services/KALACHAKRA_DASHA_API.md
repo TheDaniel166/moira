@@ -157,6 +157,15 @@ row seams can be classified under that source. Santhanam retains `KC_GATI`, its
 unclassified row seams and unresolved KC-10 Cancer/Leo readings. Classification
 metadata does not generate event predictions. Eligibility remains `not_evaluated`.
 
+Markati requires occurrence context: `Vi Cn Le Ge` in Savya and `Ge Le Cn Vi`
+in Apasavya. The central transition is a temporary reversal in those sequences.
+The same pairs in ordinary `Ge Cn Le Vi` / `Vi Le Cn Ge` progression return
+`classification=null` and `classification_status=not_classified_by_profile`.
+The classifier reads neighbors from the selected source sequence, including
+across row seams and outside the returned or birth-clipped window; it does not
+emit extra periods. This corrects the unreleased Rao extension's pair-only
+Markati classification in both MD and AD transitions.
+
 The source decisions `R2000-01` through `R2000-09` are discoverable. In particular,
 the profile explicitly carries the reconciled KC-03 star membership rather than
 silently copying Table 45's defective heading. Footnote 64 governs the nine-MD

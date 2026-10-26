@@ -122,7 +122,7 @@ def _components(birth, levels, projection):
         for left,right in zip(siblings,siblings[1:]):
             pair = (left.sign_index,right.sign_index)
             seam = left.row_position == 8 and right.row_position == 0
-            status,label,conflicts,rule = transition_reading(left.row_id,pair,seam)
+            status,label,conflicts,rule = transition_reading(left.row_id,left.row_position,pair,seam)
             boundary = left.full_years.end
             transitions.append(KalachakraTransition(left.path,right.path,*pair,
                 left.row_position,right.row_position,len(left.path),boundary,

@@ -37,3 +37,21 @@ SHA-256:
 This is compatibility evidence generated from the previous engine, not an
 independent source or astronomy oracle. Neither fixture may be regenerated
 from the new runtime to resolve a disagreement.
+
+## Markati context supplement, 26 October 2026
+
+The original Rao fixture's pair-only `gati` entries are incomplete as a
+Markati oracle: the same directed pair appears in ordinary and reversing
+portions of Table 43. Preserve that historical file and its fingerprint.
+`rao_2000_markati_contexts.json` supplies the missing context from Table 43
+and section 24.3.3(2), printed pages 290 and 297. SHA-256:
+`9bded4c5fc07341c350dc5d5967fc657f9cce8b0d1ae104b2104cee6dc1e5450`.
+
+The four cases distinguish two source-described reversals from two ordinary
+progressions. Ring positions, input longitudes and output ordinals are labelled
+as derived evidence. The independent source test checks the four-sign contexts,
+their zodiac directions and the derived input/path mapping before comparison
+with runtime output. The runtime uses neighboring source rows; the oracle
+uses the independently transcribed 24-position ring. The supplement was frozen
+before the runtime repair, and does not change existing balance, period or
+Santhanam regression fixtures.

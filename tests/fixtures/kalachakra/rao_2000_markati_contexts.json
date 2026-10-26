@@ -1,0 +1,38 @@
+{
+  "evidence_class": "Source-context supplement frozen before the Markati repair; not generated from engine output",
+  "source": {
+    "id": "L02",
+    "title": "PVR Narasimha Rao, Vedic Astrology: An Integrated Approach, 2000",
+    "sha256": "2971851a3cda30929cf5b1ec56b88902bd4a141c8d5479599573ddf1c5f78242",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "coordinates": "Table 43, printed 290; section 24.3.3(2), printed 297",
+    "rule": "Markati requires a temporary reversal in the surrounding sequence. The same sign pair also occurs in ordinary progression."
+  },
+  "position_basis": "Zero-based source occurrence in the 24-sign Table 43 family ring; context is predecessor, source, destination, successor",
+  "cases": [
+    {
+      "id": "savya_ordinary", "family": "S", "source_ring_position": 3,
+      "context": "Ge Cn Le Vi", "classification": null,
+      "moon_sidereal_lon": 0.0, "md_source_ordinal": 3,
+      "evidence": "Context transcribed from Table 43; absence of reversal follows section 24.3.3(2); longitude and path are derived test inputs"
+    },
+    {
+      "id": "savya_reversal", "family": "S", "source_ring_position": 15,
+      "context": "Vi Cn Le Ge", "classification": "markati",
+      "moon_sidereal_lon": 4.0, "md_source_ordinal": 4,
+      "evidence": "Context and Markati reading in section 24.3.3(2); longitude and path are derived test inputs"
+    },
+    {
+      "id": "apasavya_reversal", "family": "A", "source_ring_position": 7,
+      "context": "Ge Le Cn Vi", "classification": "markati",
+      "moon_sidereal_lon": 40.0, "md_source_ordinal": 7,
+      "evidence": "Context and Markati reading in section 24.3.3(2); longitude and path are derived test inputs"
+    },
+    {
+      "id": "apasavya_ordinary", "family": "A", "source_ring_position": 19,
+      "context": "Vi Le Cn Ge", "classification": null,
+      "moon_sidereal_lon": 54.0, "md_source_ordinal": 5,
+      "evidence": "Context transcribed from Table 43; absence of reversal follows section 24.3.3(2); longitude and path are derived test inputs"
+    }
+  ]
+}

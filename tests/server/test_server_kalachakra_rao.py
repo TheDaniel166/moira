@@ -1,5 +1,6 @@
 """Rao discovery, actual HTTP parity, strict admission and profile isolation."""
 from fractions import Fraction as F
+from types import SimpleNamespace
 import math
 import pytest
 from fastapi.testclient import TestClient
@@ -15,7 +16,7 @@ from moira_server.models.kalachakra import KalachakraSequenceResponse
 from moira_server.serializers.kalachakra import serialize_sequence,serialize_current
 from tests.server.test_server_kalachakra import client as _client_fixture
 from tests.unit.test_kalachakra_astronomy import fake_astronomy as _astronomy_fixture
-from tests.unit.test_kalachakra_rao_sources import DATA,SIGNS
+from tests.unit.test_kalachakra_rao_sources import DATA,SIGNS,GATI_CONTEXTS
 
 client = _client_fixture
 fake_astronomy = _astronomy_fixture
@@ -135,6 +136,43 @@ def test_catalogue_and_openapi_share_profile_contract(client):
     assert 97 in schema['PeriodResponse']['properties']['denominator']['enum']
     assert set(schema['BirthResponse']['properties']['deha_jeeva_reference']['enum'])=={'natal_row','birth_nine_md_window'}
     assert schema['KalachakraSequenceResponse']['properties']['generated_node_count']['enum']==[9,90]
+
+
+@pytest.mark.parametrize('case',GATI_CONTEXTS,ids=lambda c:c['id'])
+@pytest.mark.parametrize('levels',[1,2])
+@pytest.mark.parametrize('endpoint',['/sequence','/chart/sequence'])
+def test_markati_requires_source_context_over_http(client,fake_astronomy,monkeypatch,case,levels,endpoint):
+    lon = case['moon_sidereal_lon']
+    if endpoint == '/chart/sequence':
+        # Keep the real composition owner with controlled Moon/clock inputs.
+        monkeypatch.setattr('moira._kalachakra_astronomy.planet_at',
+            lambda *a,**kw:SimpleNamespace(longitude=lon+23.8))
+        request = {'profile_id':RAO_PROFILE_ID,'birth_datetime':'2000-01-01T12:00:00Z',
+            'ayanamsa_system':'Lahiri','projection':{'year_basis':'savana_360'},'levels':levels}
+    else:
+        request = {**payload(lon,projected=True),'levels':levels}
+    response = client.post(BASE+endpoint,json=request)
+    assert response.status_code==200,response.text
+    ordinal = case['md_source_ordinal']
+    paths = [[ordinal]] + ([[0,ordinal]] if levels==2 else [])
+    for path in paths:
+        edge = next(e for e in response.json()['transitions'] if e['source_path']==path)
+        assert [SIGNS[edge['source_sign_index']],SIGNS[edge['destination_sign_index']]] == case['context'].split()[1:3]
+        assert edge['rule_id']=='R2000_GATI'
+        assert edge['classification']==case['classification']
+        assert edge['classification_status']==('classified' if case['classification'] else 'not_classified_by_profile')
+
+
+def test_forged_ordinary_markati_is_sanitized_500(client,monkeypatch):
+    result = kalachakra_sequence(KalachakraSeed('sidereal',0),profile_id=RAO_PROFILE_ID)
+    edge = next(e for e in result.transitions if e.source_path==(3,))
+    object.__setattr__(edge,'classification','markati')
+    object.__setattr__(edge,'classification_status','classified')
+    monkeypatch.setattr('moira_server.routers.kalachakra.compute_sequence',lambda *a,**kw:result)
+    response = client.post(BASE+'/sequence',json=payload(0))
+    assert response.status_code==500,f'unexpected HTTP {response.status_code}'
+    assert response.json()['error_code']=='kalachakra_internal_invariant'
+    assert response.json()['request_id']==response.headers['X-Request-ID']
 
 
 @pytest.mark.requires_ephemeris
