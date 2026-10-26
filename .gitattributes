@@ -21,6 +21,8 @@ tests/fixtures/small_body_release_manifests/*.json text eol=lf
 
 # VED-014 source admission records this fixture's exact SHA-256.
 tests/fixtures/kalachakra/source_cases.json text eol=lf
+tests/fixtures/kalachakra/rao_2000_source_cases.json text eol=lf
+tests/fixtures/kalachakra/santhanam_compatibility_2026_10_26.json text eol=lf
 
 # VED-017 binds the validation specification's byte digest. Preserve retained
 # primary/benchmark evidence across Windows and POSIX publication checkouts.

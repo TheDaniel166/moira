@@ -2,7 +2,7 @@
 
 **Status:** Active documentation register; implementation requires a separately authorized work package.
 **Last reconciled:** 12 October 2026.
-**Baseline:** engine `main`, version 6.9.9. Sections 36–38 retain the source-published adversarial repair checkpoint; sections 39–44 record the selected MC marriage delivery and both published performance passes. Section 45 preserves the four-area research checkpoint. Sections 46–47 record the selected housing/Vastu, commerce, travel and VV/KP marriage implementation and source publication. Section 48 records VED-017's bounded Gochar windows and final local engine/facade/REST acceptance. Section 51 closes the selected 21-entry VED-012 yoga package across engine/facade/REST. Section 54 closes VED-013's selected three Chara recipes and three Argala assessments locally. Section 59 closes VED-014's named Santhanam/BPHS Kalachakra profile locally. Sixteen of 24 stable feature packages have reached their selected delivery checkpoints; eight remain open/bounded. Release and deployment remain separate.
+**Baseline:** engine `main`, version 6.9.9. Sections 36–38 retain the source-published adversarial repair checkpoint; sections 39–44 record the selected MC marriage delivery and both published performance passes. Section 45 preserves the four-area research checkpoint. Sections 46–47 record the selected housing/Vastu, commerce, travel and VV/KP marriage implementation and source publication. Section 48 records VED-017's bounded Gochar windows and final local engine/facade/REST acceptance. Section 51 closes the selected 21-entry VED-012 yoga package across engine/facade/REST. Section 54 closes VED-013's selected three Chara recipes and three Argala assessments locally. Section 59 closes VED-014's named Santhanam/BPHS Kalachakra profile locally; section 61 records the subsequent Rao 2000 extension and profile isolation on the 6.10.1 working tree. Sixteen of 24 stable feature packages have reached their selected delivery checkpoints; eight remain open/bounded. Release and deployment remain separate.
 **Scope:** Moira engine, curated Python surfaces, REST contracts, source evidence and validation. Website and Urania adoption are separate product work.
 
 This is the current index of remaining Vedic work. It supersedes the Vedic backlog claims in the [original completion roadmap](vedic_jyotish_completion.md), [Phase 2 gap register](vedic_jyotish_phase2_gaps.md), [paused Tier 2 tracker](TIER2_VEDIC_WORK_TRACKER.md), the Vedic entries in the [frontiers register](ENGINE_FRONTIERS_AND_POLISH_REGISTER.md), and section 6.2 of the [August coverage audit](../07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md). Those records remain historical evidence, including their source leads and earlier pauses.
@@ -74,7 +74,7 @@ contract. VED-010 Lagna-strength composition is locally complete for its named p
 | --- | --- | --- | --- |
 | VED-012 | Locally complete for the selected 21 source entries: separate JP 7.14 and Raman no. 252 Navamsa profiles, fourteen BPHS wealth rules and five selected royal entries. Legacy admission, missing-motion evidence and applied-policy transport repairs are also complete. BPHS 39.35 needs source resolution of aspect targets/type; broader chapter-specific and unidentified Raman source leads remain separate extensions. | [Standard](../02_standards/YOGA_EXTENSION_STANDARD.md), [executed plan](VEDIC_YOGA_EXTENSION_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/YOGA_EXTENSION_VALIDATION_2026-10-12.md): 573 passing selected tests, 44 independent source cases across all public/HTTP paths, 144-chart regression and bounded resource-free cost. See sections 51-52 for closure and source publication; the former global docstring findings are resolved. | `LOCAL_COMPLETE`; authorized engine/wiki source-publication package in section 52; release/deployment separate |
 | VED-013 | Locally complete for three Rangacharya Chara recipes, separate optional calendar projection and BPHS/PVR/Rath Argala assessments. Existing Chara and valid legacy Argala arithmetic are preserved; direct-input and lineage/receipt repairs are complete. Full BPHS/PVR Chara, Narayana, Yogada and general Argala strength retain explicit admission gates. | [Source packet](VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md), [standard](../02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md), [executed seven-stage plan](VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md) and [validation receipt](../03_validation/VEDIC_CHARA_ARGALA_VALIDATION_2026-10-12.md): 951 passing selected tests after three adversarial repairs, independent printed tables and boundary arithmetic, all public/HTTP surfaces and bounded cost. Source conflicts remain visible. See sections 54–57. | `LOCAL_COMPLETE` for the selected six profiles; original engine/wiki publication in section 55; validated repair publication in section 57; release/deployment separate |
-| VED-014 | Locally complete for `bphs_santhanam_longitude_row_cycle_v1`: exact source arithmetic, nine occurrence-aware MDs and optional full-parent ADs, explicit calendar clocks, reader-bound Moon composition, bounded active lookup and equally capable Python/facade/REST. Competing traditions, deeper levels, full gati taxonomy and eligibility evaluation remain separate capabilities. | [Source research](VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md), [executed seven-stage plan](VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md), [backend standard](../02_standards/KALACHAKRA_DASHA_STANDARD.md), [API](../02_services/KALACHAKRA_DASHA_API.md) and [validation receipt](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md): 249 feature + 545 regression tests passed, including real DE441 and HTTP parity. | `LOCAL_COMPLETE`; publication/release/deployment separate |
+| VED-014 | Locally complete for `bphs_santhanam_longitude_row_cycle_v1` and `rao_2000_longitude_continuous_v1`: exact source arithmetic, profile-owned continuation/ADs/Deha-Jeeva/gati, explicit calendar clocks, reader-bound Moon composition, bounded active lookup and equally capable Python/facade/REST. Other traditions, deeper levels and eligibility evaluation remain separate capabilities. | [Source research](VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md), [original seven-stage plan](VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md), [backend standard](../02_standards/KALACHAKRA_DASHA_STANDARD.md), [API](../02_services/KALACHAKRA_DASHA_API.md) and [validation receipt](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md): latest extension 1,072 feature + 43 public-surface tests passed, seven real DE441 resource uses, independent Rao source arithmetic and 648 unchanged Santhanam transport cases. See section 61. | `LOCAL_COMPLETE` for both selected profiles; Rao extension not yet source-published; release/deployment separate |
 | VED-015 | Completed local daily contract: local date/zone/location, sunrise-owned Vara, retained sunrise/sunset crossings, solved angular limb endings, repeated/skipped sunrise evidence, half-open coverage, and unavailable solar states. | [Daily engine](../../moira/daily_panchanga.py), curated root/facade/Vedic exports and `POST /v1/panchanga/day`; [source/policy/validation standard](../02_standards/DAILY_PANCHANGA_STANDARD.md). Three named sunrise conventions and existing ayanamsa choices are explicit. Lunar months/festivals remain separate scope. | `LOCAL_COMPLETE`; engine/wiki source published, release/deployment separate |
 | VED-016 | Source and admit special Lagnas as distinct products, beginning with selected Bhava/Hora/Ghati Lagna traditions. Define sunrise/elapsed-time ownership, units, sidereal frame and lineage differences; provide typed results and transport provenance. | No first-class Bhava/Hora/Ghati Lagna implementation was found in the inspected engine/server tree. Ordinary chart Lagna, vargas and Pancha Pakshi clock inputs do not supply these definitions. | `SOURCE_RESEARCH`, P3 |
 
@@ -1452,3 +1452,45 @@ and [compatibility notes](../03_release/COMPATIBILITY_NOTES_6.10.0.md) define th
 shipped scope. Separate unfinished natal-discovery/light-box work is excluded;
 website application deployment remains separate. Earlier local-only statements
 in sections 58-59 describe those historical checkpoints.
+
+## 61. VED-014 profile separation and Rao 2000 extension - 26 October 2026
+
+After the focused review and error-classification repair, the user authorized
+profile separation and the named Rao 2000 extension together. Both selected
+profiles are locally complete across module/root/Vedic/facade exports, Moira
+methods, the four calculation routes and profile discovery. No additional
+numbered package is closed: **sixteen delivered / eight open or bounded**.
+
+Immutable profile recipes own row namespaces, continuation, AD denominators,
+Deha/Jeeva reference, directed gati and source decisions. Exact intervals,
+full-parent clipping, explicit projection, astronomical composition and active
+lookup share the existing engine. Rao uses continuous family rows and forward
+nine-sign AD windows; Santhanam retains its natal-row behavior and unresolved
+KC-10 reading. Constructors, aggregate validation, serializers and REST schemas
+reject mixed identities and unsupported hybrids.
+
+Rao chapter 24 was rechecked against the author's online text and local PDF,
+including visual source-page checks. Decisions `R2000-01` through `R2000-09`
+retain the KC-03 membership correction, source/product bounds and clock
+distinction. Examples 95-97 and Exercise 34 are frozen separately from derived
+fractions; the independent oracle traverses Table 43's 24-position rings.
+
+The [dated validation extension](../03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md#rao-2000-extension---26-october-2026)
+records **1,115 passing tests, no failures/errors/skips**: 1,072 Kalachakra and
+43 public-surface/discovery checks, with seven successful DE441 resource uses.
+All 648 frozen pre-extension Santhanam sequence/current cases remain identical.
+Focused Ruff/docstring checks, three executed API examples, doc consistency,
+workflow syntax and Python 3.10 grammar checks passed. Actual Python 3.10 runtime
+validation is wired in CI and was not executed locally.
+
+Remaining expansion is explicit: Sastri's pada-sign school, deeper periods,
+source-specific eligibility, other gati traditions, Rao 2018/Rath alternatives
+and version/settings-pinned external-software comparison. No pinned comparator
+export was available; source arithmetic and same-engine DE441 composition are
+not presented as external-software or predictive validation. The astronomy
+repair also preserves missing-anchor 503 responses while internal lookup defects
+remain sanitized 500 errors.
+
+Unrelated working-tree changes are preserved. The selected repair and extension
+are uncommitted; this checkpoint does not publish, release, deploy or modify a
+website. Generated publication inventories remain for the publication workflow.

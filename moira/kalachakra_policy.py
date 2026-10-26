@@ -5,6 +5,10 @@ from types import MappingProxyType
 
 PROFILE_ID = "bphs_santhanam_longitude_row_cycle_v1"
 VERSION = "ved014.1"
+RAO_PROFILE_ID = "rao_2000_longitude_continuous_v1"
+RAO_VERSION = "ved014.rao2000.1"
+CATALOGUE_VERSION = "ved014.2"
+PROFILE_IDS = (PROFILE_ID, RAO_PROFILE_ID)
 SIGNS = ("Ar", "Ta", "Ge", "Cn", "Le", "Vi", "Li", "Sc", "Sg", "Cp", "Aq", "Pi")
 RULERS = ("Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter")
 WEIGHTS = (7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10)
@@ -58,6 +62,13 @@ class KalachakraProfile:
     admission_status: str
     selectable: bool
     description: str
+    profile_version: str | None = None
+    source_ids: tuple[str, ...] = ()
+    rule_ids: tuple[str, ...] = ()
+    conflict_ids: tuple[str, ...] = ()
+    row_namespace: str | None = None
+    continuation: str | None = None
+    deha_jeeva_reference: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,22 +132,52 @@ CONFLICTS = tuple(KalachakraConflict(f"KC-{i:02}", *text) for i,text in enumerat
 RULE_IDS = tuple(r.rule_id for r in RULES)
 CONFLICT_IDS = tuple(c.conflict_id for c in CONFLICTS)
 
+RAO_RULES = (
+    KalachakraRule("R2000_ROWS", ("L01","L02","L09"), "Reconciled memberships (KC-03); L02 Tables 43-48 and weight-derived row totals"),
+    KalachakraRule("R2000_WEIGHTS", ("L02",), "Table 48 seven classical rulers' sign years"),
+    KalachakraRule("R2000_BALANCE", ("L02",), "Chapter 24 rules 1-3: elapsed longitude fraction of natal row"),
+    KalachakraRule("R2000_CONTINUATION", ("L02",), "Rule 4: advance through four padas then the other subgroup in the same family"),
+    KalachakraRule("R2000_AD", ("L02",), "Rule 5 / Example 97: nine forward occurrences from parent; recompute denominator; full axis before clipping"),
+    KalachakraRule("R2000_DEHA_JEEVA", ("L02",), "24.3.2: first/ninth birth MDs, reversed in Apasavya"),
+    KalachakraRule("R2000_GATI", ("L02",), "24.3.3 directed gati readings, including continuous row seams; no predictive prose"),
+)
+_RAO_DECISIONS = (
+    ("Table 45 vs L01/L09; KC-03", "Revati=S1, Uttara Bhadrapada=S2; retain explicit membership correction"),
+    ("Tables 44-48", "Row totals derive from weights; S2 totals 100,85,83,86"),
+    ("Rule 4 and Example 96", "Continue through rows/subgroups in the same family, not physical nakshatra order"),
+    ("Rule 5 / Example 97 / footnote 66", "Nine forward ADs; recomputed denominator; full-parent birth clipping"),
+    ("24.3.2", "Deha/Jeeva reference is birth_nine_md_window"),
+    ("24.3.3 vs KC-10", "Rao directed gati readings do not resolve Santhanam's conflicting reading"),
+    ("Footnote 64 vs Exercise 34 answer", "Nine-MD product; retain tenth printed entry outside admitted coverage"),
+    ("Footnote 65", "360 is the author's preferred clock; explicit 365.25 remains a Moira projection, not textbook date parity"),
+    ("Chapter 24 and separately identified later schools", "Eligibility not evaluated; no prediction prose; Rao 2018/Rath remain separate"),
+)
+RAO_CONFLICTS = tuple(KalachakraConflict(f"R2000-{i:02}", *text) for i,text in enumerate(_RAO_DECISIONS,1))
+RAO_RULE_IDS = tuple(r.rule_id for r in RAO_RULES) + ("KC_PROJECTION","KC_BOUND")
+RAO_CONFLICT_IDS = ("KC-03",) + tuple(c.conflict_id for c in RAO_CONFLICTS)
+
 
 def kalachakra_profiles() -> KalachakraCatalogue:
-    """Discover the one admitted recipe and explicitly non-executable candidates."""
+    """Discover two named recipes and explicitly non-executable candidates."""
     from .sidereal import Ayanamsa
+    from ._kalachakra_recipes import RECIPES
     candidates = (
-        ("candidate_rao_2000_continuous", "Rao 2000 continuous traversal and recomputed AD denominator"),
         ("candidate_sastri_pada_sign", "JP/Sastri pada-sign MD school"),
         ("candidate_rao_2018", "Rao later reformulation, separate from his 2000 profile"),
         ("candidate_rath_alternatives", "Rath's named continuation alternatives"),
         ("candidate_software_listed", "Software-listed variants without a complete reviewed recipe"),
     )
-    return KalachakraCatalogue(VERSION,
-        (KalachakraProfile(PROFILE_ID, "admitted_bounded", True,
-            "BPHS/Santhanam longitude balance, natal-row repetition and cyclic ADs"),) +
+    descriptions = (
+        "BPHS/Santhanam longitude balance, natal-row repetition and cyclic ADs",
+        "Rao 2000 longitude balance, continuous family rows and recomputed AD denominators",
+    )
+    profiles = tuple(KalachakraProfile(key, "admitted_bounded", True, description,
+        RECIPES[key].version, RECIPES[key].source_ids, RECIPES[key].rule_ids,
+        RECIPES[key].conflict_ids, RECIPES[key].namespace, RECIPES[key].continuation,
+        RECIPES[key].deha_jeeva_reference) for key,description in zip(PROFILE_IDS,descriptions))
+    return KalachakraCatalogue(CATALOGUE_VERSION, profiles +
         tuple(KalachakraProfile(k,"research_candidate",False,d) for k,d in candidates),
-        SOURCES, RULES, CONFLICTS,tuple(Ayanamsa.ALL))
+        SOURCES, RULES+RAO_RULES, CONFLICTS+RAO_CONFLICTS,tuple(Ayanamsa.ALL))
 
 
 def _validate_catalogue():

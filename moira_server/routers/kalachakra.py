@@ -1,4 +1,4 @@
-"""Five bounded, source-defined Kalachakra routes with engine-owned semantics."""
+"""Five bounded Kalachakra routes sharing the engine's named profile semantics."""
 from fastapi import APIRouter, Depends
 from moira import Moira
 from moira.kalachakra import kalachakra_profiles
@@ -21,7 +21,7 @@ router = APIRouter(prefix='/v1/dasha/kalachakra',tags=['kalachakra-dasha'],respo
 
 @router.get('/profiles',response_model=KalachakraCatalogueResponse)
 def profiles():
-    """Discover one admitted profile, source decisions and non-selectable candidates."""
+    """Discover admitted profiles, source decisions and non-selectable candidates."""
     return serialize_catalogue(kalachakra_profiles())
 
 

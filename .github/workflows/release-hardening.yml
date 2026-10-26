@@ -107,12 +107,13 @@ jobs:
           from moira_server.models.timelords import DecennialNatalRequest
           from moira_server.models.kalachakra import KalachakraSequenceRequest
 
-          kalachakra = KalachakraSequenceRequest.model_validate({
-              "profile_id": "bphs_santhanam_longitude_row_cycle_v1",
-              "seed": {"basis": "sidereal", "moon_sidereal_lon": 45.8},
-              "levels": 2,
-          })
-          assert kalachakra.levels == 2
+          for profile_id in ("bphs_santhanam_longitude_row_cycle_v1", "rao_2000_longitude_continuous_v1"):
+              kalachakra = KalachakraSequenceRequest.model_validate({
+                  "profile_id": profile_id,
+                  "seed": {"basis": "sidereal", "moon_sidereal_lon": 45.8},
+                  "levels": 2,
+              })
+              assert kalachakra.levels == 2
           try:
               KalachakraSequenceRequest.model_validate({
                   "profile_id": "bphs_santhanam_longitude_row_cycle_v1",
@@ -228,8 +229,12 @@ jobs:
             tests/unit/test_kalachakra_projection.py \
             tests/unit/test_kalachakra_astronomy.py \
             tests/unit/test_kalachakra_public_api.py \
+            tests/unit/test_kalachakra_rao_sources.py \
+            tests/unit/test_kalachakra_rao.py \
+            tests/unit/test_kalachakra_compatibility.py \
             tests/server/test_server_kalachakra.py \
             tests/server/test_server_kalachakra_openapi.py \
+            tests/server/test_server_kalachakra_rao.py \
             -q -m "not requires_ephemeris"
 
       - name: Run source-defined yoga engine and REST gates

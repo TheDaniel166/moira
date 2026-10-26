@@ -1,0 +1,3895 @@
+{
+  "evidence_class": "pre-refactor implementation regression, not source authority",
+  "baseline_commit": "caec99b",
+  "profile_id": "bphs_santhanam_longitude_row_cycle_v1",
+  "cases": [
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e398516f52a918e6e956e7f9e0a7e2a7fd019e64b524f9a62c8156ab03e6bcbb"
+    },
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "af212e6bfb433720313a8dcb4442372f8936d0c912bd6cda018c5ea7a1896c74"
+    },
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "656fcae468d622b7bd63bbeabdd3b386b7385e2cba39a3fa3bd89235ad9b8155"
+    },
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "10a53024441462920d6ef819524920e15e4bcc6dc990827c5d298a6726fdc065"
+    },
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "42533a82c62600d8d209c41809dde66ea00feef8e21782b013b810b283db1538"
+    },
+    {
+      "longitude": 1.6666666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f9b745f8e5bdf3473c1665c1eba26ee54eefd1a82161f3e424c7e7ef54119f74"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d1bb8e42b8464e95f45eaf4d9834acc6528398ce8fd0b6fdde0d2cd113ac4a20"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "2f4f163aa41c8f4abd55a1530611e73abfea0764306dba196e2cf405ae179700"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "933af155e0cf400a610317121f3ecd8a723d49f2a1c62b788911b01ff3f22485"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "15adcc5d6e7aa1bb57ad198c32dbc33de96524c4d2d578afac90753984ba1b5c"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "3575fd2cea3467f566f92bccb2ae51054988fa03a721473c0489eb3e6a94adbf"
+    },
+    {
+      "longitude": 5.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "061fa2e15e7040f32f917ae749cbe51e95525decbfed39a1e3b645b39747c3e4"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "7d4305fb3f5ddc67dd42f4a33b8c0a14e5d2d9d0c0cc217a1388e09cf62c0c8b"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "e81575e5b73d72bce89e351b7a80c739ee706fe55184e1e354b26982b222d51c"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d4658f0370e737d4708037fdf72a275df983185911225af2901fd76de8e6dbf4"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "7fc2968c2aa935ef958253471240dc3ab53a56c1af485c672c48d76cc83bce00"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "04e16f7f632cbfe056898aaeb270fefe505d4147b863dd447c8087a30eb9c03b"
+    },
+    {
+      "longitude": 8.333333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0542115cd4fa05296d2607cae1033bb553a90c4e90b18396fd6af3e225a43533"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "8edf8855e258eac79dbdfe1354c465caeca7a703b80b04c5eec02d8583558ef9"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c2bacae2c0bea6c30a959dc0723d550cbfb805288a2dace15eb0bf947ea94a42"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "7d6330c57424061f4e03f757f535a188edd691b5b644b8fd0c09b479a1c19e87"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "4d3285b264b18aef91ad9b6a855132c25eba0601d5d725bd73386c4cea4e548b"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "1b81b4122e7894bfa441ddbc29b92221a7c212a61e599a4b20adfa640c5685c8"
+    },
+    {
+      "longitude": 11.666666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "aaccfaeccd1ca7243398cae25b5d829533273796d2974a279bba2ae6febae566"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "098e8e893979d16c506a01f949de272c1c02a331e1c26accdc30a332996d3bb4"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "2dad3cb711085bf38d70ab921dd9f03ca57e011e4bdfe397fef2d871052980f4"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "24a0c0c765b5d407eabf4948112d48898b5cfec92459a992e76c80bc9d1d4c63"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "009b2889d778030663351f2d1d884471c5059c43bb25960a25bc36473c00b49e"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "01e5e517bc4cd04f290882b52d49cac092e89853e3f119176f00e7c540b07a39"
+    },
+    {
+      "longitude": 15.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f544b892801cd52daa4904baae5c26640702c38de9d70984e07680eba56b91bd"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "1ea29af1baa0416448a86b5cf64b991ce967503bb747a5c63961e7e86f86fc5e"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "5656e88196c3e35b9c606a06b5e38d63ea2bcfedc1b09ce7efd736959ccf4028"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "2ee5d444ac6528f62956cc342d8d22fe68e5418c42c659873fb2ef2ea5329b94"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "7e7ee481f3cd0aa057955c19fd9b05dd94266a95cf1a2d2a5baa0aa965eb2560"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9d9a02199fae3a3229a0b90c99507b71697d82bf91a8297e8d5b2fcce19832c4"
+    },
+    {
+      "longitude": 18.333333333333332,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "670f9386fff9edbd91df9ea499b8ae8ead30061f6e6377969f8db87742c0f58e"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "5b0926dbf8ec98f73661f554018f508fd73c473f6d7ce32c460ba9dc7f62d824"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f337aa01cea416aacf8e398df7264032d998818280d89bc5f9d8c22e3e203a1f"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "4fed11e9c215c0d7630edbb13a7ce3f9372d1a6de964511febdd2de2290dccc5"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "09979ea307025ef0fc30c1154db53a699f8328664e8d329a07e11bee1df7014c"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "e0e1f64c09d38b18671b997f26c6202ae0775b88710804ea225760d9d7846a6e"
+    },
+    {
+      "longitude": 21.666666666666668,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "65b4c3f09ef2b0d3c09cfa8b89d4e70d734e750f9ee8df904a6ac392226959a4"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "27307183da24c54e21e1f10eda086ac55a568c58b461e13481ebfcbd99fc0e16"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "ed648da50da95baef0e25f8242621c1fdbbcfe0a6946b1f748e3ea7ca03454ef"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "2465ab8d6f9ca3459e6a703107c86cdc8f30add38a2ef1d57fab09f5b20e351e"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "eb1a9092bef835f220dd4d43a20106a3c075bddfd46880b3641d38596d24211d"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "e32631c49e2d38007fef8e93f702d6f835fad1ac3f24820e072d0ea3695df166"
+    },
+    {
+      "longitude": 25.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "000910a039d2a0ce3ac3aa423cf3a405944b4c46c1cf4362436207b10377e9a3"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "99235efcb7fb39f78c90f43fe0d2c1eb38f55dae0d560f710f6d4d6b32b60b7d"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "8ba6beef1a3b22e182f530abfd344372dd733cd6172c15fa280acbee3b92badc"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "9d8482e67603ab209a6a5e4fc14e7cba2c110c7e889d47ce09f2c1fbbcd600af"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "ae1524d634da5a2ab5c86a2827ba0aee6357d87dbddc0ed7a2aa2146e411b241"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "30c7f1de021a824060da78259893de97dd1a6215f85ed0a0b139efb195a76040"
+    },
+    {
+      "longitude": 28.333333333333332,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0c87a095ff60e8184de38452bd1aa50b61cf257fb64807216e71258b8311ad09"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e552ad502e692650189cc6c7227588412f9c368855f7062359b41b75262f12c0"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "3a7f470faa9b6e541221eaf07d654794999c496b6333e86b5f8bcd71e4784765"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "ec0d89765dea58bb7bbc7cb64b70f9c3b326185ee1eb5426a002919667a1bb4e"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "744e8fc6662ca1faa6d388e429c0526e7f76d62ba9ca4e2b80445a1bef24236e"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b7cc13d513c910a55585b19b92b6a5601f64b7f0b7db17667267cf3a4715d5f5"
+    },
+    {
+      "longitude": 31.666666666666668,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d4c94ff97615551c5327f534d48e3c888e11be2999c5180ccae0b7cc8c22526d"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "38f7a1a2ab6da9eae0de79c7db2f0dba375230c4c10ab2c07353d537c37881e8"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "11b123040abb703f34997ba1ea27eafe141dcc6ace05a89ae41edf819b462d80"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "a3a80e27e947d1ef51eb55703a5030b6421c2ea2441aa7fdf3782bbf9e834959"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "1ca6a838d964e1882dd8fbbdd4142647a4b69f42de604b899c3c9e51985bc8d9"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "f599213ecbaab16332eb3219e6d6fad2b143451df8933e23ffc576283bbb988d"
+    },
+    {
+      "longitude": 35.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "a50f2ead090daf176afe2f6752ff2c077aac28250b825899da92f55a52060968"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "9b7439c0b1fdcc4c179a3b7488b56dd8b0253183849ffcda4ae4a8ae53adcbae"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "55c59e0e6618c476ab6b5782f3b8c09c0215ec72793db545831f55ae95eb713e"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "14f3bfd461775178dee39753f3713def6e87ec80631a1d44857ae797c98d0457"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bd5d1f0f2eb1d9ebb14992f3ca0d272a01e719348762335c3d7610b85f312221"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "c2ee43ffea80c4e0ff77f73f854e70e57f0f912726c25923d5d0ba9a0d7396e8"
+    },
+    {
+      "longitude": 38.333333333333336,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "78ac40559d18c5300b662ff5c7e5baa0b02535a536243bb4a7a14b24ac2501eb"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "5d58be92c9b3ee7435b792cefcc118129e586d756c13da13e00a71dd485ff23a"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "95c5e9558b2e22a0fc273073960682f302265a0f4ea1967f0c6df952bde4ba57"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "bb33f1734f7bb10417e5c7ba5e16d6bddd67f9557ffcd73f7e68eaa7e5a12286"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b0ba4870a78b65128d5847bfce9fe9f5c8d09cabc861277c347631e65e712d70"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9d02c0913d865276421d6c27ed47408f2793fe8a33f93752e6ec235e0afc2007"
+    },
+    {
+      "longitude": 41.666666666666664,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "5b53fb6a0ed7e9cb54fa4b98075fcf987674cc54628096d6e0b291b1f6639aa2"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "ea0be43a58b16dfb0196949cc84e37d248824f95675735ab3fecbd3cf6e502c9"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a1bd2647bcc3604642bbbe328f3d2b401e42560867001f58f849128b57edfc6c"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "7d8886cd351f6b469e9441d031295c1b8f40363bfae1d16b496bc949b3fe1953"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b5688210f39974b32584e608c529237b96210f86edee75b125d7df89fe443ff0"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "58b53a3672ccb63693b4ddc34b5f9a3db084d6feba6018d53fb45f1c775d9a16"
+    },
+    {
+      "longitude": 45.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "3d0fca62a77f4be740dbed9df12f9423eeeb8b1fd6cc509c9e6ed99f87e82fb8"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "02556d19211ae5b61199022aaec6e36f3f32679669fba92850557f8f0cc99729"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "0939afb7c1a28f59a3be42023d93b8c108bad34401665222b9d3c1479b4d7ad3"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "8b2d946aa0467af09e03aec0cfa3d6e5f59a89639883878bd9e072a2cb14020e"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "102d7100dbd4fb6d72c7b9fb8fd926393599615770a4af27e8661d1eebd3dc90"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b65bc06f28cc343be499b7259251f40c3163a2372eccff26781b577f092158c8"
+    },
+    {
+      "longitude": 48.333333333333336,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "b07f32c68021b5cde8df258bdce89f2c01b7a440cbdc7d4c87303e58b897d99c"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "78a7281863a3a54389a79ddaca4a2bab1c913e9fb88a997e6d5a6f80906725c8"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d9001d5d078022da50328f0d18508c991c3a091062a784eb8e28ffe7347f39b7"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "1f9a9a6c914d8e184a62f2b63616b53e25c45abd09f0e2648b82fb2623666ebf"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "1ecb72f1d508c2930baa34bba2e593b188528212eefbd5fe1a20d1ff0348fc8d"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b25d2f7231c9b117cac34811268f16c6b60ede6423cec6ce3e545bdbd02f23e3"
+    },
+    {
+      "longitude": 51.666666666666664,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "adca45d6674b22b34e5b7113427853c6c17aa343bb2263a8e4a9da543c038180"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "015455f23aa168aff0ff6c6ebc3cf6753c11e91bf50653c30303991b28cb20de"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "abbc8d97706045a6119162b76cfab42d20f75dce99b6bda88dcc943a6b27bb34"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "f7d553b21d4b193cbd2b8b27b7ab3df3a106df851d4e77524acafae290d425b3"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "4fa79f62903b8ff92e6599054eb4f6f5e13780e6d9c94454dd477a919b1d157d"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "8d76545d65e26bcb80cfc7e030d376ebf45bcf7dd586aebbabc458109d577e79"
+    },
+    {
+      "longitude": 55.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "9a35316c130fce7515ec5c5cb1733eac2c9110ad97fc179b746beb2aaa5da5f9"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "659f95818618f830a2aa1c0dcb2e36021f74952a8ababff3a21c3d0858c18dab"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "4d6a99914549d8919103533689e75866fc0323dd286fbc1afb965d9a8530d434"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d3de28ff12afd5a2b95a2bfe3587d9c350c960637611c7c10d38464eff5c31bd"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9c915deba9c15dbd092433a0e31dcab7152c8c259b44a95f6eefe27efb8b1952"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "40009bb94c76c67f74e16e106245ad109dab015f456e74f7af300d0e90731d19"
+    },
+    {
+      "longitude": 58.333333333333336,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "e3a726c439508096cd07d602974656e6ef4b22fd014e55f557042d353606f03d"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "5511a9046e239f869b0d6a6766b1a2bf24a3afe039041b164b3ba6382a74f80b"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "fd65e0a9197fa42778b8a233221cab7b3a1beb37ab7e43d7e24aff38c86ec22f"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "0d3be58aadef20d5345e51a7a27fb96383fd81f4b1f97c632077c77b94457e4b"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "7a1f63c75bd201ae65a9482c3aa9fb603e8f537da4a318b674dfcf4d6074bdbd"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "441bf3a5713184a922b0d3a96628410e9fc0f8760742b27da77ee6fdeaf088e2"
+    },
+    {
+      "longitude": 61.666666666666664,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "44dde569d27d9d0c4b5b9510ba7b80ff972875fd772c7562c5d44fc5f10ccea4"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "cbda55a8bfd331d15df676dc921b1be44e180afa515b6be3be576fb9c8cc9656"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b04f1a3a1dd26f82ae541659bc8f85c4fe86030a70f0d7669f8c459b92e1b9a7"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "3ec0b11b4a44074bd0671d2a45fa100b56f2c85ab7810f187fe29965f0bddf8f"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "edd893ec670ffaa1ca623db70bc56b6ad353ae7cd2ceae7be91898daa60ea01b"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "4b07eeb95447918509d6c9810e0ac9cd7aa338232925d81fc68cf8cbf5935acc"
+    },
+    {
+      "longitude": 65.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d89399d498f8ee5ef8cfa17fa59002d8a36f28280fd9181ab807a61e494142d3"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "69a716d00535170adae80263332ef89d2f818edf014f8faf2aa9ab00163e3c13"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "09e04d6b0b0b5e2e62706e61d35b6ca92839d495873d823abd02943520b5d94f"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "b265929b4eb8f11bd085113a554b112f6ce3a70c871f833c53a46ba755e3a032"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "62cb87fb55b50611360dfe42a7b966a42de10b3eea92147bcdb74cf344bb74b9"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "c227e481ef543335fc4140b20573a2084ebf86c8679e0bee1fb6b8e0457419aa"
+    },
+    {
+      "longitude": 68.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "35bd4ff5cee6299ff641fa65771d2c969c1885fe4a34d612264588052b4ae51a"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "ae2ced1310bbf81719f9a0051fd0f3e87775d412a552e1ee50745c435cce47c0"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a6feb00e216bf862a52175fc4786ceea4561dbdf5e738f39fc81b4afb767412a"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "737bdde15c633298bf9e4206851d5d8eb0213280d1f13e47357b61a91916145f"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9d18d92ea4634c3fa64b2c7dbfb2a51e7415f81c74cf6fdebbf470ba9322411d"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "080b68eadd40b82edbe920f60e1421f4be9e8545bab560bd417fad41ed8e59a1"
+    },
+    {
+      "longitude": 71.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "17d861a9c72cbd73d470818c77e9c479e7511a26097788840ef46105f86072ec"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "f28ba37b589304fcc49dfee00532d21bf70a886ff43399efa5654ab3517a76db"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "adbea191ff2bca7cd03015b15b0d25811bd80014b0f60bfe3a05636f43c0f50a"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "39139ef5d076d259bc92f3ad21be1ec1a33a1fc06e2f9bdecba8f27322fb0d85"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "725d9e9d1867c41b01ae2580797d1f309c21102bb81a9301bbeb2fc78cd3473b"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "e45de3102336927bbde9f34aa1a86e486d5c271e0e7846276ab84b315e2fc43b"
+    },
+    {
+      "longitude": 75.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "831c80c8d6e132ccf18ae7d535e6e58be23a9cea1db12c1355bca20b856fad7d"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "60175bebc0a011543485eddd6a59b3b59e643c8084a8a873a2b1ebb5cc151ca7"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "0b04fa0e2466f3d519f48a1bbf6be1ae53189068e5f991bfc0127ceb299fbc25"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "17c70beccdaa67d691671671054f648e3a84dba71d15620eb53c9eca37d01a8c"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "35f225e2514c09a53d5d434195c574db8cdecf3d598579318e7b07cf77634b38"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "af4809fd8124a5fa8337847a7ddc2d62ced7ce310253a0b680835d80f061a46a"
+    },
+    {
+      "longitude": 78.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "5ce1522ddf1005135994e73fd6a12e96f753f62153d1723204087931cf832b27"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d875b54f4464d87235531f1440d21a41f161c067527b848175a19783d1f86ea2"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "1534eb008da44ebb672ee87f70d1300ed48625e205e19f4ffd3acd8e8a875ffb"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "564725446d23a18a8333fc691c98f115b88cd3cb436095932eb39ba9e57ae977"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "1decf8c0b28795ad75b40dc9f89236ecfa8216fcb7605cb5de6b86359249bc3b"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0c428ef5b79fe25c683b3b8de6d1ec9316c9d638db6d06fbbf8a18a51bf40d6d"
+    },
+    {
+      "longitude": 81.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "24efb43f2dee1596f31aa8e25493c586773108e001461e84a2ce0c7616703ba9"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "4cd7fddaed7fc595c30b19787545cca037259e1c1b74631f6244c43cef534d7b"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "6e6c54d47284a6341138a3ebb7c3cd70facc4e967efc159f1d26ba1cfda14cc7"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "470586733d012e274de3f4a7f1c54598372f234a4401ab3646e67e046bdf1827"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "d9c84b4a40fdce62416db98588e14ab813bc0bc5f36f812b763df38adeb0a9d3"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9a34265579205a7bcc062a429b121491488eebb2d24879bf7817065c3c4da57a"
+    },
+    {
+      "longitude": 85.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c94a88b827c180cc8bbac21e9a238ab8c92ec04a59a9f8840a7f659de0d2eb7f"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "41faedc51cb926646940ee6373261466f17f446e047d49af6828ef8d54716a33"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b83b3417684e066405a066d16ad2a28d0a1b3e75a2ce6a39277738b016405fce"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d067ee5c27e89cb36e2a60ce9e5af6cb1c650dc8857561feaa983f2d7fcbe838"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "09021d9139b8d867893b0ee6d82c8b5a5525942641586f405b603ba0b89ab639"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "bfc8b9d4ec08ff2d47fe23d6bf0d1512f4e4ebeb41328229db9db7f3c4262c09"
+    },
+    {
+      "longitude": 88.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "31251471198da4e00b96f3ce18172fdb2819938ed3925276b0bd5c9083e8013b"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d73845ba296aafc0ede29844eb144f35845105268492de5db254106e02573261"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "54d281e0065ad15e3b20d65fa8a8988c60734445f430376b23e6ac4521615198"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "9d34a352f6ec556f9ab7d931d04ee47c33a6c3d93a9e37d668406cc19f223d57"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "c42e5095f5ebcf9619c3e7bdda679d4159cba4ab873fad8eb516bf28c04955a8"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0d44d4dba697522fccbf44d454fdf3fa7d7a021626ab3a91de84234ba2c9b27b"
+    },
+    {
+      "longitude": 91.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d181a7b4025cf36b9ebb2df8e689c332a0183ddd4f80ffb007086215e5c099e6"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "9c4c773ff233d33387ff6b93541fe75e7e3417f2d6033a4a6288a25792ab8a7d"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c8dde236a933bd7db4f4658cc6febdabfb2f22a4fb7c29442387f34d52360a60"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "97097b58099fbc1d9975a097d777c26488640637b6e0a8c28105f46cc4d430df"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "f43002aab57dc57f59c04dc1922c31b34187e07e965ccaed8582096f1bac151f"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "5b84db56d548cfd7a6f5c4b2289bb070d15c5e52b6b184b4d5f50dbae6153280"
+    },
+    {
+      "longitude": 95.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "9994eac5ea3d52785a158098c750e949b40dfe045a203b0145b1606797edf6ad"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "02ee6151d50649594d2b5fe4226ad592473b298735f97fd9ca77cb3c1aa3075d"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "4c692a090507e2b1e8b99cf35079aa800a0dcd8732c2cdd19cb95f56f2996d38"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "c1469e5b016d40875828f023a41b86a057c9c2a8a7786286786c955e047c5fb3"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b63a0f9cc3ee9e3c53ac3fe79c557ecb76dd2baf00443295b56be9d51cbb9880"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "191aa0ca547e853ae09e59b818b616ab34752e76930467a6c358b7bf3adc31e7"
+    },
+    {
+      "longitude": 98.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "10f937e5d4df82d2ed114d684dee924ea0a08690717cea0d12b22ec6b31d99a4"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "b119d5850612f9edbd7e2b600915646ddd98226e101fcf4edad9b3c09543909a"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "fc00fb7bb775e16b79d3b3f11c56651b5b7dbbef9ce235aadeafccf1622639c3"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "1fec103f152d8c2e9466881a1fe6c18b2565d05c64abeae11526b215088ae2d2"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bb6c75fe3a8bd1a39d64105a5cfdd9546694da35795b832e396ed5935bf1b4c1"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "3e914a60f19d02d25d32e70d5a71e5eb28f7505df2e11ae460d3100f13636957"
+    },
+    {
+      "longitude": 101.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "346cda712434c0f1126889e28130d04b1b852049b0c68e6ba32b94393b090baa"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "eac75d1d631060d84c4d4abad8107dc61dcbab647810c886098b9cbcb3fb20e3"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d845846ea596498aa1f9d2ab7d1b92abcb8bb88107cf27c8a93f3e76d34f0886"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "846f5d1faac24f120c475a2444566d69dce9302ad61b31632028b52a8211df2e"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "5541e760eddb2aba95b60128e91cf08e8d84f3291dfac1acca414278f218d903"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "26de86c81f27c0b2abb93d4e9f74175a0c33e2c2afd692ec583f9eda7bfd5ec8"
+    },
+    {
+      "longitude": 105.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "809f4fa75d3ffc8bf9b6de14ccf3aeeacd9db801a9fa228ea30919c7253102c6"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "68119df8e19047a0c501c648a3fa3cdc875ab03d743d56b1c566439e4c21fc14"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "ec944363768736da7577c86e28bd015a586ebeabcc41797a411f6a065277bb88"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "91fad62be81209f8ec5d565442584ea638266b52fa477e3f5ce97df7fc72e28f"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "fe2f479c845ed8b126c703f8c941905cb380fdaf3c9c44a6f50dafd00e254959"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d23a64b5e43c4dfe015aae7b3b231cee44aae77fc044082884aa097c2540ff03"
+    },
+    {
+      "longitude": 108.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "a50f8a86fdb13a9db6746f577b9b84496567f04964becb249bf85fb03ddabe98"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "35a6471f7d6d0c322704770980cbab81e885a5a41c33075fbca653344bd53037"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "eb698ecb3514236e1aa970490a105c66be3181d3fc7fdaccce453d2566f39280"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "c849f98f08f64008c447bb0657446a9305c4869f558c8381e86f90ccf5eda823"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "ee24b2cc69b53dd83adbcb2870381075915a1876bcf3bc7335c27688d532df9d"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "1826e37d9cea3ba528857c3c63c36476ad116092c2bf188d56f2c4904d3f5ee0"
+    },
+    {
+      "longitude": 111.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "bcce2c71302132178ebf3bdc46ab92a200c9481eb2824d87a0069bc966ac36e8"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "4a3bf07cc7e2b38b2ce00871717a227982791024e842b8d83b868278d62231de"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "8a09c6c6816d6d60ff4837d76963d990647fbcc0a47876e09cdebc8d347bcebf"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "5e01021cb1c190d55e7ba66ea213f7052b52ee9429bf900048595c4653eb4dde"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "8b215355f18600469dad8bce0ed8b8243ba139ddf37a908bd06f1f4a5a9ebc4b"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b621338690c86e3f4287e3aa401601cf7ce08a3d185aa1057fe42ac4c26ceb7e"
+    },
+    {
+      "longitude": 115.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d557852fc87f2b4e45a761ae7d350d1c8c856a57a23c7c91ed4989614076e7ed"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "caa909e89b97571fd3779302471d36e260c003151edeeab4fbe3a5c0a4817f72"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c6a90de45f920935d0db38ea07b251732218f8b602be80435750e66d680f6770"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "51267b5ff2b933dcb2f1c46cbae1cc21e6783a1f7f0da1effe483d380f464043"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "f2aea12fe2498309d26644830da85d43a2e538ec392b44ae794cd0b34b185e38"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "28545c24e25bb50fc87631dc5d947c6fd9a991cdf134cb3ba89d731c819b6dc3"
+    },
+    {
+      "longitude": 118.33333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "956b35eb8fd4887d2949ee1627a639c4fc43c3b4bc392574dcf43099d1d6cd6c"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "36e5867e86686af2c228d29ac503d3d4f794ca14850fca6847fc1163c33730bc"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c4d315b17166747305f5995abbade476a72be20f66d69adcf7140fca527fb8db"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "5c02020da721ba2912a91ea24ad3c5457c8a7e8de024bcd82ff4c71510e0943f"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "dac4bffc86dd2f2621b489e99a6873f34dbe239dd36faff7994aca34320ceb12"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "8981ee91c076f00908356e5ea617e2c79e450a6a5c4308aa72e73cf5c13b9763"
+    },
+    {
+      "longitude": 121.66666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "eadb32a2cce3ef1bb70f2b2e9818dc3639c4890001eeab75c0ffd52d07b43340"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "f064f2155ec89536831bac6cd9d083725fb6b99edf6108a00b176e6c117f05ac"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c63692a4928e37da26950366909e7becc86a561543c5b48ec7cc3977ee7f06f6"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "8f3c8336b98a99f88d3df023bcc47e53fadf99755ddabd8b5b2d64d4f994b4e3"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "76f77e3cfa2f9ad11d53bbc86e6b92f9bc889b633a66ca9f88cdf35c38ed9dc2"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "2d9ec4ed58e5e5b2261f26d73af2c1aab49d98b566e595fda525c2dcc0b4c160"
+    },
+    {
+      "longitude": 125.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "a69bb5aef9b9f5d7327da62fcb69e7ed8155d68d059d9e1328a61c10f3c3c6c9"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "68da312fc9bde2ae132348804b560c92114e3e7741931701a21482bcb4ca8022"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "5c8a24901f90d22cf3fda7b77642591e09419817c8a2c6830fb959b5d5fac16d"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "a14db5a1c496531a358f58b2998844e083b7c0cd14e46f88770d5167193bbd96"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "ae074d23610121ee751d5e4c8e68c3b2bb542a6e2ac855fa2259109965ee800b"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "a7fd96b90384efa4a09478ff90c2e41ce46f0e1ad8ce64bf16edc9f952acd1ac"
+    },
+    {
+      "longitude": 128.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c780eeae83f9115eae8ef56bf92ea75386e19eea26afea874aa3abed28fe43c6"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d826e6721177cae4375790d9c903deda79f36a0daea93900f587dc004e2a0ecb"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "9b46087815a5a82ce1a45d2fe1113972d483fdbe3f995f1264ab349eb4e7d200"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "8b9ca009e2e2644331f6fa478b1a2a8d87c6c9f05afa6d788980cda65a4e850e"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "4d8a150bf1ce8d679e3a3ec3de5fc25ebe65b857c2364d19abc5610d6142fdc6"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b32332b32fa7356a16f6d7eb59e9d142a85936c4f58f3b7a3cb966c91831190d"
+    },
+    {
+      "longitude": 131.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c265a9bdcecebea17789c90d669f7bd2ec5ee295201734aa86ab2e4bc6d4dfef"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "5caf119d026e938874f34ecc2a0f56677ddf1d61237d3165ea1bbd6a0d24756a"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "34532c537a27214eff2a48f6c01665354078549dab2bcd50c0967f2048456d62"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "6619dda1c65c6715fab70b77fce980b6c0022d73a1c55cc9eb9e5300a3df02fd"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "00d9ff4b50cf65d31bb7783d35e654357b43946e9d0d41a23ec6ff4bd8efe2f8"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "2524546c898d5ddc8f1b3bebcc816596e87f6910c3fe1369db2716d7c9d20cbf"
+    },
+    {
+      "longitude": 135.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "4b6bfa3fc88f67cf017884a05b7f25106b6f5b2754c83c373b4a69e85ca47fd4"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "2dbcdb81c9a5ae3796a1faf603359efc5c20ac592f5df1977ace2d089f5c2f25"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "630b8e8a4d1e77b8c931586baa7c3841d0bb6936dbda195eb80469cf50e88534"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "eafa166a97d291622c2415c0ca17fdc9a489ca350b6c4eb55b2cf45ac92a7f38"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "3d28d4beea05346aa8bccf7dfcaa9f472f2500fecbbfd237b620cd13bc771762"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "3feb4da4d674646ef6edd1944d4487716b183c8e94a681d043792927bcfec0ad"
+    },
+    {
+      "longitude": 138.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f3af4dee90c72c356d465e4d225a2bfc53ee71785e178c2de1cf130ada942ae7"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "c431735f9f228c451fbf2b1fba69303d6c6e6a3a703046c7a4555ddfaea023db"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "1ed1882128d655a978397f2b2870b4dbd328683a411542846cf44d9339efb7d5"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "66780ec0d3dfb4226c36120d36bf93dd626376d2d4b437e4c90517b749e8ca16"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b2ebe35aef2c7f2baa3c5b6517d530d9ed4386c9f9d66cf226134820ffaac3ec"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "a0de0cdaab124a094c452cff9bebb359c634203d0e79889e2e2d952d006668ca"
+    },
+    {
+      "longitude": 141.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "23ba6b7ed306a198a80e3aa1cc46f6b3af5992d37465bf1d952dc04a278ed2f4"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d14c97fa6000258dfd003c2a5df22138d6fa2db66e80f653a382e76dc44ba518"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a4c1713a5a034dc8907cd255a71e62e8b2015c76ad2f03eb5c2ef488276333e5"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "eda882bb757ada0c088a1d21003c5048974f49f11912abbe8fcf2ce4da04ca1f"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9e9333286dc9ec242cc53be64009f8f34a107b2f45f7cea565e364a8b5062ed3"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "4bdbcb4e31351b132529d50a5987d4b7f280df769a32a561923c0c8bbdf8602f"
+    },
+    {
+      "longitude": 145.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "1c5b3cbea4212d368f881345e283a52f35ecf3579ac0d98f32ae15fde75247ad"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d21282e51e572bce356db191bf32c906f0a09f39ba820f272c6646a1182097d0"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f036e29c5c49cf788caa730d3af37eb2326ec0eacd5cdc5a6a902efa6d61a1a7"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "300d99d8e025bd5da2a485b9213468895ef513cb52848063f72822b676f3be25"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "5b33b91ffd9fbe665ea5871afdd65ff2cba3b762787b814938d3e45b80aac9bc"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "47814d05a0ba8026140edd0a8ff357093eaf35195011a3ed8cfd392102df2ffc"
+    },
+    {
+      "longitude": 148.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "42e8c083e29ce329ec352a43ecc9508e342356b71c210b06d5cb2795e7e28b0f"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "c8d998fcd9464aae73293505c82a5339c676488383845d35a96e2b0fe1c83844"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "799c1880ad0cae42ba720044a6e13b6e2a924c65082b73c89706eec43ae44ad0"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "ed155a46115db2780126b6b325a56431f6db6d222c377fa9e4cff11da633becb"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "62583ce694faf3cb90e247f72142e4bfdc3e17d13c36f2e48b4c904a41115813"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "082e7e7db2a88e6d2c2cddeb697515d9147a7ad30231d8db3bce3ceb161c9a41"
+    },
+    {
+      "longitude": 151.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f7b988367efdc9679662cea3ebf118f10f72f0b1304b514037ea64b50d0f0b44"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "8ca7910c9bca943fa61bbb3402fd1dffe0982e7e8549f0beadcc162248039817"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "7affcb2f3493ff32d483180491583382d8828a7a2d95d5cb6b90eace3e7ea732"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "3403c3a52b11cf2a2acff5f48e6d136ddcf3f641d17782804671f2baeb7bbd8f"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "af38233e1190e0aad5a66c5a8ec3ecb9ad0dbbd9dc71535a6c369d7d7026d13a"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0999df1d111b81f90cb3e8d738b5dba5d8cffd756437d8c33e3816844922b58a"
+    },
+    {
+      "longitude": 155.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "2d05a64f8fe71235a1e0dcb7c7e93b9845e580c7ebf1596daece2cc2c7080a4b"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "8b1d264ebdb96c5905cdc042c09ea2ff2c4667719d9d5fad48e1e098d5aa0695"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f28117b598847b95f37a673dbffd947037e7e8ea2e009b16deb238b3de57a726"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "817adac9308d1a621325f9bf47cb73f2697329b05d6aac201b004ca89f33554a"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "1d021131f21044ae17234347a008f11e359c29e0171409794c92a04c9fb2fc67"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "4a7bc44f8c36d9da6ff4f7761231546af41ee7c697399a7d8228800fca109118"
+    },
+    {
+      "longitude": 158.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f4f095a778c485aff11f28e9ee9251d22bfd2ed33ddac54d29568c773d80821e"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "9039105a5d7dd708525d21723d38e81a03c8d807709f717add5cc0e32950a983"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "bd649fe499e8ecabb46dbaf187de5c60a9f3c215b64ca09b3d24bae75d2e7ae5"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "4ce23bda2ccaca1f8a1454e3e468f6c086347dedffb3e6f9cca7a6590b8f001a"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "c0ecaf5d4e1ac6c4efc0372a44eb3c42734dcbbdb050cc54da8d189810abbb4f"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "5df952943cda45b9ecb0e544d3da861848b717c511f510603c5843429dfc3a12"
+    },
+    {
+      "longitude": 161.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "945bbdc0d92aa0a6cec3388c8462efbbda6ab7325f92f62935de05980559a1f4"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "a1d14c0520013333d2897fb59c578d727c62ae9d350d6e85c0f456576329fbc7"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b0de841de7b346672a7b759c87a834cce6459dd9fd44f135924a7eefbea41471"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "c5fe26f9dd7e3aaf1ee352e4e30d6e4d436f06a47e4961296477d3e2f275e67d"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "263cc447777c9b62f31cf25452375943b7f877eba6613193675a9fc4d1c78b10"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "41cd7634359fdfbfa8cdd22ee4ea50c3d8227e81a5d7f37b76ac2f5dd28fee58"
+    },
+    {
+      "longitude": 165.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "cc2e245a746324e6df596730bf680aee8eda23546c334491a37ed5d13985cc02"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "fe52bc2ed3a7633f52c01f02a789e37f3ef2e40b588e3fe54a56dd66b717f3b9"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a53f1f2eb3e15b34d362335dc7062651d41111d5eaad6e9aefea01b579a19198"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "f55db787ccf724593cece285589212dcf3c350f55a5196c24d96f9aa704bcb24"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bbcf546559c235e573282663239a7650f1fe897d4c8541b63b84aaba625f9ef0"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d6bbb6ded17f837b7b8862ed07f2d8748b7c29176d2768fa001cef503497ef8b"
+    },
+    {
+      "longitude": 168.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "92a15d35252a1c598cd9c0ec6f4202d7aab7a74dabf8186b15f831418ae62cbd"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "b6cba55a30620787fd926084660882d8781fb5e531948abf20eeaa7172282e2c"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "076b123663b45bdf8f84335b6b429838e290938c3fbb43bf085b42abf770505e"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "7725391835b93235313fd2af1dd0dc5e7abf1b17fd794a568ab34c081a91900c"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "aaad7b2c3f85618728ac97c2a85382ca4ce88308b89ff63fa1bf836118932caa"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "90e802c9672a0e6e930375744012c71fa7e37e6f439e7d20f463f79bb0c21681"
+    },
+    {
+      "longitude": 171.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "6fd8b4f0236786b2879056cd8051e7aa74b6d4065a4fe88a0ee609238758ea66"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "321bb06e15fd69a2ab8a79e3828e4c87a629bd05479d4f64ceb562f6ec9b8d47"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "e4f3ddf1aa81a0b9ff31d6079d79e641cad3690f22fd776b807cf8b795110067"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "ae8757bf841b1da727b7a353c02d179feeacd24db14e9389ce9f2af74e982bf4"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "763edf2c9e79ef9863a820d768d3781e85502bfd532b937fe790dd8fb2f68547"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "c12c9f00b17d41d5c603369f9ca83600b0eb95de3c6183d8d0253bc4b935041d"
+    },
+    {
+      "longitude": 175.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d9a1e97c871d9c42b07eaf53fcba8bd0793f33ba3674761bf26cfe35d1a9e3b1"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "78f51d6aa215cdbe93939a386a306d0f3eb6dd4af85a42dec88d2f02bf31fd14"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "bd642d09fcc0d059ac031c803ee8bc8e256698ab949898a7884499879e61cd08"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "6621a9ef5a58aeeacdb73e7d775a35f151efb43f06b6da43b18a6a38c96b757e"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "c689199bc8bd1a40b32aecba18acffb9e133f2ff7ad8578ecec29867071d8d3f"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "c1796decbb84a3c1496c8e7e3576122d7f80ad2c711fb9e1407a2ed455fc44bd"
+    },
+    {
+      "longitude": 178.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "2a13d9244328455e9a37f13a7d5f64f20af405287d7050ad5c1f7d368731cae4"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "62cac8b0c268669e7b599b219f4b57448d9619ba1b29b302027dce7927a3eee2"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c0056f4b69b9f37af2682b352b4d339222312a5ca202c4af64b79bb4cdc43d2f"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "7f7efb26640558b2d55a0c5a93310ed665f0dec74977a56492e622bbf8f1293e"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "cd13331153f0026a1b17805edcd39586d55362b1bd5c748f9778e004fad69f92"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d9f42bb05216eff43f57e7b8046cb50894377ec30a001fc9534211c4528bf70f"
+    },
+    {
+      "longitude": 181.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c768bfc1fb5b29e88210c594f7533da07625977736780d13e8c940aa30140774"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "3c86edb88beef5c6bfdce8d83a9e1af333e268a35ab3c15b037846badcb6d815"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "cea4d1e209ba7b27ddafe52bfbbc525053b5d4a03b37520bd94687bffd156d3f"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "908d003d27ab2ade3ce4d6b27bc8ba376da3c8ba3d7dd4fe582efa1d16407d6f"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "d06cc166f50d667b87d94f56e8ab6ad5a50a97c7644f4697f5d63be030410bfb"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d5451d3cdfb8d7a7759090d8fe478317b4ed0dbda614b524da20b812ef41f93d"
+    },
+    {
+      "longitude": 185.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "6cfe62a0e3501adafcd7a6c8aa05b4e305c9b6493492ddaf7ed34f4c14590890"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "0e31fe9491f76829b2ca34c9ea2c9c4e91fc600d24b224f30afe43438dc9e0f9"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "8b5b831073e50452e9d76cf41e7cc5a939bcfb60be5661718ea31d1770c7260e"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "b4b70620bf6a9310707a6a46d563772384a65d94f334a7f36a69733936e4d1c1"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9dc3fa4d27bcaea0c9b0fab19c41ce39a9a43506aed6c4d78ecca51f3166b348"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9f4c5a7faa9e4a382a888683784986081de95f5bacecd220e91f4063f741491d"
+    },
+    {
+      "longitude": 188.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "7736b562f8c02bf4fa2303ba18435f1d3dfb48f9ec6528a5a7614e72edd0ee1c"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "2dcd21b6b7432ea8f5d2441c034cc8837960b5314afb920fc3ee85b1d3cd6f14"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "94e6adef35eb3b12e2a87cc7a1db13422ff8737ce2be48598129a27b78990590"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "f580992d066576097c3711bead92a258465a72e15d2645d9cb509e4c4847f7e0"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "387f7cbc28545490cc8a33e656d7f03bbefb5b1a49261fc7fe2f1e1d25bdc070"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "f0c09b4249ec520dcaee63ac6c09dd534c592209232dab4898c0364231a0d3cb"
+    },
+    {
+      "longitude": 191.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "005b0d1b099dd8b42bad50a8e68e49f955b39c269c35395d1e14361e7ff29c14"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "7a717e985442aaac31cf98710b08acb02aefa7ed740d657a7403837c2065e130"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a714d3170097ac9a6f61e5702677204bcd536a36a406bb763d00804a528a99b6"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d600641a803bd57f126af579254cc3dc7075b66ab250eebfc3a367d1b748ed6e"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "29584be6fe7fbbd7a34a584b85520f36bcf76b739c307fb572c38e70c85ea88b"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "8c4dd96afc87e136018ece8bb5975cf96851cf1c431f449823f61a1daf3c4388"
+    },
+    {
+      "longitude": 195.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "40709e5ced20550fc97c3da1468b68f2fff613e4a4bc942488110a3eb90aadd8"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "93b3ec5bb79120c9a2c6a932d11ded3a2bc5dc44919fbe0483d5c84386ef599f"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d60c9a755955287757b577e177a40f926749cdb6105067a668868b08c247fc06"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "09746de2b3892ea752af7397157beb4c3b7fa64f4454442cc2d7c251ec3432fe"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "98e8d827900332e0fd43a6a3444b088fac980933ae7f43bba7a2864e2ce2b1c0"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "c79d8c1971c86ba4e38910910aeda6af7a9ba1c40cc495c3b7c667cfce6b5299"
+    },
+    {
+      "longitude": 198.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d49216f4d3245e6551c6a46392fae7477f720f8ef9ac021b06be64eee2addb46"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "628348d33437da1cc5c1e391667d93626249b33d11bf3fddd832e34919f4ed87"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "2df612e17d03266715b50e55f242517747b075a7cf5ebf9297b60b9dc810ed23"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "e55b145e12c3508a007daa5f25bb4055a4c273ec860ce64e5940a87b387f888c"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "51e95d77c487218c72de74c296689a360b4681ed4bed0f70c3816177c857322e"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "6c75be573ac45ee594aad1b87f3be4deee30809a4b2f270d1d656cb3a3ad3410"
+    },
+    {
+      "longitude": 201.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "5af3814a1fc8cee52ca00f73f76223dc79e9c9d6ed8969c098f790fcb1d1d434"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e063597ca5e41c9788e13c087e3da8ec3985ea61ff2303b1d5527e677c7c6ff6"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b42e3ae2064e394e46e6d2945dd71ce613f5302de11c099b2caaf62705a74b29"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "f293725441d3796b2eed1091e65f50c25718b65185d8569c0cbf558b079e14a9"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "cd6dd0a596d8778e825cf3059e572d2beab0fe6d1c6c4f68097d829c19639db4"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "ce79f2484b596ce76d1a358510c41ea3daf260588dd687d92ad68909e58e71c5"
+    },
+    {
+      "longitude": 205.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "b3d52921a3267731931417279a5b9a6d78b61c2267f54a0cb4d2c7749a968926"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "ec585d96b3270cf8e9fa6d400d4be552bf9895b5ea587d466aa23e0da8d21c7f"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "14751d510355424ac9c400fd7421fd59be4fa74ecc9459c28b691fd1982f5aa1"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "9f6a62ebf7e0f95b606a2a185264932e4709b7fbb195b2af8e703a1b672e716f"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "6efb8183e1978dfefc2838a2e83c1f9d0b96af770042dc91b650ad44c62a796f"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "f435894f94fff0a36fab211d9f753e751ed661726aa9079c729a2ae00527e5f4"
+    },
+    {
+      "longitude": 208.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "e6f4ccbe7e98347c31d8efc71515768343259e1de2f2da9b57e1ac35f050c11b"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "051cc9b505c7839f98153f72ecee1e0caf6ec67f4eeba50c438f4bea82f9b5e0"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a7ea41d93dfcd24d4cbcf7bca527674c868c246b3b953026131b1bf017bae1be"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "7c2d76fa5370979a5f3a8b127772ffb90df792e8fb1c12251e5f67a6d3f91f4a"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "e44bdb347e4b1052ae2e32fecda0329b36d73c0deb206399f6be610454b84d93"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "a75fc97d802bfe723a45f88cad2ead4eddcae0ee7f23b09b889e7826f755fe99"
+    },
+    {
+      "longitude": 211.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "8efc301b9935fa641698fb4b34d125a95141a4b9ed419ffb245c4d27eae53474"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "bde909ee78cd5b1ac21d0f88317da5d0144f4abe0d39b0197ee815853ea9f6a7"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f482c71caa6604d1d261d330742644ec77ac185b52316708386027cb30e9a53e"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "3b6239e9493b192f40c37ba46bb5bcb8900fc1f51070ff674e750113c7b75bc3"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "65862945c663aeb64cb3a829148c0983354aeef1c1ac3112e1f35865b0c81f6e"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9cdd48f4ab790e9cfa6a8401d63df2f65ece0a98f1d9f6e4ed2360f40cdcf492"
+    },
+    {
+      "longitude": 215.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "54bdb7e17d78e997fdac882ecdb38ac61fe8fe7c6abebdc1b92e4778a6c5a58e"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "00ef7e110d515fe90177b4b8cd71a245c78fe0fd3452591147c1023fbbf26d4a"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "3ae641f8a837b362506935982ae59a6137a71205ffa6456e9753733bf181db9c"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "aa882e16f7aa45668237a16f284130daa43b125a10a90e3f6c7bb954826e5916"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "09ac4c017eb4b635107fd3a7c0f5a3e2d339818e6a75f0723c731f9d2f2a6b78"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0bc7d0fc96581ff80ed3c8a6e43749f04e8c0eac2a7713a5d98e4ff555bd13f8"
+    },
+    {
+      "longitude": 218.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "b2d44dce6818118cb87a15cf6a4b751dbb81b0ea711c5669cfae78d5556a1cb3"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "552a22644f00e7bb374e3006e3ee82773f7333f183ea0e7aec88e4b97a922dfb"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "ceed0b10841465f322c865126d04db3c481a1959308549b44b7b5ae1c9575150"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "743545ee56525886eecfc7ba1044d404ca46673b9feb4d4c3f091c1004ed84fa"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "1ecfa4f195e7d1c3adecb4bd0b238a9f4264e99fb12391d37aa4478eb9017f8f"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "83f218025f6fe2428becf56b0b039c00d8da2c46c46eaedcb43d54a718e448dd"
+    },
+    {
+      "longitude": 221.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "76b626ce6461acc1095bae05f5bf405dba477d1b671017070cea30b200780673"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d30cb2c9bab7059b9e09d93e85d4f0f6a055bcd92d6cc873a5cfc032b7316c6f"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "32f05fb250469af76abc26a622493b9cbd4e1f227c5036d49563799e3a94e956"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "5a160a6b5aed385c9b4ca774d7a02bc5798a7077cf50d940ab9dcce8cfc393e9"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b770278772494ae6f300af01aee469b2ed80f979759933920eff8a848cc8d9b6"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "46a48e0f937834cf830ebb3ab834b8dc1d137e9a46dc3438aa950142cceb938a"
+    },
+    {
+      "longitude": 225.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "590506809bc5519f640b5f05c09466ce11e01c7226b8b9e1cdcd63d3be02cc49"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "0b50ee019e077ee7d4a3a1ee55f53c81821ee4da591189bec87e1eb5d27c04aa"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b837c495f213b3e6b29c04349520fa67583cf41bb0cfa9c79eaecaf44427ce38"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "19f4cf6e4bc35cddf337f9643e8dc79f5d1c8a5ae7b4bd03e507915d285561a9"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "64ac4f794d8e765bfcf6dde88c52a9032d8e6b364f367d1d9f38b5139d9c7e71"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d9bc4b5ec467176d68b46ff79732f87754855c9865953430ffd6b5dd187af8d2"
+    },
+    {
+      "longitude": 228.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0ba92dcc5ba1b5665b57a6a92cfc486bc57eb056e4a0dfec626ff20a65d26b9e"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "ceb29904af475cea1442f383b2318910e6ac112c975a3f33fccd9bd0d2af93bb"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "8a56f71716760ab7dcb18bde522ba817adc264fe2277c03abc3f797d70ee499e"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "40201bc56dd5edc31898c8943341eac58c6aac40f12343c0d4eb76fa32440c38"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "2fe597439264d2f617f1fccdabb30a37edf766a589b500433598f3319e006dd9"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0ec47558c9123bbea11470a015fd5920eece3cf0957b7f75e9bcace7a0317c8e"
+    },
+    {
+      "longitude": 231.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "86172c76732a6c7b76c94556c432457886a36bb151ed56f810eb5bdc8368e9d6"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "66774bc0429fd06613b148154237b15d8fa257121f537594b342b73a834740d0"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "132ada79a652d73f487972651f8fe33a0e94e1093cacb9fae8509f7e1f937ea6"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "dd8a039d68feaea892f102c0203763079a71b1be17b9d4d6f1204d18176f31a1"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9ecca34531dc7514c474759f4c72c690328919cff2e729f97dd00f729af6d753"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d393383a32a6aed93e1b8608abb1e54f6ab12de0cee95976be4da76a2ff795a5"
+    },
+    {
+      "longitude": 235.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "56d4cee1710765e377208176645890e26f6ce09a670a8df4a360f4c8c7b03461"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e7d5891c4a1fe35f29d9f009acf09b2450c192e3d0cde27bb821852917c84938"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "8623224921bbee7dbb68490e500b9e1dd9251b79358404ef0a5bc0529b66263d"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "19e63d943267cce301dc93d8bcdddcd03f9e3390e3761bb1fc013a86dccce1a5"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "f42d55ab7a6a1bbb18f233632e701e1546bf8c2f9bbbf3b273eb5203f3be2c7d"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "a73d6e0dab4ad1530ac8a791e89ab0bef456e739d237e8754f6530586071ccdb"
+    },
+    {
+      "longitude": 238.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "417f92d5d431af79301141581a19fb23266ce083e899bcc1650333aacbad1f8e"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "98ded32b18efab65bd295edcbd0b4cebd94bb102ebf4e9753ebea5600b2fa542"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "68041d36aeb89cef9ed1efc5eedf7fc5c7cad8419df2b0cf8c0a21f511a34ebc"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "1aa972573d6e2a4ba90028369d0b06b1541251643e3cef1f22822729d111caa7"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "8f7ca4f97683bef17a0616bb6667e10d64161150f626eed41dc5964594bc7e2e"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "77de1788d98471628a157fe2b3531f32aab52659af39ed11d549d7855041df2b"
+    },
+    {
+      "longitude": 241.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "1faafbfdabdb666e84a5306825e3c8025ef3789710c5338bc0de376aa17c554d"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "cfdc4ee2b1a28ea451a713c4df1aff9c6d6605ccbb3718bc2a7855f0450bd6e2"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "cd2727a66a73576b79d68a32106b235000cd7eb3f3582c0e74cda0dee6ccfd08"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "777e96e6a8cb03197a8b964d03284a0b15b52a291c73feb02b42075cd49a1678"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "a2df46fa343f340a70d0b241df370887894a441213c3427adc34d7a47aa6cb33"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "507823968df83f6ba56c8b67ab0f8ef833805dc462de0219497e70c5269e02ea"
+    },
+    {
+      "longitude": 245.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f2876dc7a1840bfee727a774f9e40092040b855c2ce0f89ec345d8f57988c943"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "497c1d98a3211446c5910507c8b01a828315f99ecc900c01bbb13ac2e85f3329"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "e501ba7b7fb75bbcc7b44b672f1479f8716885fc5343a5c3ef69cc059d803baa"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "ab0b42afe9d8256beab79de146135f9bd1a56f04eb83604efafb78fff74de78e"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "a33859b2e08f90b5710ef4afb4425c63af85f5d26c5af82f6a68eb2a647598db"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "8f491067e420ef42ee630ef77b1937e60b32659df5785d1f4d835cf89f219d39"
+    },
+    {
+      "longitude": 248.33333333333334,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "5ce6a43150d75865eacacf90cc5ba50cb4562c6e36e2f27f6c55c50df64cf12c"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "05bc33d51b51bfee437f2a9315ee40dfd654f63dec4cc12f86fc79feee743eee"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f3d535c0919623a629576dfe49a6bd7fc5ff5a36c2d556dc3a293ec2d5bf3184"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "19a218f6c4db40dc5f05d30f3023acbf21da06e7163fc8a211bb26ea4a19d363"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "01142028523a8c1ddf352da946476dc0be55578c1ac86c85a5e852acea147bbc"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "d0ee2adc59c651563e463da8343f5ff3a790a432fe9784b1c41ee4098c1c84bf"
+    },
+    {
+      "longitude": 251.66666666666666,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "472f1ab7fb82601a6897fb8d34717138ae350a5a3c6814394640466e4d23f186"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e6310ddb510dd45c9dcc8d282188eab17f264127d0fcaca9e172e80ce1c26efa"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "c8aabe12e2d9a3cdc5f46868ff4dd25c2d422990bb0271554c37cf3b4a857641"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "19114ecaefe90faad0333264a992a397d0aa228c361e035540e2d9b6baa24021"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "970b16b31ee9eafadd63b6dbf11e013251c3e9c49b8c4d317b81b8b663477313"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "407cbc5ae0ecd9eea1836581097ed3ada802ea71bc57ac95834950e78ef415fe"
+    },
+    {
+      "longitude": 255.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0987344acbb68fe95c142cc63eb6fdd293b290697abe0d67fc2fca2d868a6bc1"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "8febaae6d3c115c7b449e763ce5c24be5f61038f009f4cf4066732528049bc1f"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f16ffe37edb2a22c800dd33b2a6608f1b9271eb38e6ec5ddf2fb6ab1f484c964"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "100411261952cde81426d2d2f6165e73621f278a91b8bab56a8682bb120f489a"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "02580d89f7e4009717eaf658096d89e7f87d421a5639ed48ffd1075d4b45e161"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9feb8bda2c6d1f5113df8697871514dc77915a10541ed044946a0256eb710a0e"
+    },
+    {
+      "longitude": 258.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "56c3bc793d31c34aff57d0bb376fff1d24c77da2b0d3431777a86e12d88c5910"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "6cbf082df417e7da7006a900e9ce0d2df19e018fb6ec807c2f2e24c49fd1b61d"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "40554501a1586f84c7ad5d07be2d39cc3c19a7b880a98aa15efb3b2ddf6b8ff6"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "a8114c34a1576d344e84d2fea5c07bcc5341988dbb03a5411dde5242459e783a"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "262dc2d5f8feaf6c34a1c5163179174367c2123f00dd4f9e7e0a75075e9e4204"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "377fde95aeb58bd3f089432ab35a0cf2355d34e0c2c88e9fbfbb5bbe0ea0c9e5"
+    },
+    {
+      "longitude": 261.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "1b0d46507902bb703afec94b6f18a9bd79b03b05cf2818098d280f94e1c322ab"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "bdf4e7d7ebbd969e79fe2a5dc05d4503f11ecf68c899091cdab435d59f683400"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "2700b1d601bb76f770589d16e121417eb170bbe624fbfd0d742448d8642411ef"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "860bcf935a2adcf0fa32bbfc8d9b6ac4ac8430e44bee681b540863cfaaf11052"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "988293ff72d3cacc0e6293715da5fdbd603c03d66a89bbc13f043ec3959b6022"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "999f85bb503a67c28e6d46ec7760ccdc3235a4411beb853a06454dbb66f0f235"
+    },
+    {
+      "longitude": 265.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "88d6bbab9dd5bd9a33211996c56c57dd59c129f0bbfab358ebac1a6c33423390"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "03c80a27c8377fd8bd005d8a4e423eb35363d5e29a9987c70f47e96d511ada08"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a1a63d03508428b243d5f863ca6161a239982570cced68fb2c5744985850c966"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "082b9556b38342e7d6aac441c07f1ee429fd98a33d92ad382a560a7c681b48c9"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "6e39345877ac05336bec09e3db7938b5487caf920c70fce2834c10d11e1bd0ce"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "704fbba41eb452d9c31547809d11f491da1af9d5bba42540cbaff972b45a2f02"
+    },
+    {
+      "longitude": 268.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "113c320e1a3f4d6b97c5fcc8c03c22e43650daf20d3283906909e117fdf250fe"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "151572118f14df02b90de4172faac553a6e25d6b87ace7a86ee31570bce49f8d"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f271cf47898076202bfb9079fbd9562f4d33d9d2a98d579bf3cc485d3ee41519"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "3928f79e32f4411320d3f86127b004656a90b09e1e94ae890b489f6074edf2af"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "a1cc49655a0b677f015156ffd7b1592d75c0f6d332b0e4e55d4fa98f40019433"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "f87a2b8f5e48e1afee995185ca8beaf5db5a4d319d8d5e8e7508f79cf879ffd2"
+    },
+    {
+      "longitude": 271.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "f5e598026e4c90c7ec1d91b54cac71b6e9e279672d5c79bf64ec22845a6b91db"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "2071fae7bd04738c4401d37ca16ef7fccda396a8ac13fb879412d514f1f25435"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "a2da9a87e7b12d1bd0ea81732133887802ab8b47ed49acd85c7b2b1048e4f431"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "5d1b2d9dcf2707b376c3ad5f54d661d5aca13ac8af543f935592940324cb72f5"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "fb54e6ebbfe1eea4ae416dea016f478670f4fe90021fec1b71bdcc0ae4205cc4"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "b165fdd720390db6998049349a667423759078a48e4df8b6eaf4fda6047b2346"
+    },
+    {
+      "longitude": 275.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c455d2bace8bd76376196994cc1931a36afe04eb316c5f5d8e778add3c66919c"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "9eb920f8aaa04e3a1e49e7929de1ab73f8bcfe206df41190283efe0863adbbed"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "60e863e3428b9f4db98b17fcc75f01df0f4a16663c2df6e68ffa2da8c34af45a"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "9165c69e3369606bac04d29b3cf0f8ca3d9399b2c6c74367e9da42a2ca1d61ad"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "7efdcdc25553b028d54a3e364fbef9f6da7e5465049e601945d590572c91724e"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "155dbaf38b63d15a2139294a1ca64b0d78c5b457de7d9a7ae40cf1cb85da9dd1"
+    },
+    {
+      "longitude": 278.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "3a915c9afec62dbc410134374f309c9edfcb74749b79f5c331903311cc9e490f"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "068fea2b9d4d71e109c4b400f4c9b0a9dbb7eba3ab755678f7b1def6f25fe827"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "ba6f774e89192260665345f8476e3ced3d142e3356fc31a64e766b203a182532"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d33663d04aa884e8c0df6dfc31b5adf3c49e74288dfd6fd5dd217cd639b2610a"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "0bcf2c45169d7ffd65651ce82f47f36722cc59c91bbc1c1417a89ea6145c4f40"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "87a5c8d20107587b734530dbc8e273e1c1f01526782ea0e5ee8227fc57600516"
+    },
+    {
+      "longitude": 281.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "00acfe51192be9568c73cff1a771df574ce6cf05e713008a285bfc1ffb250a75"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "63fc0e109efcd4e9e57052b19ce57ecc1c804ab8abca209e34e342c471de24ba"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "678de167c4326ffe452d218b6f03576d43c4d3548ddff113e99348ec154769ea"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "592b5548c425522e37c51dd41bd87448cb52cc1e0bfa6428c9808f6bc5b3dc7d"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b6774b1ecacaa6e5dc86deefc004e0b0e34432ee854acf8364e24f0ff0e6a305"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "50ff78c6cd19a69be2b9df45caa59fcac7273e6acf55219564798ffaa8d01558"
+    },
+    {
+      "longitude": 285.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "7ebae5ea7e2b6f1ac61c74cb95fb8d0550e2f186bb0ebb0b23e0f611836508e1"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "3be48c8f3f5ab13e9f0d8c923be87d6420eeb2fe71d7bd2092c3075176bd3bb2"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d59e1204281a8c5c3320a075d81035d58eea55342db864e4d4ed13210076078b"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "c716f4ca6c70c566d5cdda354f0492c22223ed0fc6d67d10969df2a3b3d2a5ed"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "015783b53fe33890f88cdeacaf0b50f358eeed82cba44dd0feb556ad3bf9d2b5"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "4c975a1e9442bc35a4c2c7eeaed297f0168e24be67b626a1ee3906c245af4c82"
+    },
+    {
+      "longitude": 288.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d9024304d2ecdfd442021664a390280fd4e1d159f8bf707c0ca31b2875c3e908"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "4492d9365c871bfe972e49cce440ab04fbd470c8420fa32f1eaf3b49773baf3c"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "64243806636d9808bab2fdba8b727e26396981eefed17d990791e43394127355"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "03f97acbc98b6fa854715f7feb4fec22d73083b701aec6276227e84f6d882987"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "0014a2ae9b75e1ceceb0f940790212523cb77f42ab457736f1ce325274b89bea"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "2b617172d2df7156469ceab3968908c37b98ca0e1519fa22596abe11202332ca"
+    },
+    {
+      "longitude": 291.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "dca767b6cb47ab1a5c80a02a25d7e3672edd3b8e47f37f38c27021d434dc85a9"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "64246efb0ed9abb0c95733cef869a7f6db28997a773c8e0f7e616b142914b9ae"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "b4cd86ece51e7fe8d14e5e897e7dd9f7ff07facf316a7ec68fd84922aa5bfb3f"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "21d3fedf0f834c3f4a869a1154e2fcf8ee85e9c777dbf0ace00d2e4bb55efd5c"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bc0f1016d0b8018758b6e9e19b63eb873af97cfea476d532ee53cafd24bd0e98"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "0559991786120c928b8deeed2642999878884618a34135ab220cd6cdf5981a9e"
+    },
+    {
+      "longitude": 295.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "ad81da00b0b17988f94e623cd72849ea5e2db03d15b87ace9c1035e7b3c45056"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "7ec3f79c9dcd79136d2f37ba5ba77244fe95631d9c9c84fd01c3650d87686b54"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "40e46d27abf21ea512b09a40f2d1a3f4b3855e3e7a3aa9b6e45a164b87964373"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "f40fb9cf4f98259790389e3e1a634e4b5d90d85624e7a2e28ac1aaed371ae37b"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "2fba196d53221351218772d3265665567bd37b5764f6dc8b320177ac4c97dbe7"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "ce38e823ab52500aa22ea1f2c9db8051b02d42dffb0efd45abbdfe70e71f9fb6"
+    },
+    {
+      "longitude": 298.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "a7a54162da14575d7a1f5da929653972db873cd18f9ec5757be8b3fe20d91d20"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "f53d8ba95a635be7801307d4e02e05c9eb088422423728cb588f24b14c974a86"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "731cc964efc2e9ccb31b058e4388acfdcf3e7bac488f0c36231b0c056c73e890"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "11d26f7b7ddf4326ce76ce50fb57f8deb59271bb5b18e2355fff3c4e79a639e8"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b5ec938a33e1c9ad34d13bbeae1c6e409376c88c49b3df71b13eb5c89d3f938b"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "dbc92640626e69b035a7a83a3064afc6191637d3076ae2e104286479da2c3f6b"
+    },
+    {
+      "longitude": 301.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "7c11b93f0f202423fcd23345a544d8e7539d880ab899ea2b5f0ec71860f566dd"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "e6c3581be15ab43f35038a93cbc579332cc3d808e3ea198c0f68d1affe3c6d38"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d50008995b6d86306fe07ea0887971aea9df49da2bc9d0e90afee7291a06f6f9"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "055a1c7fe81d3f1bddb145bcf0a5cc81608f18c3951ad477efd4444a5c123934"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "cb4a6f1c7eaa83b6240bac96594d00b5e469f203075b2c93142234f1221e9515"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "f2da36802298f449dab77e410988ccf0fc31fe5d486431fa4c18fdb27d978917"
+    },
+    {
+      "longitude": 305.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "4a08eee92daa4599f72a709a496449a8cf0e2f68e96b6961ce1c43894946fc11"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d417d64dfb175bb245454d083d7e671762164cea578055d5a5c181f9b9a460e3"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "0bf768f657d10640e614acc42cc63e391a802ec9bfb4c4f31bf289c2a7ca92c0"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "cc307e8411b0e1601910235c68c08f06e28be16b31ed1130eb6ebf93fa5f65b0"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bab99c9c2c8f10f8e9239ee12c3fdd14e3d58256571d3ba11ae9da61a7159005"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "1a08f90f046e45a43812181ad8114574350042cc6634b6ea94917f83664e1ff4"
+    },
+    {
+      "longitude": 308.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "18208e0f95c6c21c266c357739f6f0b5b15c78769dc2df9e7b05b92dfb12a69a"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "af4557dd699baecd7896bd34aefdcbfa374d0bbd69af00df895e208b924cf44d"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "9e15417d5b92e44ea8dba427c666a22f787156c7a3c6c39628dbe4a7489076b5"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "13a8415c17bef7103572a7a21e63ea206bd745651cba3d56225d753af57e75b4"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "33dd2cbff40c1867b4be192906ea3cc44f45e4367dbb65dc6aaa0bf41dc3a448"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "bb33470c047fd99505a179cb317d69bb603c9f1706e528c97151b4690d4b8ef8"
+    },
+    {
+      "longitude": 311.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "d4923cdd73ebe4d468b4dbcf82ab8ff113b1c26895836fce0a3a582c91cb7b08"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "207a408bcdf7e2e70c7c692a0ec418462378b3137a791be9b71a543da003ad45"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "0999f8c613660e2b56d5f3c9226b0309465bc9dd4b8c9dfea4bc8c4c59d15fb0"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "8251cedf7bda3ec1cbe179ada7092da5ee0570addb898acb5c5c55e8c36ed830"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "793e4b66e88b12b99578d6fc22e8e960a1ba999ec8e56c080e34cde4f634dae7"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9ec07cf0860dfb2d5acef15711d82be432ead7b13a960ab87aa38f63a06dc3dd"
+    },
+    {
+      "longitude": 315.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0d6263e3bf87a90fc4a7e2128e65e0ff743fd3deb9591e1f59d22208961ef6bc"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "21c211d9678dfc174178db065ee03dd47e76b93ce3724f09d23ecc37b7f70e78"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "31bcbd2cb7adc581cffda9d8d0ba15dc1ad1cd98017b3b269ffe18d4c75df69e"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "58f362028e4bb0c8cdb3e9847a86e85540fcacf9bff9d6c348221870012ac1f8"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "0d58ef5266e720de11d073053858a5e27796baf656ac53d98cccee64b2a8b3e4"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "54337a304d447b582d01cf7f51faae9e9d6baa985bdf7e9c292681dbcb7c1684"
+    },
+    {
+      "longitude": 318.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "97620b5c13582498787ca3ddf23a99ad3f0b960c9318c8a72c8fc661d2c03037"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "19cf0137193fd0544a1ec2f51530b90bfc9bf889f01e3fc184fcb1759d15508c"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "4994532ab9899ede80a72fe2b43edd99b0c732254dd52b6ea5b6939e741d12fd"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "758c75963acda47244fb5c5d090e88eda7e980a34b1efaf950daf2bfdc7bd9fe"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9bdd9d61c7d9dfcdc615902befb2e512b3a662a1db7ac38ee34af7b613ebee19"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "1ec6a20c170d92cb19e01be456dd32794ba5961c42dcf48f5eee564418584c59"
+    },
+    {
+      "longitude": 321.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "0e8fe96fa151197d924e74dfdd6316c4f9d50ba43bd2b3fcf3314f08d509edcb"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "d8da1e2631e831daf0e7f820c35d77869ba7a23c35df45656c946ab59a070493"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "438cadb2684f1b8435d2987a47ea55c8eb0c9dd62e2fb7db0c506c296ab15ecb"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "1270619c34385289ffcbd068b242d047db83dd26ac4b03bf7de02ab77509d450"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "e26ebf32c8c1b116d64aa8f4cf2ffbbd5c53794d2371eb4e62d2807398f7fe02"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "6f11ab5bb45c798e8b251cf1440d8977ca40c478617a95c40f2091fe9ecfc95f"
+    },
+    {
+      "longitude": 325.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "28482e2fa11ff23883bfcfd99105469b07b097be3401c5deb6780286d883268c"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "b77a0df18763119763f4815a4e4bc36a3d373a6d49a3a2a66e5eb195860d1854"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "68cd56aea3083212dad058167f40e5abde01d2378c9fb3ff4fc2f9c950c5d582"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "703a76974087059cc519a5d30aa0e7f8b3c763229de86ce5d0501644719b4451"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "0c9c383f7db1a29132f41e67f6c10c37d387961daf0984e1a62c3e74b1b32f54"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "50bf018c2c443cf280a3c5d8b3b898fd4e63073fe1c24f2c53616416318b063a"
+    },
+    {
+      "longitude": 328.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "5f65bf156ec4e41a12d7388350ba0e6f77a1a6c74d848856ebd446753d241c88"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "77d87ab4f6e75b7ebbfd79e563c1b3f99fe923186abac1285d696e6779a9fbd5"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "0ede8be94649a553552669d5e64e520e2e62ed9e09970e5e0e90ed8a7986215b"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "1580cee059f1af317794340a2ae1f204414a8b04b063b9ea27413f8e8e4af727"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "3917765658b9a8336626c99caabc80c306d4890ebdc4366c03c1609088854b4d"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "df768e2ce5fb1f02ca385c2a6619b807718fec37ddbedb9faddc7b37931b049a"
+    },
+    {
+      "longitude": 331.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "e4a23e241c2d4d93c32c2eb11a9d22df0fd2995689c08eecfcbe3b28097add0f"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "9b90b028e14f99154e65a929f5dc69b9c0f9a499d6a761857eb884f57a4eaa42"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "49cb2472c24a2727ef73a51ebdc71acfc1fec5c382dc552250a8a982df6dd4b4"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d109dfb91bc0c281bf52177ae7c5a38226e1a02c6041f5f1da84dfddbc809b4a"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "9f14f774aeaf0fd5d00f9c09e484875953cc73f013997b326f015e3580072dc2"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "9e36db2ed9de8b5aeea75b2216670608542898cb9e1219d55e8bcc259992eab6"
+    },
+    {
+      "longitude": 335.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "c1b2f09646c9219ad8b3d79eea8df79b6208fa63252fba30410539a1a47a42d1"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "ff43d8541a3f5ab81bb24b00612b6f5e85cd98f6c7148ae21d37c6102c8c4b9f"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "f8798624b4cc4fbc98284c040ba287711d4b6c9199561567a2ebcd1905ff4f83"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "9e8ec8017c84a07094315c6a604f37a382ea9ded658f431d77dea0ba6edb74fe"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "7e2da8a02b55fc5f014388ae28b50c3836665844230ef8963dbb27aeff4901e6"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "401ed414dba399447115a0fec55c21342b469eea7da5aa3a3349d44cc11402bb"
+    },
+    {
+      "longitude": 338.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "ba0a64292428c0ad132a89c2bfd768b36574371318aec96a277b79edfc34a8be"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "a90a22db568d1e201c33a26ad3efe0de3813fcc62b1a54fe3d902261ce0814fc"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d8514af4c26e5fe6ffa569ce3b0ab787422ab76e648c07d8428d19a3d598614e"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "55a306a7fb8231a0c03328ad2f4183c990781639a0d524e7f9f1ffc9d07f78c2"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "d167c127c006b9b2b685b382bd89fc7ceb8091e610231eadea33223cd4817d0f"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "20abfdd8eff44a84d3b539ecb825f57c6bcd6f270eaa67b78d1c4c4abde1efe0"
+    },
+    {
+      "longitude": 341.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "aba8bc95dec9ab8509099cd08770f4a53dd9b55639bd1aeb3e7709a4afa9ec0e"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "a60be98941d5e3ec300ebc90388aa107f89397ae3791abdeaebec945b0cdd328"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "aeb8d37486eaae9043531ecb383958ca0ce95335917a366502016effe51d555c"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "0949621cb5d8ebb1e904119c9627fc6281fa0cbafb8bcbb81f00a53072b679b0"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "e9a5fed950e6912160cce1ee99a605023009d8c866071ae11ff24f7d2ffac8b7"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "ea9e8b723296882a87ca4b4dcfe3a9becb7caf42da2aa2eee3eb67e8f5a19b33"
+    },
+    {
+      "longitude": 345.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "7ac52e443704a26ebcff0e3d33b7242f5877c2aae905dfe900da8bc7e9f03707"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "afb9f8c22630e90672ce65c3d5b177766609bcaaf414ad5e43afb771b8fbe505"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "d2e164f76aa1954ce049ab6021ac06a52438b2c87258be2674562a3ab171cbf9"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "d8e84d3d9c55ee816583fa2c479f0603c59f1a1cd1f2cbc14f55fe91142370f8"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "bc29621fa5ba887fd4736869b43407dc93e24fffe7ec18e2783e42006fa36695"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "e414385b1c20ae2a03b8331ad16e70a64ba5e1eea8e41cf908c0943c4f951626"
+    },
+    {
+      "longitude": 348.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "73cbfe4ddabb1e24048740a0eef143c20b27289ed8efafbb0c5f321c8631d947"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "3fbbf8fe081f549c454e0e615aeb108199c1fa55b28aea78768ee523bb633804"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "aa766af2f9549b59ef56c7d044b248408e6b1b9fa160da3e25564a8ac249c6ac"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "ff89ded4d1d63c5dfb389718f202b22dbe5242ce1e30387444f8797b712e747c"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "b612c8351c8749ed0ec711da5ff6456f95ca1807ba32fbd87b01e973ee46c57a"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "298e5175f95abfec676e900774d84075badcde16820987da57f50f2afe2f3a20"
+    },
+    {
+      "longitude": 351.6666666666667,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "696ff8cb7ccb9c3fab3b8c81b22ed0381df01ab66ce9b71ab4310803e0054a19"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "76f08ff35a34f708df8e893ae476089533e9ddcc14cda70dd22e34b8b3ba9a12"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "730acd66c6c3283fc25f7b8ca6507541fe40d92e191bce4334c0849be1212f29"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "32034845c59c382b5acb340506b639bfe0c1ab8883f72bde416e525ac9d65730"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "51e4dd3fddd28e8b4d476199591f46c48ed6c6723bac8834ebb2b02b4bfe58e5"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "1b2d6b77a928a2b0238f215fc7acd0abae95cf94515a1ed226afbe55cd1ecd19"
+    },
+    {
+      "longitude": 355.0,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "b0ebd2741a0efa5db098bac6163b3db645039747ea736a019acf3c1fea770f79"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 1,
+      "year_basis": null,
+      "sha256": "6f9ffac6f3f18843f294691d37d025fe75f53ad5513361f1aa371d3095da6f9d"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 1,
+      "year_basis": "savana_360",
+      "sha256": "fe7e2b6e47bd13a80d4999be9572fac48c74a0d12495dadb9845f0d6359c8c50"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 1,
+      "year_basis": "julian_365.25",
+      "sha256": "c47027153bfd7fdc07218270fb4c4ac59b29daa71a3e527ecc2262f90b61d4b9"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 2,
+      "year_basis": null,
+      "sha256": "78b75070e802015f30f21897806d0ae690573b5a83e6ed1295586cc93d4230a1"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 2,
+      "year_basis": "savana_360",
+      "sha256": "de56e1ae05904e8ffec9739804731b87ce425ce2b0e8bf080d64fb60cb011951"
+    },
+    {
+      "longitude": 358.3333333333333,
+      "levels": 2,
+      "year_basis": "julian_365.25",
+      "sha256": "928ca2c6b805a7aead0bf720b95837c2e670b22f00ccdf2e58b40e30f6d2e1ed"
+    }
+  ]
+}

@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from fractions import Fraction
 import math
 
-from .kalachakra_policy import CLOCKS, PROFILE_ID, VERSION, RULE_IDS, CONFLICT_IDS, ROWS, WEIGHTS, RULERS, GROUPS
+from .kalachakra_policy import CLOCKS, PROFILE_IDS, VERSION, RULE_IDS, CONFLICT_IDS, WEIGHTS, RULERS, GROUPS
+from ._kalachakra_recipes import recipe_for_row, source_row, advance, window_total, birth_window
 
 
 class KalachakraInputError(ValueError):
@@ -66,6 +67,13 @@ def named_ayanamsa(value):
     if type(value) is not str or value not in Ayanamsa.ALL:
         raise KalachakraInputError("ayanamsa_system must be a named Moira ayanamsa")
     return value
+
+
+def admitted_row(row_id):
+    try:
+        return recipe_for_row(row_id)
+    except ValueError as exc:
+        raise KalachakraInputError(str(exc)) from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -220,9 +228,10 @@ class KalachakraBirth:
         integer(self.nakshatra_number,"nakshatra_number",1,27)
         integer(self.pada_number,"pada_number",1,4)
         integer(self.birth_row_position,"birth_row_position",0,8)
+        recipe = admitted_row(self.row_id)
         group = next(g for g,ns in GROUPS.items() if self.nakshatra_number in ns)
-        row_id = f"{group}/{self.pada_number}"
-        row = ROWS[row_id]
+        row_id = f"{recipe.namespace}{group}/{self.pada_number}"
+        row = source_row(row_id)
         total = sum(WEIGHTS[s] for s in row)
         for name in ("fraction_in_pada","elapsed_row_years","natal_row_remaining_years",
                      "birth_md_remaining_years","coverage_years"):
@@ -233,13 +242,13 @@ class KalachakraBirth:
         cumulative = sum(WEIGHTS[s] for s in row[:i])
         weight = WEIGHTS[row[i]]
         elapsed = self.fraction_in_pada*total
-        deha,jeeva = (row[0],row[-1]) if group[0]=='S' else (row[-1],row[0])
+        full_coverage,deha,jeeva,reference = birth_window(row_id,i)
         from .kalachakra import _strict_equal
         actual = (self.group,self.row_id,self.row_signs,self.row_total_years,self.elapsed_row_years,
             self.natal_row_remaining_years,self.birth_md_full_years,self.birth_md_remaining_years,
             self.coverage_years,self.deha_sign_index,self.jeeva_sign_index,self.deha_jeeva_reference)
         expected = (group,row_id,row,total,elapsed,total-elapsed,weight,Fraction(cumulative+weight)-elapsed,
-            Fraction(total+cumulative)-elapsed,deha,jeeva,"natal_row")
+            Fraction(full_coverage+cumulative)-elapsed,deha,jeeva,reference)
         if not cumulative <= elapsed < cumulative+weight or not _strict_equal(actual,expected):
             raise KalachakraInputError("inconsistent birth classification or source balance")
 
@@ -275,8 +284,9 @@ class KalachakraPeriod:
         integer(self.sign_index,"sign_index",0,11)
         integer(self.parent_weight,"parent_weight",1,21)
         integer(self.weight,"weight",4,21)
-        integer(self.denominator,"denominator",1,100)
-        if type(self.row_id) is not str or self.row_id not in ROWS or ROWS[self.row_id][self.row_position] != self.sign_index:
+        integer(self.denominator,"denominator",1,189)
+        admitted_row(self.row_id)
+        if source_row(self.row_id)[self.row_position] != self.sign_index:
             raise KalachakraInputError("period sign/row identity mismatch")
         if self.ruler != RULERS[self.sign_index] or self.weight != WEIGHTS[self.sign_index]:
             raise KalachakraInputError("period ruler/weight mismatch")
@@ -316,8 +326,10 @@ class KalachakraPeriod:
             expected_parent = self.path[:1]
             if self.children or self.children_status != "maximum_depth" or self.parent_path != expected_parent:
                 raise KalachakraInputError("invalid AD parent/depth")
-            if self.denominator != sum(WEIGHTS[s] for s in ROWS[self.row_id]):
-                raise KalachakraInputError("AD denominator must be natal-row total")
+            parent_row,parent_pos,_ = advance(self.row_id,self.row_position,-self.path[1])
+            if (self.denominator,self.parent_weight) != (
+                window_total(parent_row,parent_pos),WEIGHTS[source_row(parent_row)[parent_pos]]):
+                raise KalachakraInputError("AD weights must match its profile-owned parent window")
         elif self.parent_path is not None or self.parent_weight != 1 or self.denominator != 1:
             raise KalachakraInputError("invalid MD parent/weights")
         elif self.children_status == "not_requested":
@@ -331,8 +343,9 @@ class KalachakraPeriod:
                 if type(child) is not KalachakraPeriod or child.path != self.path+(ordinal,) or child.children:
                     raise KalachakraInputError("invalid child identity or depth")
                 child.__post_init__()
+                child_row,child_pos,_ = advance(self.row_id,self.row_position,ordinal)
                 if (child.full_years.start,child.row_id,child.row_position,child.md_cycle_index,child.parent_weight) != (
-                    cursor,self.row_id,(self.row_position+ordinal)%9,self.md_cycle_index,self.weight):
+                    cursor,child_row,child_pos,self.md_cycle_index,self.weight):
                     raise KalachakraInputError("invalid child partition or rotation")
                 cursor = child.full_years.end
             if cursor != self.full_years.end:
@@ -437,7 +450,7 @@ class KalachakraCurrent:
 
 
 def admit(profile_id, levels, seed=None, birth_epoch=None, projection=None):
-    if type(profile_id) is not str or profile_id != PROFILE_ID:
+    if type(profile_id) is not str or profile_id not in PROFILE_IDS:
         raise KalachakraInputError("unsupported Kalachakra profile_id")
     integer(levels,"levels",1,2)
     if seed is not None:

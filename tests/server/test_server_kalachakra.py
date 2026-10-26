@@ -164,14 +164,38 @@ def test_invalid_generated_moon_is_internal_failure(client,fake_astronomy,monkey
     assert r.status_code==500 and r.json()['error_code']=='kalachakra_internal_invariant'
 
 
-def test_generated_index_failure_is_internal_not_resource_unavailable(client,fake_astronomy,monkeypatch):
+@pytest.mark.parametrize('error',[KeyError,IndexError])
+def test_generated_lookup_failure_is_internal_not_resource_unavailable(client,fake_astronomy,monkeypatch,error):
     def corrupt(*args,**kwargs):
-        raise IndexError('private internal position buffer')
+        raise error('private internal position buffer')
     monkeypatch.setattr('moira._kalachakra_astronomy.planet_at',corrupt)
     r = client.post(BASE+'/chart/sequence',json={'profile_id':PROFILE_ID,
         'birth_datetime':'2000-01-01T12:00:00Z','ayanamsa_system':'Lahiri'})
     assert r.status_code==500 and r.json()['error_code']=='kalachakra_internal_invariant'
     assert 'private' not in r.text
+
+
+@pytest.mark.parametrize('endpoint',['/sequence','/chart/sequence','/current','/chart/current'])
+def test_missing_live_anchor_is_resource_unavailable(client,fake_astronomy,monkeypatch,endpoint):
+    from moira._kalachakra_astronomy import _STAR_ANCHORED
+    system = next(iter(_STAR_ANCHORED))
+    def missing(*args,**kwargs):
+        raise KeyError('private missing anchor catalogue key')
+    monkeypatch.setattr('moira._kalachakra_astronomy.star_at',missing)
+    if endpoint.startswith('/chart/'):
+        request = {'profile_id':PROFILE_ID,'birth_datetime':'2000-01-01T12:00:00Z',
+                   'ayanamsa_system':system,'projection':{'year_basis':'savana_360'}}
+    else:
+        request = {**payload(projected=True),
+                   'seed':{'basis':'tropical','moon_tropical_lon':57.5,'ayanamsa_system':system}}
+    if endpoint.endswith('/current'):
+        request['query_epoch'] = {'kind':'jd_utc','value':2451545}
+    response = client.post(BASE+endpoint,json=request)
+    assert response.status_code==503,response.text
+    assert response.json()['error_code']=='kalachakra_resource_unavailable'
+    assert response.json()['request_id']==response.headers['X-Request-ID']
+    assert 'private' not in response.text
+    assert fake_astronomy['ayanamsa']==0 and fake_astronomy['moon']==0
 
 
 @pytest.mark.requires_ephemeris

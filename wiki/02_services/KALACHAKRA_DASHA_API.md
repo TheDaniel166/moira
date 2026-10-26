@@ -1,10 +1,11 @@
 # Kalachakra Dasha API
 
-The selected profile is `bphs_santhanam_longitude_row_cycle_v1`, governed by the
+The admitted profiles are `bphs_santhanam_longitude_row_cycle_v1` and
+`rao_2000_longitude_continuous_v1`, governed by the
 [backend standard](../02_standards/KALACHAKRA_DASHA_STANDARD.md),
 [source ledger](../06_roadmap/VEDIC_KALACHAKRA_SOURCE_RESEARCH_2026-10-12.md)
 and [implementation plan](../06_roadmap/VEDIC_KALACHAKRA_IMPLEMENTATION_PLAN_2026-10-12.md).
-It admits nine MD occurrences and optional nine full AD records per MD, preserving
+Each admits nine MD occurrences and optional nine full AD records per MD, preserving
 repeated signs and birth clipping. Other traditions remain named research candidates.
 Discovery and OpenAPI enumerate the same supported named ayanamsas.
 
@@ -35,7 +36,7 @@ active = current_kalachakra_periods(
 assert len(source.periods) == 9
 assert schedule.generated_node_count == 90
 assert active.status == "active" and len(active.active_line) == 2
-assert sum(p.selectable for p in kalachakra_profiles().profiles) == 1
+assert sum(p.selectable for p in kalachakra_profiles().profiles) == 2
 ```
 
 For date-derived input use the facade's reader; module-level astronomy calls
@@ -126,12 +127,64 @@ Astronomical JDs are preflighted within `[-10000000,10000000]`, then actual read
 coverage is enforced. Pure calendar projection instead requires finite,
 representable endpoints.
 
+## Rao 2000 profile and compatibility
+
+Select `profile_id="rao_2000_longitude_continuous_v1"` on any of the same four
+calculation routes or Python/facade operations. Discovery version `ved014.2`
+lists both admitted profiles and their versions, source/rule/conflict IDs,
+row namespace, continuation and Deha/Jeeva reference. The old candidate ID
+`candidate_rao_2000_continuous` is not an executable alias. Other candidates
+remain unselectable, and profile selection remains mandatory.
+
+Rao version `ved014.rao2000.1` implements chapter 24 of the 2000 textbook:
+whole-row longitude balance, continuous progression through four padas then the
+other subgroup in the same Savya/Apasavya family, and nine forward AD occurrences
+starting at each MD. Their weight sum is recomputed for each parent. For example,
+Taurus/Taurus in the initial Savya sequence is `256/97` source years; the selected
+Santhanam profile's value remains `256/100`.
+
+Rao's Deha/Jeeva reference is `birth_nine_md_window`: the first/ninth emitted MD
+signs, reversed for Apasavya. Its `coverage_years` uses the actual nine forward
+MDs minus the elapsed part of the birth MD; it need not equal the natal-row total.
+Rao's row IDs are `R2000/S1/1` through `R2000/A2/4`; each period identifies the
+source row it occupies. `md_cycle_index` starts at zero and increments when the
+eighth family row wraps to the first (a 72-occurrence family table); children
+inherit the MD's cycle index.
+Santhanam keeps its original row IDs and natal-row cycle semantics.
+
+Rao's directed gati readings use `R2000_GATI` and include `markati`. Continuous
+row seams can be classified under that source. Santhanam retains `KC_GATI`, its
+unclassified row seams and unresolved KC-10 Cancer/Leo readings. Classification
+metadata does not generate event predictions. Eligibility remains `not_evaluated`.
+
+The source decisions `R2000-01` through `R2000-09` are discoverable. In particular,
+the profile explicitly carries the reconciled KC-03 star membership rather than
+silently copying Table 45's defective heading. Footnote 64 governs the nine-MD
+bound despite Exercise 34's ten printed entries. Footnote 65 prefers the 360-day
+clock; choosing `julian_365.25` is an explicit Moira projection, not a claim of
+textbook calendar parity. Both clocks remain available without a default.
+
+```python
+rao = kalachakra_sequence(
+    KalachakraSeed("sidereal", 45 + 50 / 60),
+    profile_id="rao_2000_longitude_continuous_v1",
+)
+assert [p.sign_index for p in rao.periods] == [7, 6, 5, 4, 3, 2, 1, 0, 8]
+assert rao.birth.deha_jeeva_reference == "birth_nine_md_window"
+assert rao.periods[1].children[0].denominator == 97
+```
+
+Santhanam's calculation version and sequence/current payloads are preserved.
+Independent source tests and 648 frozen pre-refactor transport cases guard the
+extension. Clients must accept the newly admitted profile and source-specific
+metadata to consume Rao; the bounds remain levels 1-2 and 9/90 period nodes.
+
 ## Result semantics
 
 Signs, row positions, cycle indices and path ordinals are zero-based. Nakshatra
 and pada numbers are one-based. `path=[m]` identifies an MD occurrence and
 `path=[m,a]` its full-axis AD. A repeated sign retains a different path. Child
-row wrapping does not advance the parent's MD row cycle.
+row wrapping does not advance the parent's MD cycle.
 
 Source-year values use exact, reduced ratios. For example `49/100` is serialized
 as `{"numerator":"49","denominator":"100"}`. Strings preserve integers beyond
@@ -144,7 +197,8 @@ Each period has `full_years`, nullable `visible_years`, and corresponding
 `full_dates` / `visible_dates` when projected. Wholly pre-birth ADs retain full
 records with `visibility=clipped_before_birth` and null visible intervals.
 `birth` distinguishes row total, elapsed row, original-row remainder, birth-MD
-balance and nine-MD coverage. Deha/Jeeva always have `reference=natal_row`.
+balance and nine-MD coverage. `deha_jeeva_reference` is `natal_row` for
+Santhanam and `birth_nine_md_window` for Rao.
 
 Projected endpoints are UTC-derived Julian dates. The astronomical receipt
 separately identifies UT1, TT, TDB, bound Delta-T, ephemeris identity, true
@@ -160,11 +214,13 @@ active line. They do not generate more cycles. A valid source sequence may have
 a residual too short to project at the chosen JD origin; the projection fails
 explicitly while the source-only calculation remains available.
 
-Catalogue/sequence results carry source and rule IDs and all fourteen conflict
-decisions. Transitions report ordered occurrence edges, seams, visibility and
-bounded classification. Both Cancer/Leo directions retain unresolved KC-10;
-unclassified seams/reverse pairs are not asserted to be universally without
-gati. Eligibility remains `not_evaluated`. Row totals are not lifespan estimates.
+The catalogue carries fourteen KC and nine R2000 decisions; each calculation
+carries its selected profile's source, rule and conflict IDs. Transitions report
+ordered occurrence edges, seams, visibility and bounded classification.
+Santhanam retains unresolved KC-10 for both Cancer/Leo directions; Rao carries
+its separately sourced directed classifications. An unclassified edge is not
+asserted to be universally without gati. Eligibility remains `not_evaluated`.
+Row totals are not lifespan estimates.
 
 ## Errors
 
@@ -180,5 +236,8 @@ Errors retain the common envelope and `X-Request-ID` correlation:
 | 500 | `kalachakra_internal_invariant` | Generated result or serializer invariant failure; sanitized, logged with request ID |
 
 Bad requests are rejected before astronomical work. Internal defects are not
-converted into caller errors or empty successful schedules. The actual OpenAPI
+converted into caller errors or empty successful schedules. A missing anchor
+catalogue key returns `503`; internal `KeyError` or `IndexError` failures during
+time binding, ayanamsa reduction or lunar computation return the sanitized
+`kalachakra_internal_invariant` `500`, not a resource outage. The actual OpenAPI
 schema and `/v1/meta/routes` expose all five operations and their bounds.

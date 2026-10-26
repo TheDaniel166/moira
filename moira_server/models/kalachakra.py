@@ -1,6 +1,6 @@
-"""Strict, bounded REST contracts for the named Kalachakra profile."""
+"""Strict, bounded REST contracts for the named Kalachakra profiles."""
 from typing import Annotated, Literal
-from pydantic import ConfigDict, Field, StrictBool, model_validator
+from pydantic import AfterValidator, ConfigDict, Field, StrictBool, model_validator
 import math
 from moira.kalachakra import (
     KalachakraEpoch, KalachakraSeed, KalachakraProjection,
@@ -8,16 +8,28 @@ from moira.kalachakra import (
 )
 from moira._kalachakra_types import admit, astronomical_epoch
 from moira.sidereal import Ayanamsa
+from moira._kalachakra_recipes import RECIPES, DENOMINATORS, recipe_for_row
 from .common import _StrictModel
 from ._vedic_inputs import FiniteNumber, CivilDateTime, KnownAyanamsa, SignIndex
 
-ProfileId = Literal['bphs_santhanam_longitude_row_cycle_v1']
+ProfileId = Literal['bphs_santhanam_longitude_row_cycle_v1','rao_2000_longitude_continuous_v1']
 YearBasis = Literal['savana_360','julian_365.25']
 Level = Annotated[int, Field(strict=True,ge=1,le=2)]
 RowPosition = Annotated[int, Field(strict=True,ge=0,le=8)]
 Path = Annotated[list[RowPosition], Field(min_length=1,max_length=2)]
 Angle = Annotated[float, Field(strict=True,ge=0,lt=360,allow_inf_nan=False)]
 AyanamsaName = Annotated[KnownAyanamsa,Field(json_schema_extra={'enum':list(Ayanamsa.ALL)})]
+RowId = Annotated[str,Field(pattern=r'^(R2000/)?[SA][12]/[1-4]$')]
+
+
+def admitted_denominator(value):
+    if value not in DENOMINATORS:
+        raise ValueError('denominator must belong to an admitted source window')
+    return value
+
+
+Denominator = Annotated[int,Field(strict=True,json_schema_extra={'enum':list(DENOMINATORS)}),
+                       AfterValidator(admitted_denominator)]
 
 
 class DatetimeEpochRequest(_StrictModel):
@@ -169,7 +181,7 @@ class BirthResponse(_StrictModel):
     nakshatra_number: Annotated[int,Field(strict=True,ge=1,le=27)]
     pada_number: Annotated[int,Field(strict=True,ge=1,le=4)]
     group: Literal['S1','S2','A1','A2']
-    row_id: Annotated[str,Field(pattern=r'^[SA][12]/[1-4]$')]
+    row_id: RowId
     row_signs: Annotated[list[SignIndex],Field(min_length=9,max_length=9)]
     fraction_in_pada: ExactRatioResponse
     row_total_years: Literal[83,85,86,100]
@@ -181,7 +193,7 @@ class BirthResponse(_StrictModel):
     coverage_years: ExactRatioResponse
     deha_sign_index: SignIndex
     jeeva_sign_index: SignIndex
-    deha_jeeva_reference: Literal['natal_row']
+    deha_jeeva_reference: Literal['natal_row','birth_nine_md_window']
 
 
 class PeriodResponse(_StrictModel):
@@ -192,14 +204,14 @@ class PeriodResponse(_StrictModel):
     ]})
     path: Path
     parent_path: Path | None
-    row_id: str
+    row_id: RowId
     row_position: RowPosition
     md_cycle_index: Annotated[int,Field(strict=True,ge=0,le=1)]
     sign_index: SignIndex
     ruler: Literal['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn']
     parent_weight: Annotated[int,Field(strict=True,ge=1,le=21)]
     weight: Annotated[int,Field(strict=True,ge=4,le=21)]
-    denominator: Literal[1,83,85,86,100]
+    denominator: Denominator
     full_years: SourceSpanResponse
     visible_years: SourceSpanResponse | None
     full_dates: DateSpanResponse | None
@@ -231,9 +243,9 @@ class TransitionResponse(_StrictModel):
     row_seam: StrictBool
     visible: StrictBool
     classification_status: Literal['classified','unresolved_source_conflict','row_seam_not_classified','not_classified_by_profile']
-    classification: Literal['mandooki','simhavlokan'] | None
+    classification: Literal['mandooki','simhavlokan','markati'] | None
     conflict_ids: Annotated[list[Literal['KC-10']],Field(max_length=1)]
-    rule_id: Literal['KC_GATI']
+    rule_id: Literal['KC_GATI','R2000_GATI']
 
 
 class ProjectionResponse(_StrictModel):
@@ -245,7 +257,7 @@ class ProjectionResponse(_StrictModel):
 
 class ResultIdentity(_StrictModel):
     profile_id: ProfileId
-    profile_version: Literal['ved014.1']
+    profile_version: Literal['ved014.1','ved014.rao2000.1']
     levels: Level
     birth: BirthResponse
     provenance: ProvenanceResponse
@@ -253,6 +265,17 @@ class ResultIdentity(_StrictModel):
     rule_ids: list[str]
     conflict_ids: list[str]
     eligibility_status: Literal['not_evaluated']
+
+    @model_validator(mode='after')
+    def profile_identity(self):
+        recipe = RECIPES[self.profile_id]
+        if (self.profile_version,tuple(self.source_ids),tuple(self.rule_ids),tuple(self.conflict_ids),
+            self.birth.deha_jeeva_reference) != (
+            recipe.version,recipe.source_ids,recipe.rule_ids,recipe.conflict_ids,recipe.deha_jeeva_reference):
+            raise ValueError('result metadata disagrees with its named profile')
+        if recipe_for_row(self.birth.row_id) is not recipe:
+            raise ValueError('birth row belongs to another profile')
+        return self
 
 
 class KalachakraSequenceResponse(ResultIdentity):
@@ -273,6 +296,9 @@ class KalachakraSequenceResponse(ResultIdentity):
             raise ValueError('generated nodes disagree with requested depth')
         if any(p.children_status != ('generated' if self.levels==2 else 'not_requested') for p in self.periods):
             raise ValueError('children status disagrees with depth')
+        if any(recipe_for_row(p.row_id).profile_id != self.profile_id
+               for md in self.periods for p in (md,*md.children)):
+            raise ValueError('period row belongs to another profile')
         if (self.projection_status=='projected') != (self.projection is not None and self.coverage_dates is not None):
             raise ValueError('inconsistent projection status')
         return self
@@ -303,7 +329,7 @@ class KalachakraCurrentResponse(ResultIdentity):
 
 
 class KalachakraCatalogueResponse(_StrictModel):
-    catalogue_version: Literal['ved014.1']
+    catalogue_version: Literal['ved014.2']
     profiles: list[KalachakraProfile]
     sources: list[KalachakraSource]
     rules: list[KalachakraRule]
