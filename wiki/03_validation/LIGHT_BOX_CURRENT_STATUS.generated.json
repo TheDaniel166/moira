@@ -27,10 +27,10 @@
     }
   ],
   "doctrine_text_changed": false,
-  "engine_version": "6.11.0",
-  "evidence_source_revision": "fcc1efeaa987f8128d852f30517dcb05b5a8cc61",
+  "engine_version": "6.11.1",
+  "evidence_source_revision": "8188e9ba90c680528cf53cdc68d3128e676e84fa",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "78d580c4275d5755137109e951ebd77320fa66b09d35036fb642b34bf4746de6",
+  "inventory_fingerprint_sha256": "0be3d76ff38de4bb6009aabf9fee014363e92f3d58d16686900cf8756ab03971",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Bounded replay contracts cover 210 calculations and do not generalize to their entire families.",
