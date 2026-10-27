@@ -299,12 +299,69 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             bound_doctrine=resolved_doctrine,
         )
 
-    def longevity(self, chart, houses):
-        """Calculate the Hyleg and Alcocoden."""
-        facade = _facade_module()
+    def longevity(
+        self,
+        chart,
+        houses,
+        *,
+        observer_latitude=None,
+        prenatal_new_moon_longitude=None,
+        prenatal_full_moon_longitude=None,
+        latest_prenatal_syzygy=None,
+    ):
+        """Determine the hyleg and alcocoden by Lilly, *Christian Astrology* (1647).
+
+        Returns ``find_alcocoden_lilly_1647``'s determination, whose ``hyleg``
+        field carries the hyleg determination. ``houses`` must be quadrant
+        cusps whose first cusp is the Ascendant (Lilly erected in
+        Regiomontanus); the chart must contain all seven planets. Sect comes
+        from the Sun's hemisphere in the horizon frame, exact above the polar
+        circles when ``observer_latitude`` is given; the same latitude, the
+        houses' ARMC and the chart's obliquity serve Lilly's under-the-earth
+        cases, which otherwise raise rather than guess. The syzygy inputs are
+        needed only when no luminary is hylegiacal.
+
+        The legacy ``moira.longevity.calculate_longevity`` (unsourced
+        alcocoden and granted-years rules) is no longer used here.
+        """
+        from .longevity import find_alcocoden_lilly_1647
+
         lons = chart.longitudes(include_nodes=False)
-        day = facade.is_day_chart(lons.get("Sun", 0.0), houses.asc)
-        return facade.calculate_longevity(lons, houses.cusps, day)
+        missing = [
+            planet
+            for planet in ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn")
+            if planet not in lons
+        ]
+        if missing:
+            raise ValueError(
+                "longevity needs all seven planets; chart is missing "
+                + ", ".join(missing)
+            )
+        cusps = list(houses.cusps)
+        if len(cusps) != 12 or abs((cusps[0] - houses.asc + 180.0) % 360.0 - 180.0) > 1e-9:
+            raise ValueError(
+                "longevity needs 12 quadrant cusps whose first cusp is the "
+                "Ascendant (Lilly erected in Regiomontanus); got system "
+                f"{getattr(houses, 'system', 'unknown')}"
+            )
+        sun_dignity = next(
+            item
+            for item in self.dignities(chart, houses, observer_latitude=observer_latitude)
+            if item.planet == "Sun"
+        )
+        if sun_dignity.sect_truth is None:
+            raise ValueError("longevity could not evaluate sect from the Sun's hemisphere")
+        return find_alcocoden_lilly_1647(
+            lons,
+            cusps,
+            sun_dignity.sect_truth.is_day_chart,
+            armc=houses.armc,
+            obliquity=chart.obliquity,
+            geographic_latitude=observer_latitude,
+            prenatal_new_moon_longitude=prenatal_new_moon_longitude,
+            prenatal_full_moon_longitude=prenatal_full_moon_longitude,
+            latest_prenatal_syzygy=latest_prenatal_syzygy,
+        )
 
     def planetary_nodes(self, dt: datetime):
         """Return heliocentric orbital nodes and apsides for all planets."""

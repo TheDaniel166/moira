@@ -39,6 +39,7 @@ from ..models.lots import (
     LotsCatalogResponse,
     LotsConditionsResponse,
     LotsDependenciesResponse,
+    LotsHouseFrameResponse,
     LotsResultResponse,
     PartDefinitionResponse,
 )
@@ -282,6 +283,16 @@ def serialize_lots_result(evaluation: LotsEvaluation) -> LotsResultResponse:
         status=evaluation.status,
         evaluated_count=evaluation.evaluated_count,
         not_evaluable_count=evaluation.not_evaluable_count,
+        house_frame=(
+            None
+            if evaluation.house_frame is None
+            else LotsHouseFrameResponse(
+                system=evaluation.house_frame.system,
+                effective_system=evaluation.house_frame.effective_system,
+                fallback=evaluation.house_frame.fallback,
+                fallback_reason=evaluation.house_frame.fallback_reason,
+            )
+        ),
     )
 
 

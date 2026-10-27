@@ -177,6 +177,8 @@ def _derive_dignity_support_truth(
         horizon_frame=DignityHorizonFrame(
             asc_longitude=houses.asc,
             mc_longitude=houses.mc,
+            geographic_latitude=request.observer_lat,
+            obliquity=chart.obliquity,
         ),
         node_positions=node_positions,
         fixed_star_positions=fixed_star_positions,

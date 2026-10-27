@@ -499,3 +499,19 @@ def test_dignities_routes_are_registered() -> None:
     assert "/v1/dignities/chart/condition" in paths
     assert "/v1/dignities/chart/profile" in paths
     assert "/v1/dignities/chart/network" in paths
+
+
+@pytest.mark.requires_ephemeris
+def test_dignities_route_sect_is_exact_at_a_polar_midnight_sun(
+    client_with_engine: TestClient,
+) -> None:
+    # 2024-06-21 00:00 UTC at 80 N: the Sun is up (lower culmination, about
+    # +13 deg) while the Midheaven is about 13 deg below the horizon.
+    response = client_with_engine.post(
+        "/v1/dignities/chart",
+        json={"dt": "2024-06-21T00:00:00Z", "observer_lat": 80.0, "observer_lon": 0.0},
+    )
+
+    assert response.status_code == 200
+    sun = next(item for item in response.json()["dignities"] if item["planet"] == "Sun")
+    assert sun["sect_truth"]["is_day_chart"] is True

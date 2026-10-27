@@ -12,6 +12,7 @@ from moira.dignities import (
     DignitiesService,
     DignityHorizonFrame,
     HorizonHemisphere,
+    almuten_figuris_determination,
     calculate_dignities,
 )
 from moira.houses import houses_from_armc
@@ -199,3 +200,87 @@ def test_polar_profile_sect_follows_true_solar_altitude() -> None:
 
     assert exact.is_day_chart is True
     assert assumed.is_day_chart is False
+
+
+# ---------------------------------------------------------------------------
+# Remaining dignity callers at a polar midnight sun
+#
+# 2024-06-21 00:00 UTC at 80 deg N, 0 deg E: the Sun is near lower culmination
+# at about +13 deg altitude while the Midheaven (near 0 Capricorn, dec -23.4)
+# lies about 13 deg below the horizon. A day chart the MC-only frame calls night.
+# ---------------------------------------------------------------------------
+
+POLAR_DT = datetime(2024, 6, 21, 0, 0, tzinfo=timezone.utc)
+
+
+def _sun_sect(dignities) -> bool:
+    return next(item for item in dignities if item.planet == "Sun").sect_truth.is_day_chart
+
+
+def test_facade_dignities_use_the_meridian_altitude_when_given_latitude(moira_engine) -> None:
+    chart = moira_engine.chart(POLAR_DT)
+    houses = moira_engine.houses(POLAR_DT, 80.0, 0.0, HouseSystem.WHOLE_SIGN)
+    sun_altitude = _ecliptic_altitude(
+        chart.planets["Sun"].longitude, houses.armc, 80.0, chart.obliquity
+    )
+    assert sun_altitude > 5.0
+
+    assert _sun_sect(moira_engine.dignities(chart, houses, observer_latitude=80.0)) is True
+    assert _sun_sect(moira_engine.dignities(chart, houses)) is False
+
+
+def _polar_equal_frame(lat: float):
+    for step in range(288):
+        armc = step * 1.25
+        houses = houses_from_armc(armc, OBLIQUITY, lat, HouseSystem.EQUAL)
+        frame = DignityHorizonFrame(
+            asc_longitude=houses.asc,
+            mc_longitude=houses.mc,
+            geographic_latitude=lat,
+            obliquity=OBLIQUITY,
+        )
+        if frame.mc_altitude_deg >= 0.0:
+            continue
+        for index in range(72):
+            sun = index * 5.0 + 0.5
+            if _ecliptic_altitude(sun, armc, lat, OBLIQUITY) > 1.0:
+                return houses, sun
+    pytest.fail("no polar frame with a below-horizon Midheaven and a risen Sun")
+
+
+def test_lilly_almuten_accepts_the_true_polar_sect() -> None:
+    houses, sun = _polar_equal_frame(80.0)
+    positions = {**POSITIONS, "Sun": sun}
+    common = dict(
+        doctrine="william_lilly_1647",
+        midheaven_longitude=houses.mc,
+        speeds={planet: 1.0 for planet in HELLENISTIC_CLASSICAL_PLANETS},
+        north_node_longitude=0.0,
+        fixed_star_longitudes={"Regulus": 150.0, "Spica": 204.0, "Algol": 56.0},
+    )
+
+    exact = almuten_figuris_determination(
+        positions,
+        list(houses.cusps),
+        True,
+        geographic_latitude=80.0,
+        obliquity=OBLIQUITY,
+        **common,
+    )
+    assert exact.is_day_chart is True
+
+    with pytest.raises(ValueError, match="is_day does not match"):
+        almuten_figuris_determination(positions, list(houses.cusps), True, **common)
+
+
+def test_other_almuten_doctrines_refuse_meridian_inputs() -> None:
+    houses, sun = _polar_equal_frame(80.0)
+    with pytest.raises(ValueError, match="geographic_latitude, obliquity used only"):
+        almuten_figuris_determination(
+            {**POSITIONS, "Sun": sun},
+            list(houses.cusps),
+            True,
+            doctrine="william_lilly_1647_others_five_places",
+            geographic_latitude=80.0,
+            obliquity=OBLIQUITY,
+        )

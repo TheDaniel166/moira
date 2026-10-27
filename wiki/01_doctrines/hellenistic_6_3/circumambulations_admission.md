@@ -5,8 +5,12 @@
 ## Object
 
 Release a named significator through Egyptian bounds. Bound lord is the
-time lord. Years follow the declared rising-time / equatorial key from the
-source packet, not a primary-direction method family.
+time lord. The only evaluable year key is the bound lord's planetary minor
+years, a non-traditional Moira key: no primary passage times each bound by its
+lord's minor years, and a full circuit under it spans 1,020 years. The attested
+key, ascensional time at the native's klima (about one degree per year;
+Ptolemy, *Tetrabiblos* IV.10; Valens, *Anthology* III.3), and the equatorial
+key remain `not_evaluable`. This is not a primary-direction method family.
 
 ## Not this object
 

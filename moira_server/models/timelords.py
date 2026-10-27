@@ -560,6 +560,17 @@ class ZRFortuneAngularityTruthResponse(_StrictModel):
     reason: str | None
 
 
+class ZRStartShiftTruthResponse(_StrictModel):
+    status: TimelordEvaluationStatus
+    lot_name: str
+    lot_sign: str
+    fortune_sign: str | None
+    rule_applies: bool
+    shift_applied: bool | None
+    start_sign: str
+    reason: str | None
+
+
 class ZRReleasingPeriodResponse(_StrictModel):
     level: int
     level_name: str
@@ -578,6 +589,7 @@ class ZRReleasingPeriodResponse(_StrictModel):
     angularity_class: str | None
     use_loosing_of_bond: bool
     fortune_angularity_truth: ZRFortuneAngularityTruthResponse
+    start_shift_truth: ZRStartShiftTruthResponse | None = None
 
 
 class ZRPeriodGroupResponse(_StrictModel):
@@ -699,6 +711,7 @@ __all__ = [
     "ZRProfileRequest",
     "ZRReleasingPeriodResponse",
     "ZRFortuneAngularityTruthResponse",
+    "ZRStartShiftTruthResponse",
     "ZRSequenceProfileResponse",
     "ZRSequenceResponse",
 ]

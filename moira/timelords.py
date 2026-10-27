@@ -74,6 +74,7 @@ __all__ = [
     "ZRAngularityClass",
     "ZRPeakGrade",
     "ZRFortuneAngularityTruth",
+    "ZRStartShiftTruth",
     "zr_peak_grade",
     # Policy surfaces
     "FirdarYearPolicy",
@@ -111,6 +112,7 @@ __all__ = [
     "current_decennials",
     "zodiacal_releasing",
     "zr_fortune_angularity_truth",
+    "zr_start_shift_truth",
     "current_releasing",
     "group_firdaria",
     "group_decennials",
@@ -392,6 +394,112 @@ def zr_fortune_angularity_truth(
         angularity_from_fortune=angularity,
         angularity_class=angularity_class,
         is_peak_period=angularity in _ANGULAR_HOUSES,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class ZRStartShiftTruth:
+    """Typed receipt for how a releasing's Level 1 start sign was resolved.
+
+    Valens' start shift applies only when releasing from Spirit: if Spirit
+    shares Fortune's sign, releasing starts from the following sign. The rule
+    needs Fortune's sign. When Spirit is released without Fortune the shift is
+    not evaluable and releasing starts, unshifted, from Spirit's own sign.
+    """
+
+    status: TimelordEvaluationStatus
+    lot_name: str
+    lot_sign: str
+    fortune_sign: str | None
+    rule_applies: bool
+    shift_applied: bool | None
+    start_sign: str
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TimelordEvaluationStatus):
+            raise ValueError(
+                "ZRStartShiftTruth status must be a TimelordEvaluationStatus"
+            )
+        if self.lot_sign not in SIGNS or self.start_sign not in SIGNS:
+            raise ValueError(
+                "ZRStartShiftTruth lot_sign and start_sign must be zodiac signs"
+            )
+        if self.fortune_sign is not None and self.fortune_sign not in SIGNS:
+            raise ValueError(
+                "ZRStartShiftTruth fortune_sign must be a zodiac sign or None"
+            )
+        if self.rule_applies is not (self.lot_name == "Spirit"):
+            raise ValueError(
+                "ZRStartShiftTruth rule_applies must be true only for Spirit"
+            )
+        shifted_sign = _sign_at_index(_sign_index(self.lot_sign) + 1)
+        if self.status is TimelordEvaluationStatus.NOT_EVALUABLE:
+            if (
+                not self.rule_applies
+                or self.fortune_sign is not None
+                or self.shift_applied is not None
+                or self.start_sign != self.lot_sign
+                or self.reason != "fortune_not_supplied"
+            ):
+                raise ValueError(
+                    "ZRStartShiftTruth not_evaluable results require Spirit, "
+                    "no Fortune, an unshifted start and "
+                    "reason='fortune_not_supplied'"
+                )
+            return
+        if self.reason is not None or not isinstance(self.shift_applied, bool):
+            raise ValueError(
+                "ZRStartShiftTruth evaluated results require a shift boolean "
+                "and no reason"
+            )
+        expected_shift = (
+            self.rule_applies and self.fortune_sign == self.lot_sign
+        )
+        expected_start = shifted_sign if expected_shift else self.lot_sign
+        if self.shift_applied is not expected_shift or self.start_sign != expected_start:
+            raise ValueError(
+                "ZRStartShiftTruth shift and start sign must follow the "
+                "Spirit/Fortune same-sign rule"
+            )
+
+
+def zr_start_shift_truth(
+    lot_longitude: float,
+    lot_name: str,
+    fortune_longitude: float | None,
+) -> ZRStartShiftTruth:
+    """Resolve the Level 1 start sign and record whether the shift applied."""
+
+    lot_sign = sign_of(lot_longitude)[0]
+    fortune_sign = (
+        None if fortune_longitude is None else sign_of(fortune_longitude)[0]
+    )
+    rule_applies = lot_name == "Spirit"
+    if rule_applies and fortune_sign is None:
+        return ZRStartShiftTruth(
+            status=TimelordEvaluationStatus.NOT_EVALUABLE,
+            lot_name=lot_name,
+            lot_sign=lot_sign,
+            fortune_sign=None,
+            rule_applies=True,
+            shift_applied=None,
+            start_sign=lot_sign,
+            reason="fortune_not_supplied",
+        )
+    shift_applied = rule_applies and fortune_sign == lot_sign
+    return ZRStartShiftTruth(
+        status=TimelordEvaluationStatus.EVALUATED,
+        lot_name=lot_name,
+        lot_sign=lot_sign,
+        fortune_sign=fortune_sign,
+        rule_applies=rule_applies,
+        shift_applied=shift_applied,
+        start_sign=(
+            _sign_at_index(_sign_index(lot_sign) + 1)
+            if shift_applied
+            else lot_sign
+        ),
     )
 
 
@@ -2379,6 +2487,7 @@ class ReleasingPeriod:
         Responsibilities:
             - Store a single Zodiacal Releasing period as named, typed fields
             - Preserve Fortune angularity raw truth and its compatibility fields
+            - Preserve the Level 1 start-shift receipt of the releasing
             - Expose UTC datetime and CalendarDateTime views via read-only properties
             - Serve as the return type of zodiacal_releasing() and current_releasing()
         Non-responsibilities:
@@ -2405,7 +2514,7 @@ class ReleasingPeriod:
       "id": "moira.timelords.ReleasingPeriod",
       "risk": "high",
       "api": {
-        "frozen": ["level", "sign", "ruler", "start_jd", "end_jd", "years", "lot_name", "is_loosing_of_bond", "is_peak_period", "angularity_from_fortune", "use_loosing_of_bond", "angularity_class", "fortune_angularity_truth"],
+        "frozen": ["level", "sign", "ruler", "start_jd", "end_jd", "years", "lot_name", "is_loosing_of_bond", "is_peak_period", "angularity_from_fortune", "use_loosing_of_bond", "angularity_class", "fortune_angularity_truth", "start_shift_truth"],
         "internal": ["start_dt", "start_calendar", "end_dt", "end_calendar"]
       },
       "state": {"mutable": true, "owners": ["_generate_releasing"]},
@@ -2435,6 +2544,8 @@ class ReleasingPeriod:
     # Phase 2: typed classification
     angularity_class: str | None = None  # ZRAngularityClass constant, or None when Fortune is unavailable
     fortune_angularity_truth: ZRFortuneAngularityTruth | None = None
+    # Preserved generative context: how the Level 1 start sign was resolved.
+    start_shift_truth: ZRStartShiftTruth | None = None
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
@@ -3987,19 +4098,6 @@ def _fortune_angularity(sign: str, fortune_sign: str | None) -> int | None:
     return offset + 1
 
 
-def _resolve_releasing_start_sign(
-    lot_longitude: float,
-    lot_name: str,
-    fortune_longitude: float | None,
-) -> str:
-    sign_name, _, _ = sign_of(lot_longitude)
-    if lot_name == "Spirit" and fortune_longitude is not None:
-        fortune_sign, _, _ = sign_of(fortune_longitude)
-        if fortune_sign == sign_name:
-            return _sign_at_index(_sign_index(sign_name) + 1)
-    return sign_name
-
-
 def _generate_releasing(
     start_sign: str,
     start_jd: float,
@@ -4011,6 +4109,7 @@ def _generate_releasing(
     use_loosing_of_bond: bool,
     level_days: dict[int, float],
     year_days: float,
+    start_shift_truth: ZRStartShiftTruth | None = None,
 ) -> list[ReleasingPeriod]:
     """
     Recursively generate Zodiacal Releasing periods.
@@ -4074,6 +4173,7 @@ def _generate_releasing(
             use_loosing_of_bond=use_loosing_of_bond,
             angularity_class=fortune_angularity_truth.angularity_class,
             fortune_angularity_truth=fortune_angularity_truth,
+            start_shift_truth=start_shift_truth,
         )
         results.append(rp)
         next_is_loosing_of_bond = False
@@ -4091,6 +4191,7 @@ def _generate_releasing(
                 use_loosing_of_bond=use_loosing_of_bond,
                 level_days=level_days,
                 year_days=year_days,
+                start_shift_truth=start_shift_truth,
             )
             results.extend(sub)
 
@@ -4194,11 +4295,12 @@ def zodiacal_releasing(
         4: (_eff_month_days / 12.0) / 12.0,
     }
 
-    start_sign = _resolve_releasing_start_sign(
+    start_shift_truth = zr_start_shift_truth(
         lot_longitude,
         lot_name,
         fortune_longitude,
     )
+    start_sign = start_shift_truth.start_sign
     fortune_sign = None if fortune_longitude is None else sign_of(fortune_longitude)[0]
     max_jd = natal_jd + _TOTAL_MINOR_YEARS * _eff_year_days
 
@@ -4213,6 +4315,7 @@ def zodiacal_releasing(
         use_loosing_of_bond=use_loosing_of_bond,
         level_days=_eff_level_days,
         year_days=_eff_year_days,
+        start_shift_truth=start_shift_truth,
     )
 
 

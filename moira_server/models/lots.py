@@ -7,7 +7,7 @@ from datetime import datetime
 
 from pydantic import Field, field_validator
 
-from moira.constants import HouseSystem
+from moira.constants import HOUSE_SYSTEM_NAMES, HouseSystem
 from moira.lots import (
     LotArcPolicy,
     LotConditionState,
@@ -47,7 +47,14 @@ class LotsChartRequest(_StrictModel):
     observer_lat: float = Field(ge=-90.0, le=90.0)
     observer_lon: float = Field(ge=-180.0, le=180.0)
     observer_elev_m: float = 0.0
-    house_system: str = HouseSystem.PLACIDUS
+    house_system: str = Field(
+        default=HouseSystem.PLACIDUS,
+        description=(
+            "House system code or name. Cusp-projected lots depend on it; "
+            "Ascendant/Midheaven lots such as Fortune do not. Unknown systems "
+            "are rejected."
+        ),
+    )
     syzygy: float | None = None
     prenatal_new_moon: float | None = None
     prenatal_full_moon: float | None = None
@@ -77,10 +84,20 @@ class LotsChartRequest(_StrictModel):
 
     @field_validator("house_system")
     @classmethod
-    def _non_empty_house_system(cls, value: str) -> str:
-        if not value:
+    def _known_house_system(cls, value: str) -> str:
+        if not value or not value.strip():
             raise ValueError("house_system must be non-empty")
-        return value
+        def normalize(text: str) -> str:
+            return " ".join(text.replace("_", " ").replace("-", " ").casefold().split())
+
+        key = normalize(value)
+        for code, name in HOUSE_SYSTEM_NAMES.items():
+            if key in (normalize(code), normalize(name)):
+                return code
+        raise ValueError(
+            f"house_system {value!r} is not a known house system; use one of "
+            + ", ".join(sorted(HOUSE_SYSTEM_NAMES))
+        )
 
 
 class LotsConditionChartRequest(LotsChartRequest):
@@ -279,12 +296,20 @@ class LotsCatalogResponse(_StrictModel):
     parts: tuple[PartDefinitionResponse, ...]
 
 
+class LotsHouseFrameResponse(_StrictModel):
+    system: str
+    effective_system: str
+    fallback: bool
+    fallback_reason: str | None
+
+
 class LotsResultResponse(_StrictModel):
     parts: tuple[ArabicPartResponse, ...]
     not_evaluable: tuple[LotNotEvaluableResponse, ...]
     status: LotEvaluationStatus
     evaluated_count: int
     not_evaluable_count: int
+    house_frame: LotsHouseFrameResponse | None = None
 
 
 class LotsDependenciesResponse(_StrictModel):
@@ -318,6 +343,7 @@ __all__ = [
     "LotsDependenciesResponse",
     "LotsDerivedReferencePolicyRequest",
     "LotsExternalReferencePolicyRequest",
+    "LotsHouseFrameResponse",
     "LotsResultResponse",
     "PartDefinitionResponse",
 ]

@@ -53,7 +53,8 @@ named deep-subdivision candidates are outside the closed admitted contract.
 ### Halb and Hayz
 
 Halb uses the admitted al-Qabisi/Bonatti sect-relative hemisphere rule. Hayz
-adds the planet's own sign gender. Mars is feminine; Mercury is neutral and
+adds the planet's own sign gender. Mars is masculine (al-Biruni §496: "both
+male and nocturnal", so it needs a male sign); Mercury is neutral and
 requires explicit sect-phase truth rather than a fabricated default.
 
 ### Zodiacal Releasing

@@ -1,5 +1,5 @@
 {
-  "authority": "Ptolemy Tetrabiblos I.22; ordinary 12× natal projection (sign start + 12 × degree in sign). Seams left-closed, right-open.",
+  "authority": "Manilius, Astronomica II.693ff; al-Biruni, Book of Instruction sec. 456 (Ptolemy, Tetrabiblos I.22 reports and rejects twelfth-parts); ordinary 12× natal projection (sign start + 12 × degree in sign). Seams left-closed, right-open.",
   "formula": "projected = (sign_start + 12 * degree_in_sign) mod 360",
   "cases": [
     {

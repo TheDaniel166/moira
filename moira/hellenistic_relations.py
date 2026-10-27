@@ -2,8 +2,21 @@
 Score-free Hellenistic relational condition.
 
 Owns testimony, adherence, and the assemble-condition vessel. Reuses
-whole-sign superiority and malefic enclosure. Does not score, rank, or
-admit aktinobolia geometry in 6.3.0.
+whole-sign superiority and the dignity layer's Mars/Saturn besieging. Does not
+score or rank.
+
+Labels, as checked against the sources:
+
+- ``enclosure`` is Lilly-style bodily besieging between Mars and Saturn
+  within a 12 degree Moira policy orb (``DEFAULT_ENCLOSURE_ORB_DEG``). It is
+  not Hellenistic enclosure, which al-Biruni (Book of Instruction sec. 500)
+  and the Antiochus/Porphyry definitions frame by sign, bodily or by rays, and
+  with benefics as well as malefics.
+- ``ray`` (aktinobolia) is evaluated since 6.9.8 as a qualified Moira policy:
+  dexter sextile, square and trine contacts to the subject within the
+  configured orb, opposition excluded. No primary passage is source-locked for
+  that exact rule (the Porphyry definition is recalled, not verified), and it
+  is not Ptolemy's use of rays in directions (Tetrabiblos III.10).
 """
 
 from __future__ import annotations
@@ -36,6 +49,7 @@ CLASSICAL_7: tuple[str, ...] = (
 )
 
 DEFAULT_ADHERENCE_ORB_DEG = 3.0
+# Moira policy orb for Lilly-style besieging; no Hellenistic source fixes it.
 DEFAULT_ENCLOSURE_ORB_DEG = 12.0
 RAY_NOT_ADMITTED_REASON = "doctrine_not_admitted"
 HELLENISTIC_RAY_ASPECTS: dict[str, float] = {
@@ -174,7 +188,11 @@ class HellenisticRayStrike:
 
 @dataclass(frozen=True, slots=True)
 class HellenisticRayTruth:
-    """Rays striking the subject (Aktinobolia)."""
+    """Dexter rays striking the subject (aktinobolia, qualified Moira policy).
+
+    Sextile, square and trine contacts from the dexter side within the orb;
+    opposition is excluded. Not source-locked to a primary passage.
+    """
 
     status: HellenisticAspectEvaluationStatus
     subject: str
@@ -411,7 +429,7 @@ def _enclosure_truth(
     positions: dict[str, float],
     orb_deg: float,
 ) -> BesiegingTruth:
-    """Reuse malefic enclosure. Do not invent a subject longitude."""
+    """Reuse Lilly-style Mars/Saturn besieging. Do not invent a subject longitude."""
 
     if subject not in positions:
         return besieging_truth(

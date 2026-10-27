@@ -676,6 +676,7 @@ from .lots import (
     LotsDependenciesResponse,
     LotsDerivedReferencePolicyRequest,
     LotsExternalReferencePolicyRequest,
+    LotsHouseFrameResponse,
     LotsResultResponse,
     PartDefinitionResponse,
 )
@@ -995,6 +996,7 @@ from .timelords import (
     ZRProfileRequest,
     ZRReleasingPeriodResponse,
     ZRFortuneAngularityTruthResponse,
+    ZRStartShiftTruthResponse,
     ZRSequenceProfileResponse,
     ZRSequenceResponse,
 )
@@ -1397,6 +1399,7 @@ __all__ = [
     "LotsDependenciesResponse",
     "LotsDerivedReferencePolicyRequest",
     "LotsExternalReferencePolicyRequest",
+    "LotsHouseFrameResponse",
     "LotsResultResponse",
     "OvercomingRequest",
     "OvercomingResponse",
@@ -2017,6 +2020,7 @@ __all__ = [
     "WholeSignAspectsRequest",
     "WholeSignAspectsResponse",
     "ZRFortuneAngularityTruthResponse",
+    "ZRStartShiftTruthResponse",
     "YearBasis",
     "YoginiChartSequenceRequest",
     "ObserverSource",

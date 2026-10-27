@@ -294,6 +294,8 @@ def test_moira_evaluate_lots_preserves_full_policy_and_optional_inputs(
         "prenatal_new_moon": 33.0,
         "prenatal_full_moon": 44.0,
         "lord_of_hour": 55.0,
+        # The stub houses name no system, so the lots house frame is unknown.
+        "house_frame": None,
     }
 
 

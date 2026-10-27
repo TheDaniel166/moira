@@ -151,6 +151,8 @@ def compute_almuten_figuris(request: AlmutenFigurisRequest) -> AlmutenResponse:
         fixed_star_longitudes=(
             None if request.fixed_star_longitudes is None else dict(request.fixed_star_longitudes)
         ),
+        geographic_latitude=request.geographic_latitude,
+        obliquity=request.obliquity,
     )
     return _serialize(
         determination,

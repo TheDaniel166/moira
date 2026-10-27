@@ -313,3 +313,43 @@ def test_lots_routes_are_registered() -> None:
     assert "/v1/lots/chart/condition" in paths
     assert "/v1/lots/chart/profile" in paths
     assert "/v1/lots/chart/network" in paths
+
+
+@pytest.mark.requires_ephemeris
+def test_lots_chart_reports_the_house_frame_behind_its_cusps(
+    client_with_engine: TestClient,
+) -> None:
+    placidus = client_with_engine.post("/v1/lots/chart", json=_PAYLOAD)
+    whole_sign = client_with_engine.post(
+        "/v1/lots/chart", json={**_PAYLOAD, "house_system": "Whole Sign"}
+    )
+    polar = client_with_engine.post(
+        "/v1/lots/chart",
+        json={**_PAYLOAD, "observer_lat": 70.0, "house_system": "P"},
+    )
+
+    assert placidus.status_code == whole_sign.status_code == polar.status_code == 200
+    assert placidus.json()["house_frame"] == {
+        "system": "P",
+        "effective_system": "P",
+        "fallback": False,
+        "fallback_reason": None,
+    }
+    # A system name resolves to its code instead of silently falling back.
+    assert whole_sign.json()["house_frame"]["system"] == "W"
+    assert whole_sign.json()["house_frame"]["effective_system"] == "W"
+    frame = polar.json()["house_frame"]
+    assert frame["system"] == "P"
+    assert frame["fallback"] is True
+    assert frame["effective_system"] != "P"
+    assert frame["fallback_reason"]
+
+
+def test_lots_chart_rejects_an_unknown_house_system(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/lots/chart", json={**_PAYLOAD, "house_system": "ZZ"}
+    )
+    assert response.status_code == 422
+    assert "not a known house system" in response.text

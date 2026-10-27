@@ -59,6 +59,7 @@ from ..models.timelords import (
     ZRPeriodGroupResponse,
     ZRReleasingPeriodResponse,
     ZRFortuneAngularityTruthResponse,
+    ZRStartShiftTruthResponse,
     ZRSequenceProfileResponse,
     ZRSequenceResponse,
 )
@@ -507,6 +508,24 @@ def _serialize_zr_fortune_angularity_truth(
     )
 
 
+def _serialize_zr_start_shift_truth(
+    period: ReleasingPeriod,
+) -> ZRStartShiftTruthResponse | None:
+    truth = period.start_shift_truth
+    if truth is None:
+        return None
+    return ZRStartShiftTruthResponse(
+        status=truth.status,
+        lot_name=truth.lot_name,
+        lot_sign=truth.lot_sign,
+        fortune_sign=truth.fortune_sign,
+        rule_applies=truth.rule_applies,
+        shift_applied=truth.shift_applied,
+        start_sign=truth.start_sign,
+        reason=truth.reason,
+    )
+
+
 def serialize_decennial_period(
     period: DecennialPeriod,
 ) -> DecennialPeriodResponse:
@@ -532,6 +551,7 @@ def _serialize_releasing_period(period: ReleasingPeriod) -> ZRReleasingPeriodRes
         angularity_class=period.angularity_class,
         use_loosing_of_bond=period.use_loosing_of_bond,
         fortune_angularity_truth=_serialize_zr_fortune_angularity_truth(period),
+        start_shift_truth=_serialize_zr_start_shift_truth(period),
     )
 
 

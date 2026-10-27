@@ -30,6 +30,7 @@ _CURATED_PUBLIC_NAMES = [
     "ZRAngularityClass",
     "ZRPeakGrade",
     "ZRFortuneAngularityTruth",
+    "ZRStartShiftTruth",
     "zr_peak_grade",
     "FirdarYearPolicy",
     "DecennialPolicy",
@@ -60,6 +61,7 @@ _CURATED_PUBLIC_NAMES = [
     "current_decennials",
     "zodiacal_releasing",
     "zr_fortune_angularity_truth",
+    "zr_start_shift_truth",
     "current_releasing",
     "group_firdaria",
     "group_decennials",
@@ -143,11 +145,11 @@ class TestTimelordsModuleLevelResolution:
 
 
 class TestTimelordsCounts:
-    def test_curated_count_is_61(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 61
+    def test_curated_count_is_63(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 63
 
-    def test_timelords_all_count_is_61(self):
-        assert len(_timelords_module.__all__) == 61
+    def test_timelords_all_count_is_63(self):
+        assert len(_timelords_module.__all__) == 63
 
 
 class TestTimelordsInternalsRemainInternal:

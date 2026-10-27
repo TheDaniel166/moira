@@ -1,9 +1,16 @@
 """
 Named Hellenistic circumambulation (aphesis through Egyptian bounds).
 
-Owns bound-sequence geometry and one admitted year key: the bound lord's
+Owns bound-sequence geometry and one evaluable year key: the bound lord's
 planetary minor years. Does not select a releaser, wrap primary directions,
 or invent rising-time / equatorial keys.
+
+Source status: the bound-lord minor-years key is a non-traditional Moira key.
+No primary passage has been located for timing each bound by its lord's minor
+years; under it a full circuit spans 1,020 years (85 per sign). The attested
+key is ascensional time at the native's klima, about one degree of ascension
+per year (Ptolemy, Tetrabiblos IV.10; Valens, Anthology III.3). That key and
+the equatorial key remain not_evaluable here.
 """
 
 from __future__ import annotations

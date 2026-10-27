@@ -21,6 +21,26 @@ def _facade_module() -> Any:
     return sys.modules[f"{__package__}.facade"]
 
 
+def _lots_house_frame(houses):
+    """Describe the house system behind ``houses`` for lots receipts.
+
+    Returns None for a cusp carrier that does not name its system: the frame
+    is then unknown rather than guessed.
+    """
+
+    from .lots import LotsHouseFrame
+
+    if getattr(houses, "system", None) is None:
+        return None
+    effective = getattr(houses, "effective_system", "") or houses.system
+    return LotsHouseFrame(
+        system=houses.system,
+        effective_system=effective,
+        fallback=bool(getattr(houses, "fallback", False)),
+        fallback_reason=getattr(houses, "fallback_reason", None),
+    )
+
+
 class ClassicalFacadeMixin:
     """RITE: The Tradition-Keeper — the layer that routes the public Moira
     surface to classical and Hermetic astrological techniques: Hermetic Lots,
@@ -80,7 +100,12 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         prenatal_full_moon=None,
         lord_of_hour=None,
     ):
-        """Compute Arabic Parts / Hermetic Lots for a chart."""
+        """Compute Arabic Parts / Hermetic Lots for a chart.
+
+        Each part records ``house_frame``: the requested and effective house
+        system of ``houses`` and whether it fell back. House-based lots
+        depend on that system.
+        """
         facade = _facade_module()
         lons = chart.longitudes(include_nodes=True)
         if "Sun" not in lons:
@@ -98,6 +123,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
             lord_of_hour=lord_of_hour,
+            house_frame=_lots_house_frame(houses),
         )
 
     def evaluate_lots(
@@ -111,7 +137,10 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         prenatal_full_moon=None,
         lord_of_hour=None,
     ):
-        """Evaluate catalogued lots without erasing unresolved entries."""
+        """Evaluate catalogued lots without erasing unresolved entries.
+
+        The evaluation and each part record ``house_frame`` for ``houses``.
+        """
 
         facade = _facade_module()
         longitudes = chart.longitudes(include_nodes=True)
@@ -130,6 +159,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
             lord_of_hour=lord_of_hour,
+            house_frame=_lots_house_frame(houses),
         )
 
     def hellenistic_chart_profile(
@@ -290,8 +320,14 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             reader=self._reader,
         )
 
-    def dignities(self, chart, houses, *, policy=None):
-        """Compute essential and accidental dignities for chart planets."""
+    def dignities(self, chart, houses, *, policy=None, observer_latitude=None):
+        """Compute essential and accidental dignities for chart planets.
+
+        ``observer_latitude`` (with the chart's true obliquity) lets the
+        horizon frame place the Midheaven above or below the horizon, which
+        keeps sect and hemispheres exact above the polar circles. Without it
+        the frame assumes the Midheaven is above the horizon.
+        """
         from .dignities import DignityHorizonFrame
 
         facade = _facade_module()
@@ -314,6 +350,8 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             horizon_frame=DignityHorizonFrame(
                 asc_longitude=houses.asc,
                 mc_longitude=houses.mc,
+                geographic_latitude=observer_latitude,
+                obliquity=None if observer_latitude is None else chart.obliquity,
             ),
         )
 

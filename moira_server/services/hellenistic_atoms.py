@@ -46,7 +46,10 @@ def compute_twelfth_parts(request: TwelfthPartsRequest) -> TwelfthPartsResponse:
             source_module="moira.twelfth_parts",
             engine_entrypoint="twelfth_part_of",
             doctrine="natal_twelfth_parts_12x_projection",
-            source_refs=["Ptolemy, Tetrabiblos I.22"],
+            source_refs=[
+                "Manilius, Astronomica II.693ff",
+                "al-Biruni, Book of Instruction sec. 456",
+            ],
             stage_sequence=[
                 "caller_position_validation",
                 "sign_degree_extraction",

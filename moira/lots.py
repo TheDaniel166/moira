@@ -35,7 +35,7 @@ Public surface:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from ._strenum import StrEnum
 from math import isfinite
 
@@ -56,6 +56,7 @@ __all__ = [
     # Condition vessels
     "LotDependency", "LotDependencyCompletenessTruth",
     "LotAstrologicalConditionTruth", "LotNotEvaluable", "LotsEvaluation",
+    "LotsHouseFrame",
     "LotConditionProfile", "LotChartConditionProfile",
     "LotConditionNetworkNode", "LotConditionNetworkEdge", "LotConditionNetworkProfile",
     # Core vessels
@@ -303,6 +304,10 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Damage",                            "Saturn",        "Mars",           True,  "hellenistic"),
     PartDefinition("Damage (Modern)",                   "Neptune",       "Mars",           False, "modern"),
     PartDefinition("Dates",                             "Venus",         "Sun",            False, "medieval,commodity"),
+    # Ascendant-cast H8 - Moon, unreversed. No primary source located for
+    # this projection: al-Biruni (Book of Instruction sec. 476 no. 50) casts
+    # the Lot of Death from Saturn (Saturn + H8 - Moon, unreversed), and
+    # Valens' working "place of death" (II.41) is the 8th sign from Fortune.
     PartDefinition("Death",                             "H8",            "Moon",           False, "hellenistic,medieval"),
     PartDefinition("Death (al-Tabari 1)",               "Ruler Asc",     "Ruler H8",       False, "medieval,horary"),
     PartDefinition("Death (al-Tabari 2)",               "Ruler H8",      "H8",             False, "medieval,horary"),
@@ -380,6 +385,9 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Eros (Paulus)",                     "Venus",         "Spirit",         True,  "hellenistic"),
     PartDefinition("Eros (Valens)",                     "Spirit",        "Fortune",        True,  "hellenistic,medieval"),
     PartDefinition("Estates",                           "Mercury",       "Saturn",         True,  "hellenistic"),
+    # Valens (Anthology II.18) names only the exaltation signs (Aries by
+    # day, Taurus by night). 18 Aries / 2 Taurus are the starts of the 19th
+    # and 3rd degrees; moira.astrodynes uses 19 / 3 for the same exaltations.
     PartDefinition("Exaltation (Day)",                  "18 Aries",      "Sun",            False, "hellenistic,medieval"),
     PartDefinition("Exaltation (Night)",                "2 Taurus",      "Moon",           False, "hellenistic,medieval"),
     PartDefinition("Exhaustion of Bodies",              "Mars",          "Fortune",        True,  "medieval"),
@@ -1345,12 +1353,44 @@ class LotNotEvaluable:
             raise ValueError("LotNotEvaluable requires an explicit reason")
 
 
+@dataclass(frozen=True, slots=True)
+class LotsHouseFrame:
+    """House frame whose cusps fed a lots evaluation.
+
+    House-based lots (for example those projected from a house cusp) differ
+    between Whole Sign and quadrant cusps, and a quadrant request can fall
+    back to another system at high latitude. This records which system was
+    requested and which actually produced the cusps.
+    """
+
+    system: str
+    effective_system: str
+    fallback: bool
+    fallback_reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.system, str) or not self.system:
+            raise ValueError("LotsHouseFrame system must be a non-empty string")
+        if not isinstance(self.effective_system, str) or not self.effective_system:
+            raise ValueError(
+                "LotsHouseFrame effective_system must be a non-empty string"
+            )
+        if not isinstance(self.fallback, bool):
+            raise ValueError("LotsHouseFrame fallback must be a bool")
+        if self.fallback is (self.system == self.effective_system):
+            raise ValueError(
+                "LotsHouseFrame fallback must be true exactly when the "
+                "effective system differs from the requested one"
+            )
+
+
 @dataclass(slots=True)
 class LotsEvaluation:
     """Typed aggregate containing both computed and not-evaluable catalogue lots."""
 
     parts: list["ArabicPart"] = field(default_factory=list)
     not_evaluable: list[LotNotEvaluable] = field(default_factory=list)
+    house_frame: LotsHouseFrame | None = None
 
     @property
     def status(self) -> LotEvaluationStatus:
@@ -1576,6 +1616,7 @@ class ArabicPart:
         default_factory=LotAstrologicalConditionTruth
     )
     condition_profile: LotConditionProfile | None = None
+    house_frame: LotsHouseFrame | None = None
     sign:        str     = field(init=False)
     sign_symbol: str     = field(init=False)
     sign_degree: float   = field(init=False)
@@ -2792,9 +2833,14 @@ def calculate_lots(
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
     lord_of_hour: float | None = None,
+    house_frame: LotsHouseFrame | None = None,
     ) -> list[ArabicPart]:
-    """Compute all Arabic Parts."""
-    return _service.calculate_parts(
+    """Compute all Arabic Parts.
+
+    ``house_frame``, when supplied, describes the system behind
+    ``house_cusps`` and is recorded on every returned part.
+    """
+    parts = _service.calculate_parts(
         positions, house_cusps, is_day_chart, policy=policy,
         asc_longitude=asc_longitude,
         mc_longitude=mc_longitude,
@@ -2803,6 +2849,7 @@ def calculate_lots(
         prenatal_full_moon=prenatal_full_moon,
         lord_of_hour=lord_of_hour,
     )
+    return _with_house_frame(parts, house_frame)
 
 
 def evaluate_lots(
@@ -2817,10 +2864,15 @@ def evaluate_lots(
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
     lord_of_hour: float | None = None,
+    house_frame: LotsHouseFrame | None = None,
 ) -> LotsEvaluation:
-    """Evaluate all catalogue lots and preserve unresolved entries explicitly."""
+    """Evaluate all catalogue lots and preserve unresolved entries explicitly.
 
-    return _service.evaluate_parts(
+    ``house_frame``, when supplied, describes the system behind
+    ``house_cusps`` and is recorded on the evaluation and every part.
+    """
+
+    evaluation = _service.evaluate_parts(
         positions,
         house_cusps,
         is_day_chart,
@@ -2832,6 +2884,24 @@ def evaluate_lots(
         prenatal_full_moon=prenatal_full_moon,
         lord_of_hour=lord_of_hour,
     )
+    if house_frame is None:
+        return evaluation
+    return LotsEvaluation(
+        parts=_with_house_frame(evaluation.parts, house_frame),
+        not_evaluable=evaluation.not_evaluable,
+        house_frame=house_frame,
+    )
+
+
+def _with_house_frame(
+    parts: list[ArabicPart],
+    house_frame: LotsHouseFrame | None,
+) -> list[ArabicPart]:
+    if house_frame is None:
+        return parts
+    if not isinstance(house_frame, LotsHouseFrame):
+        raise TypeError("house_frame must be a LotsHouseFrame or None")
+    return [replace(part, house_frame=house_frame) for part in parts]
 
 
 HELLENISTIC_SUPPORTING_LOTS: tuple[str, ...] = (

@@ -693,7 +693,13 @@ def besieging_truth(
     planet_name: str | None = None,
     orb: float = 12.0,
 ) -> BesiegingTruth:
-    """Return typed nearest-neighbor malefic enclosure truth."""
+    """Return typed nearest-neighbor Mars/Saturn besieging truth.
+
+    Lilly-style bodily besieging: the planet lies between Mars and Saturn as
+    its nearest neighbours within ``orb`` (12 degrees, a Moira policy orb, not
+    a sourced figure). This is not Hellenistic enclosure, which is framed by
+    sign, by rays and with benefics too (al-Biruni sec. 500).
+    """
 
     if not math.isfinite(planet_lon):
         raise ValueError("planet_lon must be finite")
@@ -1018,7 +1024,7 @@ class DignitiesService:
             - Malformed or incomplete house input raises instead of defaulting.
 
     Canon: William Lilly, Christian Astrology (1647), Book I;
-           Vettius Valens, Anthology (hayz)
+           al-Biruni, Book of Instruction (Wright 1934) sec. 496 (halb/hayz)
 
     [MACHINE_CONTRACT v1]
     {
@@ -4096,6 +4102,8 @@ def _lilly_1647_whole_figure_determination(
     north_node_longitude: float | None,
     node_doctrine: DignityNodeDoctrine,
     fixed_star_longitudes: dict[str, float] | None,
+    geographic_latitude: float | None = None,
+    obliquity: float | None = None,
 ) -> AlmutenDetermination:
     missing: list[str] = [p for p in _PLANET_ORDER if p not in planet_positions]
     if missing:
@@ -4149,6 +4157,8 @@ def _lilly_1647_whole_figure_determination(
         horizon_frame=DignityHorizonFrame(
             asc_longitude=house_cusps[0],
             mc_longitude=float(midheaven_longitude),
+            geographic_latitude=geographic_latitude,
+            obliquity=obliquity,
         ),
         node_positions={node_key: float(north_node_longitude)},
         fixed_star_positions={star: float(stars[star]) for star in LILLY_1647_ALMUTEN_FIXED_STARS},
@@ -4212,6 +4222,8 @@ def almuten_figuris_determination(
     north_node_longitude: float | None = None,
     node_doctrine: DignityNodeDoctrine = DignityNodeDoctrine.MEAN_NODE,
     fixed_star_longitudes: dict[str, float] | None = None,
+    geographic_latitude: float | None = None,
+    obliquity: float | None = None,
 ) -> AlmutenDetermination:
     """
     Almuten figuris with every planet's tally and the points scored.
@@ -4226,6 +4238,11 @@ def almuten_figuris_determination(
     Regulus, Spica and Algol; the Midheaven is ``midheaven_longitude`` or the
     tenth cusp. A testimony that still cannot be evaluated leaves ``almuten``
     None with a named ``reason``; a tie leaves it None with the tied planets.
+    ``is_day`` is checked against the Sun's hemisphere in the Asc/MC horizon
+    frame. Above the polar circles that frame needs ``geographic_latitude``
+    and ``obliquity`` (both or neither) to know whether the Midheaven is above
+    the horizon; without them it assumes so, which is exact only below
+    ``|phi| = 90 - eps``.
 
     ``william_lilly_1647_others_five_places``: the count Lilly reports from
     "others" (III ch. CV, p. 531) — essential points (table p. 104, scale
@@ -4264,6 +4281,8 @@ def almuten_figuris_determination(
             ("speeds", speeds),
             ("north_node_longitude", north_node_longitude),
             ("fixed_star_longitudes", fixed_star_longitudes),
+            ("geographic_latitude", geographic_latitude),
+            ("obliquity", obliquity),
         )
         if value is not None
     ]
@@ -4302,6 +4321,8 @@ def almuten_figuris_determination(
             north_node_longitude=north_node_longitude,
             node_doctrine=node_doctrine,
             fixed_star_longitudes=fixed_star_longitudes,
+            geographic_latitude=geographic_latitude,
+            obliquity=obliquity,
         )
 
     if whole_figure_inputs:

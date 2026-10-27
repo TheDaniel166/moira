@@ -296,6 +296,34 @@ def test_zr_sequence_with_fortune_longitude(client_with_engine: TestClient) -> N
     )
 
 
+def test_zr_sequence_exposes_the_start_shift_receipt(
+    client_with_engine: TestClient,
+) -> None:
+    without = client_with_engine.post(
+        "/v1/timelords/zodiacal-releasing/sequence",
+        json={"natal": _NATAL_PAYLOAD, "levels": 1},
+    )
+    assert without.status_code == 200
+    receipt = without.json()["periods"][0]["start_shift_truth"]
+    assert receipt["status"] == "not_evaluable"
+    assert receipt["reason"] == "fortune_not_supplied"
+    assert receipt["shift_applied"] is None
+
+    # Fortune in Spirit's own sign (Virgo, 159 deg): releasing starts in Libra.
+    shifted = client_with_engine.post(
+        "/v1/timelords/zodiacal-releasing/sequence",
+        json={
+            "natal": {**_NATAL_PAYLOAD, "fortune_longitude": 165.0},
+            "levels": 1,
+        },
+    )
+    assert shifted.status_code == 200
+    first = shifted.json()["periods"][0]
+    assert first["start_shift_truth"]["status"] == "evaluated"
+    assert first["start_shift_truth"]["shift_applied"] is True
+    assert first["sign"] == first["start_shift_truth"]["start_sign"] == "Libra"
+
+
 # ---------------------------------------------------------------------------
 # Adversarial witnesses
 # ---------------------------------------------------------------------------

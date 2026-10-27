@@ -14,7 +14,10 @@ Seams are left-closed, right-open: `[0, 2.5)`, `[2.5, 5)`, …, `[27.5, 30)`.
 
 ## Sources
 
-- Ptolemy, *Tetrabiblos* I.22
+- Manilius, *Astronomica* II.693ff (the 12× rule)
+- al-Biruni, *Book of Instruction* (Wright 1934) §456 (the 12× rule)
+- Ptolemy, *Tetrabiblos* I.22 reports twelfth-parts and rejects them as
+  unfounded; it is not an endorsing source
 - Vettius Valens, *Anthologies* (Riley), multiple uses of twelfth-parts
 - Dorotheus, *Carmen* I.8
 - Firmicus Maternus, *Mathesis* II.17

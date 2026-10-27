@@ -66,6 +66,11 @@ class AlmutenFigurisRequest(_StrictModel):
     prenatal_syzygy_longitude: float | None = None
     day_ruler: ClassicPlanet | None = None
     hour_ruler: ClassicPlanet | None = None
+    # Meridian inputs for the whole-figure rule's sect check (both or neither):
+    # needed above the polar circles, where the Midheaven can lie below the
+    # horizon and the Asc/MC frame would otherwise invert day and night.
+    geographic_latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    obliquity: float | None = Field(default=None, gt=0.0, lt=90.0)
 
     @field_validator("positions")
     @classmethod

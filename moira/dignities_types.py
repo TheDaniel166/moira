@@ -116,9 +116,15 @@ __all__ = [
     "PlanetaryDignity",
 ]
 
-# One doctrine-owned source for the exclusive classical solar-proximity bands.
+# One doctrine-owned source for the exclusive solar-proximity bands.
 # Computational modules and transports derive their thresholds from this map;
 # they must not restate the numbers independently.
+#
+# These are William Lilly's figures (Christian Astrology, 1647): cazimi
+# within 17', combust within 8 deg 30', under the beams within 17 deg. They
+# are medieval/early-modern policy, not a Hellenistic orb table: al-Biruni
+# (Book of Instruction, sec. 481) gives 16' / 6 deg / 12-18 deg by planet,
+# and the Hellenistic phasis convention uses 15 deg for the beams.
 SOLAR_CONDITION_THRESHOLDS_DEG: Mapping[str, float] = MappingProxyType(
     {
         "cazimi": 17.0 / 60.0,
@@ -1797,7 +1803,7 @@ class BesiegingDependencyCompletenessTruth:
 
 @dataclass(frozen=True, slots=True)
 class BesiegingTruth:
-    """Typed nearest-neighbor malefic enclosure result."""
+    """Typed nearest-neighbor Mars/Saturn besieging result (Lilly-style, 12 deg policy orb)."""
 
     status: TruthEvaluationStatus
     dependency_truth: BesiegingDependencyCompletenessTruth
