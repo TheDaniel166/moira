@@ -527,9 +527,11 @@ def _observer_position_icrf(
     itrf_y = (a * C + h) * cos_lat * math.sin(lon)
     itrf_z = (a * S + h) * sin_lat
 
-    # 2. Apply IERS polar motion W(t) to get TIRS coordinates:
+    # 2. IERS W(t), like ERFA pom00, maps CIP/TIRS -> ITRS.  The
+    # terrestrial station needs its transpose (ERFA pvtob, with s' = 0).
     x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
-    tirs = mat_vec_mul(polar_motion_matrix(x_p_arcsec, y_p_arcsec), (itrf_x, itrf_y, itrf_z))
+    polar_matrix = polar_motion_matrix(x_p_arcsec, y_p_arcsec)
+    tirs = mat_vec_mul(tuple(zip(*polar_matrix)), (itrf_x, itrf_y, itrf_z))
 
     # 3. Rotate TIRS around Z-axis by -GST (Greenwich Sidereal Time) to get TETE:
     gast_deg = lst_deg - longitude_deg

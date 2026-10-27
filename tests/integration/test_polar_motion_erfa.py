@@ -69,14 +69,14 @@ def test_observer_position_matches_erfa_polar_motion_rotation(
     # 2. Get polar motion from Registry
     x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
 
-    # 3. Rotate by Polar Motion W(t) using ERFA pom00
+    # 3. pom00 maps CIP/TIRS -> ITRS; pvtob uses its transpose for a station.
     erfa_pom = erfa.pom00(
         x_p_arcsec * erfa.DAS2R,
         y_p_arcsec * erfa.DAS2R,
         0.0,
     )
     tirs = mat_vec_mul(
-        tuple(tuple(float(value) for value in row) for row in erfa_pom),
+        tuple(tuple(float(value) for value in row) for row in erfa_pom.T),
         itrf,
     )
 

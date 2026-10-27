@@ -73,6 +73,7 @@ from .eclipse_geometry import apparent_radius as _apparent_radius, MOON_RADIUS_K
 from .corrections import (
     apply_aberration,
     apply_deflection,
+    apply_diurnal_aberration,
     apply_refraction,
     SCHWARZSCHILD_RADII,
 )
@@ -1206,8 +1207,14 @@ def _star_topocentric_equatorial(
     xyz_apparent = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_apparent)
     xyz_apparent = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_apparent)
 
-    ra_star, dec_star, _ = icrf_to_equatorial(xyz_apparent)
     lst = local_sidereal_time(jd, lon, dpsi, obliquity)
+    # Match sky_position_at's observer-apparent Moon/planet ray.  This
+    # nominal apparent path is separate from the physical topographic ray.
+    xyz_apparent = apply_diurnal_aberration(
+        xyz_apparent, lat, lon, lst, observer_elev_m,
+        jd_ut=jd, observer_frame="equatorial_of_date",
+    )
+    ra_star, dec_star, _ = icrf_to_equatorial(xyz_apparent)
     _, altitude = equatorial_to_horizontal(ra_star, dec_star, lst, lat)
     return ra_star, dec_star, altitude
 
