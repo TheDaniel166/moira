@@ -318,6 +318,24 @@
   ],
   "release_summaries": [
     {
+      "version": "6.11.1",
+      "date": "2026-10-27",
+      "title": "Physical Astrocartography Horizons",
+      "added": [],
+      "changed": [
+        "Existing geometric and constant-refraction horizon policies are retained with corrected physical latitude domains."
+      ],
+      "fixed": [
+        "ASC/DSC horizon geometry uses the geodetic surface normal rather than geocentric latitude.",
+        "Lunar parallax is evaluated at each actual candidate longitude, repairing false cutoff inclusions and omissions."
+      ],
+      "validation": [
+        "Independent ERFA horizon and ellipsoid covenants plus DE441-backed forward checks on six lunar date/horizon combinations."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.11.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.11.1.md"
+    },
+    {
       "version": "6.11.0",
       "date": "2026-10-25",
       "title": "Exact Primary-Direction Time Keys",

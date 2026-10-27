@@ -4,8 +4,8 @@
 
 - Schema: `moira.lightbox-calculation-inventory/v1`
 - Classification: `moira.lightbox-surface-classification/v1`
-- Engine version: `6.11.0`
-- Surface fingerprint: `78d580c4275d5755137109e951ebd77320fa66b09d35036fb642b34bf4746de6`
+- Engine version: `6.11.1`
+- Surface fingerprint: `0be3d76ff38de4bb6009aabf9fee014363e92f3d58d16686900cf8756ab03971`
 - Python authority: `moira.facade.__all__` plus runtime source ownership
 - REST authority: `moira_server.app.create_app().openapi()` plus FastAPI endpoint ownership
 
@@ -73,8 +73,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 
 | Surface ID | Public name | Classification | Scope | Canonical/alias | Owner | Documentation | Tests |
 |---|---|---|---|---|---|---|---|
-| `python:moira.facade:acg_from_chart` | `acg_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:633` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +6 | `tests/unit/test_astrocartography.py` |
-| `python:moira.facade:acg_lines` | `acg_lines` | `calculation` | yes | `canonical` | `moira/astrocartography.py:538` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +7 | `tests/server/test_server_astrocartography_routes.py` +3 |
+| `python:moira.facade:acg_from_chart` | `acg_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:704` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +6 | `tests/unit/test_astrocartography.py` |
+| `python:moira.facade:acg_lines` | `acg_lines` | `calculation` | yes | `canonical` | `moira/astrocartography.py:635` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +7 | `tests/integration/test_astrocartography_physical_horizon.py` +5 |
 | `python:moira.facade:activated_midpoints` | `activated_midpoints` | `calculation` | yes | `canonical` | `moira/midpoints.py:1000` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_midpoints.py` |
 | `python:moira.facade:active_mudda_dasha` | `active_mudda_dasha` | `calculation` | yes | `canonical` | `moira/varshaphal.py:2060` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/server/test_server_phase8_varshaphal_routes.py` +1 |
 | `python:moira.facade:active_tasira_period` | `active_tasira_period` | `calculation` | yes | `canonical` | `moira/varshaphal.py:2158` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` | `tests/server/test_server_phase8_varshaphal_routes.py` +1 |
@@ -411,9 +411,9 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:firdar_sequence_profile` | `firdar_sequence_profile` | `composition_profile` | yes | `canonical` | `moira/timelords.py:3088` | `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md` +2 | `tests/server/test_server_phase8_timelord_routes.py` +2 |
 | `python:moira.facade:firdar_series` | `firdar_series` | `calculation` | yes | `canonical` | `moira/cycles.py:1577` | `docs/superpowers/plans/2026-05-04-conftest-fixture-adoption.md` +1 | `tests/test_api_reference_validation.py` +1 |
 | `python:moira.facade:firdaria` | `firdaria` | `calculation` | yes | `canonical` | `moira/timelords.py:812` | `docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md` +16 | `tests/server/test_server_hellenistic_profile.py` +8 |
-| `python:moira.facade:fixed_star_astrocartography` | `fixed_star_astrocartography` | `calculation` | yes | `canonical` | `moira/astrocartography.py:380` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
-| `python:moira.facade:fixed_star_astrocartography_from_chart` | `fixed_star_astrocartography_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:466` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
-| `python:moira.facade:fixed_star_equatorial_subject` | `fixed_star_equatorial_subject` | `calculation` | yes | `canonical` | `moira/astrocartography.py:322` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
+| `python:moira.facade:fixed_star_astrocartography` | `fixed_star_astrocartography` | `calculation` | yes | `canonical` | `moira/astrocartography.py:379` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
+| `python:moira.facade:fixed_star_astrocartography_from_chart` | `fixed_star_astrocartography_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:465` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
+| `python:moira.facade:fixed_star_equatorial_subject` | `fixed_star_equatorial_subject` | `calculation` | yes | `canonical` | `moira/astrocartography.py:321` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:format_jd_utc` | `format_jd_utc` | `calculation` | yes | `canonical` | `moira/julian.py:578` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_api_surface_adversarial_audit.py` |
 | `python:moira.facade:galactic_position_of` | `galactic_position_of` | `calculation` | yes | `canonical` | `moira/galactic.py:510` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +4 | `tests/unit/test_galactic.py` |
 | `python:moira.facade:galactic_reference_points` | `galactic_reference_points` | `calculation` | yes | `canonical` | `moira/galactic.py:460` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +3 | `tests/server/test_server_galactic_routes.py` +4 |
@@ -615,7 +615,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:nodes_and_apsides_at` | `nodes_and_apsides_at` | `calculation` | yes | `canonical` | `moira/nodes.py:708` | `wiki/02_standards/API_REFERENCE.md` +3 | `tests/oracle/test_oracle_validation.py` +2 |
 | `python:moira.facade:normal_progressed_horoscope` | `normal_progressed_horoscope` | `calculation` | yes | `canonical` | `moira/progressed_astrodynes.py:929` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:normalize_degrees` | `normalize_degrees` | `calculation` | yes | `canonical` | `moira/coordinates.py:579` | `docs/superpowers/plans/2026-05-20-adversarial-singularity-tests.md` +9 | `tests/server/test_server_draconic_routes.py` +1 |
-| `python:moira.facade:nutation` | `nutation` | `calculation` | yes | `canonical` | `moira/obliquity.py:78` | `CHANGELOG.md` +76 | `tests/integration/test_erfa_validation.py` +41 |
+| `python:moira.facade:nutation` | `nutation` | `calculation` | yes | `canonical` | `moira/obliquity.py:78` | `CHANGELOG.md` +76 | `tests/integration/test_astrocartography_physical_horizon.py` +42 |
 | `python:moira.facade:orbit_class` | `orbit_class` | `calculation` | yes | `canonical` | `moira/orbits.py:3093` | `CHANGELOG.md` +3 | `tests/integration/test_sbdb_orbit_classes.py` +4 |
 | `python:moira.facade:orbit_classes_at` | `orbit_classes_at` | `calculation` | yes | `canonical` | `moira/orbits.py:3148` | `CHANGELOG.md` +3 | `tests/integration/test_sbdb_orbit_classes.py` +3 |
 | `python:moira.facade:orbital_elements_at` | `orbital_elements_at` | `calculation` | yes | `canonical` | `moira/orbits.py:2424` | `CHANGELOG.md` +13 | `tests/integration/test_horizons_orbits.py` +4 |
@@ -779,8 +779,8 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:stars_by_magnitude` | `stars_by_magnitude` | `calculation` | yes | `canonical` | `moira/stars.py:922` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_stars_public_api.py` +1 |
 | `python:moira.facade:stars_near` | `stars_near` | `calculation` | yes | `canonical` | `moira/stars.py:906` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_stars_public_api.py` +1 |
 | `python:moira.facade:sthana_bala` | `sthana_bala` | `calculation` | yes | `canonical` | `moira/shadbala.py:917` | `docs/architecture/P9-02_SHADBALA_TRANSPORT_DESIGN.md` +3 | `tests/server/test_server_shadbala_routes.py` +7 |
-| `python:moira.facade:subplanetary_from_chart` | `subplanetary_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:739` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +3 | `tests/unit/test_astrocartography.py` +1 |
-| `python:moira.facade:subplanetary_points` | `subplanetary_points` | `calculation` | yes | `canonical` | `moira/astrocartography.py:694` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +4 | `tests/server/test_server_astrocartography_routes.py` +4 |
+| `python:moira.facade:subplanetary_from_chart` | `subplanetary_from_chart` | `calculation` | yes | `canonical` | `moira/astrocartography.py:810` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +3 | `tests/unit/test_astrocartography.py` +1 |
+| `python:moira.facade:subplanetary_points` | `subplanetary_points` | `calculation` | yes | `canonical` | `moira/astrocartography.py:765` | `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md` +4 | `tests/server/test_server_astrocartography_routes.py` +4 |
 | `python:moira.facade:sun_based_upagrahas` | `sun_based_upagrahas` | `calculation` | yes | `canonical` | `moira/upagrahas.py:150` | — | `tests/unit/test_api_surface_adversarial_audit.py` +1 |
 | `python:moira.facade:surya_yogas` | `surya_yogas` | `calculation` | yes | `canonical` | `moira/yogas.py:2204` | — | `tests/unit/test_api_surface_adversarial_audit.py` +2 |
 | `python:moira.facade:synastry_aspects` | `synastry_aspects` | `calculation` | yes | `canonical` | `moira/synastry.py:2026` | `CHANGELOG.md` +4 | `tests/server/test_server_relationship_routes.py` +5 |
@@ -821,12 +821,12 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:tropical_to_sidereal_with_truth` | `tropical_to_sidereal_with_truth` | `calculation` | yes | `canonical` | `moira/sidereal.py:624` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_sidereal.py` |
 | `python:moira.facade:true_lilith` | `true_lilith` | `calculation` | yes | `canonical` | `moira/nodes.py:425` | `CHANGELOG.md` +12 | `tests/integration/test_true_lilith_speed.py` +4 |
 | `python:moira.facade:true_lilith_with_truth` | `true_lilith_with_truth` | `calculation` | yes | `canonical` | `moira/nodes.py:467` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_r2b_truth_evidence.py` +1 |
-| `python:moira.facade:true_obliquity` | `true_obliquity` | `calculation` | yes | `canonical` | `moira/obliquity.py:103` | `docs/superpowers/plans/2026-05-21-asteroid-integration-refactor.md` +7 | `tests/integration/test_erfa_validation.py` +44 |
+| `python:moira.facade:true_obliquity` | `true_obliquity` | `calculation` | yes | `canonical` | `moira/obliquity.py:103` | `docs/superpowers/plans/2026-05-21-asteroid-integration-refactor.md` +7 | `tests/integration/test_astrocartography_physical_horizon.py` +45 |
 | `python:moira.facade:true_obliquity_with_truth` | `true_obliquity_with_truth` | `calculation` | yes | `canonical` | `moira/obliquity.py:123` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_r2b_truth_evidence.py` +1 |
 | `python:moira.facade:twelfth_part_of` | `twelfth_part_of` | `calculation` | yes | `canonical` | `moira/twelfth_parts.py:75` | `CHANGELOG.md` +1 | `tests/server/test_server_hellenistic_atoms_routes.py` +4 |
 | `python:moira.facade:twilight_times` | `twilight_times` | `calculation` | yes | `canonical` | `moira/rise_set.py:936` | `wiki/02_standards/API_REFERENCE.md` +3 | `tests/integration/test_twilight_external_reference.py` +3 |
 | `python:moira.facade:uranian_at` | `uranian_at` | `calculation` | yes | `canonical` | `moira/uranian.py:367` | `docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md` +3 | `tests/server/test_server_uranian_routes.py` +1 |
-| `python:moira.facade:ut_to_tt` | `ut_to_tt` | `calculation` | yes | `canonical` | `moira/julian.py:2434` | `docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md` +13 | `tests/integration/test_astrometric_corrections_external.py` +54 |
+| `python:moira.facade:ut_to_tt` | `ut_to_tt` | `calculation` | yes | `canonical` | `moira/julian.py:2434` | `docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md` +13 | `tests/integration/test_astrocartography_physical_horizon.py` +55 |
 | `python:moira.facade:utc_to_tt` | `utc_to_tt` | `calculation` | yes | `canonical` | `moira/julian.py:1808` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/server/test_server_chart_routes.py` +18 |
 | `python:moira.facade:utc_to_tt_with_truth` | `utc_to_tt_with_truth` | `calculation` | yes | `canonical` | `moira/julian.py:2357` | `wiki/02_standards/API_REFERENCE.md` | `tests/integration/test_r2b_truth_evidence.py` +1 |
 | `python:moira.facade:utc_to_ut1` | `utc_to_ut1` | `calculation` | yes | `canonical` | `moira/julian.py:2274` | `wiki/02_standards/API_REFERENCE.md` +4 | `tests/integration/test_iota_spica_moira_lola_model.py` +50 |

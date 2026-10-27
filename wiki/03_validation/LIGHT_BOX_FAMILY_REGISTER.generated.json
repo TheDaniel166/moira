@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.11.0",
+  "engine_version": "6.11.1",
   "entries": [
     {
       "assessment_status": "partial",
@@ -11,7 +11,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 633,
+        "source_line": 704,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -36,7 +36,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 538,
+        "source_line": 635,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -8436,7 +8436,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 380,
+        "source_line": 379,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -8461,7 +8461,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 466,
+        "source_line": 465,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -8486,7 +8486,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 322,
+        "source_line": 321,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -17087,7 +17087,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 739,
+        "source_line": 810,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -17112,7 +17112,7 @@
       "family_id": "astrocartography",
       "family_label": "Astrocartography",
       "ownership": {
-        "source_line": 694,
+        "source_line": 765,
         "source_path": "moira/astrocartography.py"
       },
       "priority": "P2",
@@ -31762,7 +31762,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "78d580c4275d5755137109e951ebd77320fa66b09d35036fb642b34bf4746de6",
+  "inventory_fingerprint_sha256": "0be3d76ff38de4bb6009aabf9fee014363e92f3d58d16686900cf8756ab03971",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v1",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

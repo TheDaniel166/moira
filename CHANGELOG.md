@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.11.1] - 2026-10-27
+
+### Fixed
+- Astrocartography uses the geodetic surface normal in the horizon equation,
+  correctly excluding samples beyond the physical circumpolar boundary.
+- Lunar ASC/DSC curves solve finite-distance parallax at each actual candidate
+  longitude instead of reusing the Moon's topocentric position at the MC.
+  Both false inclusions and false omissions near the lunar cutoff are repaired.
+
+### Validation
+- Independent ERFA horizon/ellipsoid tests cover both hemispheres, geometric
+  and refracted horizons, limiting tangencies, and finite-distance lunar roots.
+- DE441-backed forward sky checks cover every returned lunar sample for
+  June 16, 21 and 29, 2026, including the reproduced production failures.
+
 ## [6.11.0] - 2026-10-25
 
 ### Fixed

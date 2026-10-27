@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.11.0",
+  "engine_version": "6.11.1",
   "families": [
     {
       "assessment_status": "partial",
@@ -506,10 +506,12 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/server/test_server_astrocartography_routes.py",
         "tests/server/test_server_forecasting_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrocartography.py",
+        "tests/unit/test_astrocartography_physical_horizon.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_fixed_star_astrocartography.py",
         "tests/unit/test_locational_forecasting.py",
@@ -3084,6 +3086,7 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/harness_meta/test_reference_epoch_policy.py",
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/integration/test_astrometric_corrections_external.py",
         "tests/integration/test_custom_type13_toutatis_kernel.py",
         "tests/integration/test_delta_t_ancient_month_continuity.py",
@@ -4820,6 +4823,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/integration/test_erfa_validation.py",
         "tests/integration/test_gauquelin_external_reference.py",
         "tests/integration/test_houses_external_reference.py",
@@ -8292,7 +8296,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "78d580c4275d5755137109e951ebd77320fa66b09d35036fb642b34bf4746de6",
+  "inventory_fingerprint_sha256": "0be3d76ff38de4bb6009aabf9fee014363e92f3d58d16686900cf8756ab03971",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
