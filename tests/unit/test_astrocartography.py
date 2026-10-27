@@ -50,25 +50,18 @@ def test_acg_lines_returns_four_lines_per_body_in_expected_shape() -> None:
         assert by_key[(body, "DSC")].points
 
 
-def test_acg_lines_binds_reader_and_refraction_to_lunar_refinement(
+def test_acg_lines_binds_reader_to_lunar_apparent_vector(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     reader = object()
-    calls: list[tuple[str, float, float, float, object, bool]] = []
+    calls = []
 
-    def fake_sky_position_at(
-        body: str,
-        jd_ut: float,
-        observer_lat: float,
-        observer_lon: float,
-        *,
-        reader,
-        refraction: bool,
-    ):
-        calls.append((body, jd_ut, observer_lat, observer_lon, reader, refraction))
-        return _FakePlanet(right_ascension=250.0, declination=-5.0)
+    def fake_planet_at(body, jd_ut, *, reader, frame):
+        from types import SimpleNamespace
+        calls.append((body, jd_ut, reader, frame))
+        return SimpleNamespace(x=384400.0, y=0.0, z=0.0)
 
-    monkeypatch.setattr("moira.planets.sky_position_at", fake_sky_position_at)
+    monkeypatch.setattr("moira.planets.planet_at", fake_planet_at)
 
     acg.acg_lines(
         {"Moon": (250.0, -5.0)},
@@ -79,10 +72,7 @@ def test_acg_lines_binds_reader_and_refraction_to_lunar_refinement(
         refraction=False,
     )
 
-    assert calls == [
-        ("Moon", 2451545.0, -89.0, 230.0, reader, False),
-        ("Moon", 2451545.0, 89.0, 230.0, reader, False),
-    ]
+    assert calls == [("Moon", 2451545.0, reader, "cartesian")]
 
 
 def test_mc_and_ic_are_antipodal_meridians() -> None:

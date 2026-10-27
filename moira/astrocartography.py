@@ -43,9 +43,8 @@ from dataclasses import dataclass, field
 from .constants import DEG2RAD, Body
 
 # WGS-84 first eccentricity squared: e^2 = 1 - (b/a)^2 ~= 0.006694379990
-# Used to convert geodetic latitude -> geocentric latitude for the horizon
-# hour-angle formula. The maximum difference is ~11.5 arcminutes near +/-45 deg,
-# which can shift an ASC/DSC line by several kilometres on a rendered map.
+# Used by the subplanetary surface-coordinate conversion.  The local horizon
+# uses the geodetic surface normal directly, never the geocentric radius.
 _WGS84_E2 = 0.00669437999014
 
 __all__ = [
@@ -510,7 +509,13 @@ def _compute_acg_curve_samples(
     lats: list[float],
     sin_h0: float,
 ) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
-    """Return ASC and DSC samples for a fixed RA/Dec body."""
+    """Solve the geodetic horizon for a fixed equatorial direction.
+
+    ERFA hd2ae defines latitude by the adopted zenith (normally geodetic).
+    A real hour angle exists only inside the body's horizon-crossing domain.
+    The 1e-14 cosine allowance below covers roundoff at a limiting tangent;
+    it never extends a curve into a resolved circumpolar interval.
+    """
     dec_r = dec * DEG2RAD
     sin_dec = math.sin(dec_r)
     cos_dec = math.cos(dec_r)
@@ -519,18 +524,110 @@ def _compute_acg_curve_samples(
 
     for phi in lats:
         phi_r = phi * DEG2RAD
-        phi_gc_r = math.atan((1.0 - _WGS84_E2) * math.tan(phi_r))
-        denom = math.cos(phi_gc_r) * cos_dec
+        denom = math.cos(phi_r) * cos_dec
         if abs(denom) < 1e-12:
             continue
 
-        cos_ha = (sin_h0 - math.sin(phi_gc_r) * sin_dec) / denom
-        if abs(cos_ha) > 1.0:
+        cos_ha = (sin_h0 - math.sin(phi_r) * sin_dec) / denom
+        if abs(cos_ha) > 1.0 + 1e-14:
             continue
 
-        ha_deg = math.degrees(math.acos(cos_ha))
+        ha_deg = math.degrees(math.acos(max(-1.0, min(1.0, cos_ha))))
         asc_pts.append((phi, (ra - gmst_deg - ha_deg) % 360.0))
         dsc_pts.append((phi, (ra - gmst_deg + ha_deg) % 360.0))
+
+    return asc_pts, dsc_pts
+
+
+def _longitude_extremum(function, left: float, right: float, *, maximum: bool) -> float:
+    """Locate one smooth horizon extremum within its meridian half-circle."""
+    ratio = (math.sqrt(5.0) - 1.0) / 2.0
+    a = right - ratio * (right - left)
+    b = left + ratio * (right - left)
+    fa, fb = function(a), function(b)
+    for _ in range(52):
+        if (fa < fb) == maximum:
+            left, a, fa = a, b, fb
+            b = left + ratio * (right - left)
+            fb = function(b)
+        else:
+            right, b, fb = b, a, fa
+            a = right - ratio * (right - left)
+            fa = function(a)
+    return (left + right) / 2.0
+
+
+def _compute_lunar_curve_samples(
+    jd_ut: float,
+    gmst_deg: float,
+    lats: list[float],
+    sin_h0: float,
+    reader,
+) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+    """Intersect the finite-distance lunar sightline with each local horizon.
+
+    The object is (Moon vector - WGS-84 observer vector) dotted with the
+    geodetic zenith, divided by sightline length.  The admitted planetary
+    pipeline owns the apparent vector, parallax and diurnal aberration.
+    Refraction remains the caller's constant geometric-altitude threshold.
+
+    The exterior Moon has one upper and one lower horizon extremum around
+    Earth.  Locate those extrema in their geocentric meridian half-circles,
+    reject latitudes whose altitude range excludes the horizon, then bracket
+    the increasing (ASC) and decreasing (DSC) crossings separately.  A limiting
+    tangent is a shared endpoint; no point is invented beyond that domain.
+    """
+    from .corrections import apply_diurnal_aberration, topocentric_correction
+    from .planets import planet_at
+
+    moon = planet_at(Body.MOON, jd_ut, reader=reader, frame="cartesian")
+    vector = (moon.x, moon.y, moon.z)
+    meridian = math.degrees(math.atan2(moon.y, moon.x)) - gmst_deg
+    asc_pts: list[tuple[float, float]] = []
+    dsc_pts: list[tuple[float, float]] = []
+    contact_tolerance = 2e-14  # sine altitude, approximately 1e-12 degrees
+
+    for latitude in lats:
+        phi = latitude * DEG2RAD
+        sin_phi, cos_phi = math.sin(phi), math.cos(phi)
+
+        def horizon_residual(longitude: float) -> float:
+            sidereal = gmst_deg + longitude
+            sightline = topocentric_correction(
+                vector, latitude, longitude, sidereal,
+                jd_ut=jd_ut, observer_frame="equatorial_of_date",
+            )
+            sightline = apply_diurnal_aberration(
+                sightline, latitude, longitude, sidereal,
+                jd_ut=jd_ut, observer_frame="equatorial_of_date",
+            )
+            theta = sidereal * DEG2RAD
+            up = (cos_phi * math.cos(theta), cos_phi * math.sin(theta), sin_phi)
+            projection = sum(component * normal for component, normal in zip(sightline, up))
+            return projection / math.sqrt(sum(component * component for component in sightline)) - sin_h0
+
+        upper = _longitude_extremum(horizon_residual, meridian - 90, meridian + 90, maximum=True)
+        lower = _longitude_extremum(horizon_residual, meridian + 90, meridian + 270, maximum=False)
+        maximum, minimum = horizon_residual(upper), horizon_residual(lower)
+        if maximum < -contact_tolerance or minimum > contact_tolerance:
+            continue
+        if abs(maximum) <= contact_tolerance or abs(minimum) <= contact_tolerance:
+            contact = upper if abs(maximum) <= contact_tolerance else lower
+            asc_pts.append((latitude, contact % 360))
+            dsc_pts.append((latitude, contact % 360))
+            continue
+
+        for increasing, left, right, points in (
+            (True, lower - 360, upper, asc_pts),
+            (False, upper, lower, dsc_pts),
+        ):
+            for _ in range(48):
+                middle = (left + right) / 2.0
+                if (horizon_residual(middle) < 0.0) == increasing:
+                    left = middle
+                else:
+                    right = middle
+            points.append((latitude, ((left + right) / 2.0) % 360))
 
     return asc_pts, dsc_pts
 
@@ -562,8 +659,6 @@ def acg_lines(
     -------
     list[ACGLine] - four lines per planet (MC, IC, ASC, DSC).
     """
-    from .planets import sky_position_at
-
     if not math.isfinite(gmst_deg):
         raise ValueError(f"gmst_deg must be finite, got {gmst_deg!r}")
     if not math.isfinite(lat_step) or not 0.0 < lat_step <= 178.0:
@@ -596,33 +691,9 @@ def acg_lines(
                 ra_geo, dec_geo, gmst_deg, lats, sin_h0
             )
         else:
-            asc_points = []
-            dsc_points = []
-            for phi in lats:
-                phi_r = phi * DEG2RAD
-                phi_gc_r = math.atan((1.0 - _WGS84_E2) * math.tan(phi_r))
-
-                sky = sky_position_at(
-                    body,
-                    jd_ut,
-                    observer_lat=phi,
-                    observer_lon=lon_mc,
-                    reader=reader,
-                    refraction=refraction,
-                )
-                ra, dec = sky.right_ascension, sky.declination
-                dec_r = dec * DEG2RAD
-                denom = math.cos(phi_gc_r) * math.cos(dec_r)
-                if abs(denom) < 1e-12:
-                    continue
-
-                cos_ha = (sin_h0 - math.sin(phi_gc_r) * math.sin(dec_r)) / denom
-                if abs(cos_ha) > 1.0:
-                    continue
-
-                ha_deg = math.degrees(math.acos(cos_ha))
-                asc_points.append((phi, (ra - gmst_deg - ha_deg) % 360.0))
-                dsc_points.append((phi, (ra - gmst_deg + ha_deg) % 360.0))
+            asc_points, dsc_points = _compute_lunar_curve_samples(
+                jd_ut, gmst_deg, lats, sin_h0, reader,
+            )
 
         lines.append(ACGLine(planet=body, line_type="ASC", points=asc_points))
         lines.append(ACGLine(planet=body, line_type="DSC", points=dsc_points))
