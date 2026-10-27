@@ -342,7 +342,8 @@ def _fw_angles(T: float) -> tuple[float, float, float, float]:
     constant terms (SOFA iauPfw06).
     """
     gamb = (  -0.052928
-              + 10.556403  * T
+              # Bias-inclusive gamma_bar (IAU 2006, ERFA/SOFA pfw06).
+              + 10.556378  * T
               +  0.4932044 * T**2
               -  0.00031238* T**3
               -  0.000002788*T**4

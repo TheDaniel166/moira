@@ -352,6 +352,26 @@ def _eval_chebyshev_record_with_derivative_scalar(
     return tuple(values), tuple(rates)
 
 
+def _chebyshev_epoch_record(jd: float, jd2: float, init: float, intlen: float):
+    """Return a record index and local seconds without losing ET-INIT roundoff.
+
+    ET retains the existing binary64 seconds-since-J2000 contract. TwoDiff
+    recovers the rounding residual of ET-INIT before the segment-wide offset
+    is reduced to a record. The split JD contribution is reduced separately;
+    coverage checks and ownership of the final endpoint remain with callers.
+    """
+    epoch_seconds = (jd - T0) * S_PER_DAY
+    offset_seconds = epoch_seconds - init
+    virtual_init = epoch_seconds - offset_seconds
+    roundoff_seconds = (
+        epoch_seconds - (offset_seconds + virtual_init)
+    ) + (virtual_init - init)
+    index1, offset1 = divmod(offset_seconds, intlen)
+    index2, offset2 = divmod(jd2 * S_PER_DAY, intlen)
+    index3, offset = divmod((offset1 + offset2) + roundoff_seconds, intlen)
+    return int(index1 + index2 + index3), offset
+
+
 def _native_spk_record_inputs(segment, jd: float):
     """Return native-evaluable type-2 record inputs or ``None``."""
     if not _HAS_NATIVE_SPK or getattr(segment, "data_type", None) != 2:
@@ -376,15 +396,15 @@ def _native_spk_record_inputs(segment, jd: float):
     if component_count != 3 or coefficient_count == 0 or record_count == 0:
         return None
 
-    index, offset = divmod((jd - T0) * S_PER_DAY - init, intlen)
-    index = int(index)
+    index, offset = _chebyshev_epoch_record(jd, 0.0, init, intlen)
     if index < 0 or index > record_count:
         return None
     if index == record_count:
         index -= 1
         offset += intlen
 
-    s = 2.0 * offset / intlen - 1.0
+    radius = 0.5 * intlen
+    s = (offset - radius) / radius
     derivative_scale = 2.0 * S_PER_DAY / intlen
     return coeff_record_getter(index), s, derivative_scale
 
@@ -699,10 +719,7 @@ class _NativeChebyshevSegment:
         init, intlen, coefficients = self._load_data()
         record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
 
-        index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
-        index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
-        index3, offset = divmod(offset1 + offset2, intlen)
-        index = int(index1 + index2 + index3)
+        index, offset = _chebyshev_epoch_record(tdb, tdb2, init, intlen)
         if index < 0 or index > record_count:
             raise OutOfRangeError(
                 'segment only covers dates %d-%02d-%02d through %d-%02d-%02d'
@@ -714,7 +731,8 @@ class _NativeChebyshevSegment:
             index -= 1
             offset += intlen
 
-        s = 2.0 * offset / intlen - 1.0
+        radius = 0.5 * intlen
+        s = (offset - radius) / radius
         derivative_scale = 2.0 * S_PER_DAY / intlen
 
         coeff_record = _coeff_record(coefficients, index)

@@ -28,6 +28,7 @@ from .spk_reader import (
     _KernelSourceIdentity,
     _RoutedState,
     _SpkSegmentReceipt,
+    _chebyshev_epoch_record,
     _coeff_record,
     _coeff_tensor_shape,
     _eval_chebyshev_record_scalar,
@@ -476,10 +477,7 @@ class _NativeChebyshevSegment:
         init, intlen, coefficients = self._load_data()
         record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
 
-        index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
-        index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
-        index3, offset = divmod(offset1 + offset2, intlen)
-        index = int(index1 + index2 + index3)
+        index, offset = _chebyshev_epoch_record(tdb, tdb2, init, intlen)
         if index < 0 or index >= record_count:
             # Boundary handling for exact end matches
             if index == record_count and offset <= 1e-7:
@@ -496,7 +494,8 @@ class _NativeChebyshevSegment:
                 )
 
         coeff_record = _coeff_record(coefficients, index)
-        s = 2.0 * offset / intlen - 1.0
+        radius = 0.5 * intlen
+        s = (offset - radius) / radius
         derivative_scale = 2.0 * S_PER_DAY / intlen
 
         if need_rates:

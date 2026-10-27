@@ -38,7 +38,9 @@ EXPECTED_COLUMNS = [
     "lat_limit_deg",
 ]
 
-ORACLE_ANCHORS = {
+# Historical implementation outputs, including the former mixed-definition
+# gamma coefficient. Preserve the numbers; correct only their frame below.
+LEGACY_MIXED_FW06_ANCHORS = {
     "Sirius": {
         "j1000": (90.32324909319895, -39.37754877844545),
         "j1500": (97.19263208055153, -39.490817852676805),
@@ -115,6 +117,32 @@ def _angular_delta(a: float, b: float) -> float:
     return abs((((a - b) + 180.0) % 360.0) - 180.0)
 
 
+def _corrected_fw06_anchor(name: str, jd_tt: float, date_key: str) -> tuple[float, float]:
+    """Transport the frozen legacy output through independent ERFA frames.
+
+    Propagation and nutation are held fixed. The independent precession-only
+    correction is M_correct @ transpose(M_legacy), with the literal pfw06
+    gamma_bar coefficient replacing the precession-only coefficient.
+    """
+    legacy_position = LEGACY_MIXED_FW06_ANCHORS[name][date_key]
+    if jd_tt == J2000:
+        return legacy_position
+    erfa = pytest.importorskip("erfa")
+    from moira.coordinates import nutation_matrix_equatorial
+    from moira.obliquity import true_obliquity
+
+    offset = jd_tt - J2000
+    gamb, phib, psib, epsa = erfa.pfw06(J2000, offset)
+    delta = (10.556403 - 10.556378) * offset / 36525.0 * math.pi / 648000.0
+    identity = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+    axes = erfa.rx(math.radians(true_obliquity(jd_tt)), identity) @ nutation_matrix_equatorial(jd_tt)
+    legacy_frame = axes @ erfa.fw2m(gamb + delta, phib, psib, epsa)
+    correct_frame = axes @ erfa.pmat06(J2000, offset)
+    vector = erfa.s2c(*map(math.radians, legacy_position))
+    lon, lat = erfa.c2s(correct_frame @ legacy_frame.T @ vector)
+    return math.degrees(lon) % 360.0, math.degrees(lat)
+
+
 @pytest.mark.unit
 def test_registry_schema_and_key_alignment() -> None:
     rows = _registry_rows()
@@ -181,7 +209,7 @@ def test_star_at_matches_registry_reference_longitude_and_latitude(name: str) ->
 @pytest.mark.parametrize("date_key", ["j1000", "j1500", "j1900", "j2000", "j2100", "j2500", "j3000"])
 def test_oracle_anchor_reference_positions(name: str, date_key: str) -> None:
     star = star_at(name, ORACLE_DATE_POINTS[date_key])
-    expected_lon, expected_lat = ORACLE_ANCHORS[name][date_key]
+    expected_lon, expected_lat = _corrected_fw06_anchor(name, ORACLE_DATE_POINTS[date_key], date_key)
 
     assert star.longitude == pytest.approx(expected_lon, abs=1e-9)
     assert star.latitude == pytest.approx(expected_lat, abs=1e-9)

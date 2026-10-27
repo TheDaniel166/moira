@@ -13,6 +13,7 @@ import pytest
 from moira._kernel_paths import find_planetary_kernel
 from moira.constants import Body, HouseSystem
 from moira.eclipse import EclipseCalculator
+from moira.houses import calculate_houses
 from moira.planets import planet_at
 from moira.spk_reader import SpkReader
 from moira.western_electional import (
@@ -80,6 +81,16 @@ def test_j2000_rooted_context_next_connection_satisfies_de441_geometry() -> None
         angular_error = abs((separation - connection.angle + 180.0) % 360.0 - 180.0)
         before_exit = planet_at(Body.MOON, connection.jd_sign_exit - 2e-5, reader=reader)
         after_exit = planet_at(Body.MOON, connection.jd_sign_exit + 2e-5, reader=reader)
+        # London at J2000 noon is a day chart. Test the defining directed arc,
+        # rather than freezing the ephemeris inputs of an earlier reduction.
+        sun_at_inception = planet_at(Body.SUN, 2451545.0, reader=reader)
+        moon_at_inception = planet_at(Body.MOON, 2451545.0, reader=reader)
+        houses = calculate_houses(
+            2451545.0, 51.5074, -0.1278, system=HouseSystem.REGIOMONTANUS,
+        )
+        expected_fortune = (
+            houses.asc + moon_at_inception.longitude - sun_at_inception.longitude
+        ) % 360.0
 
     assert Path(result.reader_provenance).name == "de441.bsp"
     assert connection.jd_query < connection.jd_exact < connection.jd_sign_exit
@@ -90,8 +101,7 @@ def test_j2000_rooted_context_next_connection_satisfies_de441_geometry() -> None
     assert after_exit.sign != connection.moon_sign
     ninth, fortune, outcome = result.supplementary_indicators
     assert ninth.state.value == "not_evaluable"
-    # Fixed-DE441 witness after the Stage 1 public-TT/private-TDB correction.
-    assert fortune.longitude == pytest.approx(326.969422871406, abs=1e-10)
+    assert fortune.longitude == pytest.approx(expected_fortune, abs=1e-10)
     assert fortune.sign == "Aquarius"
     assert fortune.ruler == Body.SATURN
     assert outcome.body == connection.body

@@ -179,7 +179,8 @@ inline Mat3 precession_matrix_fw06(double jd_tt) {
     double T = (jd_tt - J2000) / 36525.0;
 
     double gamb = ( -0.052928
-                  + T * (10.556403
+                  // Bias-inclusive gamma_bar, as in ERFA/SOFA pfw06.
+                  + T * (10.556378
                   + T * (0.4932044
                   + T * (-0.00031238
                   + T * (-0.000002788

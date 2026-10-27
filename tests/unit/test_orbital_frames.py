@@ -154,13 +154,15 @@ def test_frame_matrices_are_right_handed_orthogonal(frame: str, epoch_tt: float)
 def test_position_and_velocity_receive_the_identical_instantaneous_matrix() -> None:
     transform = orbital_frame_transform(MEAN_ECLIPTIC_OF_DATE, 2461298.5)
     position = (1.0, 2.0, 3.0)
-    velocity = tuple(value * 7.0 for value in position)
+    # A binary power scales exactly: the invariant tests the shared matrix,
+    # without assuming floating point distributivity for a factor like seven.
+    velocity = tuple(value * 8.0 for value in position)
     rotated_position, rotated_velocity = rotate_orbital_state(
         transform, position, velocity
     )
 
     assert rotated_velocity == pytest.approx(
-        tuple(value * 7.0 for value in rotated_position), abs=2.0e-15
+        tuple(value * 8.0 for value in rotated_position), abs=2.0e-15
     )
 
 

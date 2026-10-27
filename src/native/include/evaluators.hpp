@@ -199,6 +199,33 @@ private:
     std::shared_ptr<IEvaluator> raw_tdb_evaluator_;
 };
 
+// Shared time reduction for native Chebyshev segment evaluators.
+inline std::pair<int64_t, double> chebyshev_epoch_record(
+    double jd, double jd2, double init, double intlen
+) {
+    if (!std::isfinite(jd) || !std::isfinite(jd2)) {
+        throw std::invalid_argument("Chebyshev evaluator epoch must be finite");
+    }
+    // Preserve the binary64 ET contract, but carry the TwoDiff residual of
+    // ET-INIT into record-local time. A long segment must not quantize ET.
+    const double epoch_seconds = (jd - 2451545.0) * 86400.0;
+    const double offset_seconds = epoch_seconds - init;
+    const double virtual_init = epoch_seconds - offset_seconds;
+    const double roundoff_seconds =
+        (epoch_seconds - (offset_seconds + virtual_init)) + (virtual_init - init);
+    const double index1 = std::floor(offset_seconds / intlen);
+    const double offset1 = offset_seconds - index1 * intlen;
+    const double split_seconds = jd2 * 86400.0;
+    const double index2 = std::floor(split_seconds / intlen);
+    const double offset2 = split_seconds - index2 * intlen;
+    const double combined_offset = (offset1 + offset2) + roundoff_seconds;
+    const double index3 = std::floor(combined_offset / intlen);
+    return {
+        static_cast<int64_t>(index1 + index2 + index3),
+        combined_offset - index3 * intlen
+    };
+}
+
 /**
  * @brief THEOREM: Chebyshev Segment Evaluator (Type 2/3).
  */
@@ -220,19 +247,17 @@ public:
     }
 
     void compute(double jd, double* result) const override {
-        // JPL SPK Type 2/3 uses seconds since J2000.0.
-        // We convert JD to seconds to match the domain of the polynomial.
-        double t_sec = (jd - 2451545.0) * 86400.0;
-        double d_t = t_sec - init;
-        const double duration = static_cast<double>(record_count) * intlen;
-        if (d_t < 0.0 || d_t > duration) {
+        auto [record_index, offset] = chebyshev_epoch_record(jd, 0.0, init, intlen);
+        if (record_index < 0 || static_cast<size_t>(record_index) > record_count
+            || (static_cast<size_t>(record_index) == record_count && offset > 0.0)) {
             throw std::invalid_argument("ChebyshevEvaluator epoch is outside payload coverage");
         }
-        size_t record_index = static_cast<size_t>(std::floor(d_t / intlen));
-        if (record_index == record_count) record_index -= 1;
-
-        double s = (d_t - (static_cast<double>(record_index) * intlen)) / intlen;
-        s = 2.0 * s - 1.0;
+        if (static_cast<size_t>(record_index) == record_count) {
+            record_index -= 1;
+            offset += intlen;
+        }
+        const double radius = 0.5 * intlen;
+        const double s = (offset - radius) / radius;
 
         const double* ptr = coefficients.data() + record_index * component_count * coefficient_count;
         spk_chebyshev_record_avx2(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
@@ -458,28 +483,7 @@ private:
     }
 
     std::pair<size_t, double> epoch_record_and_offset(double jd, double jd2) const {
-        const double offset_seconds = (jd - 2451545.0) * 86400.0 - init;
-        double index1;
-        double offset1;
-        {
-            const double quotient = std::floor(offset_seconds / intlen);
-            index1 = quotient;
-            offset1 = offset_seconds - quotient * intlen;
-        }
-
-        double index2;
-        double offset2;
-        {
-            const double split_seconds = jd2 * 86400.0;
-            const double quotient = std::floor(split_seconds / intlen);
-            index2 = quotient;
-            offset2 = split_seconds - quotient * intlen;
-        }
-
-        const double combined_offset = offset1 + offset2;
-        const double index3 = std::floor(combined_offset / intlen);
-        double offset = combined_offset - index3 * intlen;
-        int64_t index = static_cast<int64_t>(index1 + index2 + index3);
+        auto [index, offset] = chebyshev_epoch_record(jd, jd2, init, intlen);
         if (index < 0 || static_cast<size_t>(index) > record_count) {
             throw std::invalid_argument(
                 "SPK evaluator record index is outside descriptor payload"
@@ -495,8 +499,8 @@ private:
     double normalized_time(double jd, double jd2) const {
         const auto [index, offset] = epoch_record_and_offset(jd, jd2);
         (void)index;
-        double s = offset / intlen;
-        return 2.0 * s - 1.0;
+        const double radius = 0.5 * intlen;
+        return (offset - radius) / radius;
     }
 
     const double* record_ptr(double jd, double jd2) const {

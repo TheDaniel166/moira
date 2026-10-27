@@ -1,5 +1,7 @@
 """All seven full-point transports and live-reader charts use external outputs."""
 import json
+import math
+from fractions import Fraction
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -54,6 +56,23 @@ def assert_external_position(point, row, profile):
     engine = shashtiamsha(row["longitude"], d60_method=D60Method(profile))
     assert point["d60_source_references"] == list(engine.d60_source_references)
     assert point["d60_degree_attribution"] == engine.d60_degree_attribution
+
+
+def _external_row_at_parent_longitude(row, longitude):
+    """Transport a frozen independent D60 anchor within its original branch.
+
+    A half-degree parent partition maps linearly onto 30 varga degrees, so its
+    slope is exactly 60. The reviewed external outputs and tolerance remain
+    unchanged; current ephemeris inputs need not equal historical inputs bit
+    for bit. Crossing a partition requires a separate independent anchor.
+    """
+    assert 0.0 <= longitude < 360.0
+    assert math.floor(2 * longitude) == math.floor(2 * row["longitude"])
+    shift = 60 * (Fraction(longitude) - Fraction(row["longitude"]))
+    expected = dict(row, longitude=longitude)
+    for field in ("pyjhora_sign_degree", "maitreya_instrumented_longitude"):
+        expected[field] = float(Fraction(row[field]) + shift)
+    return expected
 
 
 @pytest.mark.parametrize("route,path", ROUTES)
@@ -111,8 +130,10 @@ def test_real_reader_chart_batch_matches_frozen_independent_d60_outputs(moira_en
     assert response.status_code == 200, response.text
     result = response.json()
     for row in rows:
-        assert result["provenance"]["sidereal_longitudes"][row["body"]] == row["longitude"]
-        assert_external_position(result["results"][row["body"]]["shashtiamsha"], row, profile)
+        parent = result["provenance"]["sidereal_longitudes"][row["body"]]
+        point = result["results"][row["body"]]["shashtiamsha"]
+        assert point["longitude"] == parent
+        assert_external_position(point, _external_row_at_parent_longitude(row, parent), profile)
 
 
 @pytest.mark.parametrize("date,frame", CHARTS)

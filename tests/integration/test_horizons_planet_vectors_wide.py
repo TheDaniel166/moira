@@ -6,7 +6,7 @@ import pytest
 
 from moira._ephemeris_time import _ut1_to_ephemeris_tt
 from moira.constants import Body, NAIF_ROUTES
-from moira.julian import julian_day
+from moira.julian import julian_day, tt_to_tdb
 from moira.planets import _geocentric
 from tools.horizons import VectorState, vector_state_tdb
 
@@ -84,13 +84,12 @@ def test_planet_geocentric_vectors_match_horizons_across_wide_de441_range(
     jd_ut: float,
     planetary_reader,
 ) -> None:
-    # Moira currently passes its reader-bound ephemeris JD directly to the SPK
-    # evaluator. Horizons receives that same numeric JD explicitly as TDB, so
-    # this fixture isolates target/vector geometry rather than independently
-    # validating a TT-to-TDB conversion.
-    jd_ephemeris = _ut1_to_ephemeris_tt(jd_ut, planetary_reader)
-    moira_xyz = _geocentric(body, jd_ephemeris, planetary_reader)
-    ref = vector_state_tdb(command, jd_ephemeris)
+    # The reader accepts TT and converts to TDB at the SPK boundary. Give
+    # Horizons the same converted TDB instant, rather than relabelling TT as
+    # TDB. This comparison isolates vector geometry, not TT-to-TDB accuracy.
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, planetary_reader)
+    moira_xyz = _geocentric(body, jd_tt, planetary_reader)
+    ref = vector_state_tdb(command, tt_to_tdb(jd_tt))
     diff_km, error_arcsec = _vector_diff(moira_xyz, ref)
 
     assert error_arcsec <= ANGULAR_THRESHOLD_ARCSEC, (
