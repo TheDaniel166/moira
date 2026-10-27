@@ -1,7 +1,7 @@
 # Astrocartography Backend Standard
 
-Version: 0.1
-Date: 2026-06-11
+Version: 0.2
+Date: 2026-10-27
 Status: Active backend admission packet for Phase 10 REST evaluation
 Scope: `moira.astrocartography`
 
@@ -86,6 +86,20 @@ Frame doctrine:
 - `gmst_deg` is Greenwich apparent sidereal time in degrees.
 - MC/IC line longitudes are geographic longitudes.
 - ASC/DSC points are sampled `(latitude, longitude)` geographic pairs.
+- Horizon latitude is geodetic: the zenith is the ellipsoid surface normal,
+  not the geocentric radius. Fixed-direction samples solve
+  `sin(h0) = sin(phi) sin(dec) + cos(phi) cos(dec) cos(H)` directly with that
+  latitude. Non-real solutions are omitted; only floating-point roundoff at
+  a limiting tangent is allowed inside the inverse-trigonometric domain.
+- With no refraction the fixed-direction limit is `abs(phi) = 90 - abs(dec)`.
+  With refraction the adopted body-centre geometric altitude is -0.5667 degrees,
+  and existence is tested against that horizon rather than an unrefracted cap.
+- When a lunar epoch is supplied, the apparent geocentric lunar vector is
+  reduced once. Each candidate longitude receives its own WGS-84 observer
+  subtraction and diurnal aberration before projection on the local zenith.
+  The increasing and decreasing longitude crossings are bracketed separately
+  after checking the latitude's actual altitude range. Coordinates calculated
+  at the MC must not be reused as topocentric coordinates for ASC/DSC.
 - Subplanetary point latitude is WGS-84 geodetic latitude derived from the
   geocentric declination.
 - Subplanetary point longitude is wrapped to `[-180, 180)`.
@@ -161,6 +175,12 @@ Covered invariants include:
 - MC/IC antipodal meridian behavior
 - zero-declination ASC/DSC meridian behavior
 - high-declination circumpolar latitude skipping
+- independent ERFA `hd2ae` altitude and domain checks in both hemispheres,
+  including exact tangent and just-outside-cutoff inputs
+- finite-distance lunar sightlines independently constructed with ERFA
+  `gd2gc`, with separate rising/setting branch and domain assertions
+- DE441-backed forward sky-position checks at every returned lunar sample,
+  including the June 16 and June 29, 2026 cutoff regressions
 - ASC/DSC symmetry around the MC meridian
 - WGS-84 geodetic latitude conversion for subplanetary points
 - chart wrapper delegation to apparent sidereal time and sky-position truth
@@ -186,3 +206,19 @@ REST design must still decide:
 
 Do not admit dense grid or map-rendering routes as part of first P10-01
 transport.
+
+## 8. Physical Horizon Authorities
+
+- ERFA `hd2ae`: the latitude is defined by the adopted zenith; published
+  geodetic latitude supplies the ordinary geodetic horizon.
+  <https://github.com/liberfa/erfa/blob/master/src/hd2ae.c>
+- PROJ topocentric conversion: East and North span the local ellipsoid tangent
+  plane, and Up follows its normal.
+  <https://proj.org/en/stable/operations/conversions/topocentric.html>
+- The finite-distance observer subtraction and diurnal aberration use Moira's
+  admitted `corrections` pipeline. The lunar root search changes observer
+  longitude at a fixed UT1 epoch; it does not search time or hold a natal
+  topocentric direction fixed over Earth.
+
+The new tests are geometric/authority-transform evidence. Their JPL-backed
+forward checks are not a separate external validation of the lunar ephemeris.
