@@ -234,6 +234,38 @@ def test_zr_level_pair_route_matches_engine(client_with_engine: TestClient) -> N
     assert body["is_peak_pair"] == direct_pair.is_peak_pair
 
 
+@pytest.mark.parametrize(("upper", "lower"), [(2, 3), (3, 4), (1, 4)])
+def test_zr_level_pair_route_releases_to_the_lower_level(
+    client_with_engine: TestClient,
+    upper: int,
+    lower: int,
+) -> None:
+    natal_jd = jd_from_datetime(_NATAL_DT)
+    current_jd = jd_from_datetime(_CURRENT_DT)
+    active = current_releasing(
+        _LOT_LONGITUDE, natal_jd, current_jd, lot_name="Spirit", levels=lower
+    )
+    by_level = {p.level: p for p in active}
+    direct_pair = zr_level_pair(by_level[upper], by_level[lower])
+
+    resp = client_with_engine.post(
+        "/v1/timelords/zodiacal-releasing/level-pair",
+        json={
+            "natal": _NATAL_PAYLOAD,
+            "query_dt": _CURRENT_ISO,
+            "upper_level": upper,
+            "lower_level": lower,
+        },
+    )
+
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["upper_profile"]["sign"] == direct_pair.upper_profile.sign
+    assert body["lower_profile"]["sign"] == direct_pair.lower_profile.sign
+    assert body["house_distance"] == direct_pair.house_distance
+    assert body["is_adjacent_levels"] is (lower - upper == 1)
+
+
 # ---------------------------------------------------------------------------
 # Angularity classification witness (fortune_longitude provided)
 # ---------------------------------------------------------------------------

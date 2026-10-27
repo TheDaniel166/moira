@@ -139,11 +139,30 @@ class MonthlyProfectionResponse(_StrictModel):
 # P8-07 Firdaria request models
 # ---------------------------------------------------------------------------
 
-class FirdarNatalRequest(_StrictModel):
+class _NatalSectLocation(_StrictModel):
+    """Optional birth location used to verify a caller-supplied sect.
+
+    When ``latitude`` and ``longitude`` are supplied (both or neither), the
+    server derives sect from the Sun's hemisphere in the exact horizon frame at
+    ``dt`` and that location, and rejects an ``is_day_chart`` that contradicts
+    it. Without a location the caller's sect is used unverified.
+    """
+
+    latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
+
+    @model_validator(mode="after")
+    def _location_supplied_together(self):
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be supplied together")
+        return self
+
+
+class FirdarNatalRequest(_NatalSectLocation):
     """Natal basis for Firdaria computations.
 
     is_day_chart: True when the Sun is above the horizon at birth (diurnal chart).
-    The caller is responsible for supplying the correct sect designation.
+    It is verified against the birth location when latitude/longitude are given.
     """
 
     dt: datetime
@@ -268,11 +287,12 @@ class FirdarActivePairOptionalResponse(_StrictModel):
 # P8-08 Decennials request models
 # ---------------------------------------------------------------------------
 
-class DecennialNatalRequest(_StrictModel):
+class DecennialNatalRequest(_NatalSectLocation):
     """Natal basis for Decennials computations.
 
     is_day_chart: True for a diurnal (day) chart — governs the sect-light
-    anchor and sequence ordering.
+    anchor and sequence ordering. It is verified against the birth location
+    when latitude/longitude are given.
     levels: admitted sub-period depth (1=major only, 2=sub).
     """
 

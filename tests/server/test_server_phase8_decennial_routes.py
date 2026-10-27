@@ -375,3 +375,49 @@ def test_decennials_current_rejects_date_before_birth(client_with_engine: TestCl
         json={"natal": _NATAL_PAYLOAD, "current_dt": "1999-01-01T00:00:00Z"},
     )
     assert resp.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Caller-supplied sect verified against the birth location
+# ---------------------------------------------------------------------------
+
+# London at 2000-01-01 12:00 UTC: the Sun is near culmination, a day chart.
+_LONDON = {"latitude": 51.5, "longitude": -0.1}
+
+
+@pytest.mark.requires_ephemeris
+def test_decennials_reject_sect_that_contradicts_the_location(
+    client_with_engine: TestClient,
+) -> None:
+    wrong = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={"natal": {"dt": _NATAL_ISO, "is_day_chart": False, **_LONDON}},
+    )
+    assert wrong.status_code == 422
+    assert "contradicts the day chart" in wrong.text
+
+    right = client_with_engine.post(
+        "/v1/timelords/decennials/current",
+        json={
+            "natal": {"dt": _NATAL_ISO, "is_day_chart": True, **_LONDON},
+            "current_dt": _CURRENT_ISO,
+        },
+    )
+    assert right.status_code == 200
+
+    # Without a location the caller's sect stays unverified (compatible).
+    unverified = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={"natal": {"dt": _NATAL_ISO, "is_day_chart": False}},
+    )
+    assert unverified.status_code == 200
+
+
+def test_decennials_require_latitude_and_longitude_together(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={"natal": {"dt": _NATAL_ISO, "is_day_chart": True, "latitude": 51.5}},
+    )
+    assert resp.status_code == 422

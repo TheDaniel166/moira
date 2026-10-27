@@ -389,3 +389,22 @@ def test_server_aggregators_export_the_profile_contract_by_identity() -> None:
         is compute_hellenistic_chart_profile
     )
     assert "compute_hellenistic_chart_profile" in public_services.__all__
+
+
+@pytest.mark.requires_ephemeris
+def test_route_profile_bound_component_names_the_bound_truth_lord(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post("/v1/hellenistic/chart-profile", json=PAYLOAD)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["policy"]["bounds"]["doctrine"] == "egyptian"
+    assert body["policy"]["dignity"]["essential"]["bounds_doctrine"] == "egyptian"
+    for planet in body["planets"]:
+        bound = next(
+            component
+            for component in planet["essential_components"]
+            if component["kind"] == "bound"
+        )
+        assert bound["ruler"] == planet["bound_truth"]["segment"]["ruler"], planet["planet"]

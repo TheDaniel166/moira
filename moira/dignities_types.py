@@ -21,7 +21,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 from ._strenum import StrEnum
-from math import isfinite
+from math import asin, degrees, isfinite, radians, sin
 
 from .constants import SIGNS
 from .egyptian_bounds import EgyptianBoundsDoctrine
@@ -541,18 +541,58 @@ class DignityHorizonFrame:
     Exact chart angles used for house-system-independent horizon truth.
 
     The Ascendant/Descendant are the ecliptic intersections with the local
-    horizon. The Midheaven identifies which of the two open semicircles is
-    above the horizon. A body on either horizon intersection is deliberately
-    not assigned to a hemisphere.
+    horizon; they split the ecliptic into two open semicircles, one above and
+    one below the horizon. The Midheaven (the ecliptic point on the upper
+    meridian) lies on one of them, at altitude ``90 - |phi - dec_MC|`` with
+    ``sin(dec_MC) = sin(eps) * sin(MC)``. Its semicircle is the upper one when
+    that altitude is positive and the lower one when it is negative.
+
+    Below ``|phi| = 90 - eps`` (about 66.56 degrees) the Midheaven is always
+    above the horizon. Above the polar circles it can lie below it, which
+    inverts the upper semicircle. ``geographic_latitude`` and ``obliquity``
+    (both or neither) supply that meridian altitude. Without them the frame
+    assumes the Midheaven is above the horizon, which is exact only below the
+    polar circles. A body on either horizon intersection is deliberately not
+    assigned to a hemisphere.
     """
 
     asc_longitude: float
     mc_longitude: float
     boundary_tolerance_deg: float = 1e-7
+    geographic_latitude: float | None = None
+    obliquity: float | None = None
+
+    @property
+    def mc_altitude_deg(self) -> float | None:
+        """Altitude of the Midheaven ecliptic point, or None when unsupplied."""
+
+        if self.geographic_latitude is None or self.obliquity is None:
+            return None
+        sin_dec = sin(radians(self.obliquity)) * sin(radians(self.mc_longitude))
+        dec_mc = degrees(asin(max(-1.0, min(1.0, sin_dec))))
+        return 90.0 - abs(self.geographic_latitude - dec_mc)
 
     def __post_init__(self) -> None:
         if not isfinite(self.asc_longitude) or not isfinite(self.mc_longitude):
             raise ValueError("DignityHorizonFrame longitudes must be finite")
+        if (self.geographic_latitude is None) != (self.obliquity is None):
+            raise ValueError(
+                "DignityHorizonFrame geographic_latitude and obliquity must be "
+                "supplied together"
+            )
+        if self.geographic_latitude is not None:
+            if (
+                not isfinite(self.geographic_latitude)
+                or not -90.0 <= self.geographic_latitude <= 90.0
+            ):
+                raise ValueError(
+                    "DignityHorizonFrame geographic_latitude must be finite and "
+                    "in [-90, 90]"
+                )
+            if not isfinite(self.obliquity) or not 0.0 < self.obliquity < 90.0:
+                raise ValueError(
+                    "DignityHorizonFrame obliquity must be finite and in (0, 90)"
+                )
         if (
             not isfinite(self.boundary_tolerance_deg)
             or self.boundary_tolerance_deg < 0.0

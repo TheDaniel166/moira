@@ -152,7 +152,15 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         kernel_id=None,
         kernel_coverage=None,
     ):
-        """Compose the admitted, score-free Hellenistic chart profile."""
+        """Compose the admitted, score-free Hellenistic chart profile.
+
+        ``chart`` must have been computed for ``natal_dt``. When
+        ``observer_latitude`` and ``observer_longitude`` are supplied, the
+        Whole Sign ``houses`` must also match ``natal_dt`` at that location,
+        and the chart's true obliquity is forwarded so sect stays exact above
+        the polar circles. Without an observer location the houses cannot be
+        verified against the chart and sect uses the non-polar horizon frame.
+        """
 
         facade = _facade_module()
         if (
@@ -164,6 +172,36 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
                 "hellenistic_chart_profile requires an explicit Whole Sign "
                 "house result with no fallback"
             )
+
+        # The chart, the houses and natal_dt must describe one nativity: a
+        # mismatched pair silently changes sect, the angles and every lot.
+        # Chart.jd_ut is the UTC-coded JD of the dt it was built from.
+        natal_jd = facade.jd_from_datetime(natal_dt)
+        if abs(chart.jd_ut - natal_jd) * 86400.0 > 1e-3:
+            raise ValueError(
+                "hellenistic_chart_profile chart was not computed for natal_dt"
+            )
+        # HouseCusps carries no epoch or place, so the angles can be checked
+        # only when the observer location is supplied: recompute the Whole
+        # Sign angles there and require the supplied ones to agree.
+        if observer_latitude is not None and observer_longitude is not None:
+            expected = self.houses(
+                natal_dt,
+                observer_latitude,
+                observer_longitude,
+                facade.HouseSystem.WHOLE_SIGN,
+            )
+            for name, supplied, recomputed in (
+                ("Ascendant", houses.asc, expected.asc),
+                ("Midheaven", houses.mc, expected.mc),
+            ):
+                delta = abs((supplied - recomputed + 180.0) % 360.0 - 180.0)
+                if delta > 1e-6:
+                    raise ValueError(
+                        f"hellenistic_chart_profile houses {name} "
+                        f"({supplied:.6f}) does not match natal_dt at the "
+                        f"observer location ({recomputed:.6f})"
+                    )
 
         positions = chart.longitudes(include_nodes=False)
         speeds = chart.speeds()
@@ -229,6 +267,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             observer_latitude=observer_latitude,
             observer_longitude=observer_longitude,
             observer_elevation_m=observer_elevation_m,
+            obliquity=chart.obliquity,
             position_frame=position_frame,
             engine_version=facade.__version__,
             kernel_id=kernel_id,
@@ -720,8 +759,20 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         use_loosing_of_bond: bool = True,
         policy=None,
     ):
-        """Generate Zodiacal Releasing periods from a Lot."""
+        """Generate Zodiacal Releasing periods from a Lot.
+
+        Releasing from Spirit requires ``fortune_longitude``: Valens' start
+        shift for a Spirit that shares Fortune's sign depends on it, and the
+        core function would otherwise skip that shift without a trace. Call
+        ``moira.timelords.zodiacal_releasing`` directly to release from Spirit
+        deliberately without Fortune.
+        """
         facade = _facade_module()
+        if lot_name == "Spirit" and fortune_longitude is None:
+            raise ValueError(
+                "zodiacal_releasing from Spirit requires fortune_longitude; "
+                "the Spirit start shift depends on Fortune's sign"
+            )
         return facade.zodiacal_releasing(
             lot_longitude,
             facade.jd_from_datetime(natal_dt),

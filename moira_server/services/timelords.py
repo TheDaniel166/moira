@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from moira import Moira
+from moira.constants import HouseSystem
+from moira.dignities import DignityHorizonFrame, calculate_dignities
+from moira.hellenistic import HELLENISTIC_CLASSICAL_PLANETS
 from moira.julian import jd_from_datetime
 from moira.profections import annual_profection, monthly_profection, profection_schedule
 from moira.timelords import (
@@ -49,6 +52,7 @@ from ..models.timelords import (
     FirdarActivePairRequest,
     FirdarBaseRequest,
     FirdarCurrentRequest,
+    FirdarNatalRequest,
     MonthlyProfectionRequest,
     ProfectionScheduleRequest,
     TimelordNativityRequest,
@@ -122,12 +126,66 @@ def compute_profection_schedule(engine: Moira, request: ProfectionScheduleReques
     )
 
 
+def _verify_natal_sect(
+    engine: Moira,
+    natal: DecennialNatalRequest | FirdarNatalRequest,
+) -> None:
+    """Reject a caller-supplied sect that contradicts the birth location.
+
+    Sect is the Sun's hemisphere in the engine's exact horizon frame at the
+    birth instant and location, with the meridian altitude supplied so polar
+    births classify correctly. Without a location nothing is verified.
+    """
+
+    if natal.latitude is None or natal.longitude is None:
+        return
+    chart = engine.chart(
+        natal.dt,
+        bodies=list(HELLENISTIC_CLASSICAL_PLANETS),
+        include_nodes=False,
+    )
+    houses = engine.houses(
+        natal.dt,
+        latitude=natal.latitude,
+        longitude=natal.longitude,
+        system=HouseSystem.WHOLE_SIGN,
+    )
+    dignities = calculate_dignities(
+        [
+            {
+                "name": planet,
+                "degree": chart.planets[planet].longitude,
+                "is_retrograde": chart.planets[planet].speed < 0.0,
+            }
+            for planet in HELLENISTIC_CLASSICAL_PLANETS
+        ],
+        [
+            {"number": index + 1, "degree": cusp}
+            for index, cusp in enumerate(houses.cusps)
+        ],
+        horizon_frame=DignityHorizonFrame(
+            asc_longitude=houses.asc,
+            mc_longitude=houses.mc,
+            geographic_latitude=natal.latitude,
+            obliquity=chart.obliquity,
+        ),
+    )
+    sun_sect = next(item for item in dignities if item.planet == "Sun").sect_truth
+    if sun_sect is not None and sun_sect.is_day_chart is not natal.is_day_chart:
+        derived = "day" if sun_sect.is_day_chart else "night"
+        raise ValueError(
+            f"is_day_chart={natal.is_day_chart} contradicts the {derived} chart "
+            "derived from dt at the supplied latitude/longitude"
+        )
+
+
 # ---------------------------------------------------------------------------
 # P8-07 Firdaria services
 # ---------------------------------------------------------------------------
 
-def _firdaria_periods(request: FirdarBaseRequest) -> list[FirdarPeriod]:
+def _firdaria_periods(engine: Moira, request: FirdarBaseRequest) -> list[FirdarPeriod]:
     require_aware_datetime(request.natal.dt)
+    _verify_natal_sect(engine, request.natal)
     natal_jd = jd_from_datetime(request.natal.dt)
     return firdaria(
         natal_jd,
@@ -138,11 +196,11 @@ def _firdaria_periods(request: FirdarBaseRequest) -> list[FirdarPeriod]:
 
 
 def compute_firdaria_sequence(engine: Moira, request: FirdarBaseRequest) -> list[FirdarPeriod]:
-    return _firdaria_periods(request)
+    return _firdaria_periods(engine, request)
 
 
 def compute_firdaria_groups(engine: Moira, request: FirdarBaseRequest) -> list[FirdarMajorGroup]:
-    periods = _firdaria_periods(request)
+    periods = _firdaria_periods(engine, request)
     return group_firdaria(periods)
 
 
@@ -152,6 +210,7 @@ def compute_current_firdaria(
 ) -> tuple[FirdarPeriod, FirdarPeriod]:
     require_aware_datetime(request.natal.dt)
     require_aware_datetime(request.current_dt)
+    _verify_natal_sect(engine, request.natal)
     natal_jd = jd_from_datetime(request.natal.dt)
     current_jd = jd_from_datetime(request.current_dt)
     return current_firdaria(
@@ -167,7 +226,7 @@ def compute_firdar_sequence_profile_service(
     engine: Moira,
     request: FirdarBaseRequest,
 ) -> FirdarSequenceProfile:
-    periods = _firdaria_periods(request)
+    periods = _firdaria_periods(engine, request)
     return firdar_sequence_profile(periods)
 
 
@@ -184,7 +243,7 @@ def compute_firdar_active_pair_service(
         variant=request.variant,
         include_node_subperiods=request.include_node_subperiods,
     )
-    periods = _firdaria_periods(base)
+    periods = _firdaria_periods(engine, base)
     return firdar_active_pair(periods, query_jd)
 
 
@@ -195,6 +254,7 @@ def compute_firdar_active_pair_service(
 def _natal_positions_and_jd(engine: Moira, natal_request: DecennialNatalRequest):
     """Derive natal planetary longitudes and Julian Day for decennials computation."""
     require_aware_datetime(natal_request.dt)
+    _verify_natal_sect(engine, natal_request)
     natal_jd = jd_from_datetime(natal_request.dt)
     chart = engine.chart(natal_request.dt)
     natal_positions = chart.longitudes(include_nodes=False)
@@ -355,7 +415,13 @@ def compute_zr_level_pair_service(
     require_aware_datetime(request.query_dt)
     if request.upper_level >= request.lower_level:
         raise ValueError("upper_level must be less than lower_level")
-    current_req = ZRCurrentRequest(natal=request.natal, current_dt=request.query_dt)
+    # Release down to the lower level of the pair; the current-period default
+    # of two levels would leave L3/L4 without an active period.
+    current_req = ZRCurrentRequest(
+        natal=request.natal,
+        current_dt=request.query_dt,
+        levels=request.lower_level,
+    )
     active = compute_current_releasing_service(engine, current_req)
     by_level = {p.level: p for p in active}
     if request.upper_level not in by_level:

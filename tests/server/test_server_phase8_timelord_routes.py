@@ -235,3 +235,25 @@ def test_firdaria_sequence_rejects_invalid_variant(client_with_engine: TestClien
         json={"natal": _NATAL_PAYLOAD, "variant": "invalid_variant"},
     )
     assert resp.status_code == 422
+
+
+def test_firdaria_rejects_sect_that_contradicts_the_location(
+    client_with_engine: TestClient,
+) -> None:
+    # London at 2000-01-01 12:00 UTC is a day chart.
+    london = {"latitude": 51.5, "longitude": -0.1}
+    wrong = client_with_engine.post(
+        "/v1/timelords/firdaria/current",
+        json={
+            "natal": {**_NATAL_PAYLOAD, "is_day_chart": False, **london},
+            "current_dt": _CURRENT_ISO,
+        },
+    )
+    assert wrong.status_code == 422
+    assert "contradicts the day chart" in wrong.text
+
+    right = client_with_engine.post(
+        "/v1/timelords/firdaria/sequence",
+        json={"natal": {**_NATAL_PAYLOAD, **london}},
+    )
+    assert right.status_code == 200

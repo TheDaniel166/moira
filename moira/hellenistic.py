@@ -287,16 +287,18 @@ class HellenisticSignPerMonthProfection:
 class HellenisticProfilePolicy:
     """Explicit selectors governing profile composition."""
 
-    # The dignity projection names its triplicity table explicitly so that
-    # the essential-dignity components and ``triplicity_assignment`` use the
-    # same (Dorothean) table. Its term table is named explicitly too, as the
-    # Ptolemaic (Robbins) terms it has always used: since 6.9.9 an unset term
-    # table under Lilly scoring would resolve to Lilly's own p. 104 terms,
-    # which do not belong to a Hellenistic profile.
+    # The dignity projection names its triplicity and term tables explicitly
+    # so that the essential-dignity components agree with
+    # ``triplicity_assignment`` and ``bound_truth`` (one Dorothean triplicity
+    # table, one bounds table). The term table is the profile's own Egyptian
+    # bounds: an unset term table would resolve to the Ptolemaic terms, or
+    # under Lilly scoring to Lilly's p. 104 terms, and the profile would then
+    # report two different bound lords for one planet. ``__post_init__``
+    # rejects any policy whose dignity term table differs from ``bounds``.
     dignity: DignityComputationPolicy = field(
         default_factory=lambda: DignityComputationPolicy(
             essential=EssentialDignityPolicy(
-                bounds_doctrine=EgyptianBoundsDoctrine.PTOLEMAIC,
+                bounds_doctrine=EgyptianBoundsDoctrine.EGYPTIAN,
                 triplicity_doctrine=TriplicityDoctrine.DOROTHEAN_PINGREE_1976,
             ),
         )
@@ -371,6 +373,12 @@ class HellenisticProfilePolicy:
                 "triplicity doctrine "
                 f"({self.triplicity_doctrine.value}); got "
                 f"{self.dignity.resolved_triplicity_doctrine.value}"
+            )
+        if self.dignity.resolved_bounds_doctrine is not self.bounds.doctrine:
+            raise ValueError(
+                "Hellenistic profile dignity policy must use the profile's "
+                f"bounds doctrine ({self.bounds.doctrine.value}); got "
+                f"{self.dignity.resolved_bounds_doctrine.value}"
             )
         if (
             self.lots.unresolved_reference_mode
@@ -1343,6 +1351,8 @@ def _planet_profiles(
     asc_longitude: float,
     mc_longitude: float,
     policy: HellenisticProfilePolicy,
+    geographic_latitude: float | None = None,
+    obliquity: float | None = None,
 ) -> tuple[tuple[HellenisticPlanetProfile, ...], bool]:
     planet_inputs = [
         {
@@ -1363,6 +1373,8 @@ def _planet_profiles(
         horizon_frame=DignityHorizonFrame(
             asc_longitude=asc_longitude,
             mc_longitude=mc_longitude,
+            geographic_latitude=geographic_latitude,
+            obliquity=obliquity,
         ),
     )
     dignity_by_planet = {dignity.planet: dignity for dignity in dignities}
@@ -1834,6 +1846,7 @@ def hellenistic_chart_profile(
     observer_latitude: float | None = None,
     observer_longitude: float | None = None,
     observer_elevation_m: float | None = None,
+    obliquity: float | None = None,
     position_frame: str = "caller_supplied_position_frame_unspecified",
     engine_version: str | None = None,
     kernel_id: str | None = None,
@@ -1845,6 +1858,13 @@ def hellenistic_chart_profile(
     The function requires exact Whole Sign cusps plus the actual Ascendant and
     Midheaven, so angle-dependent lots remain distinct from house-sign
     boundaries. It computes no overall score or interpretive verdict.
+
+    Sect and every planet's horizon hemisphere use the meridian altitude of
+    the Midheaven when both ``observer_latitude`` and ``obliquity`` (true
+    obliquity of the natal epoch, degrees) are supplied. That is required for
+    correct sect above the polar circles, where the Midheaven can lie below
+    the horizon. Without both, the horizon frame assumes the Midheaven is
+    above the horizon, which is exact only below ``|phi| = 90 - eps``.
     """
 
     _aware_datetime("natal_dt", natal_dt)
@@ -1873,6 +1893,18 @@ def hellenistic_chart_profile(
     if current_jd < natal_jd:
         raise ValueError("current_dt must not be earlier than natal_dt")
 
+    if obliquity is not None and (
+        not isfinite(obliquity) or not 0.0 < obliquity < 90.0
+    ):
+        raise ValueError("obliquity must be finite and in (0, 90)")
+    # The meridian-altitude horizon test needs both the observer latitude and
+    # the obliquity; with either missing the frame keeps its documented
+    # non-polar assumption that the Midheaven is above the horizon.
+    meridian_inputs = (
+        (observer.latitude, obliquity)
+        if observer.latitude is not None and obliquity is not None
+        else (None, None)
+    )
     planets, day_chart = _planet_profiles(
         positions,
         speeds,
@@ -1880,6 +1912,8 @@ def hellenistic_chart_profile(
         asc_longitude=asc,
         mc_longitude=mc,
         policy=resolved_policy,
+        geographic_latitude=meridian_inputs[0],
+        obliquity=meridian_inputs[1],
     )
     aspects = _aspect_profiles(positions)
     lots, lots_not_evaluable, lots_evaluation = _lot_profiles(

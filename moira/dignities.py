@@ -2385,11 +2385,18 @@ class DignitiesService:
                 reason="body_on_ascendant_or_descendant",
             )
 
+        # The Asc/Dsc split the ecliptic into two open semicircles; the body
+        # shares the Midheaven's semicircle or lies on the other one. The
+        # Midheaven's semicircle is the upper one unless the frame's meridian
+        # altitude places the Midheaven below the horizon (polar latitudes).
         mc_on_asc_arc = 0.0 < (frame.mc_longitude - asc) % 360.0 < 180.0
         body_on_asc_arc = 0.0 < (lon - asc) % 360.0 < 180.0
+        mc_altitude = frame.mc_altitude_deg
+        mc_semicircle_is_upper = mc_altitude is None or mc_altitude > 0.0
+        shares_mc_semicircle = body_on_asc_arc == mc_on_asc_arc
         hemisphere = (
             HorizonHemisphere.ABOVE
-            if body_on_asc_arc == mc_on_asc_arc
+            if shares_mc_semicircle == mc_semicircle_is_upper
             else HorizonHemisphere.BELOW
         )
         return HorizonTruth(

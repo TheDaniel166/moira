@@ -27,7 +27,10 @@ from moira.hellenistic import (
     HellenisticRevivalPolicy,
     hellenistic_chart_profile,
 )
+from moira.egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy
+from moira.julian import jd_from_datetime
 from moira.lots import exaltation_lot_name
+from moira.triplicity import TriplicityDoctrine
 from moira.timelords import ZRPeakGrade
 from moira.twelfth_parts import twelfth_part_of
 from moira.lots import (
@@ -354,6 +357,70 @@ def test_profile_preserves_explicit_profection_chronology_policies() -> None:
     )
 
 
+def _bound_component_rulers(profile) -> dict[str, tuple[str | None, str]]:
+    return {
+        planet.planet: (
+            next(
+                component.ruler
+                for component in planet.essential_components
+                if component.kind.value == "bound"
+            ),
+            planet.bound_truth.segment.ruler,
+        )
+        for planet in profile.planets
+    }
+
+
+def test_profile_bound_component_and_bound_truth_name_the_same_lord() -> None:
+    # 13 deg Aries is Mercury's Egyptian bound (12-20) but lies inside
+    # Venus' Ptolemaic bound (6-14); a profile mixing the two tables reports
+    # two different bound lords for one planet.
+    positions = {**POSITIONS, "Venus": 13.0}
+    default = _profile(natal_positions=positions)
+    rulers = _bound_component_rulers(default)
+
+    assert default.policy.bounds.doctrine.value == "egyptian"
+    assert rulers["Venus"] == ("Mercury", "Mercury")
+    assert all(component == truth for component, truth in rulers.values())
+
+    ptolemaic = HellenisticProfilePolicy(
+        dignity=DignityComputationPolicy(
+            essential=EssentialDignityPolicy(
+                bounds_doctrine=EgyptianBoundsDoctrine.PTOLEMAIC,
+                triplicity_doctrine=TriplicityDoctrine.DOROTHEAN_PINGREE_1976,
+            )
+        ),
+        bounds=EgyptianBoundsPolicy(doctrine=EgyptianBoundsDoctrine.PTOLEMAIC),
+    )
+    rulers = _bound_component_rulers(
+        _profile(natal_positions=positions, policy=ptolemaic)
+    )
+    assert rulers["Venus"] == ("Venus", "Venus")
+    assert all(component == truth for component, truth in rulers.values())
+
+
+def test_profile_rejects_dignity_terms_that_differ_from_profile_bounds() -> None:
+    dorothean = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    with pytest.raises(ValueError, match="bounds doctrine \\(egyptian\\)"):
+        HellenisticProfilePolicy(
+            dignity=DignityComputationPolicy(
+                essential=EssentialDignityPolicy(
+                    bounds_doctrine=EgyptianBoundsDoctrine.PTOLEMAIC,
+                    triplicity_doctrine=dorothean,
+                )
+            )
+        )
+    # An unset dignity term table resolves from the scoring mode (Lilly's
+    # p. 104 terms by default), not from the profile's Egyptian bounds, so it
+    # is rejected rather than silently mixed.
+    with pytest.raises(ValueError, match="got william_lilly_1647"):
+        HellenisticProfilePolicy(
+            dignity=DignityComputationPolicy(
+                essential=EssentialDignityPolicy(triplicity_doctrine=dorothean)
+            )
+        )
+
+
 def test_profile_rejects_non_admitted_policy_and_geometry() -> None:
     modern = DignityComputationPolicy(
         essential=EssentialDignityPolicy(
@@ -454,6 +521,8 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
     seen: dict[str, object] = {}
     policy = HellenisticProfilePolicy()
     chart = SimpleNamespace(
+        jd_ut=jd_from_datetime(NATAL_DT),
+        obliquity=23.43,
         longitudes=lambda *, include_nodes: dict(POSITIONS),
         speeds=lambda: dict(SPEEDS),
     )
@@ -472,6 +541,9 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
         return sentinel
 
     monkeypatch.setattr(facade, "hellenistic_chart_profile", fake_profile)
+    # The wrapper re-derives the Whole Sign angles at the observer location;
+    # this forwarding witness supplies the same synthetic houses there.
+    monkeypatch.setattr(facade.Moira, "houses", lambda self, *a, **k: houses)
     result = facade.Moira().hellenistic_chart_profile(
         chart,
         houses,
@@ -511,6 +583,7 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
         "observer_latitude": 40.0,
         "observer_longitude": -74.0,
         "observer_elevation_m": 10.0,
+        "obliquity": 23.43,
         "position_frame": "test_position_frame",
         "engine_version": facade.__version__,
         "kernel_id": "TEST-KERNEL",
@@ -533,3 +606,49 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
             kernel_id="TEST-KERNEL",
             kernel_coverage="TEST-COVERAGE",
         )
+
+
+def test_moira_profile_rejects_chart_and_houses_from_other_moments(moira_engine) -> None:
+    natal_dt = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
+    lat, lon = 51.5085, -0.1257
+    chart = moira_engine.chart(
+        natal_dt,
+        bodies=list(HELLENISTIC_CLASSICAL_PLANETS),
+        include_nodes=False,
+    )
+    houses = moira_engine.houses(natal_dt, lat, lon, HouseSystem.WHOLE_SIGN)
+    evening_houses = moira_engine.houses(
+        natal_dt.replace(hour=23), lat, lon, HouseSystem.WHOLE_SIGN
+    )
+    observer = {"observer_latitude": lat, "observer_longitude": lon}
+
+    profile = moira_engine.hellenistic_chart_profile(
+        chart, houses, natal_dt, CURRENT_DT, **observer
+    )
+    assert profile.is_day_chart is True
+
+    # Houses from 23:00 would silently turn this noon nativity into a night chart.
+    with pytest.raises(ValueError, match="Ascendant"):
+        moira_engine.hellenistic_chart_profile(
+            chart, evening_houses, natal_dt, CURRENT_DT, **observer
+        )
+    with pytest.raises(ValueError, match="not computed for natal_dt"):
+        moira_engine.hellenistic_chart_profile(
+            chart,
+            houses,
+            natal_dt.replace(hour=13),
+            CURRENT_DT,
+            **observer,
+        )
+
+
+def test_moira_zodiacal_releasing_requires_fortune_for_spirit(moira_engine) -> None:
+    with pytest.raises(ValueError, match="requires fortune_longitude"):
+        moira_engine.zodiacal_releasing(159.0, NATAL_DT)
+
+    with_fortune = moira_engine.zodiacal_releasing(
+        159.0, NATAL_DT, fortune_longitude=45.0
+    )
+    from_fortune = moira_engine.zodiacal_releasing(45.0, NATAL_DT, lot_name="Fortune")
+    assert with_fortune and with_fortune[0].lot_name == "Spirit"
+    assert from_fortune and from_fortune[0].lot_name == "Fortune"
