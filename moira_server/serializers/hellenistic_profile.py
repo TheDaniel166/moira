@@ -153,6 +153,7 @@ def _serialize_policy(
             supporting_lots=policy.overlays.supporting_lots,
             assemble_condition=policy.overlays.assemble_condition,
             twelfth_parts=policy.overlays.twelfth_parts,
+            ray_opposition_policy=policy.overlays.ray_opposition_policy,
         ),
     )
 
@@ -259,6 +260,7 @@ def _serialize_assemble_condition(
                 for strike in condition.ray.strikes
             ],
             reason=condition.ray.reason,
+            opposition_policy=condition.ray.opposition_policy,
         ),
         provenance=HellenisticAspectProvenanceResponse(
             source_module="moira.hellenistic_relations",

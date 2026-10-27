@@ -14,6 +14,7 @@ from moira.hellenistic import (
     HellenisticProfileExclusion,
     HellenisticProfileStatus,
 )
+from moira.hellenistic_relations import HellenisticRayOppositionPolicy
 from moira.lots import LotsReferenceFailureMode
 from moira.profections import (
     LeapDayAnniversaryPolicy,
@@ -112,6 +113,9 @@ class HellenisticProfileOverlaysRequest(_StrictModel):
     supporting_lots: bool = False
     assemble_condition: bool = False
     twelfth_parts: bool = False
+    ray_opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    )
 
 
 class HellenisticZRYearPolicyRequest(_StrictModel):

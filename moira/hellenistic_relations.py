@@ -12,11 +12,16 @@ Labels, as checked against the sources:
   not Hellenistic enclosure, which al-Biruni (Book of Instruction sec. 500)
   and the Antiochus/Porphyry definitions frame by sign, bodily or by rays, and
   with benefics as well as malefics.
-- ``ray`` (aktinobolia) is evaluated since 6.9.8 as a qualified Moira policy:
-  dexter sextile, square and trine contacts to the subject within the
-  configured orb, opposition excluded. No primary passage is source-locked for
-  that exact rule (the Porphyry definition is recalled, not verified), and it
-  is not Ptolemy's use of rays in directions (Tetrabiblos III.10).
+- ``ray`` (aktinobolia) follows the Antiochus/Porphyry tradition's
+  direction: sight is cast forward and the ray backward (Hephaistio I.16,
+  Engelbrecht p. 74; Antiochus/Rhetorius, CCAG I pp. 155-157), so the later
+  planet in zodiacal order strikes the earlier one with its sextile, square
+  or trine. The opposition has no side; ``HellenisticRayOppositionPolicy``
+  either excludes it (Moira's default) or counts it as a mutual strike, as
+  the Antiochus/Rhetorius "four figures" do. Those sources give no degree orb
+  for rays; the 3 degree default is borrowed from adherence and the moiety
+  mode is Lilly's (1647). Not Ptolemy's use of rays in directions
+  (Tetrabiblos III.10).
 """
 
 from __future__ import annotations
@@ -65,6 +70,7 @@ __all__ = [
     "RAY_NOT_ADMITTED_REASON",
     "HELLENISTIC_RAY_ASPECTS",
     "HellenisticRayOrbMode",
+    "HellenisticRayOppositionPolicy",
     "HellenisticRayStrike",
     "HellenisticTestimonyWitness",
     "HellenisticTestimonyTruth",
@@ -173,6 +179,21 @@ class HellenisticRayOrbMode(StrEnum):
     MOIETY = "moiety"
 
 
+class HellenisticRayOppositionPolicy(StrEnum):
+    """Whether the opposition counts as a ray strike.
+
+    Sextile, square and trine have a side: the later planet casts its ray
+    backward onto the earlier one. The opposition has none.
+
+    - ``EXCLUDED``: Moira's default; only the sided figures strike.
+    - ``MUTUAL_STRIKE``: the Antiochus/Rhetorius reading, which counts "the
+      four figures" (CCAG I pp. 155-157); opposed planets strike each other.
+    """
+
+    EXCLUDED = "excluded"
+    MUTUAL_STRIKE = "mutual_strike"
+
+
 @dataclass(frozen=True, slots=True)
 class HellenisticRayStrike:
     """One dexter ray striking the subject."""
@@ -188,16 +209,21 @@ class HellenisticRayStrike:
 
 @dataclass(frozen=True, slots=True)
 class HellenisticRayTruth:
-    """Dexter rays striking the subject (aktinobolia, qualified Moira policy).
+    """Rays striking the subject (aktinobolia, Antiochus/Porphyry direction).
 
-    Sextile, square and trine contacts from the dexter side within the orb;
-    opposition is excluded. Not source-locked to a primary passage.
+    The later planet in zodiacal order strikes the earlier one with its
+    sextile, square or trine, within the configured orb (policy; the sources
+    give none). ``opposition_policy`` records whether the opposition was
+    counted as a mutual strike.
     """
 
     status: HellenisticAspectEvaluationStatus
     subject: str
     strikes: tuple[HellenisticRayStrike, ...]
     reason: str | None = None
+    opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    )
 
     def __post_init__(self) -> None:
         if self.status is HellenisticAspectEvaluationStatus.EVALUATED:
@@ -451,6 +477,9 @@ def _ray_truth(
     positions: dict[str, float],
     speeds: dict[str, float] | None,
     orb_mode: HellenisticRayOrbMode,
+    opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    ),
 ) -> HellenisticRayTruth:
     if subject not in positions:
         return HellenisticRayTruth(
@@ -458,7 +487,13 @@ def _ray_truth(
             subject=subject,
             strikes=(),
             reason="subject_longitude_not_supplied",
+            opposition_policy=opposition_policy,
         )
+    ray_aspects = dict(HELLENISTIC_RAY_ASPECTS)
+    if opposition_policy is HellenisticRayOppositionPolicy.MUTUAL_STRIKE:
+        # No side: L - 180 and L + 180 are one point, so each opposed planet
+        # strikes the other.
+        ray_aspects["Opposition"] = 180.0
     subject_lon = positions[subject]
     strikes: list[HellenisticRayStrike] = []
     
@@ -472,7 +507,7 @@ def _ray_truth(
             moiety_subject = TRADITIONAL_MOIETY_ORBS.get(subject, 5.0) / 2.0
             allowed_orb = moiety_other + moiety_subject
             
-        for aspect_name, angle in HELLENISTIC_RAY_ASPECTS.items():
+        for aspect_name, angle in ray_aspects.items():
             focal_point = (longitude - angle) % 360.0
             distance = _circular_distance(subject_lon, focal_point)
             
@@ -506,6 +541,7 @@ def _ray_truth(
         status=HellenisticAspectEvaluationStatus.EVALUATED,
         subject=subject,
         strikes=tuple(strikes),
+        opposition_policy=opposition_policy,
     )
 
 
@@ -517,11 +553,22 @@ def assemble_hellenistic_condition(
     adherence_orb_deg: float = DEFAULT_ADHERENCE_ORB_DEG,
     enclosure_orb_deg: float = DEFAULT_ENCLOSURE_ORB_DEG,
     ray_orb_mode: HellenisticRayOrbMode = HellenisticRayOrbMode.STRICT_3,
+    ray_opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    ),
 ) -> HellenisticAssembleCondition:
-    """Assemble named relational receipts for one classical planet."""
+    """Assemble named relational receipts for one classical planet.
+
+    ``ray_opposition_policy`` selects whether the opposition counts as a
+    mutual ray strike (see ``HellenisticRayOppositionPolicy``).
+    """
 
     if not isinstance(subject, str) or not subject or subject != subject.strip():
         raise ValueError("subject must be a non-empty trimmed string")
+    if not isinstance(ray_opposition_policy, HellenisticRayOppositionPolicy):
+        raise TypeError(
+            "ray_opposition_policy must be a HellenisticRayOppositionPolicy"
+        )
     resolved = _classical_positions(positions)
     resolved_speeds: dict[str, float] | None = None
     if speeds is not None:
@@ -548,5 +595,6 @@ def assemble_hellenistic_condition(
             resolved,
             resolved_speeds,
             ray_orb_mode,
+            ray_opposition_policy,
         ),
     )

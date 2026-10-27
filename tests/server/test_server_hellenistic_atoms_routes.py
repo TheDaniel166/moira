@@ -138,3 +138,56 @@ def test_hellenistic_atom_routes_are_registered(client: TestClient) -> None:
         "/v1/hellenistic/twelfth-parts",
         "/v1/hellenistic/condition",
     } <= paths
+
+
+_RAY_POSITIONS = {
+    "Sun": 10.0,
+    "Moon": 190.5,
+    "Mercury": 40.0,
+    "Venus": 100.0,
+    "Mars": 250.0,
+    "Jupiter": 300.0,
+    "Saturn": 330.0,
+}
+
+
+@pytest.mark.parametrize(
+    ("gate", "expected"),
+    [
+        ("excluded", [["Venus", "Square"]]),
+        ("mutual_strike", [["Moon", "Opposition"], ["Venus", "Square"]]),
+    ],
+)
+def test_condition_route_returns_ray_strikes_under_each_opposition_gate(
+    client: TestClient,
+    gate: str,
+    expected: list[list[str]],
+) -> None:
+    response = client.post(
+        "/v1/hellenistic/condition",
+        json={
+            "subject": "Sun",
+            "positions": _RAY_POSITIONS,
+            "ray_opposition_policy": gate,
+        },
+    )
+
+    assert response.status_code == 200
+    ray = response.json()["ray"]
+    assert ray["opposition_policy"] == gate
+    # The strikes list is serialized (it was previously dropped by the route).
+    assert sorted(
+        [strike["origin_body"], strike["aspect_name"]] for strike in ray["strikes"]
+    ) == expected
+
+
+def test_condition_route_rejects_an_unknown_opposition_gate(client: TestClient) -> None:
+    response = client.post(
+        "/v1/hellenistic/condition",
+        json={
+            "subject": "Sun",
+            "positions": _RAY_POSITIONS,
+            "ray_opposition_policy": "both",
+        },
+    )
+    assert response.status_code == 422

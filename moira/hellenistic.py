@@ -48,6 +48,7 @@ from .julian import jd_from_datetime
 from .hellenistic_labels import HellenisticOverlayLabels
 from .hellenistic_relations import (
     HellenisticAssembleCondition,
+    HellenisticRayOppositionPolicy,
     assemble_hellenistic_condition,
 )
 from .lots import (
@@ -197,6 +198,10 @@ class HellenisticProfileOverlays:
     supporting_lots: bool = False
     assemble_condition: bool = False
     twelfth_parts: bool = False
+    # Opposition gate for the assemble-condition ray strikes.
+    ray_opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    )
 
     def __post_init__(self) -> None:
         for name in (
@@ -208,6 +213,13 @@ class HellenisticProfileOverlays:
                 raise TypeError(
                     f"HellenisticProfileOverlays.{name} must be bool"
                 )
+        if not isinstance(
+            self.ray_opposition_policy, HellenisticRayOppositionPolicy
+        ):
+            raise TypeError(
+                "HellenisticProfileOverlays.ray_opposition_policy must be a "
+                "HellenisticRayOppositionPolicy"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1968,6 +1980,9 @@ def hellenistic_chart_profile(
                         planet.planet,
                         positions,
                         speeds,
+                        ray_opposition_policy=(
+                            resolved_policy.overlays.ray_opposition_policy
+                        ),
                     )
                     if resolved_policy.overlays.assemble_condition
                     else None

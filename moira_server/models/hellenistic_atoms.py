@@ -7,6 +7,7 @@ import math
 from pydantic import Field, field_validator
 
 from moira.aspects import HellenisticAspectEvaluationStatus
+from moira.hellenistic_relations import HellenisticRayOppositionPolicy
 
 from .common import _StrictModel
 from .dignities import BesiegingTruthResponse
@@ -63,6 +64,13 @@ class HellenisticConditionRequest(_StrictModel):
     speeds: dict[str, float] | None = None
     adherence_orb_deg: float = 3.0
     enclosure_orb_deg: float = 12.0
+    ray_opposition_policy: HellenisticRayOppositionPolicy = Field(
+        default=HellenisticRayOppositionPolicy.EXCLUDED,
+        description=(
+            "Whether the opposition counts as a ray strike: 'excluded' "
+            "(Moira default) or 'mutual_strike' (Antiochus/Rhetorius)."
+        ),
+    )
 
     @field_validator("subject")
     @classmethod
@@ -161,6 +169,9 @@ class HellenisticRayTruthResponse(_StrictModel):
     subject: str
     strikes: list[HellenisticRayStrikeResponse] = []
     reason: str | None = None
+    opposition_policy: HellenisticRayOppositionPolicy = (
+        HellenisticRayOppositionPolicy.EXCLUDED
+    )
 
 
 class HellenisticAssembleConditionResponse(_StrictModel):

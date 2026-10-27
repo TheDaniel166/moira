@@ -160,6 +160,7 @@ def _policy_from_request(
             supporting_lots=request.overlays.supporting_lots,
             assemble_condition=request.overlays.assemble_condition,
             twelfth_parts=request.overlays.twelfth_parts,
+            ray_opposition_policy=request.overlays.ray_opposition_policy,
         ),
     )
 

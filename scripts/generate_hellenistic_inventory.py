@@ -297,7 +297,7 @@ CAPABILITIES: tuple[Capability, ...] = (
         ("HellenisticAssembleCondition", "assemble_hellenistic_condition"),
         "testimony, overcoming, enclosure, adherence, and REST parity tests",
         "Antiochus via Porphyry; Valens on overcoming; existing superiority and besieging vessels",
-        "No maltreatment score. Enclosure is Lilly-style Mars/Saturn besieging. Aktinobolia is evaluated as a qualified dexter-ray policy (sextile, square, trine; no opposition) not source-locked to a primary passage.",
+        "No maltreatment score. Enclosure is Lilly-style Mars/Saturn besieging. Aktinobolia follows the Antiochus/Porphyry direction (the later planet strikes the earlier; Hephaistio I.16, CCAG I pp. 155-157) with sextile, square and trine; the opposition is a policy gate (excluded by default, or mutual strike per Antiochus/Rhetorius). The ray orb is policy: the sources give none.",
         ("Hellenistic atoms",),
     ),
     Capability(
