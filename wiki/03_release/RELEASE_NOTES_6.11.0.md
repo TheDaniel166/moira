@@ -1,6 +1,6 @@
-# Release Notes - Moira 6.10.2
+# Release Notes - Moira 6.11.0
 
-**Release date:** 23 October 2026.
+**Release date:** 25 October 2026.
 
 This bounded patch follows published 6.10.1. It does not include unrelated
 unreleased geodetic, eclipse or house changes on the development main branch.
@@ -26,4 +26,4 @@ forward-motion residuals, age/JD/calendar invariants, natal-rate boundaries,
 input budgets and failure propagation. This is bounded invariant and transport
 evidence; it is not external validation of predicted biographical events.
 
-See [compatibility notes](COMPATIBILITY_NOTES_6.10.2.md).
+See [compatibility notes](COMPATIBILITY_NOTES_6.11.0.md).

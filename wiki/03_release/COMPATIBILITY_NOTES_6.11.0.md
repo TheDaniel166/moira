@@ -1,4 +1,4 @@
-# Compatibility Notes - Moira 6.10.2
+# Compatibility Notes - Moira 6.11.0
 
 This patch preserves the 6.10.1 native substrate, dependencies, existing REST
 request/response contracts, primary-direction geometry and time-key constants.
