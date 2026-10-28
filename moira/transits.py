@@ -1311,12 +1311,20 @@ def _resolve_longitude_truth(
 
     small_body = resolve_small_body_identity(name)
     if small_body is not None:
+        try:
+            longitude = planet_at(small_body.qualified_name, jd, reader=reader).longitude
+        except KeyError as exc:
+            # The reader's own error names only NAIF segment numbers.
+            raise KeyError(
+                f"No loaded small-body kernel has {small_body.qualified_name} at this date; "
+                "install the small-body kernel to use it"
+            ) from exc
         return LongitudeResolutionTruth(
             requested_spec=spec,
             resolved_kind=small_body.family,
             resolved_name=small_body.qualified_name,
             jd_ut=jd,
-            longitude=planet_at(small_body.qualified_name, jd, reader=reader).longitude,
+            longitude=longitude,
         )
 
     try:

@@ -61,3 +61,31 @@ def test_missing_kernel_error_maps_to_kernel_readiness_envelope(client: TestClie
     assert body["message"] == "Kernel missing for route"
     assert body["request_id"]
     assert response.headers["X-Request-ID"] == body["request_id"]
+
+
+def _app_raising(exc: Exception) -> TestClient:
+    from fastapi import FastAPI
+
+    from moira_server.errors import register_exception_handlers
+
+    app = FastAPI()
+    register_exception_handlers(app)
+
+    @app.get("/boom")
+    def boom() -> None:
+        raise exc
+
+    return TestClient(app, raise_server_exceptions=False)
+
+
+def test_bare_key_error_says_a_required_value_is_missing() -> None:
+    body = _app_raising(KeyError("Mars")).get("/boom").json()
+
+    assert body["error_code"] == "validation_error"
+    assert body["message"] == "The request is missing a required value: Mars"
+
+
+def test_descriptive_key_error_message_is_kept() -> None:
+    body = _app_raising(KeyError("No loaded small-body kernel has Chiron")).get("/boom").json()
+
+    assert body["message"] == "No loaded small-body kernel has Chiron"

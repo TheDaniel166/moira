@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends
 
 from moira import Moira
 
-from ..dependencies import get_engine
+from ..dependencies import get_engine, with_engine_reader
 from ..models.varshaphal import (
     MuddaDashaActivationResponse,
     MuddaPeriodJudgementResponse,
@@ -63,6 +63,7 @@ router = APIRouter(prefix="/v1", tags=["varshaphal"])
 
 
 @router.post("/varshaphal/chart", response_model=VarshaphalChartResponse)
+@with_engine_reader
 def varshaphal_chart_route(
     request: VarshaphalChartRequest,
     engine: Moira = Depends(get_engine),
@@ -71,6 +72,7 @@ def varshaphal_chart_route(
 
 
 @router.post("/varshaphal/mudda/active", response_model=MuddaDashaActivationResponse)
+@with_engine_reader
 def varshaphal_mudda_active_route(
     request: VarshaphalTimingRequest,
     engine: Moira = Depends(get_engine),
@@ -79,6 +81,7 @@ def varshaphal_mudda_active_route(
 
 
 @router.post("/varshaphal/tasira/active", response_model=TasiraPeriodResponse)
+@with_engine_reader
 def varshaphal_tasira_active_route(
     request: VarshaphalTimingRequest,
     engine: Moira = Depends(get_engine),
@@ -87,6 +90,7 @@ def varshaphal_tasira_active_route(
 
 
 @router.post("/varshaphal/mudda/judgement", response_model=MuddaPeriodJudgementResponse)
+@with_engine_reader
 def varshaphal_mudda_judgement_route(
     request: VarshaphalTimingRequest,
     engine: Moira = Depends(get_engine),
@@ -99,6 +103,7 @@ def varshaphal_mudda_judgement_route(
 # ---------------------------------------------------------------------------
 
 @router.post("/varshaphal/judgement/profile", response_model=VarshaphalJudgementProfileResponse)
+@with_engine_reader
 def varshaphal_judgement_profile_route(
     request: VarshaphalDoctrineRequest,
     engine: Moira = Depends(get_engine),
@@ -109,6 +114,7 @@ def varshaphal_judgement_profile_route(
 
 
 @router.post("/varshaphal/judgement/year", response_model=VarshaphalYearJudgementResponse)
+@with_engine_reader
 def varshaphal_year_judgement_route(
     request: VarshaphalDoctrineRequest,
     engine: Moira = Depends(get_engine),
@@ -119,6 +125,7 @@ def varshaphal_year_judgement_route(
 
 
 @router.post("/varshaphal/topics", response_model=list[VarshaphalTopicJudgementResponse])
+@with_engine_reader
 def varshaphal_topics_route(
     request: VarshaphalDoctrineRequest,
     engine: Moira = Depends(get_engine),
@@ -129,6 +136,7 @@ def varshaphal_topics_route(
 
 
 @router.post("/varshaphal/topics/windows", response_model=list[VarshaphalTopicWindowResponse])
+@with_engine_reader
 def varshaphal_topic_windows_route(
     request: VarshaphalDoctrineRequest,
     topic: str,
@@ -141,6 +149,7 @@ def varshaphal_topic_windows_route(
 
 
 @router.post("/varshaphal/summary", response_model=VarshaphalYearSummaryResponse)
+@with_engine_reader
 def varshaphal_year_summary_route(
     request: VarshaphalDoctrineRequest,
     engine: Moira = Depends(get_engine),

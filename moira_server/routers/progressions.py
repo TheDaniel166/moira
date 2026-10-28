@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends
 
 from moira import Moira
 
-from ..dependencies import get_engine
+from ..dependencies import get_engine, with_engine_reader
 from ..models.progressions import (
     ArcProgressionRequest,
     DailyHousesResponse,
@@ -86,6 +86,7 @@ router = APIRouter(prefix="/v1", tags=["progressions"])
 
 
 @router.post("/progressions/secondary", response_model=ProgressedChartResponse)
+@with_engine_reader
 def secondary_progression_route(
     request: SecondaryProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -94,6 +95,7 @@ def secondary_progression_route(
 
 
 @router.post("/progressions/secondary/reduction", response_model=ProgressedChartReductionResponse)
+@with_engine_reader
 def secondary_progression_reduction_route(
     request: SecondaryProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -103,6 +105,7 @@ def secondary_progression_reduction_route(
 
 
 @router.post("/progressions/secondary-declination", response_model=ProgressedDeclinationChartResponse)
+@with_engine_reader
 def secondary_declination_route(
     request: SecondaryProgressionDeclinationRequest,
     engine: Moira = Depends(get_engine),
@@ -116,6 +119,7 @@ def secondary_declination_route(
     "/progressions/secondary-declination/reduction",
     response_model=ProgressedDeclinationChartReductionResponse,
 )
+@with_engine_reader
 def secondary_declination_reduction_route(
     request: SecondaryProgressionDeclinationRequest,
     engine: Moira = Depends(get_engine),
@@ -127,6 +131,7 @@ def secondary_declination_reduction_route(
 
 
 @router.post("/progressions/arc", response_model=ProgressedChartResponse)
+@with_engine_reader
 def arc_progression_route(
     request: ArcProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -135,6 +140,7 @@ def arc_progression_route(
 
 
 @router.post("/progressions/arc/reduction", response_model=ProgressedChartReductionResponse)
+@with_engine_reader
 def arc_progression_reduction_route(
     request: ArcProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -144,6 +150,7 @@ def arc_progression_reduction_route(
 
 
 @router.post("/progressions/time-key", response_model=ProgressedChartResponse)
+@with_engine_reader
 def time_key_progression_route(
     request: TimeKeyProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -152,6 +159,7 @@ def time_key_progression_route(
 
 
 @router.post("/progressions/time-key/reduction", response_model=ProgressedChartReductionResponse)
+@with_engine_reader
 def time_key_progression_reduction_route(
     request: TimeKeyProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -161,6 +169,7 @@ def time_key_progression_reduction_route(
 
 
 @router.post("/progressions/house-frame", response_model=ProgressedHouseFrameResponse)
+@with_engine_reader
 def house_frame_route(
     request: HouseFrameProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -169,6 +178,7 @@ def house_frame_route(
 
 
 @router.post("/progressions/house-frame/reduction", response_model=ProgressedHouseFrameReductionResponse)
+@with_engine_reader
 def house_frame_reduction_route(
     request: HouseFrameProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -178,6 +188,7 @@ def house_frame_reduction_route(
 
 
 @router.post("/progressions/house-frame/cusps", response_model=DailyHousesResponse)
+@with_engine_reader
 def daily_houses_route(
     request: HouseFrameProgressionRequest,
     engine: Moira = Depends(get_engine),
@@ -186,6 +197,7 @@ def daily_houses_route(
 
 
 @router.post("/progressions/house-frame/arc", response_model=ProgressedChartResponse)
+@with_engine_reader
 def house_frame_arc_route(
     request: HouseFrameArcRequest,
     engine: Moira = Depends(get_engine),
@@ -197,6 +209,7 @@ def house_frame_arc_route(
     "/progressions/house-frame/arc/reduction",
     response_model=ProgressedHouseFrameArcReductionResponse,
 )
+@with_engine_reader
 def house_frame_arc_reduction_route(
     request: HouseFrameArcRequest,
     engine: Moira = Depends(get_engine),
@@ -206,6 +219,7 @@ def house_frame_arc_reduction_route(
 
 
 @router.post("/progressions/profile", response_model=ProgressionChartConditionProfileResponse)
+@with_engine_reader
 def progression_profile_route(
     request: ProgressionProfileRequest,
     engine: Moira = Depends(get_engine),
@@ -216,6 +230,7 @@ def progression_profile_route(
 
 
 @router.post("/progressions/profile/reduction", response_model=ProgressionChartConditionProfileReductionResponse)
+@with_engine_reader
 def progression_profile_reduction_route(
     request: ProgressionProfileRequest,
     engine: Moira = Depends(get_engine),
@@ -227,6 +242,7 @@ def progression_profile_reduction_route(
 
 
 @router.post("/progressions/network", response_model=ProgressionConditionNetworkProfileResponse)
+@with_engine_reader
 def progression_network_route(
     request: ProgressionNetworkRequest,
     engine: Moira = Depends(get_engine),
@@ -237,6 +253,7 @@ def progression_network_route(
 
 
 @router.post("/progressions/network/reduction", response_model=ProgressionConditionNetworkProfileReductionResponse)
+@with_engine_reader
 def progression_network_reduction_route(
     request: ProgressionNetworkRequest,
     engine: Moira = Depends(get_engine),

@@ -103,7 +103,8 @@ def list_or_search_stars(engine: Moira, q: str | None = None, limit: int = 50) -
     """Fast search or listing over the sovereign star catalog."""
     if q:
         found = find_stars(q, limit=limit)
-        names = [s.get("name") or s.get("designation", "") for s in found]
+        # find_stars returns catalog names (str), not records.
+        names = list(found)
         return StarListResponse(stars=names, total=len(names))
 
     all_names = list_stars()[:limit]

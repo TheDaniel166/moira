@@ -116,6 +116,20 @@ publication, or production pin is implied by these entries.
   the new `start_shift_truth` field.
 
 ### Fixed
+- **REST Routes Without A Global Kernel**: 31 phase, progressions and
+  Varshaphal routes called engine functions that resolve the reader from
+  context, so they returned HTTP 500 unless `MOIRA_SERVER_KERNEL_PATH` was
+  set. Each now runs with the server engine's reader (`with_engine_reader`);
+  kernel-free routes still never touch the engine.
+- **REST Error Responses**:
+  - `/v1/stars/list?q=` returns names instead of HTTP 500.
+  - The two lunar path-topology routes answer an unsolvable path with 422
+    `path_not_solvable` (category `search_resolution`) instead of 500.
+  - A bare `KeyError` now reads "The request is missing a required value".
+  - Small-body targets with no loaded kernel name the body rather than NAIF
+    segment numbers.
+  - These were stranded on `fix/stars-search-rest` since the 2026-09-30
+    route audit.
 - **Geodetic Undefined Geometry And Angle Ranges**: refuse coincident planes
   and zero-rising-rate branch ties, including non-quadrant meridional ties;
   sensitivity checks the entire uncertainty region before linearizing.

@@ -375,6 +375,27 @@ _LUNAR_ORIENTATION_ERROR_POLICIES = (
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
 
+    # The occultation path solver refuses a path it cannot continue without
+    # guessing (an ArithmeticError, so no generic handler caught it: HTTP 500).
+    # The request was valid; the answer is "not solvable", not "bad input".
+    from moira.occultations import _OccultationPathSolveError
+
+    @app.exception_handler(_OccultationPathSolveError)
+    async def handle_occultation_path_not_solvable(
+        request: Request,
+        exc: _OccultationPathSolveError,
+    ) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(
+            status_code=422,
+            content=_error_body(
+                error_code="path_not_solvable",
+                message=f"The occultation path cannot be traced for this event: {exc}",
+                category="search_resolution",
+                request_id=request_id,
+            ),
+        )
+
     def kalachakra_handler(status, code, category, message):
         async def handle(request, exc):
             request_id = getattr(request.state, "request_id", str(uuid4()))
@@ -670,12 +691,16 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(KeyError)
     async def handle_key_error(request: Request, exc: KeyError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))
-        message = exc.args[0] if exc.args else str(exc)
+        message = str(exc.args[0] if exc.args else exc)
+        if message and " " not in message:
+            # A bare key (e.g. 'Mars') means the request lacks a value the
+            # computation needs; say so instead of echoing the name alone.
+            message = f"The request is missing a required value: {message}"
         return JSONResponse(
             status_code=422,
             content=_error_body(
                 error_code="validation_error",
-                message=str(message),
+                message=message,
                 category="input_validation",
                 request_id=request_id,
             ),

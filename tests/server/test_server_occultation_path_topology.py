@@ -587,3 +587,34 @@ def test_openapi_admits_new_topology_routes_without_replacing_legacy_paths() -> 
         "minimum": pytest.approx(_MIN_TOPOLOGY_OBSERVER_ELEV_M, abs=1.0e-9),
         "title": "Observer Elevation M",
     }
+
+
+@pytest.mark.requires_ephemeris
+def test_unsolvable_path_is_a_named_refusal_not_a_server_error(
+    moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A real Neptune occultation (2000-01-08) whose boundary the solver cannot
+    # continue without guessing. The engine refuses honestly with an
+    # ArithmeticError, which no handler used to catch (HTTP 500).
+    from fastapi.testclient import TestClient
+
+    from moira_server.app import create_app
+    from moira_server.config import ServerConfig
+
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    with TestClient(create_app(ServerConfig()), raise_server_exceptions=False) as client:
+        at = client.post(
+            "/v1/occultations/lunar-path-topology-at",
+            json={"target": "Neptune", "jd_mid": 2451551.7374492073},
+        )
+        search = client.post(
+            "/v1/occultations/lunar-path-topology",
+            json={"target": "Neptune", "jd_start": 2451551.2374492073, "jd_end": 2451552.2374492073},
+        )
+
+    for response in (at, search):
+        assert response.status_code == 422, response.text
+        body = response.json()
+        assert body["error_code"] == "path_not_solvable"
+        assert body["category"] == "search_resolution"

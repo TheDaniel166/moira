@@ -529,3 +529,18 @@ def test_multiple_star_list_route_rejects_invalid_limit(
     response = client_with_engine.get("/v1/stars/multiple/list?limit=0")
 
     _assert_validation_envelope(response, message_fragment="greater than or equal to 1")
+
+
+def test_star_list_search_by_name_returns_names(
+    moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # find_stars returns catalog names; the route used to call .get() on them (HTTP 500).
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    with TestClient(create_app(ServerConfig())) as client:
+        response = client.get("/v1/stars/list", params={"q": "reg"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "Regulus" in body["stars"]
+    assert body["total"] == len(body["stars"])

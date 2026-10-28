@@ -826,6 +826,17 @@ def test_planet_target_resolution_surfaces_substrate_failures(monkeypatch: pytes
         transits_module._resolve_longitude_truth(Body.MARS, 2451545.0, object())
 
 
+def test_small_body_without_a_loaded_kernel_names_the_body(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The reader's own KeyError names only NAIF segment numbers.
+    def _missing_segment(name: str, jd: float, reader: object | None = None) -> object:
+        raise KeyError("no segment for 2002060 relative to 10")
+
+    monkeypatch.setattr(transits_module, "planet_at", _missing_segment)
+
+    with pytest.raises(KeyError, match="No loaded small-body kernel has asteroid:Chiron"):
+        transits_module._resolve_longitude_truth("Chiron", 2451545.0, object())
+
+
 @pytest.mark.requires_ephemeris
 def test_default_transit_policy_preserves_current_behavior() -> None:
     start = jd_from_datetime(datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc))
