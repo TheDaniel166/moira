@@ -242,20 +242,25 @@ def _scan_fixed_aspects(evaluator, targets, intervals, policy):
                 def orb_residual(t):
                     return abs(residual(t)) - orb
 
+                # Each exact root is a certified in-orb point, so it is a knot
+                # for the boundary search. Without it, an orb window narrower
+                # than one scan step has no sign change of |residual| - orb at
+                # any knot, and its exact contact would carry no window.
+                orb_times = sorted(set(times).union(unique))
                 boundaries = {low, high}
                 verified_boundaries = set()
-                for index, t in enumerate(times):
+                for index, t in enumerate(orb_times):
                     value = orb_residual(t)
                     if abs(value) > policy.angular_tolerance_deg:
                         continue
-                    adjacent_crossing = ((index > 0 and orb_residual(times[index - 1]) * value < 0)
-                                         or (index + 1 < len(times) and orb_residual(times[index + 1]) * value < 0))
+                    adjacent_crossing = ((index > 0 and orb_residual(orb_times[index - 1]) * value < 0)
+                                         or (index + 1 < len(orb_times) and orb_residual(orb_times[index + 1]) * value < 0))
                     is_extremum = any(abs(t - s) <= 4 * policy.time_tolerance_days for s in stationary)
                     endpoint_close = t in (low, high) and (abs(value) <= abs(velocity(t)) * policy.time_tolerance_days or abs(velocity(t)) <= policy.stationary_rate_tolerance)
                     if value == 0 or (is_extremum and not adjacent_crossing) or endpoint_close:
                         boundaries.add(t)
                         verified_boundaries.add(t)
-                for a, b in zip(times, times[1:]):
+                for a, b in zip(orb_times, orb_times[1:]):
                     fa, fb = orb_residual(a), orb_residual(b)
                     if fa * fb < 0:
                         try:

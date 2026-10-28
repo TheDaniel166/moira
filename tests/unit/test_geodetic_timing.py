@@ -45,6 +45,27 @@ def test_slow_orb_window_longer_than_two_days_and_reference_alias(monkeypatch):
     assert result.timescale == "JD_UT1"
 
 
+@pytest.mark.parametrize("step", [.05, 1, 2, 3])
+def test_orb_window_narrower_than_the_scan_step_is_still_found(monkeypatch, step):
+    # A 13 deg/day mover with a 1 deg orb is in orb for 2/13 day around each
+    # exact contact: [4.193, 4.347] for t0 = 4.27. The scanner's knots fall on
+    # multiples of step/2 from 0, so steps 1, 2 and 3 put no knot inside the
+    # window (0.05 is the control). The exact root is a certified in-orb point
+    # and must anchor the window; entry/exit are t0 -/+ 1/13 analytically.
+    t0 = 4.27
+    reference = synthetic(monkeypatch, lambda t: 13 * (t - t0))
+    result = run(reference, end=9, aspects=((0, 1),), policy=GeodeticTimingPolicy(step_days=step))
+    assert result.complete
+    assert len(result.events) == len(result.windows) == 1
+    assert result.events[0].jd_ut1 == pytest.approx(JD + t0, abs=2e-6)
+    assert result.events[0].window_index == 0
+    window = result.windows[0]
+    assert (window.entry_status, window.exit_status) == ("found", "found")
+    assert window.entry_jd_ut1 == pytest.approx(JD + t0 - 1 / 13, abs=2e-6)
+    assert window.exit_jd_ut1 == pytest.approx(JD + t0 + 1 / 13, abs=2e-6)
+    assert window.pass_indices == (0,)
+
+
 def test_repeated_retrograde_passes_share_one_connected_window(monkeypatch):
     reference = synthetic(monkeypatch, lambda t: 10 * math.sin((t - 15) * math.pi / 10))
     result = run(reference, end=30, aspects=((0, 15),))

@@ -151,6 +151,20 @@ publication, or production pin is implied by these entries.
   the new `start_shift_truth` field.
 
 ### Fixed
+- **Orb Windows Narrower Than The Scan Step**:
+  - **The problem:** the shared fixed-target solver found orb boundaries only
+    where `|residual| - orb` changed sign between scan knots. A window narrower
+    than one step (the Moon with a 1° orb lasts about 0.17 day) contained no
+    knot, so its exact contact came back with no window while the result still
+    reported complete. Geodetic timing at a 0.5-day step lost 14 of 34 Moon
+    windows over 60 days.
+  - **The fix:** each exact root is a certified in-orb point, so the roots are
+    now knots for the boundary search.
+  - **Verification:** windows are now identical for steps from 0.125 to 2 days
+    (boundaries within 6 ms). Every boundary's recomputed separation equals the
+    orb to 1e-5°.
+  - **Scope:** a legacy natal-aspect probe found its windows both before and
+    after the fix.
 - **REST Routes Without A Global Kernel**: 31 phase, progressions and
   Varshaphal routes called engine functions that resolve the reader from
   context, so they returned HTTP 500 unless `MOIRA_SERVER_KERNEL_PATH` was
