@@ -1,14 +1,16 @@
 # Astronomy Validation: Methods, Results, and Limits
 
-**Version:** 2.0
+**Version:** 2.1
 
-**Date:** 2026-08-13
+**Date:** 2026-10-28
 
-**Engine:** Moira 6.1.0
+**Engine:** Moira 6.11.1
 
-**Calculation baseline:** `68544ae1403009e3b25c30554992acb48790487c`
+**Calculation baseline:** `b5bc031b2085621aa2d21179ea3f6b128945279a`
 
-**Validation runtime:** Python 3.14.3
+**Validation runtime:** Python 3.14.8
+
+**Previous revision:** 2.0, 2026-08-13, Moira 6.1.0 at `68544ae`
 
 **Planetary kernel:** JPL DE441
 
@@ -26,10 +28,10 @@ The strongest current numerical results are:
 
 - 120 apparent geocentric major-body comparisons against JPL Horizons pass a
   `0.35 arcsecond` angular and `0.1 km` distance gate. The recorded maxima are
-  `0.277781 arcsecond` and `0.066846 km`.
+  `0.244422 arcsecond` and `0.015717 km`.
 - 80 geometric ICRF vector comparisons against JPL Horizons pass a
   `0.001 arcsecond` angular and `0.01 km` vector-difference gate. The recorded
-  maxima are `0.000021829 arcsecond` and `0.002937 km`.
+  maxima are `0.000021255 arcsecond` and `0.002472 km`.
 - IAU 2006/2000A frame and Earth-rotation functions agree with their matching
   ERFA functions within `0.001 arcsecond` across the declared test epochs.
 - Lunar orientation matches five JPL Horizons geocentric/topocentric cases at
@@ -84,13 +86,39 @@ separate quantities.
 
 ## 2. System under test and reproducibility
 
-The results in this revision were reviewed against Moira 6.1.0 at calculation
-baseline `68544ae`, using Python 3.14.3 and the discovered DE441 resource with
-downloads disabled. The repository's `tests/KNOWN_ISSUES.yml` contained no
-active entries at review time.
+The results in this revision were rerun on 2026-10-28 against Moira 6.11.1 at
+calculation baseline `b5bc031`, using Python 3.14.8 and the discovered DE441
+resource with downloads disabled, `MOIRA_TEST_MODE=1`, and
+`MOIRA_STRICT_KNOWN_ISSUES=1`. The repository's `tests/KNOWN_ISSUES.yml`
+contained no active entries. The engine checkout carried unrelated
+uncommitted horary work that none of the suites below import.
+
+This revision supersedes 2.0 because four engine commits since then change
+quantities this paper reports or the contracts behind them:
+
+- `690359d` corrects the IAU 2006 Fukushima-Williams `gamma_bar` coefficient
+  and preserves SPK record time, and corrects the TT/TDB epoch sent to
+  Horizons by the geometric vector suite (Section 5.3);
+- `0b7d739` corrects observer polar motion and stellar aberration;
+- `29965ae` evaluates SPK Chebyshev segments record by record; its
+  differential is bit-identical to whole-segment evaluation; and
+- `b350715` finds orb windows narrower than the timing scan step.
+
+The offline run of every suite named in this paper, with live cases
+deselected, collected 777 tests: 773 passed, 3 were skipped and 1 failed. The
+failure is
+`test_orbital_elements_kernels.py::test_packaged_twenty_five_asteroids_have_strict_receipted_elements`:
+the test admits only the `moira-asteroids@2026.10.10.1` release, while this
+machine has `moira-asteroids@2026.09.18.1` installed. The same resource
+mismatch skips the Halley and Encke current-solution holdouts. It predates
+these engine commits (it is the asteroid-admission case listed in
+[the 2026-10-27 repair receipt](PRECESSION_SPK_PRECISION_REPAIR_2026-10-27.md))
+and is a local-resource gap, not a numerical residual; it was not suppressed.
+The regression tests added by the four commits pass (77 passed, 6 skipped as
+out of scope by their own declarations).
 
 The two major-body maxima quoted in the abstract and Section 5 are dated
-receipts from the isolated live Horizons run on 2026-08-13. The acceptance
+receipts from the isolated live Horizons run on 2026-10-28. The acceptance
 thresholds and comparison contracts are executable tests; the observed maxima
 are not promoted to frozen golden truth and should be refreshed with a later
 live-oracle run rather than copied forward unexamined.
@@ -121,7 +149,7 @@ where a dedicated differential exists; it is not assumed for every product.
 | Apparent geocentric major bodies | JPL Horizons; 10 targets × 12 epochs = 120 | `<= 0.35 arcsecond`, `<= 0.1 km` | Cross-model angle; same-target/same-epoch distance |
 | Geometric geocentric major-body vectors | JPL Horizons; 10 targets × 8 epochs = 80 | `<= 0.001 arcsecond`, `<= 0.01 km` | Authority comparison of matched ICRF vector geometry |
 | Topocentric apparent RA/Dec | JPL Horizons; 18 cases | Per-case RA `15–30 arcseconds`, Dec `4–12 arcseconds` | Authority-validated on the named sites/epochs; not an azimuth/altitude claim |
-| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 current-catalog holdout cases | Exact-kernel gates from `2e-14` to `5e-10 degree`; sampled-catalog product gates from `1e-5 AU` to `0.05 degree` | Strict core authority-validated; current asteroid/comet releases admitted on six holdouts; live drift 17/17; full 11,720-body runtime inventory passed |
+| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 current-catalog holdout cases | Exact-kernel gates from `2e-14` to `5e-10 degree`; sampled-catalog product gates from `1e-5 AU` to `0.05 degree` | Strict core authority-validated; current asteroid/comet releases admitted on six holdouts; live drift 15/17 on 2026-10-28 (two Horizons comet-solution changes, Section 5.6); full 11,720-body runtime inventory passed |
 | Heliocentric distance extrema | JPL Horizons vectors; 8 bodies | `<= 1 day`, `<= 3e-4 AU` | Authority-validated for the next local extrema in each case |
 | Asteroid apparent ecliptic positions | Frozen JPL Horizons fixture; 203 cases, 61 bodies | `0.5 arcsecond` default; four named TNO exceptions at `1.5` or `5.0 arcseconds` | Product-specific authority fixture; not the planetary threshold |
 | Delta T policies | Source-priority, continuity, policy, and compatibility tests | Product-specific invariants and source envelopes | Documented/partially validated; no universal Delta-T accuracy claim |
@@ -152,6 +180,20 @@ ERFA functions for:
 Most comparisons use 12 epochs from 500 BCE through 2100 CE and enforce
 `< 0.001 arcsecond`. Full `erfa.gst06a` GAST parity is separately enforced at
 eight modern epochs from J1500 through J2100.
+
+Since `690359d`, the Fukushima-Williams precession angles use the IAU 2006
+bias-inclusive `gamma_bar` linear coefficient `10.556378 arcsecond` per
+century in the Python, native and interval-frame paths.
+`tests/unit/test_precession_fw06_precision.py` checks it against ERFA and an
+exact-rational reference; the measurement is recorded in
+[the 2026-10-27 repair receipt](PRECESSION_SPK_PRECISION_REPAIR_2026-10-27.md).
+Since `0b7d739`, the observer station is carried from ITRS to TIRS with the
+transpose of the polar-motion matrix, as in ERFA `pvtob`, and the occultation
+star ray receives diurnal aberration. `tests/integration/test_polar_motion_erfa.py`
+and `tests/unit/test_occultation_observer_motion.py` compare these stages with
+ERFA `pom00`, `pvtob` and `ab`; see
+[the observer-motion receipt](observer_motion_precision_2026_10_27.md). Both
+groups pass on this revision's baseline.
 
 Before J1000, Moira's equation-of-equinoxes construction and ERFA's
 equation-of-origins construction can differ by about `1.1 arcseconds`. That is
@@ -271,10 +313,16 @@ All 120 cases pass:
 
 - angular separation `<= 0.35 arcsecond`;
 - distance difference `<= 0.1 km`;
-- recorded maximum angular separation `0.277781 arcsecond` for the Saturn
-  system barycenter at the 1900 epoch; and
-- recorded maximum distance difference `0.066846 km` for Mercury at the 1933
+- recorded maximum angular separation `0.244422 arcsecond` for the Moon at
+  the 1900 epoch; and
+- recorded maximum distance difference `0.015717 km` for Mercury at the 1950
   epoch.
+
+Revision 2.0 recorded `0.277781 arcsecond` (Saturn system barycenter, 1900)
+and `0.066846 km` (Mercury, 1933) on 2026-08-13. The gates are unchanged; the
+lower maxima follow the corrected precession coefficient and SPK record time
+and a later Horizons service state, and are not separated between those
+causes here.
 
 The angle is a cross-reduction-model comparison. Moira uses IAU 2006/2000A
 true-of-date reduction, while the Horizons manual describes apparent quantity
@@ -291,16 +339,22 @@ distance comparison is same-target and same-epoch.
 
 **Horizons correction:** `VEC_CORR=NONE`
 
-**Epoch contract:** the same numeric ephemeris JD sent as discrete `TLIST`
-with `TIME_TYPE=TDB`
+**Epoch contract:** Moira's reader receives TT and converts it to TDB once at
+the SPK boundary; Horizons receives that same converted TDB instant as a
+discrete `TLIST` with `TIME_TYPE=TDB`
 
 All 80 cases pass:
 
 - angular vector difference `<= 0.001 arcsecond`;
 - absolute vector difference `<= 0.01 km`;
-- recorded maximum angular difference `0.000021829 arcsecond` for the Moon at
-  J2000; and
-- recorded maximum vector difference `0.002937 km` for Mercury at J2000.
+- recorded maximum angular difference `0.000021255 arcsecond` for the Moon at
+  2150-01-01; and
+- recorded maximum vector difference `0.002472 km` for Mercury at J2000.
+
+Revision 2.0 sent the unconverted TT value to Horizons labelled as TDB, a
+difference of up to about `1.7 milliseconds` in epoch. Its maxima
+(`0.000021829 arcsecond`, `0.002937 km`) were measured under that mismatch
+and are retired.
 
 This isolates target and vector geometry. Orbital Core Stage 1 separately
 locks the public-TT/private-TDB conversion and compares strict orbital states
@@ -323,6 +377,9 @@ the Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, and Pluto at Greenwich
 and New York epochs. It compares topocentric apparent right ascension and
 declination. Per-case gates range from `15–30 arcseconds` in right ascension
 and `4–12 arcseconds` in declination.
+
+All 18 cases pass in the isolated live run of 2026-10-28, after the observer
+polar-motion correction of `0b7d739`.
 
 The current test does not assert its stored azimuth and altitude tolerances.
 Therefore this section makes no azimuth/altitude parity claim from that file.
@@ -464,7 +521,17 @@ measured residual is Encke at `1.203e-6 AU` in semi-major axis and
 `0.000107 degree` in mean anomaly. The isolated live-primary drift audit passes
 all 17 calibration and holdout cases after Horizons advanced Encke from
 `JPL#K273/14` to `JPL#K273/17`; the historical fixture and receipts remain
-unchanged. On the release host, all 11,223 asteroids and 497 periodic comets
+unchanged.
+
+The 2026-10-28 rerun of that audit passes 15 of the 17 cases and fails two.
+Both failures are changes in the authority, not Moira residuals: the audit
+compares live Horizons replies with the frozen Horizons records and does not
+evaluate Moira. For 2P/Encke, Horizons now reports solution `JPL#K273/24`
+where the record holds `JPL#K273/17`. For 1P/Halley, the solution label is
+still `JPL#75`, but one distance element moved from `35.14382535810686` to
+`35.14382535708947 AU`, about `1.0e-9 AU` against the audit's `2e-10 AU`
+gate. The frozen records were not refreshed. Re-admitting the comet holdouts
+on the new solutions is open work. On the release host, all 11,223 asteroids and 497 periodic comets
 (11,720 bodies) pass the exhaustive orbital-element coverage, finiteness,
 identity, and manifest/shard receipt gate. The admission receipt is
 `tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`.
@@ -876,3 +943,120 @@ The overall report remains **partial** because its component products have
 different evidence maturity and because no finite corpus can prove every
 supported astronomical condition. That status is a truthful boundary, not a
 failure of the validated slices above.
+
+Open items from the 2026-10-28 rerun:
+
+- this machine has asteroid catalog `2026.09.18.1` installed, not the
+  admitted `2026.10.10.1`, so the release-bound asteroid element check fails
+  and the Halley and Encke holdouts are skipped (Section 2);
+- Horizons has changed the 1P/Halley and 2P/Encke solutions behind the frozen
+  live-drift records (Section 5.6); and
+- the bulk-eclipse benchmark finds more 100-year events than its July run did
+  (Appendix A.5); that change has not been reviewed against Section 6.
+
+Calculation speed is reported separately in Appendix A as performance
+evidence.
+
+## Appendix A. Calculation speed (performance evidence)
+
+This appendix is performance evidence, not scientific validation. A timing says
+nothing about accuracy, and nothing in Sections 3 through 9 depends on it. The
+numbers belong to one machine, one kernel and one run; they are not a
+guaranteed service level.
+
+### A.1 Run conditions
+
+| Item | Value |
+|---|---|
+| Date | 2026-10-28 |
+| Engine | Moira 6.11.1 at `b5bc031`; the checkout carried unrelated uncommitted horary work |
+| Runtime | Python 3.14.8, project `.venv`, native module built from `b5bc031` |
+| Hardware | AMD Ryzen 7 8700F, 8 cores / 16 threads, 31.6 GB RAM; Windows 11 build 26300 |
+| Kernel | JPL DE441 (`de441.bsp`, 3,307,878,400 bytes), downloads disabled |
+| Environment | `MOIRA_NO_DOWNLOAD=1`, `MOIRA_TEST_MODE=1`, `MOIRA_STRICT_KNOWN_ISSUES=1`; no other benchmark or test running |
+
+### A.2 Method
+
+`scripts/benchmark_astronomy_speed.py` times each public product
+single-threaded on one warm reader. Each product gets one untimed warm-up
+pass, then five timed passes (three for event searches). The harness runs
+garbage collection before each pass and times it with `time.perf_counter`.
+Each pass shifts its epochs by 0.137 day, so no pass reuses an earlier epoch.
+The tables report the median pass divided by the calls in it, with the best
+pass beside it.
+
+Position products run on two sets of 200 epochs. The `modern` set spans
+1900-2100. The `mixed-era` set is spread evenly across DE441's whole Sun
+coverage, which exercises SPK records far apart in the kernel.
+`scripts/benchmark_native_bulk_eclipse_ranges.py` is the existing bulk-eclipse
+benchmark, run unchanged. The raw results are
+`tests/artifacts/benchmarks/astronomy_speed_2026-10-28.json` and
+`tests/artifacts/benchmarks/native_bulk_eclipse_ranges_2026-10-28.json`.
+
+### A.3 Positions and Earth orientation
+
+Time per call, in milliseconds:
+
+| Product | Call | Modern median | Modern best | Mixed-era median | Mixed-era best |
+|---|---|---:|---:|---:|---:|
+| Raw SPK position, SSB to Sun | `SpkReader.position` | 0.0098 | 0.0097 | 0.0122 | 0.0116 |
+| Apparent geocentric place, one body | `planet_at` | 0.173 | 0.164 | 0.195 | 0.188 |
+| Apparent places, 10 bodies at one epoch | `all_planets_at` | 1.22 | 0.84 | 0.86 | 0.81 |
+| Topocentric RA/Dec/Az/Alt with refraction, one body | `sky_position_at` | 0.254 | 0.251 | 0.302 | 0.289 |
+| Full chart: default bodies, nodes and Lilith | `Moira.chart` | 2.34 | 2.18 | — | — |
+| Catalog star apparent place | `Moira.fixed_star` | 0.129 | 0.126 | — | — |
+| IAU 2000A nutation | `nutation_2000a` | 0.060 | 0.059 | — | — |
+| IAU 2006 precession matrix | `precession_matrix` | 0.0065 | 0.0062 | — | — |
+| Apparent local sidereal time | `apparent_sidereal_time_at` | 0.171 | 0.161 | — | — |
+
+The passes of `all_planets_at` on the modern set spread from 0.84 to 1.70 ms
+per call. Read its median as noisy; the best pass and the mixed-era row agree
+at about 0.8 ms.
+
+### A.4 Event searches
+
+| Search | Call | Span per call | Median | Best |
+|---|---|---|---:|---:|
+| Rise, set and both transits for one body | `find_phenomena` | one day | 12.0 ms | 11.3 ms |
+| Mercury stations | `Moira.stations` | one year | 0.52 s | 0.50 s |
+| Lunar phases | `Moira.moon_phases` | one year | 2.51 s | 2.33 s |
+| Lunar occultations, default targets | `Moira.occultations` | 30 days | 1.56 s | 1.54 s |
+
+Global eclipse searches from J2000 with the bulk native candidate route:
+
+| Span | Solar events | Solar time | Lunar events | Lunar time | Python-route time (solar / lunar) |
+|---|---:|---:|---:|---:|---:|
+| 1 year | 4 | 0.10 s | 2 | 0.024 s | 0.80 s / 0.50 s |
+| 10 years | 22 | 0.42 s | 24 | 0.20 s | 4.75 s / 5.13 s |
+| 100 years | 226 | 6.8 s | 228 | 4.1 s | not run |
+| 1000 years | 2390 | 84 s | 2413 | 58 s | not run |
+
+The 1- and 10-year rows are medians of three runs. The 100- and 1000-year
+rows are single runs. On the 1- and 10-year spans, the native and Python
+routes return the same events, with eclipse instants differing by at most
+0.016 s.
+
+### A.5 Comparison with earlier timing artifacts
+
+- The July 21 run of the bulk-eclipse benchmark (Moira 5.0.0, artifact
+  `native_bulk_eclipse_ranges.json`) found 223 solar and 223 lunar eclipses
+  in the 100-year span. This run finds 226 and 228. The difference is in
+  event counts, so it belongs to the eclipse validation in Section 6, not to
+  this appendix. It is recorded here as an open observation. The event-count
+  change also limits time comparisons between the two runs. As one example,
+  the 1000-year solar search took 55 s in July and 84 s in this run.
+- The May 2026 public-surface artifacts (`native_phase2_planet_at.json`,
+  `planetary_flow_stage_timing.json`) used a different epoch set and
+  cold-reader runs. Their scripts are archived and write to fixed artifact
+  paths, so they were not rerun.
+
+### A.6 Reproducing
+
+```powershell
+$env:MOIRA_NO_DOWNLOAD = "1"
+.\.venv\Scripts\python.exe scripts\benchmark_astronomy_speed.py --output <path>.json
+.\.venv\Scripts\python.exe scripts\benchmark_native_bulk_eclipse_ranges.py --output <path>.json
+```
+
+Timings vary with hardware, power state, background load and operating-system
+file cache. Compare runs only on the same machine and kernel.

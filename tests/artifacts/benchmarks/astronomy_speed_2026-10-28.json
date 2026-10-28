@@ -1,0 +1,296 @@
+{
+  "schema": "moira.astronomy_speed.benchmark.v1",
+  "evidence_class": "performance_only",
+  "generated_utc": "2026-10-28T22:57:09.624911+00:00",
+  "moira_version": "6.11.1",
+  "git_commit": "b5bc031b2085621aa2d21179ea3f6b128945279a+dirty",
+  "python": "3.14.8",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "AMD Ryzen 7 8700F 8-Core Processor",
+  "logical_cpus": 16,
+  "kernel": "de441.bsp",
+  "kernel_bytes": 3307878400,
+  "environment": {
+    "MOIRA_NO_DOWNLOAD": "1",
+    "MOIRA_TEST_MODE": "1",
+    "MOIRA_STRICT_KNOWN_ISSUES": "1"
+  },
+  "timing_policy": {
+    "warm_reader": true,
+    "untimed_warmup_passes": 1,
+    "repeats": 5,
+    "event_repeats": 3,
+    "epochs_per_set": 200,
+    "epoch_shift_per_pass_days": 0.137,
+    "statistic": "median pass / calls per pass"
+  },
+  "results": [
+    {
+      "name": "spk_position_ssb_sun",
+      "product": "raw SPK position (SSB->Sun, TDB)",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.002264600000671635,
+        0.0019462000000203261,
+        0.0019654000006994465,
+        0.0031229000005623675,
+        0.0019524999997884152
+      ],
+      "median_ms_per_call": 0.009827000003497233,
+      "best_ms_per_call": 0.00973100000010163
+    },
+    {
+      "name": "planet_at",
+      "product": "apparent geocentric ecliptic place, one body",
+      "epoch_set": "modern",
+      "calls_per_pass": 2000,
+      "repeats": 5,
+      "pass_seconds": [
+        0.33251669999935984,
+        0.32775149999997666,
+        0.3456403999998656,
+        0.4047783999994863,
+        0.4864505999994435
+      ],
+      "median_ms_per_call": 0.1728201999999328,
+      "best_ms_per_call": 0.16387574999998833
+    },
+    {
+      "name": "all_planets_at",
+      "product": "apparent geocentric places, 10 bodies at one epoch",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.2769004000001587,
+        0.24458189999950264,
+        0.16819159999977273,
+        0.3393677999993088,
+        0.22356480000053125
+      ],
+      "median_ms_per_call": 1.2229094999975132,
+      "best_ms_per_call": 0.8409579999988637
+    },
+    {
+      "name": "sky_position_at",
+      "product": "topocentric apparent RA/Dec/Az/Alt with refraction, one body",
+      "epoch_set": "modern",
+      "calls_per_pass": 600,
+      "repeats": 5,
+      "pass_seconds": [
+        0.1625235999999859,
+        0.15217050000046584,
+        0.15162899999995716,
+        0.17091100000016013,
+        0.15030310000020108
+      ],
+      "median_ms_per_call": 0.2536175000007764,
+      "best_ms_per_call": 0.2505051666670018
+    },
+    {
+      "name": "spk_position_ssb_sun",
+      "product": "raw SPK position (SSB->Sun, TDB)",
+      "epoch_set": "mixed_era",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.003104700000221783,
+        0.00377070000013191,
+        0.00236620000032417,
+        0.0024389999998675194,
+        0.0023281000003407826
+      ],
+      "median_ms_per_call": 0.012194999999337597,
+      "best_ms_per_call": 0.011640500001703913
+    },
+    {
+      "name": "planet_at",
+      "product": "apparent geocentric ecliptic place, one body",
+      "epoch_set": "mixed_era",
+      "calls_per_pass": 2000,
+      "repeats": 5,
+      "pass_seconds": [
+        0.37610850000055507,
+        0.3889613000001191,
+        0.4345346999998583,
+        0.3761223000001337,
+        0.4041997000003903
+      ],
+      "median_ms_per_call": 0.19448065000005954,
+      "best_ms_per_call": 0.18805425000027753
+    },
+    {
+      "name": "all_planets_at",
+      "product": "apparent geocentric places, 10 bodies at one epoch",
+      "epoch_set": "mixed_era",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.17227610000009008,
+        0.17269799999940005,
+        0.16270720000011352,
+        0.17504099999950995,
+        0.17173860000002605
+      ],
+      "median_ms_per_call": 0.8613805000004504,
+      "best_ms_per_call": 0.8135360000005676
+    },
+    {
+      "name": "sky_position_at",
+      "product": "topocentric apparent RA/Dec/Az/Alt with refraction, one body",
+      "epoch_set": "mixed_era",
+      "calls_per_pass": 600,
+      "repeats": 5,
+      "pass_seconds": [
+        0.22042490000058024,
+        0.17715409999982512,
+        0.17338250000011612,
+        0.1814528999993854,
+        0.18929759999991802
+      ],
+      "median_ms_per_call": 0.30242149999897566,
+      "best_ms_per_call": 0.28897083333352686
+    },
+    {
+      "name": "nutation_2000a",
+      "product": "IAU 2000A nutation angles",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.011951800000133517,
+        0.011914099999557948,
+        0.011867100000017672,
+        0.012340400000539375,
+        0.011796699999649718
+      ],
+      "median_ms_per_call": 0.05957049999778974,
+      "best_ms_per_call": 0.05898349999824859
+    },
+    {
+      "name": "precession_matrix",
+      "product": "IAU 2006 precession matrix",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.0016187999999601743,
+        0.0013095000003886526,
+        0.001248400000804395,
+        0.0012502999998105224,
+        0.0018019999997704872
+      ],
+      "median_ms_per_call": 0.006547500001943263,
+      "best_ms_per_call": 0.006242000004021975
+    },
+    {
+      "name": "apparent_sidereal_time_at",
+      "product": "apparent local sidereal time",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.03222170000026381,
+        0.03513420000035694,
+        0.03412949999983539,
+        0.03311530000064522,
+        0.03452359999937471
+      ],
+      "median_ms_per_call": 0.17064749999917694,
+      "best_ms_per_call": 0.16110850000131904
+    },
+    {
+      "name": "find_phenomena",
+      "product": "rise, set and transits for one body over one day",
+      "epoch_set": "2026",
+      "calls_per_pass": 20,
+      "repeats": 3,
+      "pass_seconds": [
+        0.2421863999998095,
+        0.22577479999927164,
+        0.2408661999998003
+      ],
+      "median_ms_per_call": 12.043309999990015,
+      "best_ms_per_call": 11.288739999963582
+    },
+    {
+      "name": "Moira.chart",
+      "product": "full chart: default bodies plus nodes and Lilith",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.45484269999997196,
+        0.4847485999998753,
+        0.4805059000000256,
+        0.4674560000003112,
+        0.4350789000000077
+      ],
+      "median_ms_per_call": 2.337280000001556,
+      "best_ms_per_call": 2.1753945000000385
+    },
+    {
+      "name": "Moira.fixed_star",
+      "product": "apparent place of a catalog star",
+      "epoch_set": "modern",
+      "calls_per_pass": 200,
+      "repeats": 5,
+      "pass_seconds": [
+        0.025645900000199617,
+        0.025228299999980663,
+        0.025737799999660638,
+        0.02746359999946435,
+        0.02641629999925499
+      ],
+      "median_ms_per_call": 0.1286889999983032,
+      "best_ms_per_call": 0.12614149999990332
+    },
+    {
+      "name": "Moira.stations",
+      "product": "Mercury stations over one year",
+      "epoch_set": "2026",
+      "calls_per_pass": 1,
+      "repeats": 3,
+      "pass_seconds": [
+        0.5190485000002809,
+        0.5354754999998477,
+        0.4987308000008852
+      ],
+      "median_ms_per_call": 519.0485000002809,
+      "best_ms_per_call": 498.7308000008852,
+      "note": "one call = one year searched"
+    },
+    {
+      "name": "Moira.moon_phases",
+      "product": "lunar phases over one year",
+      "epoch_set": "2026",
+      "calls_per_pass": 1,
+      "repeats": 3,
+      "pass_seconds": [
+        2.3254158999998253,
+        2.5113541000000623,
+        2.5308145999997578
+      ],
+      "median_ms_per_call": 2511.3541000000623,
+      "best_ms_per_call": 2325.4158999998253,
+      "note": "one call = one year searched"
+    },
+    {
+      "name": "Moira.occultations",
+      "product": "lunar occultations over 30 days, default targets",
+      "epoch_set": "2026",
+      "calls_per_pass": 1,
+      "repeats": 3,
+      "pass_seconds": [
+        1.5439034999999421,
+        1.6195814000002429,
+        1.557739899999433
+      ],
+      "median_ms_per_call": 1557.739899999433,
+      "best_ms_per_call": 1543.9034999999421,
+      "note": "one call = 30 days searched"
+    }
+  ]
+}
