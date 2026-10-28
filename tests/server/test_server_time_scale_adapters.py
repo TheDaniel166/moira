@@ -268,7 +268,9 @@ def test_jaimini_and_shadbala_receive_resolved_ut1(monkeypatch) -> None:
     )
     jaimini.compute_jaimini_chart(engine, JaiminiChartRequest(dt=_DT))
 
-    sentinel = object()
+    # The result carries its own war resolution (moira.shadbala) and the
+    # engine supplies day/night through its Shadbala context.
+    sentinel = SimpleNamespace(war_resolution=SimpleNamespace(pairs=()))
     captured: dict[str, float] = {}
     monkeypatch.setattr(shadbala, "utc_to_ut1", lambda _jd: _JD_UT1)
     monkeypatch.setattr(
@@ -283,17 +285,21 @@ def test_jaimini_and_shadbala_receive_resolved_ut1(monkeypatch) -> None:
             tithi=SimpleNamespace(number=1), vara_lord="Sun"
         ),
     )
+    engine._reader_obj = None
+    engine.shadbala_context = lambda jd, *_args, jd_utc, **_kwargs: (
+        captured.update(context_jd=jd, context_jd_utc=jd_utc)
+        or SimpleNamespace(require_complete=lambda: None, is_day=True)
+    )
     engine.shadbala = lambda **kwargs: captured.update(jd=kwargs["jd"]) or sentinel
     monkeypatch.setattr(shadbala, "validate_shadbala_output", lambda _result: None)
-    monkeypatch.setattr(shadbala, "graha_yuddha_pairs", lambda *_args: ())
-    monkeypatch.setattr(shadbala, "is_day_chart", lambda *_args: True)
 
     assert shadbala.compute_shadbala_chart(
         engine,
         ShadbalaChartRequest(dt=_DT, observer_lat=40.0, observer_lon=-74.0),
     ) is sentinel
     assert seen == [_JD_UT1] * 14
-    assert captured == {"jd": _JD_UT1}
+    # Astronomy runs on UT1; the context keeps the UTC civil instant.
+    assert captured == {"context_jd": _JD_UT1, "context_jd_utc": _JD_UTC, "jd": _JD_UT1}
 
 
 def test_panchanga_uses_ut1_but_keeps_utc_civil_weekday(monkeypatch) -> None:

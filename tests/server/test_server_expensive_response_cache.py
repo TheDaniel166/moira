@@ -121,6 +121,10 @@ def test_sade_sati_windows_route_caches_by_validated_request(
             end_jd=2451910.5,
             ayanamsa_system=request.ayanamsa_system,
             windows=(),
+            scan_step_days=1.0,
+            evaluations=367,
+            max_evaluations=request.max_evaluations,
+            search_semantics="sampled_sign_changes_no_substep_excursion_guarantee",
         )
 
     monkeypatch.setattr("moira_server.app.create_engine", lambda _config: engine)
