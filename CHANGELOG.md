@@ -11,6 +11,15 @@ Unreleased engine remediation work. No version bump, wheel
 publication, or production pin is implied by these entries.
 
 ### Added
+- **Geodetic Analysis On The Facade**:
+  - New `Moira` methods: `geodetic_houses`, `geodetic_overlay`,
+    `geodetic_compare`, `geodetic_loci`, `geodetic_transits` and
+    `geodetic_uncertainty`.
+  - Each composes the Geodetic analysis modules with the engine's own reader
+    on one epoch: the natal snapshot is built first, and a place's figure
+    reuses its UT1/TT and offset.
+  - Each equals the hand-built composition exactly.
+  - No `moira.facade` module export or REST route is added.
 - **Geodetic Analysis Expansion**: added explicit immutable body snapshots,
   full house figures, static overlays, segmented inverse angle loci, supplied-
   place comparisons, and fixed-reference transit timing in their owning

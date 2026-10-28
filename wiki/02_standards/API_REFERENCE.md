@@ -781,6 +781,12 @@ motion semantics.
 | `uranian(dt)` | `dict[str, UranianPosition]` | Positions of the current nine Uranian/Hamburg School and Transpluto hypothetical bodies |
 | `geodetic(chart, zodiac="tropical", ayanamsa_system=None)` | `GeodeticChart` | Geodetic chart frame derived from planetary longitudes |
 | `geodetic_planet_equivalents(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)` | `dict[str, float]` | Geodetic longitude equivalents for selected bodies |
+| `geodetic_houses(location, dt, system, *, zodiac="tropical", ayanamsa_system=None, house_policy=None, sun_longitude=None)` | `GeodeticHouseChart` | Twelve-house Geodetic figure for a `GeodeticLocation`, obliquity at `dt` |
+| `geodetic_overlay(natal_dt, location, system, *, aspect_policy, bodies=None, angles=..., include_cusps=False, zodiac=..., ayanamsa_system=None, house_policy=None, sun_longitude=None, error_policy="raise")` | `GeodeticNatalOverlay` | Natal bodies placed in and aspected to a place's Geodetic figure on the natal epoch; static contacts |
+| `geodetic_compare(natal_dt, locations, system, *, aspect_policy, bodies=None, ..., order_by="input")` | `GeodeticLocationComparison` | One natal snapshot across `GeodeticNamedLocation`s; `minimum_contact_orb` ordering is geometric, not a score |
+| `geodetic_loci(natal_dt, *, bodies=None, angles=..., curve_policy=None, zodiac=..., ayanamsa_system=None, error_policy="raise")` | `GeodeticLociResult` | Geographic curves where natal degrees fall on MC/IC/ASC/DSC (ecliptic latitude zero, not physical horizon tracks) |
+| `geodetic_transits(location, reference_dt, mover, start_dt, end_dt, *, aspects, policy, angles=..., zodiac=..., ayanamsa_system=None)` | `GeodeticTimingResult` | Mover contacts with a place's Geodetic angles frozen at `reference_dt`; event epochs are JD UT1 |
+| `geodetic_uncertainty(chart, uncertainty, *, policy)` | `GeodeticNonlinearityResult` | Nonlinear input-uncertainty diagnostic with first-order sensitivity; sampled, not an error bound |
 | `synodic_phase(body1, body2, dt)` | `dict[str, float \| str]` | Synodic separation, cycle fraction, and phase label for two bodies |
 | `galactic_houses(dt, latitude, longitude)` | `GalacticHouseCusps` | Galactic Porphyry house cusps for a time and observer location; `cusps_gal` gives native galactic membership, `cusps_ecl` provides ecliptic interoperability |
 

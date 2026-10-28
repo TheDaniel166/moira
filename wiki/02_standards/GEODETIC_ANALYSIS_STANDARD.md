@@ -1,8 +1,9 @@
 # Geodetic Analysis Standard
 
-Version: 1.0
-Date: 2026-10-22
-Status: Python engine implementation; no additional REST/facade admission
+Version: 1.1
+Date: 2026-10-28
+Status: Python engine implementation with `Moira` facade methods (section 7);
+no additional REST admission
 
 This document governs the six Geodetic expansions and their common body
 inputs. Existing scalar/dictionary APIs retain their shapes. Undefined geometry
@@ -174,7 +175,36 @@ prove the absence of an event. Completion is only under the declared finite
 scan policy, not a mathematical guarantee against arbitrarily oscillatory
 motion between samples. Reader/clock identity changes abort the result.
 
-## 7. Example
+## 7. Facade access
+
+Six `Moira` methods compose the owning modules with the engine's own reader.
+They add no doctrine; each equals the hand-built composition exactly
+(`tests/unit/test_geodetic_facade.py`). No `moira.facade` module-level export
+or REST route is added.
+
+| Method | Composition |
+| --- | --- |
+| `geodetic_houses(location, dt, system, ...)` | `geodetic_house_chart` at `dt`'s JD UT1 and engine-clock TT |
+| `geodetic_overlay(natal_dt, location, system, *, aspect_policy, ...)` | `geodetic_snapshot_at`, then the place's figure on the snapshot's epochs and offset, then `geodetic_natal_overlay` |
+| `geodetic_compare(natal_dt, locations, system, *, aspect_policy, ...)` | snapshot, then `compare_geodetic_locations` |
+| `geodetic_loci(natal_dt, ...)` | snapshot, then `geodetic_angular_loci` |
+| `geodetic_transits(location, reference_dt, mover, start_dt, end_dt, ...)` | `GeodeticFixedReference` from `geodetic_chart_at_location`, then `find_geodetic_transits` |
+| `geodetic_uncertainty(chart, uncertainty, *, policy)` | `diagnose_geodetic_uncertainty` |
+
+Epochs: a civil datetime becomes JD UT1 through `utc_to_ut1`; TT is the
+engine-clock TT used by snapshots, and obliquity is true obliquity at that TT.
+The snapshot is built first and a place's figure reuses its UT1/TT, frame and
+offset, which overlays and comparisons require.
+
+Zodiac lanes: tropical refuses an `ayanamsa_system`; sidereal requires one, and
+its offset is `moira.sidereal.ayanamsa` at JD UT1 (that function is contracted
+for UT). Bodies default to the ten planets. `aspect_policy` and the house
+`system` are required, as in the owning functions. Solar-dependent house
+systems need an explicit tropical `sun_longitude`; none is calculated
+implicitly. Timing locations pass through `geodetic_chart_at_location`, so a
+geocentric latitude is refused.
+
+## 8. Example
 
 ```python
 from moira.geodetic import GeodeticLocation
@@ -204,7 +234,7 @@ timing = find_geodetic_transits(
 )
 ```
 
-## 8. Verification scope
+## 9. Verification scope
 
 The focused `test_geodetic_*` unit files cover geometry, whole-box diagnostic
 semantics, identity/frame/epoch contracts, composition with house/aspect owners,

@@ -172,6 +172,265 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
             ayanamsa_system=ayanamsa_system,
         )
 
+    # -- Geodetic analysis (moira.geodetic_analysis/_curves/_timing/_uncertainty)
+    #
+    # Each method composes the owning modules on one epoch. The natal snapshot
+    # comes first; a place's house figure then reuses the snapshot's UT1/TT
+    # epochs and zodiac offset, which overlays and comparisons require.
+
+    def _geodetic_epoch(self, dt: datetime) -> tuple[float, float]:
+        """Return (JD UT1, JD TT) for a civil datetime on this engine's clock."""
+        from ._ephemeris_time import _ut1_to_ephemeris_tt
+
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return jd_ut1, _ut1_to_ephemeris_tt(jd_ut1, self._reader)
+
+    @staticmethod
+    def _geodetic_offset(
+        zodiac: str,
+        ayanamsa_system: str | None,
+        jd_ut1: float,
+    ) -> float | None:
+        """Sidereal offset for one epoch; the tropical lane refuses a system."""
+        if zodiac == "sidereal":
+            if ayanamsa_system is None:
+                raise ValueError(
+                    "ayanamsa_system is required when zodiac='sidereal'. "
+                    "Pass a system name from moira.sidereal.Ayanamsa."
+                )
+            from .sidereal import ayanamsa
+
+            # moira.sidereal.ayanamsa is contracted for UT.
+            return ayanamsa(jd_ut1, ayanamsa_system)
+        if ayanamsa_system is not None:
+            raise ValueError("zodiac='tropical' does not take an ayanamsa_system")
+        return None
+
+    def _geodetic_snapshot(
+        self,
+        dt: datetime,
+        bodies: list[str] | None,
+        zodiac: str,
+        ayanamsa_system: str | None,
+        error_policy: str,
+    ):
+        from .geodetic_inputs import geodetic_snapshot_at
+
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return geodetic_snapshot_at(
+            jd_ut1,
+            list(facade.Body.ALL_PLANETS) if bodies is None else list(bodies),
+            reader=self._reader,
+            zodiac=zodiac,
+            ayanamsa_deg=self._geodetic_offset(zodiac, ayanamsa_system, jd_ut1),
+            ayanamsa_system=ayanamsa_system,
+            error_policy=error_policy,
+        )
+
+    @staticmethod
+    def _geodetic_figure_for(snapshot, location, system, house_policy, sun_longitude):
+        """House figure for one place on the snapshot's epoch and offset."""
+        from .geodetic_analysis import geodetic_house_chart
+        from .obliquity import true_obliquity
+
+        return geodetic_house_chart(
+            location,
+            obliquity=true_obliquity(snapshot.jd_tt),
+            system=system,
+            zodiac=snapshot.zodiac,
+            ayanamsa_deg=snapshot.ayanamsa_deg if snapshot.zodiac == "sidereal" else None,
+            ayanamsa_system=snapshot.ayanamsa_system,
+            house_policy=house_policy,
+            sun_longitude=sun_longitude,
+            source_frame=snapshot.source_frame,
+            jd_ut1=snapshot.jd_ut1,
+            jd_tt=snapshot.jd_tt,
+        )
+
+    def geodetic_houses(
+        self,
+        location,
+        dt: datetime,
+        system: str,
+        *,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+        house_policy=None,
+        sun_longitude: float | None = None,
+    ):
+        """Twelve-house Geodetic figure for a place, with obliquity at ``dt``.
+
+        ``location`` is a ``moira.geodetic.GeodeticLocation``. Solar-dependent
+        house systems need an explicit tropical ``sun_longitude``.
+        """
+        from .geodetic_analysis import geodetic_house_chart
+        from .obliquity import true_obliquity
+
+        jd_ut1, jd_tt = self._geodetic_epoch(dt)
+        return geodetic_house_chart(
+            location,
+            obliquity=true_obliquity(jd_tt),
+            system=system,
+            zodiac=zodiac,
+            ayanamsa_deg=self._geodetic_offset(zodiac, ayanamsa_system, jd_ut1),
+            ayanamsa_system=ayanamsa_system,
+            house_policy=house_policy,
+            sun_longitude=sun_longitude,
+            jd_ut1=jd_ut1,
+            jd_tt=jd_tt,
+        )
+
+    def geodetic_overlay(
+        self,
+        natal_dt: datetime,
+        location,
+        system: str,
+        *,
+        aspect_policy,
+        bodies: list[str] | None = None,
+        angles: tuple[str, ...] = ("MC", "IC", "ASC", "DSC"),
+        include_cusps: bool = False,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+        house_policy=None,
+        sun_longitude: float | None = None,
+        error_policy: str = "raise",
+    ):
+        """Place natal bodies in, and aspect them to, a place's Geodetic figure.
+
+        Bodies default to the ten planets. ``aspect_policy`` is a required
+        ``moira.aspects.AspectPolicy``; contacts are static.
+        """
+        from .geodetic_analysis import geodetic_natal_overlay
+
+        snapshot = self._geodetic_snapshot(natal_dt, bodies, zodiac, ayanamsa_system, error_policy)
+        figure = self._geodetic_figure_for(snapshot, location, system, house_policy, sun_longitude)
+        return geodetic_natal_overlay(
+            figure,
+            snapshot,
+            aspect_policy=aspect_policy,
+            angles=angles,
+            include_cusps=include_cusps,
+        )
+
+    def geodetic_compare(
+        self,
+        natal_dt: datetime,
+        locations,
+        system: str,
+        *,
+        aspect_policy,
+        bodies: list[str] | None = None,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+        house_policy=None,
+        sun_longitude: float | None = None,
+        error_policy: str = "raise",
+        order_by: str = "input",
+    ):
+        """Compare one natal snapshot across named places.
+
+        ``locations`` are ``moira.geodetic_analysis.GeodeticNamedLocation``.
+        ``order_by="minimum_contact_orb"`` is geometric ordering, not a score.
+        """
+        from .geodetic_analysis import compare_geodetic_locations
+        from .obliquity import true_obliquity
+
+        snapshot = self._geodetic_snapshot(natal_dt, bodies, zodiac, ayanamsa_system, error_policy)
+        return compare_geodetic_locations(
+            locations,
+            snapshot,
+            obliquity=true_obliquity(snapshot.jd_tt),
+            system=system,
+            aspect_policy=aspect_policy,
+            house_policy=house_policy,
+            sun_longitude=sun_longitude,
+            error_policy=error_policy,
+            order_by=order_by,
+        )
+
+    def geodetic_loci(
+        self,
+        natal_dt: datetime,
+        *,
+        bodies: list[str] | None = None,
+        angles: tuple[str, ...] = ("MC", "IC", "ASC", "DSC"),
+        curve_policy=None,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+        error_policy: str = "raise",
+    ):
+        """Geographic curves where natal degrees fall on the Geodetic angles.
+
+        These are loci of zodiacal longitudes at ecliptic latitude zero, not
+        physical rising/setting tracks of off-ecliptic bodies.
+        """
+        from .geodetic_curves import geodetic_angular_loci
+        from .obliquity import true_obliquity
+
+        snapshot = self._geodetic_snapshot(natal_dt, bodies, zodiac, ayanamsa_system, error_policy)
+        return geodetic_angular_loci(
+            snapshot,
+            obliquity=true_obliquity(snapshot.jd_tt),
+            angles=angles,
+            policy=curve_policy,
+        )
+
+    def geodetic_transits(
+        self,
+        location,
+        reference_dt: datetime,
+        mover: str,
+        start_dt: datetime,
+        end_dt: datetime,
+        *,
+        aspects,
+        policy,
+        angles: tuple[str, ...] = ("MC", "IC", "ASC", "DSC"),
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+    ):
+        """When a mover aspects a place's Geodetic angles, frozen at ``reference_dt``.
+
+        ``aspects`` are explicit ``(aspect_angle_deg, orb_deg)`` pairs and
+        ``policy`` is a ``moira.geodetic_timing.GeodeticTimingPolicy``. Event
+        epochs in the result are JD UT1, not civil UTC.
+        """
+        from .geodetic import geodetic_chart_at_location
+        from .geodetic_timing import GeodeticFixedReference, find_geodetic_transits
+        from .obliquity import true_obliquity
+
+        facade = _facade_module()
+        jd_ut1, jd_tt = self._geodetic_epoch(reference_dt)
+        chart = geodetic_chart_at_location(
+            location,
+            true_obliquity(jd_tt),
+            ayanamsa_deg=self._geodetic_offset(zodiac, ayanamsa_system, jd_ut1),
+            zodiac=zodiac,
+        )
+        reference = GeodeticFixedReference(chart, jd_ut1, jd_tt, tuple(angles))
+        return find_geodetic_transits(
+            reference,
+            mover,
+            facade.utc_to_ut1(facade.jd_from_datetime(start_dt)),
+            facade.utc_to_ut1(facade.jd_from_datetime(end_dt)),
+            aspects=aspects,
+            policy=policy,
+            reader=self._reader,
+        )
+
+    def geodetic_uncertainty(self, chart, uncertainty, *, policy):
+        """Diagnose how input uncertainty moves a Geodetic chart's angles.
+
+        Includes the first-order sensitivity when it is representable. Sampled
+        maxima are diagnostics, not confidence intervals or error bounds.
+        """
+        from .geodetic_uncertainty import diagnose_geodetic_uncertainty
+
+        return diagnose_geodetic_uncertainty(chart, uncertainty, policy=policy)
+
     def relocated_chart(
         self,
         natal_dt: datetime,
