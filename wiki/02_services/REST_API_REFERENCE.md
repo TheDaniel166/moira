@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 557
-- Registered OpenAPI operations: 557 (GET 51, POST 506)
+- Registered OpenAPI paths: 558
+- Registered OpenAPI operations: 558 (GET 51, POST 507)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 553
+- Versioned `/v1` paths: 554
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3665,6 +3665,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
 | `POST` | `/v1/geodetic/chart/loci` | geodetic | `geodetic_chart_loci_route_v1_geodetic_chart_loci_post` |
 | `POST` | `/v1/geodetic/chart/overlay` | geodetic | `geodetic_chart_overlay_route_v1_geodetic_chart_overlay_post` |
+| `POST` | `/v1/geodetic/chart/transits` | geodetic | `geodetic_chart_transits_route_v1_geodetic_chart_transits_post` |
 | `POST` | `/v1/geodetic/compare` | geodetic | `geodetic_compare_route_v1_geodetic_compare_post` |
 | `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
 | `POST` | `/v1/geodetic/geometry` | geodetic | `geodetic_geometry_route_v1_geodetic_geometry_post` |

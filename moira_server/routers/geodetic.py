@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from moira import Moira
 
+from ..cache import ResponseLRUCache, cached_response
 from ..dependencies import get_engine
 from ..models.geodetic import (
+    GeodeticChartBackedTransitsRequest,
+    GeodeticTransitsResponse,
     GeodeticChartBackedCompareRequest,
     GeodeticChartBackedHousesRequest,
     GeodeticChartBackedHousesResponse,
@@ -35,6 +38,7 @@ from ..models.geodetic import (
     GeodeticUncertaintyResponse,
 )
 from ..serializers.geodetic import (
+    serialize_geodetic_transits,
     serialize_geodetic_chart_houses,
     serialize_geodetic_compare,
     serialize_geodetic_loci,
@@ -47,6 +51,7 @@ from ..serializers.geodetic import (
     serialize_geodetic_uncertainty,
 )
 from ..services.geodetic import (
+    compute_geodetic_chart_transits,
     compute_geodetic_chart_compare,
     compute_geodetic_chart_houses,
     compute_geodetic_chart_loci,
@@ -191,3 +196,28 @@ def geodetic_compare_route(request: GeodeticDirectCompareRequest) -> GeodeticCom
 def geodetic_loci_route(request: GeodeticDirectLociRequest) -> GeodeticLociResponse:
     """Loci of supplied tropical longitudes; kernel-free."""
     return serialize_geodetic_loci(compute_geodetic_direct_loci(request))
+
+
+# -- P10-03c timing: docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md
+
+
+@router.post("/chart/transits", response_model=GeodeticTransitsResponse)
+def geodetic_chart_transits_route(
+    request: GeodeticChartBackedTransitsRequest,
+    http_request: Request,
+    engine: Moira = Depends(get_engine),
+) -> GeodeticTransitsResponse:
+    """Mover contacts with a place's Geodetic angles frozen at reference_dt.
+
+    Bounded (span <= 366 days, step >= 0.25 day) and cached by validated
+    request. Epochs are JD UT1 with a UTC rendering; an exhausted budget is
+    a complete:false answer, never proof that no event exists.
+    """
+    cache: ResponseLRUCache | None = getattr(http_request.app.state, "expensive_response_cache", None)
+    return cached_response(
+        cache,
+        "v1:geodetic:chart:transits",
+        request,
+        engine,
+        lambda: serialize_geodetic_transits(compute_geodetic_chart_transits(engine, request), request.aspects),
+    )

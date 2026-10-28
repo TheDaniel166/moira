@@ -1,17 +1,18 @@
 # Geodetic Analysis Standard
 
-Version: 1.3
+Version: 1.4
 Date: 2026-10-28
 Status: Python engine implementation with `Moira` facade methods (section 7).
 
 REST admission is recorded in `GEODETIC_BACKEND_STANDARD.md` section 7:
 - kernel-free houses, geometry, sensitivity and uncertainty;
 - per P10-03b, overlay, comparison, loci and chart-backed houses, in direct
-  and chart-backed forms.
+  and chart-backed forms;
+- per P10-03c, chart-backed timing.
 
-Timing has no REST admission. `Moira.geodetic_compare` takes a separate
-`place_error_policy`; when it is omitted, `error_policy` governs both bodies
-and places.
+`Moira.geodetic_compare` takes a separate `place_error_policy`; when it is
+omitted, `error_policy` governs both bodies and places. Orb windows narrower
+than the scan step are anchored on their exact contact (section 6).
 
 This document governs the six Geodetic expansions and their common body
 inputs. Existing scalar/dictionary APIs retain their shapes. Undefined geometry
@@ -158,7 +159,10 @@ difference angular velocity plus an accepted angular residual. Nonisolated
 near-continuous contacts and unresolved extrema are visibly incomplete rather
 than fabricated finite event lists. Connected orb windows may contain several
 direct/retrograde passes. Orb windows are searched across the bounded covered
-study interval rather than assuming two days is sufficient.
+study interval rather than assuming two days is sufficient. Each exact root is
+a knot of the orb-boundary search, so a window narrower than the scan step
+(for example the Moon with a small orb) is still bracketed around its contact.
+Windows are therefore independent of `step_days` up to the solver tolerance.
 
 Coverage uses actual disjoint TDB descriptors, route availability, the
 planetary clock, Earth, Sun and the provider's Jupiter/Saturn deflection routes

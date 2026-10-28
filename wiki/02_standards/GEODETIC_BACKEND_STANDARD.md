@@ -348,4 +348,22 @@ Parity is tested in `tests/server/test_server_geodetic_analysis_products_routes.
 The admitted products are analytic. These remain unadmitted: rendered maps,
 projections, GeoJSON or grid variants, geographic search and place scoring,
 relocated natal chart synthesis, and primitive MC-only or ASC-only routes.
-Timing is deferred to its own record (P10-03c).
+
+A fourth step, P10-03c (`docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md`),
+admits `POST /v1/geodetic/chart/transits`, which wraps `find_geodetic_transits`
+through `Moira.geodetic_transits`.
+
+**What the route does:**
+- Freezes the place's angles at `reference_dt` (a frozen tropical anchor) and
+  searches one mover.
+- Bounds: span at most 366 days; `step_days` from 0.25 to 5 (default 0.5,
+  echoed); 1 to 8 unique aspects with orbs at most 10°; the owner's budget
+  defaults as ceilings; `maximum_light_time_days` at most 2.
+- Caches by validated request.
+- Returns epochs as JD UT1 with a UTC rendering.
+
+**Behaviour:**
+- An exhausted budget is HTTP 200 with `complete: false`.
+- Admission depended on the orb-window repair in `moira._fixed_aspect_search`:
+  windows narrower than the scan step were previously lost.
+- Tests: `tests/server/test_server_geodetic_timing_route.py`.

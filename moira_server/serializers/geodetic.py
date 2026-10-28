@@ -19,6 +19,8 @@ from moira.geodetic_analysis import (
 )
 from moira.geodetic_curves import GeodeticLociResult
 from moira.geodetic_inputs import GeodeticBodySnapshot
+from moira.geodetic_timing import GeodeticTimingResult
+from moira.julian import _ut1_to_utc, datetime_from_jd
 
 from ..models.geodetic import (
     GeodeticAngleDerivativesResponse,
@@ -32,6 +34,16 @@ from ..models.geodetic import (
     GeodeticCurveExclusionResponse,
     GeodeticCurvePolicyModel,
     GeodeticCurveVertexResponse,
+    GeodeticEphemerisClockResponse,
+    GeodeticEpochResponse,
+    GeodeticIntervalResponse,
+    GeodeticOrbWindowResponse,
+    GeodeticTimingAspectModel,
+    GeodeticTimingPolicyModel,
+    GeodeticTimingReferenceResponse,
+    GeodeticTimingResourceResponse,
+    GeodeticTransitPassResponse,
+    GeodeticTransitsResponse,
     GeodeticHouseChangeResponse,
     GeodeticHouseFigureResponse,
     GeodeticLociResponse,
@@ -414,7 +426,144 @@ def serialize_geodetic_loci(result: GeodeticLociResult) -> GeodeticLociResponse:
         interpolation=result.interpolation,
     )
 
+# -- P10-03c timing ------------------------------------------------------------
+
+
+def _epoch(jd_ut1: float) -> GeodeticEpochResponse:
+    # JD UT1 is authoritative; datetime_utc renders the same epoch in UTC.
+    return GeodeticEpochResponse(jd_ut1=jd_ut1, datetime_utc=datetime_from_jd(_ut1_to_utc(jd_ut1)).isoformat())
+
+
+def _interval(interval) -> GeodeticIntervalResponse:
+    start, end = interval
+    return GeodeticIntervalResponse(start=_epoch(start), end=_epoch(end))
+
+
+def _serialize_clock(clock) -> GeodeticEphemerisClockResponse:
+    identity = getattr(clock, "identity", None)
+    raw_delta_t = getattr(clock, "raw_delta_t", None)
+    return GeodeticEphemerisClockResponse(
+        jd_ut1=clock.jd_ut1,
+        epoch_tt=clock.epoch_tt,
+        epoch_tdb=clock.epoch_tdb,
+        delta_t_seconds=clock.delta_t_seconds,
+        delta_t_correction_seconds=clock.delta_t_correction_seconds,
+        tdb_minus_tt_seconds=clock.tdb_minus_tt_seconds,
+        ephemeris_summary_label=getattr(identity, "summary_label", None),
+        planetary_ephemeris=getattr(identity, "planetary_ephemeris", None),
+        lunar_ephemeris=getattr(identity, "lunar_ephemeris", None),
+        delta_t_source_product=getattr(raw_delta_t, "source_product", None),
+    )
+
+
+def _serialize_identity(identity) -> GeodeticSmallBodyIdentityResponse | None:
+    if identity is None:
+        return None
+    return GeodeticSmallBodyIdentityResponse(
+        family=identity.family,
+        canonical_name=identity.canonical_name,
+        naif_id=identity.naif_id,
+        matched_name=identity.matched_name,
+        is_alias=identity.is_alias,
+    )
+
+
+def serialize_geodetic_transits(
+    result: GeodeticTimingResult,
+    aspects: list[GeodeticTimingAspectModel],
+) -> GeodeticTransitsResponse:
+    reference = result.reference
+    policy = result.policy
+    return GeodeticTransitsResponse(
+        reference=GeodeticTimingReferenceResponse(
+            chart=serialize_geodetic_chart(reference.chart),
+            selected_targets=[
+                GeodeticNamedLongitudeResponse(name=name, longitude=longitude)
+                for name, longitude in reference.selected_targets
+            ],
+            tropical_targets=[
+                GeodeticNamedLongitudeResponse(name=name, longitude=longitude)
+                for name, longitude in reference.tropical_targets
+            ],
+            reference_jd_ut1=reference.reference_jd_ut1,
+            reference_jd_tt=reference.reference_jd_tt,
+            angles=list(reference.angles),
+            target_policy=reference.target_policy,
+            source_frame=reference.source_frame,
+        ),
+        requested_mover=result.requested_mover,
+        body_id=result.body_id,
+        identity=_serialize_identity(result.identity),
+        policy=GeodeticTimingPolicyModel(
+            step_days=policy.step_days,
+            max_evaluations=policy.max_evaluations,
+            max_subdivisions=policy.max_subdivisions,
+            max_depth=policy.max_depth,
+            maximum_light_time_days=policy.maximum_light_time_days,
+            coverage_policy=policy.coverage_policy,
+        ),
+        aspects=list(aspects),
+        requested_interval=_interval(result.requested_interval_jd_ut1),
+        covered_intervals=[_interval(i) for i in result.covered_intervals_jd_ut1],
+        gaps=[_interval(i) for i in result.gaps_jd_ut1],
+        scanned_intervals=[_interval(i) for i in result.scanned_intervals_jd_ut1],
+        resources=[
+            GeodeticTimingResourceResponse(
+                center=r.center,
+                target=r.target,
+                source_label=r.source_label,
+                source_sha256=r.source_sha256,
+                catalog_id=r.catalog_id,
+                catalog_version=r.catalog_version,
+                manifest_sha256=r.manifest_sha256,
+                intervals_tdb=[list(i) for i in r.intervals_tdb],
+                segment_boundaries_tdb=list(r.segment_boundaries_tdb),
+            )
+            for r in result.resources
+        ],
+        events=[
+            GeodeticTransitPassResponse(
+                body_id=e.body_id,
+                target=e.target,
+                aspect_angle_deg=e.aspect_angle_deg,
+                directed_angle_deg=e.directed_angle_deg,
+                epoch=_epoch(e.jd_ut1),
+                motion=e.motion,
+                residual_deg=e.residual_deg,
+                window_index=e.window_index,
+            )
+            for e in result.events
+        ],
+        windows=[
+            GeodeticOrbWindowResponse(
+                body_id=w.body_id,
+                target=w.target,
+                aspect_angle_deg=w.aspect_angle_deg,
+                orb_deg=w.orb_deg,
+                covered=_interval((w.covered_start_jd_ut1, w.covered_end_jd_ut1)),
+                entry=None if w.entry_jd_ut1 is None else _epoch(w.entry_jd_ut1),
+                exit=None if w.exit_jd_ut1 is None else _epoch(w.exit_jd_ut1),
+                entry_status=w.entry_status,
+                exit_status=w.exit_status,
+                pass_indices=list(w.pass_indices),
+            )
+            for w in result.windows
+        ],
+        evaluations=result.evaluations,
+        subdivisions=result.subdivisions,
+        complete=result.complete,
+        status=result.status,
+        reasons=list(result.reasons),
+        ephemeris_clock=_serialize_clock(result.ephemeris_clock),
+        timescale=result.timescale,
+        longitude_frame=result.longitude_frame,
+        correction_regime=result.correction_regime,
+        completeness=result.completeness,
+        resource_semantics=result.resource_semantics,
+    )
+
 __all__ = [
+    "serialize_geodetic_transits",
     "serialize_geodetic_chart_houses",
     "serialize_geodetic_compare",
     "serialize_geodetic_house_figure",

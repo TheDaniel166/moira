@@ -29,6 +29,18 @@ publication, or production pin is implied by these entries.
   - `/houses` defaults to the Geodetic strict house policy.
   - `/geometry` admits latitudes up to ±90 so `polar_refusal` is reportable.
   - `/uncertainty` caps sampling at 4096 evaluations.
+- **Geodetic Timing REST (P10-03c)**:
+  - New route `POST /v1/geodetic/chart/transits`. It finds when one mover
+    aspects a place's Geodetic angles, which are frozen at `reference_dt`.
+  - Bounds: a span of at most 366 days, `step_days` from 0.25 to 5 (default
+    0.5), 1 to 8 aspects with orbs at most 10°, and the owner's budgets as
+    ceilings.
+  - Cached by validated request.
+  - Events and window boundaries are JD UT1, each with a UTC rendering.
+  - Coverage resources, gaps, the bound ephemeris clock and the semantics
+    strings are all serialized.
+  - An exhausted budget returns 200 with `complete: false`.
+  - Design record: `docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md`.
 - **Geodetic Analysis REST (P10-03b)**:
   - New routes under `/v1/geodetic`: `chart/houses`, plus chart-backed and
     direct forms of `overlay`, `compare` and `loci`.

@@ -209,6 +209,8 @@ def test_geodetic_routes_are_registered(client_with_engine: TestClient) -> None:
         "/v1/geodetic/overlay",
         "/v1/geodetic/compare",
         "/v1/geodetic/loci",
+        # P10-03c (docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md)
+        "/v1/geodetic/chart/transits",
     }
 
 

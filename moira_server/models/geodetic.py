@@ -736,7 +736,218 @@ class GeodeticLociResponse(_StrictModel):
     semantics: str
     interpolation: str
 
+# -- P10-03c timing: docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md
+
+GEODETIC_TIMING_MAX_SPAN_DAYS = 366
+GEODETIC_TIMING_MAX_ASPECTS = 8
+GEODETIC_TIMING_MAX_EVALUATIONS = 50000
+GEODETIC_TIMING_MAX_SUBDIVISIONS = 10000
+GEODETIC_TIMING_MAX_DEPTH = 12
+
+
+def _aware(value: datetime, name: str) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError(f"{name} must be timezone-aware")
+    return value
+
+
+class GeodeticTimingAspectModel(_StrictModel):
+    angle_deg: float = Field(ge=0.0, le=180.0)
+    orb_deg: float = Field(ge=0.0, le=10.0)
+
+    @field_validator("angle_deg", "orb_deg")
+    @classmethod
+    def _finite_aspect(cls, value: float) -> float:
+        return _finite(value, "aspect values")
+
+
+class GeodeticTimingPolicyModel(_StrictModel):
+    step_days: float = Field(default=0.5, ge=0.25, le=5.0)
+    max_evaluations: int = Field(
+        default=GEODETIC_TIMING_MAX_EVALUATIONS, ge=1, le=GEODETIC_TIMING_MAX_EVALUATIONS, strict=True,
+    )
+    max_subdivisions: int = Field(
+        default=GEODETIC_TIMING_MAX_SUBDIVISIONS, ge=1, le=GEODETIC_TIMING_MAX_SUBDIVISIONS, strict=True,
+    )
+    max_depth: int = Field(default=GEODETIC_TIMING_MAX_DEPTH, ge=1, le=GEODETIC_TIMING_MAX_DEPTH, strict=True)
+    maximum_light_time_days: float = Field(default=1.0, gt=0.0, le=2.0)
+    coverage_policy: Literal["require_full", "allow_partial"] = "require_full"
+
+    @field_validator("step_days", "maximum_light_time_days")
+    @classmethod
+    def _finite_policy(cls, value: float) -> float:
+        return _finite(value, "timing policy values")
+
+
+class GeodeticChartBackedTransitsRequest(_StrictModel):
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
+    geo_longitude: float = Field(ge=-180.0, le=180.0)
+    reference_dt: datetime
+    mover: str = Field(min_length=1, max_length=64)
+    start_dt: datetime
+    end_dt: datetime
+    aspects: list[GeodeticTimingAspectModel] = Field(min_length=1, max_length=GEODETIC_TIMING_MAX_ASPECTS)
+    angles: list[GeodeticAngleName] = Field(default_factory=lambda: list(GEODETIC_ANGLES))
+    zodiac: ZodiacName = "tropical"
+    ayanamsa_system: str | None = Field(default=None, min_length=1)
+    policy: GeodeticTimingPolicyModel = Field(default_factory=GeodeticTimingPolicyModel)
+
+    @field_validator("geo_latitude", "geo_longitude")
+    @classmethod
+    def _finite_place(cls, value: float) -> float:
+        return _finite(value, "geographic coordinates")
+
+    @field_validator("reference_dt", "start_dt", "end_dt")
+    @classmethod
+    def _aware_datetimes(cls, value: datetime, info) -> datetime:
+        return _aware(value, info.field_name)
+
+    @field_validator("mover")
+    @classmethod
+    def _trimmed_mover(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("mover must be a trimmed name")
+        return value
+
+    @field_validator("aspects")
+    @classmethod
+    def _unique_aspects(cls, value: list[GeodeticTimingAspectModel]) -> list[GeodeticTimingAspectModel]:
+        angles = [aspect.angle_deg for aspect in value]
+        if len(set(angles)) != len(angles):
+            raise ValueError("aspect angles must be unique")
+        return value
+
+    @field_validator("angles")
+    @classmethod
+    def _angles(cls, value: list[str]) -> list[str]:
+        return _unique_angles(value)
+
+    @model_validator(mode="after")
+    def _span_and_lane(self):
+        span = (self.end_dt - self.start_dt).total_seconds() / 86400.0
+        if span <= 0:
+            raise ValueError("end_dt must be after start_dt")
+        if span > GEODETIC_TIMING_MAX_SPAN_DAYS:
+            raise ValueError(f"timing span may be at most {GEODETIC_TIMING_MAX_SPAN_DAYS} days")
+        _chart_zodiac_policy(self.zodiac, self.ayanamsa_system)
+        return self
+
+
+class GeodeticEpochResponse(_StrictModel):
+    """A JD UT1 epoch (authoritative) with its UTC rendering."""
+
+    jd_ut1: float
+    datetime_utc: str
+
+
+class GeodeticIntervalResponse(_StrictModel):
+    start: GeodeticEpochResponse
+    end: GeodeticEpochResponse
+
+
+class GeodeticTimingReferenceResponse(_StrictModel):
+    chart: GeodeticChartResponse
+    selected_targets: list[GeodeticNamedLongitudeResponse]
+    tropical_targets: list[GeodeticNamedLongitudeResponse]
+    reference_jd_ut1: float
+    reference_jd_tt: float | None
+    angles: list[GeodeticAngleName]
+    target_policy: str
+    source_frame: str
+
+
+class GeodeticTimingResourceResponse(_StrictModel):
+    center: int
+    target: int
+    source_label: str
+    source_sha256: str
+    catalog_id: str | None
+    catalog_version: str | None
+    manifest_sha256: str | None
+    intervals_tdb: list[list[float]]
+    segment_boundaries_tdb: list[float]
+
+
+class GeodeticTransitPassResponse(_StrictModel):
+    body_id: str
+    target: GeodeticAngleName
+    aspect_angle_deg: float
+    directed_angle_deg: float
+    epoch: GeodeticEpochResponse
+    motion: str
+    residual_deg: float
+    window_index: int | None
+
+
+class GeodeticOrbWindowResponse(_StrictModel):
+    body_id: str
+    target: GeodeticAngleName
+    aspect_angle_deg: float
+    orb_deg: float
+    covered: GeodeticIntervalResponse
+    entry: GeodeticEpochResponse | None
+    exit: GeodeticEpochResponse | None
+    entry_status: str
+    exit_status: str
+    pass_indices: list[int]
+
+
+class GeodeticEphemerisClockResponse(_StrictModel):
+    jd_ut1: float
+    epoch_tt: float
+    epoch_tdb: float
+    delta_t_seconds: float
+    delta_t_correction_seconds: float
+    tdb_minus_tt_seconds: float
+    ephemeris_summary_label: str | None
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    delta_t_source_product: str | None
+
+
+class GeodeticTransitsResponse(_StrictModel):
+    reference: GeodeticTimingReferenceResponse
+    requested_mover: str
+    body_id: str
+    identity: GeodeticSmallBodyIdentityResponse | None
+    policy: GeodeticTimingPolicyModel
+    aspects: list[GeodeticTimingAspectModel]
+    requested_interval: GeodeticIntervalResponse
+    covered_intervals: list[GeodeticIntervalResponse]
+    gaps: list[GeodeticIntervalResponse]
+    scanned_intervals: list[GeodeticIntervalResponse]
+    resources: list[GeodeticTimingResourceResponse]
+    events: list[GeodeticTransitPassResponse]
+    windows: list[GeodeticOrbWindowResponse]
+    evaluations: int
+    subdivisions: int
+    complete: bool
+    status: str
+    reasons: list[str]
+    ephemeris_clock: GeodeticEphemerisClockResponse
+    timescale: str
+    longitude_frame: str
+    correction_regime: str
+    completeness: str
+    resource_semantics: str
+
 __all__ = [
+    "GEODETIC_TIMING_MAX_ASPECTS",
+    "GEODETIC_TIMING_MAX_DEPTH",
+    "GEODETIC_TIMING_MAX_EVALUATIONS",
+    "GEODETIC_TIMING_MAX_SPAN_DAYS",
+    "GEODETIC_TIMING_MAX_SUBDIVISIONS",
+    "GeodeticChartBackedTransitsRequest",
+    "GeodeticEphemerisClockResponse",
+    "GeodeticEpochResponse",
+    "GeodeticIntervalResponse",
+    "GeodeticOrbWindowResponse",
+    "GeodeticTimingAspectModel",
+    "GeodeticTimingPolicyModel",
+    "GeodeticTimingReferenceResponse",
+    "GeodeticTimingResourceResponse",
+    "GeodeticTransitPassResponse",
+    "GeodeticTransitsResponse",
     "GEODETIC_ANGLES",
     "GEODETIC_LOCI_MAX_EVALUATIONS",
     "GEODETIC_MAX_COMPARE_PLACES",

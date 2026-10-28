@@ -28,6 +28,7 @@ from moira.geodetic_analysis import (
 )
 from moira.geodetic_curves import GeodeticCurvePolicy, GeodeticLociResult, geodetic_angular_loci
 from moira.geodetic_inputs import GeodeticBodySnapshot, geodetic_snapshot_from_positions
+from moira.geodetic_timing import GeodeticTimingPolicy, GeodeticTimingResult
 from moira.geodetic_uncertainty import (
     GeodeticDiagnosticPolicy,
     GeodeticNonlinearityResult,
@@ -51,6 +52,7 @@ from ..models.geodetic import (
     GeodeticChartBackedHousesRequest,
     GeodeticChartBackedLociRequest,
     GeodeticChartBackedOverlayRequest,
+    GeodeticChartBackedTransitsRequest,
     GeodeticCurvePolicyModel,
     GeodeticDirectCompareRequest,
     GeodeticDirectHousesRequest,
@@ -592,11 +594,38 @@ def compute_geodetic_direct_loci(request: GeodeticDirectLociRequest) -> Geodetic
     )
 
 
+# -- P10-03c timing: docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md
+
+
+def compute_geodetic_chart_transits(engine: Moira, request: GeodeticChartBackedTransitsRequest) -> GeodeticTimingResult:
+    policy = request.policy
+    return engine.geodetic_transits(
+        GeodeticLocation(request.geo_latitude, request.geo_longitude),
+        request.reference_dt,
+        request.mover,
+        request.start_dt,
+        request.end_dt,
+        aspects=tuple((aspect.angle_deg, aspect.orb_deg) for aspect in request.aspects),
+        policy=GeodeticTimingPolicy(
+            step_days=policy.step_days,
+            max_evaluations=policy.max_evaluations,
+            max_subdivisions=policy.max_subdivisions,
+            max_depth=policy.max_depth,
+            maximum_light_time_days=policy.maximum_light_time_days,
+            coverage_policy=policy.coverage_policy,
+        ),
+        angles=tuple(request.angles),
+        zodiac=request.zodiac,
+        ayanamsa_system=request.ayanamsa_system,
+    )
+
+
 __all__ = [
     "GeodeticChartResult",
     "GeodeticEquivalentsResult",
     "GeodeticHousesResult",
     "compute_geodetic_chart_compare",
+    "compute_geodetic_chart_transits",
     "compute_geodetic_chart_houses",
     "compute_geodetic_chart_loci",
     "compute_geodetic_chart_overlay",
