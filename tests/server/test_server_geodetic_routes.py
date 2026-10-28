@@ -201,6 +201,14 @@ def test_geodetic_routes_are_registered(client_with_engine: TestClient) -> None:
         "/v1/geodetic/geometry",
         "/v1/geodetic/sensitivity",
         "/v1/geodetic/uncertainty",
+        # P10-03b (docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md)
+        "/v1/geodetic/chart/houses",
+        "/v1/geodetic/chart/overlay",
+        "/v1/geodetic/chart/compare",
+        "/v1/geodetic/chart/loci",
+        "/v1/geodetic/overlay",
+        "/v1/geodetic/compare",
+        "/v1/geodetic/loci",
     }
 
 

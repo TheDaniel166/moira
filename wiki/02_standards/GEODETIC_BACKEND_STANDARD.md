@@ -329,5 +329,23 @@ The direct lane law, the polar admission limit (except geometry) and the Earth
 obliquity envelope are shared with `/location-chart`. Route output equals the
 owning call exactly (`tests/server/test_server_geodetic_analysis_routes.py`).
 
-Do not admit rendered map, projection, geographic search, relocation synthesis,
-or primitive-helper-only routes as part of first P10-03 transport.
+A third step, P10-03b (`docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md`),
+admits seven analysis routes:
+- chart-backed: `/chart/houses`, `/chart/overlay`, `/chart/compare` and `/chart/loci`;
+- direct (supplied tropical longitudes in a declared frame): `/overlay`, `/compare` and `/loci`.
+
+That record carries the bounds:
+- at most 12 bodies;
+- 1 to 24 places, with unique IDs;
+- a loci latitude step of 0.5° to 10° and at most 20,000 evaluations.
+
+Failure policy:
+- compare isolates each failing place by default;
+- body failures are collected only on request, and are then visible.
+
+Parity is tested in `tests/server/test_server_geodetic_analysis_products_routes.py`.
+
+The admitted products are analytic. These remain unadmitted: rendered maps,
+projections, GeoJSON or grid variants, geographic search and place scoring,
+relocated natal chart synthesis, and primitive MC-only or ASC-only routes.
+Timing is deferred to its own record (P10-03c).

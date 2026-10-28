@@ -329,11 +329,14 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         sun_longitude: float | None = None,
         error_policy: str = "raise",
         order_by: str = "input",
+        place_error_policy: str | None = None,
     ):
         """Compare one natal snapshot across named places.
 
         ``locations`` are ``moira.geodetic_analysis.GeodeticNamedLocation``.
         ``order_by="minimum_contact_orb"`` is geometric ordering, not a score.
+        ``error_policy`` governs natal bodies; ``place_error_policy`` governs
+        each place and defaults to ``error_policy``.
         """
         from .geodetic_analysis import compare_geodetic_locations
         from .obliquity import true_obliquity
@@ -347,7 +350,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
             aspect_policy=aspect_policy,
             house_policy=house_policy,
             sun_longitude=sun_longitude,
-            error_policy=error_policy,
+            error_policy=error_policy if place_error_policy is None else place_error_policy,
             order_by=order_by,
         )
 

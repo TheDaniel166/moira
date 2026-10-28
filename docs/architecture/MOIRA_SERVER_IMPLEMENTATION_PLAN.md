@@ -71,7 +71,9 @@ Current implementation state:
   Geodetic direct/chart-backed location-chart and equivalent routes, Galactic
   coordinate transform/reference/chart-position routes, Galactic Houses cusp
   and placement routes, and canonical Gauquelin direct/chart-backed sector
-  routes
+  routes; Geodetic analysis (kernel-free houses, geometry, sensitivity and
+  uncertainty, plus P10-03b houses, overlay, compare and loci) followed on
+  2026-10-28
 - website-driven acceleration has also admitted a bounded Phase 11 subset:
   fixed-star, variable-star, multiple-star, asteroid, and comet routes
 - website support routes are live for location lookup, timezone validation,

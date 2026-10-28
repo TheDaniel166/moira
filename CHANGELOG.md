@@ -29,6 +29,23 @@ publication, or production pin is implied by these entries.
   - `/houses` defaults to the Geodetic strict house policy.
   - `/geometry` admits latitudes up to ±90 so `polar_refusal` is reportable.
   - `/uncertainty` caps sampling at 4096 evaluations.
+- **Geodetic Analysis REST (P10-03b)**:
+  - New routes under `/v1/geodetic`: `chart/houses`, plus chart-backed and
+    direct forms of `overlay`, `compare` and `loci`.
+  - Chart-backed routes read natal positions through the server engine. Direct
+    routes take supplied tropical longitudes in a declared frame and never touch
+    the engine.
+  - Bounds: at most 12 bodies, 1 to 24 uniquely identified places, and loci
+    steps of 0.5° to 10° with at most 20,000 evaluations.
+  - Compare isolates each failing place by default. Body failures are collected
+    only on request, and are then serialized.
+  - Every response carries snapshot provenance, including the ayanamsa system
+    and offset.
+  - Loci are analytic polylines with residual witnesses and exclusions, not
+    rendered maps.
+  - Design record: `docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md`.
+  - `Moira.geodetic_compare` gains `place_error_policy`, which defaults to
+    `error_policy`.
 - **Geodetic Analysis Expansion**: added explicit immutable body snapshots,
   full house figures, static overlays, segmented inverse angle loci, supplied-
   place comparisons, and fixed-reference transit timing in their owning

@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 550
-- Registered OpenAPI operations: 550 (GET 51, POST 499)
+- Registered OpenAPI paths: 557
+- Registered OpenAPI operations: 557 (GET 51, POST 506)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 546
+- Versioned `/v1` paths: 553
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3659,12 +3659,19 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/gauquelin/chart/sectors` | gauquelin | `gauquelin_chart_sectors_route_v1_gauquelin_chart_sectors_post` |
 | `POST` | `/v1/gauquelin/sector` | gauquelin | `gauquelin_sector_route_v1_gauquelin_sector_post` |
 | `POST` | `/v1/gauquelin/sectors` | gauquelin | `gauquelin_sectors_route_v1_gauquelin_sectors_post` |
+| `POST` | `/v1/geodetic/chart/compare` | geodetic | `geodetic_chart_compare_route_v1_geodetic_chart_compare_post` |
 | `POST` | `/v1/geodetic/chart/equivalents` | geodetic | `geodetic_chart_equivalents_route_v1_geodetic_chart_equivalents_post` |
+| `POST` | `/v1/geodetic/chart/houses` | geodetic | `geodetic_chart_houses_route_v1_geodetic_chart_houses_post` |
 | `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
+| `POST` | `/v1/geodetic/chart/loci` | geodetic | `geodetic_chart_loci_route_v1_geodetic_chart_loci_post` |
+| `POST` | `/v1/geodetic/chart/overlay` | geodetic | `geodetic_chart_overlay_route_v1_geodetic_chart_overlay_post` |
+| `POST` | `/v1/geodetic/compare` | geodetic | `geodetic_compare_route_v1_geodetic_compare_post` |
 | `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
 | `POST` | `/v1/geodetic/geometry` | geodetic | `geodetic_geometry_route_v1_geodetic_geometry_post` |
 | `POST` | `/v1/geodetic/houses` | geodetic | `geodetic_houses_route_v1_geodetic_houses_post` |
 | `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
+| `POST` | `/v1/geodetic/loci` | geodetic | `geodetic_loci_route_v1_geodetic_loci_post` |
+| `POST` | `/v1/geodetic/overlay` | geodetic | `geodetic_overlay_route_v1_geodetic_overlay_post` |
 | `POST` | `/v1/geodetic/sensitivity` | geodetic | `geodetic_sensitivity_route_v1_geodetic_sensitivity_post` |
 | `POST` | `/v1/geodetic/uncertainty` | geodetic | `geodetic_uncertainty_route_v1_geodetic_uncertainty_post` |
 | `GET` | `/v1/gochara/doctrine-options` | gochara | `doctrine_route_v1_gochara_doctrine_options_get` |

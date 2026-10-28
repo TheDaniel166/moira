@@ -10,10 +10,41 @@ from moira.geodetic import (
     GeodeticSensitivityResult,
 )
 from moira.geodetic_uncertainty import GeodeticNonlinearityResult
+from moira.aspects import AspectPolicy
+from moira.geodetic_analysis import (
+    GeodeticHouseChart,
+    GeodeticLocationComparison,
+    GeodeticLocationDifference,
+    GeodeticNatalOverlay,
+)
+from moira.geodetic_curves import GeodeticLociResult
+from moira.geodetic_inputs import GeodeticBodySnapshot
 
 from ..models.geodetic import (
     GeodeticAngleDerivativesResponse,
     GeodeticAngleTargetsResponse,
+    GeodeticAspectPolicyModel,
+    GeodeticBodyFailureResponse,
+    GeodeticBodyPositionResponse,
+    GeodeticChartBackedHousesResponse,
+    GeodeticCompareResponse,
+    GeodeticContactKeyResponse,
+    GeodeticCurveExclusionResponse,
+    GeodeticCurvePolicyModel,
+    GeodeticCurveVertexResponse,
+    GeodeticHouseChangeResponse,
+    GeodeticHouseFigureResponse,
+    GeodeticLociResponse,
+    GeodeticLocusResponse,
+    GeodeticNamedLongitudeResponse,
+    GeodeticOverlayBodyResponse,
+    GeodeticOverlayResponse,
+    GeodeticPlaceDifferenceResponse,
+    GeodeticPlaceModel,
+    GeodeticPlaceResultResponse,
+    GeodeticPlacementResponse,
+    GeodeticSmallBodyIdentityResponse,
+    GeodeticSnapshotResponse,
     GeodeticChartEnvelopeResponse,
     GeodeticChartResponse,
     GeodeticCircularArcResponse,
@@ -34,6 +65,7 @@ from ..services.geodetic import (
     GeodeticProvenance,
 )
 from .chart import serialize_houses
+from .relationship import serialize_aspect
 
 
 def serialize_geodetic_chart(chart: GeodeticChart) -> GeodeticChartResponse:
@@ -186,7 +218,210 @@ def serialize_geodetic_uncertainty(result: GeodeticNonlinearityResult) -> Geodet
     )
 
 
+# -- P10-03b analysis products ------------------------------------------------
+
+
+def serialize_geodetic_snapshot(snapshot: GeodeticBodySnapshot) -> GeodeticSnapshotResponse:
+    return GeodeticSnapshotResponse(
+        positions=[
+            GeodeticBodyPositionResponse(
+                body_id=p.body_id,
+                requested_name=p.requested_name,
+                display_name=p.display_name,
+                tropical_longitude_deg=p.tropical_longitude_deg,
+                selected_longitude_deg=p.selected_longitude_deg,
+                identity=(
+                    None if p.identity is None
+                    else GeodeticSmallBodyIdentityResponse(
+                        family=p.identity.family,
+                        canonical_name=p.identity.canonical_name,
+                        naif_id=p.identity.naif_id,
+                        matched_name=p.identity.matched_name,
+                        is_alias=p.identity.is_alias,
+                    )
+                ),
+                ecliptic_latitude_deg=p.ecliptic_latitude_deg,
+                speed_deg_per_day=p.speed_deg_per_day,
+            )
+            for p in snapshot.positions
+        ],
+        failures=[
+            GeodeticBodyFailureResponse(
+                requested_name=f.requested_name,
+                body_id=f.body_id,
+                failure_type=f.failure_type,
+                reason=f.reason,
+            )
+            for f in snapshot.failures
+        ],
+        source_kind=snapshot.source_kind,
+        source_frame=snapshot.source_frame,
+        correction_regime=snapshot.correction_regime,
+        zodiac=snapshot.zodiac,
+        ayanamsa_deg=snapshot.ayanamsa_deg,
+        ayanamsa_system=snapshot.ayanamsa_system,
+        jd_ut1=snapshot.jd_ut1,
+        jd_tt=snapshot.jd_tt,
+        resource_receipt_status=snapshot.resource_receipt_status,
+        complete=snapshot.complete,
+    )
+
+
+def serialize_geodetic_house_figure(figure: GeodeticHouseChart) -> GeodeticHouseFigureResponse:
+    return GeodeticHouseFigureResponse(
+        chart=serialize_geodetic_chart(figure.angles),
+        targets=GeodeticAngleTargetsResponse(**figure.targets),
+        houses=serialize_houses(figure.houses),
+        source_frame=figure.source_frame,
+        jd_ut1=figure.jd_ut1,
+        jd_tt=figure.jd_tt,
+        ayanamsa_system=figure.ayanamsa_system,
+    )
+
+
+def serialize_geodetic_chart_houses(figure: GeodeticHouseChart) -> GeodeticChartBackedHousesResponse:
+    return GeodeticChartBackedHousesResponse(figure=serialize_geodetic_house_figure(figure))
+
+
+def _serialize_aspect_policy(policy: AspectPolicy) -> GeodeticAspectPolicyModel:
+    return GeodeticAspectPolicyModel(
+        tier=policy.tier,
+        orb_factor=policy.orb_factor,
+        optional_sets=list(policy.optional_sets),
+    )
+
+
+def serialize_geodetic_overlay_body(overlay: GeodeticNatalOverlay) -> GeodeticOverlayBodyResponse:
+    return GeodeticOverlayBodyResponse(
+        figure=serialize_geodetic_house_figure(overlay.house_chart),
+        placements=[
+            GeodeticPlacementResponse(
+                body_id=placement.body_id,
+                house=placement.placement.house,
+                longitude=placement.placement.longitude,
+                exact_on_cusp=placement.placement.exact_on_cusp,
+                cusp_longitude=placement.placement.cusp_longitude,
+            )
+            for placement in overlay.placements
+        ],
+        contacts=[serialize_aspect(contact) for contact in overlay.contacts],
+        aspect_policy=_serialize_aspect_policy(overlay.aspect_policy),
+        target_longitudes=[
+            GeodeticNamedLongitudeResponse(name=name, longitude=longitude)
+            for name, longitude in overlay.target_longitudes
+        ],
+        coincident_targets=[list(pair) for pair in overlay.coincident_targets],
+        placement_semantics=overlay.placement_semantics,
+        complete=overlay.complete,
+    )
+
+
+def serialize_geodetic_overlay(overlay: GeodeticNatalOverlay) -> GeodeticOverlayResponse:
+    return GeodeticOverlayResponse(
+        snapshot=serialize_geodetic_snapshot(overlay.snapshot),
+        overlay=serialize_geodetic_overlay_body(overlay),
+    )
+
+
+def _serialize_difference(difference: GeodeticLocationDifference) -> GeodeticPlaceDifferenceResponse:
+    return GeodeticPlaceDifferenceResponse(
+        baseline_id=difference.baseline_id,
+        angle_deltas_deg=[
+            GeodeticNamedLongitudeResponse(name=name, longitude=delta)
+            for name, delta in difference.angle_deltas_deg
+        ],
+        house_changes=[
+            GeodeticHouseChangeResponse(body_id=body, baseline_house=before, house=after)
+            for body, before, after in difference.house_changes
+        ],
+        added_contacts=[
+            GeodeticContactKeyResponse(body=body, target=target, aspect_angle_deg=angle)
+            for body, target, angle in difference.added_contacts
+        ],
+        removed_contacts=[
+            GeodeticContactKeyResponse(body=body, target=target, aspect_angle_deg=angle)
+            for body, target, angle in difference.removed_contacts
+        ],
+    )
+
+
+def serialize_geodetic_compare(comparison: GeodeticLocationComparison) -> GeodeticCompareResponse:
+    return GeodeticCompareResponse(
+        snapshot=serialize_geodetic_snapshot(comparison.snapshot),
+        results=[
+            GeodeticPlaceResultResponse(
+                place=GeodeticPlaceModel(
+                    location_id=result.place.location_id,
+                    geo_latitude=result.place.location.latitude_deg,
+                    geo_longitude=result.place.location.longitude_deg,
+                    display_name=result.place.display_name,
+                ),
+                overlay=None if result.overlay is None else serialize_geodetic_overlay_body(result.overlay),
+                difference=None if result.difference is None else _serialize_difference(result.difference),
+                failure_type=result.failure_type,
+                reason=result.reason,
+            )
+            for result in comparison.results
+        ],
+        order_by=comparison.order_by,
+        baseline_id=comparison.baseline_id,
+        complete=comparison.complete,
+    )
+
+
+def serialize_geodetic_loci(result: GeodeticLociResult) -> GeodeticLociResponse:
+    return GeodeticLociResponse(
+        snapshot=serialize_geodetic_snapshot(result.snapshot),
+        obliquity_deg=result.obliquity_deg,
+        curve_policy=GeodeticCurvePolicyModel(
+            latitude_step_deg=result.policy.latitude_step_deg,
+            max_evaluations=result.policy.max_evaluations,
+            round_trip_tolerance_deg=result.policy.round_trip_tolerance_deg,
+        ),
+        loci=[
+            GeodeticLocusResponse(
+                body_id=locus.body_id,
+                angle=locus.angle,
+                tropical_target_deg=locus.tropical_target_deg,
+                selected_target_deg=locus.selected_target_deg,
+                right_ascension_deg=locus.right_ascension_deg,
+                declination_deg=locus.declination_deg,
+                segments=[
+                    [
+                        GeodeticCurveVertexResponse(
+                            latitude_deg=v.latitude_deg,
+                            longitude_deg=v.longitude_deg,
+                            residual_deg=v.residual_deg,
+                            rising_rate=v.rising_rate,
+                            boundary=v.boundary,
+                        )
+                        for v in segment
+                    ]
+                    for segment in locus.segments
+                ],
+                exclusions=[
+                    GeodeticCurveExclusionResponse(latitude_deg=e.latitude_deg, reason=e.reason)
+                    for e in locus.exclusions
+                ],
+                analytic_definition=locus.analytic_definition,
+                complete=locus.complete,
+            )
+            for locus in result.loci
+        ],
+        evaluations=result.evaluations,
+        complete=result.complete,
+        semantics=result.semantics,
+        interpolation=result.interpolation,
+    )
+
 __all__ = [
+    "serialize_geodetic_chart_houses",
+    "serialize_geodetic_compare",
+    "serialize_geodetic_house_figure",
+    "serialize_geodetic_loci",
+    "serialize_geodetic_overlay",
+    "serialize_geodetic_overlay_body",
+    "serialize_geodetic_snapshot",
     "serialize_geodetic_chart",
     "serialize_geodetic_chart_result",
     "serialize_geodetic_equivalent",

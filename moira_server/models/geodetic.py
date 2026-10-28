@@ -16,6 +16,7 @@ from moira.geodetic import (
 
 from .chart import HousePolicyRequest, HousesResponse
 from .common import _StrictModel
+from .relationship import AspectDataResponse, _OptionalAspectSetsRequest
 
 
 GEODETIC_MAX_BODIES = 12
@@ -348,7 +349,426 @@ class GeodeticUncertaintyResponse(_StrictModel):
     sampling_scheme: str
 
 
+# -- P10-03b analysis products: overlay, comparison, loci, chart houses -------
+# docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md
+
+GEODETIC_MAX_COMPARE_PLACES = 24
+GEODETIC_LOCI_MAX_EVALUATIONS = 20000
+GEODETIC_ANGLES = ("MC", "IC", "ASC", "DSC")
+GeodeticAngleName = Literal["MC", "IC", "ASC", "DSC"]
+ErrorPolicyName = Literal["raise", "collect"]
+
+
+def _unique_angles(value: list[str]) -> list[str]:
+    if not value:
+        raise ValueError("angles must be non-empty")
+    if len(set(value)) != len(value):
+        raise ValueError("angles must be unique")
+    return value
+
+
+def _validate_bodies(value: list[str] | None) -> list[str] | None:
+    if value is None:
+        return value
+    if not value:
+        raise ValueError("bodies must be non-empty when supplied")
+    if len(value) > GEODETIC_MAX_BODIES:
+        raise ValueError(f"bodies may contain at most {GEODETIC_MAX_BODIES} entries")
+    if any(not body or body != body.strip() for body in value):
+        raise ValueError("bodies must be non-empty trimmed names")
+    return value
+
+
+def _chart_zodiac_policy(zodiac: str, ayanamsa_system: str | None) -> None:
+    if zodiac == "sidereal" and ayanamsa_system is None:
+        raise ValueError("sidereal zodiac requires ayanamsa_system")
+    if zodiac == "tropical" and ayanamsa_system is not None:
+        raise ValueError("tropical zodiac must not carry ayanamsa_system")
+
+
+class GeodeticAspectPolicyModel(_OptionalAspectSetsRequest):
+    """Same shape and law as AspectsFromLongitudesRequest's policy fields."""
+
+    tier: Literal[0, 1, 2] = 1
+    orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
+
+
+class _GeodeticHouseFigureFields(_StrictModel):
+    system: str = Field(min_length=1)
+    # Absent means HousePolicy.strict(), the Geodetic owner's default.
+    house_policy: HousePolicyRequest | None = None
+    sun_longitude: float | None = None
+
+    @field_validator("sun_longitude")
+    @classmethod
+    def _finite_sun(cls, value: float | None) -> float | None:
+        return _finite(value, "sun_longitude")
+
+
+class GeodeticPlaceModel(_StrictModel):
+    location_id: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_.:-]+$")
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
+    geo_longitude: float = Field(ge=-180.0, le=180.0)
+    display_name: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @field_validator("geo_latitude", "geo_longitude")
+    @classmethod
+    def _finite_coordinates(cls, value: float) -> float:
+        return _finite(value, "geographic coordinates")
+
+
+class GeodeticCurvePolicyModel(_StrictModel):
+    latitude_step_deg: float = Field(default=2.0, ge=0.5, le=10.0)
+    max_evaluations: int = Field(
+        default=GEODETIC_LOCI_MAX_EVALUATIONS, ge=1, le=GEODETIC_LOCI_MAX_EVALUATIONS, strict=True,
+    )
+    round_trip_tolerance_deg: float = Field(default=1e-7, gt=0.0, le=1e-3)
+
+
+class _GeodeticDirectPositionsFields(_GeodeticZodiacPolicyRequest):
+    """Caller-supplied TROPICAL longitudes in a declared frame; no ephemeris."""
+
+    longitudes: dict[str, float]
+    source_frame: str = Field(min_length=1, max_length=128)
+    correction_regime: str = Field(default="caller_declared_unspecified", min_length=1, max_length=128)
+    obliquity: float
+    jd_ut1: float | None = None
+    jd_tt: float | None = None
+
+    @field_validator("longitudes")
+    @classmethod
+    def _bounded_longitudes(cls, value: dict[str, float]) -> dict[str, float]:
+        _validate_longitude_map(value)
+        return value
+
+    @field_validator("obliquity")
+    @classmethod
+    def _earth_obliquity_envelope(cls, value: float) -> float:
+        if not math.isfinite(value) or not _EARTH_OBLIQUITY_MIN_DEG <= value <= _EARTH_OBLIQUITY_MAX_DEG:
+            raise ValueError("Earth obliquity must be finite and in [22, 25] degrees")
+        return value
+
+    @field_validator("jd_ut1", "jd_tt")
+    @classmethod
+    def _finite_epochs(cls, value: float | None) -> float | None:
+        return _finite(value, "epochs")
+
+
+class _GeodeticNatalFields(_StrictModel):
+    """Chart-backed natal positions: engine reader at an aware datetime."""
+
+    dt: datetime
+    bodies: list[str] | None = None
+    zodiac: ZodiacName = "tropical"
+    ayanamsa_system: str | None = Field(default=None, min_length=1)
+    body_error_policy: ErrorPolicyName = "raise"
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value
+
+    @field_validator("bodies")
+    @classmethod
+    def _bounded_bodies(cls, value: list[str] | None) -> list[str] | None:
+        return _validate_bodies(value)
+
+    @model_validator(mode="after")
+    def _natal_zodiac_policy(self):
+        _chart_zodiac_policy(self.zodiac, self.ayanamsa_system)
+        return self
+
+
+class _GeodeticOverlayFields(_GeodeticHouseFigureFields):
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
+    geo_longitude: float = Field(ge=-180.0, le=180.0)
+    aspect_policy: GeodeticAspectPolicyModel
+    angles: list[GeodeticAngleName] = Field(default_factory=lambda: list(GEODETIC_ANGLES))
+    include_cusps: bool = False
+
+    @field_validator("geo_latitude", "geo_longitude")
+    @classmethod
+    def _finite_place(cls, value: float) -> float:
+        return _finite(value, "geographic coordinates")
+
+    @field_validator("angles")
+    @classmethod
+    def _angles(cls, value: list[str]) -> list[str]:
+        return _unique_angles(value)
+
+
+class _GeodeticCompareFields(_GeodeticHouseFigureFields):
+    places: list[GeodeticPlaceModel] = Field(min_length=1, max_length=GEODETIC_MAX_COMPARE_PLACES)
+    aspect_policy: GeodeticAspectPolicyModel
+    order_by: Literal["input", "minimum_contact_orb"] = "input"
+    # Batch isolation (route admission checklist 4.2): one failing place never
+    # masks the others unless the caller asks for raise.
+    place_error_policy: ErrorPolicyName = "collect"
+
+    @field_validator("places")
+    @classmethod
+    def _unique_places(cls, value: list[GeodeticPlaceModel]) -> list[GeodeticPlaceModel]:
+        ids = [place.location_id for place in value]
+        if len(set(ids)) != len(ids):
+            raise ValueError("location_id values must be unique")
+        return value
+
+
+class _GeodeticLociFields(_StrictModel):
+    angles: list[GeodeticAngleName] = Field(default_factory=lambda: list(GEODETIC_ANGLES))
+    curve_policy: GeodeticCurvePolicyModel = Field(default_factory=GeodeticCurvePolicyModel)
+
+    @field_validator("angles")
+    @classmethod
+    def _angles(cls, value: list[str]) -> list[str]:
+        return _unique_angles(value)
+
+
+class GeodeticChartBackedHousesRequest(_GeodeticHouseFigureFields):
+    dt: datetime
+    geo_latitude: float = Field(gt=-_POLAR_LIMIT_DEG, lt=_POLAR_LIMIT_DEG)
+    geo_longitude: float = Field(ge=-180.0, le=180.0)
+    zodiac: ZodiacName = "tropical"
+    ayanamsa_system: str | None = Field(default=None, min_length=1)
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value
+
+    @field_validator("geo_latitude", "geo_longitude")
+    @classmethod
+    def _finite_place(cls, value: float) -> float:
+        return _finite(value, "geographic coordinates")
+
+    @model_validator(mode="after")
+    def _houses_zodiac_policy(self):
+        _chart_zodiac_policy(self.zodiac, self.ayanamsa_system)
+        return self
+
+
+class GeodeticChartBackedOverlayRequest(_GeodeticNatalFields, _GeodeticOverlayFields):
+    pass
+
+
+class GeodeticDirectOverlayRequest(_GeodeticDirectPositionsFields, _GeodeticOverlayFields):
+    pass
+
+
+class GeodeticChartBackedCompareRequest(_GeodeticNatalFields, _GeodeticCompareFields):
+    pass
+
+
+class GeodeticDirectCompareRequest(_GeodeticDirectPositionsFields, _GeodeticCompareFields):
+    pass
+
+
+class GeodeticChartBackedLociRequest(_GeodeticNatalFields, _GeodeticLociFields):
+    pass
+
+
+class GeodeticDirectLociRequest(_GeodeticDirectPositionsFields, _GeodeticLociFields):
+    pass
+
+
+# Responses
+
+
+class GeodeticSmallBodyIdentityResponse(_StrictModel):
+    family: str
+    canonical_name: str
+    naif_id: int
+    matched_name: str
+    is_alias: bool
+
+
+class GeodeticBodyPositionResponse(_StrictModel):
+    body_id: str
+    requested_name: str
+    display_name: str
+    tropical_longitude_deg: float
+    selected_longitude_deg: float
+    identity: GeodeticSmallBodyIdentityResponse | None
+    ecliptic_latitude_deg: float | None
+    speed_deg_per_day: float | None
+
+
+class GeodeticBodyFailureResponse(_StrictModel):
+    requested_name: str
+    body_id: str
+    failure_type: str
+    reason: str
+
+
+class GeodeticSnapshotResponse(_StrictModel):
+    positions: list[GeodeticBodyPositionResponse]
+    failures: list[GeodeticBodyFailureResponse]
+    source_kind: str
+    source_frame: str
+    correction_regime: str
+    zodiac: ZodiacName
+    ayanamsa_deg: float
+    ayanamsa_system: str | None
+    jd_ut1: float | None
+    jd_tt: float | None
+    resource_receipt_status: str
+    complete: bool
+
+
+class GeodeticHouseFigureResponse(_StrictModel):
+    chart: GeodeticChartResponse
+    targets: GeodeticAngleTargetsResponse
+    houses: HousesResponse
+    source_frame: str
+    jd_ut1: float | None
+    jd_tt: float | None
+    ayanamsa_system: str | None
+
+
+class GeodeticChartBackedHousesResponse(_StrictModel):
+    figure: GeodeticHouseFigureResponse
+
+
+class GeodeticPlacementResponse(_StrictModel):
+    body_id: str
+    house: int
+    longitude: float
+    exact_on_cusp: bool
+    cusp_longitude: float
+
+
+class GeodeticNamedLongitudeResponse(_StrictModel):
+    name: str
+    longitude: float
+
+
+class GeodeticOverlayBodyResponse(_StrictModel):
+    """Overlay without its snapshot (compare shares one snapshot)."""
+
+    figure: GeodeticHouseFigureResponse
+    placements: list[GeodeticPlacementResponse]
+    contacts: list[AspectDataResponse]
+    aspect_policy: GeodeticAspectPolicyModel
+    target_longitudes: list[GeodeticNamedLongitudeResponse]
+    coincident_targets: list[list[str]]
+    placement_semantics: str
+    complete: bool
+
+
+class GeodeticOverlayResponse(_StrictModel):
+    snapshot: GeodeticSnapshotResponse
+    overlay: GeodeticOverlayBodyResponse
+
+
+class GeodeticHouseChangeResponse(_StrictModel):
+    body_id: str
+    baseline_house: int
+    house: int
+
+
+class GeodeticContactKeyResponse(_StrictModel):
+    body: str
+    target: str
+    aspect_angle_deg: float
+
+
+class GeodeticPlaceDifferenceResponse(_StrictModel):
+    baseline_id: str
+    angle_deltas_deg: list[GeodeticNamedLongitudeResponse]
+    house_changes: list[GeodeticHouseChangeResponse]
+    added_contacts: list[GeodeticContactKeyResponse]
+    removed_contacts: list[GeodeticContactKeyResponse]
+
+
+class GeodeticPlaceResultResponse(_StrictModel):
+    place: GeodeticPlaceModel
+    overlay: GeodeticOverlayBodyResponse | None
+    difference: GeodeticPlaceDifferenceResponse | None
+    failure_type: str | None
+    reason: str | None
+
+
+class GeodeticCompareResponse(_StrictModel):
+    snapshot: GeodeticSnapshotResponse
+    results: list[GeodeticPlaceResultResponse]
+    order_by: str
+    baseline_id: str | None
+    complete: bool
+
+
+class GeodeticCurveVertexResponse(_StrictModel):
+    latitude_deg: float
+    longitude_deg: float
+    residual_deg: float
+    rising_rate: float | None
+    boundary: str | None
+
+
+class GeodeticCurveExclusionResponse(_StrictModel):
+    latitude_deg: float
+    reason: str
+
+
+class GeodeticLocusResponse(_StrictModel):
+    body_id: str
+    angle: GeodeticAngleName
+    tropical_target_deg: float
+    selected_target_deg: float
+    right_ascension_deg: float
+    declination_deg: float
+    segments: list[list[GeodeticCurveVertexResponse]]
+    exclusions: list[GeodeticCurveExclusionResponse]
+    analytic_definition: str
+    complete: bool
+
+
+class GeodeticLociResponse(_StrictModel):
+    snapshot: GeodeticSnapshotResponse
+    obliquity_deg: float
+    curve_policy: GeodeticCurvePolicyModel
+    loci: list[GeodeticLocusResponse]
+    evaluations: int
+    complete: bool
+    semantics: str
+    interpolation: str
+
 __all__ = [
+    "GEODETIC_ANGLES",
+    "GEODETIC_LOCI_MAX_EVALUATIONS",
+    "GEODETIC_MAX_COMPARE_PLACES",
+    "GeodeticAspectPolicyModel",
+    "GeodeticBodyFailureResponse",
+    "GeodeticBodyPositionResponse",
+    "GeodeticChartBackedCompareRequest",
+    "GeodeticChartBackedHousesRequest",
+    "GeodeticChartBackedHousesResponse",
+    "GeodeticChartBackedLociRequest",
+    "GeodeticChartBackedOverlayRequest",
+    "GeodeticCompareResponse",
+    "GeodeticContactKeyResponse",
+    "GeodeticCurveExclusionResponse",
+    "GeodeticCurvePolicyModel",
+    "GeodeticCurveVertexResponse",
+    "GeodeticDirectCompareRequest",
+    "GeodeticDirectLociRequest",
+    "GeodeticDirectOverlayRequest",
+    "GeodeticHouseChangeResponse",
+    "GeodeticHouseFigureResponse",
+    "GeodeticLociResponse",
+    "GeodeticLocusResponse",
+    "GeodeticNamedLongitudeResponse",
+    "GeodeticOverlayBodyResponse",
+    "GeodeticOverlayResponse",
+    "GeodeticPlaceDifferenceResponse",
+    "GeodeticPlaceModel",
+    "GeodeticPlaceResultResponse",
+    "GeodeticPlacementResponse",
+    "GeodeticSmallBodyIdentityResponse",
+    "GeodeticSnapshotResponse",
     "GEODETIC_DIAGNOSTIC_MAX_EVALUATIONS",
     "GEODETIC_MAX_BODIES",
     "CoordinateSource",

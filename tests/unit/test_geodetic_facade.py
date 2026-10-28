@@ -115,6 +115,18 @@ def test_compare_matches_owner(moira_engine) -> None:
     assert [r.place.location_id for r in got.results] == ["ny", "ldn"]
 
 
+def test_compare_place_policy_is_separate_from_body_policy(moira_engine) -> None:
+    # A polar strict-house refusal is isolated per place without collecting
+    # body failures; omitting place_error_policy keeps error_policy for both.
+    places = [GeodeticNamedLocation("ny", NEW_YORK), GeodeticNamedLocation("north", GeodeticLocation(80.0, 10.0))]
+    got = moira_engine.geodetic_compare(NATAL, places, HouseSystem.PLACIDUS, aspect_policy=POLICY, bodies=BODIES,
+                                        place_error_policy="collect")
+    assert got.results[0].overlay is not None
+    assert got.results[1].overlay is None and got.results[1].reason
+    with pytest.raises(ValueError):
+        moira_engine.geodetic_compare(NATAL, places, HouseSystem.PLACIDUS, aspect_policy=POLICY, bodies=BODIES)
+
+
 def test_loci_match_owner(moira_engine) -> None:
     snapshot = _snapshot(moira_engine)
     expected = geodetic_angular_loci(snapshot, obliquity=true_obliquity(snapshot.jd_tt))

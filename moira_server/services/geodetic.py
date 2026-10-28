@@ -16,7 +16,18 @@ from moira.geodetic import (
     geodetic_equivalents,
     geodetic_geometry,
 )
-from moira.geodetic_analysis import GeodeticHouseChart, geodetic_house_chart
+from moira.aspects import AspectPolicy
+from moira.geodetic_analysis import (
+    GeodeticHouseChart,
+    GeodeticLocationComparison,
+    GeodeticNamedLocation,
+    GeodeticNatalOverlay,
+    compare_geodetic_locations,
+    geodetic_house_chart,
+    geodetic_natal_overlay,
+)
+from moira.geodetic_curves import GeodeticCurvePolicy, GeodeticLociResult, geodetic_angular_loci
+from moira.geodetic_inputs import GeodeticBodySnapshot, geodetic_snapshot_from_positions
 from moira.geodetic_uncertainty import (
     GeodeticDiagnosticPolicy,
     GeodeticNonlinearityResult,
@@ -35,8 +46,18 @@ from ..models.geodetic import (
     GeodeticChartBackedEquivalentsRequest,
     GeodeticDirectChartRequest,
     GeodeticDirectEquivalentsRequest,
+    GeodeticAspectPolicyModel,
+    GeodeticChartBackedCompareRequest,
+    GeodeticChartBackedHousesRequest,
+    GeodeticChartBackedLociRequest,
+    GeodeticChartBackedOverlayRequest,
+    GeodeticCurvePolicyModel,
+    GeodeticDirectCompareRequest,
     GeodeticDirectHousesRequest,
+    GeodeticDirectLociRequest,
+    GeodeticDirectOverlayRequest,
     GeodeticGeometryRequest,
+    GeodeticPlaceModel,
     GeodeticSensitivityRequest,
     GeodeticUncertaintyRequest,
     ZodiacName,
@@ -365,24 +386,23 @@ def _uncertainty(request) -> GeodeticInputUncertainty:
     )
 
 
+def _house_policy(policy) -> HousePolicy | None:
+    # Absent keeps the Geodetic owner's strict default; an explicit transport
+    # policy replaces it, field for field.
+    if policy is None:
+        return None
+    return HousePolicy(unknown_system=policy.unknown_system, polar_fallback=policy.polar_fallback)
+
+
 def compute_geodetic_direct_houses(request: GeodeticDirectHousesRequest) -> GeodeticHousesResult:
     ayanamsa_deg = _direct_ayanamsa(request.zodiac, request.ayanamsa_deg)
-    # The Geodetic owner defaults to a strict house policy; an explicit
-    # transport policy replaces it, field for field.
-    house_policy = (
-        None if request.policy is None
-        else HousePolicy(
-            unknown_system=request.policy.unknown_system,
-            polar_fallback=request.policy.polar_fallback,
-        )
-    )
     figure = geodetic_house_chart(
         GeodeticLocation(request.geo_latitude, request.geo_longitude),
         obliquity=request.obliquity,
         system=request.system,
         zodiac=request.zodiac,
         ayanamsa_deg=ayanamsa_deg if request.zodiac == "sidereal" else None,
-        house_policy=house_policy,
+        house_policy=_house_policy(request.policy),
         sun_longitude=request.sun_longitude,
     )
     return GeodeticHousesResult(
@@ -424,10 +444,165 @@ def compute_geodetic_uncertainty(request: GeodeticUncertaintyRequest) -> Geodeti
     )
 
 
+# -- P10-03b analysis products ------------------------------------------------
+# docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md
+# Chart-backed routes call the Moira facade (engine reader); direct routes
+# compose the owners on the caller's declared frame and epochs.
+
+
+def _aspect_policy(model: GeodeticAspectPolicyModel) -> AspectPolicy:
+    return AspectPolicy(
+        tier=model.tier,
+        orb_factor=model.orb_factor,
+        **({"optional_sets": tuple(model.optional_sets)} if model.optional_sets else {}),
+    )
+
+
+def _curve_policy(model: GeodeticCurvePolicyModel) -> GeodeticCurvePolicy:
+    return GeodeticCurvePolicy(
+        latitude_step_deg=model.latitude_step_deg,
+        max_evaluations=model.max_evaluations,
+        round_trip_tolerance_deg=model.round_trip_tolerance_deg,
+    )
+
+
+def _place(model: GeodeticPlaceModel) -> GeodeticNamedLocation:
+    return GeodeticNamedLocation(
+        model.location_id,
+        GeodeticLocation(model.geo_latitude, model.geo_longitude),
+        model.display_name,
+    )
+
+
+def _supplied_snapshot(request) -> GeodeticBodySnapshot:
+    """Caller-supplied tropical longitudes; they never acquire an ephemeris."""
+    _direct_ayanamsa(request.zodiac, request.ayanamsa_deg)
+    return geodetic_snapshot_from_positions(
+        request.longitudes,
+        source_frame=request.source_frame,
+        correction_regime=request.correction_regime,
+        zodiac=request.zodiac,
+        ayanamsa_deg=request.ayanamsa_deg,
+        jd_ut1=request.jd_ut1,
+        jd_tt=request.jd_tt,
+    )
+
+
+def compute_geodetic_chart_houses(engine: Moira, request: GeodeticChartBackedHousesRequest) -> GeodeticHouseChart:
+    return engine.geodetic_houses(
+        GeodeticLocation(request.geo_latitude, request.geo_longitude),
+        request.dt,
+        request.system,
+        zodiac=request.zodiac,
+        ayanamsa_system=request.ayanamsa_system,
+        house_policy=_house_policy(request.house_policy),
+        sun_longitude=request.sun_longitude,
+    )
+
+
+def compute_geodetic_chart_overlay(engine: Moira, request: GeodeticChartBackedOverlayRequest) -> GeodeticNatalOverlay:
+    return engine.geodetic_overlay(
+        request.dt,
+        GeodeticLocation(request.geo_latitude, request.geo_longitude),
+        request.system,
+        aspect_policy=_aspect_policy(request.aspect_policy),
+        bodies=request.bodies,
+        angles=tuple(request.angles),
+        include_cusps=request.include_cusps,
+        zodiac=request.zodiac,
+        ayanamsa_system=request.ayanamsa_system,
+        house_policy=_house_policy(request.house_policy),
+        sun_longitude=request.sun_longitude,
+        error_policy=request.body_error_policy,
+    )
+
+
+def compute_geodetic_chart_compare(engine: Moira, request: GeodeticChartBackedCompareRequest) -> GeodeticLocationComparison:
+    return engine.geodetic_compare(
+        request.dt,
+        [_place(place) for place in request.places],
+        request.system,
+        aspect_policy=_aspect_policy(request.aspect_policy),
+        bodies=request.bodies,
+        zodiac=request.zodiac,
+        ayanamsa_system=request.ayanamsa_system,
+        house_policy=_house_policy(request.house_policy),
+        sun_longitude=request.sun_longitude,
+        error_policy=request.body_error_policy,
+        order_by=request.order_by,
+        place_error_policy=request.place_error_policy,
+    )
+
+
+def compute_geodetic_chart_loci(engine: Moira, request: GeodeticChartBackedLociRequest) -> GeodeticLociResult:
+    return engine.geodetic_loci(
+        request.dt,
+        bodies=request.bodies,
+        angles=tuple(request.angles),
+        curve_policy=_curve_policy(request.curve_policy),
+        zodiac=request.zodiac,
+        ayanamsa_system=request.ayanamsa_system,
+        error_policy=request.body_error_policy,
+    )
+
+
+def compute_geodetic_direct_overlay(request: GeodeticDirectOverlayRequest) -> GeodeticNatalOverlay:
+    snapshot = _supplied_snapshot(request)
+    figure = geodetic_house_chart(
+        GeodeticLocation(request.geo_latitude, request.geo_longitude),
+        obliquity=request.obliquity,
+        system=request.system,
+        zodiac=request.zodiac,
+        ayanamsa_deg=request.ayanamsa_deg,
+        house_policy=_house_policy(request.house_policy),
+        sun_longitude=request.sun_longitude,
+        source_frame=request.source_frame,
+        jd_ut1=request.jd_ut1,
+        jd_tt=request.jd_tt,
+    )
+    return geodetic_natal_overlay(
+        figure,
+        snapshot,
+        aspect_policy=_aspect_policy(request.aspect_policy),
+        angles=tuple(request.angles),
+        include_cusps=request.include_cusps,
+    )
+
+
+def compute_geodetic_direct_compare(request: GeodeticDirectCompareRequest) -> GeodeticLocationComparison:
+    return compare_geodetic_locations(
+        [_place(place) for place in request.places],
+        _supplied_snapshot(request),
+        obliquity=request.obliquity,
+        system=request.system,
+        aspect_policy=_aspect_policy(request.aspect_policy),
+        house_policy=_house_policy(request.house_policy),
+        sun_longitude=request.sun_longitude,
+        error_policy=request.place_error_policy,
+        order_by=request.order_by,
+    )
+
+
+def compute_geodetic_direct_loci(request: GeodeticDirectLociRequest) -> GeodeticLociResult:
+    return geodetic_angular_loci(
+        _supplied_snapshot(request),
+        obliquity=request.obliquity,
+        angles=tuple(request.angles),
+        policy=_curve_policy(request.curve_policy),
+    )
+
+
 __all__ = [
     "GeodeticChartResult",
     "GeodeticEquivalentsResult",
     "GeodeticHousesResult",
+    "compute_geodetic_chart_compare",
+    "compute_geodetic_chart_houses",
+    "compute_geodetic_chart_loci",
+    "compute_geodetic_chart_overlay",
+    "compute_geodetic_direct_compare",
+    "compute_geodetic_direct_loci",
+    "compute_geodetic_direct_overlay",
     "GeodeticProvenance",
     "compute_geodetic_chart_backed_chart",
     "compute_geodetic_chart_backed_equivalents",
