@@ -42,6 +42,46 @@ publication, or production pin is implied by these entries.
   frame-aware geometric/apparent horizon capability into
   `wiki/05_research/geodetic/GEODETIC_PHYSICAL_HORIZON_SPEC.md`; no physical
   horizon calculation or transport route is introduced.
+- **Extended Aspect Catalog**: Tao (165°), Hexadecile, Seminovile, Untion and
+  twenty further exact-fraction minor aspects, canonical alias resolution
+  across Python and REST, and the eight missing primitive harmonic presets.
+  Optional H13/H32/H36/H40 sets add 28 rational-turn targets with fraction
+  metadata, aliases, presets, discovery and receipts; they are opt-in, and the
+  46 standard definitions, existing defaults and Quindecile at 24° are
+  unchanged.
+- **Aspect Pattern Constructions**: five Huber configurations, exact
+  rational-turn templates, harmonic presets and ten mathematical constructions
+  across the facade and REST. Huber Trapeze is distinguished from the
+  preserved legacy Sextile Chain.
+- **Derived and Hypothetical Points**: source-qualified APIs for Baker Vulcan,
+  mean/osculating Priapus, second focal points, Arta sets, anchored Selena,
+  Abramov approximations and prescribed historical models, with explicit
+  source, frame, clock, branch and reconstruction policies in Python, the
+  facade, REST and catalogs. Existing charts and body catalogs are unchanged.
+- **Primary-Direction Typed Targets**: immutable, source-bound Fortune,
+  catalogue-lot and predominator targets across all eight registered methods
+  and 28 presets, through the opt-in `derived_point_targets` policy/preset
+  argument (empty by default). Existing arguments, result shapes and REST
+  contracts are unchanged.
+- **Rao 2000 Kalachakra Profile**: a source-owned profile alongside Santhanam
+  with continuous family traversal, source-specific antardasha denominators,
+  Deha/Jeeva and gati across the engine, facade and REST. Santhanam transport
+  output is unchanged.
+- **Lilly Horary Condition and Reception Evidence**: `moira.horary_reception`
+  records Lilly condition and reception evidence for horary judgments.
+- **Hellenistic Receipts and Policy Gates**:
+  - `ZRStartShiftTruth` records how the zodiacal-releasing Level 1 start sign
+    was resolved; every `ReleasingPeriod` and REST period response carries it.
+  - `LotsHouseFrame` records the requested and effective house system on lots,
+    and `POST /v1/hellenistic/lots` returns it.
+  - `HellenisticRayOppositionPolicy` selects whether the opposition counts as
+    an aktinobolia ray strike: `EXCLUDED` (default, unchanged behaviour) or
+    `MUTUAL_STRIKE` (Antiochus/Rhetorius). Every `HellenisticRayTruth` records
+    the gate; `/v1/hellenistic/condition` and the profile overlays accept and
+    echo it.
+- **Noncentral Solar Eclipse Paths**: shadow sweeps and global circumstances
+  for noncentral eclipses, with absent central-line width and paired optional
+  U2/U3 contacts, including REST serialization.
 
 ### Breaking Changes
 - **Direct Sidereal Geodetic Charts Require An Explicit Offset**:
@@ -50,7 +90,7 @@ publication, or production pin is implied by these entries.
   `0.0` remains valid when the caller intends coincident lanes.
 - **Geodetic Tropical Lane Refuses An Ayanamsa**: `moira.geodetic` entry points
   and all four `/v1/geodetic/*` routes now reject a `tropical` request that
-  carries an ayanamsa, instead of resolving the same contradiction two ways â€”
+  carries an ayanamsa, instead of resolving the same contradiction two ways —
   the direct route previously honoured a nonzero `ayanamsa_deg`, while the
   chart-backed route silently discarded `ayanamsa_system`. Transport reads
   presence as the declaration, so `zodiac: "tropical"` with
@@ -62,6 +102,18 @@ publication, or production pin is implied by these entries.
   tangent roots of the Ascendant are exactly equidistant, so the horizon no
   longer singles out a rising ecliptic degree; the module previously answered
   with a mathematical extrapolation.
+- **Sourced Longevity**: `Moira.longevity` uses Lilly 1647
+  (`find_alcocoden_lilly_1647`) and returns `AlcocodenDetermination`; it fails
+  closed on missing planets or non-quadrant cusps instead of applying the
+  unsourced legacy rule.
+- **Hellenistic Input Guards**: `Moira.hellenistic_chart_profile` rejects a
+  chart not computed for `natal_dt` and, with an observer location, houses
+  whose Asc/MC do not match it. `Moira.zodiacal_releasing` from Spirit requires
+  `fortune_longitude`. `HellenisticProfilePolicy` rejects a dignity term table
+  that differs from its bounds doctrine. REST `/lots` rejects unknown house
+  systems instead of falling back to Placidus.
+- **Schema Consumers**: strict clients of the Enhanced ZR responses must accept
+  the new `start_shift_truth` field.
 
 ### Fixed
 - **Geodetic Undefined Geometry And Angle Ranges**: refuse coincident planes
@@ -75,7 +127,7 @@ publication, or production pin is implied by these entries.
   explicit numerical corrections.
 - **Vertex / Anti-Vertex Branch Selection (#23)**: Python and native house
   helpers now select the western prime-vertical/ecliptic intersection by its
-  actual local hour angle. Comparing ecliptic longitude with `ARMC - 90Â°`
+  actual local hour angle. Comparing ecliptic longitude with `ARMC - 90°`
   could swap the two points at low southern latitudes, including the reported
   Lima chart. Meridional ties retain the principal root; the existing
   near-equator sentinel and conventional geographic-pole frame remain explicit.
@@ -89,10 +141,10 @@ publication, or production pin is implied by these entries.
   `moira._angles`, which now selects the rising ecliptic/horizon intersection
   by the sign of its local-hour-angle vertical rate. This replaces a
   coordinate-frame mismatch that compared ecliptic longitude with
-  `ARMC + 90Â°` (a right ascension) and could select the setting root at high
+  `ARMC + 90°` (a right ascension) and could select the setting root at high
   latitudes. Exact-pole ties remain deterministic for low-level house callers;
   public geodetic calculations refuse the undefined polar margin. The shared
-  result is normalized to `[0Â°, 360Â°)`.
+  result is normalized to `[0°, 360°)`.
 - **Sidereal Geodetic Ascendant Frame**: geodetic ARMC was derived from the
   sidereal MC and then treated as a tropical equatorial frame. The engine now
   derives ARMC from the zodiac-independent tropical meridian and expresses the
@@ -100,16 +152,81 @@ publication, or production pin is implied by these entries.
 - **Geodetic Ayanamsa Epoch**: `geodetic_chart_from_chart` and
   `geodetic_equivalents_from_chart` passed the vessel's TT into
   `moira.sidereal.ayanamsa`, which is contracted for UT and performs its own
-  UTâ†’TT step, so the epoch shifted twice. Measured error is `2.98e-08Â°` at
-  J2000 and `3.90e-06Â°` at 100 CE â€” 3.9Ã— the `1e-6Â°` longitude covenant.
+  UT→TT step, so the epoch shifted twice. Measured error is `2.98e-08°` at
+  J2000 and `3.90e-06°` at 100 CE — 3.9× the `1e-6°` longitude covenant.
   Obliquity correctly remains a TT computation. `moira.vedic` already used the
   UT scale; geodetic was the only outlier.
 - **Geodetic Equivalents Double Ayanamsa**: `geodetic_equivalents_from_chart`
   fed the vessel's tropical positions into an inversion helper that reads a
   nonzero ayanamsa as "these inputs are sidereal", so its sidereal lane
-  returned a meridian displaced by the full ayanamsa â€” `23.853Â°` at J2000.
+  returned a meridian displaced by the full ayanamsa — `23.853°` at J2000.
   Both lanes now return the one zodiac-independent geographic anchor, matching
   the REST service path, which converted positions first and was never wrong.
+- **IAU 2006 Frame Bias Gamma**: Python, native and interval frames use the
+  adopted bias-inclusive `gamma_bar` coefficient.
+- **SPK Record Time**: native and Python evaluators compensate the `ET - INIT`
+  subtraction before Chebyshev record normalization. Against a matched kernel
+  this removes the 5.57 cm raw SPK residual.
+- **Observer Polar Motion and Stellar Aberration**: ITRS-to-TIRS station
+  transport applies the inverse polar rotation, and nominal apparent stellar
+  coordinates include diurnal aberration, pairing the stellar and lunar
+  observer settings.
+- **Solar Eclipse Overlap**: classified from exact physical cones on the WGS84
+  ellipsoid, recovering limiting polar partial events and distinguishing cone
+  coverage from shadow-axis centrality.
+- **Horary Perfection**: directional events are matched in the requested
+  principal frame; the search covers closed interval endpoints and
+  relative-motion extrema and rejects incomplete scans explicitly.
+- **Primary-Direction Timelines**: complete source dependencies are preserved;
+  chronology and distributor context stay bounded under event filters;
+  horizons derive from the selected key; natal UT1/TT is kept distinct from
+  UTC display timestamps.
+- **Aspect Consumers**: optional-set validation survives the synastry facade;
+  REST aspect policy types are strict; forecast aliases normalize; unavailable
+  forecast selections fail before chart construction; and automatic Septile
+  Triangle detection works. Unsigned circular-distance reduction keeps
+  inclusive orb boundaries for repeating-fraction targets.
+- **Aspect Pattern Geometry**: Eye, Irritation Triangle, Dominant Triangle and
+  Grand Quintile corrected.
+- **Kalachakra Markati**: ordinary Cancer/Leo progression is distinguished from
+  Rao's temporary reversals using neighbouring source occurrences, including
+  outside clipped windows. Santhanam classifications are unchanged.
+- **Hellenistic Bound Coherence**: profile dignity terms follow the profile's
+  bounds doctrine (Egyptian by default), so the essential-dignity bound and
+  `bound_truth` name the same lord.
+- **Hellenistic Polar Sect**: `DignityHorizonFrame` takes
+  `geographic_latitude` and `obliquity` and uses the Midheaven's meridian
+  altitude to find the upper ecliptic semicircle, fixing day/night inversion
+  above the polar circles. The same fix reaches `Moira.dignities`
+  (`observer_latitude`), REST dignities (`observer_lat`) and the Lilly
+  whole-figure almuten.
+- **Zodiacal-Releasing Level Pairs**: `/zodiacal-releasing/level-pair`
+  releases to the requested lower level, so L3/L4 pairs no longer return 422.
+- **Hellenistic Sect Verification**: Decennials and Firdaria REST requests
+  accept an optional location; a contradicting `is_day_chart` is rejected.
+- **Hellenistic Condition Rays**: `/v1/hellenistic/condition` serializes the
+  ray strikes it had been dropping.
+- **Hellenistic Doctrine Labels**: aligned with code and sources:
+  - Lilly solar bands;
+  - Lilly-style besieging, not Hellenistic enclosure;
+  - aktinobolia as a qualified dexter-ray policy;
+  - the circumambulation minor-years key as non-traditional;
+  - twelfth-parts sourced to Manilius and al-Biruni (citation only, values
+    unchanged);
+  - Mars as masculine for hayz;
+  - source notes on the Death and Exaltation lots.
+
+### Performance
+- **Record-Level SPK Evaluation**: native type 2/3 segments are evaluated one
+  record at a time from a shared file handle with a bounded per-record LRU,
+  instead of preloading whole segments.
+  - Output is bit-identical to whole-segment evaluation on DE441, DE440 and
+    DE440s.
+  - On DE441, charts on both sides of the 1969-07-30 segment split drop from
+    ~1.8 s to ~1 ms.
+  - Peak memory drops from ~2.7 GB to ~120 MB per process.
+  - Settings: `MOIRA_NATIVE_SPK_EVALUATION` (`record` default, or `segment`)
+    and `MOIRA_NATIVE_SPK_RECORD_CACHE_MAX` (default 64).
 
 ### Changed
 - `wiki/02_standards/GEODETIC_BACKEND_STANDARD.md` is amended to `0.5`: lane
@@ -117,7 +234,7 @@ publication, or production pin is implied by these entries.
   caller-supplied latitude semantics, obliquity limits, and result provenance.
 - **Explicit Geodetic Input and Result Contracts**: geodetic latitude is
   documented as caller-supplied and passed through without conversion or an
-  inferred datum; Earth obliquity is guarded to `[22Â°, 25Â°]`; direct
+  inferred datum; Earth obliquity is guarded to `[22°, 25°]`; direct
   `GeodeticChart` construction now enforces the result invariants. Chart-backed
   chart results retain Julian Days, obliquity model identities, and the
   sidereal ayanamsa system/time-scale provenance.
@@ -129,6 +246,11 @@ publication, or production pin is implied by these entries.
   equivalent horizon equation with sine and cosine terms instead of explicitly
   evaluating `tan(latitude)`, while preserving the rising-root selection and
   deterministic exact-pole tie.
+- **Light Box Governance**: structural identity is separated from discovery
+  metadata; the reviewed CI response schemas and renderer provenance are
+  bound; generated-artifact maintenance is enforced before merging; and
+  routine validation and release checks are simplified, with CI checks
+  mirrored locally (`scripts/check_ci.py`).
 
 ### Validation
 - Added `tests/unit/test_house_angle_branches.py`: the Lima public-API
@@ -150,7 +272,22 @@ publication, or production pin is implied by these entries.
   checks, typed-location/provenance tests, detailed-equivalents lane receipts,
   and finite-difference verification of analytic sensitivity derivatives.
 
-## [6.10.2] - 2026-10-23
+## [6.11.1] - 2026-10-27
+
+### Fixed
+- Astrocartography uses the geodetic surface normal in the horizon equation,
+  correctly excluding samples beyond the physical circumpolar boundary.
+- Lunar ASC/DSC curves solve finite-distance parallax at each actual candidate
+  longitude instead of reusing the Moon's topocentric position at the MC.
+  Both false inclusions and false omissions near the lunar cutoff are repaired.
+
+### Validation
+- Independent ERFA horizon/ellipsoid tests cover both hemispheres, geometric
+  and refracted horizons, limiting tangencies, and finite-distance lunar roots.
+- DE441-backed forward sky checks cover every returned lunar sample for
+  June 16, 21 and 29, 2026, including the reproduced production failures.
+
+## [6.11.0] - 2026-10-25
 
 ### Fixed
 - Primary-direction distributor boundaries use the explicit natal Sun speed
@@ -348,7 +485,7 @@ publication, or production pin is implied by these entries.
   - The harmonic conjunction orb defaults to 12 deg on the harmonic wheel
     (12/H on the natal circle), per Hamblin; it was 1 deg.
   - Lunar mansions use 28 equal divisions in every tradition, al-Biruni
-    included (Book of Instruction Â§164). Al-Biruni's marker stars are
+    included (Book of Instruction §164). Al-Biruni's marker stars are
     descriptive data. Latin names follow each tradition's own list (Agrippa II.33,
     Picatrix I.4), and Agrippa's significations are faithful to II.33.
 - **Heliacal names**: `HELIACAL_SETTING` means evening last visibility and
@@ -525,7 +662,7 @@ publication, or production pin is implied by these entries.
   and 497 periodic comets (11,720 bodies) with coverage, finiteness, mapping,
   and manifest/shard receipt checks. Small-body apsidal-passage accuracy
   remains a separately named validation frontier.
-- **Midpoint dial projection repair**: Corrected 90Â°, 45Â°, and 22.5Â°
+- **Midpoint dial projection repair**: Corrected 90°, 45°, and 22.5°
   midpoint-dial coordinates to fold longitude by the dial modulus instead of
   multiplying by the harmonic and folding a second time. Planetary pictures,
   weighting, activation, trees, clusters, and dial ordering now preserve
@@ -541,7 +678,7 @@ publication, or production pin is implied by these entries.
 - **Ashtottari Dasha start per BPHS**: The starting lord and balance follow
   BPHS 46.17-22: allocation begins at Ardra in alternating four- and
   three-nakshatra groups, with Abhijit counted as a place; its span is named
-  explicitly as the later traditional boundary (6Â°40â€²-10Â°53â€²20â€³ sidereal
+  explicitly as the later traditional boundary (6°40′-10°53′20″ sidereal
   Capricorn), since the verses do not state it.
 - **Composite chart default method**: The composite route's default `method`
   is now `reference_place` instead of `midpoint`.
@@ -596,7 +733,7 @@ publication, or production pin is implied by these entries.
   provenance are returned or fail closed. Frozen JPL Horizons and NASA SVS
   comparisons and native-versus-SPICE matrix checks cover geocentric,
   topocentric, holdout, and segment-boundary cases.
-- **House Dynamics & Instantaneous Cusp Speeds â€” Frontier 8**:
+- **House Dynamics & Instantaneous Cusp Speeds — Frontier 8**:
   - **Analytical Ground Truth Derivations (Part 1)**: Derived exact closed forms from first principles for fundamental angle velocities under Earth's diurnal rotation:
     - Midheaven: $\dot{\lambda}_{\text{MC}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon}{1 - \sin^2 \varepsilon \sin^2 \lambda_{\text{MC}}}$ via `analytical_mc_speed()`.
     - Ascendant: $\dot{\lambda}_{\text{ASC}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon + \tan \phi \sin \varepsilon \sin \theta}{\cos^2 \theta + (\sin \theta \cos \varepsilon + \tan \phi \sin \varepsilon)^2}$ via `analytical_asc_speed()`.
@@ -605,30 +742,30 @@ publication, or production pin is implied by these entries.
   - **Server Transport Layer (Part 3)**: Added Pydantic v2 schemas (`CuspSpeedResponse`, `HouseDynamicsRequest`, `HouseDynamicsResponse`) and registered endpoint `POST /v1/houses/dynamics` with timezone validation and custom step/policy forwarding.
   - **Analytical and Invariant Validation (Part 4)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day internal analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence. This evidence is internal mathematical validation, not an external house-speed authority comparison.
   - **Verification**: Validated across 90 automated tests in [`tests/unit/test_house_dynamics_oracle.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics_oracle.py), 28 tests in [`tests/unit/test_house_dynamics.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics.py), and 4 server contract tests in [`tests/server/test_server_house_dynamics_routes.py`](file:///c:/dev/moira/tests/server/test_server_house_dynamics_routes.py).
-- **Primary Directions Frontier Triad: Placidian Mundane Parallels, Ptolemaic Mundane Aspects & Zodiacal Midpoints â€” Frontier 7**:
+- **Primary Directions Frontier Triad: Placidian Mundane Parallels, Ptolemaic Mundane Aspects & Zodiacal Midpoints — Frontier 7**:
   - **Placidian Mundane Parallels & Contra-Parallels *In Mundo* (Part 1)**: Implemented true mundane parallel reflections across the Meridian ($f_{\text{par}} = -f_S$) and contra-parallel reflections across the Horizon ($f_{\text{contra}} = \text{copysign}(2.0 - |f_S|, f_S)$) via `compute_placidian_mundane_parallel_arc`. Direct and converse arcs evaluated with native equatorial acceleration. Added `PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_PARALLEL`, `PrimaryDirectionRelationalKind.MUNDANE_PARALLEL`, `PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL`, `PrimaryDirectionMundaneParallelTarget`, and generator `resolve_primary_direction_mundane_parallel_targets`.
   - **Ptolemaic Mundane Aspects *In Mundo* (Part 2)**: Added proportional semi-arc trisections under Ptolemy's mundane projection model (`PrimaryDirectionMethod.PTOLEMY_SEMI_ARC`), expanding the existing Placidian semi-arc trisection to Ptolemaic semi-arcs with exact quadrant temporal hour fractions. Added `PrimaryDirectionsPreset.PTOLEMY_MUNDANE_ASPECT`.
   - **Zodiacal Midpoint Targets in Primary Directions (Part 3)**: Implemented shortest-arc circular midpoint targets ($A/B$) with rigorous $0^\circ$ Aries boundary wrapping ($\Delta \lambda = (\lambda_B - \lambda_A + 540^\circ) \pmod{360^\circ} - 180^\circ$). Full multi-method direction across all 8 projection systems, direct/converse/neo-converse motion doctrines, dynamic true solar arc time keys, and life timeline integration. Added `PrimaryDirectionRelationalKind.MIDPOINT`, `PrimaryDirectionMidpointTarget`, and generator `resolve_primary_direction_midpoint_targets`.
   - **Server Transport & Verification (Part 4)**: Added Pydantic v2 schemas (`PrimaryDirectionMundaneParallelTargetRequest`, `PrimaryDirectionMidpointTargetRequest`), registered in advanced search policy vessels. Cleanly resolved preset relation policy propagation and keyword collisions across all directional presets.
   - **Verification**: Validated across dedicated unit test suites (`tests/unit/test_primary_directions_mundane_parallels.py`, `tests/unit/test_primary_directions_ptolemy_mundane_aspects.py`, `tests/unit/test_primary_directions_midpoints.py`) with all 412 primary directions tests passing (100% green).
-- **Primary Directions Neo-Converse Motion Doctrine, Placidian Mundane Aspects & Native Placidian Mundane Solver â€” Frontier 6**:
+- **Primary Directions Neo-Converse Motion Doctrine, Placidian Mundane Aspects & Native Placidian Mundane Solver — Frontier 6**:
   - **Neo-Converse Motion Doctrine (Part 1)**: Formally admitted `PrimaryDirectionConverseDoctrine.NEO_CONVERSE` (`neo_converse`) holding the Significator stationary as the recipient of influence while directing promissors against the diurnal rotation (West-to-East) via circle complement $\Delta_{\text{neo}} = (360^\circ - \Delta_{\text{dir}}) \pmod{360^\circ}$. Rigorously distinguished from Traditional Converse role-exchange ($\text{converse}(S \to P) = \text{direct}(P \to S)$) across asymmetric semi-arc methods (Placidus, Campanus, Topocentric) while proving mathematical identity on symmetric Meridian right ascensional directions. Added `converse_doctrine` parameter to `primary_directions_policy_preset` and updated relational validators.
   - **Placidian Mundane Aspects *In Mundo* (Part 2)**: Generalized Placidian proportional semi-arc directions from conjunctions/oppositions to all classical mundane aspects: semi-sextile ($\pm 1/3$), sextile ($\pm 2/3$), square ($\pm 1.0$), trine ($\pm 4/3$), quincunx ($\pm 5/3$), and opposition ($2.0$). Defined cyclic temporal fraction trisection $f \in [-2.0, 2.0]$ with `wrap_mundane_fraction()`, allowing promissor mundane aspect points to inherit the parent promissor's diurnal/nocturnal semi-arc and be directed directly, converse, or neo-converse to significators across all quadrants. Added `PrimaryDirectionsPreset.PLACIDUS_MUNDANE_ASPECT` and `resolve_primary_direction_mundane_aspect_targets()`.
   - **Native Placidian Mundane Solver `_moira_native` (Part 3)**: Implemented C++ functions `placidian_required_ha`, `placidian_mundane_arc`, `compute_placidian_pair_arcs` (supporting traditional converse `'T'` and neo-converse `'N'`), and batched OpenMP matrix generator `compute_placidian_arcs_matrix` in `src/native/include/primary_directions.hpp` and registered pybind11 bindings in `src/native/bindings/moira_native.cpp`. Dispatched transparently in `moira/primary_directions/geometry.py` with zero-drift numerical parity ($|\Delta| < 10^{-12 \circ}$) against Python reference math.
   - **Verification**: Validated across dedicated unit test suites (`tests/unit/test_primary_directions_neo_converse.py`, `tests/unit/test_primary_directions_mundane_aspects.py`, `tests/unit/test_native_primary_directions_parity.py`) and updated transport route contracts (`tests/server/test_primary_directions_transport_contract.py`), passing all 395 primary directions tests.
-- **Primary Directions Bound Distributions, Dynamic Ephemeris Inversion & Chronological Life Timeline â€” Frontier 5**:
-  - **Terms/Bounds Boundaries & Distributor Engine (Part 1)**: Integrated traditional distribution through the terms/bounds (*distributor* / *particeps* and *participator* / *socius*). Implemented `resolve_primary_direction_bound_targets`, `DistributorPeriod`, and `resolve_distributor_chronology` in [`moira/primary_directions/distributor.py`](file:///c:/dev/moira/moira/primary_directions/distributor.py), partitioning 360Â° zodiacal boundary crossings under Egyptian and Ptolemaic bounds for direct and converse motions.
+- **Primary Directions Bound Distributions, Dynamic Ephemeris Inversion & Chronological Life Timeline — Frontier 5**:
+  - **Terms/Bounds Boundaries & Distributor Engine (Part 1)**: Integrated traditional distribution through the terms/bounds (*distributor* / *particeps* and *participator* / *socius*). Implemented `resolve_primary_direction_bound_targets`, `DistributorPeriod`, and `resolve_distributor_chronology` in [`moira/primary_directions/distributor.py`](file:///c:/dev/moira/moira/primary_directions/distributor.py), partitioning 360° zodiacal boundary crossings under Egyptian and Ptolemaic bounds for direct and converse motions.
   - **Dynamic Ephemeris Inversion (Part 2)**: Added keys `PrimaryDirectionKey.SOLAR_RA_DYNAMIC` and `PrimaryDirectionKey.SOLAR_LON_DYNAMIC` under `PrimaryDirectionKeyFamily.DYNAMIC`. Implemented rigorous bisection solvers `invert_solar_arc_ra` and `invert_solar_arc_lon` in [`moira/primary_directions/keys.py`](file:///c:/dev/moira/moira/primary_directions/keys.py), solving $\text{RA}_{\odot}(t_0 + Y) - \text{RA}_{\odot}(t_0) = \Delta$ and $\lambda_{\odot}(t_0 + Y) - \lambda_{\odot}(t_0) = \Delta$ down to $<10^{-6}$ days error (<0.1s calendar time) across perihelion/aphelion velocities within $<30$ ephemeris inquiries. Updated `convert_arc_to_time` and `PrimaryArc.years()` to seamlessly evaluate dynamic solar keys.
   - **Chronological Life Timeline Engine & REST API Surface (Part 3)**: Implemented `compute_primary_directions_timeline` in [`moira/primary_directions/timeline.py`](file:///c:/dev/moira/moira/primary_directions/timeline.py) and `Moira.primary_directions_timeline` in [`moira/facade.py`](file:///c:/dev/moira/moira/facade.py), compiling all directional events into an ordered lifetime sequence enriched with distributor periods, bound names, and participator identities. Added REST route `POST /v1/primary-directions/timeline` with strict Pydantic v2 schemas (`PrimaryDirectionsTimelineRequest` and `PrimaryDirectionsTimelineResponse`).
   - **Comprehensive Verification**: Validated across dedicated unit test suites (`tests/unit/test_primary_directions_bounds.py`, `tests/unit/test_primary_directions_dynamic_keys.py`, `tests/unit/test_primary_directions_timeline.py`) and server contract suite (`tests/server/test_server_primary_directions_timeline_routes.py`), achieving 100% pass across all 280+ primary directions tests.
-- **High-Latitude House Solvers Integration & Promotion â€” Frontier 4**:
+- **High-Latitude House Solvers Integration & Promotion — Frontier 4**:
   - Re-founded pole projection onto the exact unitary cleared-denominator plane normal $\mathbf{n} = (-\sin \text{RA} \cos \phi_h, \cos \text{RA} \cos \phi_h, -\sin \phi_h)$ in [`moira/houses.py`](file:///c:/dev/moira/moira/houses.py) and native C++ [`src/native/include/houses.hpp`](file:///c:/dev/moira/src/native/include/houses.hpp), proving $\|\mathbf{n}\| = 1$ unconditionally for all pole heights $\phi_h \in [0^\circ, 90^\circ]$ and eliminating $\tan(\phi_h)$ division-by-zero singularities.
   - Promoted Campanus, Regiomontanus, and Topocentric from quarantined experimental isolation into the primary **Integrated Branch Doctrine** alongside Placidus and Alcabitius.
   - Re-classified `HouseSystem.CAMPANUS`, `HouseSystem.REGIOMONTANUS`, and `HouseSystem.TOPOCENTRIC` as `polar_capable=True`. `_POLAR_SYSTEMS` reduced to `{HouseSystem.KOCH}` due to intrinsic diurnal semi-arc circumpolar collapse ($|\tan \phi \tan \delta_{\text{MC}}| > 1$).
   - Under `HousePolicy.default()`, charts at polar latitudes ($|\phi| \ge 90^\circ - \varepsilon$) with admissible ARMC now automatically deliver real Campanus, Regiomontanus, or Topocentric cusps (`effective_system=system`, `fallback=False`), falling back cleanly to Porphyry with full provenance only when geometry degenerates or cusps fold.
   - Added REST endpoint `POST /v1/houses/polar-admissibility` returning contiguous valid ARMC windows, valid fractions, sample counts, practical windows, and stability metrics.
   - Added contract test suite in [`tests/server/test_server_polar_admissibility_routes.py`](file:///c:/dev/moira/tests/server/test_server_polar_admissibility_routes.py) (5/5 passing) and verified across all 141 house and parity tests.
-- **Primary Directions Native Under-Pole Arcs (`_moira_native`) â€” Frontier 3**:
+- **Primary Directions Native Under-Pole Arcs (`_moira_native`) — Frontier 3**:
   - Implemented compiled native under-pole (*sub polo*) arc engine in [`src/native/include/primary_directions.hpp`](file:///c:/dev/moira/src/native/include/primary_directions.hpp) and registered pybind11 bindings in [`src/native/bindings/moira_native.cpp`](file:///c:/dev/moira/src/native/bindings/moira_native.cpp).
   - Derived and implemented the branch-independent continuous vector/plane invariant $\sin ZD = |\text{transverse}| / \text{norm}$ where $\text{transverse} = \cos \delta \sin HA$ and $\text{meridional} = \cos \phi \cos \delta \cos HA + \sin \phi \sin \delta$, eliminating the classical meridian-distance $MD = 90^\circ$ singularity without piecewise inverse-tangent branching.
   - Implemented Regiomontanus/Campanus pole height solver (`regiomontanus_pole_height`), Topocentric pole height solver (`topocentric_pole_height`), oblique coordinate projector (`under_pole_w`), directed arc calculators (`regiomontanus_under_pole_arc`, `topocentric_under_pole_arc`), and role-exchanged pair solver (`compute_under_pole_pair_arcs`).
@@ -640,7 +777,7 @@ publication, or production pin is implied by these entries.
   - Implemented `evaluate_all_planets_apparent_with_speed` in `src/native/include/planetary_evaluator.hpp`, consolidating primary apparent coordinates and finite-difference rate evaluations ($t \pm 0.002$ days) into a single GIL-released native execution pass (`src/native/bindings/moira_native.cpp`).
   - Implemented thread-safe caching of resolved SPK Chebyshev segment evaluators (`resolved_segments_`) in `NativePlanetaryEvaluator`, eliminating heap allocations and mutex contention across consecutive chart evaluations.
   - Reduced Python orchestration function call overhead by 54% (from 783,001 down to 361,001 calls per 500 charts) while preserving sub-microarcsecond numerical parity ($\Delta \lambda < 10^{-12 \circ}$) with the pure-Python reference across DE441.
-- **Aspect-Pattern Qualitative Scoring (`v1-draft`) â€” Frontier 2**:
+- **Aspect-Pattern Qualitative Scoring (`v1-draft`) — Frontier 2**:
   - Implemented qualitative geometric coherence and instantaneous motion scoring under the named policy `moira.pattern_coherence.qualitative.v1-draft` in [`moira/pattern_coherence.py`](file:///c:/dev/moira/moira/pattern_coherence.py), re-exported through [`moira/patterns.py`](file:///c:/dev/moira/moira/patterns.py) and available directly on `AspectPattern.evaluate_coherence()`.
   - Replaced arbitrary composite percentage scoring with an auditable two-part result: **Coherence Band** (`Very strong`, `Strong`, `Moderate`, `Loose`, `Marginal`) and **Motion Qualifier** (`Motion unavailable`, `Partial motion`, `Station-sensitive`, `Exact`, `Applying`, `Separating`, `Mixed motion`).
   - Built conservative weakest-link ratio aggregation $R = \max(\text{actual\_orb} / \text{reference\_orb})$ over frozen reference orbs (Opposition $8^\circ$, Square $7^\circ$, Trine $7^\circ$, Sextile $5^\circ$, Quincunx $3^\circ$), preserving full-precision unrounded IEEE-754 angular deviations.
@@ -694,10 +831,10 @@ publication, or production pin is implied by these entries.
   - All 449 shards verified with sub-nanometer ($< 1.5 \times 10^{-8}\text{ km}$) Chebyshev interpolation round-trip node errors.
   - Bound sealed catalog release receipt `1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e` into engine manifest and NAIF identity registry.
 - **Native Quadrant House Systems & Nutation Epoch Caching**:
-  - Accelerated `calculate_houses` from 128.6 Âµs to **18.8 Âµs** ($6.85\times$, >53,000 charts/sec) while strictly preserving sub-picodegree parity ($\le 10^{-11 \circ}$) with the pure-Python reference.
-  - Implemented high-performance native C++ solvers for **Placidus (`'P'`)**, **Koch (`'K'`)**, **Regiomontanus (`'R'`)**, **Campanus (`'C'`)**, **Porphyry (`'O'`)**, **Equal (`'E'`)**, and **Whole Sign (`'W'`)** in `src/native/include/houses.hpp`, evaluating in 0.45 to 1.9 Âµs natively with seamless fallback to Python on polar domain limits.
-  - Implemented thread-local epoch caching (`tl_nutation_cache`) and atomic series generation in C++ `nutation_2000r06(double jd_tt)` alongside Python `functools.lru_cache`, reducing repeated IAU 2000A trigonometric evaluations for chart epochs from 37.5 Âµs to **0.19 Âµs** ($197\times$ speedup).
-  - Accelerated sidereal angle reduction (`reduce_local_angles`) from 47.2 Âµs to **0.78 Âµs** ($57\times$ speedup).
+  - Accelerated `calculate_houses` from 128.6 µs to **18.8 µs** ($6.85\times$, >53,000 charts/sec) while strictly preserving sub-picodegree parity ($\le 10^{-11 \circ}$) with the pure-Python reference.
+  - Implemented high-performance native C++ solvers for **Placidus (`'P'`)**, **Koch (`'K'`)**, **Regiomontanus (`'R'`)**, **Campanus (`'C'`)**, **Porphyry (`'O'`)**, **Equal (`'E'`)**, and **Whole Sign (`'W'`)** in `src/native/include/houses.hpp`, evaluating in 0.45 to 1.9 µs natively with seamless fallback to Python on polar domain limits.
+  - Implemented thread-local epoch caching (`tl_nutation_cache`) and atomic series generation in C++ `nutation_2000r06(double jd_tt)` alongside Python `functools.lru_cache`, reducing repeated IAU 2000A trigonometric evaluations for chart epochs from 37.5 µs to **0.19 µs** ($197\times$ speedup).
+  - Accelerated sidereal angle reduction (`reduce_local_angles`) from 47.2 µs to **0.78 µs** ($57\times$ speedup).
   - Added comprehensive parity gauntlets in `tests/unit/test_native_houses_parity.py` covering thousands of historical epochs ($-3000 \to +3000$ CE) and global latitudes.
 
 ## [6.8.0] - 2026-09-17
@@ -771,8 +908,8 @@ publication, or production pin is implied by these entries.
   state, coverage, and singularity provenance. It remains planet-only.
 - `moira.shadbala.chesta_bala` and `POST /v1/vedic/shadbala` Chesta Bala now
   compute Chesta Kendra strictly according to B.V. Raman (*Graha and Bhava
-  Balas*, Ch. VI, Â§Â§84â€“97). Chesta Bala equals `(chesta_kendra / 3)` for
-  `chesta_kendra <= 180Â°` and `(360Â° - chesta_kendra) / 3` for `> 180Â°`,
+  Balas*, Ch. VI, §§84–97). Chesta Bala equals `(chesta_kendra / 3)` for
+  `chesta_kendra <= 180°` and `(360° - chesta_kendra) / 3` for `> 180°`,
   guaranteeing a maximum of 60 Virupas.
 
 ### Fixed
@@ -783,7 +920,7 @@ publication, or production pin is implied by these entries.
 - The legacy `KeplerianElements.epoch_jd` value returned by
   `orbital_elements_at` is now correctly TT rather than the caller's UT1 value.
 - Sun and Moon Chesta Bala are now derived directly from Ayana Bala according
-  to B.V. Raman Ch. X (Â§Â§136â€“137), completely removing unverified planetary
+  to B.V. Raman Ch. X (§§136–137), completely removing unverified planetary
   mandoccha offsets `_sun_mandoccha_lon` and `_moon_mandoccha_lon`.
 
 ### Compatibility
@@ -904,11 +1041,11 @@ publication, or production pin is implied by these entries.
   used. When the native scan is unavailable the pure-Python search runs
   unchanged; event times are still refined by the same bisection.
 - Recalibrated the default post-observation Delta-T scenario to
-  `D0 + 29.09Â·((year âˆ’ Y0)/100)Â²` using Morrison et al. 2021 tidal
-  `43.7 s/cyÂ²` and Shahvandi et al. 2024 GIA `âˆ’0.80 ms/cy`
-  (`âˆ’14.61 s/cyÂ²`). The linear handoff slope is no longer consumed
+  `D0 + 29.09·((year − Y0)/100)²` using Morrison et al. 2021 tidal
+  `43.7 s/cy²` and Shahvandi et al. 2024 GIA `−0.80 ms/cy`
+  (`−14.61 s/cy²`). The linear handoff slope is no longer consumed
   (C0 kept, C1 not claimed). No climate ice-melt term is included.
-  `Î”T(2100)` moves from 83.29 s to about 85.00 s. Source-era totals,
+  `ΔT(2100)` moves from 83.29 s to about 85.00 s. Source-era totals,
   quarantined component fields, EOP, and `DeltaTPolicy` names are
   unchanged.
 - Expanded that note into a file-reading comparison: JPL Type-2 SPK
@@ -933,7 +1070,7 @@ Detailed release and migration guidance is available in
 - Optional v2 profile overlays (`revival`, `overlays`), default off.
 - Circumambulations through Egyptian bounds,
   `POST /v1/hellenistic/circumambulations`.
-- Fromâ†’to transmission graph, `POST /v1/hellenistic/transmissions`.
+- From→to transmission graph, `POST /v1/hellenistic/transmissions`.
 - Fail-closed office candidate hunt, `POST /v1/hellenistic/offices`.
 
 ### Changed
@@ -948,9 +1085,9 @@ Detailed release and migration guidance is available in
 
 ### Changed
 - `mean_lilith()` / `Body.LILITH` now uses the IERS 2003 mean apogee
-  `F + Î© âˆ’ l + 180Â°` from the same fundamental arguments as
+  `F + Ω − l + 180°` from the same fundamental arguments as
   `mean_node()`. The 5.2.2 `nutation=` frame is unchanged. Modern
-  longitudes move by less than 0.2â€³ versus the previous Meeus
+  longitudes move by less than 0.2″ versus the previous Meeus
   polynomial. The several-arcminute residual versus Swiss
   `SE_MEAN_APOG` is expected and is not a parity target.
 - `true_node()` and `true_lilith()` `NodeData.speed` is now the circular
@@ -1416,7 +1553,7 @@ Detailed release and migration guidance is available in
 ### Fixed
 - **DE440 historical Delta-T clock binding**: admitted the content-identified
   `DE440`/`LE440` lunar tidal acceleration basis at
-  `-25.936 arcsec/cyÂ²`. Reader-backed charts before the 1972 atomic-clock
+  `-25.936 arcsec/cy²`. Reader-backed charts before the 1972 atomic-clock
   boundary now translate the historical Delta-T source product onto DE440
   instead of raising `_EphemerisTimeBasisError`. Unknown and unadmitted DE/LE
   identities continue to fail closed; modern direct-EOP epochs remain
@@ -1631,9 +1768,9 @@ Detailed release and migration guidance is available in
   five-position vinadi ordinal axis beneath each named activity from rendered
   review of Uromarisi-attributed 1922, 1932, and 1934 publications. Rendered
   review of a separately scoped Bogamuni-attributed 2024 editorial witness also
-  recovered two incompatible selectors: weighted SÅ«ká¹£ma durations `(3/2,
+  recovered two incompatible selectors: weighted Sūkṣma durations `(3/2,
   5/4, 2, 3/4, 1/2)` closing exactly to six nazhigai, and separately named Eka
-  SÅ«ká¹£ma equal fifths. The hash-bound research decision preserves exact witness
+  Sūkṣma equal fifths. The hash-bound research decision preserves exact witness
   and page locators, selects no default, and forbids automatic binding to the
   Uromarisi outcome tables. Human-language review is not a dependency.
   Translation-backed outcomes, condition, scoring, electional judgment, and
@@ -1803,7 +1940,7 @@ Detailed release and migration guidance is available in
   private, data-free `moira._pancha_pakshi_classification` vocabulary and a
   hash-bound closure corpus that classifies all `24` unconflicted Uromarisi
   illness-context cells across EAT/WALK/RULE/SLEEP/DIE as exact projections of
-  the Stage 2Qâ€“2U semantic atoms. The model preserves typed source-statement
+  the Stage 2Q–2U semantic atoms. The model preserves typed source-statement
   dispositions, time-expression shapes, semantic-reference presence, source
   decision identity, and per-cell uncertainty. Verse `250` remains a separate
   unclassifiable text-layer conflict with no classification payload. Invariants
@@ -1815,36 +1952,36 @@ Detailed release and migration guidance is available in
   route. The closure SHA-256 is
   `a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
 - **Pancha Pakshi Uromarisi DIE Semantics Stage 2U Research Extension**:
-  Reviewed the five unconflicted DIE-period illness verses `251â€“255` on
-  rendered PDF pages `124â€“126`, while carrying verse `250` only as the blocked
+  Reviewed the five unconflicted DIE-period illness verses `251–255` on
+  rendered PDF pages `124–126`, while carrying verse `250` only as the blocked
   Stage 2T precursor. The first cell preserves a conditional two-month upper
   bound and a separate six-month source branch; the second preserves both an
   instantaneous marker and a one-year marker without harmonizing them; the
   remaining cells state no numeric duration. Mortality, body-destruction,
   nonresolution, space/void, fate, deity, relation, and source-branch language
-  remains historical and non-runtimeâ€”not prediction, diagnosis, prognosis,
+  remains historical and non-runtime—not prediction, diagnosis, prognosis,
   cause, symptom, score, advice, or deterministic fate. Verse `256` begins a
   separate illness-duration section and is excluded. No selector, manifest,
   engine, facade, or REST surface changed, and no human Tamil reviewer is
   required. The Stage 2U decision SHA-256 is
   `4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`.
 - **Pancha Pakshi Uromarisi SLEEP Semantics Stage 2T Research Extension**:
-  Reviewed SLEEP-period illness verses `246â€“250` on rendered PDF pages
-  `122â€“124`. Verses `246â€“249` yield four unconflicted semantic records with
+  Reviewed SLEEP-period illness verses `246–250` on rendered PDF pages
+  `122–124`. Verses `246–249` yield four unconflicted semantic records with
   upper-bound `8` days, upper-bound `15` days, exact `20` days, and a
   conditional three-month mortality-or-resolution branch. Verse `250` is
   blocked: its heading and verse assign DIE ordinal 5 while its commentary
   assigns SLEEP ordinal 5. Stage 2T therefore refines the earlier Stage 2P
   locator claim without mutating that hash-bound fixture. Mortality,
   recurrence, distress, harm, wind-dosha, treatment, ritual, and relation
-  language remains historical and non-runtimeâ€”not prediction, diagnosis,
+  language remains historical and non-runtime—not prediction, diagnosis,
   advice, symptom, score, or medical truth. No selector, manifest, engine,
   facade, or REST surface changed, and no human Tamil reviewer is required.
   The Stage 2T decision SHA-256 is
   `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
 - **Pancha Pakshi Uromarisi RULE Semantics Stage 2S Research Extension**:
   Extended the machine-assisted semantic-atom method to RULE-period illness
-  verses `241â€“245` on rendered PDF pages `120â€“122`. All five cells state
+  verses `241–245` on rendered PDF pages `120–122`. All five cells state
   resolution, with time expressions of `3` days, `5` days, within `8` days,
   `10` days, and `12` days; the upper bound remains distinct from exact days.
   Source deity titles, prescribed actions, fire-clause roles, Saturn-dosha
@@ -1856,7 +1993,7 @@ Detailed release and migration guidance is available in
   `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
 - **Pancha Pakshi Uromarisi WALK Semantics Stage 2R Research Extension**:
   Extended the Stage 2Q semantic-atom method to WALK-period illness verses
-  `235â€“239` on rendered PDF pages `118â€“120`. The source-stated time expressions
+  `235–239` on rendered PDF pages `118–120`. The source-stated time expressions
   remain distinct: `10` days, `15` days, within `20` days, `25` days, and
   within one month. The cells separately preserve resolution, abatement, and a
   timed progression without explicit resolution; the month is not converted
@@ -1869,7 +2006,7 @@ Detailed release and migration guidance is available in
   `361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`.
 - **Pancha Pakshi Uromarisi EAT Semantics Stage 2Q Research Pilot**:
   Transcribed bounded semantic atoms for the five EAT-period illness cells in
-  verses `230â€“234` of the exact Stage 2P witness. Rendered PDF pages `116â€“118`
+  verses `230–234` of the exact Stage 2P witness. Rendered PDF pages `116–118`
   control the reading; Archive.org OCR lines are navigation aids only. The
   source-stated resolution durations are preserved as `4 or 5`, `7`, `9`,
   `13`, and `15` days, while distinct devotional-response categories,
@@ -1883,9 +2020,9 @@ Detailed release and migration guidance is available in
 - **Pancha Pakshi Uromarisi Illness Grid Stage 2P Research Gate**: Verified
   the exact Archive.org 1934 Uromarisi-attributed PDF at SHA-256
   `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
-  and rendered PDF pages `115â€“126`. Added a research-only decision indexing
+  and rendered PDF pages `115–126`. Added a research-only decision indexing
   the complete illness-context structure as five parent activities by five
-  explicit vinadi ordinals. The 25 cells bind verses `230â€“239` and `241â€“255`
+  explicit vinadi ordinals. The 25 cells bind verses `230–239` and `241–255`
   to repeatable PDF/printed-page locators; transition verse `240` and the
   separate illness-duration section beginning at verse `256` remain outside
   the grid. No source outcome statement is copied, translated, normalized,
@@ -1934,7 +2071,7 @@ Detailed release and migration guidance is available in
   machine reconciliation as frozen historical records. The adjudication
   established the full `30/5/6` day/night scope and table axes, confirmed the
   Amara-night schedule and all twenty directed nonself relationship cells, and
-  corrected the former PÅ«rva-night generator. A new additive admission fixture
+  corrected the former Pūrva-night generator. A new additive admission fixture
   links the former and schema-v2 profile hashes and binds the unchanged
   computational surface of 10 identity symbols, 28 schedules, 700 cells, and 20
   directed relationships. Independent-witness collation remains a barrier to
@@ -1959,7 +2096,7 @@ Detailed release and migration guidance is available in
   deterministic DE441 Dorotheus regression value after the admitted clock
   correction.
 - **Nakshatra Boundary Ownership**: Centralized equal-27-sector classification
-  so exact internal `k Ã— 40/3`-degree boundaries belong to the following
+  so exact internal `k × 40/3`-degree boundaries belong to the following
   nakshatra across the public sidereal and Vimshottari consumers. A bounded
   maximum-one-ULP recovery corrects only binary representations of those exact
   mathematical boundaries; it is not an orb or tolerance band. TT-explicit
@@ -2431,23 +2568,23 @@ Detailed release and migration guidance is available in
   removing ancient month-boundary reversals from their UT1-to-TT paths.
   EOP edge corrections taper to zero locally over one Julian year instead of
   biasing remote epochs, and admitted rows are no longer all described as
-  measured. Computational guards are explicit at Â±100,000 years and
-  Â±40,000,000 JD. These changes preserve facade method names and `/v1`
+  measured. Computational guards are explicit at ±100,000 years and
+  ±40,000,000 JD. These changes preserve facade method names and `/v1`
   response schemas.
 - **Delta-T Epoch Integrity**: Restored the HPIERS-declared half-year cadence
-  for 1950â€“2016 instead of collapsing its rounded HTML DATE labels. Modern
-  USNO full-year and Janâ€“Apr aggregate means now sit at the mean epochs of
+  for 1950–2016 instead of collapsing its rounded HTML DATE labels. Modern
+  USNO full-year and Jan–Apr aggregate means now sit at the mean epochs of
   their contributing first-of-month samples, rather than masquerading as
   January 1 point values. Unknown conflicting duplicate epochs fail closed;
   the two published conflicts retain explicit compatibility policy. The
   bridge/aggregate uncertainty scale is now `0.06 s`, covering the verified
   `0.052808 s` maximum daily residual against the bundled EOP snapshot.
 - **Provisional Delta-T Boundary Semantics**: Recorded that the final `2026`
-  aggregate product is a Janâ€“Apr partial mean. The slope derived from its
+  aggregate product is a Jan–Apr partial mean. The slope derived from its
   representative epoch and the preceding aggregate epoch is provisional
   scenario policy, not an observed instantaneous derivative. The post-handoff
   mean preserves that admitted boundary value and slope before applying the declared
-  `28 s/cyÂ²` scenario curvature. `DeltaTBreakdown.era` remains a compatibility
+  `28 s/cy²` scenario curvature. `DeltaTBreakdown.era` remains a compatibility
   category rather than source-row provenance.
 - **Delta-T Attribution And Provenance Honesty**: Quarantined the historical
   C04, GRACE, AAM, and OAM proxy artifacts from the admitted causal
@@ -2844,7 +2981,7 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
   and Arabic/Latin eighth-rule variants explicitly.
 - **Sahl Fourth-House Matter Profiles**: Added separate building, demolition,
   land, wells/rivers, planting, and sowing profiles for *On Elections*
-  Â§Â§43-55 through `sahl_matter_profile_at(...)`, the `Moira` facade, and
+  §§43-55 through `sahl_matter_profile_at(...)`, the `Moira` facade, and
   `POST /v1/electional/western/sahl-matter-profile`. Responses preserve every
   source clause and typed indeterminacy without scoring or recommendation.
 - **Dorotheus Moon Condition**: Added the eleven-clause
@@ -2879,7 +3016,7 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
   the summary precedence is inspectable and never erases component truth.
 - **Caller-Weighted Electional Ranking**: Added
   `western_electional_ranking_v1` and
-  `POST /v1/electional/western/ranking` for 2â€“64 caller-supplied candidate
+  `POST /v1/electional/western/ranking` for 2–64 caller-supplied candidate
   instants. Only complete-under-profile results are scored, weights are
   explicit finite nonzero inputs, and impeded or indeterminate candidates
   remain in a separate evidence-bearing partition. No hidden historical
@@ -3170,11 +3307,11 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
 - **Canonical Comet Identity**: The canonical comet name in REST responses is now the standard numbered designation (`"1P/Halley"`, not `"Halley"`); curated short aliases remain accepted as inputs. The comet list route's `catalog_scope` is now `numbered_periodic_comet_identity_mapping`.
 
 ### Added
-- **Yoga Engine** (`moira.yogas`, `POST /v1/yogas/evaluate`): 60 classical yogas per chart across six families â€” Pancha Mahapurusha (BPHS 75.1-2), Chandra (7, incl. the Parashara-strict Gajakesari gates and the full Kemadruma bhanga catalog), Surya (4), all 32 Nabhasa (BPHS Ch. 35 / Brihat Jataka Ch. 12 with Bhattotpala's precedence doctrine), Raja core (Kendra-Trikona with the 34.15 dilution, Yogakaraka, Dharma-Karmadhipati, Viparita with all three conflicting primary formulations as policy, Neecha Bhanga per Phaladeepika 7.26-30), and Dhana core (2-11, the Uttara Kalamrita IV.28 network with dusthana contamination, Lakshmi, Maha/Khala/Dainya Parivartana). Every yoga returns as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, per-yoga primary-source citations, and Nabhasa precedence suppression made visible.
-- **Shadbala Completion**: Bhava Bala (house strength, Raman Part II â€” Bhavadhipati/Bhava Dig/Bhava Drishti per house with rank, no invented pass/fail threshold), inline Ishta/Kashta Phala on every planet (BPHS Ch. 27, derived from the displayed Uchcha and Chesta), Graha Yuddha transfer disclosure (`shashtiamsas_transferred`), the exact `ayanamsa_degrees` used, and the single-call `POST /v1/shadbala/chart/full` envelope (chart + profile + network + bhava from one support-truth derivation).
-- **Upagrahas** (`moira.upagrahas`, `POST /v1/upagrahas/*`): the five kalavelas (Gulika, Kala, Mrityu, Ardhaprahara, Yamaghantaka â€” BPHS 3.66-70 eight-fold day/night division with ascendant materialization) with portion-point, Mandi-mode, and lord-sequence lineage policies, plus the five Sun-derived upagrahas (BPHS 3.61-64) with the verse-stated self-check (Upaketu + 30Â° â‰¡ Sun) enforced as an invariant.
-- **Avasthas** (`moira.avasthas`, `POST /v1/avasthas/evaluate`): Baladi (with Vriddha honestly unnumbered), Jagradadi, Deeptadi as four per-source rule tables (BPHS-9 / Saravali-9 / Jataka-Parijata-10 / Phaladeepika-11 â€” never merged), and the six non-exclusive Lajjitadi flags with evidence strings.
-- **Jaimini Extended** (`moira.jaimini_extended`, `POST /v1/jaimini/extended/*`): rasi drishti, arudha padas A1-A12 (Rath/JHora exception default, Raman variant as policy; classical-seven vs Jaimini co-lords lordship), argala with virodha pairs and the Ketu reversal, karakamsa with both lineage readings named (Rath D9 vs K.N. Rao D1 â€” never collapsed), and first-cycle Chara Dasha in K.N. Rao's named lineage.
+- **Yoga Engine** (`moira.yogas`, `POST /v1/yogas/evaluate`): 60 classical yogas per chart across six families — Pancha Mahapurusha (BPHS 75.1-2), Chandra (7, incl. the Parashara-strict Gajakesari gates and the full Kemadruma bhanga catalog), Surya (4), all 32 Nabhasa (BPHS Ch. 35 / Brihat Jataka Ch. 12 with Bhattotpala's precedence doctrine), Raja core (Kendra-Trikona with the 34.15 dilution, Yogakaraka, Dharma-Karmadhipati, Viparita with all three conflicting primary formulations as policy, Neecha Bhanga per Phaladeepika 7.26-30), and Dhana core (2-11, the Uttara Kalamrita IV.28 network with dusthana contamination, Lakshmi, Maha/Khala/Dainya Parivartana). Every yoga returns as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, per-yoga primary-source citations, and Nabhasa precedence suppression made visible.
+- **Shadbala Completion**: Bhava Bala (house strength, Raman Part II — Bhavadhipati/Bhava Dig/Bhava Drishti per house with rank, no invented pass/fail threshold), inline Ishta/Kashta Phala on every planet (BPHS Ch. 27, derived from the displayed Uchcha and Chesta), Graha Yuddha transfer disclosure (`shashtiamsas_transferred`), the exact `ayanamsa_degrees` used, and the single-call `POST /v1/shadbala/chart/full` envelope (chart + profile + network + bhava from one support-truth derivation).
+- **Upagrahas** (`moira.upagrahas`, `POST /v1/upagrahas/*`): the five kalavelas (Gulika, Kala, Mrityu, Ardhaprahara, Yamaghantaka — BPHS 3.66-70 eight-fold day/night division with ascendant materialization) with portion-point, Mandi-mode, and lord-sequence lineage policies, plus the five Sun-derived upagrahas (BPHS 3.61-64) with the verse-stated self-check (Upaketu + 30° ≡ Sun) enforced as an invariant.
+- **Avasthas** (`moira.avasthas`, `POST /v1/avasthas/evaluate`): Baladi (with Vriddha honestly unnumbered), Jagradadi, Deeptadi as four per-source rule tables (BPHS-9 / Saravali-9 / Jataka-Parijata-10 / Phaladeepika-11 — never merged), and the six non-exclusive Lajjitadi flags with evidence strings.
+- **Jaimini Extended** (`moira.jaimini_extended`, `POST /v1/jaimini/extended/*`): rasi drishti, arudha padas A1-A12 (Rath/JHora exception default, Raman variant as policy; classical-seven vs Jaimini co-lords lordship), argala with virodha pairs and the Ketu reversal, karakamsa with both lineage readings named (Rath D9 vs K.N. Rao D1 — never collapsed), and first-cycle Chara Dasha in K.N. Rao's named lineage.
 - **Ashtakavarga Refinements**: kakshya-level transit evaluation (`kakshya_transit`, JP II.71 Saturn-first lord order; favorability tests the specific kakshya lord's contribution) and Shodhya Pinda (`shodhya_pinda`, BPHS Ch. 69 Rasi+Graha Pinda with verified multiplier tables), validated exactly against BPHS's own worked example (Sun 148, Moon 158) and Patel's Standard Horoscope; served at `POST /v1/ashtakavarga/{kakshya-transit,shodhya-pinda}`.
 - **Vimshopaka Bala + Vargottama** (`POST /v1/varga/vimshopaka`): the BPHS 20-point varga-dignity strength over all four classical groups with per-division vargavishwa breakdown, plus vargottama detection.
 - **Tara Bala + Chandra Bala** (`POST /v1/muhurta/personal/score`): the nine-tara cycle and Chandra Shuddhi (with Chandrashtama flagged and double-weighted) as a natal-personalized muhurta overlay; the long-dormant Tara placeholder in `_classify_nakshatra` now computes.
@@ -3195,7 +3332,7 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
 ## [3.4.3] - 2026-07-04
 
 ### Added
-- **Draconic Chart Frame**: Added the node-anchored `moira.draconic` module (`draconic_longitude`, `draconic_positions`, `draconic_chart`, `draconic_chart_from_positions`, and the `DraconicAnchor` / `DraconicChart` / `DraconicPosition` vessels) exposed through the facade, plus a bounded `/v1/draconic/*` REST family â€” longitude rotation, caller-supplied positions, and engine-backed chart â€” for mean- and true-node draconic frames.
+- **Draconic Chart Frame**: Added the node-anchored `moira.draconic` module (`draconic_longitude`, `draconic_positions`, `draconic_chart`, `draconic_chart_from_positions`, and the `DraconicAnchor` / `DraconicChart` / `DraconicPosition` vessels) exposed through the facade, plus a bounded `/v1/draconic/*` REST family — longitude rotation, caller-supplied positions, and engine-backed chart — for mean- and true-node draconic frames.
 - **Chart-Shape Handle Identity**: Added an authoritative `handle_bodies` frozenset to the `ChartShape` vessel and its `ChartShapeResponse`, separating the display label (`handle_planet`, e.g. `"Neptune/Pluto"`) from the actual handle body set, enforced by real `__post_init__` invariants (non-empty, subset of `clusters[1]`, disjoint from `clusters[0]`).
 
 ### Fixed
@@ -3203,7 +3340,7 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
 - **Seesaw Seam Classification**: Fixed `chart_shape` Seesaw detection so a clean two-cluster chart with one cluster crossing the 0/360 longitude seam is no longer misclassified as Splash (VALIDATION CODEX RULE-20).
 
 ### Changed
-- **Chart-Shape Doctrine Docs**: Synced the frozen chart-shape docstrings and VALIDATION CODEX to the implemented behavior â€” bowl-core Bucket metrics, the strict `> 60` handle threshold, tight conjunction-pair handles, unconditional Splash fallback, and seam-safe Seesaw.
+- **Chart-Shape Doctrine Docs**: Synced the frozen chart-shape docstrings and VALIDATION CODEX to the implemented behavior — bowl-core Bucket metrics, the strict `> 60` handle threshold, tight conjunction-pair handles, unconditional Splash fallback, and seam-safe Seesaw.
 
 ### Validation
 - Draconic and chart-shape engine unit tests, docstring governance, and the draconic and relationship REST route tests pass in the project virtual environment. The new public surface is additive; existing facade and REST semantics are unchanged.
@@ -3407,7 +3544,7 @@ as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
 ## [2.0.0] - 2026-04-10
 
 ### Added
-- **Phase Î± Accuracy Certification**: Transition to a sub-arcsecond accurate substrate grounded in IAU ERFA/SOFA standards.
+- **Phase α Accuracy Certification**: Transition to a sub-arcsecond accurate substrate grounded in IAU ERFA/SOFA standards.
 - **JPL DE441 Support**: Integration of high-precision long-term planetary ephemerides.
 - **IAU 2006 Standards**: Implementation of the full IAU 2000A/2006 precession and nutation models.
 - **Relativistic Reduction Pipeline**: Geometric positions corrected for light-time, gravitational deflection, annual aberration, and frame bias.
@@ -3460,7 +3597,7 @@ _(Version 1.0.2 was skipped.)_
 - **Initial Stable Release**: Core planetary positions, house systems (17 systems), and zodiacal aspects.
 - **Kernel Management**: Integrated CLI and GUI tools for JPL kernel acquisition and configuration.
 
-## [0.4.0] - 2026-03-27 â€” ACCIDENTAL TAG
+## [0.4.0] - 2026-03-27 — ACCIDENTAL TAG
 
 - This tag was cut from a commit reporting "No code changes detected; skipping commit" and is out of sequence with the surrounding `0.1.x` development line. It introduced no changes and should be treated as an accidental tag; recorded here only for provenance.
 
@@ -3479,7 +3616,7 @@ _(Version 1.0.2 was skipped.)_
 ## [0.1.5] - 2026-03-30
 
 ### Added
-- **Primary Directions Subsystem**: Added the primary-directions subsystem â€” roadmap, doctrine, core classes, presets, and Placidus rapt-parallel logic â€” with tests.
+- **Primary Directions Subsystem**: Added the primary-directions subsystem — roadmap, doctrine, core classes, presets, and Placidus rapt-parallel logic — with tests.
 - **Physical Delta T**: Added planetary, stellar, and physical Delta T modules, including a physics-based hybrid computation with OAM/AAM proxy data and validation.
 
 ## [0.1.4] - 2026-03-27
