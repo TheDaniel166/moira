@@ -1195,14 +1195,16 @@ PYBIND11_MODULE(_moira_native, m) {
                 throw std::invalid_argument("invalid bounded Chebyshev record selection");
             }
             py::tuple records(static_cast<size_t>(count));
+            std::vector<double> words(self.component_count * self.coefficient_count);
             for (int64_t r = 0; r < count; ++r) {
+                self.copy_record(static_cast<size_t>(first + r), words.data());
                 py::tuple components(self.component_count);
                 for (size_t c = 0; c < self.component_count; ++c) {
                     py::tuple values(self.coefficient_count);
-                    const size_t base = ((static_cast<size_t>(first + r) * self.component_count) + c) * self.coefficient_count;
+                    const size_t base = c * self.coefficient_count;
                     for (size_t k = 0; k < self.coefficient_count; ++k) {
                         const size_t stored = self.coefficients_in_file_order ? k : self.coefficient_count - 1 - k;
-                        values[k] = self.coefficients[base + stored];
+                        values[k] = words[base + stored];
                     }
                     components[c] = values;
                 }
@@ -1210,6 +1212,8 @@ PYBIND11_MODULE(_moira_native, m) {
             }
             return records;
         }, py::arg("first"), py::arg("count") = 1)
+        .def("record_level", &SpkSegmentEvaluator::record_level)
+        .def("cached_record_count", &SpkSegmentEvaluator::cached_record_count)
         .def("position", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double result[3];
             {
@@ -1238,6 +1242,8 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("catalog", [](const NativeSpkKernelHandle& self) {
             return catalog_to_py_dict(self.catalog);
         })
+        .def("record_level", &NativeSpkKernelHandle::record_level)
+        .def("record_cache_limit", &NativeSpkKernelHandle::record_cache_limit)
         .def("load_segment_evaluator", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type) {
             std::shared_ptr<SpkSegmentEvaluator> evaluator;
             {

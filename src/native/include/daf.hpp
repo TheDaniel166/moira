@@ -329,13 +329,24 @@ inline DafCatalog read_daf_catalog(const std::string& path) {
     return read_daf_catalog(file);
 }
 
-inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
+struct SpkChebyshevSegmentMetadata {
+    double init;
+    double intlen;
+    int32_t record_size;
+    int32_t record_count;
+    int32_t component_count;
+    int32_t coefficient_count;
+};
+
+/**
+ * Read an SPK type 2/3 segment's trailing directory (INIT, INTLEN, RSIZE, N)
+ * and derive its component and coefficient counts, without reading records.
+ */
+inline SpkChebyshevSegmentMetadata read_spk_chebyshev_segment_metadata(
     std::ifstream& file,
-    int32_t start_i,
     int32_t end_i,
     bool little_endian,
-    int32_t data_type,
-    bool reverse_coefficients = true
+    int32_t data_type
 ) {
     const bool swap_bytes = detail::host_is_little_endian() != little_endian;
     int32_t component_count = 0;
@@ -370,6 +381,28 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
     if (coefficient_count <= 0) {
         throw std::runtime_error("invalid SPK coefficient count in segment payload");
     }
+    return SpkChebyshevSegmentMetadata{
+        init, intlen, record_size, record_count, component_count, coefficient_count
+    };
+}
+
+inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
+    std::ifstream& file,
+    int32_t start_i,
+    int32_t end_i,
+    bool little_endian,
+    int32_t data_type,
+    bool reverse_coefficients = true
+) {
+    const bool swap_bytes = detail::host_is_little_endian() != little_endian;
+    const SpkChebyshevSegmentMetadata metadata =
+        read_spk_chebyshev_segment_metadata(file, end_i, little_endian, data_type);
+    const double init = metadata.init;
+    const double intlen = metadata.intlen;
+    const int32_t record_size = metadata.record_size;
+    const int32_t record_count = metadata.record_count;
+    const int32_t component_count = metadata.component_count;
+    const int32_t coefficient_count = metadata.coefficient_count;
 
     const int64_t coefficient_word_count = static_cast<int64_t>(record_count) * record_size;
     const std::streamoff coeff_offset = static_cast<std::streamoff>(start_i - 1) * 8;
@@ -541,6 +574,87 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
     );
 }
 
+/**
+ * Kernel file shared by the record sources of one handle. Reads are serialized.
+ * Its lifetime is the lifetime of the evaluators that read from it: closing the
+ * handle drops only the handle's reference, so an evaluator obtained before
+ * close keeps working, as a whole-segment evaluator that owns its coefficients
+ * does. The file closes when the last such evaluator is released.
+ */
+struct SharedSpkRecordFile {
+    explicit SharedSpkRecordFile(const std::string& path)
+        : file(path, std::ios::binary) {
+        if (!file.is_open()) {
+            throw std::runtime_error("unable to open DAF file");
+        }
+    }
+
+    void read_words(std::streamoff word_offset, size_t count, bool swap_bytes, double* out) {
+        std::lock_guard<std::mutex> lock(mutex);
+        file.clear();
+        file.seekg(word_offset * 8, std::ios::beg);
+        if (!file.good()) {
+            throw std::runtime_error("failed to seek SPK record");
+        }
+        const std::streamsize bytes = static_cast<std::streamsize>(count * 8);
+        if (!swap_bytes) {
+            file.read(reinterpret_cast<char*>(out), bytes);
+            if (file.gcount() != bytes) {
+                throw std::runtime_error("failed to read SPK record");
+            }
+            return;
+        }
+        std::vector<char> raw(static_cast<size_t>(bytes));
+        file.read(raw.data(), bytes);
+        if (file.gcount() != bytes) {
+            throw std::runtime_error("failed to read SPK record");
+        }
+        for (size_t i = 0; i < count; ++i) {
+            out[i] = detail::read_f64_swapped(raw.data() + i * 8, true);
+        }
+    }
+
+    std::mutex mutex;
+    std::ifstream file;
+};
+
+/**
+ * Reads one SPK type 2/3 record's coefficient words directly from the kernel.
+ * Record ``i`` occupies words [start_i - 1 + i * RSIZE, ... + RSIZE); its first
+ * two words are MID and RADIUS, which the evaluator does not use (it derives
+ * the interval from INIT and INTLEN, as the whole-segment path does).
+ */
+class SpkFileChebyshevRecordSource : public ChebyshevRecordSource {
+public:
+    SpkFileChebyshevRecordSource(
+        std::shared_ptr<SharedSpkRecordFile> file,
+        int32_t start_i,
+        int32_t record_size,
+        size_t word_count,
+        bool swap_bytes
+    )
+        : file_(std::move(file)),
+          start_i_(start_i),
+          record_size_(record_size),
+          word_count_(word_count),
+          swap_bytes_(swap_bytes) {}
+
+    void read_record(size_t index, double* out) const override {
+        const std::streamoff word_offset =
+            static_cast<std::streamoff>(start_i_ - 1)
+            + static_cast<std::streamoff>(index) * record_size_
+            + 2;
+        file_->read_words(word_offset, word_count_, swap_bytes_, out);
+    }
+
+private:
+    std::shared_ptr<SharedSpkRecordFile> file_;
+    int32_t start_i_;
+    int32_t record_size_;
+    size_t word_count_;
+    bool swap_bytes_;
+};
+
 class NativeSpkKernelHandle {
 public:
     struct SegmentCacheKey {
@@ -568,7 +682,9 @@ public:
         : path(std::move(kernel_path)),
           file(path, std::ios::binary),
           catalog(),
-          segment_cache_limit_(resolve_segment_cache_limit()) {
+          segment_cache_limit_(resolve_segment_cache_limit()),
+          record_level_(resolve_record_level()),
+          record_cache_limit_(resolve_record_cache_limit()) {
         if (!file.is_open()) {
             throw std::runtime_error("unable to open DAF file");
         }
@@ -630,6 +746,33 @@ public:
                 std::move(payload.epochs_jd),
                 std::move(payload.states),
                 static_cast<size_t>(payload.window_size)
+            );
+        } else if (record_level_) {
+            const SpkChebyshevSegmentMetadata metadata = read_spk_chebyshev_segment_metadata(
+                file, end_i, catalog.little_endian, data_type
+            );
+            if (!record_file_) {
+                record_file_ = std::make_shared<SharedSpkRecordFile>(path);
+            }
+            const size_t word_count =
+                static_cast<size_t>(metadata.component_count) * static_cast<size_t>(metadata.coefficient_count);
+            evaluator = std::make_shared<SpkSegmentEvaluator>(
+                coverage_start_jd,
+                coverage_end_jd,
+                data_type,
+                metadata.init,
+                metadata.intlen,
+                static_cast<size_t>(metadata.record_count),
+                static_cast<size_t>(metadata.component_count),
+                static_cast<size_t>(metadata.coefficient_count),
+                std::make_shared<SpkFileChebyshevRecordSource>(
+                    record_file_,
+                    start_i,
+                    metadata.record_size,
+                    word_count,
+                    detail::host_is_little_endian() != catalog.little_endian
+                ),
+                record_cache_limit_
             );
         } else {
             SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
@@ -711,10 +854,21 @@ public:
         }
         segment_cache.clear();
         segment_cache_lru.clear();
+        // Evaluators already handed out keep their own reference to the record
+        // file; the handle only releases its reference here.
+        record_file_.reset();
         if (file.is_open()) {
             file.close();
         }
         closed_ = true;
+    }
+
+    bool record_level() const {
+        return record_level_;
+    }
+
+    size_t record_cache_limit() const {
+        return record_cache_limit_;
     }
 
     size_t segment_cache_size() {
@@ -737,6 +891,40 @@ private:
     };
 
     static constexpr size_t kDefaultSegmentCacheLimit = 16;
+    static constexpr size_t kDefaultRecordCacheLimit = 64;
+
+    // MOIRA_NATIVE_SPK_EVALUATION: "record" (default) reads only the record
+    // covering each epoch; "segment" preloads whole type 2/3 segments.
+    static bool resolve_record_level() {
+        const char* raw = std::getenv("MOIRA_NATIVE_SPK_EVALUATION");
+        if (raw == nullptr || raw[0] == '\0') {
+            return true;
+        }
+        const std::string mode(raw);
+        if (mode == "record") {
+            return true;
+        }
+        if (mode == "segment") {
+            return false;
+        }
+        throw std::invalid_argument(
+            "MOIRA_NATIVE_SPK_EVALUATION must be 'record' or 'segment'"
+        );
+    }
+
+    // MOIRA_NATIVE_SPK_RECORD_CACHE_MAX: records kept per segment in record mode.
+    static size_t resolve_record_cache_limit() {
+        const char* raw = std::getenv("MOIRA_NATIVE_SPK_RECORD_CACHE_MAX");
+        if (raw == nullptr || raw[0] == '\0') {
+            return kDefaultRecordCacheLimit;
+        }
+        char* end = nullptr;
+        unsigned long long parsed = std::strtoull(raw, &end, 10);
+        if (end == raw || *end != '\0' || parsed == 0) {
+            return kDefaultRecordCacheLimit;
+        }
+        return static_cast<size_t>(parsed);
+    }
 
     static size_t resolve_segment_cache_limit() {
         const char* raw = std::getenv("MOIRA_NATIVE_SEGMENT_CACHE_MAX");
@@ -766,6 +954,9 @@ private:
     std::mutex cache_mutex;
     bool closed_ = false;
     size_t segment_cache_limit_;
+    bool record_level_;
+    size_t record_cache_limit_;
+    std::shared_ptr<SharedSpkRecordFile> record_file_;
     std::list<SegmentCacheKey> segment_cache_lru;
     std::unordered_map<SegmentCacheKey, SegmentCacheEntry, SegmentCacheKeyHash> segment_cache;
 };

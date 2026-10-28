@@ -1,11 +1,16 @@
 #ifndef MOIRA_NATIVE_EVALUATORS_HPP
 #define MOIRA_NATIVE_EVALUATORS_HPP
 
+#include <algorithm>
 #include <cstdint>
 #include <cmath>
+#include <list>
 #include <mutex>
 #include <limits>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 #include <memory>
 #include "interpolation.hpp"
@@ -32,6 +37,25 @@ inline size_t checked_payload_size(
     return first * second * third;
 }
 
+inline size_t validate_chebyshev_dimensions(
+    double init,
+    double intlen,
+    size_t record_count,
+    size_t component_count,
+    size_t coefficient_count,
+    const char* surface
+) {
+    if (!std::isfinite(init) || !std::isfinite(intlen) || intlen <= 0.0) {
+        throw std::invalid_argument(std::string(surface) + ": init and interval must be finite with interval > 0");
+    }
+    if (component_count > 6) {
+        throw std::invalid_argument(std::string(surface) + ": component count exceeds the six-value result vessel");
+    }
+    return checked_payload_size(
+        record_count, component_count, coefficient_count, surface
+    );
+}
+
 inline void validate_chebyshev_payload(
     double init,
     double intlen,
@@ -41,14 +65,8 @@ inline void validate_chebyshev_payload(
     const std::vector<double>& coefficients,
     const char* surface
 ) {
-    if (!std::isfinite(init) || !std::isfinite(intlen) || intlen <= 0.0) {
-        throw std::invalid_argument(std::string(surface) + ": init and interval must be finite with interval > 0");
-    }
-    if (component_count > 6) {
-        throw std::invalid_argument(std::string(surface) + ": component count exceeds the six-value result vessel");
-    }
-    const size_t expected = checked_payload_size(
-        record_count, component_count, coefficient_count, surface
+    const size_t expected = validate_chebyshev_dimensions(
+        init, intlen, record_count, component_count, coefficient_count, surface
     );
     if (coefficients.size() != expected) {
         throw std::invalid_argument(std::string(surface) + ": coefficient payload size does not match dimensions");
@@ -270,6 +288,22 @@ public:
  * Keeps the segment payload resident in native memory so Python does not have
  * to materialize large intermediate structures for first-use segment evaluation.
  */
+/**
+ * @brief Supplies one SPK Chebyshev record's coefficient words on demand.
+ *
+ * A record of an SPK type 2/3 segment is [MID, RADIUS, coefficients...], with
+ * the coefficients component-major in ascending degree. ``read_record`` copies
+ * the coefficient words (MID and RADIUS excluded) of record ``index`` in that
+ * file order into ``out[0 .. component_count * coefficient_count)``. It is the
+ * same word sequence a whole-segment payload read with
+ * ``reverse_coefficients = false`` stores for that record.
+ */
+class ChebyshevRecordSource {
+public:
+    virtual ~ChebyshevRecordSource() = default;
+    virtual void read_record(size_t index, double* out) const = 0;
+};
+
 class SpkSegmentEvaluator : public IEvaluator {
 public:
     int32_t data_type;
@@ -320,6 +354,83 @@ public:
             init, intlen, record_count, component_count, coefficient_count,
             coefficients, "SpkSegmentEvaluator"
         );
+    }
+
+    /**
+     * Record-level Chebyshev evaluator. Coefficients are not preloaded: each
+     * evaluation fetches the one record covering the epoch from ``source``
+     * (file order) and keeps up to ``cache_limit`` recent records. Record
+     * selection, normalized time and the Chebyshev arithmetic are the ones the
+     * whole-segment evaluator uses, applied to the same words, so results are
+     * identical. A non-finite coefficient is reported when its record is first
+     * read rather than when the segment is opened.
+     */
+    SpkSegmentEvaluator(
+        double coverage_start_jd,
+        double coverage_end_jd,
+        int32_t data_type,
+        double init,
+        double intlen,
+        size_t rec_count,
+        size_t comp_count,
+        size_t coeff_count,
+        std::shared_ptr<const ChebyshevRecordSource> source,
+        size_t cache_limit
+    )
+        : data_type(data_type),
+          coefficients_in_file_order(true),
+          coverage_start_jd(coverage_start_jd),
+          coverage_end_jd(coverage_end_jd),
+          init(init),
+          intlen(intlen),
+          record_count(rec_count),
+          component_count(comp_count),
+          coefficient_count(coeff_count),
+          type13_window_size(0),
+          record_source_(std::move(source)),
+          record_cache_limit_(std::max<size_t>(1, cache_limit)) {
+        if (
+            !std::isfinite(coverage_start_jd) || !std::isfinite(coverage_end_jd)
+            || coverage_start_jd > coverage_end_jd
+            || (data_type != 2 && data_type != 3)
+        ) {
+            throw std::invalid_argument("SpkSegmentEvaluator: invalid descriptor metadata");
+        }
+        if (!record_source_) {
+            throw std::invalid_argument("SpkSegmentEvaluator: record source is required");
+        }
+        validate_chebyshev_dimensions(
+            init, intlen, record_count, component_count, coefficient_count,
+            "SpkSegmentEvaluator"
+        );
+    }
+
+    bool record_level() const {
+        return static_cast<bool>(record_source_);
+    }
+
+    size_t cached_record_count() const {
+        std::lock_guard<std::mutex> lock(record_cache_mutex_);
+        return record_cache_.size();
+    }
+
+    /**
+     * Copy record ``index``'s coefficient words, component-major, in this
+     * evaluator's storage order (file order when ``coefficients_in_file_order``).
+     */
+    void copy_record(size_t index, double* out) const {
+        if (data_type != 2 && data_type != 3) {
+            throw std::invalid_argument("Chebyshev records require an SPK type 2 or 3 segment");
+        }
+        if (index >= record_count) {
+            throw std::invalid_argument("SPK evaluator record index is outside descriptor payload");
+        }
+        const size_t words = component_count * coefficient_count;
+        if (record_source_) {
+            load_record(index, out);
+            return;
+        }
+        std::copy_n(coefficients.data() + index * words, words, out);
     }
 
     SpkSegmentEvaluator(
@@ -383,7 +494,8 @@ public:
         }
 
         if (data_type == 2) {
-            const double* ptr = record_ptr(jd, jd2);
+            std::vector<double> scratch;
+            const double* ptr = record_ptr(jd, jd2, scratch);
             const double s = normalized_time(jd, jd2);
             if (coefficients_in_file_order) {
                 spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
@@ -426,7 +538,8 @@ public:
         }
 
         if (data_type == 2) {
-            const double* ptr = record_ptr(jd, jd2);
+            std::vector<double> scratch;
+            const double* ptr = record_ptr(jd, jd2, scratch);
             const double s = normalized_time(jd, jd2);
             const double derivative_scale = 2.0 * 86400.0 / intlen;
             if (coefficients_in_file_order) {
@@ -503,14 +616,58 @@ private:
         return (offset - radius) / radius;
     }
 
-    const double* record_ptr(double jd, double jd2) const {
+    const double* record_ptr(double jd, double jd2, std::vector<double>& scratch) const {
         const auto [index, offset] = epoch_record_and_offset(jd, jd2);
         (void)offset;
-        return coefficients.data() + index * component_count * coefficient_count;
+        const size_t words = component_count * coefficient_count;
+        if (!record_source_) {
+            return coefficients.data() + index * words;
+        }
+        scratch.resize(words);
+        load_record(index, scratch.data());
+        return scratch.data();
     }
 
+    void load_record(size_t index, double* out) const {
+        const size_t words = component_count * coefficient_count;
+        {
+            std::lock_guard<std::mutex> lock(record_cache_mutex_);
+            auto it = record_cache_.find(index);
+            if (it != record_cache_.end()) {
+                record_lru_.splice(record_lru_.begin(), record_lru_, it->second.second);
+                std::copy_n(it->second.first.data(), words, out);
+                return;
+            }
+        }
+        std::vector<double> record(words);
+        record_source_->read_record(index, record.data());
+        for (double value : record) {
+            if (!std::isfinite(value)) {
+                throw std::invalid_argument("SpkSegmentEvaluator: coefficients must be finite");
+            }
+        }
+        std::copy_n(record.data(), words, out);
+        std::lock_guard<std::mutex> lock(record_cache_mutex_);
+        if (record_cache_.find(index) != record_cache_.end()) {
+            return;
+        }
+        record_lru_.push_front(index);
+        record_cache_.emplace(index, std::make_pair(std::move(record), record_lru_.begin()));
+        while (record_cache_.size() > record_cache_limit_) {
+            record_cache_.erase(record_lru_.back());
+            record_lru_.pop_back();
+        }
+    }
+
+    std::shared_ptr<const ChebyshevRecordSource> record_source_;
+    size_t record_cache_limit_ = 0;
+    mutable std::mutex record_cache_mutex_;
+    mutable std::list<size_t> record_lru_;
+    mutable std::unordered_map<size_t, std::pair<std::vector<double>, std::list<size_t>::iterator>> record_cache_;
+
     void evaluate_type3(double jd, double jd2, double* result) const {
-        const double* ptr = record_ptr(jd, jd2);
+        std::vector<double> scratch;
+        const double* ptr = record_ptr(jd, jd2, scratch);
         const double s = normalized_time(jd, jd2);
         if (coefficients_in_file_order) {
             spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
