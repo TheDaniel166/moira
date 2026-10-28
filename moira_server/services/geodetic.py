@@ -5,7 +5,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Moira
-from moira.geodetic import GeodeticChart, geodetic_chart, geodetic_equivalents
+from moira.geodetic import (
+    GeodeticChart,
+    GeodeticGeometryWitness,
+    GeodeticInputUncertainty,
+    GeodeticLocation,
+    GeodeticSensitivityResult,
+    geodetic_chart,
+    geodetic_chart_sensitivity,
+    geodetic_equivalents,
+    geodetic_geometry,
+)
+from moira.geodetic_analysis import GeodeticHouseChart, geodetic_house_chart
+from moira.geodetic_uncertainty import (
+    GeodeticDiagnosticPolicy,
+    GeodeticNonlinearityResult,
+    diagnose_geodetic_uncertainty,
+)
+from moira.houses import HousePolicy
 from moira.julian import utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 from moira.sidereal import ayanamsa
@@ -18,6 +35,10 @@ from ..models.geodetic import (
     GeodeticChartBackedEquivalentsRequest,
     GeodeticDirectChartRequest,
     GeodeticDirectEquivalentsRequest,
+    GeodeticDirectHousesRequest,
+    GeodeticGeometryRequest,
+    GeodeticSensitivityRequest,
+    GeodeticUncertaintyRequest,
     ZodiacName,
 )
 from ._shared import build_chart_context, require_supported_chart_bodies
@@ -307,12 +328,113 @@ def _chart_provenance(
         stage_sequence=stage_sequence,
     )
 
+# -- Kernel-free Geodetic analysis --------------------------------------------
+# These never touch the engine: every input is supplied by the caller.
+
+DIRECT_HOUSES_STAGE_SEQUENCE = (
+    "direct_geographic_validation",
+    "zodiac_policy_validation",
+    "obliquity_validation",
+    "house_policy_resolution",
+    "geodetic_house_computation",
+    "response_materialization",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class GeodeticHousesResult:
+    house_chart: GeodeticHouseChart
+    provenance: GeodeticProvenance
+
+
+def _direct_chart(request: GeodeticDirectChartRequest) -> GeodeticChart:
+    return geodetic_chart(
+        request.geo_longitude,
+        request.geo_latitude,
+        request.obliquity,
+        ayanamsa_deg=_direct_ayanamsa(request.zodiac, request.ayanamsa_deg),
+        zodiac=request.zodiac,
+    )
+
+
+def _uncertainty(request) -> GeodeticInputUncertainty:
+    return GeodeticInputUncertainty(
+        longitude_deg=request.uncertainty.longitude_deg,
+        latitude_deg=request.uncertainty.latitude_deg,
+        obliquity_deg=request.uncertainty.obliquity_deg,
+    )
+
+
+def compute_geodetic_direct_houses(request: GeodeticDirectHousesRequest) -> GeodeticHousesResult:
+    ayanamsa_deg = _direct_ayanamsa(request.zodiac, request.ayanamsa_deg)
+    # The Geodetic owner defaults to a strict house policy; an explicit
+    # transport policy replaces it, field for field.
+    house_policy = (
+        None if request.policy is None
+        else HousePolicy(
+            unknown_system=request.policy.unknown_system,
+            polar_fallback=request.policy.polar_fallback,
+        )
+    )
+    figure = geodetic_house_chart(
+        GeodeticLocation(request.geo_latitude, request.geo_longitude),
+        obliquity=request.obliquity,
+        system=request.system,
+        zodiac=request.zodiac,
+        ayanamsa_deg=ayanamsa_deg if request.zodiac == "sidereal" else None,
+        house_policy=house_policy,
+        sun_longitude=request.sun_longitude,
+    )
+    return GeodeticHousesResult(
+        house_chart=figure,
+        provenance=GeodeticProvenance(
+            requested_datetime=None,
+            normalized_datetime_utc=None,
+            jd_ut=None,
+            jd_tt=None,
+            obliquity_deg=request.obliquity,
+            zodiac=request.zodiac,
+            ayanamsa_system=None,
+            ayanamsa_deg=ayanamsa_deg,
+            requested_bodies=None,
+            returned_bodies=(),
+            coordinate_source="direct_geographic_obliquity",
+            stage_sequence=DIRECT_HOUSES_STAGE_SEQUENCE,
+        ),
+    )
+
+
+def compute_geodetic_geometry(request: GeodeticGeometryRequest) -> GeodeticGeometryWitness:
+    return geodetic_geometry(request.geo_longitude, request.geo_latitude, request.obliquity)
+
+
+def compute_geodetic_sensitivity(request: GeodeticSensitivityRequest) -> GeodeticSensitivityResult:
+    return geodetic_chart_sensitivity(_direct_chart(request), _uncertainty(request))
+
+
+def compute_geodetic_uncertainty(request: GeodeticUncertaintyRequest) -> GeodeticNonlinearityResult:
+    return diagnose_geodetic_uncertainty(
+        _direct_chart(request),
+        _uncertainty(request),
+        policy=GeodeticDiagnosticPolicy(
+            residual_tolerance_deg=request.policy.residual_tolerance_deg,
+            max_evaluations=request.policy.max_evaluations,
+            max_depth=request.policy.max_depth,
+        ),
+    )
+
+
 __all__ = [
     "GeodeticChartResult",
     "GeodeticEquivalentsResult",
+    "GeodeticHousesResult",
     "GeodeticProvenance",
     "compute_geodetic_chart_backed_chart",
     "compute_geodetic_chart_backed_equivalents",
     "compute_geodetic_direct_chart",
     "compute_geodetic_direct_equivalents",
+    "compute_geodetic_direct_houses",
+    "compute_geodetic_geometry",
+    "compute_geodetic_sensitivity",
+    "compute_geodetic_uncertainty",
 ]

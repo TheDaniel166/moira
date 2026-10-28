@@ -13,17 +13,33 @@ from ..models.geodetic import (
     GeodeticChartEnvelopeResponse,
     GeodeticDirectChartRequest,
     GeodeticDirectEquivalentsRequest,
+    GeodeticDirectHousesRequest,
     GeodeticEquivalentsResponse,
+    GeodeticGeometryRequest,
+    GeodeticGeometryResponse,
+    GeodeticHousesResponse,
+    GeodeticSensitivityRequest,
+    GeodeticSensitivityResponse,
+    GeodeticUncertaintyRequest,
+    GeodeticUncertaintyResponse,
 )
 from ..serializers.geodetic import (
     serialize_geodetic_chart_result,
     serialize_geodetic_equivalents_result,
+    serialize_geodetic_geometry,
+    serialize_geodetic_houses_result,
+    serialize_geodetic_sensitivity,
+    serialize_geodetic_uncertainty,
 )
 from ..services.geodetic import (
     compute_geodetic_chart_backed_chart,
     compute_geodetic_chart_backed_equivalents,
     compute_geodetic_direct_chart,
     compute_geodetic_direct_equivalents,
+    compute_geodetic_direct_houses,
+    compute_geodetic_geometry,
+    compute_geodetic_sensitivity,
+    compute_geodetic_uncertainty,
 )
 
 
@@ -66,3 +82,30 @@ def geodetic_chart_equivalents_route(
     return serialize_geodetic_equivalents_result(
         compute_geodetic_chart_backed_equivalents(engine, request)
     )
+
+
+# -- Kernel-free Geodetic analysis: every input is supplied; no engine access.
+
+
+@router.post("/houses", response_model=GeodeticHousesResponse)
+def geodetic_houses_route(request: GeodeticDirectHousesRequest) -> GeodeticHousesResponse:
+    """Twelve-house Geodetic figure from supplied location, obliquity and system."""
+    return serialize_geodetic_houses_result(compute_geodetic_direct_houses(request))
+
+
+@router.post("/geometry", response_model=GeodeticGeometryResponse)
+def geodetic_geometry_route(request: GeodeticGeometryRequest) -> GeodeticGeometryResponse:
+    """Geometry witness: conditioning, polar, coincident-plane and tie status."""
+    return serialize_geodetic_geometry(compute_geodetic_geometry(request))
+
+
+@router.post("/sensitivity", response_model=GeodeticSensitivityResponse)
+def geodetic_sensitivity_route(request: GeodeticSensitivityRequest) -> GeodeticSensitivityResponse:
+    """First-order MC/ASC response to input uncertainty; local, not a bound."""
+    return serialize_geodetic_sensitivity(compute_geodetic_sensitivity(request))
+
+
+@router.post("/uncertainty", response_model=GeodeticUncertaintyResponse)
+def geodetic_uncertainty_route(request: GeodeticUncertaintyRequest) -> GeodeticUncertaintyResponse:
+    """Nonlinear uncertainty diagnostic; sampled maxima are not error bounds."""
+    return serialize_geodetic_uncertainty(compute_geodetic_uncertainty(request))

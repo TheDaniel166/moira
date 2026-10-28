@@ -1,9 +1,11 @@
 # Geodetic Analysis Standard
 
-Version: 1.1
+Version: 1.2
 Date: 2026-10-28
 Status: Python engine implementation with `Moira` facade methods (section 7);
-no additional REST admission
+kernel-free REST for houses, geometry, sensitivity and uncertainty only (see
+`GEODETIC_BACKEND_STANDARD.md` section 7). Snapshot, overlay, comparison,
+loci and timing have no REST admission.
 
 This document governs the six Geodetic expansions and their common body
 inputs. Existing scalar/dictionary APIs retain their shapes. Undefined geometry

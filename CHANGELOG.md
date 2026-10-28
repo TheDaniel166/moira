@@ -20,6 +20,15 @@ publication, or production pin is implied by these entries.
     reuses its UT1/TT and offset.
   - Each equals the hand-built composition exactly.
   - No `moira.facade` module export or REST route is added.
+- **Kernel-Free Geodetic Analysis REST**:
+  - New routes `POST /v1/geodetic/houses`, `/geometry`, `/sensitivity` and
+    `/uncertainty`. Every input is supplied by the caller, and none touches
+    the engine.
+  - Each route calls one owning function, and its output equals that call
+    exactly.
+  - `/houses` defaults to the Geodetic strict house policy.
+  - `/geometry` admits latitudes up to ±90 so `polar_refusal` is reportable.
+  - `/uncertainty` caps sampling at 4096 evaluations.
 - **Geodetic Analysis Expansion**: added explicit immutable body snapshots,
   full house figures, static overlays, segmented inverse angle loci, supplied-
   place comparisons, and fixed-reference transit timing in their owning

@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 546
-- Registered OpenAPI operations: 546 (GET 51, POST 495)
+- Registered OpenAPI paths: 550
+- Registered OpenAPI operations: 550 (GET 51, POST 499)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 542
+- Versioned `/v1` paths: 546
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3662,7 +3662,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/geodetic/chart/equivalents` | geodetic | `geodetic_chart_equivalents_route_v1_geodetic_chart_equivalents_post` |
 | `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
 | `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
+| `POST` | `/v1/geodetic/geometry` | geodetic | `geodetic_geometry_route_v1_geodetic_geometry_post` |
+| `POST` | `/v1/geodetic/houses` | geodetic | `geodetic_houses_route_v1_geodetic_houses_post` |
 | `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
+| `POST` | `/v1/geodetic/sensitivity` | geodetic | `geodetic_sensitivity_route_v1_geodetic_sensitivity_post` |
+| `POST` | `/v1/geodetic/uncertainty` | geodetic | `geodetic_uncertainty_route_v1_geodetic_uncertainty_post` |
 | `GET` | `/v1/gochara/doctrine-options` | gochara | `doctrine_route_v1_gochara_doctrine_options_get` |
 | `POST` | `/v1/gochara/evaluate` | gochara | `evaluate_route_v1_gochara_evaluate_post` |
 | `POST` | `/v1/gochara/from-datetimes` | gochara | `datetimes_route_v1_gochara_from_datetimes_post` |

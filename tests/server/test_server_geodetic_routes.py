@@ -190,11 +190,17 @@ def test_geodetic_routes_are_registered(client_with_engine: TestClient) -> None:
         if route.path.startswith("/v1/geodetic")
     }
 
+    # Exact admitted set (GEODETIC_BACKEND_STANDARD.md section 7). A new route
+    # must be admitted there and here deliberately.
     assert paths == {
         "/v1/geodetic/location-chart",
         "/v1/geodetic/chart/location-chart",
         "/v1/geodetic/equivalents",
         "/v1/geodetic/chart/equivalents",
+        "/v1/geodetic/houses",
+        "/v1/geodetic/geometry",
+        "/v1/geodetic/sensitivity",
+        "/v1/geodetic/uncertainty",
     }
 
 

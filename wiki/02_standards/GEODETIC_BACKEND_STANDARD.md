@@ -1,7 +1,7 @@
 # Geodetic Backend Standard
 
-Version: 0.6
-Date: 2026-10-22
+Version: 0.7
+Date: 2026-10-28
 Status: Active contract for the admitted Phase 10 REST subset
 Scope: `moira.geodetic`
 
@@ -313,6 +313,21 @@ P10-03 currently admits `POST /v1/geodetic/location-chart`,
 service admission, serializers and route counts are unchanged by the Python
 analysis expansion. See `moira_server/routers/geodetic.py` and the Phase 10
 ledger for the bounded transport contract.
+
+A second, kernel-free step (2026-10-28) admits four direct analysis routes.
+Every input is caller-supplied; they never consult the engine or an ephemeris,
+and each calls exactly one owning function:
+
+| Route | Owner | Notes |
+| --- | --- | --- |
+| `POST /v1/geodetic/houses` | `geodetic_analysis.geodetic_house_chart` | Explicit `system`; an absent `policy` means `HousePolicy.strict()` (the owner's default, not the chart routes' fallback); solar systems need `sun_longitude` |
+| `POST /v1/geodetic/geometry` | `geodetic.geodetic_geometry` | Admits latitude to ±90 so `polar_refusal` is reportable; no zodiac |
+| `POST /v1/geodetic/sensitivity` | `geodetic.geodetic_chart_sensitivity` | `first_order_local_not_a_bound` |
+| `POST /v1/geodetic/uncertainty` | `geodetic_uncertainty.diagnose_geodetic_uncertainty` | `max_evaluations` ≤ 4096 (the engine default); sampled maxima are not bounds |
+
+The direct lane law, the polar admission limit (except geometry) and the Earth
+obliquity envelope are shared with `/location-chart`. Route output equals the
+owning call exactly (`tests/server/test_server_geodetic_analysis_routes.py`).
 
 Do not admit rendered map, projection, geographic search, relocation synthesis,
 or primitive-helper-only routes as part of first P10-03 transport.
