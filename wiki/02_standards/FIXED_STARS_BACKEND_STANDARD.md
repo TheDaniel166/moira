@@ -1,8 +1,8 @@
 # Fixed Stars Backend Standard
 
-Version: 0.3 (draft)<br>
+Version: 0.4 (draft)<br>
 Date: 2026-10-29<br>
-Status: Phases 0-3 implemented; Phase 4 planned
+Status: Phases 0-4 implemented; Phase 5 (documentation and release evidence) planned
 Scope: catalog-star positions from the sovereign star registry
 
 This standard governs:
@@ -129,6 +129,10 @@ at most 0.005 arcsec between 1800 and 2200, 0.11 arcsec at 1000 CE, and
 `FixedStarTruth.position_product` names the product: `astrometric`,
 `apparent`, or `geometric`.
 
+`FixedStarTruth.motion_model` names the stage-1 model: `straight_line`, or
+`binary_orbit` for a component placed about its system's barycentre
+(Section 6).
+
 `FixedStarTruth.true_position` is a legacy flag kept for REST compatibility.
 It is `True` only for the `geometric` product. Earlier releases set it on the
 `astrometric` product, which was a mislabel.
@@ -191,12 +195,94 @@ arcsec (Barnard's Star, 2100). Gate: 0.001 arcsec, in
 A component of a resolved binary with a published orbit is placed at the
 system barycenter plus its share of the relative orbit:
 
-- barycenter: straight-line space motion of the system;
-- relative orbit: `moira.multiple_stars` elements and its Kepler solution;
-- component offset: the relative offset times the component's mass fraction.
+- **barycenter:** straight-line space motion of the system's own astrometry
+  (stage 1, the same core as every other star);
+- **relative orbit:** the `moira.multiple_stars` elements, through Kepler's
+  equation and the Thiele-Innes projection: the offset of B from A, toward
+  east and north of J2000;
+- **component offset:** with q = m_B / (m_A + m_B), A sits at −q times the
+  relative offset and B at (1 − q) times it.
 
-A component without an admitted orbit keeps straight-line propagation of its
-own catalog values, and its result records that.
+The offset is laid in the plane of the sky at the barycenter's reference
+position, so the orbit stays fixed in space while the line of sight turns.
+Its physical size follows from the reference parallax, so its angular size
+changes with the system's distance. The orbit is evaluated at the date the
+light is received, as its elements were fitted to observation dates.
+
+The registry row of a component is unchanged: it records the astrometry its
+source measured. `star_at` and every stage-1 consumer use the orbit model
+for the components listed below; the result's `motion_model` is
+`binary_orbit`. A component without an admitted orbit, including Proxima
+Centauri, keeps straight-line propagation of its own row.
+
+| Registry star | System, component | Orbit | Barycenter |
+|---|---|---|---|
+| Sirius | Sirius A | Bond et al. 2017, Table 4 (ORB6 BdH2017) | Hipparcos 1997 HIP 32349 orbital solution |
+| Rigil Kentaurus | α Centauri A | Akeson et al. 2021, Table 8 (ORB6 Ake2021) | refit, Section 6.2 |
+| Toliman | α Centauri B | Akeson et al. 2021, Table 8 | refit, Section 6.2 |
+
+### 6.1 Sirius
+
+The Hipparcos Catalogue solved Sirius with an orbital model (multiplicity
+flag `O`, astrometric reference flag `+`): its position and proper motion at
+J1991.25 already describe the centre of mass. The registry row, taken from
+SIMBAD, is that same solution moved to J2000, so it is the barycenter, not
+Sirius A. The barycenter uses Bond et al.'s adopted parallax (378.9 mas) and
+their system radial velocity corrected for Sirius A's gravitational redshift
+(−8.47 km/s); q = a_A / a = 2.4761 / 7.4957. Sirius A lies up to 3.9 arcsec
+from the barycenter; at 2000 the orbit model moves it 1.5 arcsec from the
+straight-line row.
+
+The orbit elements `moira.multiple_stars` carried before Phase 4 were
+labelled Bond et al. 2017 but were older values (P = 50.090 yr,
+a = 7.56 arcsec, T = 1994.3); they are replaced by Bond's Table 4.
+
+### 6.2 α Centauri barycenter refit
+
+Akeson et al. (2021) fitted the barycenter position and proper motion to the
+absolute Hipparcos and ALMA positions of A and B. Their machine-readable
+ephemeris (Table 12) is reproduced to 0.3 mas at 2010 by moving the
+barycenter at constant rates in right ascension and declination. Straight-line
+motion in space, which ERFA `pmsafe`, astropy and Moira agree on to 0.01 mas,
+departs from that path by 0.1-0.2 mas/yr²: with the published proper
+motion it misses the Hipparcos position of A by 47 mas and Akeson's tabulated
+barycenter by 94 mas at 2050.
+
+Moira therefore refits the barycenter position and proper motion at J2019.5
+to the same measurements (18 ALMA positions with Akeson's 3 mas systematic
+uncertainty, 6 mas for October 2018; the van Leeuwen 2007 Hipparcos positions
+of A and B with their catalog errors), with straight-line space motion and
+Akeson's orbit, parallax, radial velocity and mass fraction held fixed. The
+refit moves the proper motion by (−0.77, +1.53) mas/yr and the position by
+2 mas. `tests/support/binary_star_barycentre.py` performs the fit and the
+integration test re-derives the catalog values from
+`tests/fixtures/binary_star_orbit_references_2026_10_29.json`.
+
+### 6.3 Measured on 2026-10-29
+
+| Check | Evidence class | Sample | Result | Gate |
+|---|---|---|---|---|
+| Relative orbits vs ORB6 ephemerides (position angle precessed to the equinox of date with ERFA `pmat06`) | authority validation | 2 systems × 5 years, 2025-2029 | 0.04° and 0.0004 arcsec worst | 0.06°, 0.0008 arcsec |
+| Sirius B relative to A vs Bond et al. HST measures | authority validation | 17 epochs, 1997-2016 | median 0.006, worst 0.016 arcsec | 0.025 arcsec |
+| α Cen B relative to A vs Akeson Table 12 | authority validation | 41 years, 2010-2050 | 0.0014 arcsec worst | 0.003 arcsec |
+| α Cen A and B vs ALMA absolute positions (with Moira's DE441 parallax) | authority validation | 18 positions, 2018-2019 | RMS 7.1 mas, worst 14.6 mas | 10, 20 mas |
+| α Cen A and B vs Hipparcos (J1991.25) | authority validation | 2 positions | A 1.4 mas; B 57 mas (2.7σ) | 3σ per coordinate |
+| Barycenter motion vs ERFA `pmsafe` | authority validation | 2 systems × 1000, 1800, 2200, 3000 | below 0.01 arcsec | 0.01 arcsec |
+| Offsets balance about the barycenter; component inside its orbit | invariant | −1000 to 3000, every 50 years | holds | — |
+| Every other star unchanged | regression parity | 1,806 stars and 60 deep-sky objects at 7 epochs | bit-identical | exact |
+
+Without the orbit model, straight-line propagation of the α Centauri rows
+(instantaneous Hipparcos proper motions) strays from the orbit model by 50
+arcsec (A) and 28 arcsec (B) at 1800 and by 234 and 114 arcsec at 1000 CE.
+
+### 6.4 Other consumers
+
+- The native heliacal evaluator moves a star in a straight line. For a
+  binary component it receives the chord of the stage-1 track over the search
+  window (position at the midpoint, proper motion joining the ends), which
+  stays within 0.1 arcsec of the orbit over 400 days.
+- The Gochara interval enclosure has no orbit enclosure; it refuses a binary
+  component as a live sidereal anchor. No current ayanamsa anchor is one.
 
 ## 7. Validation
 
@@ -205,7 +291,7 @@ own catalog values, and its result records that.
 | Stage 1 (`astrometric`, `geometric`) | ERFA `pmsafe` (rigorous space motion) | authority validation |
 | `apparent` | ERFA `apcg` with Moira's DE441 Earth state, then `atciq`; ERFA `atci13` as an independent-Earth check | authority validation |
 | Frame | ERFA `pnm06a` with the true obliquity | authority validation |
-| Binary components | ORB6 ephemerides and the source orbit papers; separation and position angle | authority validation |
+| Binary components | ORB6 ephemerides, Bond et al. 2017 HST measures, Akeson et al. 2021 ephemeris and ALMA/Hipparcos positions (Section 6.3) | authority validation |
 | Refactors | the pre-change output for every registry star | regression parity |
 | Swiss Ephemeris | any product | cross-engine corroboration only |
 

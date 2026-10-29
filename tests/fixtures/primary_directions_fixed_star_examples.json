@@ -15,9 +15,9 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 104.07779911495244,
-    "expected_latitude": -39.60523763643798,
-    "expected_arc": 18.809564925915055
+    "expected_longitude": 104.07749769750625,
+    "expected_latitude": -39.604900732132286,
+    "expected_arc": 18.80977062393532
   },
   {
     "example_id": "fixed_star_ptolemy_algol_to_mc",
@@ -55,9 +55,9 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 104.07779911495244,
-    "expected_latitude": -39.60523763643798,
-    "expected_arc": 35.79052932375116
+    "expected_longitude": 104.07749769750625,
+    "expected_latitude": -39.604900732132286,
+    "expected_arc": 35.790735021771425
   },
   {
     "example_id": "fixed_star_ptolemy_algol_to_sun",

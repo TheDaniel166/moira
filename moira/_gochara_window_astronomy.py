@@ -45,6 +45,10 @@ _INTERVAL_ARITHMETIC = StellarArithmetic(
 
 def _propagate(record, tt):
     """Interval enclosure of the fixed-star astrometric direction at ``tt``."""
+    if stars._motion_model(record) != stars.MOTION_STRAIGHT_LINE:
+        # Stage 1 places a binary component on its orbit; that path has no
+        # certified interval enclosure here.
+        raise GocharaResourceError("live anchor is a binary component without an interval orbit enclosure")
     values = (record.ra_deg, record.dec_deg, record.pmra_mas_yr,
               record.pmdec_mas_yr, record.radial_velocity_km_s, record.ref_epoch_jd)
     if not all(isfinite(v) for v in values):

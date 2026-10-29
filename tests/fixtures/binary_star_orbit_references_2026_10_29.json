@@ -1,0 +1,743 @@
+{
+  "schema": "moira.binary_star_orbit_references.v1",
+  "retrieved": "2026-10-29",
+  "purpose": "Authority data for the Sirius and alpha Centauri component positions (FIXED_STARS_BACKEND_STANDARD.md, Section 6). Values are transcribed unchanged.",
+  "sources": {
+    "orb6": "Sixth Catalog of Orbits of Visual Binary Stars, ephemerides, http://www.astro.gsu.edu/wds/orb6/orb6ephem.txt (position angles for the equinox of date)",
+    "bond2017": "Bond et al. 2017, ApJ 840, 70 (arXiv:1703.10625 source), Table 2",
+    "akeson2021": "Akeson et al. 2021, AJ 162, 14 (arXiv:2104.10086 source), Tables 2, 8, 9 and the machine-readable Table 12 (datafile12.txt)",
+    "hipparcos_2007": "van Leeuwen 2007, Hipparcos new reduction, ESA Gaia archive table public.hipparcos_newreduction (positions at J1991.25)",
+    "hipparcos_1997": "ESA 1997, The Hipparcos Catalogue, ESA Gaia archive table public.hipparcos"
+  },
+  "orb6_ephemerides": {
+    "Sirius": {
+      "line": "06451-1643 AGC   1AB         2    BdH2017      59.0  11.256     57.1  11.163     55.2  11.032     53.3  10.861     51.2  10.648",
+      "reference_code": "BdH2017",
+      "rows": [
+        {
+          "year": 2025.0,
+          "theta_deg": 59.0,
+          "rho_arcsec": 11.256
+        },
+        {
+          "year": 2026.0,
+          "theta_deg": 57.1,
+          "rho_arcsec": 11.163
+        },
+        {
+          "year": 2027.0,
+          "theta_deg": 55.2,
+          "rho_arcsec": 11.032
+        },
+        {
+          "year": 2028.0,
+          "theta_deg": 53.3,
+          "rho_arcsec": 10.861
+        },
+        {
+          "year": 2029.0,
+          "theta_deg": 51.2,
+          "rho_arcsec": 10.648
+        }
+      ]
+    },
+    "Alpha Centauri": {
+      "line": "14396-6050 RHD   1AB         2    Ake2021       9.2   8.737     11.9   9.294     14.3   9.765     16.5  10.121     18.6  10.329",
+      "reference_code": "Ake2021",
+      "rows": [
+        {
+          "year": 2025.0,
+          "theta_deg": 9.2,
+          "rho_arcsec": 8.737
+        },
+        {
+          "year": 2026.0,
+          "theta_deg": 11.9,
+          "rho_arcsec": 9.294
+        },
+        {
+          "year": 2027.0,
+          "theta_deg": 14.3,
+          "rho_arcsec": 9.765
+        },
+        {
+          "year": 2028.0,
+          "theta_deg": 16.5,
+          "rho_arcsec": 10.121
+        },
+        {
+          "year": 2029.0,
+          "theta_deg": 18.6,
+          "rho_arcsec": 10.329
+        }
+      ]
+    }
+  },
+  "bond2017_hst_relative": [
+    {
+      "ut_date": "1997 Mar 19",
+      "besselian_year": 1997.2137,
+      "rho_arcsec": 3.6811,
+      "sigma_rho_arcsec": 0.004,
+      "theta_j2000_deg": 191.864,
+      "sigma_theta_deg": 0.065,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "1997 May 18",
+      "besselian_year": 1997.3782,
+      "rho_arcsec": 3.7229,
+      "sigma_rho_arcsec": 0.0047,
+      "theta_j2000_deg": 188.996,
+      "sigma_theta_deg": 0.076,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2001 Oct 27",
+      "besselian_year": 2001.8209,
+      "rho_arcsec": 5.1909,
+      "sigma_rho_arcsec": 0.0042,
+      "theta_j2000_deg": 132.6,
+      "sigma_theta_deg": 0.049,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2002 May 10",
+      "besselian_year": 2002.3562,
+      "rho_arcsec": 5.4271,
+      "sigma_rho_arcsec": 0.0042,
+      "theta_j2000_deg": 128.119,
+      "sigma_theta_deg": 0.047,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2002 Oct 20",
+      "besselian_year": 2002.8012,
+      "rho_arcsec": 5.6285,
+      "sigma_rho_arcsec": 0.0041,
+      "theta_j2000_deg": 124.654,
+      "sigma_theta_deg": 0.044,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2003 Apr 18",
+      "besselian_year": 2003.2942,
+      "rho_arcsec": 5.8598,
+      "sigma_rho_arcsec": 0.0043,
+      "theta_j2000_deg": 121.202,
+      "sigma_theta_deg": 0.044,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2003 Oct 15",
+      "besselian_year": 2003.7879,
+      "rho_arcsec": 6.0894,
+      "sigma_rho_arcsec": 0.0041,
+      "theta_j2000_deg": 117.913,
+      "sigma_theta_deg": 0.041,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2004 Aug 15",
+      "besselian_year": 2004.6224,
+      "rho_arcsec": 6.4675,
+      "sigma_rho_arcsec": 0.004,
+      "theta_j2000_deg": 113.025,
+      "sigma_theta_deg": 0.038,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2005 Apr 20",
+      "besselian_year": 2005.3012,
+      "rho_arcsec": 6.7901,
+      "sigma_rho_arcsec": 0.0042,
+      "theta_j2000_deg": 109.353,
+      "sigma_theta_deg": 0.037,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2006 Jan 15",
+      "besselian_year": 2006.0415,
+      "rho_arcsec": 7.1261,
+      "sigma_rho_arcsec": 0.0041,
+      "theta_j2000_deg": 105.823,
+      "sigma_theta_deg": 0.034,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2006 Dec 27",
+      "besselian_year": 2006.9883,
+      "rho_arcsec": 7.5551,
+      "sigma_rho_arcsec": 0.0041,
+      "theta_j2000_deg": 101.725,
+      "sigma_theta_deg": 0.033,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2008 Jan 03",
+      "besselian_year": 2008.0072,
+      "rho_arcsec": 7.9858,
+      "sigma_rho_arcsec": 0.0041,
+      "theta_j2000_deg": 97.585,
+      "sigma_theta_deg": 0.031,
+      "source": "WFPC2 F1042M spike fit"
+    },
+    {
+      "ut_date": "2010 Sep 02",
+      "besselian_year": 2010.6697,
+      "rho_arcsec": 9.0224,
+      "sigma_rho_arcsec": 0.0029,
+      "theta_j2000_deg": 88.952,
+      "sigma_theta_deg": 0.019,
+      "source": "WFC3 F953N average"
+    },
+    {
+      "ut_date": "2011 Oct 01",
+      "besselian_year": 2011.7484,
+      "rho_arcsec": 9.3956,
+      "sigma_rho_arcsec": 0.0029,
+      "theta_j2000_deg": 85.938,
+      "sigma_theta_deg": 0.018,
+      "source": "WFC3 F953N average"
+    },
+    {
+      "ut_date": "2012 Sep 26",
+      "besselian_year": 2012.7392,
+      "rho_arcsec": 9.7128,
+      "sigma_rho_arcsec": 0.0031,
+      "theta_j2000_deg": 83.387,
+      "sigma_theta_deg": 0.019,
+      "source": "WFC3 F953N average"
+    },
+    {
+      "ut_date": "2014 Mar 31",
+      "besselian_year": 2014.2455,
+      "rho_arcsec": 10.1454,
+      "sigma_rho_arcsec": 0.0028,
+      "theta_j2000_deg": 79.85,
+      "sigma_theta_deg": 0.016,
+      "source": "WFC3 F953N average"
+    },
+    {
+      "ut_date": "2016 Aug 20",
+      "besselian_year": 2016.6361,
+      "rho_arcsec": 10.6983,
+      "sigma_rho_arcsec": 0.0028,
+      "theta_j2000_deg": 74.645,
+      "sigma_theta_deg": 0.016,
+      "source": "WFC3 F953N average"
+    }
+  ],
+  "akeson2021_alma_absolute": {
+    "note": "ICRS positions measured by ALMA, phase-referenced to quasars: geocentric directions that include annual parallax. Akeson et al. assign a 3 mas systematic uncertainty to each, 6 mas to 14-Oct-2018.",
+    "rows": [
+      {
+        "date": "14-Oct-2018",
+        "start_time_ut": "13:38:19.0",
+        "star": "A",
+        "ra_deg": 219.86076325,
+        "dec_deg": -60.832171539,
+        "sigma_ra_cosdec_arcsec": 0.0039,
+        "sigma_dec_arcsec": 0.0035
+      },
+      {
+        "date": "14-Oct-2018",
+        "start_time_ut": "13:38:19.0",
+        "star": "B",
+        "ra_deg": 219.859663542,
+        "dec_deg": -60.830951061,
+        "sigma_ra_cosdec_arcsec": 0.004,
+        "sigma_dec_arcsec": 0.0039
+      },
+      {
+        "date": "15-Jul-2019",
+        "start_time_ut": "23:14:41.3",
+        "star": "A",
+        "ra_deg": 219.858859933,
+        "dec_deg": -60.832264944,
+        "sigma_ra_cosdec_arcsec": 0.0007,
+        "sigma_dec_arcsec": 0.001
+      },
+      {
+        "date": "15-Jul-2019",
+        "start_time_ut": "23:14:41.3",
+        "star": "B",
+        "ra_deg": 219.857984904,
+        "dec_deg": -60.830881649,
+        "sigma_ra_cosdec_arcsec": 0.0007,
+        "sigma_dec_arcsec": 0.001
+      },
+      {
+        "date": "16-Jul-2019",
+        "start_time_ut": "01:15:31.1",
+        "star": "A",
+        "ra_deg": 219.858854542,
+        "dec_deg": -60.832262378,
+        "sigma_ra_cosdec_arcsec": 0.0019,
+        "sigma_dec_arcsec": 0.0014
+      },
+      {
+        "date": "16-Jul-2019",
+        "start_time_ut": "01:15:31.1",
+        "star": "B",
+        "ra_deg": 219.857979,
+        "dec_deg": -60.830879128,
+        "sigma_ra_cosdec_arcsec": 0.0018,
+        "sigma_dec_arcsec": 0.0013
+      },
+      {
+        "date": "19-Jul-2019",
+        "start_time_ut": "23:31:14.5",
+        "star": "A",
+        "ra_deg": 219.858829571,
+        "dec_deg": -60.832252293,
+        "sigma_ra_cosdec_arcsec": 0.0004,
+        "sigma_dec_arcsec": 0.0007
+      },
+      {
+        "date": "19-Jul-2019",
+        "start_time_ut": "23:31:14.5",
+        "star": "B",
+        "ra_deg": 219.857957646,
+        "dec_deg": -60.83086672,
+        "sigma_ra_cosdec_arcsec": 0.0004,
+        "sigma_dec_arcsec": 0.0007
+      },
+      {
+        "date": "20-Jul-2019",
+        "start_time_ut": "01:02:29.9",
+        "star": "A",
+        "ra_deg": 219.858827083,
+        "dec_deg": -60.832253354,
+        "sigma_ra_cosdec_arcsec": 0.0005,
+        "sigma_dec_arcsec": 0.0005
+      },
+      {
+        "date": "20-Jul-2019",
+        "start_time_ut": "01:02:29.9",
+        "star": "B",
+        "ra_deg": 219.857955246,
+        "dec_deg": -60.830867652,
+        "sigma_ra_cosdec_arcsec": 0.0006,
+        "sigma_dec_arcsec": 0.0007
+      },
+      {
+        "date": "12-Aug-2019",
+        "start_time_ut": "23:10:35.2",
+        "star": "A",
+        "ra_deg": 219.858667583,
+        "dec_deg": -60.832185858,
+        "sigma_ra_cosdec_arcsec": 0.0068,
+        "sigma_dec_arcsec": 0.0057
+      },
+      {
+        "date": "12-Aug-2019",
+        "start_time_ut": "23:10:35.2",
+        "star": "B",
+        "ra_deg": 219.857814792,
+        "dec_deg": -60.830785642,
+        "sigma_ra_cosdec_arcsec": 0.0071,
+        "sigma_dec_arcsec": 0.0061
+      },
+      {
+        "date": "13-Aug-2019",
+        "start_time_ut": "00:44:57.6",
+        "star": "A",
+        "ra_deg": 219.858669208,
+        "dec_deg": -60.832186997,
+        "sigma_ra_cosdec_arcsec": 0.0049,
+        "sigma_dec_arcsec": 0.0037
+      },
+      {
+        "date": "13-Aug-2019",
+        "start_time_ut": "00:44:57.6",
+        "star": "B",
+        "ra_deg": 219.857817458,
+        "dec_deg": -60.830787197,
+        "sigma_ra_cosdec_arcsec": 0.0047,
+        "sigma_dec_arcsec": 0.0035
+      },
+      {
+        "date": "25-Aug-2019",
+        "start_time_ut": "23:33:45.5",
+        "star": "A",
+        "ra_deg": 219.858615833,
+        "dec_deg": -60.832153722,
+        "sigma_ra_cosdec_arcsec": 0.0035,
+        "sigma_dec_arcsec": 0.002
+      },
+      {
+        "date": "25-Aug-2019",
+        "start_time_ut": "23:33:45.5",
+        "star": "B",
+        "ra_deg": 219.857773917,
+        "dec_deg": -60.830746378,
+        "sigma_ra_cosdec_arcsec": 0.0043,
+        "sigma_dec_arcsec": 0.0024
+      },
+      {
+        "date": "26-Aug-2019",
+        "start_time_ut": "20:07:30.6",
+        "star": "A",
+        "ra_deg": 219.858613375,
+        "dec_deg": -60.832152358,
+        "sigma_ra_cosdec_arcsec": 0.0016,
+        "sigma_dec_arcsec": 0.0016
+      },
+      {
+        "date": "26-Aug-2019",
+        "start_time_ut": "20:07:30.6",
+        "star": "B",
+        "ra_deg": 219.857772625,
+        "dec_deg": -60.830744378,
+        "sigma_ra_cosdec_arcsec": 0.0018,
+        "sigma_dec_arcsec": 0.0018
+      }
+    ]
+  },
+  "akeson2021_published_barycentre": {
+    "epoch_julian_year": 2019.5,
+    "ra_deg": 219.85892215,
+    "dec_deg": -60.83163195,
+    "pmra_mas_yr": -3639.95,
+    "pmdec_mas_yr": 700.4,
+    "parallax_mas": 750.81,
+    "radial_velocity_km_s": -22.3796,
+    "mass_fraction_a": 0.54266
+  },
+  "akeson2021_relative_ephemeris": {
+    "note": "Offsets of B relative to A from Table 12, sampled at each whole year 2010-2050.",
+    "rows": [
+      {
+        "year": 2010.0,
+        "dra_arcsec": -6.136,
+        "ddec_arcsec": -2.815,
+        "rho_arcsec": 6.751,
+        "theta_deg": 245.357
+      },
+      {
+        "year": 2011.0,
+        "dra_arcsec": -5.71,
+        "ddec_arcsec": -1.993,
+        "rho_arcsec": 6.048,
+        "theta_deg": 250.758
+      },
+      {
+        "year": 2012.0,
+        "dra_arcsec": -5.269,
+        "ddec_arcsec": -1.166,
+        "rho_arcsec": 5.396,
+        "theta_deg": 257.52
+      },
+      {
+        "year": 2013.0,
+        "dra_arcsec": -4.814,
+        "ddec_arcsec": -0.336,
+        "rho_arcsec": 4.826,
+        "theta_deg": 266.006
+      },
+      {
+        "year": 2014.0,
+        "dra_arcsec": -4.345,
+        "ddec_arcsec": 0.495,
+        "rho_arcsec": 4.373,
+        "theta_deg": 276.496
+      },
+      {
+        "year": 2015.0,
+        "dra_arcsec": -3.864,
+        "ddec_arcsec": 1.324,
+        "rho_arcsec": 4.084,
+        "theta_deg": 288.918
+      },
+      {
+        "year": 2016.0,
+        "dra_arcsec": -3.37,
+        "ddec_arcsec": 2.149,
+        "rho_arcsec": 3.997,
+        "theta_deg": 302.532
+      },
+      {
+        "year": 2017.0,
+        "dra_arcsec": -2.864,
+        "ddec_arcsec": 2.967,
+        "rho_arcsec": 4.124,
+        "theta_deg": 316.013
+      },
+      {
+        "year": 2018.0,
+        "dra_arcsec": -2.347,
+        "ddec_arcsec": 3.773,
+        "rho_arcsec": 4.444,
+        "theta_deg": 328.115
+      },
+      {
+        "year": 2019.0,
+        "dra_arcsec": -1.821,
+        "ddec_arcsec": 4.564,
+        "rho_arcsec": 4.914,
+        "theta_deg": 338.247
+      },
+      {
+        "year": 2020.0,
+        "dra_arcsec": -1.287,
+        "ddec_arcsec": 5.335,
+        "rho_arcsec": 5.488,
+        "theta_deg": 346.436
+      },
+      {
+        "year": 2021.0,
+        "dra_arcsec": -0.747,
+        "ddec_arcsec": 6.079,
+        "rho_arcsec": 6.124,
+        "theta_deg": 352.998
+      },
+      {
+        "year": 2022.0,
+        "dra_arcsec": -0.202,
+        "ddec_arcsec": 6.789,
+        "rho_arcsec": 6.792,
+        "theta_deg": 358.297
+      },
+      {
+        "year": 2023.0,
+        "dra_arcsec": 0.344,
+        "ddec_arcsec": 7.456,
+        "rho_arcsec": 7.464,
+        "theta_deg": 2.641
+      },
+      {
+        "year": 2024.0,
+        "dra_arcsec": 0.887,
+        "ddec_arcsec": 8.071,
+        "rho_arcsec": 8.12,
+        "theta_deg": 6.273
+      },
+      {
+        "year": 2025.0,
+        "dra_arcsec": 1.423,
+        "ddec_arcsec": 8.62,
+        "rho_arcsec": 8.737,
+        "theta_deg": 9.375
+      },
+      {
+        "year": 2026.0,
+        "dra_arcsec": 1.946,
+        "ddec_arcsec": 9.087,
+        "rho_arcsec": 9.293,
+        "theta_deg": 12.084
+      },
+      {
+        "year": 2027.0,
+        "dra_arcsec": 2.446,
+        "ddec_arcsec": 9.453,
+        "rho_arcsec": 9.764,
+        "theta_deg": 14.508
+      },
+      {
+        "year": 2028.0,
+        "dra_arcsec": 2.914,
+        "ddec_arcsec": 9.693,
+        "rho_arcsec": 10.121,
+        "theta_deg": 16.732
+      },
+      {
+        "year": 2029.0,
+        "dra_arcsec": 3.334,
+        "ddec_arcsec": 9.776,
+        "rho_arcsec": 10.329,
+        "theta_deg": 18.833
+      },
+      {
+        "year": 2030.0,
+        "dra_arcsec": 3.688,
+        "ddec_arcsec": 9.665,
+        "rho_arcsec": 10.345,
+        "theta_deg": 20.888
+      },
+      {
+        "year": 2031.0,
+        "dra_arcsec": 3.952,
+        "ddec_arcsec": 9.319,
+        "rho_arcsec": 10.123,
+        "theta_deg": 22.982
+      },
+      {
+        "year": 2032.0,
+        "dra_arcsec": 4.096,
+        "ddec_arcsec": 8.69,
+        "rho_arcsec": 9.607,
+        "theta_deg": 25.235
+      },
+      {
+        "year": 2033.0,
+        "dra_arcsec": 4.086,
+        "ddec_arcsec": 7.738,
+        "rho_arcsec": 8.75,
+        "theta_deg": 27.838
+      },
+      {
+        "year": 2034.0,
+        "dra_arcsec": 3.893,
+        "ddec_arcsec": 6.439,
+        "rho_arcsec": 7.525,
+        "theta_deg": 31.158
+      },
+      {
+        "year": 2035.0,
+        "dra_arcsec": 3.5,
+        "ddec_arcsec": 4.811,
+        "rho_arcsec": 5.949,
+        "theta_deg": 36.04
+      },
+      {
+        "year": 2036.0,
+        "dra_arcsec": 2.915,
+        "ddec_arcsec": 2.918,
+        "rho_arcsec": 4.124,
+        "theta_deg": 44.97
+      },
+      {
+        "year": 2037.0,
+        "dra_arcsec": 2.171,
+        "ddec_arcsec": 0.866,
+        "rho_arcsec": 2.337,
+        "theta_deg": 68.258
+      },
+      {
+        "year": 2038.0,
+        "dra_arcsec": 1.319,
+        "ddec_arcsec": -1.231,
+        "rho_arcsec": 1.804,
+        "theta_deg": 133.036
+      },
+      {
+        "year": 2039.0,
+        "dra_arcsec": 0.41,
+        "ddec_arcsec": -3.279,
+        "rho_arcsec": 3.305,
+        "theta_deg": 172.874
+      },
+      {
+        "year": 2040.0,
+        "dra_arcsec": -0.514,
+        "ddec_arcsec": -5.215,
+        "rho_arcsec": 5.24,
+        "theta_deg": 185.633
+      },
+      {
+        "year": 2041.0,
+        "dra_arcsec": -1.425,
+        "ddec_arcsec": -7.006,
+        "rho_arcsec": 7.149,
+        "theta_deg": 191.498
+      },
+      {
+        "year": 2042.0,
+        "dra_arcsec": -2.304,
+        "ddec_arcsec": -8.639,
+        "rho_arcsec": 8.941,
+        "theta_deg": 194.934
+      },
+      {
+        "year": 2043.0,
+        "dra_arcsec": -3.141,
+        "ddec_arcsec": -10.114,
+        "rho_arcsec": 10.591,
+        "theta_deg": 197.255
+      },
+      {
+        "year": 2044.0,
+        "dra_arcsec": -3.932,
+        "ddec_arcsec": -11.438,
+        "rho_arcsec": 12.095,
+        "theta_deg": 198.97
+      },
+      {
+        "year": 2045.0,
+        "dra_arcsec": -4.673,
+        "ddec_arcsec": -12.619,
+        "rho_arcsec": 13.456,
+        "theta_deg": 200.321
+      },
+      {
+        "year": 2046.0,
+        "dra_arcsec": -5.365,
+        "ddec_arcsec": -13.667,
+        "rho_arcsec": 14.682,
+        "theta_deg": 201.434
+      },
+      {
+        "year": 2047.0,
+        "dra_arcsec": -6.01,
+        "ddec_arcsec": -14.593,
+        "rho_arcsec": 15.782,
+        "theta_deg": 202.383
+      },
+      {
+        "year": 2048.0,
+        "dra_arcsec": -6.608,
+        "ddec_arcsec": -15.406,
+        "rho_arcsec": 16.763,
+        "theta_deg": 203.215
+      },
+      {
+        "year": 2049.0,
+        "dra_arcsec": -7.161,
+        "ddec_arcsec": -16.115,
+        "rho_arcsec": 17.634,
+        "theta_deg": 203.959
+      },
+      {
+        "year": 2050.0,
+        "dra_arcsec": -7.671,
+        "ddec_arcsec": -16.727,
+        "rho_arcsec": 18.403,
+        "theta_deg": 204.637
+      }
+    ]
+  },
+  "hipparcos_2007": {
+    "alpha_cen_a": {
+      "hip": 71683,
+      "ra_deg": 219.9204081301028,
+      "dec_deg": -60.83514521897498,
+      "parallax_mas": 754.81,
+      "pmra_mas_yr": -3679.25,
+      "pmdec_mas_yr": 473.67,
+      "sigma_ra_cosdec_mas": 3.07,
+      "sigma_dec_mas": 2.46
+    },
+    "alpha_cen_b": {
+      "hip": 71681,
+      "ra_deg": 219.91412459936643,
+      "dec_deg": -60.83948046402479,
+      "parallax_mas": 796.92,
+      "pmra_mas_yr": -3614.39,
+      "pmdec_mas_yr": 802.98,
+      "sigma_ra_cosdec_mas": 19.15,
+      "sigma_dec_mas": 14.24
+    },
+    "sirius": {
+      "hip": 32349,
+      "ra_deg": 101.2885410520664,
+      "dec_deg": -16.713143062644765,
+      "parallax_mas": 379.21,
+      "pmra_mas_yr": -546.01,
+      "pmdec_mas_yr": -1223.07,
+      "sigma_ra_cosdec_mas": 1.21,
+      "sigma_dec_mas": 1.04
+    }
+  },
+  "hipparcos_1997_sirius": {
+    "hip": 32349,
+    "ra_deg": 101.28854105,
+    "dec_deg": -16.71314306,
+    "pmra_mas_yr": -546.01,
+    "pmdec_mas_yr": -1223.08,
+    "parallax_mas": 379.21,
+    "multiplicity_flag": "O",
+    "astrometric_reference_flag": "+",
+    "note": "Multiplicity flag O: orbital solution (Double and Multiple Systems Annex, part O). Astrometric reference flag '+': the astrometric parameters refer to the centre of mass."
+  }
+}

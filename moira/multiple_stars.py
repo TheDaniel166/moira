@@ -14,9 +14,15 @@ Owns:
     - OrbitalElements   — Campbell visual-binary orbital elements for one pair,
                           or a reference separation/PA for WIDE/OPTICAL pairs.
     - MultipleStarSystem — complete catalog record for one multiple system.
+    - SystemBarycentre  — astrometry of a system's centre of mass and the mass
+                          fraction that places each component on its orbit.
+                          Reached through MultipleStarSystem.barycentre; not
+                          re-exported (RULE-11).
     - _CATALOG          — module-level dict of all registered systems.
     - _solve_kepler()           — Newton-Raphson eccentric-anomaly solver.
-    - _visual_binary_rho_theta() — Thiele-Innes sky-plane projection.
+    - _visual_binary_offset()   — Thiele-Innes sky-plane offset of B from A.
+    - _visual_binary_rho_theta() — separation and position angle of that offset.
+    - component_offset_arcsec()  — a component's offset from the barycentre.
     - angular_separation_at()   — angular separation (arcsec) at a given JD.
     - position_angle_at()       — position angle (°, N through E) at a given JD.
     - is_resolvable()           — Dawes-limit check for a given telescope aperture.
@@ -89,13 +95,30 @@ visual-binary formalism:
   6. Separation:           ρ = √(x_E² + y_N²)
      Position angle:       θ = atan2(x_E, y_N) mod 360°   [N through E]
 
+Component positions
+-------------------
+A system with a ``barycentre`` record places each component about its centre
+of mass.  The relative orbit gives the offset of B from A; with
+q = m_B / (m_A + m_B), component A sits at −q times that offset from the
+barycentre and component B at (1 − q) times it.  moira.stars adds the offset
+to the barycentre's straight-line space motion (FIXED_STARS_BACKEND_STANDARD.md,
+Section 6).
+
+Time argument: the elements are fitted to observation dates, so ``jd`` is the
+date the light is received (TT).  Decimal-year epochs (T₀, barycentre epochs)
+are read as Julian epochs, JD = 2451545.0 + 365.25·(year − 2000).
+
 Catalog sources
 ---------------
   WDS  — Washington Double Star Catalog (Mason et al., ongoing)
   INT4 — Fourth Interferometric Catalog (Hartkopf & Mason 2004)
-  6OC  — Sixth Orbit Catalog (Hartkopf et al. 2001, updated)
-  Pourbaix et al. 2002, A&A 386, 280    — α Centauri AB
-  Bond et al. 2017, ApJ 840, 70         — Sirius AB
+  6OC  — Sixth Orbit Catalog (Hartkopf et al. 2001, updated); its current
+         orbits for Sirius (BdH2017) and α Centauri (Ake2021) are the ones
+         adopted here
+  Akeson et al. 2021, AJ 162, 14        — α Centauri AB orbit and barycentre
+  Bond et al. 2017, ApJ 840, 70         — Sirius AB orbit and masses
+  ESA 1997, The Hipparcos Catalogue (HIP 32349, orbital solution) — Sirius
+         barycentre
   Torres et al. 2009, A&A 502, 253      — Capella
   Herbison-Evans et al. 1971, MNRAS 151 — Spica
 
@@ -128,9 +151,19 @@ Kepler solver doctrine (frozen)
 Thiele-Innes projection doctrine (frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Campbell elements (a, i, Ω, ω) → Thiele-Innes constants (A, B, F, G).
-    Sky coordinates: x_E = B·X + G·Y  (East),  y_N = A·X + F·Y  (North).
+    Sky coordinates: x_E = B·X + G·Y  (East),  y_N = A·X + F·Y  (North),
+    the offset of B from A in the equator and equinox of J2000.
     Separation ρ = √(x_E² + y_N²).
     Position angle θ = atan2(x_E, y_N) mod 360°, measured N through E.
+
+Barycentre doctrine (revised 2026-10-29)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    A VISUAL system may carry a SystemBarycentre: the ICRS position, proper
+    motion, parallax and radial velocity of its centre of mass at a stated
+    epoch, the secondary mass fraction q = m_B / (m_A + m_B), and the
+    sovereign star-registry names of its components.  Component A is offset
+    from the barycentre by −q·(x_E, y_N), component B by (1 − q)·(x_E, y_N).
+    Every field names its source; derived values say how they were derived.
 
 Resolvability doctrine (frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -189,6 +222,15 @@ RULE-09  list_multiple_stars is sorted
 RULE-10  multiple_stars_by_type filters correctly
     multiple_stars_by_type(MultiType.VISUAL) returns only systems whose
     system_type == MultiType.VISUAL; same for all other type strings.
+
+RULE-12  Component offsets balance about the barycentre
+    For a system with a barycentre, m_A·offset_A + m_B·offset_B = 0 and
+    offset_B − offset_A equals the relative orbit, at any JD.
+
+RULE-13  Relative orbits reproduce the orbit authorities
+    The Sirius and α Centauri relative orbits reproduce the Sixth Orbit
+    Catalog ephemerides and the source papers' measurements
+    (tests/integration/test_stars_binary_orbits.py).
 
 RULE-11  Public surface sealed
     moira.__all__ and moira.multiple_stars.__all__ expose exactly
@@ -267,12 +309,15 @@ class StarComponent:
                     Use math.nan where individual magnitudes are unresolved.
     mass_solar    : Mass in solar units.  math.nan if unknown.
     note          : One-line astrological and astronomical characterisation.
+    registry_name : Name of this component's row in the sovereign star
+                    registry, or "" when it has none.
     """
     label:         str
     spectral_type: str
     magnitude:     float
     mass_solar:    float
     note:          str
+    registry_name: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -296,6 +341,8 @@ class OrbitalElements:
                         N through E, approximately J2000).  Ignored for VISUAL.
     period_uncertain  : True when the orbital period is based on a short arc and
                         carries significant uncertainty.
+    source            : Citation of the published elements, or "" when the
+                        elements predate source tracking in this catalog.
     """
     label:             str
     period_yr:         float
@@ -307,6 +354,35 @@ class OrbitalElements:
     arg_peri_deg:      float
     ref_pa_deg:        float = 0.0
     period_uncertain:  bool  = False
+    source:            str   = ""
+
+
+@dataclass(frozen=True, slots=True)
+class SystemBarycentre:
+    """
+    Astrometry of a multiple system's centre of mass.
+
+    Fields
+    ------
+    ra_deg, dec_deg      : ICRS position of the barycentre at ``ref_epoch_jd``.
+    pmra_mas_yr          : Proper motion in right ascension times cos(dec).
+    pmdec_mas_yr         : Proper motion in declination.
+    parallax_mas         : Parallax of the system.
+    radial_velocity_km_s : Radial velocity of the barycentre.
+    ref_epoch_jd         : Epoch of the position, as a TDB Julian date.
+    secondary_mass_fraction : q = m_B / (m_A + m_B) for the orbit's pair.
+    source               : Where each value comes from and how any derived
+                           value was derived.
+    """
+    ra_deg:                  float
+    dec_deg:                 float
+    pmra_mas_yr:             float
+    pmdec_mas_yr:            float
+    parallax_mas:            float
+    radial_velocity_km_s:    float
+    ref_epoch_jd:            float
+    secondary_mass_fraction: float
+    source:                  str
 
 
 @dataclass(frozen=True, slots=True)
@@ -327,6 +403,8 @@ class MultipleStarSystem:
     combined_mag      : Combined apparent Johnson V magnitude of the whole system.
     classical_quality : "malefic", "benefic", "neutral", or "mixed".
     note              : Extended astrological and physical description.
+    barycentre        : SystemBarycentre for systems whose components are
+                        placed on their orbit, else None.
     """
     name:              str
     designation:       str
@@ -337,6 +415,7 @@ class MultipleStarSystem:
     combined_mag:      float
     classical_quality: str
     note:              str
+    barycentre:        SystemBarycentre | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -370,9 +449,14 @@ def _solve_kepler(M: float, ecc: float) -> float:
     return E % tau
 
 
-def _visual_binary_rho_theta(orb: OrbitalElements, jd: float) -> tuple[float, float]:
+def _julian_epoch_jd(year: float) -> float:
+    """Return the TDB Julian date of a Julian-epoch decimal year."""
+    return 2451545.0 + 365.25 * (year - 2000.0)
+
+
+def _visual_binary_offset(orb: OrbitalElements, jd: float) -> tuple[float, float]:
     """
-    Compute the projected angular separation and position angle of a visual binary.
+    Compute the sky-plane offset of B from A for a visual binary.
 
     Uses the Thiele-Innes formulation of the Campbell orbital elements.
 
@@ -383,8 +467,7 @@ def _visual_binary_rho_theta(orb: OrbitalElements, jd: float) -> tuple[float, fl
 
     Returns
     -------
-    (rho, theta) — separation in arcseconds, position angle in degrees [0, 360)
-    measured North through East.
+    (x_e, y_n) — offset in arcseconds toward East and North (J2000).
     """
     t_yr = (jd - orb.epoch_jd) / 365.25
     P    = orb.period_yr
@@ -415,10 +498,58 @@ def _visual_binary_rho_theta(orb: OrbitalElements, jd: float) -> tuple[float, fl
     # Project to sky (East = x_e, North = y_n)
     x_e = B * X + G * Y
     y_n = A * X + F * Y
+    return x_e, y_n
 
+
+def _visual_binary_rho_theta(orb: OrbitalElements, jd: float) -> tuple[float, float]:
+    """
+    Compute the projected angular separation and position angle of a visual binary.
+
+    Returns
+    -------
+    (rho, theta) — separation in arcseconds, position angle in degrees [0, 360)
+    measured North through East.
+    """
+    x_e, y_n = _visual_binary_offset(orb, jd)
     rho   = math.hypot(x_e, y_n)
     theta = math.degrees(math.atan2(x_e, y_n)) % 360.0
     return rho, theta
+
+
+def component_offset_arcsec(
+    system: MultipleStarSystem, label: str, jd: float
+) -> tuple[float, float]:
+    """
+    Return a component's offset from its system's barycentre at JD.
+
+    Component A is offset by −q times the relative orbit and component B by
+    (1 − q) times it, where q is the barycentre's secondary mass fraction.
+
+    Parameters
+    ----------
+    system : MultipleStarSystem with a barycentre
+    label  : "A" or "B", the components of orbits[0]
+    jd     : Julian Day (TT), the date the light is received
+
+    Returns
+    -------
+    (east, north) offset in arcseconds, J2000 equator and equinox.
+
+    Raises
+    ------
+    ValueError if the system has no barycentre or the label is not A or B.
+    """
+    if system.barycentre is None:
+        raise ValueError(f"{system.name} has no barycentre record")
+    q = system.barycentre.secondary_mass_fraction
+    if label == "A":
+        factor = -q
+    elif label == "B":
+        factor = 1.0 - q
+    else:
+        raise ValueError(f"component label must be 'A' or 'B', got {label!r}")
+    x_e, y_n = _visual_binary_offset(system.orbits[0], jd)
+    return factor * x_e, factor * y_n
 
 
 # ---------------------------------------------------------------------------
@@ -656,10 +787,18 @@ def multiple_stars_by_type(multi_type: str) -> list[MultipleStarSystem]:
 # Catalog — 8 astrologically significant multiple star systems
 # ---------------------------------------------------------------------------
 
-# ── 1. Sirius (α Canis Majoris) — VISUAL binary, 50.09-year orbit ───────────
+# ── 1. Sirius (α Canis Majoris) — VISUAL binary, 50.13-year orbit ───────────
 #
-# Orbital elements: Bond et al. 2017, ApJ 840, 70.
-# T_peri = 1994.3 yr → JD 2449463  (J2000 − 5.7 yr × 365.25 d/yr)
+# Orbital elements: Bond et al. 2017, ApJ 840, 70, Table 4 (J2000), adopted
+# by the Sixth Orbit Catalog as BdH2017.  T_peri = 1994.5715 (Julian epoch).
+# Masses: Bond et al. 2017, Table 6; q = a_A / a = 2.4761 / 7.4957 (Table 5).
+#
+# Barycentre: the Hipparcos Catalogue (ESA 1997) solved HIP 32349 with an
+# orbital model (multiplicity flag O, astrometric reference flag "+"), so its
+# position and proper motion at J1991.25 already describe the centre of mass.
+# Parallax: Bond et al. 2017 adopted weighted mean, 378.9 mas.  Radial
+# velocity: Bond et al. 2017 (corrections to J2000) system velocity −7.70 km/s corrected
+# for Sirius A's gravitational redshift, −8.47 km/s.
 # The most precisely known stellar orbit for a naked-eye binary.
 
 _reg(MultipleStarSystem(
@@ -679,6 +818,7 @@ _reg(MultipleStarSystem(
                 "heroic radiance, worldly excellence, the kingly fire of the Dog Star.  "
                 "In Egypt, its heliacal rising marked the Nile flood and the new year."
             ),
+            registry_name = "Sirius",
         ),
         StarComponent(
             label         = "B",
@@ -698,13 +838,31 @@ _reg(MultipleStarSystem(
     orbits = (
         OrbitalElements(
             label             = "AB",
-            period_yr         = 50.090,
-            epoch_jd          = 2449463.0,   # T_peri 1994.3
-            ecc               = 0.5914,
-            semi_major_arcsec = 7.56,
+            period_yr         = 50.1284,
+            epoch_jd          = _julian_epoch_jd(1994.5715),
+            ecc               = 0.59142,
+            semi_major_arcsec = 7.4957,
             incl_deg          = 136.336,
-            node_deg          = 44.57,
-            arg_peri_deg      = 147.27,
+            node_deg          = 45.400,
+            arg_peri_deg      = 149.161,
+            source            = "Bond et al. 2017, ApJ 840, 70, Table 4",
+        ),
+    ),
+    barycentre = SystemBarycentre(
+        ra_deg                  = 101.28854105,
+        dec_deg                 = -16.71314306,
+        pmra_mas_yr             = -546.01,
+        pmdec_mas_yr            = -1223.08,
+        parallax_mas            = 378.9,
+        radial_velocity_km_s    = -8.47,
+        ref_epoch_jd            = _julian_epoch_jd(1991.25),
+        secondary_mass_fraction = 2.4761 / 7.4957,
+        source                  = (
+            "position and proper motion: Hipparcos Catalogue (ESA 1997) "
+            "HIP 32349 orbital solution, centre of mass at J1991.25; "
+            "parallax: Bond et al. 2017 adopted 0.3789 arcsec; radial "
+            "velocity: Bond et al. 2017 system velocity corrected for "
+            "gravitational redshift; q: Bond et al. 2017 a_A / a"
         ),
     ),
     combined_mag      = -1.46,
@@ -712,9 +870,9 @@ _reg(MultipleStarSystem(
     note = (
         "SIRIUS — The Dog Star, α Canis Majoris.  Brightest star in the night sky "
         "(V = −1.46).  A binary system: Sirius A (A1V, blazing main-sequence star) "
-        "and Sirius B (DA2, white dwarf).  Orbital period 50.09 years; eccentricity "
+        "and Sirius B (DA2, white dwarf).  Orbital period 50.13 years; eccentricity "
         "0.59 — a highly elongated orbit that carries B from 3\" at periastron to over "
-        "11\" at apastron.  Last periastron: 1994.3.  Next: ~2044.  As of 2026 the "
+        "11\" at apastron.  Last periastron: 1994.57.  Next: ~2044.7.  As of 2026 the "
         "pair is moving back toward each other (separation ~8–10\"), still easily "
         "split in any 60 mm telescope.\n\n"
         "The two stars embody opposite principles: A is the seen, the solar, the "
@@ -828,11 +986,13 @@ _reg(MultipleStarSystem(
 ))
 
 
-# ── 3. Alpha Centauri — VISUAL triple, 79.91-year A+B orbit ─────────────────
+# ── 3. Alpha Centauri — VISUAL triple, 79.76-year A+B orbit ─────────────────
 #
-# Orbital elements: Pourbaix et al. 2002, A&A 386, 280 (still the standard).
-# T_peri = 1955.67 yr → JD 2435353  (J2000 − 44.33 yr × 365.25 d/yr)
-# Last periastron 1955.67; next ~2035.58.  Currently (2026) approaching
+# Orbital elements, masses and barycentre: Akeson et al. 2021, AJ 162, 14,
+# Tables 8 and 9 (epoch 2019.5), adopted by the Sixth Orbit Catalog as
+# Ake2021.  T_peri = 1955.564 (Julian epoch).  The barycentre astrometry was
+# fitted to Hipparcos and ALMA absolute positions of A and B.
+# Last periastron 1955.56; next ~2035.3.  Currently (2026) approaching
 # next periastron; separation decreasing from ~21.5\" (apastron ~1995) toward ~4\".
 # Proxima Centauri (M5.5Ve, V=11.13, P_outer ~547 000 yr): bound but too
 # widely separated to include as an OrbitalElements entry.
@@ -850,19 +1010,20 @@ _reg(MultipleStarSystem(
             label         = "A",
             spectral_type = "G2V",
             magnitude     = 0.01,
-            mass_solar    = 1.100,
+            mass_solar    = 1.0788,
             note          = (
-                "α Cen A — a near-perfect solar twin: G2V, 1.1 M☉, 1.22 R☉, surface "
+                "α Cen A — a near-perfect solar twin: G2V, 1.08 M☉, 1.22 R☉, surface "
                 "temperature 5790 K.  The nearest other sun.  At 4.37 ly it is the "
                 "brightest of the nearest stars.  Sol's sibling in spectral class: "
                 "what our own Sun looks like from 4 light-years away."
             ),
+            registry_name = "Rigil Kentaurus",
         ),
         StarComponent(
             label         = "B",
             spectral_type = "K1V",
             magnitude     = 1.33,
-            mass_solar    = 0.907,
+            mass_solar    = 0.9092,
             note          = (
                 "α Cen B — K1V dwarf, cooler and dimmer than A, slightly smaller than "
                 "the Sun.  Orange-gold hue.  In the binary pair it plays Venus/Saturn "
@@ -870,6 +1031,7 @@ _reg(MultipleStarSystem(
                 "rocky planets (though Proxima b is currently the nearest known "
                 "exoplanet in the system)."
             ),
+            registry_name = "Toliman",
         ),
         StarComponent(
             label         = "C",
@@ -888,13 +1050,35 @@ _reg(MultipleStarSystem(
     orbits = (
         OrbitalElements(
             label             = "AB",
-            period_yr         = 79.91,
-            epoch_jd          = 2435353.0,   # T_peri 1955.67
-            ecc               = 0.5179,
-            semi_major_arcsec = 17.57,
-            incl_deg          = 79.20,
-            node_deg          = 204.85,
-            arg_peri_deg      = 231.65,
+            period_yr         = 79.762,
+            epoch_jd          = _julian_epoch_jd(1955.564),
+            ecc               = 0.51947,
+            semi_major_arcsec = 17.4930,
+            incl_deg          = 79.2430,
+            node_deg          = 205.073,
+            arg_peri_deg      = 231.519,
+            source            = "Akeson et al. 2021, AJ 162, 14, Table 8",
+        ),
+    ),
+    barycentre = SystemBarycentre(
+        ra_deg                  = 219.85892098,
+        dec_deg                 = -60.83163210,
+        pmra_mas_yr             = -3640.724,
+        pmdec_mas_yr            = 701.935,
+        parallax_mas            = 750.81,
+        radial_velocity_km_s    = -22.3796,
+        ref_epoch_jd            = _julian_epoch_jd(2019.5),
+        secondary_mass_fraction = 1.0 - 0.54266,
+        source                  = (
+            "Akeson et al. 2021, AJ 162, 14: orbital parallax, barycentric "
+            "radial velocity and mass fraction m_A / (m_A + m_B) = 0.54266 "
+            "(Table 8).  Position and proper motion at J2019.5: refit by "
+            "Moira to the same Hipparcos (van Leeuwen 2007) and ALMA "
+            "(Table 2) absolute positions of A and B with straight-line space "
+            "motion, holding the Table 8 orbit fixed; the published Table 9 "
+            "values (-3639.95, +700.40 mas/yr) follow constant rates in right "
+            "ascension and declination.  Re-derived by "
+            "tests/integration/test_stars_binary_orbits.py"
         ),
     ),
     combined_mag      = -0.27,
@@ -904,10 +1088,10 @@ _reg(MultipleStarSystem(
         "in the sky (combined V = −0.27).  The nearest stellar system to the Sun "
         "(4.37 light-years for A+B; 4.24 ly for Proxima C).\n\n"
         "A triple: α Cen A (G2V solar twin) + α Cen B (K1V, orange dwarf) in a "
-        "79.91-year visual orbit, plus Proxima Centauri (M5.5Ve red dwarf) in an "
+        "79.76-year visual orbit, plus Proxima Centauri (M5.5Ve red dwarf) in an "
         "immense outer orbit of ~547 000 years.\n\n"
         "A+B orbital arc 2025–2035: the pair is currently approaching periastron "
-        "(next ~2035.6).  At apastron (~1995) the separation reached ~22\"; by "
+        "(next ~2035.3).  At apastron (~1995) the separation reached ~22\"; by "
         "periastron it shrinks to ~4\" before the cycle resumes.  A telescope of "
         "60 mm can split the pair through most of the orbit.\n\n"
         "The astrological picture: two distinct suns in intimate orbit — the solar "
@@ -1350,8 +1534,8 @@ def alpha_cen_separation_at(jd: float) -> float:
     """
     Return the current angular separation of α Centauri A and B in arcseconds.
 
-    Computed from the Pourbaix et al. (2002) orbital elements.  The separation
-    ranges from ~4″ (periastron, last 1955.67, next ~2035.6) to ~22″ (apastron
+    Computed from the Akeson et al. (2021) orbital elements.  The separation
+    ranges from ~4″ (periastron, last 1955.56, next ~2035.3) to ~22″ (apastron
     ~1995.6).  As of 2026 the pair is approaching next periastron.
 
     Parameters

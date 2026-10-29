@@ -59,6 +59,7 @@ class StarPositionProvenanceResponse(_StrictModel):
     true_position: bool | None = None
     dedup_applied: bool | None = None
     position_product: str | None = None
+    motion_model: str | None = None
     relation_kind: str | None = None
     relation_basis: str | None = None
     relation_star_name: str | None = None

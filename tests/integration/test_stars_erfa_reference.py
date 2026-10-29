@@ -4,9 +4,13 @@ import csv
 import math
 import warnings
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import moira.stars as stars
+from moira._stellar_space_motion import astrometric_direction
+from moira.coordinates import icrf_to_true_ecliptic
 from moira.stars import star_at
 
 
@@ -46,6 +50,26 @@ ANCHOR_CASES = [
     ("Aldebaran", J2000 + 36525.0 * 5),
     ("Aldebaran", J2000 + 36525.0 * 10),
 ]
+
+
+def _moira_position(name: str, jd_tt: float) -> SimpleNamespace:
+    """Moira's position for the registry row that ERFA propagates here.
+
+    ``star_at`` places a binary component (Sirius, alpha Centauri A and B) on
+    its orbit about the system barycentre; ERFA ``pmsafe`` moves the catalog
+    row in a straight line.  For those rows the comparison therefore uses
+    Moira's straight-line stage-1 path; the orbit model is validated in
+    test_stars_binary_orbits.py.
+    """
+    if name not in stars._binary_components():
+        return star_at(name, jd_tt)
+    record = {r.name: r for r in stars._load_registry_records()}[name]
+    direction, _ = astrometric_direction(
+        record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
+        record.parallax_mas, record.radial_velocity_km_s, record.ref_epoch_jd, jd_tt,
+    )
+    lon, lat, _ = icrf_to_true_ecliptic(jd_tt, direction)
+    return SimpleNamespace(longitude=lon, latitude=lat)
 
 
 def _split_jd(jd: float) -> tuple[float, float]:
@@ -120,7 +144,7 @@ def _erfa_fixed_star_position(row: dict[str, str], jd_tt: float) -> tuple[float,
 def test_anchor_stars_match_erfa_oracle(name: str, jd_tt: float) -> None:
     row = _registry_by_name()[name]
     erfa_lon, erfa_lat = _erfa_fixed_star_position(row, jd_tt)
-    moira = star_at(name, jd_tt)
+    moira = _moira_position(name, jd_tt)
 
     lon_err = _angular_diff(moira.longitude, erfa_lon)
     lat_err = abs(moira.latitude - erfa_lat)
@@ -141,7 +165,7 @@ def test_full_catalog_j2000_erfa_sweep_has_no_large_outliers() -> None:
 
     for name, row in _registry_by_name().items():
         erfa_lon, erfa_lat = _erfa_fixed_star_position(row, J2000)
-        moira = star_at(name, J2000)
+        moira = _moira_position(name, J2000)
         lon_err = _angular_diff(moira.longitude, erfa_lon)
         lat_err = abs(moira.latitude - erfa_lat)
         if max(lon_err, lat_err) > ERFA_CATALOG_PASS_THRESHOLD_DEG:
@@ -164,7 +188,7 @@ def test_full_catalog_space_motion_with_radial_velocity_matches_erfa(jd_tt: floa
 
     for name, row in _registry_by_name().items():
         erfa_lon, erfa_lat = _erfa_fixed_star_position(row, jd_tt)
-        moira = star_at(name, jd_tt)
+        moira = _moira_position(name, jd_tt)
         lon_err = _angular_diff(moira.longitude, erfa_lon) * math.cos(math.radians(erfa_lat))
         lat_err = abs(moira.latitude - erfa_lat)
         error_arcsec = math.hypot(lon_err, lat_err) * 3600.0

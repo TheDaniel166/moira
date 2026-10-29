@@ -175,6 +175,9 @@ class FixedStarTruth:
     # "astrometric", "apparent" or "geometric"; see
     # wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md, Section 1.
     position_product: str = "astrometric"
+    # "straight_line", or "binary_orbit" for a component placed about its
+    # system's barycentre; see FIXED_STARS_BACKEND_STANDARD.md, Section 6.
+    motion_model: str = "straight_line"
 
 @dataclass(slots=True)
 class FixedStarClassification:

@@ -178,6 +178,41 @@ def test_public_surface_is_exposed_from_module_and_top_level_package() -> None:
     assert "_solve_kepler" not in ms.__all__
 
 
+@pytest.mark.parametrize("name", ["Sirius", "Alpha Centauri"])
+@pytest.mark.parametrize("jd", [J2000 - 36525.0 * 10, J2000, J2020, J2035])
+def test_component_offsets_balance_about_the_barycentre(name: str, jd: float) -> None:
+    """RULE-12: m_A offset_A + m_B offset_B = 0; offset_B - offset_A = relative orbit."""
+    system = ms.multiple_star(name)
+    q = system.barycentre.secondary_mass_fraction
+    a_east, a_north = ms.component_offset_arcsec(system, "A", jd)
+    b_east, b_north = ms.component_offset_arcsec(system, "B", jd)
+    rel_east, rel_north = ms._visual_binary_offset(system.orbits[0], jd)
+    assert (1.0 - q) * a_east + q * b_east == pytest.approx(0.0, abs=1e-12)
+    assert (1.0 - q) * a_north + q * b_north == pytest.approx(0.0, abs=1e-12)
+    assert b_east - a_east == pytest.approx(rel_east, abs=1e-12)
+    assert b_north - a_north == pytest.approx(rel_north, abs=1e-12)
+    rho, theta = ms._visual_binary_rho_theta(system.orbits[0], jd)
+    assert math.hypot(rel_east, rel_north) == pytest.approx(rho, abs=1e-12)
+
+
+def test_component_offsets_require_a_barycentre_and_a_known_label() -> None:
+    with pytest.raises(ValueError, match="no barycentre"):
+        ms.component_offset_arcsec(ms.multiple_star("Castor"), "A", J2000)
+    with pytest.raises(ValueError, match="'A' or 'B'"):
+        ms.component_offset_arcsec(ms.multiple_star("Alpha Centauri"), "C", J2000)
+
+
+def test_barycentre_components_name_their_registry_rows() -> None:
+    sirius = ms.multiple_star("Sirius")
+    alpha_cen = ms.multiple_star("Alpha Centauri")
+    assert {c.label: c.registry_name for c in sirius.components} == {"A": "Sirius", "B": ""}
+    assert {c.label: c.registry_name for c in alpha_cen.components} == {
+        "A": "Rigil Kentaurus", "B": "Toliman", "C": "",
+    }
+    assert sirius.orbits[0].source.startswith("Bond et al. 2017")
+    assert alpha_cen.orbits[0].source.startswith("Akeson et al. 2021")
+
+
 def test_moira_wrapper_methods_match_subsystem_outputs(moira_engine) -> None:
     dt = datetime(2020, 1, 1, tzinfo=timezone.utc)
     jd = moira.jd_from_datetime(dt)

@@ -141,6 +141,24 @@ def _straight_line_direction(row: dict[str, str], jd_tt: float, radial_velocity_
     return tuple(c / norm for c in x)
 
 
+def _straight_line_star(name: str, jd_tt: float):
+    """star_at for ordinary stars; the straight-line row path for binary components."""
+    if name not in stars._binary_components():
+        return star_at(name, jd_tt)
+    from types import SimpleNamespace
+
+    from moira._stellar_space_motion import astrometric_direction
+    from moira.coordinates import icrf_to_true_ecliptic
+
+    record = {r.name: r for r in stars._load_registry_records()}[name]
+    direction, _ = astrometric_direction(
+        record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
+        record.parallax_mas, record.radial_velocity_km_s, record.ref_epoch_jd, jd_tt,
+    )
+    lon, lat, _ = icrf_to_true_ecliptic(jd_tt, direction)
+    return SimpleNamespace(longitude=lon, latitude=lat)
+
+
 def _corrected_fw06_anchor(name: str, jd_tt: float, date_key: str) -> tuple[float, float]:
     """Transport the frozen legacy output through independent ERFA frames.
 
@@ -245,7 +263,10 @@ def test_star_at_matches_registry_reference_longitude_and_latitude(name: str) ->
 @pytest.mark.parametrize("name", ["Sirius", "Algol", "Spica", "Aldebaran"])
 @pytest.mark.parametrize("date_key", ["j1000", "j1500", "j1900", "j2000", "j2100", "j2500", "j3000"])
 def test_oracle_anchor_reference_positions(name: str, date_key: str) -> None:
-    star = star_at(name, ORACLE_DATE_POINTS[date_key])
+    # The frozen anchors are straight-line propagations of the catalog row.
+    # Sirius is now placed on its orbit by star_at (FIXED_STARS_BACKEND_STANDARD.md,
+    # Section 6), so its anchors check the straight-line stage-1 path of its row.
+    star = _straight_line_star(name, ORACLE_DATE_POINTS[date_key])
     expected_lon, expected_lat = _corrected_fw06_anchor(name, ORACLE_DATE_POINTS[date_key], date_key)
 
     assert star.longitude == pytest.approx(expected_lon, abs=1e-9)

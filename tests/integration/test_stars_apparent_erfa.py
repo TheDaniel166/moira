@@ -55,14 +55,23 @@ def _erfa_apparent(record, jd_tt, reader):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         astrom = erfa.apcg(jd_tt, 0.0, earth_pv, -np.array(sun) / AU_KM)
-        dec = math.radians(record.dec_deg)
-        parallax = record.parallax_mas / 1000.0 if record.parallax_mas > 0 else 0.0
-        ra_i, dec_i = erfa.atciq(
-            math.radians(record.ra_deg), dec,
-            math.radians(record.pmra_mas_yr / 3.6e6) / math.cos(dec),
-            math.radians(record.pmdec_mas_yr / 3.6e6),
-            parallax, record.radial_velocity_km_s, astrom,
-        )
+        binary = stars._binary_components().get(record.name)
+        if binary is None:
+            dec = math.radians(record.dec_deg)
+            parallax = record.parallax_mas / 1000.0 if record.parallax_mas > 0 else 0.0
+            ra_i, dec_i = erfa.atciq(
+                math.radians(record.ra_deg), dec,
+                math.radians(record.pmra_mas_yr / 3.6e6) / math.cos(dec),
+                math.radians(record.pmdec_mas_yr / 3.6e6),
+                parallax, record.radial_velocity_km_s, astrom,
+            )
+        else:
+            # A binary component's stage-1 position comes from its orbit
+            # (test_stars_binary_orbits.py); ERFA checks stage 2 from there,
+            # with the component's parallax at the date and no further motion.
+            unit, distance_pc = stars._binary_component_state(binary[0], binary[1], jd_tt)
+            ra_c, dec_c = erfa.c2s(np.array(unit))
+            ra_i, dec_i = erfa.atciq(ra_c, dec_c, 0.0, 0.0, 1.0 / distance_pc, 0.0, astrom)
     return (math.cos(dec_i) * math.cos(ra_i), math.cos(dec_i) * math.sin(ra_i), math.sin(dec_i))
 
 

@@ -22,8 +22,19 @@ try:
 except ImportError:
     mn = None
 
-from ._stellar_space_motion import astrometric_direction
+from ._stellar_space_motion import (
+    FLOAT_ARITHMETIC,
+    JULIAN_YEAR_DAYS,
+    MAS_TO_RAD,
+    astrometric_direction,
+    space_motion,
+)
 from .coordinates import icrf_to_true_ecliptic
+from .multiple_stars import (
+    MultipleStarSystem,
+    _CATALOG as _MULTIPLE_STAR_CATALOG,
+    component_offset_arcsec,
+)
 from .star_types import (
     FixedStarLookupPolicy,
     HeliacalSearchPolicy,
@@ -529,15 +540,84 @@ def _icrs_unit_vector(ra_deg: float, dec_deg: float) -> tuple[float, float, floa
     )
 
 
+MOTION_STRAIGHT_LINE = "straight_line"
+MOTION_BINARY_ORBIT = "binary_orbit"
+_ARCSEC_TO_RAD = math.pi / 648000.0
+
+
+@lru_cache(maxsize=1)
+def _binary_components() -> dict[str, tuple[MultipleStarSystem, str]]:
+    """Map registry star names to the binary system and component they belong to.
+
+    Only systems with a barycentre record take part: their components are
+    placed on the orbit instead of moving in a straight line from their own
+    catalog row.
+    """
+    index: dict[str, tuple[MultipleStarSystem, str]] = {}
+    for system in _MULTIPLE_STAR_CATALOG.values():
+        if system.barycentre is None:
+            continue
+        for component in system.components:
+            if component.registry_name and component.label in ("A", "B"):
+                index[component.registry_name] = (system, component.label)
+    return index
+
+
+def _binary_component_state(
+    system: MultipleStarSystem, label: str, jd_tt: float
+) -> tuple[tuple[float, float, float], float]:
+    """Stage 1 for a component of a binary with an admitted orbit.
+
+    The barycentre moves in a straight line in space from its own epoch; the
+    component sits at its share of the relative orbit, laid in the plane of
+    the sky at the barycentre's reference position (the J2000 east and north
+    of the orbit elements).  The orbit's physical size is fixed by the
+    reference parallax, so the angular offset shrinks or grows with distance.
+
+    Returns the unit ICRS direction and the distance in parsecs.
+
+    Side effects: None.
+    """
+    bary = system.barycentre
+    dt_years = (jd_tt - bary.ref_epoch_jd) / JULIAN_YEAR_DAYS
+    catalog_unit, vector, _ = space_motion(
+        bary.ra_deg, bary.dec_deg, bary.pmra_mas_yr, bary.pmdec_mas_yr,
+        bary.parallax_mas, bary.radial_velocity_km_s, dt_years, FLOAT_ARITHMETIC,
+    )
+    ra = math.radians(bary.ra_deg)
+    dec = math.radians(bary.dec_deg)
+    east = (-math.sin(ra), math.cos(ra), 0.0)
+    north = (-math.sin(dec) * math.cos(ra), -math.sin(dec) * math.sin(ra), math.cos(dec))
+    offset_east, offset_north = component_offset_arcsec(system, label, jd_tt)
+    reference_distance_pc = 1000.0 / bary.parallax_mas
+    scale = _ARCSEC_TO_RAD * reference_distance_pc
+    position = tuple(
+        v + scale * (offset_east * e + offset_north * n)
+        for v, e, n in zip(vector, east, north)
+    )
+    norm = math.sqrt(sum(c * c for c in position))
+    return (position[0] / norm, position[1] / norm, position[2] / norm), norm
+
+
+def _motion_model(record: _SovereignStarRecord) -> str:
+    """Name the stage-1 motion model that propagates ``record``."""
+    return MOTION_BINARY_ORBIT if record.name in _binary_components() else MOTION_STRAIGHT_LINE
+
+
 def _astrometric_state(
     record: _SovereignStarRecord, jd_tt: float
 ) -> tuple[tuple[float, float, float], float | None]:
     """Return a record's astrometric unit direction at TT and its distance in pc.
 
-    Stage 1 of the fixed-star pipeline, from the record's own reference epoch.
+    Stage 1 of the fixed-star pipeline.  A component of a binary with an
+    admitted orbit is placed about its system's barycentre; every other star
+    moves in a straight line from its own reference epoch.
 
     Side effects: None.
     """
+    binary = _binary_components().get(record.name)
+    if binary is not None:
+        return _binary_component_state(binary[0], binary[1], jd_tt)
     return astrometric_direction(
         record.ra_deg,
         record.dec_deg,
@@ -556,6 +636,46 @@ def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[
     Side effects: None.
     """
     return _astrometric_state(record, jd_tt)[0]
+
+
+def _native_star_inputs(
+    record: _SovereignStarRecord, jd_start_tt: float, jd_end_tt: float
+) -> tuple[float, float, float, float, float, float, float]:
+    """Return straight-line catalog inputs for the native fixed-star evaluator.
+
+    The native evaluator moves a star in a straight line.  A star that already
+    does so passes its catalog row through.  A binary component is replaced by
+    the chord of its stage-1 track over ``[jd_start_tt, jd_end_tt]``: its
+    position at the midpoint and the proper motion that joins the two ends,
+    with the barycentre's parallax and radial velocity.
+
+    Returns ``(ra_deg, dec_deg, pmra_mas_yr, pmdec_mas_yr, parallax_mas,
+    radial_velocity_km_s, ref_epoch_jd)``.
+    """
+    binary = _binary_components().get(record.name)
+    if binary is None:
+        return (
+            record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
+            record.parallax_mas, record.radial_velocity_km_s, record.ref_epoch_jd,
+        )
+    system, label = binary
+    mid = 0.5 * (jd_start_tt + jd_end_tt)
+    middle, _ = _binary_component_state(system, label, mid)
+    start, _ = _binary_component_state(system, label, jd_start_tt)
+    end, _ = _binary_component_state(system, label, jd_end_tt)
+    ra = math.atan2(middle[1], middle[0])
+    dec = math.asin(middle[2])
+    east = (-math.sin(ra), math.cos(ra), 0.0)
+    north = (-math.sin(dec) * math.cos(ra), -math.sin(dec) * math.sin(ra), math.cos(dec))
+    years = (jd_end_tt - jd_start_tt) / JULIAN_YEAR_DAYS
+    rate = tuple((b - a) / years for a, b in zip(start, end)) if years > 0.0 else (0.0, 0.0, 0.0)
+    pmra = sum(r * e for r, e in zip(rate, east)) / MAS_TO_RAD
+    pmdec = sum(r * n for r, n in zip(rate, north)) / MAS_TO_RAD
+    bary = system.barycentre
+    return (
+        math.degrees(ra) % 360.0, math.degrees(dec), pmra, pmdec,
+        bary.parallax_mas, bary.radial_velocity_km_s, mid,
+    )
 
 
 def _distance_ly_from_parallax(parallax_mas: float) -> float:
@@ -715,6 +835,7 @@ def _build_fixed_star(
             true_position=product == "geometric",
             dedup_applied=False,
             position_product=product,
+            motion_model=_motion_model(record),
         ),
         classification=classification,
         relation=relation,
@@ -1150,14 +1271,17 @@ def _native_heliacal_event(
 
     earth_ssb = mn.SumEvaluator(earth_barycentric, emb_barycentric)
     sun_geocentric = mn.RelativeEvaluator(sun_barycentric, earth_ssb)
+    ra_deg, dec_deg, pmra, pmdec, parallax, radial_velocity, ref_epoch = (
+        _native_star_inputs(record, interval_start_tt, interval_end_tt)
+    )
     star_icrs = mn.FixedStarEvaluator(
-        record.ra_deg,
-        record.dec_deg,
-        record.pmra_mas_yr,
-        record.pmdec_mas_yr,
-        record.parallax_mas,
-        record.radial_velocity_km_s,
-        ref_epoch_jd=record.ref_epoch_jd,
+        ra_deg,
+        dec_deg,
+        pmra,
+        pmdec,
+        parallax,
+        radial_velocity,
+        ref_epoch_jd=ref_epoch,
     )
     search_kwargs: dict[str, object] = {
         "delta_t": delta_t_start,
@@ -1789,11 +1913,12 @@ def heliacal_catalog_batch(
                 candidates.append(record)
 
             def _search_record(record: _SovereignStarRecord):
+                ra_deg, dec_deg, pmra, pmdec, parallax, radial_velocity, ref_epoch = (
+                    _native_star_inputs(record, interval_start_tt, interval_end_tt)
+                )
                 star_ssb = mn.FixedStarEvaluator(
-                    record.ra_deg, record.dec_deg,
-                    record.pmra_mas_yr, record.pmdec_mas_yr,
-                    record.parallax_mas, record.radial_velocity_km_s,
-                    ref_epoch_jd=record.ref_epoch_jd,
+                    ra_deg, dec_deg, pmra, pmdec, parallax, radial_velocity,
+                    ref_epoch_jd=ref_epoch,
                 )
                 if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0:
                     arcus = record.arc_vis_deg

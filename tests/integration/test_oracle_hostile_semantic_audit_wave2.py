@@ -19,6 +19,7 @@ import pytest
 
 from moira.julian import datetime_from_jd, jd_from_datetime, tt_to_ut
 from moira.rise_set import _altitude
+import moira.stars as stars
 from moira.stars import star_at
 
 
@@ -177,11 +178,17 @@ def test_oracle_hostile_public_fixed_star_path_matches_erfa_anchor_cases(
 
     failures: list[str] = []
     for name, jd_tt in test_stars_erfa_reference.ANCHOR_CASES:
-        erfa_lon, erfa_lat = test_stars_erfa_reference._erfa_fixed_star_position(
-            test_stars_erfa_reference._registry_by_name()[name],
-            jd_tt,
-        )
         public = moira_engine.fixed_star(name, datetime_from_jd(tt_to_ut(jd_tt)).astimezone(timezone.utc))
+        if name in stars._binary_components():
+            # A binary component follows its orbit, not ERFA's straight line
+            # for its catalog row (test_stars_binary_orbits.py validates the
+            # orbit); here the public path must equal the engine path.
+            erfa_lon, erfa_lat = star_at(name, jd_tt).longitude, star_at(name, jd_tt).latitude
+        else:
+            erfa_lon, erfa_lat = test_stars_erfa_reference._erfa_fixed_star_position(
+                test_stars_erfa_reference._registry_by_name()[name],
+                jd_tt,
+            )
         lon_err = _angular_diff(public.longitude, erfa_lon)
         lat_err = abs(public.latitude - erfa_lat)
         if lon_err > threshold or lat_err > threshold:

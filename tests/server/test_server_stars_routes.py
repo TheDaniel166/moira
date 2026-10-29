@@ -98,6 +98,7 @@ def test_star_position_route_converts_transport_datetime_to_jd_tt(
     assert provenance["coordinate_source"] == "sovereign_star_registry"
     assert provenance["source"] == direct.source
     assert provenance["source_mode"] == direct.computation_truth.source_mode
+    assert provenance["motion_model"] == "binary_orbit"
     assert provenance["lookup_kind"] == direct.computation_truth.lookup_kind
     assert provenance["hipparcos_name"] == direct.computation_truth.hipparcos_name
     assert provenance["gaia_match_status"] == direct.computation_truth.gaia_match_status
