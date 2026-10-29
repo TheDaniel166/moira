@@ -126,12 +126,13 @@ installed:
   elements and geometric nodes for all 11,720 bodies, plus the 203-case
   asteroid apparent-position fixture; and
 - the six September 28 catalog holdouts (Ceres, Hektor, Atira, Apophis,
-  1P/Halley, 2P/Encke) are skipped.
+  1P/Halley, 2P/Encke) were at first skipped.
 
-The holdouts skip because their admission record binds them to the older
-`2026.09.18.1` asteroid and `2026.07.28.1` comet releases. Only one release
-can serve a given body, so no single installation runs both the
-`2026.10.10.1` checks and those holdouts. Section 5.6 records this.
+They skipped because their admission record binds them to the older
+`2026.09.18.1` asteroid and `2026.07.28.1` comet releases, and only one
+release can serve a given body. On 2026-10-29 a successor admission re-admitted
+the four asteroid holdouts on `2026.10.10.1`; they now run and pass. The two
+comet holdouts still skip. Section 5.6 gives the details.
 The regression tests added by the four commits pass (77 passed, 6 skipped as
 out of scope by their own declarations).
 
@@ -167,7 +168,7 @@ where a dedicated differential exists; it is not assumed for every product.
 | Apparent geocentric major bodies | JPL Horizons; 10 targets × 12 epochs = 120 | `<= 0.35 arcsecond`, `<= 0.1 km` | Cross-model angle; same-target/same-epoch distance |
 | Geometric geocentric major-body vectors | JPL Horizons; 10 targets × 8 epochs = 80 | `<= 0.001 arcsecond`, `<= 0.01 km` | Authority comparison of matched ICRF vector geometry |
 | Topocentric apparent RA/Dec | JPL Horizons; 18 cases | Per-case RA `15–30 arcseconds`, Dec `4–12 arcseconds` | Authority-validated on the named sites/epochs; not an azimuth/altitude claim |
-| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 current-catalog holdout cases | Exact-kernel gates from `2e-14` to `5e-10 degree`; sampled-catalog product gates from `1e-5 AU` to `0.05 degree` | Strict core authority-validated; current asteroid/comet releases admitted on six holdouts; live drift 15/17 on 2026-10-28 (two Horizons comet-solution changes, Section 5.6); full 11,720-body runtime inventory passed |
+| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 current-catalog holdout cases | Exact-kernel gates from `2e-14` to `5e-10 degree`; sampled-catalog product gates from `1e-5 AU` to `0.05 degree` | Strict core authority-validated; September releases admitted on six holdouts; current asteroid release `2026.10.10.1` admitted on four (2026-10-29), comet holdouts not yet re-admitted; live drift 16/17 on 2026-10-29 (Encke solution change, Section 5.6); full 11,720-body runtime inventory passed |
 | Heliocentric distance extrema | JPL Horizons vectors; 8 bodies | `<= 1 day`, `<= 3e-4 AU` | Authority-validated for the next local extrema in each case |
 | Asteroid apparent ecliptic positions | Frozen JPL Horizons fixture; 203 cases, 61 bodies | `0.5 arcsecond` default; four named TNO exceptions at `1.5` or `5.0 arcseconds` | Product-specific authority fixture; not the planetary threshold |
 | Delta T policies | Source-priority, continuity, policy, and compatibility tests | Product-specific invariants and source envelopes | Documented/partially validated; no universal Delta-T accuracy claim |
@@ -541,10 +542,29 @@ all 17 calibration and holdout cases after Horizons advanced Encke from
 `JPL#K273/14` to `JPL#K273/17`; the historical fixture and receipts remain
 unchanged.
 
-Those six holdouts remain bound to the September releases. On an
-installation of the current `2026.10.10.1` releases they are skipped, not run;
-re-admitting them on the current releases would need a new frozen authority
-record.
+The September 28 receipt stays bound to the September releases and is not
+relabelled. A successor receipt,
+`tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-10-29.json`,
+admits `moira-asteroids@2026.10.10.1` for the four asteroid holdouts. It uses
+the same frozen authority fixture and the same pre-existing gates, and binds
+the byte-exact archived manifest
+`tests/fixtures/small_body_release_manifests/asteroids-2026.10.10.1.json`.
+Every holdout state is served by that release at its exact frozen TDB epoch.
+The largest residuals against Horizons are:
+
+- `2.4e-10 AU` in semi-major axis;
+- `3.8e-10` in eccentricity;
+- `2.0e-9 AU` in pericenter and apocenter distance;
+- `6.9e-9 degree` in node;
+- `1.1e-6 degree` in argument of pericenter; and
+- `2.1e-6 degree` in mean anomaly.
+
+Atira's shard was rebuilt for `2026.10.10.1`; the other three holdouts use
+shards byte-identical to the September release. The live drift audit of
+2026-10-29 passes for all four asteroid records, so the frozen asteroid
+authority still matches Horizons. The two comet holdouts are not admitted by
+the successor and still skip. Re-admitting them needs a new frozen authority
+record, because Horizons has changed Encke's solution.
 
 The 2026-10-28 rerun of that audit passes 15 of the 17 cases and fails two.
 Both failures are changes in the authority, not Moira residuals: the audit
@@ -553,11 +573,17 @@ evaluate Moira. For 2P/Encke, Horizons now reports solution `JPL#K273/24`
 where the record holds `JPL#K273/17`. For 1P/Halley, the solution label is
 still `JPL#75`, but one distance element moved from `35.14382535810686` to
 `35.14382535708947 AU`, about `1.0e-9 AU` against the audit's `2e-10 AU`
-gate. The frozen records were not refreshed. Re-admitting the comet holdouts
-on the new solutions is open work. On the release host, all 11,223 asteroids and 497 periodic comets
+gate. The frozen records were not refreshed.
+
+The 2026-10-29 rerun passes 16 of the 17 cases. Halley's difference did not
+recur, and only Encke's solution change remains.
+
+On the release host, all 11,223 asteroids and 497 periodic comets
 (11,720 bodies) pass the exhaustive orbital-element coverage, finiteness,
-identity, and manifest/shard receipt gate. The admission receipt is
-`tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`.
+identity, and manifest/shard receipt gate. The September admission receipt
+is `tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`.
+On 2026-10-29 the same exhaustive gate passed again for the `2026.10.10.1`
+asteroid and comet releases, as recorded in the successor receipt.
 
 ### 5.7 Orbital Core Stage 3 geometric nodes
 
@@ -1053,10 +1079,10 @@ failure of the validated slices above.
 
 Open items from the 2026-10-28 rerun:
 
-- the September 28 catalog holdouts are bound to superseded small-body
-  releases, so a current installation skips them (Sections 2 and 5.6);
-- Horizons has changed the 1P/Halley and 2P/Encke solutions behind the frozen
-  live-drift records (Section 5.6); and
+- the 1P/Halley and 2P/Encke catalog holdouts are not admitted on the current
+  comet release, so a current installation skips them (Sections 2 and 5.6);
+- Horizons has changed the 2P/Encke solution behind the frozen live-drift
+  record (Section 5.6); and
 - the eclipse completeness windows outside 1901-2100 in Section 6.1 are
   diagnostic audit runs, not executable tests.
 
