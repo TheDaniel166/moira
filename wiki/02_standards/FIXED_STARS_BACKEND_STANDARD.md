@@ -1,8 +1,8 @@
 # Fixed Stars Backend Standard
 
-Version: 0.1 (draft)<br>
+Version: 0.2 (draft)<br>
 Date: 2026-10-29<br>
-Status: Phases 0-1 in progress; Phases 2-4 planned
+Status: Phases 0-2 implemented; Phases 3-4 planned
 Scope: catalog-star positions from the sovereign star registry
 
 This standard governs:
@@ -91,6 +91,38 @@ Each registry row carries:
   motion, parallax and radial velocity) live in `star_provenance.json`.
 - Catalog rebuilds are reviewed before promotion and diffed against the
   previous registry.
+
+### 3.1 Radial velocities (Phase 2)
+
+`scripts/data_ingestion/augment_star_registry_astrometry.py` fetches SIMBAD's
+adopted radial velocity for each row's recorded SIMBAD identifier into a
+candidate file, which is reviewed before `apply-rv` writes it. A velocity is
+admitted as `measured` only when SIMBAD reports a radial velocity (type `v`)
+with quality grade A to D. Grade E, a missing value, or an unresolved
+identifier leaves the status `unknown`.
+
+The 2026-10-29 fetch (SIMBAD TAP through its CfA mirror, because the
+Strasbourg service was unreachable from the build host) resolved 1,808 of
+1,809 rows: 1,619 velocities admitted, 186 grade-E values and 3 missing values
+left `unknown`, and one row ("Bodu") without a SIMBAD identifier. Each row's
+`astrometry_sources` in `star_provenance.json` records the service, retrieval
+time, SIMBAD identifier, the references of the adopted position, proper
+motion, parallax and radial velocity, and the velocity's error and grade.
+
+The same fetch compared the registry's astrometry with SIMBAD's current
+values. All rows agree except two, which SIMBAD has re-solved since the
+registry was built: δ Indi (0.31 arcsec in position, 10.8 mas/yr in proper
+motion, 3.9 mas in parallax) and σ² Ursae Majoris (3.0 mas/yr in proper
+motion). Their positions are not refreshed by Phase 2.
+
+### 3.2 Declared residual: light time along the line of sight
+
+ERFA `pmsafe` corrects the straight-line motion for the changing light-travel
+time (the Rømer effect); Moira's stage 1 does not. Because a catalog proper
+motion is already the observed rate, the effect is of second order. With the
+catalog radial velocities it measured, over the whole registry on 2026-10-29:
+at most 0.005 arcsec between 1800 and 2200, 0.11 arcsec at 1000 CE, and
+0.82 arcsec at 1000 BCE, the largest in each case being Barnard's Star.
 
 ## 4. Result contract
 

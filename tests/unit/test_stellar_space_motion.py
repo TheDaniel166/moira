@@ -124,3 +124,18 @@ def test_every_registry_row_declares_its_epoch_and_frame():
     assert records
     assert {record.frame for record in records} == {"ICRS"}
     assert all(math.isfinite(record.ref_epoch_jd) for record in records)
+
+
+def test_radial_velocity_status_value_and_provenance_agree_for_every_star():
+    records = stars._load_registry_records()
+    assert {record.radial_velocity_status for record in records} <= {"measured", "unknown"}
+    for record in records:
+        if record.radial_velocity_status == "unknown":
+            # Unknown is never a silent measurement: it propagates as zero.
+            assert record.radial_velocity_km_s == 0.0
+            continue
+        source = record.provenance["astrometry_sources"]["radial_velocity"]
+        assert source["admitted"] is True
+        assert source["quality"] in ("A", "B", "C", "D")
+        assert source["bibcode"]
+        assert record.radial_velocity_km_s == source["value_km_s"]

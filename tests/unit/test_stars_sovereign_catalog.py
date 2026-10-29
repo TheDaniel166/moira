@@ -38,6 +38,8 @@ EXPECTED_COLUMNS = [
     "lat_limit_deg",
     "ref_epoch_jd",
     "frame",
+    "radial_velocity_km_s",
+    "radial_velocity_status",
 ]
 
 # Historical implementation outputs, including the former mixed-definition
@@ -119,12 +121,37 @@ def _angular_delta(a: float, b: float) -> float:
     return abs((((a - b) + 180.0) % 360.0) - 180.0)
 
 
+def _straight_line_direction(row: dict[str, str], jd_tt: float, radial_velocity_km_s: float):
+    """Independent restatement of the declared straight-line space-motion model.
+
+    Written here from the standard, not imported from the engine, so the
+    radial-velocity shift below is not the engine checking itself.
+    """
+    ra, dec = math.radians(float(row["ra_deg"])), math.radians(float(row["dec_deg"]))
+    p = (math.cos(dec) * math.cos(ra), math.cos(dec) * math.sin(ra), math.sin(dec))
+    east = (-math.sin(ra), math.cos(ra), 0.0)
+    north = (-math.sin(dec) * math.cos(ra), -math.sin(dec) * math.sin(ra), math.cos(dec))
+    mas = math.radians(1.0 / 3.6e6)
+    v = [float(row["pmra_mas_yr"]) * mas * e + float(row["pmdec_mas_yr"]) * mas * n for e, n in zip(east, north)]
+    years = (jd_tt - float(row["ref_epoch_jd"])) / 365.25
+    distance_pc = 1000.0 / float(row["parallax_mas"])
+    radial_pc_per_year = radial_velocity_km_s * 31557600.0 / (149597870.7 * 206264.806247096355)
+    x = [distance_pc * pi + (vi * distance_pc + radial_pc_per_year * pi) * years for pi, vi in zip(p, v)]
+    norm = math.sqrt(sum(c * c for c in x))
+    return tuple(c / norm for c in x)
+
+
 def _corrected_fw06_anchor(name: str, jd_tt: float, date_key: str) -> tuple[float, float]:
     """Transport the frozen legacy output through independent ERFA frames.
 
     Propagation and nutation are held fixed. The independent precession-only
     correction is M_correct @ transpose(M_legacy), with the literal pfw06
     gamma_bar coefficient replacing the precession-only coefficient.
+
+    The frozen outputs predate catalog radial velocities (Phase 2 of the
+    fixed-star standard). The radial-velocity shift is added in ICRS from an
+    independent restatement of the straight-line model; authority agreement
+    with ERFA pmsafe is gated separately in test_stars_erfa_reference.py.
     """
     legacy_position = LEGACY_MIXED_FW06_ANCHORS[name][date_key]
     if jd_tt == J2000:
@@ -141,7 +168,14 @@ def _corrected_fw06_anchor(name: str, jd_tt: float, date_key: str) -> tuple[floa
     legacy_frame = axes @ erfa.fw2m(gamb + delta, phib, psib, epsa)
     correct_frame = axes @ erfa.pmat06(J2000, offset)
     vector = erfa.s2c(*map(math.radians, legacy_position))
-    lon, lat = erfa.c2s(correct_frame @ legacy_frame.T @ vector)
+    corrected = correct_frame @ legacy_frame.T @ vector
+    row = {r["name"]: r for r in _registry_rows()}[name]
+    radial_velocity_km_s = float(row["radial_velocity_km_s"])
+    if radial_velocity_km_s != 0.0:
+        with_rv = _straight_line_direction(row, jd_tt, radial_velocity_km_s)
+        without_rv = _straight_line_direction(row, jd_tt, 0.0)
+        corrected = corrected + correct_frame @ [a - b for a, b in zip(with_rv, without_rv)]
+    lon, lat = erfa.c2s(corrected)
     return math.degrees(lon) % 360.0, math.degrees(lat)
 
 

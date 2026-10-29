@@ -79,6 +79,9 @@ def _erfa_fixed_star_position(row: dict[str, str], jd_tt: float) -> tuple[float,
     pmra_mas_yr = float(row["pmra_mas_yr"])
     pmdec_mas_yr = float(row["pmdec_mas_yr"])
     parallax_mas = float(row["parallax_mas"])
+    # The same catalog inputs Moira propagates: radial velocity and epoch.
+    radial_velocity_km_s = float(row["radial_velocity_km_s"])
+    ref_epoch_jd = float(row["ref_epoch_jd"])
 
     cos_dec = math.cos(math.radians(dec_deg))
     pmr_deg_per_year = 0.0
@@ -86,7 +89,7 @@ def _erfa_fixed_star_position(row: dict[str, str], jd_tt: float) -> tuple[float,
         pmr_deg_per_year = (pmra_mas_yr / 1000.0) / 3600.0 / cos_dec
     pmd_deg_per_year = (pmdec_mas_yr / 1000.0) / 3600.0
 
-    jd1a, jd1b = _split_jd(J2000)
+    jd1a, jd1b = _split_jd(ref_epoch_jd)
     jd2a, jd2b = _split_jd(jd_tt)
 
     with warnings.catch_warnings():
@@ -97,7 +100,7 @@ def _erfa_fixed_star_position(row: dict[str, str], jd_tt: float) -> tuple[float,
             math.radians(pmr_deg_per_year),
             math.radians(pmd_deg_per_year),
             max(0.0, parallax_mas / 1000.0),
-            0.0,
+            radial_velocity_km_s,
             jd1a,
             jd1b,
             jd2a,
@@ -143,5 +146,29 @@ def test_full_catalog_j2000_erfa_sweep_has_no_large_outliers() -> None:
         lat_err = abs(moira.latitude - erfa_lat)
         if max(lon_err, lat_err) > ERFA_CATALOG_PASS_THRESHOLD_DEG:
             outliers.append((name, lon_err, lat_err))
+
+    assert outliers == []
+
+
+# Straight-line space motion with the catalog radial velocity omits only the
+# second-order Romer (light-time) term that pmsafe includes. Over the whole
+# registry it measured at most 0.0048 arcsec at 1800 and 2200 (Barnard's
+# Star) on 2026-10-29; the gate leaves room for catalog refreshes.
+ERFA_CATALOG_SPACE_MOTION_THRESHOLD_ARCSEC = 0.01
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("jd_tt", [J2000 - 73050.0, J2000 + 73050.0], ids=["1800", "2200"])
+def test_full_catalog_space_motion_with_radial_velocity_matches_erfa(jd_tt: float) -> None:
+    outliers: list[tuple[str, float]] = []
+
+    for name, row in _registry_by_name().items():
+        erfa_lon, erfa_lat = _erfa_fixed_star_position(row, jd_tt)
+        moira = star_at(name, jd_tt)
+        lon_err = _angular_diff(moira.longitude, erfa_lon) * math.cos(math.radians(erfa_lat))
+        lat_err = abs(moira.latitude - erfa_lat)
+        error_arcsec = math.hypot(lon_err, lat_err) * 3600.0
+        if error_arcsec > ERFA_CATALOG_SPACE_MOTION_THRESHOLD_ARCSEC:
+            outliers.append((name, error_arcsec))
 
     assert outliers == []
