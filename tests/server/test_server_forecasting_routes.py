@@ -107,7 +107,9 @@ def test_fixed_star_route_exposes_identity_geometry_and_receipts(
     )
     assert body["subjects"][0]["source_mode"] == "sovereign_registry"
     assert body["subjects"][0]["relation_basis"] == "sovereign_registry"
-    assert body["subjects"][0]["true_position"] is True
+    # An astrometric position (the default) is not the star's geometric
+    # "true" place; see FIXED_STARS_BACKEND_STANDARD.md, Section 4.
+    assert body["subjects"][0]["true_position"] is False
     assert {line["line_type"] for line in body["lines"]} == {
         "MC",
         "IC",

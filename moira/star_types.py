@@ -168,8 +168,13 @@ class FixedStarTruth:
     gaia_match_status: str
     gaia_source_index: int | None = None
     is_topocentric: bool = False
+    # Legacy flag: True only for the "geometric" product (where the star
+    # physically is). See position_product.
     true_position: bool = False
     dedup_applied: bool = False
+    # "astrometric", "apparent" or "geometric"; see
+    # wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md, Section 1.
+    position_product: str = "astrometric"
 
 @dataclass(slots=True)
 class FixedStarClassification:

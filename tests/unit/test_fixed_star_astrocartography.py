@@ -28,10 +28,12 @@ def test_fixed_star_equatorial_subject_preserves_identity_and_true_of_date_frame
     assert subject.source_mode == "sovereign_registry"
     assert subject.gaia_match_status == "native_registry"
     assert subject.merge_state == "native_registry"
-    assert subject.observer_mode == "geocentric"
+    # The default astrometric product is barycentric and is not the star's
+    # geometric "true" place; see FIXED_STARS_BACKEND_STANDARD.md, Section 4.
+    assert subject.observer_mode == "barycentric"
     assert subject.relation_kind == "catalog_merge"
     assert subject.relation_basis == "sovereign_registry"
-    assert subject.true_position is True
+    assert subject.true_position is False
     assert subject.is_topocentric is False
     assert subject.position_source == "moira.stars.star_at:ecliptic_to_equatorial"
     assert 0.0 <= subject.right_ascension < 360.0

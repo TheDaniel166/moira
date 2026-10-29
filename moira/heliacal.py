@@ -3975,7 +3975,8 @@ def _target_signed_elongation(body: str, jd_ut: float) -> float:
         if reader is None
         else _ut1_to_ephemeris_tt(jd_ut, reader)
     )
-    star = star_at(body, jd_tt)
+    # Explicit product (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    star = star_at(body, jd_tt, product="astrometric")
     sun = planet_at(_Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0
 

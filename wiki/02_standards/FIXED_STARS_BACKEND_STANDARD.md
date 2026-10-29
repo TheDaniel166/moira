@@ -1,8 +1,8 @@
 # Fixed Stars Backend Standard
 
-Version: 0.2 (draft)<br>
+Version: 0.3 (draft)<br>
 Date: 2026-10-29<br>
-Status: Phases 0-2 implemented; Phases 3-4 planned
+Status: Phases 0-3 implemented; Phase 4 planned
 Scope: catalog-star positions from the sovereign star registry
 
 This standard governs:
@@ -139,12 +139,52 @@ position is stage 1 evaluated at the date plus the light-travel time. Earlier
 releases propagated the observed position backward by the light-travel time,
 which reversed the correction.
 
-## 5. Default product
+## 5. Default product and consumers
 
 Open decision: whether `star_at` returns `apparent` (consistent with Moira's
 apparent planets) or `astrometric` (kernel-free, current numbers) when no
-product is requested. Until it is decided the default remains `astrometric`,
-and every internal consumer states its product explicitly.
+product is requested. Until it is decided the default remains `astrometric`.
+
+`star_at(name, jd_tt, product=..., reader=...)`, `all_stars_at(...)` and
+`Moira.fixed_star(name, dt, product=...)` accept the product. The apparent
+product needs a planetary reader (passed, active, or the facade's) and fails
+closed without one.
+
+Technique consumers state their product explicitly:
+
+| Consumer | Product | Note |
+|---|---|---|
+| `moira/occultations.py` coarse search | `apparent` | compared with the observer-apparent Moon |
+| `moira/occultations.py` star rays | stage 2 on the caller's direction | topocentric diurnal aberration follows; the physical ray omits aberration |
+| `moira/astrocartography.py` | `astrometric` | current convention; open with the default decision |
+| `moira/heliacal.py` solar elongation | `astrometric` | current convention; open with the default decision |
+| `moira/primary_directions/fixed_stars.py` | `astrometric` | current convention; open with the default decision |
+
+Catalog lookups (constellation and Behenian helpers) inherit the default.
+
+### 5.1 Repairs made with Phase 3
+
+- `star_light_time_split` previously moved the "observed" position backward
+  by the light-travel time. It now returns the astrometric product as the
+  observed position and the geometric product one light time ahead.
+- `FixedStarTruth.true_position` is now `True` only for the geometric
+  product, and `FixedStarClassification.observer_mode` is `barycentric`
+  except for the apparent product.
+- The occultation star rays passed a unit vector to light deflection, which
+  treated the star as 1 km away and made the solar deflection vanish. The
+  shared stage 2 places a direction-only star at effectively infinite
+  distance. Measured on 80 star rays, the change is a median of 0.003 arcsec
+  and at most 0.22 arcsec (Spica a few degrees from the Sun in October 2024).
+- The occultation coarse search passed observer arguments that `star_at`
+  silently ignored and compared an astrometric star with the apparent Moon.
+  It now requests the apparent product.
+
+### 5.2 Apparent product validation
+
+Against ERFA `apcg` (with Moira's DE441 Earth state) and `atciq`, for 12
+stars at 6 epochs from 1800 to 2100: median 0.000003 arcsec, worst 0.00014
+arcsec (Barnard's Star, 2100). Gate: 0.001 arcsec, in
+`tests/integration/test_stars_apparent_erfa.py`.
 
 ## 6. Binary components (Phase 4)
 

@@ -565,29 +565,98 @@ def _distance_ly_from_parallax(parallax_mas: float) -> float:
 
 
 _DAYS_PER_YEAR = 365.25
+POSITION_PRODUCTS = ("astrometric", "apparent", "geometric")
+_PARSEC_KM = 206264.806247096355 * 149597870.7
+# A star without a usable parallax is placed this far away for the
+# Earth-based stage: far enough that its parallax vanishes and its light
+# deflection takes the infinite-distance value.
+_UNRESOLVED_DISTANCE_PC = 1.0e9
 
 
-def _emission_jd(record: _SovereignStarRecord, jd_tt: float) -> float:
-    """Return the JD at which the light we receive at jd_tt was emitted by this star.
-
-    For a star at distance d light-years, the light travel time is d years.
-    The emission epoch is therefore jd_tt - d * 365.25 days.
-
-    Returns jd_tt unchanged when parallax is absent or non-positive (star treated
-    as at infinite distance; the light-time distinction is undefined).
-    """
+def _light_time_days(record: _SovereignStarRecord) -> float:
+    """Return the light-travel time from the star in days (0 without parallax)."""
     dist_ly = _distance_ly_from_parallax(record.parallax_mas)
     if not math.isfinite(dist_ly):
-        return jd_tt
-    return jd_tt - dist_ly * _DAYS_PER_YEAR
+        return 0.0
+    return dist_ly * _DAYS_PER_YEAR
 
 
-def _native_position(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float]:
-    """Return propagated true ecliptic longitude/latitude for a record at TT.
+def _icrs_position(
+    record: _SovereignStarRecord,
+    jd_tt: float,
+    product: str,
+    reader: object | None,
+) -> tuple[float, float, float]:
+    """Return the ICRS vector of the requested product (stages 1 and 2).
+
+    - ``astrometric``: stage 1, the barycentric observed direction.
+    - ``geometric``: stage 1 one light-travel time later, where the star
+      physically is at ``jd_tt``.
+    - ``apparent``: stage 1, then annual parallax from Earth's barycentric
+      position, light deflection by the Sun, Jupiter and Saturn, and annual
+      aberration from Earth's barycentric velocity, all from ``reader``.
 
     Side effects: None.
     """
-    xyz = _propagate_icrs_vector(record, jd_tt)
+    if product == "geometric":
+        return _astrometric_state(record, jd_tt + _light_time_days(record))[0]
+    direction, distance_pc = _astrometric_state(record, jd_tt)
+    if product == "astrometric":
+        return direction
+    return _earth_based_effects(direction, distance_pc, jd_tt, reader)
+
+
+def _earth_based_effects(
+    direction: tuple[float, float, float],
+    distance_pc: float | None,
+    jd_tt: float,
+    reader: object,
+    *,
+    aberration: bool = True,
+) -> tuple[float, float, float]:
+    """Stage 2 of the fixed-star pipeline: from the barycenter to Earth's center.
+
+    ``direction`` is a barycentric ICRS direction. With a distance, annual
+    parallax moves the origin to the geocenter; without one the star is placed
+    at ``_UNRESOLVED_DISTANCE_PC``, where parallax vanishes and light
+    deflection takes its infinite-distance value. Light deflection by the Sun,
+    Jupiter and Saturn follows, then annual aberration unless ``aberration``
+    is False (the physical, observer-motion-free ray).
+
+    Returns a geocentric ICRS vector in km. Side effects: None.
+    """
+    from .constants import Body
+    from .corrections import SCHWARZSCHILD_RADII, apply_aberration, apply_deflection
+    from .planets import _earth_barycentric_state, _geocentric
+
+    earth_position, earth_velocity = _earth_barycentric_state(jd_tt, reader)
+    if distance_pc is not None:
+        distance_km = distance_pc * _PARSEC_KM
+        geocentric = tuple(c * distance_km - e for c, e in zip(direction, earth_position))
+    else:
+        distance_km = _UNRESOLVED_DISTANCE_PC * _PARSEC_KM
+        geocentric = tuple(c * distance_km for c in direction)
+    deflectors = [
+        (_geocentric(body, jd_tt, reader), SCHWARZSCHILD_RADII[name])
+        for body, name in ((Body.SUN, "Sun"), (Body.JUPITER, "Jupiter"), (Body.SATURN, "Saturn"))
+    ]
+    geocentric = apply_deflection(geocentric, deflectors)
+    if not aberration:
+        return geocentric
+    return apply_aberration(geocentric, earth_velocity)
+
+
+def _native_position(
+    record: _SovereignStarRecord,
+    jd_tt: float,
+    product: str = "astrometric",
+    reader: object | None = None,
+) -> tuple[float, float]:
+    """Return a record's true ecliptic longitude/latitude of date at TT (stage 3).
+
+    Side effects: None.
+    """
+    xyz = _icrs_position(record, jd_tt, product, reader)
     lon, lat, _ = icrf_to_true_ecliptic(jd_tt, xyz)
     return lon, lat
 
@@ -597,21 +666,24 @@ def _build_fixed_star(
     query_name: str,
     lookup_kind: str,
     jd_tt: float,
+    product: str = "astrometric",
+    reader: object | None = None,
 ) -> FixedStar:
     """Construct the canonical FixedStar vessel from sovereign record data.
 
     Populates truth/classification/relation/condition-profile metadata for the
-    unified star surface.
+    unified star surface. ``product`` names which position is computed.
 
     Side effects: None.
     """
-    longitude, latitude = _native_position(record, jd_tt)
+    longitude, latitude = _native_position(record, jd_tt, product, reader)
     constellation = _constellation_for_star(record.name)
     classification = FixedStarClassification(
         lookup_kind=lookup_kind,
         source_kind="sovereign",
         merge_state="native_registry",
-        observer_mode="geocentric",
+        # Only the apparent product carries Earth-based effects.
+        observer_mode="geocentric" if product == "apparent" else "barycentric",
     )
     relation = UnifiedStarRelation(
         kind="catalog_merge",
@@ -640,8 +712,9 @@ def _build_fixed_star(
             gaia_match_status="native_registry",
             gaia_source_index=None,
             is_topocentric=False,
-            true_position=True,
+            true_position=product == "geometric",
             dedup_applied=False,
+            position_product=product,
         ),
         classification=classification,
         relation=relation,
@@ -653,6 +726,24 @@ def _build_fixed_star(
             source_kind=classification.source_kind,
         ),
     )
+
+
+def _resolve_product_reader(product: str, reader: object | None) -> object | None:
+    """Validate ``product`` and bind a planetary reader when it needs one."""
+    if product not in POSITION_PRODUCTS:
+        raise ValueError(f"unknown star position product {product!r}; expected one of {POSITION_PRODUCTS}")
+    if product != "apparent":
+        return reader
+    if reader is None:
+        from .spk_reader import MissingKernelError, get_active_reader
+
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "Apparent star positions need Earth's state from a planetary kernel. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
+    return reader
 
 
 def _constellation_label_from_module_stem(stem: str) -> str:
@@ -709,127 +800,81 @@ def star_at(
     name: str,
     jd_tt: float,
     policy: UnifiedStarComputationPolicy | FixedStarComputationPolicy | None = None,
+    *,
+    product: str = "astrometric",
+    reader: object | None = None,
     **_: object,
 ) -> FixedStar:
-    """Return sovereign fixed-star position at TT epoch.
+    """Return a sovereign fixed-star position at a TT epoch.
+
+    ``product`` selects ``"astrometric"`` (the catalog direction propagated to
+    the date; the default), ``"apparent"`` (as seen from Earth's center:
+    adds annual parallax, light deflection and annual aberration, and needs a
+    planetary ``reader`` or an active one), or ``"geometric"`` (where the star
+    physically is). All are true ecliptic and equinox of date.
 
     Raises:
-        ValueError: If ``jd_tt`` is non-finite.
+        ValueError: If ``jd_tt`` is non-finite or ``product`` is unknown.
         KeyError: If star resolution fails.
+        MissingKernelError: If ``product="apparent"`` has no planetary reader.
 
     Side effects: None.
     """
     if not math.isfinite(jd_tt):
         raise ValueError("jd_tt must be finite")
+    reader = _resolve_product_reader(product, reader)
 
     lookup_policy = policy.lookup if policy is not None else DEFAULT_FIXED_STAR_POLICY.lookup
     record, lookup_kind = _resolve_star_record(name, lookup_policy)
-    return _build_fixed_star(record, name, lookup_kind, jd_tt)
+    return _build_fixed_star(record, name, lookup_kind, jd_tt, product, reader)
 
 
 def star_light_time_split(
     name: str,
     jd_tt: float,
 ) -> tuple[FixedStar, FixedStar]:
-    """Return (observed_position, true_position) for a fixed star.
+    """Return ``(observed, geometric)`` positions of a fixed star at ``jd_tt``.
 
-    observed_position — where the star appears to be: its position at the epoch
-        when the light we are currently receiving was emitted, i.e. at
-        ``jd_tt - distance_ly * 365.25``.  This is what a telescope shows.
+    observed  -- the ``astrometric`` product: the catalog direction propagated
+        to ``jd_tt``. A catalog records the direction the star's light arrives
+        from, so this is where the star is seen (from the solar-system
+        barycenter, before Earth-based effects).
+    geometric -- where the star physically is at ``jd_tt``. Its light takes
+        ``distance_ly`` years to arrive, so this is the observed direction one
+        light-travel time later.
 
-    true_position — where the star physically is at ``jd_tt``, accounting for
-        proper motion from J2000 to now.  The light carrying this information
-        has not yet reached Earth.
+    The difference is the star's motion over its light-travel time: for
+    Arcturus (37 ly) about 37 years of proper motion, for Sirius (8.6 ly)
+    about 8.6 years. Without a usable parallax the light time is undefined
+    and both positions coincide.
 
-    The longitude difference between the two positions is the proper-motion
-    drift accumulated over the light travel time.  For Arcturus (37 ly) this
-    is approximately 37 years of proper motion; for Sirius (8.6 ly) about
-    8.6 years.
-
-    For stars without a valid parallax measurement the light-travel-time is
-    undefined (star treated as at infinite distance); both returned positions
-    are identical and carry ``true_position=True``.
-
-    Parameters
-    ----------
-    name   : star name as accepted by ``star_at``
-    jd_tt  : Julian Date in TT
-
-    Returns
-    -------
-    (observed, true) — a pair of FixedStar vessels.
-    ``observed.computation_truth.true_position`` is False.
-    ``true.computation_truth.true_position`` is True.
+    ``observed.computation_truth.true_position`` is False and
+    ``geometric.computation_truth.true_position`` is True.
     """
     if not math.isfinite(jd_tt):
         raise ValueError("jd_tt must be finite")
 
     record, lookup_kind = _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
-    constellation = _constellation_for_star(record.name)
-    dist_ly = _distance_ly_from_parallax(record.parallax_mas)
-
-    # True position: propagate to jd_tt
-    true = _build_fixed_star(record, name, lookup_kind, jd_tt)
-
-    # Observed position: propagate to emission epoch
-    obs_jd = _emission_jd(record, jd_tt)
-    obs_lon, obs_lat = _native_position(record, obs_jd)
-    classification = FixedStarClassification(
-        lookup_kind=lookup_kind,
-        source_kind="sovereign",
-        merge_state="native_registry",
-        observer_mode="geocentric",
-    )
-    relation = UnifiedStarRelation(
-        kind="catalog_merge",
-        basis="sovereign_registry",
-        star_name=name,
-        source_kind="sovereign",
-        gaia_source_index=None,
-    )
-    observed = FixedStar(
-        name=record.name,
-        nomenclature=record.nomenclature,
-        constellation=constellation,
-        longitude=obs_lon,
-        latitude=obs_lat,
-        magnitude=record.magnitude_v,
-        bp_rp=record.color_index,
-        parallax_mas=record.parallax_mas,
-        distance_ly=dist_ly,
-        source="sovereign",
-        is_topocentric=False,
-        computation_truth=FixedStarTruth(
-            lookup_kind=lookup_kind,
-            hipparcos_name=record.name,
-            constellation=constellation,
-            source_mode="sovereign_registry",
-            gaia_match_status="native_registry",
-            gaia_source_index=None,
-            is_topocentric=False,
-            true_position=False,
-            dedup_applied=False,
-        ),
-        classification=classification,
-        relation=relation,
-        condition_profile=StarConditionProfile(
-            result_kind="fixed_star",
-            condition_state=StarConditionState("unified_merge"),
-            relation_kind=relation.kind,
-            relation_basis=relation.basis,
-            source_kind=classification.source_kind,
-        ),
-    )
-
-    return observed, true
+    observed = _build_fixed_star(record, name, lookup_kind, jd_tt, "astrometric")
+    geometric = _build_fixed_star(record, name, lookup_kind, jd_tt, "geometric")
+    return observed, geometric
 
 
-def all_stars_at(jd_tt: float) -> dict[str, FixedStar]:
-    """Return all sovereign stars propagated to a TT epoch.
+def all_stars_at(
+    jd_tt: float,
+    *,
+    product: str = "astrometric",
+    reader: object | None = None,
+) -> dict[str, FixedStar]:
+    """Return all sovereign stars at a TT epoch as the requested ``product``.
 
     Side effects: None.
     """
-    return {record.name: _build_fixed_star(record, record.name, "traditional_name", jd_tt) for record in _load_registry_records()}
+    reader = _resolve_product_reader(product, reader)
+    return {
+        record.name: _build_fixed_star(record, record.name, "traditional_name", jd_tt, product, reader)
+        for record in _load_registry_records()
+    }
 
 
 def list_named_stars() -> list[str]:

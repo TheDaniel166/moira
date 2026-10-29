@@ -399,13 +399,15 @@ def test_target_alt_visibility_checks_surface_target_failures_instead_of_returni
 def test_stellar_signed_elongation_passes_tt_explicitly_without_double_conversion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    captured: dict[str, float] = {}
+    captured: dict[str, object] = {}
 
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.123)
-    monkeypatch.setattr(
-        "moira.stars.star_at",
-        lambda body, jd_tt: type("Star", (), {"longitude": 120.0})(),
-    )
+    def _fake_star_at(body: str, jd_tt: float, **kwargs):
+        captured["star_jd_tt"] = jd_tt
+        captured["product"] = kwargs.get("product")
+        return type("Star", (), {"longitude": 120.0})()
+
+    monkeypatch.setattr("moira.stars.star_at", _fake_star_at)
 
     def _fake_planet_at(body: str, jd_ut: float, **kwargs):
         captured["jd_ut"] = jd_ut
@@ -419,6 +421,8 @@ def test_stellar_signed_elongation_passes_tt_explicitly_without_double_conversio
     assert elong == pytest.approx(20.0)
     assert captured["jd_ut"] == pytest.approx(2451545.0)
     assert captured["jd_tt"] == pytest.approx(2451545.123)
+    assert captured["star_jd_tt"] == pytest.approx(2451545.123)
+    assert captured["product"] == "astrometric"
 
 
 @pytest.mark.requires_ephemeris

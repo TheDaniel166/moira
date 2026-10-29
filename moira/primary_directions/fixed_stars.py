@@ -44,5 +44,6 @@ def resolve_primary_direction_fixed_star_point(
     *,
     jd_tt: float,
 ) -> tuple[str, float, float]:
-    star = star_at(target.star_name, jd_tt)
+    # Explicit product (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    star = star_at(target.star_name, jd_tt, product="astrometric")
     return star.name, star.longitude, star.latitude

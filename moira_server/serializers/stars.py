@@ -76,6 +76,7 @@ def serialize_star_provenance(
         is_topocentric=getattr(truth, "is_topocentric", getattr(data, "is_topocentric", None)),
         true_position=getattr(truth, "true_position", None),
         dedup_applied=getattr(truth, "dedup_applied", None),
+        position_product=getattr(truth, "position_product", None),
         relation_kind=getattr(relation, "kind", None),
         relation_basis=getattr(relation, "basis", None),
         relation_star_name=getattr(relation, "star_name", None),

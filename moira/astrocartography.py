@@ -339,7 +339,8 @@ def fixed_star_equatorial_subject(
         or not math.isfinite(obliquity_deg)
     ):
         raise ValueError("fixed-star astrocartography epoch and obliquity must be finite")
-    star = star_at(name, jd_tt)
+    # Explicit product (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    star = star_at(name, jd_tt, product="astrometric")
     right_ascension, declination = ecliptic_to_equatorial(
         star.longitude,
         star.latitude,

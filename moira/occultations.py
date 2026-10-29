@@ -49,7 +49,7 @@ from enum import Enum
 from numbers import Real
 
 from .constants import Body, EARTH_RADIUS_KM, SUN_RADIUS_KM
-from .planets import planet_at, sky_position_at, _earth_barycentric_state, _geocentric
+from .planets import planet_at, sky_position_at
 from .julian import (
     CalendarDateTime,
     calendar_datetime_from_jd,
@@ -71,12 +71,10 @@ from .coordinates import (
 from .obliquity import nutation, true_obliquity
 from .eclipse_geometry import apparent_radius as _apparent_radius, MOON_RADIUS_KM
 from .corrections import (
-    apply_aberration,
-    apply_deflection,
     apply_diurnal_aberration,
     apply_refraction,
-    SCHWARZSCHILD_RADII,
 )
+from .stars import _earth_based_effects
 from .geoutils import (
     EARTH_KM_PER_DEG_LAT as _EARTH_KM_PER_DEG_LAT,
     offset_geographic_km as _offset_geographic_km,
@@ -1173,10 +1171,9 @@ def _star_physical_equatorial(
 
     jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     xyz_icrf = _star_geometric_icrf_direction(star_lon, star_lat, jd_tt)
-    deflectors = [(_geocentric(Body.SUN, jd_tt, reader), SCHWARZSCHILD_RADII["Sun"])]
-    deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
-    deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
-    xyz_physical = apply_deflection(xyz_icrf, deflectors)
+    # Stage 2 of the fixed-star pipeline without aberration. The caller gives
+    # a direction only, so the star is treated as infinitely distant.
+    xyz_physical = _earth_based_effects(xyz_icrf, None, jd_tt, reader, aberration=False)
     xyz_physical = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_physical)
     xyz_physical = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_physical)
     ra_star, dec_star, _ = icrf_to_equatorial(xyz_physical)
@@ -1197,13 +1194,10 @@ def _star_topocentric_equatorial(
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
     xyz_icrf = _star_geometric_icrf_direction(star_lon, star_lat, jd_tt)
-    _, earth_vel = _earth_barycentric_state(jd_tt, reader)
-    deflectors = [(_geocentric(Body.SUN, jd_tt, reader), SCHWARZSCHILD_RADII["Sun"])]
-    deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
-    deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
-
-    xyz_apparent = apply_deflection(xyz_icrf, deflectors)
-    xyz_apparent = apply_aberration(xyz_apparent, earth_vel)
+    # Stage 2 of the fixed-star pipeline (deflection, annual aberration). The
+    # caller gives a direction only, so the star is treated as infinitely
+    # distant.
+    xyz_apparent = _earth_based_effects(xyz_icrf, None, jd_tt, reader)
     xyz_apparent = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_apparent)
     xyz_apparent = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_apparent)
 
@@ -4239,13 +4233,10 @@ def lunar_star_occultation(
             )
             from .stars import star_at
 
-            star = star_at(
-                star_name,
-                jd_tt,
-                observer_lat=observer_lat,
-                observer_lon=observer_lon,
-                observer_elev_m=observer_elev_m,
-            )
+            # The Moon above is observer-apparent, so the star must be an
+            # apparent place too (star_at has no topocentric mode; the
+            # remaining diurnal aberration is under 0.32 arcsec).
+            star = star_at(star_name, jd_tt, product="apparent", reader=reader)
             ra_star, dec_star = ecliptic_to_equatorial(
                 star.longitude,
                 star.latitude,

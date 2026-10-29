@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from moira import occultations
+from moira import corrections, occultations, planets
 from moira.constants import EARTH_ROTATION_RATE_RAD_PER_SEC
 from moira.corrections import _observer_position_icrf
 from moira.polar_motion import PolarMotionRegistry, polar_motion_matrix
@@ -56,10 +56,12 @@ def test_nominal_star_diurnal_aberration_matches_erfa(
     identity = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
     monkeypatch.setattr(occultations, "_ut1_to_ephemeris_tt", lambda jd, r: jd)
     monkeypatch.setattr(occultations, "_star_geometric_icrf_direction", lambda *a: ray)
-    monkeypatch.setattr(occultations, "_earth_barycentric_state",
+    # The shared annual stage (moira.stars._earth_based_effects) imports these
+    # at call time; neutralise them at their source modules.
+    monkeypatch.setattr(planets, "_earth_barycentric_state",
                         lambda *a: ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)))
-    monkeypatch.setattr(occultations, "_geocentric", lambda *a: (1e15, 0.0, 0.0))
-    monkeypatch.setattr(occultations, "apply_deflection", lambda u, d: u)
+    monkeypatch.setattr(planets, "_geocentric", lambda *a: (1e15, 0.0, 0.0))
+    monkeypatch.setattr(corrections, "apply_deflection", lambda u, d: u)
     monkeypatch.setattr(occultations, "precession_matrix_equatorial", lambda jd: identity)
     monkeypatch.setattr(occultations, "nutation_matrix_equatorial", lambda jd: identity)
     monkeypatch.setattr(occultations, "local_sidereal_time", lambda *a: lst)
