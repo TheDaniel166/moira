@@ -114,6 +114,24 @@ mismatch skips the Halley and Encke current-solution holdouts. It predates
 these engine commits (it is the asteroid-admission case listed in
 [the 2026-10-27 repair receipt](PRECESSION_SPK_PRECISION_REPAIR_2026-10-27.md))
 and is a local-resource gap, not a numerical residual; it was not suppressed.
+
+Later the same day, the admitted `moira-asteroids@2026.10.10.1` release was
+installed. Its 40 rebuilt shards and its metadata came from the public
+archive. Its other 409 shards are byte-identical to the `2026.09.18.1` release
+and were reused. `verify_release` accepted every byte. With that release
+installed:
+
+- the 25-asteroid check passes;
+- the release-bound full-catalog suites now run and pass: finite receipted
+  elements and geometric nodes for all 11,720 bodies, plus the 203-case
+  asteroid apparent-position fixture; and
+- the six September 28 catalog holdouts (Ceres, Hektor, Atira, Apophis,
+  1P/Halley, 2P/Encke) are skipped.
+
+The holdouts skip because their admission record binds them to the older
+`2026.09.18.1` asteroid and `2026.07.28.1` comet releases. Only one release
+can serve a given body, so no single installation runs both the
+`2026.10.10.1` checks and those holdouts. Section 5.6 records this.
 The regression tests added by the four commits pass (77 passed, 6 skipped as
 out of scope by their own declarations).
 
@@ -523,6 +541,11 @@ all 17 calibration and holdout cases after Horizons advanced Encke from
 `JPL#K273/14` to `JPL#K273/17`; the historical fixture and receipts remain
 unchanged.
 
+Those six holdouts remain bound to the September releases. On an
+installation of the current `2026.10.10.1` releases they are skipped, not run;
+re-admitting them on the current releases would need a new frozen authority
+record.
+
 The 2026-10-28 rerun of that audit passes 15 of the 17 cases and fails two.
 Both failures are changes in the authority, not Moira residuals: the audit
 compares live Horizons replies with the frozen Horizons records and does not
@@ -666,6 +689,79 @@ time semantics explicitly:
 
 The ancient gate is not an ancient-eclipse accuracy claim. It keeps distinct
 Delta-T and ephemeris models visible while preventing silent regression.
+
+#### Completeness against the NASA Five Millennium catalogs (2026-10-28 audit)
+
+A diagnostic audit compared `solar_eclipses_in_range` and
+`lunar_eclipses_in_range` with every event in NASA's Five Millennium solar
+(NASA/TP-2008-214170) and lunar (NASA/TP-2009-214173) catalogs. The catalog
+files were retrieved on 2026-10-28 with SHA-256 `c07e7b5e...` (solar) and
+`d47586fc...` (lunar). Events were paired by greatest eclipse within one
+day, after converting catalog TD to UT with the catalog's own Delta T and
+reading catalog dates as Julian before 1582 October 15. This is an audit run,
+not yet an executable test.
+
+| Window (UT) | Solar: Moira / NASA / paired | Lunar: Moira / NASA / paired | Largest timing difference |
+|---|---|---|---|
+| 1000 BCE to 1 BCE | 2373 / 2372 / 2372 | 2391 / 2391 / 2391 | 9.1 min |
+| 1000 CE to 2000 CE | 2383 / 2383 / 2383 | 2435 / 2433 / 2433 | 2.7 min |
+| 2000-01-01 to 2100-01-01 | 226 / 226 / 226 | 228 / 228 / 228 | 2.7 min |
+| 2000 to 3000 | 2390 / 2390 / 2390 | 2413 / 2413 / 2412 | 27.0 min |
+
+The timing differences grow with distance from the present, as the two Delta
+T models diverge; they are not graded here. The only unpaired events have
+eclipse magnitude near `0.0005`:
+
+- Moira-only: a solar partial on -742 November 29, magnitude `0.00061`;
+- Moira-only: a penumbral lunar eclipse on 2696 August 5, penumbral magnitude
+  `0.00055`; and
+- Moira-only: penumbral lunar eclipses on 1318 February 24 and 1571 July 17
+  (proleptic Gregorian dates), penumbral magnitudes `0.00035` and `0.00059`;
+  and
+- NASA-only: the penumbral lunar eclipse of 2791 February 11, catalog
+  penumbral magnitude `0.0006`.
+
+Moira's NASA-compatibility lunar search (`next_lunar_eclipse_canon`) agrees
+with NASA on all four lunar cases. These are threshold events whose existence
+depends on the ephemeris, shadow and Delta-T model; they are not search
+omissions.
+
+In the 2000-2100 window, type families agree on every paired event except
+2015 April 4. NASA lists it as total, with umbral magnitude `1.0008`; Moira's
+physical model classifies it as partial.
+[The eclipse catalog comparison](ECLIPSE_CATALOG_COMPARISON.md) and
+`wiki/02_standards/ECLIPSE_MODEL_STANDARD.md` document that limiting case.
+In the 1000-2000 CE window, five paired events differ in type family, all at
+a classification limit:
+
+- four NASA hybrids are total or annular in Moira's model: 1564 June 8 and
+  1703 January 17 (total), and 1804 February 11 and 1986 October 3
+  (annular; for 1986, magnitude `0.99995` against NASA's `1.0000` with a
+  1 km path); and
+- 1001 March 12 is a total lunar eclipse in Moira and a partial in NASA's
+  catalog.
+
+These are model differences at the limit, not search defects.
+
+Earlier engines were less complete. A rebuild of the July 21 engine
+(`753c3b7`) misses three solar and five lunar events from 2000 to 2100, all
+extreme grazing events (solar gamma `-1.49` to `-1.54`, lunar gamma `1.50` to
+`1.54`). The lunar events were restored by the 5.1.2 lunar discovery
+superset (`4664cd1`); the solar events by `fff4416`, which classifies
+overlap from exact WGS84 cones.
+
+**Repaired defect.** From `fff4416` until this revision,
+`next_solar_eclipse`, `previous_solar_eclipse` and `calculate_jd` raised
+`_SearchLimitReached` on the 1986 October 3 eclipse. So did every range search
+that took the Python route, such as one crossing DE441's 1969 internal segment
+boundary. The penumbral greatest-point refinement ran out of moves on a
+clearance ridge about 100 km long and a few km wide. It is now a Hooke-Jeeves
+pattern search with the same objective, step schedule and stopping rule.
+`tests/integration/test_eclipse_limiting_regressions.py` covers the event on
+the forward, backward, Python-range and native-range paths, and checks that no
+point within 30 km beats the returned site. The 1000-2000 CE row above ran
+through the repaired Python route. Chained `next_solar_eclipse` and
+`next_lunar_eclipse` searches over 1900-2100 complete with no failures.
 
 ### 6.2 Besselian elements and central paths
 
@@ -946,13 +1042,12 @@ failure of the validated slices above.
 
 Open items from the 2026-10-28 rerun:
 
-- this machine has asteroid catalog `2026.09.18.1` installed, not the
-  admitted `2026.10.10.1`, so the release-bound asteroid element check fails
-  and the Halley and Encke holdouts are skipped (Section 2);
+- the September 28 catalog holdouts are bound to superseded small-body
+  releases, so a current installation skips them (Sections 2 and 5.6);
 - Horizons has changed the 1P/Halley and 2P/Encke solutions behind the frozen
   live-drift records (Section 5.6); and
-- the bulk-eclipse benchmark finds more 100-year events than its July run did
-  (Appendix A.5); that change has not been reviewed against Section 6.
+- the completeness audit in Section 6.1 is a diagnostic run, not yet an
+  executable test.
 
 Calculation speed is reported separately in Appendix A as performance
 evidence.
@@ -1040,10 +1135,10 @@ routes return the same events, with eclipse instants differing by at most
 
 - The July 21 run of the bulk-eclipse benchmark (Moira 5.0.0, artifact
   `native_bulk_eclipse_ranges.json`) found 223 solar and 223 lunar eclipses
-  in the 100-year span. This run finds 226 and 228. The difference is in
-  event counts, so it belongs to the eclipse validation in Section 6, not to
-  this appendix. It is recorded here as an open observation. The event-count
-  change also limits time comparisons between the two runs. As one example,
+  in the 100-year span. This run finds 226 and 228, which matches NASA's
+  catalogs event for event. Section 6.1 traces the difference to grazing
+  events that the July engine missed. Because the searches now do more work,
+  times are not directly comparable between the two runs. As one example,
   the 1000-year solar search took 55 s in July and 84 s in this run.
 - The May 2026 public-surface artifacts (`native_phase2_planet_at.json`,
   `planetary_flow_stage_timing.json`) used a different epoch set and

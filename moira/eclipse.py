@@ -6073,6 +6073,50 @@ def _solve_solar_penumbral_greatest_point(
         key=lambda candidate: objective(*candidate),
     )
     best_clearance = objective(best_latitude, best_longitude)
+
+    def explore(
+        latitude_deg: float,
+        longitude_deg: float,
+        clearance: float,
+        step_km: float,
+    ) -> tuple[float, float, float, float, float]:
+        """Return the best of a point and its eight compass neighbours.
+
+        The last two values are the accepted north/east displacement in km
+        (zero when no neighbour improves on the point itself).
+        """
+        best = (latitude_deg, longitude_deg, clearance, 0.0, 0.0)
+        for north_direction in (-1.0, 0.0, 1.0):
+            for east_direction in (-1.0, 0.0, 1.0):
+                if north_direction == 0.0 and east_direction == 0.0:
+                    continue
+                north_km = north_direction * step_km
+                east_km = east_direction * step_km
+                candidate_latitude, candidate_longitude = _offset_geographic_km(
+                    latitude_deg,
+                    longitude_deg,
+                    north_km,
+                    east_km,
+                )
+                candidate = objective(candidate_latitude, candidate_longitude)
+                if candidate > best[2]:
+                    best = (
+                        candidate_latitude,
+                        candidate_longitude,
+                        candidate,
+                        north_km,
+                        east_km,
+                    )
+        return best
+
+    # Hooke-Jeeves pattern search (Hooke & Jeeves, J. ACM 8, 212, 1961).
+    # Exploratory moves are the compass neighbours above. After a successful
+    # move, a pattern move repeats the accumulated displacement from the old
+    # base, so the search accelerates along a ridge instead of crawling it one
+    # step at a time. Near a grazing eclipse the shadow axis is almost tangent
+    # to the Earth, and clearance forms a long, narrow ridge (1986-10-03).
+    # The objective, the step schedule, and the stopping rule (no improving
+    # compass neighbour at the finest step) are unchanged.
     for step_km in (
         1000.0,
         500.0,
@@ -6094,28 +6138,42 @@ def _solve_solar_penumbral_greatest_point(
         0.002,
         0.001,
     ):
+        pattern_north_km = 0.0
+        pattern_east_km = 0.0
         for _ in range(128):
-            origin_latitude = best_latitude
-            origin_longitude = best_longitude
-            improved = False
-            for north_direction in (-1.0, 0.0, 1.0):
-                for east_direction in (-1.0, 0.0, 1.0):
-                    if north_direction == 0.0 and east_direction == 0.0:
-                        continue
-                    latitude_deg, longitude_deg = _offset_geographic_km(
-                        origin_latitude,
-                        origin_longitude,
-                        north_direction * step_km,
-                        east_direction * step_km,
-                    )
-                    clearance = objective(latitude_deg, longitude_deg)
-                    if clearance > best_clearance:
-                        best_latitude = latitude_deg
-                        best_longitude = longitude_deg
-                        best_clearance = clearance
-                        improved = True
-            if not improved:
+            if pattern_north_km or pattern_east_km:
+                pattern_latitude, pattern_longitude = _offset_geographic_km(
+                    best_latitude,
+                    best_longitude,
+                    pattern_north_km,
+                    pattern_east_km,
+                )
+                latitude_deg, longitude_deg, clearance, north_km, east_km = explore(
+                    pattern_latitude,
+                    pattern_longitude,
+                    objective(pattern_latitude, pattern_longitude),
+                    step_km,
+                )
+                if clearance > best_clearance:
+                    best_latitude = latitude_deg
+                    best_longitude = longitude_deg
+                    best_clearance = clearance
+                    pattern_north_km += north_km
+                    pattern_east_km += east_km
+                    continue
+            latitude_deg, longitude_deg, clearance, north_km, east_km = explore(
+                best_latitude,
+                best_longitude,
+                best_clearance,
+                step_km,
+            )
+            if clearance <= best_clearance:
                 break
+            best_latitude = latitude_deg
+            best_longitude = longitude_deg
+            best_clearance = clearance
+            pattern_north_km = north_km
+            pattern_east_km = east_km
         else:
             raise _SearchLimitReached(
                 "penumbral greatest-location refinement did not converge"

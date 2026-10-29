@@ -163,6 +163,25 @@ publication, or production pin is implied by these entries.
   the new `start_shift_truth` field.
 
 ### Fixed
+- **Solar Eclipse Greatest-Point Search On Narrow Ridges**:
+  - **The problem:** since the exact WGS84 cone classification (`fff4416`),
+    `next_solar_eclipse`, `previous_solar_eclipse` and `calculate_jd` raised
+    `_SearchLimitReached` on the 1986-10-03 hybrid eclipse. Penumbral
+    clearance there forms a ridge about 100 km long and a few km wide, and the
+    compass search ran out of moves crawling along it. Any range search that
+    took the Python route (for example, one crossing DE441's 1969 segment
+    boundary) also raised.
+  - **The fix:** the greatest-point refinement is now a Hooke-Jeeves pattern
+    search. It keeps the same objective, step schedule and stopping rule, and
+    repeats each successful displacement so it can travel along a ridge.
+  - **Verification:** all 440 tests in the 38 eclipse test files pass.
+    Chained `next_solar_eclipse` over 1900-2100 completes with no failures.
+    Range searches over 1000-2000 CE pair all 2383 NASA Five Millennium solar
+    eclipses. On the 1986 case, no point within 30 km beats the returned site
+    by more than 1.4 mm of clearance.
+  - **Scope:** the event is classified annular at magnitude 0.99995; NASA
+    lists it as hybrid with magnitude 1.0000 and a 1 km path. That is a
+    model difference at the limit, not part of this fix.
 - **Orb Windows Narrower Than The Scan Step**:
   - **The problem:** the shared fixed-target solver found orb boundaries only
     where `|residual| - orb` changed sign between scan knots. A window narrower
