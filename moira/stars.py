@@ -22,6 +22,7 @@ try:
 except ImportError:
     mn = None
 
+from ._stellar_space_motion import astrometric_direction
 from .coordinates import icrf_to_true_ecliptic
 from .star_types import (
     FixedStarLookupPolicy,
@@ -238,6 +239,12 @@ class _SovereignStarRecord:
     lat_limit_deg: float
     lore: dict[str, object]
     provenance: dict[str, object]
+    # Reference epoch of the astrometry as a TDB Julian date, and its frame.
+    # The registry loader requires both; the defaults serve hand-built records.
+    ref_epoch_jd: float = 2451545.0
+    frame: str = "ICRS"
+    # "measured" or "unknown"; an unknown radial velocity propagates as zero.
+    radial_velocity_status: str = "unknown"
 
 
 @dataclass(slots=True)
@@ -314,7 +321,8 @@ def _load_registry_records() -> tuple[_SovereignStarRecord, ...]:
     Raises:
         FileNotFoundError: If a required data file is missing.
         KeyError: If required CSV columns are absent.
-        ValueError: If numeric coercion fails for required numeric fields.
+        ValueError: If numeric coercion fails for required numeric fields, or
+            a row's astrometric frame or reference epoch is not admissible.
 
     Side effects: Reads local data files.
     """
@@ -328,6 +336,18 @@ def _load_registry_records() -> tuple[_SovereignStarRecord, ...]:
             name = row["name"].strip()
             if not name:
                 continue
+            # The catalog epoch and frame are data, never an assumption.
+            frame = row["frame"].strip()
+            if frame != "ICRS":
+                raise ValueError(f"star {name!r}: unsupported astrometric frame {frame!r}")
+            ref_epoch_jd = _coerce_float(row["ref_epoch_jd"])
+            if not math.isfinite(ref_epoch_jd):
+                raise ValueError(f"star {name!r}: missing reference epoch")
+            radial_velocity_status = (row.get("radial_velocity_status") or "unknown").strip()
+            if radial_velocity_status not in ("measured", "unknown"):
+                raise ValueError(
+                    f"star {name!r}: unknown radial-velocity status {radial_velocity_status!r}"
+                )
             records.append(
                 _SovereignStarRecord(
                     name=name,
@@ -347,6 +367,9 @@ def _load_registry_records() -> tuple[_SovereignStarRecord, ...]:
                     lat_limit_deg=_coerce_float(row.get("lat_limit_deg")),
                     lore=lore.get(name, {}),
                     provenance=provenance.get(name, {}),
+                    ref_epoch_jd=ref_epoch_jd,
+                    frame=frame,
+                    radial_velocity_status=radial_velocity_status,
                 )
             )
 
@@ -506,76 +529,33 @@ def _icrs_unit_vector(ra_deg: float, dec_deg: float) -> tuple[float, float, floa
     )
 
 
-def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float, float]:
-    """Propagate ICRS unit vector from J2000 to requested TT epoch.
+def _astrometric_state(
+    record: _SovereignStarRecord, jd_tt: float
+) -> tuple[tuple[float, float, float], float | None]:
+    """Return a record's astrometric unit direction at TT and its distance in pc.
 
-    Applies proper motion in tangent-plane form and normalizes the result.
+    Stage 1 of the fixed-star pipeline, from the record's own reference epoch.
 
     Side effects: None.
     """
-    dt_years = (jd_tt - _J2000) / 365.25
-    if dt_years == 0.0:
-        return _icrs_unit_vector(record.ra_deg, record.dec_deg)
-
-    ra_rad = math.radians(record.ra_deg)
-    dec_rad = math.radians(record.dec_deg)
-    cos_dec = math.cos(dec_rad)
-    sin_dec = math.sin(dec_rad)
-    cos_ra = math.cos(ra_rad)
-    sin_ra = math.sin(ra_rad)
-
-    # Gaia/HIP-style pmRA is mu_alpha* = d(alpha)/dt * cos(delta).
-    dra_dt = 0.0
-    if abs(cos_dec) > 1e-12:
-        dra_dt = record.pmra_mas_yr * _MAS2RAD / cos_dec
-    ddec_dt = record.pmdec_mas_yr * _MAS2RAD
-
-    p_hat = (
-        cos_dec * cos_ra,
-        cos_dec * sin_ra,
-        sin_dec,
-    )
-    east_hat = (-sin_ra, cos_ra, 0.0)
-    north_hat = (-sin_dec * cos_ra, -sin_dec * sin_ra, cos_dec)
-
-    tangential_velocity = (
-        dra_dt * cos_dec * east_hat[0] + ddec_dt * north_hat[0],
-        dra_dt * cos_dec * east_hat[1] + ddec_dt * north_hat[1],
-        dra_dt * cos_dec * east_hat[2] + ddec_dt * north_hat[2],
+    return astrometric_direction(
+        record.ra_deg,
+        record.dec_deg,
+        record.pmra_mas_yr,
+        record.pmdec_mas_yr,
+        record.parallax_mas,
+        record.radial_velocity_km_s,
+        record.ref_epoch_jd,
+        jd_tt,
     )
 
-    if math.isfinite(record.parallax_mas) and record.parallax_mas > 0.0:
-        distance_pc = 1000.0 / record.parallax_mas
-        # Exact conversion from km/s to pc/yr based on IAU 2012 constants
-        # 1 Julian year = 31557600.0 s
-        # 1 au = 149597870.7 km
-        # 1 pc = 206264.806247096355 au
-        rv_pc_yr = record.radial_velocity_km_s * (31557600.0 / (149597870.7 * 206264.806247096355))
-        
-        propagated = (
-            distance_pc * p_hat[0] + (tangential_velocity[0] * distance_pc + rv_pc_yr * p_hat[0]) * dt_years,
-            distance_pc * p_hat[1] + (tangential_velocity[1] * distance_pc + rv_pc_yr * p_hat[1]) * dt_years,
-            distance_pc * p_hat[2] + (tangential_velocity[2] * distance_pc + rv_pc_yr * p_hat[2]) * dt_years,
-        )
-    else:
-        propagated = (
-            p_hat[0] + tangential_velocity[0] * dt_years,
-            p_hat[1] + tangential_velocity[1] * dt_years,
-            p_hat[2] + tangential_velocity[2] * dt_years,
-        )
 
-    norm = math.sqrt(
-        propagated[0] * propagated[0]
-        + propagated[1] * propagated[1]
-        + propagated[2] * propagated[2]
-    )
-    if norm == 0.0:
-        return p_hat
-    return (
-        propagated[0] / norm,
-        propagated[1] / norm,
-        propagated[2] / norm,
-    )
+def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float, float]:
+    """Return a record's astrometric ICRS unit direction at a TT epoch.
+
+    Side effects: None.
+    """
+    return _astrometric_state(record, jd_tt)[0]
 
 
 def _distance_ly_from_parallax(parallax_mas: float) -> float:
@@ -1132,6 +1112,7 @@ def _native_heliacal_event(
         record.pmdec_mas_yr,
         record.parallax_mas,
         record.radial_velocity_km_s,
+        ref_epoch_jd=record.ref_epoch_jd,
     )
     search_kwargs: dict[str, object] = {
         "delta_t": delta_t_start,
@@ -1766,7 +1747,8 @@ def heliacal_catalog_batch(
                 star_ssb = mn.FixedStarEvaluator(
                     record.ra_deg, record.dec_deg,
                     record.pmra_mas_yr, record.pmdec_mas_yr,
-                    record.parallax_mas, record.radial_velocity_km_s
+                    record.parallax_mas, record.radial_velocity_km_s,
+                    ref_epoch_jd=record.ref_epoch_jd,
                 )
                 if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0:
                     arcus = record.arc_vis_deg

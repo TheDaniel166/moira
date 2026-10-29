@@ -17,36 +17,48 @@ from ._event_search.frames import _differential_key
 from .gochara_dated import GocharaResourceError
 from .gochara_windows import GocharaWindowDomainError
 from .sidereal import _STAR_ANCHORED, _AYANAMSA_AT_J2000, _AYANAMSA_DRIFT_PER_CENTURY
+from ._stellar_space_motion import JULIAN_YEAR_DAYS, StellarArithmetic, space_motion
 from . import stars, julian
 
 
+def _interval_ra_rate(pmra_mas_yr, cos_dec):
+    # The float owner switches to a zero right-ascension rate at a pole. An
+    # enclosure straddling that switch has no certified value.
+    if cos_dec.value.lo <= 1e-12 <= cos_dec.value.hi or cos_dec.value.lo <= -1e-12 <= cos_dec.value.hi:
+        raise GocharaResourceError("live anchor polar branch is ambiguous")
+    if cos_dec.value.magnitude <= 1e-12:
+        return D.point(0.)
+    return pmra_mas_yr * D.point(stars._MAS2RAD) / cos_dec
+
+
+# Stage 1 of the fixed-star pipeline over certified interval differentials.
+_INTERVAL_ARITHMETIC = StellarArithmetic(
+    radians=lambda value: D.point(I.point(value)*PI/180),
+    cos=lambda x: x.cos(),
+    sin=lambda x: x.sin(),
+    const=lambda value: D.point(value),
+    mas_to_rad=D.point(stars._MAS2RAD),
+    km_s_to_pc_per_year=D.point(31557600.)/(D.point(149597870.7)*206264.806247096355),
+    ra_rate=_interval_ra_rate,
+)
+
+
 def _propagate(record, tt):
-    """Interval extension of stars._propagate_icrs_vector, including J2000."""
+    """Interval enclosure of the fixed-star astrometric direction at ``tt``."""
     values = (record.ra_deg, record.dec_deg, record.pmra_mas_yr,
-              record.pmdec_mas_yr, record.radial_velocity_km_s)
+              record.pmdec_mas_yr, record.radial_velocity_km_s, record.ref_epoch_jd)
     if not all(isfinite(v) for v in values):
         raise GocharaResourceError("live anchor has nonfinite propagation inputs")
-    ra, dec = (D.point(I.point(v)*PI/180) for v in values[:2])
-    c, s, cr, sr = dec.cos(), dec.sin(), ra.cos(), ra.sin()
-    p = (c*cr, c*sr, s)
-    east, north = (-sr, cr, D.point(0.)), (-s*cr, -s*sr, c)
-    # Sovereign owner uses mu_alpha*/cos(dec), with a declared polar branch.
-    if c.value.lo <= 1e-12 <= c.value.hi or c.value.lo <= -1e-12 <= c.value.hi:
-        raise GocharaResourceError("live anchor polar branch is ambiguous")
-    dra = D.point(0.) if c.value.magnitude <= 1e-12 else record.pmra_mas_yr * D.point(stars._MAS2RAD) / c
-    ddec = record.pmdec_mas_yr * D.point(stars._MAS2RAD)
-    velocity = tuple(dra*c*e+ddec*n for e, n in zip(east, north))
-    dt = (tt-2451545.)/365.25
-    if isfinite(record.parallax_mas) and record.parallax_mas > 0:
-        distance = D.point(1000.)/record.parallax_mas
-        rv = record.radial_velocity_km_s*(D.point(31557600.)/(D.point(149597870.7)*206264.806247096355))
-        vector = tuple(distance*x+(v*distance+rv*x)*dt for x, v in zip(p, velocity))
-    else:
-        vector = tuple(x+v*dt for x, v in zip(p, velocity))
+    dt = (tt-record.ref_epoch_jd)/JULIAN_YEAR_DAYS
+    p, vector, _ = space_motion(
+        record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
+        record.parallax_mas, record.radial_velocity_km_s, dt, _INTERVAL_ARITHMETIC,
+    )
     normalized = unit(vector)
-    if tt.value.lo <= 2451545. <= tt.value.hi:
-        # The point owner returns p directly at J2000, without normalization.
-        # Retain that branch only at the point; no false constant derivative.
+    if tt.value.lo <= record.ref_epoch_jd <= tt.value.hi:
+        # The point owner returns p directly at the reference epoch, without
+        # normalization. Retain that branch only at the point; no false
+        # constant derivative.
         if tt.value.lo == tt.value.hi:
             return tuple(hull((x, y)) for x, y in zip(normalized, p))
     return normalized

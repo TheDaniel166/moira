@@ -2129,8 +2129,9 @@ PYBIND11_MODULE(_moira_native, m) {
         .def(py::init<std::shared_ptr<IEvaluator>, double, double, double>());
 
     py::class_<FixedStarEvaluator, IEvaluator, std::shared_ptr<FixedStarEvaluator>>(m, "FixedStarEvaluator")
-        .def(py::init<double, double, double, double, double, double>(),
-             py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"));
+        .def(py::init<double, double, double, double, double, double, double>(),
+             py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"),
+             py::arg("ref_epoch_jd") = 2451545.0);
 
     // Legacy observer-grid cartography is intentionally not admitted here.
     // Its magnitude/raster products are distinct from the public footprint.

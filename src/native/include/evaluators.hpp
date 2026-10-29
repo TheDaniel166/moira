@@ -705,11 +705,14 @@ public:
     double ra0_rad, dec0_rad;
     double pmra_rad_yr, pmdec_rad_yr;
     double parallax_mas, rv_km_s;
+    // Reference epoch of the catalog astrometry, TDB Julian date.
+    double ref_epoch_jd;
     Vec3 p_hat, east_hat, north_hat;
 
-    FixedStarEvaluator(double ra_deg, double dec_deg, double pmra_mas, double pmdec_mas, double parallax, double rv)
+    FixedStarEvaluator(double ra_deg, double dec_deg, double pmra_mas, double pmdec_mas, double parallax, double rv,
+                       double ref_epoch = 2451545.0)
         : ra0_rad(deg_to_rad(ra_deg)), dec0_rad(deg_to_rad(dec_deg)),
-          parallax_mas(parallax), rv_km_s(rv) {
+          parallax_mas(parallax), rv_km_s(rv), ref_epoch_jd(ref_epoch) {
         
         double cos_dec = std::cos(dec0_rad);
         double sin_dec = std::sin(dec0_rad);
@@ -726,8 +729,8 @@ public:
     }
 
     void compute(double jd_tt, double* result) const override {
-        double dt_yr = (jd_tt - 2451545.0) / 365.25;
-        
+        double dt_yr = (jd_tt - ref_epoch_jd) / 365.25;
+
         Vec3 v_tan = east_hat * pmra_rad_yr + north_hat * pmdec_rad_yr;
         Vec3 propagated;
 

@@ -53,6 +53,9 @@ class StarRegistryRecord:
     ecl_lat_deg: float
     arc_vis_deg: float
     lat_limit_deg: float
+    # SIMBAD coordinates through astroquery are ICRS at epoch J2000.0.
+    ref_epoch_jd: float = 2451545.0
+    frame: str = "ICRS"
 
 def equatorial_to_ecliptic(ra, dec):
     ra_r = ra * DEG2RAD

@@ -36,6 +36,8 @@ EXPECTED_COLUMNS = [
     "ecl_lat_deg",
     "arc_vis_deg",
     "lat_limit_deg",
+    "ref_epoch_jd",
+    "frame",
 ]
 
 # Historical implementation outputs, including the former mixed-definition
@@ -172,6 +174,7 @@ def test_registry_numeric_columns_are_parseable_and_finite() -> None:
         "ecl_lat_deg",
         "arc_vis_deg",
         "lat_limit_deg",
+        "ref_epoch_jd",
     ]
     for row in _registry_rows():
         for column in numeric_columns:

@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING, Callable, Protocol, Sequence, runtime_checkabl
 
 from .julian import (
     CalendarDateTime,
-    J2000,
     _ut1_to_utc,
     calendar_datetime_from_jd,
     datetime_from_jd,
@@ -40,8 +39,6 @@ from .julian import (
 _SECONDS_PER_DAY = 86_400.0
 _AU_KM = 149_597_870.7
 _PARSEC_AU = 206_264.80624709636
-_MAS_TO_RAD = math.radians(1.0 / 3_600_000.0)
-_JULIAN_YEAR_SECONDS = 31_557_600.0
 MAX_LUNAR_CONTACT_PROFILE_SLICES = 4096
 
 if TYPE_CHECKING:
@@ -199,14 +196,14 @@ def lunar_contact_star_at(name: str, reference_epoch_jd_tt: float) -> LunarConta
     """
 
     from .star_types import DEFAULT_FIXED_STAR_POLICY
-    from .stars import _propagate_icrs_vector, _resolve_star_record
+    from .stars import _astrometric_state, _resolve_star_record
 
     epoch = _finite_real("reference_epoch_jd_tt", reference_epoch_jd_tt)
     record, lookup_kind = _resolve_star_record(
         name,
         DEFAULT_FIXED_STAR_POLICY.lookup,
     )
-    direction = _propagate_icrs_vector(record, epoch)
+    direction, propagated_distance_pc = _astrometric_state(record, epoch)
     matching_status = record.provenance.get("matching_status")
     identity_parts = [record.name, record.nomenclature]
     if record.gaia_dr3_id is not None and record.gaia_dr3_id > 0:
@@ -220,20 +217,11 @@ def lunar_contact_star_at(name: str, reference_epoch_jd_tt: float) -> LunarConta
     )
     barycentric_distance_km: float | None = None
     if parallax is not None:
-        distance_pc = 1000.0 / parallax
-        years = (epoch - J2000) / 365.25
-        radial_velocity_pc_per_year = record.radial_velocity_km_s * (
-            _JULIAN_YEAR_SECONDS / (_AU_KM * _PARSEC_AU)
-        )
-        proper_motion_rad_per_year = math.hypot(
-            record.pmra_mas_yr,
-            record.pmdec_mas_yr,
-        ) * _MAS_TO_RAD
-        propagated_distance_pc = math.hypot(
-            distance_pc + radial_velocity_pc_per_year * years,
-            distance_pc * proper_motion_rad_per_year * years,
-        )
-        if not math.isfinite(propagated_distance_pc) or propagated_distance_pc <= 0.0:
+        if (
+            propagated_distance_pc is None
+            or not math.isfinite(propagated_distance_pc)
+            or propagated_distance_pc <= 0.0
+        ):
             raise ValueError("propagated catalog-star distance must be positive")
         barycentric_distance_km = propagated_distance_pc * _PARSEC_AU * _AU_KM
     return LunarContactStar(

@@ -17,6 +17,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
+from ._stellar_space_motion import FLOAT_ARITHMETIC, JULIAN_YEAR_DAYS, space_motion
 from .constants import J2000, sign_of
 from .coordinates import icrf_to_true_ecliptic
 from .stars import star_at, star_name_resolves
@@ -37,7 +38,6 @@ __all__ = [
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 _CATALOG_PATH = _DATA_DIR / "deep_sky_catalog.json"
 _METADATA_PATH = _DATA_DIR / "deep_sky_catalog.metadata.json"
-_MAS_TO_RAD = math.radians(1.0 / 3_600_000.0)
 
 
 class DeepSkyClass(str, Enum):
@@ -292,15 +292,11 @@ def _icrs_unit_vector(record: DeepSkyObject, jd_tt: float) -> tuple[tuple[float,
     if not record.proper_motion_admitted or jd_tt == J2000:
         return base, False
     assert record.pmra_mas_yr is not None and record.pmdec_mas_yr is not None
-    dt_years = (jd_tt - J2000) / 365.25
-    east = (-math.sin(ra), math.cos(ra), 0.0)
-    north = (-math.sin(dec) * math.cos(ra), -math.sin(dec) * math.sin(ra), cos_dec)
-    dra_cosdec = record.pmra_mas_yr * _MAS_TO_RAD
-    ddec = record.pmdec_mas_yr * _MAS_TO_RAD
-    propagated = (
-        base[0] + (dra_cosdec * east[0] + ddec * north[0]) * dt_years,
-        base[1] + (dra_cosdec * east[1] + ddec * north[1]) * dt_years,
-        base[2] + (dra_cosdec * east[2] + ddec * north[2]) * dt_years,
+    # Stage 1 of the fixed-star pipeline. The catalog anchors carry no
+    # parallax or radial velocity, so only the proper motion moves them.
+    _, propagated, _ = space_motion(
+        record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
+        math.nan, 0.0, (jd_tt - J2000) / JULIAN_YEAR_DAYS, FLOAT_ARITHMETIC,
     )
     norm = math.sqrt(sum(component * component for component in propagated))
     if norm == 0.0:

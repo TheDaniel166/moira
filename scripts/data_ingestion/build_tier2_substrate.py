@@ -95,7 +95,7 @@ def build_tier2_substrate():
     lore_updates = {}
     prov_updates = {}
     
-    registry_header = ["name","nomenclature","gaia_dr3_id","ra_deg","dec_deg","pmra_mas_yr","pmdec_mas_yr","parallax_mas","magnitude_v","color_index","ecl_lon_deg","ecl_lat_deg","arc_vis_deg","lat_limit_deg"]
+    registry_header = ["name","nomenclature","gaia_dr3_id","ra_deg","dec_deg","pmra_mas_yr","pmdec_mas_yr","parallax_mas","magnitude_v","color_index","ecl_lon_deg","ecl_lat_deg","arc_vis_deg","lat_limit_deg","ref_epoch_jd","frame"]
     
     total = len(bsc_table)
     added_count = 0
@@ -156,7 +156,9 @@ def build_tier2_substrate():
                 "name": main_id, "nomenclature": main_id, "gaia_dr3_id": gaia_id,
                 "ra_deg": ra, "dec_deg": dec, "pmra_mas_yr": pmra, "pmdec_mas_yr": pmdec,
                 "parallax_mas": plx, "magnitude_v": mag_v, "color_index": color_idx,
-                "ecl_lon_deg": lon, "ecl_lat_deg": lat, "arc_vis_deg": arc_vis, "lat_limit_deg": 90.0 - abs(dec)
+                "ecl_lon_deg": lon, "ecl_lat_deg": lat, "arc_vis_deg": arc_vis, "lat_limit_deg": 90.0 - abs(dec),
+                # SIMBAD coordinates through astroquery are ICRS at epoch J2000.0.
+                "ref_epoch_jd": 2451545.0, "frame": "ICRS",
             }
             patch_registry_rows.append(row_dict)
             

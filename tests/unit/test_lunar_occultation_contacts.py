@@ -989,6 +989,7 @@ def test_finite_star_distance_propagates_with_radial_and_tangential_motion(
         pmdec_mas_yr=-2_000.0,
         parallax_mas=1_000.0,
         radial_velocity_km_s=100.0,
+        ref_epoch_jd=2451545.0,
         gaia_dr3_id=None,
         provenance={"matching_status": "synthetic"},
     )
