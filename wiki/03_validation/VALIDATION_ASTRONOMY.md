@@ -698,8 +698,18 @@ A diagnostic audit compared `solar_eclipses_in_range` and
 files were retrieved on 2026-10-28 with SHA-256 `c07e7b5e...` (solar) and
 `d47586fc...` (lunar). Events were paired by greatest eclipse within one
 day, after converting catalog TD to UT with the catalog's own Delta T and
-reading catalog dates as Julian before 1582 October 15. This is an audit run,
-not yet an executable test.
+reading catalog dates as Julian before 1582 October 15.
+
+`tests/integration/test_eclipse_nasa_completeness.py` makes 1901-2100
+executable. It reads a sourced extract of both catalogs
+(`tests/fixtures/nasa_five_millennium_eclipses_1901_2100.json`, 452 solar and
+457 lunar rows), built by `scripts/build_nasa_eclipse_completeness_fixture.py`,
+which records each source file's SHA-256. For each family it requires a
+one-to-one pairing within `0.5 day`, greatest-eclipse times within a `300 s`
+cross-model envelope, and agreement of the type family except at the two
+declared limits below. It runs 2001-2100 on the native route and 1901-2000 on
+the Python route, because that range crosses the 1969 segment boundary. The
+longer windows in the table remain diagnostic audit runs.
 
 | Window (UT) | Solar: Moira / NASA / paired | Lunar: Moira / NASA / paired | Largest timing difference |
 |---|---|---|---|
@@ -954,6 +964,7 @@ Small offline examples:
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_erfa_validation.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_horizons_rise_set_reference.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_eclipse_nasa_reference.py -q
+.\.venv\Scripts\python.exe -m pytest tests\integration\test_eclipse_nasa_completeness.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_occultation_polar_topology_horizons_reference.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_lunar_orientation_authority.py -q
 ```
@@ -1046,8 +1057,8 @@ Open items from the 2026-10-28 rerun:
   releases, so a current installation skips them (Sections 2 and 5.6);
 - Horizons has changed the 1P/Halley and 2P/Encke solutions behind the frozen
   live-drift records (Section 5.6); and
-- the completeness audit in Section 6.1 is a diagnostic run, not yet an
-  executable test.
+- the eclipse completeness windows outside 1901-2100 in Section 6.1 are
+  diagnostic audit runs, not executable tests.
 
 Calculation speed is reported separately in Appendix A as performance
 evidence.

@@ -1,0 +1,8670 @@
+{
+ "source": {
+  "authority": "NASA/GSFC Five Millennium Catalogs of Solar and Lunar Eclipses",
+  "solar": {
+   "url": "https://eclipse.gsfc.nasa.gov/5MCSE/5MKSEcatalog.txt",
+   "publication": "NASA/TP-2008-214170",
+   "bytes": 1380993,
+   "sha256": "c07e7b5e13af61a1d74eb3bee1a1824a197dc1ca393a3ac2a91c9e73bc2e0c58"
+  },
+  "lunar": {
+   "url": "https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt",
+   "publication": "NASA/TP-2009-214173",
+   "bytes": 1400382,
+   "sha256": "d47586fc9c1c59338f234b3c6634c31744739887169f58d411ac766f3861fcf2"
+  },
+  "retrieved_utc": "2026-10-28",
+  "span_td_years": [
+   1901,
+   2100
+  ],
+  "catalog_time_scale": "TD/TT",
+  "catalog_ephemeris": "VSOP87/ELP2000-82",
+  "lunar_shadow_enlargement": "Danjon",
+  "evidence_class": "primary-authority cross-model completeness corpus",
+  "builder": "scripts/build_nasa_eclipse_completeness_fixture.py",
+  "note": "Static facts copied from the official ASCII catalogs; no network access is used by tests. Catalog ephemeris, Delta T, lunar limb and shadow model differ from Moira's DE441 physical model."
+ },
+ "solar": [
+  {
+   "catalog_number": "9283",
+   "date": "1901-May-18",
+   "greatest_td": "05:33:48",
+   "delta_t_s": -1,
+   "type_code": "T",
+   "gamma": -0.3626,
+   "magnitude": 1.068
+  },
+  {
+   "catalog_number": "9284",
+   "date": "1901-Nov-11",
+   "greatest_td": "07:28:21",
+   "delta_t_s": 0,
+   "type_code": "A",
+   "gamma": 0.4758,
+   "magnitude": 0.9216
+  },
+  {
+   "catalog_number": "9285",
+   "date": "1902-Apr-08",
+   "greatest_td": "14:05:06",
+   "delta_t_s": 0,
+   "type_code": "Pe",
+   "gamma": 1.5024,
+   "magnitude": 0.0643
+  },
+  {
+   "catalog_number": "9286",
+   "date": "1902-May-07",
+   "greatest_td": "22:34:16",
+   "delta_t_s": 0,
+   "type_code": "P",
+   "gamma": -1.0831,
+   "magnitude": 0.8593
+  },
+  {
+   "catalog_number": "9287",
+   "date": "1902-Oct-31",
+   "greatest_td": "08:00:18",
+   "delta_t_s": 1,
+   "type_code": "P",
+   "gamma": 1.1556,
+   "magnitude": 0.696
+  },
+  {
+   "catalog_number": "9288",
+   "date": "1903-Mar-29",
+   "greatest_td": "01:35:23",
+   "delta_t_s": 2,
+   "type_code": "A",
+   "gamma": 0.8413,
+   "magnitude": 0.9767
+  },
+  {
+   "catalog_number": "9289",
+   "date": "1903-Sep-21",
+   "greatest_td": "04:39:52",
+   "delta_t_s": 2,
+   "type_code": "T",
+   "gamma": -0.8967,
+   "magnitude": 1.0316
+  },
+  {
+   "catalog_number": "9290",
+   "date": "1904-Mar-17",
+   "greatest_td": "05:40:44",
+   "delta_t_s": 3,
+   "type_code": "A",
+   "gamma": 0.1299,
+   "magnitude": 0.9367
+  },
+  {
+   "catalog_number": "9291",
+   "date": "1904-Sep-09",
+   "greatest_td": "20:44:21",
+   "delta_t_s": 3,
+   "type_code": "T",
+   "gamma": -0.1625,
+   "magnitude": 1.0709
+  },
+  {
+   "catalog_number": "9292",
+   "date": "1905-Mar-06",
+   "greatest_td": "05:12:26",
+   "delta_t_s": 4,
+   "type_code": "A",
+   "gamma": -0.5768,
+   "magnitude": 0.9269
+  },
+  {
+   "catalog_number": "9293",
+   "date": "1905-Aug-30",
+   "greatest_td": "13:07:26",
+   "delta_t_s": 5,
+   "type_code": "T",
+   "gamma": 0.5708,
+   "magnitude": 1.0477
+  },
+  {
+   "catalog_number": "9294",
+   "date": "1906-Feb-23",
+   "greatest_td": "07:43:20",
+   "delta_t_s": 5,
+   "type_code": "P",
+   "gamma": -1.2479,
+   "magnitude": 0.5386
+  },
+  {
+   "catalog_number": "9295",
+   "date": "1906-Jul-21",
+   "greatest_td": "13:14:19",
+   "delta_t_s": 6,
+   "type_code": "P",
+   "gamma": -1.3637,
+   "magnitude": 0.3355
+  },
+  {
+   "catalog_number": "9296",
+   "date": "1906-Aug-20",
+   "greatest_td": "01:12:50",
+   "delta_t_s": 6,
+   "type_code": "P",
+   "gamma": 1.3731,
+   "magnitude": 0.3147
+  },
+  {
+   "catalog_number": "9297",
+   "date": "1907-Jan-14",
+   "greatest_td": "06:05:43",
+   "delta_t_s": 6,
+   "type_code": "T",
+   "gamma": 0.8628,
+   "magnitude": 1.0281
+  },
+  {
+   "catalog_number": "9298",
+   "date": "1907-Jul-10",
+   "greatest_td": "15:24:32",
+   "delta_t_s": 7,
+   "type_code": "A",
+   "gamma": -0.6313,
+   "magnitude": 0.9456
+  },
+  {
+   "catalog_number": "9299",
+   "date": "1908-Jan-03",
+   "greatest_td": "21:45:22",
+   "delta_t_s": 8,
+   "type_code": "T",
+   "gamma": 0.1934,
+   "magnitude": 1.0437
+  },
+  {
+   "catalog_number": "9300",
+   "date": "1908-Jun-28",
+   "greatest_td": "16:29:51",
+   "delta_t_s": 8,
+   "type_code": "A",
+   "gamma": 0.1389,
+   "magnitude": 0.9655
+  },
+  {
+   "catalog_number": "9301",
+   "date": "1908-Dec-23",
+   "greatest_td": "11:44:28",
+   "delta_t_s": 9,
+   "type_code": "H",
+   "gamma": -0.4985,
+   "magnitude": 1.0024
+  },
+  {
+   "catalog_number": "9302",
+   "date": "1909-Jun-17",
+   "greatest_td": "23:18:38",
+   "delta_t_s": 10,
+   "type_code": "H",
+   "gamma": 0.8957,
+   "magnitude": 1.0065
+  },
+  {
+   "catalog_number": "9303",
+   "date": "1909-Dec-12",
+   "greatest_td": "19:44:48",
+   "delta_t_s": 10,
+   "type_code": "P",
+   "gamma": -1.2456,
+   "magnitude": 0.5424
+  },
+  {
+   "catalog_number": "9304",
+   "date": "1910-May-09",
+   "greatest_td": "05:42:13",
+   "delta_t_s": 11,
+   "type_code": "T",
+   "gamma": -0.9437,
+   "magnitude": 1.06
+  },
+  {
+   "catalog_number": "9305",
+   "date": "1910-Nov-02",
+   "greatest_td": "02:08:32",
+   "delta_t_s": 12,
+   "type_code": "P",
+   "gamma": 1.0603,
+   "magnitude": 0.8515
+  },
+  {
+   "catalog_number": "9306",
+   "date": "1911-Apr-28",
+   "greatest_td": "22:27:22",
+   "delta_t_s": 12,
+   "type_code": "T",
+   "gamma": -0.2294,
+   "magnitude": 1.0562
+  },
+  {
+   "catalog_number": "9307",
+   "date": "1911-Oct-22",
+   "greatest_td": "04:13:02",
+   "delta_t_s": 13,
+   "type_code": "A",
+   "gamma": 0.3224,
+   "magnitude": 0.965
+  },
+  {
+   "catalog_number": "9308",
+   "date": "1912-Apr-17",
+   "greatest_td": "11:34:22",
+   "delta_t_s": 14,
+   "type_code": "H",
+   "gamma": 0.528,
+   "magnitude": 1.0003
+  },
+  {
+   "catalog_number": "9309",
+   "date": "1912-Oct-10",
+   "greatest_td": "13:36:14",
+   "delta_t_s": 14,
+   "type_code": "T",
+   "gamma": -0.4149,
+   "magnitude": 1.0229
+  },
+  {
+   "catalog_number": "9310",
+   "date": "1913-Apr-06",
+   "greatest_td": "17:33:07",
+   "delta_t_s": 15,
+   "type_code": "P",
+   "gamma": 1.3147,
+   "magnitude": 0.4244
+  },
+  {
+   "catalog_number": "9311",
+   "date": "1913-Aug-31",
+   "greatest_td": "20:52:12",
+   "delta_t_s": 15,
+   "type_code": "P",
+   "gamma": 1.4512,
+   "magnitude": 0.1513
+  },
+  {
+   "catalog_number": "9312",
+   "date": "1913-Sep-30",
+   "greatest_td": "04:45:49",
+   "delta_t_s": 15,
+   "type_code": "P",
+   "gamma": -1.1005,
+   "magnitude": 0.8252
+  },
+  {
+   "catalog_number": "9313",
+   "date": "1914-Feb-25",
+   "greatest_td": "00:13:01",
+   "delta_t_s": 16,
+   "type_code": "A",
+   "gamma": -0.9416,
+   "magnitude": 0.9248
+  },
+  {
+   "catalog_number": "9314",
+   "date": "1914-Aug-21",
+   "greatest_td": "12:34:27",
+   "delta_t_s": 17,
+   "type_code": "T",
+   "gamma": 0.7655,
+   "magnitude": 1.0328
+  },
+  {
+   "catalog_number": "9315",
+   "date": "1915-Feb-14",
+   "greatest_td": "04:33:20",
+   "delta_t_s": 17,
+   "type_code": "A",
+   "gamma": -0.2024,
+   "magnitude": 0.9789
+  },
+  {
+   "catalog_number": "9316",
+   "date": "1915-Aug-10",
+   "greatest_td": "22:52:25",
+   "delta_t_s": 18,
+   "type_code": "A",
+   "gamma": 0.0124,
+   "magnitude": 0.9853
+  },
+  {
+   "catalog_number": "9317",
+   "date": "1916-Feb-03",
+   "greatest_td": "16:00:21",
+   "delta_t_s": 18,
+   "type_code": "T",
+   "gamma": 0.4987,
+   "magnitude": 1.028
+  },
+  {
+   "catalog_number": "9318",
+   "date": "1916-Jul-30",
+   "greatest_td": "02:06:10",
+   "delta_t_s": 19,
+   "type_code": "A",
+   "gamma": -0.7709,
+   "magnitude": 0.9447
+  },
+  {
+   "catalog_number": "9319",
+   "date": "1916-Dec-24",
+   "greatest_td": "20:46:22",
+   "delta_t_s": 19,
+   "type_code": "P",
+   "gamma": -1.5321,
+   "magnitude": 0.0114
+  },
+  {
+   "catalog_number": "9320",
+   "date": "1917-Jan-23",
+   "greatest_td": "07:28:31",
+   "delta_t_s": 19,
+   "type_code": "P",
+   "gamma": 1.1508,
+   "magnitude": 0.7254
+  },
+  {
+   "catalog_number": "9321",
+   "date": "1917-Jun-19",
+   "greatest_td": "13:16:21",
+   "delta_t_s": 20,
+   "type_code": "P",
+   "gamma": 1.2857,
+   "magnitude": 0.4729
+  },
+  {
+   "catalog_number": "9322",
+   "date": "1917-Jul-19",
+   "greatest_td": "02:42:42",
+   "delta_t_s": 20,
+   "type_code": "Pb",
+   "gamma": -1.5101,
+   "magnitude": 0.0863
+  },
+  {
+   "catalog_number": "9323",
+   "date": "1917-Dec-14",
+   "greatest_td": "09:27:20",
+   "delta_t_s": 20,
+   "type_code": "A",
+   "gamma": -0.9157,
+   "magnitude": 0.9791
+  },
+  {
+   "catalog_number": "9324",
+   "date": "1918-Jun-08",
+   "greatest_td": "22:07:43",
+   "delta_t_s": 20,
+   "type_code": "T",
+   "gamma": 0.4658,
+   "magnitude": 1.0292
+  },
+  {
+   "catalog_number": "9325",
+   "date": "1918-Dec-03",
+   "greatest_td": "15:22:02",
+   "delta_t_s": 21,
+   "type_code": "A",
+   "gamma": -0.2387,
+   "magnitude": 0.9383
+  },
+  {
+   "catalog_number": "9326",
+   "date": "1919-May-29",
+   "greatest_td": "13:08:55",
+   "delta_t_s": 21,
+   "type_code": "T",
+   "gamma": -0.2955,
+   "magnitude": 1.0719
+  },
+  {
+   "catalog_number": "9327",
+   "date": "1919-Nov-22",
+   "greatest_td": "15:14:12",
+   "delta_t_s": 21,
+   "type_code": "A",
+   "gamma": 0.4549,
+   "magnitude": 0.9198
+  },
+  {
+   "catalog_number": "9328",
+   "date": "1920-May-18",
+   "greatest_td": "06:14:55",
+   "delta_t_s": 21,
+   "type_code": "P",
+   "gamma": -1.0239,
+   "magnitude": 0.9734
+  },
+  {
+   "catalog_number": "9329",
+   "date": "1920-Nov-10",
+   "greatest_td": "15:52:15",
+   "delta_t_s": 22,
+   "type_code": "P",
+   "gamma": 1.1287,
+   "magnitude": 0.742
+  },
+  {
+   "catalog_number": "9330",
+   "date": "1921-Apr-08",
+   "greatest_td": "09:15:01",
+   "delta_t_s": 22,
+   "type_code": "A",
+   "gamma": 0.8869,
+   "magnitude": 0.9753
+  },
+  {
+   "catalog_number": "9331",
+   "date": "1921-Oct-01",
+   "greatest_td": "12:35:58",
+   "delta_t_s": 22,
+   "type_code": "T",
+   "gamma": -0.9383,
+   "magnitude": 1.0293
+  },
+  {
+   "catalog_number": "9332",
+   "date": "1922-Mar-28",
+   "greatest_td": "13:05:26",
+   "delta_t_s": 23,
+   "type_code": "A",
+   "gamma": 0.1711,
+   "magnitude": 0.9381
+  },
+  {
+   "catalog_number": "9333",
+   "date": "1922-Sep-21",
+   "greatest_td": "04:40:31",
+   "delta_t_s": 23,
+   "type_code": "T",
+   "gamma": -0.213,
+   "magnitude": 1.0678
+  },
+  {
+   "catalog_number": "9334",
+   "date": "1923-Mar-17",
+   "greatest_td": "12:44:58",
+   "delta_t_s": 23,
+   "type_code": "A",
+   "gamma": -0.5438,
+   "magnitude": 0.931
+  },
+  {
+   "catalog_number": "9335",
+   "date": "1923-Sep-10",
+   "greatest_td": "20:47:29",
+   "delta_t_s": 23,
+   "type_code": "T",
+   "gamma": 0.5149,
+   "magnitude": 1.043
+  },
+  {
+   "catalog_number": "9336",
+   "date": "1924-Mar-05",
+   "greatest_td": "15:44:20",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -1.2232,
+   "magnitude": 0.5819
+  },
+  {
+   "catalog_number": "9337",
+   "date": "1924-Jul-31",
+   "greatest_td": "19:58:20",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -1.4459,
+   "magnitude": 0.192
+  },
+  {
+   "catalog_number": "9338",
+   "date": "1924-Aug-30",
+   "greatest_td": "08:23:00",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.3123,
+   "magnitude": 0.4245
+  },
+  {
+   "catalog_number": "9339",
+   "date": "1925-Jan-24",
+   "greatest_td": "14:54:03",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.8661,
+   "magnitude": 1.0304
+  },
+  {
+   "catalog_number": "9340",
+   "date": "1925-Jul-20",
+   "greatest_td": "21:48:42",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.7193,
+   "magnitude": 0.9436
+  },
+  {
+   "catalog_number": "9341",
+   "date": "1926-Jan-14",
+   "greatest_td": "06:36:58",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.1973,
+   "magnitude": 1.043
+  },
+  {
+   "catalog_number": "9342",
+   "date": "1926-Jul-09",
+   "greatest_td": "23:06:02",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.0538,
+   "magnitude": 0.968
+  },
+  {
+   "catalog_number": "9343",
+   "date": "1927-Jan-03",
+   "greatest_td": "20:22:53",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.4956,
+   "magnitude": 0.9995
+  },
+  {
+   "catalog_number": "9344",
+   "date": "1927-Jun-29",
+   "greatest_td": "06:23:27",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.8163,
+   "magnitude": 1.0128
+  },
+  {
+   "catalog_number": "9345",
+   "date": "1927-Dec-24",
+   "greatest_td": "03:59:41",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -1.2416,
+   "magnitude": 0.549
+  },
+  {
+   "catalog_number": "9346",
+   "date": "1928-May-19",
+   "greatest_td": "13:24:20",
+   "delta_t_s": 24,
+   "type_code": "T-",
+   "gamma": -1.0048,
+   "magnitude": 1.014
+  },
+  {
+   "catalog_number": "9347",
+   "date": "1928-Jun-17",
+   "greatest_td": "20:27:28",
+   "delta_t_s": 24,
+   "type_code": "Pb",
+   "gamma": 1.5107,
+   "magnitude": 0.0375
+  },
+  {
+   "catalog_number": "9348",
+   "date": "1928-Nov-12",
+   "greatest_td": "09:48:24",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.0861,
+   "magnitude": 0.8078
+  },
+  {
+   "catalog_number": "9349",
+   "date": "1929-May-09",
+   "greatest_td": "06:10:34",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.2887,
+   "magnitude": 1.0562
+  },
+  {
+   "catalog_number": "9350",
+   "date": "1929-Nov-01",
+   "greatest_td": "12:05:10",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.3514,
+   "magnitude": 0.9649
+  },
+  {
+   "catalog_number": "9351",
+   "date": "1930-Apr-28",
+   "greatest_td": "19:03:34",
+   "delta_t_s": 24,
+   "type_code": "H",
+   "gamma": 0.473,
+   "magnitude": 1.0003
+  },
+  {
+   "catalog_number": "9352",
+   "date": "1930-Oct-21",
+   "greatest_td": "21:43:53",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.3804,
+   "magnitude": 1.023
+  },
+  {
+   "catalog_number": "9353",
+   "date": "1931-Apr-18",
+   "greatest_td": "00:45:35",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.2643,
+   "magnitude": 0.5107
+  },
+  {
+   "catalog_number": "9354",
+   "date": "1931-Sep-12",
+   "greatest_td": "04:41:25",
+   "delta_t_s": 24,
+   "type_code": "Pe",
+   "gamma": 1.506,
+   "magnitude": 0.0471
+  },
+  {
+   "catalog_number": "9355",
+   "date": "1931-Oct-11",
+   "greatest_td": "12:55:40",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -1.0607,
+   "magnitude": 0.9005
+  },
+  {
+   "catalog_number": "9356",
+   "date": "1932-Mar-07",
+   "greatest_td": "07:55:50",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.9673,
+   "magnitude": 0.9277
+  },
+  {
+   "catalog_number": "9357",
+   "date": "1932-Aug-31",
+   "greatest_td": "20:03:41",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.8307,
+   "magnitude": 1.0257
+  },
+  {
+   "catalog_number": "9358",
+   "date": "1933-Feb-24",
+   "greatest_td": "12:46:39",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.2191,
+   "magnitude": 0.9841
+  },
+  {
+   "catalog_number": "9359",
+   "date": "1933-Aug-21",
+   "greatest_td": "05:49:11",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.0869,
+   "magnitude": 0.9801
+  },
+  {
+   "catalog_number": "9360",
+   "date": "1934-Feb-14",
+   "greatest_td": "00:38:41",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.4868,
+   "magnitude": 1.0321
+  },
+  {
+   "catalog_number": "9361",
+   "date": "1934-Aug-10",
+   "greatest_td": "08:37:48",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.689,
+   "magnitude": 0.9436
+  },
+  {
+   "catalog_number": "9362",
+   "date": "1935-Jan-05",
+   "greatest_td": "05:35:46",
+   "delta_t_s": 24,
+   "type_code": "Pe",
+   "gamma": -1.5381,
+   "magnitude": 0.0013
+  },
+  {
+   "catalog_number": "9363",
+   "date": "1935-Feb-03",
+   "greatest_td": "16:16:20",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.1438,
+   "magnitude": 0.739
+  },
+  {
+   "catalog_number": "9364",
+   "date": "1935-Jun-30",
+   "greatest_td": "19:59:46",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.3623,
+   "magnitude": 0.3375
+  },
+  {
+   "catalog_number": "9365",
+   "date": "1935-Jul-30",
+   "greatest_td": "09:16:28",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -1.4259,
+   "magnitude": 0.2315
+  },
+  {
+   "catalog_number": "9366",
+   "date": "1935-Dec-25",
+   "greatest_td": "17:59:52",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.9228,
+   "magnitude": 0.9752
+  },
+  {
+   "catalog_number": "9367",
+   "date": "1936-Jun-19",
+   "greatest_td": "05:20:31",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.5389,
+   "magnitude": 1.0329
+  },
+  {
+   "catalog_number": "9368",
+   "date": "1936-Dec-13",
+   "greatest_td": "23:28:12",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": -0.2493,
+   "magnitude": 0.9349
+  },
+  {
+   "catalog_number": "9369",
+   "date": "1937-Jun-08",
+   "greatest_td": "20:41:02",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.2253,
+   "magnitude": 1.0751
+  },
+  {
+   "catalog_number": "9370",
+   "date": "1937-Dec-02",
+   "greatest_td": "23:05:45",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.4389,
+   "magnitude": 0.9184
+  },
+  {
+   "catalog_number": "9371",
+   "date": "1938-May-29",
+   "greatest_td": "13:50:19",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.9607,
+   "magnitude": 1.0552
+  },
+  {
+   "catalog_number": "9372",
+   "date": "1938-Nov-21",
+   "greatest_td": "23:52:25",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 1.1077,
+   "magnitude": 0.7781
+  },
+  {
+   "catalog_number": "9373",
+   "date": "1939-Apr-19",
+   "greatest_td": "16:45:53",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.9388,
+   "magnitude": 0.9731
+  },
+  {
+   "catalog_number": "9374",
+   "date": "1939-Oct-12",
+   "greatest_td": "20:40:23",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.9737,
+   "magnitude": 1.0266
+  },
+  {
+   "catalog_number": "9375",
+   "date": "1940-Apr-07",
+   "greatest_td": "20:21:21",
+   "delta_t_s": 24,
+   "type_code": "A",
+   "gamma": 0.219,
+   "magnitude": 0.9394
+  },
+  {
+   "catalog_number": "9376",
+   "date": "1940-Oct-01",
+   "greatest_td": "12:44:06",
+   "delta_t_s": 25,
+   "type_code": "T",
+   "gamma": -0.2573,
+   "magnitude": 1.0645
+  },
+  {
+   "catalog_number": "9377",
+   "date": "1941-Mar-27",
+   "greatest_td": "20:08:08",
+   "delta_t_s": 25,
+   "type_code": "A",
+   "gamma": -0.5025,
+   "magnitude": 0.9355
+  },
+  {
+   "catalog_number": "9378",
+   "date": "1941-Sep-21",
+   "greatest_td": "04:34:03",
+   "delta_t_s": 25,
+   "type_code": "T",
+   "gamma": 0.4649,
+   "magnitude": 1.0379
+  },
+  {
+   "catalog_number": "9379",
+   "date": "1942-Mar-16",
+   "greatest_td": "23:37:07",
+   "delta_t_s": 25,
+   "type_code": "P",
+   "gamma": -1.1908,
+   "magnitude": 0.6393
+  },
+  {
+   "catalog_number": "9380",
+   "date": "1942-Aug-12",
+   "greatest_td": "02:45:12",
+   "delta_t_s": 26,
+   "type_code": "Pe",
+   "gamma": -1.5244,
+   "magnitude": 0.0561
+  },
+  {
+   "catalog_number": "9381",
+   "date": "1942-Sep-10",
+   "greatest_td": "15:39:32",
+   "delta_t_s": 26,
+   "type_code": "P",
+   "gamma": 1.2571,
+   "magnitude": 0.523
+  },
+  {
+   "catalog_number": "9382",
+   "date": "1943-Feb-04",
+   "greatest_td": "23:38:10",
+   "delta_t_s": 26,
+   "type_code": "T",
+   "gamma": 0.8734,
+   "magnitude": 1.0331
+  },
+  {
+   "catalog_number": "9383",
+   "date": "1943-Aug-01",
+   "greatest_td": "04:16:13",
+   "delta_t_s": 26,
+   "type_code": "A",
+   "gamma": -0.8041,
+   "magnitude": 0.9409
+  },
+  {
+   "catalog_number": "9384",
+   "date": "1944-Jan-25",
+   "greatest_td": "15:26:42",
+   "delta_t_s": 26,
+   "type_code": "T",
+   "gamma": 0.2025,
+   "magnitude": 1.0428
+  },
+  {
+   "catalog_number": "9385",
+   "date": "1944-Jul-20",
+   "greatest_td": "05:43:13",
+   "delta_t_s": 27,
+   "type_code": "A",
+   "gamma": -0.0314,
+   "magnitude": 0.97
+  },
+  {
+   "catalog_number": "9386",
+   "date": "1945-Jan-14",
+   "greatest_td": "05:01:43",
+   "delta_t_s": 27,
+   "type_code": "A",
+   "gamma": -0.4937,
+   "magnitude": 0.997
+  },
+  {
+   "catalog_number": "9387",
+   "date": "1945-Jul-09",
+   "greatest_td": "13:27:45",
+   "delta_t_s": 27,
+   "type_code": "T",
+   "gamma": 0.7356,
+   "magnitude": 1.018
+  },
+  {
+   "catalog_number": "9388",
+   "date": "1946-Jan-03",
+   "greatest_td": "12:16:11",
+   "delta_t_s": 27,
+   "type_code": "P",
+   "gamma": -1.2392,
+   "magnitude": 0.5529
+  },
+  {
+   "catalog_number": "9389",
+   "date": "1946-May-30",
+   "greatest_td": "21:00:24",
+   "delta_t_s": 28,
+   "type_code": "P",
+   "gamma": -1.0711,
+   "magnitude": 0.8865
+  },
+  {
+   "catalog_number": "9390",
+   "date": "1946-Jun-29",
+   "greatest_td": "03:51:58",
+   "delta_t_s": 28,
+   "type_code": "P",
+   "gamma": 1.4361,
+   "magnitude": 0.1802
+  },
+  {
+   "catalog_number": "9391",
+   "date": "1946-Nov-23",
+   "greatest_td": "17:37:12",
+   "delta_t_s": 28,
+   "type_code": "P",
+   "gamma": 1.105,
+   "magnitude": 0.7758
+  },
+  {
+   "catalog_number": "9392",
+   "date": "1947-May-20",
+   "greatest_td": "13:47:47",
+   "delta_t_s": 28,
+   "type_code": "T",
+   "gamma": -0.3528,
+   "magnitude": 1.0557
+  },
+  {
+   "catalog_number": "9393",
+   "date": "1947-Nov-12",
+   "greatest_td": "20:05:37",
+   "delta_t_s": 28,
+   "type_code": "A",
+   "gamma": 0.3743,
+   "magnitude": 0.965
+  },
+  {
+   "catalog_number": "9394",
+   "date": "1948-May-09",
+   "greatest_td": "02:26:04",
+   "delta_t_s": 28,
+   "type_code": "A",
+   "gamma": 0.4133,
+   "magnitude": 0.9999
+  },
+  {
+   "catalog_number": "9395",
+   "date": "1948-Nov-01",
+   "greatest_td": "05:59:18",
+   "delta_t_s": 29,
+   "type_code": "T",
+   "gamma": -0.3517,
+   "magnitude": 1.0231
+  },
+  {
+   "catalog_number": "9396",
+   "date": "1949-Apr-28",
+   "greatest_td": "07:48:53",
+   "delta_t_s": 29,
+   "type_code": "P",
+   "gamma": 1.2068,
+   "magnitude": 0.6092
+  },
+  {
+   "catalog_number": "9397",
+   "date": "1949-Oct-21",
+   "greatest_td": "21:13:01",
+   "delta_t_s": 29,
+   "type_code": "P",
+   "gamma": -1.027,
+   "magnitude": 0.9638
+  },
+  {
+   "catalog_number": "9398",
+   "date": "1950-Mar-18",
+   "greatest_td": "15:32:01",
+   "delta_t_s": 29,
+   "type_code": "A-",
+   "gamma": -0.9988,
+   "magnitude": 0.962
+  },
+  {
+   "catalog_number": "9399",
+   "date": "1950-Sep-12",
+   "greatest_td": "03:38:47",
+   "delta_t_s": 29,
+   "type_code": "T",
+   "gamma": 0.8903,
+   "magnitude": 1.0182
+  },
+  {
+   "catalog_number": "9400",
+   "date": "1951-Mar-07",
+   "greatest_td": "20:53:40",
+   "delta_t_s": 30,
+   "type_code": "A",
+   "gamma": -0.242,
+   "magnitude": 0.9896
+  },
+  {
+   "catalog_number": "9401",
+   "date": "1951-Sep-01",
+   "greatest_td": "12:51:51",
+   "delta_t_s": 30,
+   "type_code": "A",
+   "gamma": 0.1557,
+   "magnitude": 0.9747
+  },
+  {
+   "catalog_number": "9402",
+   "date": "1952-Feb-25",
+   "greatest_td": "09:11:35",
+   "delta_t_s": 30,
+   "type_code": "T",
+   "gamma": 0.4697,
+   "magnitude": 1.0366
+  },
+  {
+   "catalog_number": "9403",
+   "date": "1952-Aug-20",
+   "greatest_td": "15:13:35",
+   "delta_t_s": 30,
+   "type_code": "A",
+   "gamma": -0.6102,
+   "magnitude": 0.942
+  },
+  {
+   "catalog_number": "9404",
+   "date": "1953-Feb-14",
+   "greatest_td": "00:59:30",
+   "delta_t_s": 30,
+   "type_code": "P",
+   "gamma": 1.1331,
+   "magnitude": 0.7596
+  },
+  {
+   "catalog_number": "9405",
+   "date": "1953-Jul-11",
+   "greatest_td": "02:44:14",
+   "delta_t_s": 30,
+   "type_code": "P",
+   "gamma": 1.4388,
+   "magnitude": 0.2015
+  },
+  {
+   "catalog_number": "9406",
+   "date": "1953-Aug-09",
+   "greatest_td": "15:55:03",
+   "delta_t_s": 30,
+   "type_code": "P",
+   "gamma": -1.344,
+   "magnitude": 0.3729
+  },
+  {
+   "catalog_number": "9407",
+   "date": "1954-Jan-05",
+   "greatest_td": "02:32:01",
+   "delta_t_s": 31,
+   "type_code": "A",
+   "gamma": -0.9296,
+   "magnitude": 0.972
+  },
+  {
+   "catalog_number": "9408",
+   "date": "1954-Jun-30",
+   "greatest_td": "12:32:38",
+   "delta_t_s": 31,
+   "type_code": "T",
+   "gamma": 0.6135,
+   "magnitude": 1.0357
+  },
+  {
+   "catalog_number": "9409",
+   "date": "1954-Dec-25",
+   "greatest_td": "07:36:42",
+   "delta_t_s": 31,
+   "type_code": "A",
+   "gamma": -0.2576,
+   "magnitude": 0.9323
+  },
+  {
+   "catalog_number": "9410",
+   "date": "1955-Jun-20",
+   "greatest_td": "04:10:42",
+   "delta_t_s": 31,
+   "type_code": "T",
+   "gamma": -0.1528,
+   "magnitude": 1.0776
+  },
+  {
+   "catalog_number": "9411",
+   "date": "1955-Dec-14",
+   "greatest_td": "07:02:25",
+   "delta_t_s": 31,
+   "type_code": "A",
+   "gamma": 0.4266,
+   "magnitude": 0.9176
+  },
+  {
+   "catalog_number": "9412",
+   "date": "1956-Jun-08",
+   "greatest_td": "21:20:39",
+   "delta_t_s": 32,
+   "type_code": "T",
+   "gamma": -0.8934,
+   "magnitude": 1.0581
+  },
+  {
+   "catalog_number": "9413",
+   "date": "1956-Dec-02",
+   "greatest_td": "08:00:35",
+   "delta_t_s": 32,
+   "type_code": "P",
+   "gamma": 1.0923,
+   "magnitude": 0.8047
+  },
+  {
+   "catalog_number": "9414",
+   "date": "1957-Apr-30",
+   "greatest_td": "00:05:28",
+   "delta_t_s": 32,
+   "type_code": "A+",
+   "gamma": 0.9992,
+   "magnitude": 0.9799
+  },
+  {
+   "catalog_number": "9415",
+   "date": "1957-Oct-23",
+   "greatest_td": "04:54:02",
+   "delta_t_s": 32,
+   "type_code": "T-",
+   "gamma": -1.0022,
+   "magnitude": 1.0013
+  },
+  {
+   "catalog_number": "9416",
+   "date": "1958-Apr-19",
+   "greatest_td": "03:27:17",
+   "delta_t_s": 32,
+   "type_code": "A",
+   "gamma": 0.275,
+   "magnitude": 0.9408
+  },
+  {
+   "catalog_number": "9417",
+   "date": "1958-Oct-12",
+   "greatest_td": "20:55:28",
+   "delta_t_s": 33,
+   "type_code": "T",
+   "gamma": -0.2951,
+   "magnitude": 1.0608
+  },
+  {
+   "catalog_number": "9418",
+   "date": "1959-Apr-08",
+   "greatest_td": "03:24:08",
+   "delta_t_s": 33,
+   "type_code": "A",
+   "gamma": -0.4546,
+   "magnitude": 0.9401
+  },
+  {
+   "catalog_number": "9419",
+   "date": "1959-Oct-02",
+   "greatest_td": "12:27:00",
+   "delta_t_s": 33,
+   "type_code": "T",
+   "gamma": 0.4207,
+   "magnitude": 1.0325
+  },
+  {
+   "catalog_number": "9420",
+   "date": "1960-Mar-27",
+   "greatest_td": "07:25:07",
+   "delta_t_s": 33,
+   "type_code": "P",
+   "gamma": -1.1537,
+   "magnitude": 0.7058
+  },
+  {
+   "catalog_number": "9421",
+   "date": "1960-Sep-20",
+   "greatest_td": "22:59:56",
+   "delta_t_s": 33,
+   "type_code": "P",
+   "gamma": 1.2057,
+   "magnitude": 0.6139
+  },
+  {
+   "catalog_number": "9422",
+   "date": "1961-Feb-15",
+   "greatest_td": "08:19:48",
+   "delta_t_s": 34,
+   "type_code": "T",
+   "gamma": 0.883,
+   "magnitude": 1.036
+  },
+  {
+   "catalog_number": "9423",
+   "date": "1961-Aug-11",
+   "greatest_td": "10:46:47",
+   "delta_t_s": 34,
+   "type_code": "A",
+   "gamma": -0.8859,
+   "magnitude": 0.9375
+  },
+  {
+   "catalog_number": "9424",
+   "date": "1962-Feb-05",
+   "greatest_td": "00:12:38",
+   "delta_t_s": 34,
+   "type_code": "T",
+   "gamma": 0.2107,
+   "magnitude": 1.043
+  },
+  {
+   "catalog_number": "9425",
+   "date": "1962-Jul-31",
+   "greatest_td": "12:25:33",
+   "delta_t_s": 34,
+   "type_code": "Am",
+   "gamma": -0.113,
+   "magnitude": 0.9716
+  },
+  {
+   "catalog_number": "9426",
+   "date": "1963-Jan-25",
+   "greatest_td": "13:37:12",
+   "delta_t_s": 35,
+   "type_code": "A",
+   "gamma": -0.4898,
+   "magnitude": 0.9951
+  },
+  {
+   "catalog_number": "9427",
+   "date": "1963-Jul-20",
+   "greatest_td": "20:36:13",
+   "delta_t_s": 35,
+   "type_code": "T",
+   "gamma": 0.6571,
+   "magnitude": 1.0224
+  },
+  {
+   "catalog_number": "9428",
+   "date": "1964-Jan-14",
+   "greatest_td": "20:30:08",
+   "delta_t_s": 35,
+   "type_code": "P",
+   "gamma": -1.2354,
+   "magnitude": 0.5591
+  },
+  {
+   "catalog_number": "9429",
+   "date": "1964-Jun-10",
+   "greatest_td": "04:34:07",
+   "delta_t_s": 35,
+   "type_code": "P",
+   "gamma": -1.1393,
+   "magnitude": 0.7545
+  },
+  {
+   "catalog_number": "9430",
+   "date": "1964-Jul-09",
+   "greatest_td": "11:17:53",
+   "delta_t_s": 35,
+   "type_code": "P",
+   "gamma": 1.3623,
+   "magnitude": 0.3221
+  },
+  {
+   "catalog_number": "9431",
+   "date": "1964-Dec-04",
+   "greatest_td": "01:31:54",
+   "delta_t_s": 36,
+   "type_code": "P",
+   "gamma": 1.1193,
+   "magnitude": 0.7518
+  },
+  {
+   "catalog_number": "9432",
+   "date": "1965-May-30",
+   "greatest_td": "21:17:31",
+   "delta_t_s": 36,
+   "type_code": "T",
+   "gamma": -0.4225,
+   "magnitude": 1.0544
+  },
+  {
+   "catalog_number": "9433",
+   "date": "1965-Nov-23",
+   "greatest_td": "04:14:51",
+   "delta_t_s": 36,
+   "type_code": "A",
+   "gamma": 0.3906,
+   "magnitude": 0.9656
+  },
+  {
+   "catalog_number": "9434",
+   "date": "1966-May-20",
+   "greatest_td": "09:39:02",
+   "delta_t_s": 37,
+   "type_code": "A",
+   "gamma": 0.3467,
+   "magnitude": 0.9991
+  },
+  {
+   "catalog_number": "9435",
+   "date": "1966-Nov-12",
+   "greatest_td": "14:23:28",
+   "delta_t_s": 37,
+   "type_code": "T",
+   "gamma": -0.33,
+   "magnitude": 1.0234
+  },
+  {
+   "catalog_number": "9436",
+   "date": "1967-May-09",
+   "greatest_td": "14:42:48",
+   "delta_t_s": 38,
+   "type_code": "P",
+   "gamma": 1.1422,
+   "magnitude": 0.7201
+  },
+  {
+   "catalog_number": "9437",
+   "date": "1967-Nov-02",
+   "greatest_td": "05:38:56",
+   "delta_t_s": 38,
+   "type_code": "T-",
+   "gamma": -1.0007,
+   "magnitude": 1.0126
+  },
+  {
+   "catalog_number": "9438",
+   "date": "1968-Mar-28",
+   "greatest_td": "23:00:30",
+   "delta_t_s": 38,
+   "type_code": "P",
+   "gamma": -1.037,
+   "magnitude": 0.899
+  },
+  {
+   "catalog_number": "9439",
+   "date": "1968-Sep-22",
+   "greatest_td": "11:18:46",
+   "delta_t_s": 39,
+   "type_code": "T",
+   "gamma": 0.9451,
+   "magnitude": 1.0099
+  },
+  {
+   "catalog_number": "9440",
+   "date": "1969-Mar-18",
+   "greatest_td": "04:54:57",
+   "delta_t_s": 39,
+   "type_code": "A",
+   "gamma": -0.2704,
+   "magnitude": 0.9954
+  },
+  {
+   "catalog_number": "9441",
+   "date": "1969-Sep-11",
+   "greatest_td": "19:58:59",
+   "delta_t_s": 40,
+   "type_code": "A",
+   "gamma": 0.2201,
+   "magnitude": 0.969
+  },
+  {
+   "catalog_number": "9442",
+   "date": "1970-Mar-07",
+   "greatest_td": "17:38:30",
+   "delta_t_s": 40,
+   "type_code": "T",
+   "gamma": 0.4473,
+   "magnitude": 1.0414
+  },
+  {
+   "catalog_number": "9443",
+   "date": "1970-Aug-31",
+   "greatest_td": "21:55:30",
+   "delta_t_s": 41,
+   "type_code": "A",
+   "gamma": -0.5364,
+   "magnitude": 0.94
+  },
+  {
+   "catalog_number": "9444",
+   "date": "1971-Feb-25",
+   "greatest_td": "09:38:07",
+   "delta_t_s": 41,
+   "type_code": "P",
+   "gamma": 1.1188,
+   "magnitude": 0.7872
+  },
+  {
+   "catalog_number": "9445",
+   "date": "1971-Jul-22",
+   "greatest_td": "09:31:55",
+   "delta_t_s": 42,
+   "type_code": "Pe",
+   "gamma": 1.513,
+   "magnitude": 0.0689
+  },
+  {
+   "catalog_number": "9446",
+   "date": "1971-Aug-20",
+   "greatest_td": "22:39:31",
+   "delta_t_s": 42,
+   "type_code": "P",
+   "gamma": -1.2659,
+   "magnitude": 0.508
+  },
+  {
+   "catalog_number": "9447",
+   "date": "1972-Jan-16",
+   "greatest_td": "11:03:22",
+   "delta_t_s": 42,
+   "type_code": "A",
+   "gamma": -0.9365,
+   "magnitude": 0.9692
+  },
+  {
+   "catalog_number": "9448",
+   "date": "1972-Jul-10",
+   "greatest_td": "19:46:38",
+   "delta_t_s": 43,
+   "type_code": "T",
+   "gamma": 0.6872,
+   "magnitude": 1.0379
+  },
+  {
+   "catalog_number": "9449",
+   "date": "1973-Jan-04",
+   "greatest_td": "15:46:21",
+   "delta_t_s": 43,
+   "type_code": "A",
+   "gamma": -0.2644,
+   "magnitude": 0.9303
+  },
+  {
+   "catalog_number": "9450",
+   "date": "1973-Jun-30",
+   "greatest_td": "11:38:41",
+   "delta_t_s": 44,
+   "type_code": "T",
+   "gamma": -0.0785,
+   "magnitude": 1.0792
+  },
+  {
+   "catalog_number": "9451",
+   "date": "1973-Dec-24",
+   "greatest_td": "15:02:44",
+   "delta_t_s": 44,
+   "type_code": "A",
+   "gamma": 0.4171,
+   "magnitude": 0.9174
+  },
+  {
+   "catalog_number": "9452",
+   "date": "1974-Jun-20",
+   "greatest_td": "04:48:04",
+   "delta_t_s": 45,
+   "type_code": "T",
+   "gamma": -0.8239,
+   "magnitude": 1.0592
+  },
+  {
+   "catalog_number": "9453",
+   "date": "1974-Dec-13",
+   "greatest_td": "16:13:13",
+   "delta_t_s": 45,
+   "type_code": "P",
+   "gamma": 1.0797,
+   "magnitude": 0.8266
+  },
+  {
+   "catalog_number": "9454",
+   "date": "1975-May-11",
+   "greatest_td": "07:17:33",
+   "delta_t_s": 46,
+   "type_code": "P",
+   "gamma": 1.0647,
+   "magnitude": 0.8636
+  },
+  {
+   "catalog_number": "9455",
+   "date": "1975-Nov-03",
+   "greatest_td": "13:15:54",
+   "delta_t_s": 46,
+   "type_code": "P",
+   "gamma": -1.0248,
+   "magnitude": 0.9588
+  },
+  {
+   "catalog_number": "9456",
+   "date": "1976-Apr-29",
+   "greatest_td": "10:24:18",
+   "delta_t_s": 47,
+   "type_code": "A",
+   "gamma": 0.3378,
+   "magnitude": 0.9421
+  },
+  {
+   "catalog_number": "9457",
+   "date": "1976-Oct-23",
+   "greatest_td": "05:13:45",
+   "delta_t_s": 47,
+   "type_code": "T",
+   "gamma": -0.327,
+   "magnitude": 1.0572
+  },
+  {
+   "catalog_number": "9458",
+   "date": "1977-Apr-18",
+   "greatest_td": "10:31:30",
+   "delta_t_s": 48,
+   "type_code": "A",
+   "gamma": -0.399,
+   "magnitude": 0.9449
+  },
+  {
+   "catalog_number": "9459",
+   "date": "1977-Oct-12",
+   "greatest_td": "20:27:27",
+   "delta_t_s": 48,
+   "type_code": "T",
+   "gamma": 0.3836,
+   "magnitude": 1.0269
+  },
+  {
+   "catalog_number": "9460",
+   "date": "1978-Apr-07",
+   "greatest_td": "15:03:47",
+   "delta_t_s": 49,
+   "type_code": "P",
+   "gamma": -1.1081,
+   "magnitude": 0.7883
+  },
+  {
+   "catalog_number": "9461",
+   "date": "1978-Oct-02",
+   "greatest_td": "06:28:43",
+   "delta_t_s": 49,
+   "type_code": "P",
+   "gamma": 1.1616,
+   "magnitude": 0.6905
+  },
+  {
+   "catalog_number": "9462",
+   "date": "1979-Feb-26",
+   "greatest_td": "16:55:06",
+   "delta_t_s": 50,
+   "type_code": "T",
+   "gamma": 0.8981,
+   "magnitude": 1.0391
+  },
+  {
+   "catalog_number": "9463",
+   "date": "1979-Aug-22",
+   "greatest_td": "17:22:38",
+   "delta_t_s": 50,
+   "type_code": "A",
+   "gamma": -0.9632,
+   "magnitude": 0.9329
+  },
+  {
+   "catalog_number": "9464",
+   "date": "1980-Feb-16",
+   "greatest_td": "08:54:01",
+   "delta_t_s": 51,
+   "type_code": "T",
+   "gamma": 0.2224,
+   "magnitude": 1.0434
+  },
+  {
+   "catalog_number": "9465",
+   "date": "1980-Aug-10",
+   "greatest_td": "19:12:21",
+   "delta_t_s": 51,
+   "type_code": "A",
+   "gamma": -0.1915,
+   "magnitude": 0.9727
+  },
+  {
+   "catalog_number": "9466",
+   "date": "1981-Feb-04",
+   "greatest_td": "22:09:24",
+   "delta_t_s": 51,
+   "type_code": "A",
+   "gamma": -0.4838,
+   "magnitude": 0.9937
+  },
+  {
+   "catalog_number": "9467",
+   "date": "1981-Jul-31",
+   "greatest_td": "03:46:37",
+   "delta_t_s": 52,
+   "type_code": "T",
+   "gamma": 0.5792,
+   "magnitude": 1.0258
+  },
+  {
+   "catalog_number": "9468",
+   "date": "1982-Jan-25",
+   "greatest_td": "04:42:53",
+   "delta_t_s": 52,
+   "type_code": "P",
+   "gamma": -1.2311,
+   "magnitude": 0.5663
+  },
+  {
+   "catalog_number": "9469",
+   "date": "1982-Jun-21",
+   "greatest_td": "12:04:33",
+   "delta_t_s": 53,
+   "type_code": "P",
+   "gamma": -1.2102,
+   "magnitude": 0.6168
+  },
+  {
+   "catalog_number": "9470",
+   "date": "1982-Jul-20",
+   "greatest_td": "18:44:44",
+   "delta_t_s": 53,
+   "type_code": "P",
+   "gamma": 1.2886,
+   "magnitude": 0.4643
+  },
+  {
+   "catalog_number": "9471",
+   "date": "1982-Dec-15",
+   "greatest_td": "09:32:09",
+   "delta_t_s": 53,
+   "type_code": "P",
+   "gamma": 1.1293,
+   "magnitude": 0.735
+  },
+  {
+   "catalog_number": "9472",
+   "date": "1983-Jun-11",
+   "greatest_td": "04:43:33",
+   "delta_t_s": 53,
+   "type_code": "T",
+   "gamma": -0.4947,
+   "magnitude": 1.0524
+  },
+  {
+   "catalog_number": "9473",
+   "date": "1983-Dec-04",
+   "greatest_td": "12:31:15",
+   "delta_t_s": 54,
+   "type_code": "A",
+   "gamma": 0.4015,
+   "magnitude": 0.9666
+  },
+  {
+   "catalog_number": "9474",
+   "date": "1984-May-30",
+   "greatest_td": "16:45:41",
+   "delta_t_s": 54,
+   "type_code": "A",
+   "gamma": 0.2755,
+   "magnitude": 0.998
+  },
+  {
+   "catalog_number": "9475",
+   "date": "1984-Nov-22",
+   "greatest_td": "22:54:17",
+   "delta_t_s": 54,
+   "type_code": "T",
+   "gamma": -0.3132,
+   "magnitude": 1.0237
+  },
+  {
+   "catalog_number": "9476",
+   "date": "1985-May-19",
+   "greatest_td": "21:29:38",
+   "delta_t_s": 55,
+   "type_code": "P",
+   "gamma": 1.072,
+   "magnitude": 0.8406
+  },
+  {
+   "catalog_number": "9477",
+   "date": "1985-Nov-12",
+   "greatest_td": "14:11:27",
+   "delta_t_s": 55,
+   "type_code": "T",
+   "gamma": -0.9795,
+   "magnitude": 1.0388
+  },
+  {
+   "catalog_number": "9478",
+   "date": "1986-Apr-09",
+   "greatest_td": "06:21:22",
+   "delta_t_s": 55,
+   "type_code": "P",
+   "gamma": -1.0822,
+   "magnitude": 0.8236
+  },
+  {
+   "catalog_number": "9479",
+   "date": "1986-Oct-03",
+   "greatest_td": "19:06:15",
+   "delta_t_s": 55,
+   "type_code": "H",
+   "gamma": 0.9931,
+   "magnitude": 1.0
+  },
+  {
+   "catalog_number": "9480",
+   "date": "1987-Mar-29",
+   "greatest_td": "12:49:47",
+   "delta_t_s": 55,
+   "type_code": "H",
+   "gamma": -0.3053,
+   "magnitude": 1.0013
+  },
+  {
+   "catalog_number": "9481",
+   "date": "1987-Sep-23",
+   "greatest_td": "03:12:22",
+   "delta_t_s": 56,
+   "type_code": "A",
+   "gamma": 0.2787,
+   "magnitude": 0.9634
+  },
+  {
+   "catalog_number": "9482",
+   "date": "1988-Mar-18",
+   "greatest_td": "01:58:56",
+   "delta_t_s": 56,
+   "type_code": "T",
+   "gamma": 0.4188,
+   "magnitude": 1.0464
+  },
+  {
+   "catalog_number": "9483",
+   "date": "1988-Sep-11",
+   "greatest_td": "04:44:29",
+   "delta_t_s": 56,
+   "type_code": "A",
+   "gamma": -0.4681,
+   "magnitude": 0.9377
+  },
+  {
+   "catalog_number": "9484",
+   "date": "1989-Mar-07",
+   "greatest_td": "18:08:41",
+   "delta_t_s": 56,
+   "type_code": "P",
+   "gamma": 1.0981,
+   "magnitude": 0.8268
+  },
+  {
+   "catalog_number": "9485",
+   "date": "1989-Aug-31",
+   "greatest_td": "05:31:47",
+   "delta_t_s": 57,
+   "type_code": "P",
+   "gamma": -1.1928,
+   "magnitude": 0.6344
+  },
+  {
+   "catalog_number": "9486",
+   "date": "1990-Jan-26",
+   "greatest_td": "19:31:24",
+   "delta_t_s": 57,
+   "type_code": "A",
+   "gamma": -0.9457,
+   "magnitude": 0.967
+  },
+  {
+   "catalog_number": "9487",
+   "date": "1990-Jul-22",
+   "greatest_td": "03:03:07",
+   "delta_t_s": 57,
+   "type_code": "T",
+   "gamma": 0.7597,
+   "magnitude": 1.0391
+  },
+  {
+   "catalog_number": "9488",
+   "date": "1991-Jan-15",
+   "greatest_td": "23:53:51",
+   "delta_t_s": 58,
+   "type_code": "A",
+   "gamma": -0.2727,
+   "magnitude": 0.929
+  },
+  {
+   "catalog_number": "9489",
+   "date": "1991-Jul-11",
+   "greatest_td": "19:07:01",
+   "delta_t_s": 58,
+   "type_code": "Tm",
+   "gamma": -0.0041,
+   "magnitude": 1.08
+  },
+  {
+   "catalog_number": "9490",
+   "date": "1992-Jan-04",
+   "greatest_td": "23:05:37",
+   "delta_t_s": 58,
+   "type_code": "A",
+   "gamma": 0.4091,
+   "magnitude": 0.9179
+  },
+  {
+   "catalog_number": "9491",
+   "date": "1992-Jun-30",
+   "greatest_td": "12:11:22",
+   "delta_t_s": 59,
+   "type_code": "T",
+   "gamma": -0.7512,
+   "magnitude": 1.0592
+  },
+  {
+   "catalog_number": "9492",
+   "date": "1992-Dec-24",
+   "greatest_td": "00:31:41",
+   "delta_t_s": 59,
+   "type_code": "P",
+   "gamma": 1.0711,
+   "magnitude": 0.8422
+  },
+  {
+   "catalog_number": "9493",
+   "date": "1993-May-21",
+   "greatest_td": "14:20:15",
+   "delta_t_s": 59,
+   "type_code": "P",
+   "gamma": 1.1372,
+   "magnitude": 0.7352
+  },
+  {
+   "catalog_number": "9494",
+   "date": "1993-Nov-13",
+   "greatest_td": "21:45:51",
+   "delta_t_s": 60,
+   "type_code": "P",
+   "gamma": -1.0411,
+   "magnitude": 0.928
+  },
+  {
+   "catalog_number": "9495",
+   "date": "1994-May-10",
+   "greatest_td": "17:12:26",
+   "delta_t_s": 60,
+   "type_code": "A",
+   "gamma": 0.4077,
+   "magnitude": 0.9431
+  },
+  {
+   "catalog_number": "9496",
+   "date": "1994-Nov-03",
+   "greatest_td": "13:40:06",
+   "delta_t_s": 61,
+   "type_code": "T",
+   "gamma": -0.3522,
+   "magnitude": 1.0535
+  },
+  {
+   "catalog_number": "9497",
+   "date": "1995-Apr-29",
+   "greatest_td": "17:33:21",
+   "delta_t_s": 61,
+   "type_code": "A",
+   "gamma": -0.3382,
+   "magnitude": 0.9497
+  },
+  {
+   "catalog_number": "9498",
+   "date": "1995-Oct-24",
+   "greatest_td": "04:33:30",
+   "delta_t_s": 61,
+   "type_code": "T",
+   "gamma": 0.3518,
+   "magnitude": 1.0213
+  },
+  {
+   "catalog_number": "9499",
+   "date": "1996-Apr-17",
+   "greatest_td": "22:38:12",
+   "delta_t_s": 62,
+   "type_code": "P",
+   "gamma": -1.058,
+   "magnitude": 0.8799
+  },
+  {
+   "catalog_number": "9500",
+   "date": "1996-Oct-12",
+   "greatest_td": "14:03:04",
+   "delta_t_s": 62,
+   "type_code": "P",
+   "gamma": 1.1227,
+   "magnitude": 0.7575
+  },
+  {
+   "catalog_number": "9501",
+   "date": "1997-Mar-09",
+   "greatest_td": "01:24:51",
+   "delta_t_s": 62,
+   "type_code": "T",
+   "gamma": 0.9183,
+   "magnitude": 1.042
+  },
+  {
+   "catalog_number": "9502",
+   "date": "1997-Sep-02",
+   "greatest_td": "00:04:48",
+   "delta_t_s": 63,
+   "type_code": "P",
+   "gamma": -1.0352,
+   "magnitude": 0.8988
+  },
+  {
+   "catalog_number": "9503",
+   "date": "1998-Feb-26",
+   "greatest_td": "17:29:27",
+   "delta_t_s": 63,
+   "type_code": "T",
+   "gamma": 0.2391,
+   "magnitude": 1.0441
+  },
+  {
+   "catalog_number": "9504",
+   "date": "1998-Aug-22",
+   "greatest_td": "02:07:11",
+   "delta_t_s": 63,
+   "type_code": "A",
+   "gamma": -0.2644,
+   "magnitude": 0.9734
+  },
+  {
+   "catalog_number": "9505",
+   "date": "1999-Feb-16",
+   "greatest_td": "06:34:38",
+   "delta_t_s": 63,
+   "type_code": "A",
+   "gamma": -0.4726,
+   "magnitude": 0.9928
+  },
+  {
+   "catalog_number": "9506",
+   "date": "1999-Aug-11",
+   "greatest_td": "11:04:09",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": 0.5062,
+   "magnitude": 1.0286
+  },
+  {
+   "catalog_number": "9507",
+   "date": "2000-Feb-05",
+   "greatest_td": "12:50:27",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": -1.2233,
+   "magnitude": 0.5795
+  },
+  {
+   "catalog_number": "9508",
+   "date": "2000-Jul-01",
+   "greatest_td": "19:33:34",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": -1.2821,
+   "magnitude": 0.4768
+  },
+  {
+   "catalog_number": "9509",
+   "date": "2000-Jul-31",
+   "greatest_td": "02:14:08",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": 1.2166,
+   "magnitude": 0.6034
+  },
+  {
+   "catalog_number": "9510",
+   "date": "2000-Dec-25",
+   "greatest_td": "17:35:57",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": 1.1367,
+   "magnitude": 0.7228
+  },
+  {
+   "catalog_number": "9511",
+   "date": "2001-Jun-21",
+   "greatest_td": "12:04:46",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": -0.5701,
+   "magnitude": 1.0495
+  },
+  {
+   "catalog_number": "9512",
+   "date": "2001-Dec-14",
+   "greatest_td": "20:53:01",
+   "delta_t_s": 64,
+   "type_code": "A",
+   "gamma": 0.4089,
+   "magnitude": 0.9681
+  },
+  {
+   "catalog_number": "9513",
+   "date": "2002-Jun-10",
+   "greatest_td": "23:45:22",
+   "delta_t_s": 64,
+   "type_code": "A",
+   "gamma": 0.1993,
+   "magnitude": 0.9962
+  },
+  {
+   "catalog_number": "9514",
+   "date": "2002-Dec-04",
+   "greatest_td": "07:32:16",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": -0.302,
+   "magnitude": 1.0244
+  },
+  {
+   "catalog_number": "9515",
+   "date": "2003-May-31",
+   "greatest_td": "04:09:22",
+   "delta_t_s": 64,
+   "type_code": "An",
+   "gamma": 0.996,
+   "magnitude": 0.9384
+  },
+  {
+   "catalog_number": "9516",
+   "date": "2003-Nov-23",
+   "greatest_td": "22:50:22",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": -0.9638,
+   "magnitude": 1.0379
+  },
+  {
+   "catalog_number": "9517",
+   "date": "2004-Apr-19",
+   "greatest_td": "13:35:05",
+   "delta_t_s": 65,
+   "type_code": "P",
+   "gamma": -1.1335,
+   "magnitude": 0.7367
+  },
+  {
+   "catalog_number": "9518",
+   "date": "2004-Oct-14",
+   "greatest_td": "03:00:23",
+   "delta_t_s": 65,
+   "type_code": "P",
+   "gamma": 1.0348,
+   "magnitude": 0.9282
+  },
+  {
+   "catalog_number": "9519",
+   "date": "2005-Apr-08",
+   "greatest_td": "20:36:51",
+   "delta_t_s": 65,
+   "type_code": "H",
+   "gamma": -0.3473,
+   "magnitude": 1.0074
+  },
+  {
+   "catalog_number": "9520",
+   "date": "2005-Oct-03",
+   "greatest_td": "10:32:47",
+   "delta_t_s": 65,
+   "type_code": "A",
+   "gamma": 0.3306,
+   "magnitude": 0.9576
+  },
+  {
+   "catalog_number": "9521",
+   "date": "2006-Mar-29",
+   "greatest_td": "10:12:23",
+   "delta_t_s": 65,
+   "type_code": "T",
+   "gamma": 0.3843,
+   "magnitude": 1.0515
+  },
+  {
+   "catalog_number": "9522",
+   "date": "2006-Sep-22",
+   "greatest_td": "11:41:16",
+   "delta_t_s": 65,
+   "type_code": "A",
+   "gamma": -0.4062,
+   "magnitude": 0.9352
+  },
+  {
+   "catalog_number": "9523",
+   "date": "2007-Mar-19",
+   "greatest_td": "02:32:57",
+   "delta_t_s": 65,
+   "type_code": "P",
+   "gamma": 1.0728,
+   "magnitude": 0.8756
+  },
+  {
+   "catalog_number": "9524",
+   "date": "2007-Sep-11",
+   "greatest_td": "12:32:24",
+   "delta_t_s": 66,
+   "type_code": "P",
+   "gamma": -1.1255,
+   "magnitude": 0.7507
+  },
+  {
+   "catalog_number": "9525",
+   "date": "2008-Feb-07",
+   "greatest_td": "03:56:10",
+   "delta_t_s": 66,
+   "type_code": "A",
+   "gamma": -0.957,
+   "magnitude": 0.965
+  },
+  {
+   "catalog_number": "9526",
+   "date": "2008-Aug-01",
+   "greatest_td": "10:22:12",
+   "delta_t_s": 66,
+   "type_code": "T",
+   "gamma": 0.8307,
+   "magnitude": 1.0394
+  },
+  {
+   "catalog_number": "9527",
+   "date": "2009-Jan-26",
+   "greatest_td": "07:59:45",
+   "delta_t_s": 66,
+   "type_code": "A",
+   "gamma": -0.282,
+   "magnitude": 0.9282
+  },
+  {
+   "catalog_number": "9528",
+   "date": "2009-Jul-22",
+   "greatest_td": "02:36:25",
+   "delta_t_s": 66,
+   "type_code": "T",
+   "gamma": 0.0698,
+   "magnitude": 1.0799
+  },
+  {
+   "catalog_number": "9529",
+   "date": "2010-Jan-15",
+   "greatest_td": "07:07:39",
+   "delta_t_s": 67,
+   "type_code": "A",
+   "gamma": 0.4002,
+   "magnitude": 0.919
+  },
+  {
+   "catalog_number": "9530",
+   "date": "2010-Jul-11",
+   "greatest_td": "19:34:38",
+   "delta_t_s": 67,
+   "type_code": "T",
+   "gamma": -0.6788,
+   "magnitude": 1.058
+  },
+  {
+   "catalog_number": "9531",
+   "date": "2011-Jan-04",
+   "greatest_td": "08:51:42",
+   "delta_t_s": 67,
+   "type_code": "P",
+   "gamma": 1.0627,
+   "magnitude": 0.8576
+  },
+  {
+   "catalog_number": "9532",
+   "date": "2011-Jun-01",
+   "greatest_td": "21:17:18",
+   "delta_t_s": 67,
+   "type_code": "P",
+   "gamma": 1.213,
+   "magnitude": 0.601
+  },
+  {
+   "catalog_number": "9533",
+   "date": "2011-Jul-01",
+   "greatest_td": "08:39:30",
+   "delta_t_s": 67,
+   "type_code": "Pb",
+   "gamma": -1.4917,
+   "magnitude": 0.0971
+  },
+  {
+   "catalog_number": "9534",
+   "date": "2011-Nov-25",
+   "greatest_td": "06:21:24",
+   "delta_t_s": 68,
+   "type_code": "P",
+   "gamma": -1.0536,
+   "magnitude": 0.9047
+  },
+  {
+   "catalog_number": "9535",
+   "date": "2012-May-20",
+   "greatest_td": "23:53:54",
+   "delta_t_s": 68,
+   "type_code": "A",
+   "gamma": 0.4828,
+   "magnitude": 0.9439
+  },
+  {
+   "catalog_number": "9536",
+   "date": "2012-Nov-13",
+   "greatest_td": "22:12:55",
+   "delta_t_s": 68,
+   "type_code": "T",
+   "gamma": -0.3719,
+   "magnitude": 1.05
+  },
+  {
+   "catalog_number": "9537",
+   "date": "2013-May-10",
+   "greatest_td": "00:26:20",
+   "delta_t_s": 68,
+   "type_code": "A",
+   "gamma": -0.2694,
+   "magnitude": 0.9544
+  },
+  {
+   "catalog_number": "9538",
+   "date": "2013-Nov-03",
+   "greatest_td": "12:47:36",
+   "delta_t_s": 68,
+   "type_code": "H3",
+   "gamma": 0.3272,
+   "magnitude": 1.0159
+  },
+  {
+   "catalog_number": "9539",
+   "date": "2014-Apr-29",
+   "greatest_td": "06:04:33",
+   "delta_t_s": 69,
+   "type_code": "A-",
+   "gamma": -1.0,
+   "magnitude": 0.9868
+  },
+  {
+   "catalog_number": "9540",
+   "date": "2014-Oct-23",
+   "greatest_td": "21:45:39",
+   "delta_t_s": 69,
+   "type_code": "P",
+   "gamma": 1.0908,
+   "magnitude": 0.8114
+  },
+  {
+   "catalog_number": "9541",
+   "date": "2015-Mar-20",
+   "greatest_td": "09:46:47",
+   "delta_t_s": 69,
+   "type_code": "T",
+   "gamma": 0.9454,
+   "magnitude": 1.0445
+  },
+  {
+   "catalog_number": "9542",
+   "date": "2015-Sep-13",
+   "greatest_td": "06:55:19",
+   "delta_t_s": 69,
+   "type_code": "P",
+   "gamma": -1.1004,
+   "magnitude": 0.7875
+  },
+  {
+   "catalog_number": "9543",
+   "date": "2016-Mar-09",
+   "greatest_td": "01:58:19",
+   "delta_t_s": 70,
+   "type_code": "T",
+   "gamma": 0.2609,
+   "magnitude": 1.045
+  },
+  {
+   "catalog_number": "9544",
+   "date": "2016-Sep-01",
+   "greatest_td": "09:08:02",
+   "delta_t_s": 70,
+   "type_code": "A",
+   "gamma": -0.333,
+   "magnitude": 0.9736
+  },
+  {
+   "catalog_number": "9545",
+   "date": "2017-Feb-26",
+   "greatest_td": "14:54:33",
+   "delta_t_s": 70,
+   "type_code": "A",
+   "gamma": -0.4578,
+   "magnitude": 0.9922
+  },
+  {
+   "catalog_number": "9546",
+   "date": "2017-Aug-21",
+   "greatest_td": "18:26:40",
+   "delta_t_s": 70,
+   "type_code": "T",
+   "gamma": 0.4367,
+   "magnitude": 1.0306
+  },
+  {
+   "catalog_number": "9547",
+   "date": "2018-Feb-15",
+   "greatest_td": "20:52:33",
+   "delta_t_s": 71,
+   "type_code": "P",
+   "gamma": -1.2116,
+   "magnitude": 0.5991
+  },
+  {
+   "catalog_number": "9548",
+   "date": "2018-Jul-13",
+   "greatest_td": "03:02:16",
+   "delta_t_s": 71,
+   "type_code": "P",
+   "gamma": -1.3542,
+   "magnitude": 0.3365
+  },
+  {
+   "catalog_number": "9549",
+   "date": "2018-Aug-11",
+   "greatest_td": "09:47:28",
+   "delta_t_s": 71,
+   "type_code": "P",
+   "gamma": 1.1476,
+   "magnitude": 0.7368
+  },
+  {
+   "catalog_number": "9550",
+   "date": "2019-Jan-06",
+   "greatest_td": "01:42:38",
+   "delta_t_s": 71,
+   "type_code": "P",
+   "gamma": 1.1417,
+   "magnitude": 0.7145
+  },
+  {
+   "catalog_number": "9551",
+   "date": "2019-Jul-02",
+   "greatest_td": "19:24:07",
+   "delta_t_s": 71,
+   "type_code": "T",
+   "gamma": -0.6466,
+   "magnitude": 1.0459
+  },
+  {
+   "catalog_number": "9552",
+   "date": "2019-Dec-26",
+   "greatest_td": "05:18:53",
+   "delta_t_s": 72,
+   "type_code": "A",
+   "gamma": 0.4135,
+   "magnitude": 0.9701
+  },
+  {
+   "catalog_number": "9553",
+   "date": "2020-Jun-21",
+   "greatest_td": "06:41:15",
+   "delta_t_s": 72,
+   "type_code": "Am",
+   "gamma": 0.1209,
+   "magnitude": 0.994
+  },
+  {
+   "catalog_number": "9554",
+   "date": "2020-Dec-14",
+   "greatest_td": "16:14:39",
+   "delta_t_s": 72,
+   "type_code": "T",
+   "gamma": -0.2939,
+   "magnitude": 1.0254
+  },
+  {
+   "catalog_number": "9555",
+   "date": "2021-Jun-10",
+   "greatest_td": "10:43:07",
+   "delta_t_s": 72,
+   "type_code": "A",
+   "gamma": 0.9152,
+   "magnitude": 0.9435
+  },
+  {
+   "catalog_number": "9556",
+   "date": "2021-Dec-04",
+   "greatest_td": "07:34:38",
+   "delta_t_s": 73,
+   "type_code": "T",
+   "gamma": -0.9526,
+   "magnitude": 1.0367
+  },
+  {
+   "catalog_number": "9557",
+   "date": "2022-Apr-30",
+   "greatest_td": "20:42:36",
+   "delta_t_s": 73,
+   "type_code": "P",
+   "gamma": -1.1901,
+   "magnitude": 0.6396
+  },
+  {
+   "catalog_number": "9558",
+   "date": "2022-Oct-25",
+   "greatest_td": "11:01:20",
+   "delta_t_s": 73,
+   "type_code": "P",
+   "gamma": 1.0701,
+   "magnitude": 0.8619
+  },
+  {
+   "catalog_number": "9559",
+   "date": "2023-Apr-20",
+   "greatest_td": "04:17:56",
+   "delta_t_s": 73,
+   "type_code": "H",
+   "gamma": -0.3952,
+   "magnitude": 1.0132
+  },
+  {
+   "catalog_number": "9560",
+   "date": "2023-Oct-14",
+   "greatest_td": "18:00:41",
+   "delta_t_s": 74,
+   "type_code": "A",
+   "gamma": 0.3753,
+   "magnitude": 0.952
+  },
+  {
+   "catalog_number": "9561",
+   "date": "2024-Apr-08",
+   "greatest_td": "18:18:29",
+   "delta_t_s": 74,
+   "type_code": "T",
+   "gamma": 0.3431,
+   "magnitude": 1.0566
+  },
+  {
+   "catalog_number": "9562",
+   "date": "2024-Oct-02",
+   "greatest_td": "18:46:13",
+   "delta_t_s": 74,
+   "type_code": "A",
+   "gamma": -0.3509,
+   "magnitude": 0.9326
+  },
+  {
+   "catalog_number": "9563",
+   "date": "2025-Mar-29",
+   "greatest_td": "10:48:36",
+   "delta_t_s": 75,
+   "type_code": "P",
+   "gamma": 1.0405,
+   "magnitude": 0.9376
+  },
+  {
+   "catalog_number": "9564",
+   "date": "2025-Sep-21",
+   "greatest_td": "19:43:04",
+   "delta_t_s": 75,
+   "type_code": "P",
+   "gamma": -1.0651,
+   "magnitude": 0.855
+  },
+  {
+   "catalog_number": "9565",
+   "date": "2026-Feb-17",
+   "greatest_td": "12:13:06",
+   "delta_t_s": 75,
+   "type_code": "A",
+   "gamma": -0.9743,
+   "magnitude": 0.963
+  },
+  {
+   "catalog_number": "9566",
+   "date": "2026-Aug-12",
+   "greatest_td": "17:47:06",
+   "delta_t_s": 75,
+   "type_code": "T",
+   "gamma": 0.8977,
+   "magnitude": 1.0386
+  },
+  {
+   "catalog_number": "9567",
+   "date": "2027-Feb-06",
+   "greatest_td": "16:00:48",
+   "delta_t_s": 76,
+   "type_code": "A",
+   "gamma": -0.2952,
+   "magnitude": 0.9281
+  },
+  {
+   "catalog_number": "9568",
+   "date": "2027-Aug-02",
+   "greatest_td": "10:07:50",
+   "delta_t_s": 76,
+   "type_code": "T",
+   "gamma": 0.1421,
+   "magnitude": 1.079
+  },
+  {
+   "catalog_number": "9569",
+   "date": "2028-Jan-26",
+   "greatest_td": "15:08:59",
+   "delta_t_s": 76,
+   "type_code": "A",
+   "gamma": 0.3901,
+   "magnitude": 0.9208
+  },
+  {
+   "catalog_number": "9570",
+   "date": "2028-Jul-22",
+   "greatest_td": "02:56:40",
+   "delta_t_s": 77,
+   "type_code": "T",
+   "gamma": -0.6056,
+   "magnitude": 1.056
+  },
+  {
+   "catalog_number": "9571",
+   "date": "2029-Jan-14",
+   "greatest_td": "17:13:48",
+   "delta_t_s": 77,
+   "type_code": "P",
+   "gamma": 1.0553,
+   "magnitude": 0.8714
+  },
+  {
+   "catalog_number": "9572",
+   "date": "2029-Jun-12",
+   "greatest_td": "04:06:13",
+   "delta_t_s": 77,
+   "type_code": "P",
+   "gamma": 1.2943,
+   "magnitude": 0.4576
+  },
+  {
+   "catalog_number": "9573",
+   "date": "2029-Jul-11",
+   "greatest_td": "15:37:19",
+   "delta_t_s": 77,
+   "type_code": "P",
+   "gamma": -1.4191,
+   "magnitude": 0.2303
+  },
+  {
+   "catalog_number": "9574",
+   "date": "2029-Dec-05",
+   "greatest_td": "15:03:58",
+   "delta_t_s": 77,
+   "type_code": "P",
+   "gamma": -1.0609,
+   "magnitude": 0.8911
+  },
+  {
+   "catalog_number": "9575",
+   "date": "2030-Jun-01",
+   "greatest_td": "06:29:13",
+   "delta_t_s": 78,
+   "type_code": "A",
+   "gamma": 0.5626,
+   "magnitude": 0.9443
+  },
+  {
+   "catalog_number": "9576",
+   "date": "2030-Nov-25",
+   "greatest_td": "06:51:37",
+   "delta_t_s": 78,
+   "type_code": "T",
+   "gamma": -0.3867,
+   "magnitude": 1.0468
+  },
+  {
+   "catalog_number": "9577",
+   "date": "2031-May-21",
+   "greatest_td": "07:16:04",
+   "delta_t_s": 78,
+   "type_code": "A",
+   "gamma": -0.197,
+   "magnitude": 0.9589
+  },
+  {
+   "catalog_number": "9578",
+   "date": "2031-Nov-14",
+   "greatest_td": "21:07:31",
+   "delta_t_s": 79,
+   "type_code": "H",
+   "gamma": 0.3078,
+   "magnitude": 1.0106
+  },
+  {
+   "catalog_number": "9579",
+   "date": "2032-May-09",
+   "greatest_td": "13:26:42",
+   "delta_t_s": 79,
+   "type_code": "A",
+   "gamma": -0.9375,
+   "magnitude": 0.9957
+  },
+  {
+   "catalog_number": "9580",
+   "date": "2032-Nov-03",
+   "greatest_td": "05:34:13",
+   "delta_t_s": 79,
+   "type_code": "P",
+   "gamma": 1.0643,
+   "magnitude": 0.8554
+  },
+  {
+   "catalog_number": "9581",
+   "date": "2033-Mar-30",
+   "greatest_td": "18:02:36",
+   "delta_t_s": 80,
+   "type_code": "T",
+   "gamma": 0.9778,
+   "magnitude": 1.0462
+  },
+  {
+   "catalog_number": "9582",
+   "date": "2033-Sep-23",
+   "greatest_td": "13:54:31",
+   "delta_t_s": 80,
+   "type_code": "P",
+   "gamma": -1.1583,
+   "magnitude": 0.689
+  },
+  {
+   "catalog_number": "9583",
+   "date": "2034-Mar-20",
+   "greatest_td": "10:18:45",
+   "delta_t_s": 80,
+   "type_code": "T",
+   "gamma": 0.2894,
+   "magnitude": 1.0458
+  },
+  {
+   "catalog_number": "9584",
+   "date": "2034-Sep-12",
+   "greatest_td": "16:19:28",
+   "delta_t_s": 81,
+   "type_code": "A",
+   "gamma": -0.3936,
+   "magnitude": 0.9736
+  },
+  {
+   "catalog_number": "9585",
+   "date": "2035-Mar-09",
+   "greatest_td": "23:05:54",
+   "delta_t_s": 81,
+   "type_code": "A",
+   "gamma": -0.4368,
+   "magnitude": 0.9919
+  },
+  {
+   "catalog_number": "9586",
+   "date": "2035-Sep-02",
+   "greatest_td": "01:56:46",
+   "delta_t_s": 81,
+   "type_code": "T",
+   "gamma": 0.3727,
+   "magnitude": 1.032
+  },
+  {
+   "catalog_number": "9587",
+   "date": "2036-Feb-27",
+   "greatest_td": "04:46:49",
+   "delta_t_s": 82,
+   "type_code": "P",
+   "gamma": -1.1942,
+   "magnitude": 0.6286
+  },
+  {
+   "catalog_number": "9588",
+   "date": "2036-Jul-23",
+   "greatest_td": "10:32:06",
+   "delta_t_s": 82,
+   "type_code": "P",
+   "gamma": -1.425,
+   "magnitude": 0.1991
+  },
+  {
+   "catalog_number": "9589",
+   "date": "2036-Aug-21",
+   "greatest_td": "17:25:45",
+   "delta_t_s": 82,
+   "type_code": "P",
+   "gamma": 1.0825,
+   "magnitude": 0.8622
+  },
+  {
+   "catalog_number": "9590",
+   "date": "2037-Jan-16",
+   "greatest_td": "09:48:55",
+   "delta_t_s": 82,
+   "type_code": "P",
+   "gamma": 1.1477,
+   "magnitude": 0.7049
+  },
+  {
+   "catalog_number": "9591",
+   "date": "2037-Jul-13",
+   "greatest_td": "02:40:36",
+   "delta_t_s": 83,
+   "type_code": "T",
+   "gamma": -0.7246,
+   "magnitude": 1.0413
+  },
+  {
+   "catalog_number": "9592",
+   "date": "2038-Jan-05",
+   "greatest_td": "13:47:11",
+   "delta_t_s": 83,
+   "type_code": "A",
+   "gamma": 0.4169,
+   "magnitude": 0.9728
+  },
+  {
+   "catalog_number": "9593",
+   "date": "2038-Jul-02",
+   "greatest_td": "13:32:55",
+   "delta_t_s": 84,
+   "type_code": "A",
+   "gamma": 0.0398,
+   "magnitude": 0.9911
+  },
+  {
+   "catalog_number": "9594",
+   "date": "2038-Dec-26",
+   "greatest_td": "01:00:10",
+   "delta_t_s": 84,
+   "type_code": "T",
+   "gamma": -0.2881,
+   "magnitude": 1.0268
+  },
+  {
+   "catalog_number": "9595",
+   "date": "2039-Jun-21",
+   "greatest_td": "17:12:54",
+   "delta_t_s": 84,
+   "type_code": "A",
+   "gamma": 0.8312,
+   "magnitude": 0.9454
+  },
+  {
+   "catalog_number": "9596",
+   "date": "2039-Dec-15",
+   "greatest_td": "16:23:46",
+   "delta_t_s": 85,
+   "type_code": "T",
+   "gamma": -0.9458,
+   "magnitude": 1.0356
+  },
+  {
+   "catalog_number": "9597",
+   "date": "2040-May-11",
+   "greatest_td": "03:43:02",
+   "delta_t_s": 85,
+   "type_code": "P",
+   "gamma": -1.2529,
+   "magnitude": 0.5306
+  },
+  {
+   "catalog_number": "9598",
+   "date": "2040-Nov-04",
+   "greatest_td": "19:09:02",
+   "delta_t_s": 85,
+   "type_code": "P",
+   "gamma": 1.0993,
+   "magnitude": 0.8074
+  },
+  {
+   "catalog_number": "9599",
+   "date": "2041-Apr-30",
+   "greatest_td": "11:52:21",
+   "delta_t_s": 86,
+   "type_code": "T",
+   "gamma": -0.4492,
+   "magnitude": 1.0189
+  },
+  {
+   "catalog_number": "9600",
+   "date": "2041-Oct-25",
+   "greatest_td": "01:36:22",
+   "delta_t_s": 86,
+   "type_code": "A",
+   "gamma": 0.4133,
+   "magnitude": 0.9467
+  },
+  {
+   "catalog_number": "9601",
+   "date": "2042-Apr-20",
+   "greatest_td": "02:17:30",
+   "delta_t_s": 86,
+   "type_code": "T",
+   "gamma": 0.2956,
+   "magnitude": 1.0614
+  },
+  {
+   "catalog_number": "9602",
+   "date": "2042-Oct-14",
+   "greatest_td": "02:00:42",
+   "delta_t_s": 87,
+   "type_code": "A",
+   "gamma": -0.303,
+   "magnitude": 0.93
+  },
+  {
+   "catalog_number": "9603",
+   "date": "2043-Apr-09",
+   "greatest_td": "18:57:49",
+   "delta_t_s": 87,
+   "type_code": "T+",
+   "gamma": 1.0031,
+   "magnitude": 1.0095
+  },
+  {
+   "catalog_number": "9604",
+   "date": "2043-Oct-03",
+   "greatest_td": "03:01:49",
+   "delta_t_s": 88,
+   "type_code": "A-",
+   "gamma": -1.0102,
+   "magnitude": 0.9497
+  },
+  {
+   "catalog_number": "9605",
+   "date": "2044-Feb-28",
+   "greatest_td": "20:24:39",
+   "delta_t_s": 88,
+   "type_code": "As",
+   "gamma": -0.9954,
+   "magnitude": 0.96
+  },
+  {
+   "catalog_number": "9606",
+   "date": "2044-Aug-23",
+   "greatest_td": "01:17:02",
+   "delta_t_s": 88,
+   "type_code": "T",
+   "gamma": 0.9613,
+   "magnitude": 1.0364
+  },
+  {
+   "catalog_number": "9607",
+   "date": "2045-Feb-16",
+   "greatest_td": "23:56:07",
+   "delta_t_s": 89,
+   "type_code": "A",
+   "gamma": -0.3125,
+   "magnitude": 0.9285
+  },
+  {
+   "catalog_number": "9608",
+   "date": "2045-Aug-12",
+   "greatest_td": "17:42:39",
+   "delta_t_s": 89,
+   "type_code": "T",
+   "gamma": 0.2116,
+   "magnitude": 1.0774
+  },
+  {
+   "catalog_number": "9609",
+   "date": "2046-Feb-05",
+   "greatest_td": "23:06:26",
+   "delta_t_s": 90,
+   "type_code": "A",
+   "gamma": 0.3765,
+   "magnitude": 0.9232
+  },
+  {
+   "catalog_number": "9610",
+   "date": "2046-Aug-02",
+   "greatest_td": "10:21:13",
+   "delta_t_s": 90,
+   "type_code": "T",
+   "gamma": -0.535,
+   "magnitude": 1.0531
+  },
+  {
+   "catalog_number": "9611",
+   "date": "2047-Jan-26",
+   "greatest_td": "01:33:18",
+   "delta_t_s": 90,
+   "type_code": "P",
+   "gamma": 1.045,
+   "magnitude": 0.8907
+  },
+  {
+   "catalog_number": "9612",
+   "date": "2047-Jun-23",
+   "greatest_td": "10:52:31",
+   "delta_t_s": 91,
+   "type_code": "P",
+   "gamma": 1.3766,
+   "magnitude": 0.3129
+  },
+  {
+   "catalog_number": "9613",
+   "date": "2047-Jul-22",
+   "greatest_td": "22:36:17",
+   "delta_t_s": 91,
+   "type_code": "P",
+   "gamma": -1.3477,
+   "magnitude": 0.3604
+  },
+  {
+   "catalog_number": "9614",
+   "date": "2047-Dec-16",
+   "greatest_td": "23:50:12",
+   "delta_t_s": 91,
+   "type_code": "P",
+   "gamma": -1.0661,
+   "magnitude": 0.8816
+  },
+  {
+   "catalog_number": "9615",
+   "date": "2048-Jun-11",
+   "greatest_td": "12:58:53",
+   "delta_t_s": 92,
+   "type_code": "A",
+   "gamma": 0.6468,
+   "magnitude": 0.9441
+  },
+  {
+   "catalog_number": "9616",
+   "date": "2048-Dec-05",
+   "greatest_td": "15:35:27",
+   "delta_t_s": 92,
+   "type_code": "T",
+   "gamma": -0.3973,
+   "magnitude": 1.044
+  },
+  {
+   "catalog_number": "9617",
+   "date": "2049-May-31",
+   "greatest_td": "13:59:59",
+   "delta_t_s": 92,
+   "type_code": "A",
+   "gamma": -0.1187,
+   "magnitude": 0.9631
+  },
+  {
+   "catalog_number": "9618",
+   "date": "2049-Nov-25",
+   "greatest_td": "05:33:48",
+   "delta_t_s": 93,
+   "type_code": "H",
+   "gamma": 0.2943,
+   "magnitude": 1.0057
+  },
+  {
+   "catalog_number": "9619",
+   "date": "2050-May-20",
+   "greatest_td": "20:42:50",
+   "delta_t_s": 94,
+   "type_code": "H",
+   "gamma": -0.8688,
+   "magnitude": 1.0038
+  },
+  {
+   "catalog_number": "9620",
+   "date": "2050-Nov-14",
+   "greatest_td": "13:30:53",
+   "delta_t_s": 95,
+   "type_code": "P",
+   "gamma": 1.0447,
+   "magnitude": 0.8874
+  },
+  {
+   "catalog_number": "9621",
+   "date": "2051-Apr-11",
+   "greatest_td": "02:10:39",
+   "delta_t_s": 95,
+   "type_code": "P",
+   "gamma": 1.0169,
+   "magnitude": 0.9849
+  },
+  {
+   "catalog_number": "9622",
+   "date": "2051-Oct-04",
+   "greatest_td": "21:02:14",
+   "delta_t_s": 96,
+   "type_code": "P",
+   "gamma": -1.2094,
+   "magnitude": 0.6024
+  },
+  {
+   "catalog_number": "9623",
+   "date": "2052-Mar-30",
+   "greatest_td": "18:31:53",
+   "delta_t_s": 97,
+   "type_code": "T",
+   "gamma": 0.3238,
+   "magnitude": 1.0466
+  },
+  {
+   "catalog_number": "9624",
+   "date": "2052-Sep-22",
+   "greatest_td": "23:39:10",
+   "delta_t_s": 98,
+   "type_code": "A",
+   "gamma": -0.448,
+   "magnitude": 0.9734
+  },
+  {
+   "catalog_number": "9625",
+   "date": "2053-Mar-20",
+   "greatest_td": "07:08:19",
+   "delta_t_s": 99,
+   "type_code": "A",
+   "gamma": -0.4089,
+   "magnitude": 0.9919
+  },
+  {
+   "catalog_number": "9626",
+   "date": "2053-Sep-12",
+   "greatest_td": "09:34:09",
+   "delta_t_s": 100,
+   "type_code": "T",
+   "gamma": 0.314,
+   "magnitude": 1.0328
+  },
+  {
+   "catalog_number": "9627",
+   "date": "2054-Mar-09",
+   "greatest_td": "12:33:40",
+   "delta_t_s": 101,
+   "type_code": "P",
+   "gamma": -1.1711,
+   "magnitude": 0.6678
+  },
+  {
+   "catalog_number": "9628",
+   "date": "2054-Aug-03",
+   "greatest_td": "18:04:02",
+   "delta_t_s": 102,
+   "type_code": "Pe",
+   "gamma": -1.4941,
+   "magnitude": 0.0655
+  },
+  {
+   "catalog_number": "9629",
+   "date": "2054-Sep-02",
+   "greatest_td": "01:09:34",
+   "delta_t_s": 102,
+   "type_code": "P",
+   "gamma": 1.0215,
+   "magnitude": 0.9793
+  },
+  {
+   "catalog_number": "9630",
+   "date": "2055-Jan-27",
+   "greatest_td": "17:54:05",
+   "delta_t_s": 103,
+   "type_code": "P",
+   "gamma": 1.155,
+   "magnitude": 0.6932
+  },
+  {
+   "catalog_number": "9631",
+   "date": "2055-Jul-24",
+   "greatest_td": "09:57:50",
+   "delta_t_s": 104,
+   "type_code": "T",
+   "gamma": -0.8012,
+   "magnitude": 1.0359
+  },
+  {
+   "catalog_number": "9632",
+   "date": "2056-Jan-16",
+   "greatest_td": "22:16:45",
+   "delta_t_s": 105,
+   "type_code": "A",
+   "gamma": 0.4199,
+   "magnitude": 0.9759
+  },
+  {
+   "catalog_number": "9633",
+   "date": "2056-Jul-12",
+   "greatest_td": "20:21:59",
+   "delta_t_s": 106,
+   "type_code": "A",
+   "gamma": -0.0426,
+   "magnitude": 0.9878
+  },
+  {
+   "catalog_number": "9634",
+   "date": "2057-Jan-05",
+   "greatest_td": "09:47:52",
+   "delta_t_s": 107,
+   "type_code": "T",
+   "gamma": -0.2837,
+   "magnitude": 1.0287
+  },
+  {
+   "catalog_number": "9635",
+   "date": "2057-Jul-01",
+   "greatest_td": "23:40:15",
+   "delta_t_s": 108,
+   "type_code": "A",
+   "gamma": 0.7455,
+   "magnitude": 0.9464
+  },
+  {
+   "catalog_number": "9636",
+   "date": "2057-Dec-26",
+   "greatest_td": "01:14:35",
+   "delta_t_s": 109,
+   "type_code": "T",
+   "gamma": -0.9405,
+   "magnitude": 1.0348
+  },
+  {
+   "catalog_number": "9637",
+   "date": "2058-May-22",
+   "greatest_td": "10:39:25",
+   "delta_t_s": 110,
+   "type_code": "P",
+   "gamma": -1.3194,
+   "magnitude": 0.4141
+  },
+  {
+   "catalog_number": "9638",
+   "date": "2058-Jun-21",
+   "greatest_td": "00:19:35",
+   "delta_t_s": 110,
+   "type_code": "Pb",
+   "gamma": 1.4869,
+   "magnitude": 0.126
+  },
+  {
+   "catalog_number": "9639",
+   "date": "2058-Nov-16",
+   "greatest_td": "03:23:07",
+   "delta_t_s": 111,
+   "type_code": "P",
+   "gamma": 1.1224,
+   "magnitude": 0.7644
+  },
+  {
+   "catalog_number": "9640",
+   "date": "2059-May-11",
+   "greatest_td": "19:22:16",
+   "delta_t_s": 112,
+   "type_code": "T",
+   "gamma": -0.508,
+   "magnitude": 1.0242
+  },
+  {
+   "catalog_number": "9641",
+   "date": "2059-Nov-05",
+   "greatest_td": "09:18:15",
+   "delta_t_s": 113,
+   "type_code": "A",
+   "gamma": 0.4454,
+   "magnitude": 0.9417
+  },
+  {
+   "catalog_number": "9642",
+   "date": "2060-Apr-30",
+   "greatest_td": "10:10:00",
+   "delta_t_s": 114,
+   "type_code": "T",
+   "gamma": 0.2422,
+   "magnitude": 1.066
+  },
+  {
+   "catalog_number": "9643",
+   "date": "2060-Oct-24",
+   "greatest_td": "09:24:10",
+   "delta_t_s": 115,
+   "type_code": "A",
+   "gamma": -0.2625,
+   "magnitude": 0.9277
+  },
+  {
+   "catalog_number": "9644",
+   "date": "2061-Apr-20",
+   "greatest_td": "02:56:49",
+   "delta_t_s": 116,
+   "type_code": "T",
+   "gamma": 0.9578,
+   "magnitude": 1.0475
+  },
+  {
+   "catalog_number": "9645",
+   "date": "2061-Oct-13",
+   "greatest_td": "10:32:10",
+   "delta_t_s": 117,
+   "type_code": "A",
+   "gamma": -0.9639,
+   "magnitude": 0.9469
+  },
+  {
+   "catalog_number": "9646",
+   "date": "2062-Mar-11",
+   "greatest_td": "04:26:16",
+   "delta_t_s": 118,
+   "type_code": "P",
+   "gamma": -1.0238,
+   "magnitude": 0.9331
+  },
+  {
+   "catalog_number": "9647",
+   "date": "2062-Sep-03",
+   "greatest_td": "08:54:27",
+   "delta_t_s": 119,
+   "type_code": "P",
+   "gamma": 1.0191,
+   "magnitude": 0.9749
+  },
+  {
+   "catalog_number": "9648",
+   "date": "2063-Feb-28",
+   "greatest_td": "07:43:30",
+   "delta_t_s": 120,
+   "type_code": "A",
+   "gamma": -0.336,
+   "magnitude": 0.9293
+  },
+  {
+   "catalog_number": "9649",
+   "date": "2063-Aug-24",
+   "greatest_td": "01:22:11",
+   "delta_t_s": 121,
+   "type_code": "T",
+   "gamma": 0.2771,
+   "magnitude": 1.075
+  },
+  {
+   "catalog_number": "9650",
+   "date": "2064-Feb-17",
+   "greatest_td": "07:00:23",
+   "delta_t_s": 122,
+   "type_code": "A",
+   "gamma": 0.3597,
+   "magnitude": 0.9262
+  },
+  {
+   "catalog_number": "9651",
+   "date": "2064-Aug-12",
+   "greatest_td": "17:46:06",
+   "delta_t_s": 123,
+   "type_code": "T",
+   "gamma": -0.4652,
+   "magnitude": 1.0495
+  },
+  {
+   "catalog_number": "9652",
+   "date": "2065-Feb-05",
+   "greatest_td": "09:52:26",
+   "delta_t_s": 124,
+   "type_code": "P",
+   "gamma": 1.0336,
+   "magnitude": 0.9123
+  },
+  {
+   "catalog_number": "9653",
+   "date": "2065-Jul-03",
+   "greatest_td": "17:33:52",
+   "delta_t_s": 125,
+   "type_code": "P",
+   "gamma": 1.4619,
+   "magnitude": 0.1638
+  },
+  {
+   "catalog_number": "9654",
+   "date": "2065-Aug-02",
+   "greatest_td": "05:34:17",
+   "delta_t_s": 125,
+   "type_code": "P",
+   "gamma": -1.2759,
+   "magnitude": 0.4903
+  },
+  {
+   "catalog_number": "9655",
+   "date": "2065-Dec-27",
+   "greatest_td": "08:39:56",
+   "delta_t_s": 126,
+   "type_code": "P",
+   "gamma": -1.0688,
+   "magnitude": 0.8769
+  },
+  {
+   "catalog_number": "9656",
+   "date": "2066-Jun-22",
+   "greatest_td": "19:25:48",
+   "delta_t_s": 127,
+   "type_code": "A",
+   "gamma": 0.733,
+   "magnitude": 0.9435
+  },
+  {
+   "catalog_number": "9657",
+   "date": "2066-Dec-17",
+   "greatest_td": "00:23:40",
+   "delta_t_s": 128,
+   "type_code": "T",
+   "gamma": -0.4043,
+   "magnitude": 1.0416
+  },
+  {
+   "catalog_number": "9658",
+   "date": "2067-Jun-11",
+   "greatest_td": "20:42:26",
+   "delta_t_s": 129,
+   "type_code": "A",
+   "gamma": -0.0387,
+   "magnitude": 0.967
+  },
+  {
+   "catalog_number": "9659",
+   "date": "2067-Dec-06",
+   "greatest_td": "14:03:43",
+   "delta_t_s": 130,
+   "type_code": "H",
+   "gamma": 0.2845,
+   "magnitude": 1.0011
+  },
+  {
+   "catalog_number": "9660",
+   "date": "2068-May-31",
+   "greatest_td": "03:56:39",
+   "delta_t_s": 131,
+   "type_code": "T",
+   "gamma": -0.797,
+   "magnitude": 1.011
+  },
+  {
+   "catalog_number": "9661",
+   "date": "2068-Nov-24",
+   "greatest_td": "21:32:30",
+   "delta_t_s": 132,
+   "type_code": "P",
+   "gamma": 1.0299,
+   "magnitude": 0.9109
+  },
+  {
+   "catalog_number": "9662",
+   "date": "2069-Apr-21",
+   "greatest_td": "10:11:09",
+   "delta_t_s": 133,
+   "type_code": "P",
+   "gamma": 1.0624,
+   "magnitude": 0.8992
+  },
+  {
+   "catalog_number": "9663",
+   "date": "2069-May-20",
+   "greatest_td": "17:53:18",
+   "delta_t_s": 133,
+   "type_code": "Pb",
+   "gamma": -1.4852,
+   "magnitude": 0.0879
+  },
+  {
+   "catalog_number": "9664",
+   "date": "2069-Oct-15",
+   "greatest_td": "04:19:56",
+   "delta_t_s": 134,
+   "type_code": "P",
+   "gamma": -1.2524,
+   "magnitude": 0.5298
+  },
+  {
+   "catalog_number": "9665",
+   "date": "2070-Apr-11",
+   "greatest_td": "02:36:09",
+   "delta_t_s": 135,
+   "type_code": "T",
+   "gamma": 0.3652,
+   "magnitude": 1.0472
+  },
+  {
+   "catalog_number": "9666",
+   "date": "2070-Oct-04",
+   "greatest_td": "07:08:57",
+   "delta_t_s": 136,
+   "type_code": "A",
+   "gamma": -0.495,
+   "magnitude": 0.9731
+  },
+  {
+   "catalog_number": "9667",
+   "date": "2071-Mar-31",
+   "greatest_td": "15:01:06",
+   "delta_t_s": 138,
+   "type_code": "A",
+   "gamma": -0.3739,
+   "magnitude": 0.9919
+  },
+  {
+   "catalog_number": "9668",
+   "date": "2071-Sep-23",
+   "greatest_td": "17:20:28",
+   "delta_t_s": 139,
+   "type_code": "T",
+   "gamma": 0.262,
+   "magnitude": 1.0333
+  },
+  {
+   "catalog_number": "9669",
+   "date": "2072-Mar-19",
+   "greatest_td": "20:10:31",
+   "delta_t_s": 140,
+   "type_code": "P",
+   "gamma": -1.1405,
+   "magnitude": 0.7199
+  },
+  {
+   "catalog_number": "9670",
+   "date": "2072-Sep-12",
+   "greatest_td": "08:59:20",
+   "delta_t_s": 141,
+   "type_code": "T",
+   "gamma": 0.9655,
+   "magnitude": 1.0558
+  },
+  {
+   "catalog_number": "9671",
+   "date": "2073-Feb-07",
+   "greatest_td": "01:55:59",
+   "delta_t_s": 142,
+   "type_code": "P",
+   "gamma": 1.1651,
+   "magnitude": 0.6768
+  },
+  {
+   "catalog_number": "9672",
+   "date": "2073-Aug-03",
+   "greatest_td": "17:15:23",
+   "delta_t_s": 143,
+   "type_code": "T",
+   "gamma": -0.8763,
+   "magnitude": 1.0294
+  },
+  {
+   "catalog_number": "9673",
+   "date": "2074-Jan-27",
+   "greatest_td": "06:44:15",
+   "delta_t_s": 144,
+   "type_code": "A",
+   "gamma": 0.4251,
+   "magnitude": 0.9798
+  },
+  {
+   "catalog_number": "9674",
+   "date": "2074-Jul-24",
+   "greatest_td": "03:10:32",
+   "delta_t_s": 145,
+   "type_code": "A",
+   "gamma": -0.1242,
+   "magnitude": 0.9838
+  },
+  {
+   "catalog_number": "9675",
+   "date": "2075-Jan-16",
+   "greatest_td": "18:36:04",
+   "delta_t_s": 146,
+   "type_code": "T",
+   "gamma": -0.2799,
+   "magnitude": 1.0311
+  },
+  {
+   "catalog_number": "9676",
+   "date": "2075-Jul-13",
+   "greatest_td": "06:05:44",
+   "delta_t_s": 147,
+   "type_code": "A",
+   "gamma": 0.6583,
+   "magnitude": 0.9467
+  },
+  {
+   "catalog_number": "9677",
+   "date": "2076-Jan-06",
+   "greatest_td": "10:07:27",
+   "delta_t_s": 148,
+   "type_code": "T",
+   "gamma": -0.9373,
+   "magnitude": 1.0342
+  },
+  {
+   "catalog_number": "9678",
+   "date": "2076-Jun-01",
+   "greatest_td": "17:31:22",
+   "delta_t_s": 149,
+   "type_code": "P",
+   "gamma": -1.3897,
+   "magnitude": 0.2897
+  },
+  {
+   "catalog_number": "9679",
+   "date": "2076-Jul-01",
+   "greatest_td": "06:50:43",
+   "delta_t_s": 149,
+   "type_code": "P",
+   "gamma": 1.4005,
+   "magnitude": 0.2746
+  },
+  {
+   "catalog_number": "9680",
+   "date": "2076-Nov-26",
+   "greatest_td": "11:43:01",
+   "delta_t_s": 150,
+   "type_code": "P",
+   "gamma": 1.1401,
+   "magnitude": 0.7315
+  },
+  {
+   "catalog_number": "9681",
+   "date": "2077-May-22",
+   "greatest_td": "02:46:05",
+   "delta_t_s": 151,
+   "type_code": "T",
+   "gamma": -0.5725,
+   "magnitude": 1.029
+  },
+  {
+   "catalog_number": "9682",
+   "date": "2077-Nov-15",
+   "greatest_td": "17:07:56",
+   "delta_t_s": 152,
+   "type_code": "A",
+   "gamma": 0.4705,
+   "magnitude": 0.9371
+  },
+  {
+   "catalog_number": "9683",
+   "date": "2078-May-11",
+   "greatest_td": "17:56:55",
+   "delta_t_s": 153,
+   "type_code": "T",
+   "gamma": 0.1838,
+   "magnitude": 1.0701
+  },
+  {
+   "catalog_number": "9684",
+   "date": "2078-Nov-04",
+   "greatest_td": "16:55:44",
+   "delta_t_s": 154,
+   "type_code": "A",
+   "gamma": -0.2285,
+   "magnitude": 0.9255
+  },
+  {
+   "catalog_number": "9685",
+   "date": "2079-May-01",
+   "greatest_td": "10:50:13",
+   "delta_t_s": 155,
+   "type_code": "T",
+   "gamma": 0.9081,
+   "magnitude": 1.0512
+  },
+  {
+   "catalog_number": "9686",
+   "date": "2079-Oct-24",
+   "greatest_td": "18:11:21",
+   "delta_t_s": 156,
+   "type_code": "A",
+   "gamma": -0.9243,
+   "magnitude": 0.9484
+  },
+  {
+   "catalog_number": "9687",
+   "date": "2080-Mar-21",
+   "greatest_td": "12:20:15",
+   "delta_t_s": 157,
+   "type_code": "P",
+   "gamma": -1.0578,
+   "magnitude": 0.8734
+  },
+  {
+   "catalog_number": "9688",
+   "date": "2080-Sep-13",
+   "greatest_td": "16:38:09",
+   "delta_t_s": 158,
+   "type_code": "P",
+   "gamma": 1.0723,
+   "magnitude": 0.8743
+  },
+  {
+   "catalog_number": "9689",
+   "date": "2081-Mar-10",
+   "greatest_td": "15:23:31",
+   "delta_t_s": 159,
+   "type_code": "A",
+   "gamma": -0.3653,
+   "magnitude": 0.9304
+  },
+  {
+   "catalog_number": "9690",
+   "date": "2081-Sep-03",
+   "greatest_td": "09:07:31",
+   "delta_t_s": 160,
+   "type_code": "T",
+   "gamma": 0.3378,
+   "magnitude": 1.072
+  },
+  {
+   "catalog_number": "9691",
+   "date": "2082-Feb-27",
+   "greatest_td": "14:47:00",
+   "delta_t_s": 162,
+   "type_code": "A",
+   "gamma": 0.3361,
+   "magnitude": 0.9298
+  },
+  {
+   "catalog_number": "9692",
+   "date": "2082-Aug-24",
+   "greatest_td": "01:16:21",
+   "delta_t_s": 163,
+   "type_code": "T",
+   "gamma": -0.4004,
+   "magnitude": 1.0452
+  },
+  {
+   "catalog_number": "9693",
+   "date": "2083-Feb-16",
+   "greatest_td": "18:06:36",
+   "delta_t_s": 164,
+   "type_code": "P",
+   "gamma": 1.017,
+   "magnitude": 0.9433
+  },
+  {
+   "catalog_number": "9694",
+   "date": "2083-Jul-15",
+   "greatest_td": "00:14:23",
+   "delta_t_s": 165,
+   "type_code": "Pe",
+   "gamma": 1.5465,
+   "magnitude": 0.0168
+  },
+  {
+   "catalog_number": "9695",
+   "date": "2083-Aug-13",
+   "greatest_td": "12:34:41",
+   "delta_t_s": 165,
+   "type_code": "P",
+   "gamma": -1.2064,
+   "magnitude": 0.6146
+  },
+  {
+   "catalog_number": "9696",
+   "date": "2084-Jan-07",
+   "greatest_td": "17:30:24",
+   "delta_t_s": 166,
+   "type_code": "P",
+   "gamma": -1.0715,
+   "magnitude": 0.8723
+  },
+  {
+   "catalog_number": "9697",
+   "date": "2084-Jul-03",
+   "greatest_td": "01:50:26",
+   "delta_t_s": 167,
+   "type_code": "A",
+   "gamma": 0.8208,
+   "magnitude": 0.9421
+  },
+  {
+   "catalog_number": "9698",
+   "date": "2084-Dec-27",
+   "greatest_td": "09:13:48",
+   "delta_t_s": 168,
+   "type_code": "T",
+   "gamma": -0.4094,
+   "magnitude": 1.0396
+  },
+  {
+   "catalog_number": "9699",
+   "date": "2085-Jun-22",
+   "greatest_td": "03:21:16",
+   "delta_t_s": 169,
+   "type_code": "A",
+   "gamma": 0.0452,
+   "magnitude": 0.9704
+  },
+  {
+   "catalog_number": "9700",
+   "date": "2085-Dec-16",
+   "greatest_td": "22:37:48",
+   "delta_t_s": 170,
+   "type_code": "A",
+   "gamma": 0.2786,
+   "magnitude": 0.9971
+  },
+  {
+   "catalog_number": "9701",
+   "date": "2086-Jun-11",
+   "greatest_td": "11:07:14",
+   "delta_t_s": 171,
+   "type_code": "T",
+   "gamma": -0.7215,
+   "magnitude": 1.0174
+  },
+  {
+   "catalog_number": "9702",
+   "date": "2086-Dec-06",
+   "greatest_td": "05:38:55",
+   "delta_t_s": 172,
+   "type_code": "P",
+   "gamma": 1.0194,
+   "magnitude": 0.9271
+  },
+  {
+   "catalog_number": "9703",
+   "date": "2087-May-02",
+   "greatest_td": "18:04:42",
+   "delta_t_s": 173,
+   "type_code": "P",
+   "gamma": 1.1139,
+   "magnitude": 0.8011
+  },
+  {
+   "catalog_number": "9704",
+   "date": "2087-Jun-01",
+   "greatest_td": "01:27:14",
+   "delta_t_s": 173,
+   "type_code": "P",
+   "gamma": -1.4186,
+   "magnitude": 0.2146
+  },
+  {
+   "catalog_number": "9705",
+   "date": "2087-Oct-26",
+   "greatest_td": "11:46:57",
+   "delta_t_s": 174,
+   "type_code": "P",
+   "gamma": -1.2882,
+   "magnitude": 0.4696
+  },
+  {
+   "catalog_number": "9706",
+   "date": "2088-Apr-21",
+   "greatest_td": "10:31:49",
+   "delta_t_s": 175,
+   "type_code": "T",
+   "gamma": 0.4135,
+   "magnitude": 1.0474
+  },
+  {
+   "catalog_number": "9707",
+   "date": "2088-Oct-14",
+   "greatest_td": "14:48:05",
+   "delta_t_s": 177,
+   "type_code": "A",
+   "gamma": -0.5349,
+   "magnitude": 0.9727
+  },
+  {
+   "catalog_number": "9708",
+   "date": "2089-Apr-10",
+   "greatest_td": "22:44:42",
+   "delta_t_s": 178,
+   "type_code": "A",
+   "gamma": -0.3319,
+   "magnitude": 0.9919
+  },
+  {
+   "catalog_number": "9709",
+   "date": "2089-Oct-04",
+   "greatest_td": "01:15:23",
+   "delta_t_s": 179,
+   "type_code": "T",
+   "gamma": 0.2167,
+   "magnitude": 1.0333
+  },
+  {
+   "catalog_number": "9710",
+   "date": "2090-Mar-31",
+   "greatest_td": "03:38:08",
+   "delta_t_s": 180,
+   "type_code": "P",
+   "gamma": -1.1028,
+   "magnitude": 0.7843
+  },
+  {
+   "catalog_number": "9711",
+   "date": "2090-Sep-23",
+   "greatest_td": "16:56:36",
+   "delta_t_s": 181,
+   "type_code": "T",
+   "gamma": 0.9157,
+   "magnitude": 1.0562
+  },
+  {
+   "catalog_number": "9712",
+   "date": "2091-Feb-18",
+   "greatest_td": "09:54:40",
+   "delta_t_s": 182,
+   "type_code": "P",
+   "gamma": 1.1779,
+   "magnitude": 0.6558
+  },
+  {
+   "catalog_number": "9713",
+   "date": "2091-Aug-15",
+   "greatest_td": "00:34:43",
+   "delta_t_s": 183,
+   "type_code": "T",
+   "gamma": -0.949,
+   "magnitude": 1.0216
+  },
+  {
+   "catalog_number": "9714",
+   "date": "2092-Feb-07",
+   "greatest_td": "15:10:20",
+   "delta_t_s": 184,
+   "type_code": "A",
+   "gamma": 0.4322,
+   "magnitude": 0.984
+  },
+  {
+   "catalog_number": "9715",
+   "date": "2092-Aug-03",
+   "greatest_td": "09:59:33",
+   "delta_t_s": 185,
+   "type_code": "A",
+   "gamma": -0.2044,
+   "magnitude": 0.9794
+  },
+  {
+   "catalog_number": "9716",
+   "date": "2093-Jan-27",
+   "greatest_td": "03:22:16",
+   "delta_t_s": 186,
+   "type_code": "T",
+   "gamma": -0.2737,
+   "magnitude": 1.034
+  },
+  {
+   "catalog_number": "9717",
+   "date": "2093-Jul-23",
+   "greatest_td": "12:32:04",
+   "delta_t_s": 187,
+   "type_code": "A",
+   "gamma": 0.5717,
+   "magnitude": 0.9463
+  },
+  {
+   "catalog_number": "9718",
+   "date": "2094-Jan-16",
+   "greatest_td": "18:59:03",
+   "delta_t_s": 189,
+   "type_code": "T",
+   "gamma": -0.9333,
+   "magnitude": 1.0342
+  },
+  {
+   "catalog_number": "9719",
+   "date": "2094-Jun-13",
+   "greatest_td": "00:22:11",
+   "delta_t_s": 190,
+   "type_code": "P",
+   "gamma": -1.4613,
+   "magnitude": 0.1618
+  },
+  {
+   "catalog_number": "9720",
+   "date": "2094-Jul-12",
+   "greatest_td": "13:24:35",
+   "delta_t_s": 190,
+   "type_code": "P",
+   "gamma": 1.315,
+   "magnitude": 0.4224
+  },
+  {
+   "catalog_number": "9721",
+   "date": "2094-Dec-07",
+   "greatest_td": "20:05:56",
+   "delta_t_s": 191,
+   "type_code": "P",
+   "gamma": 1.1547,
+   "magnitude": 0.7046
+  },
+  {
+   "catalog_number": "9722",
+   "date": "2095-Jun-02",
+   "greatest_td": "10:07:40",
+   "delta_t_s": 192,
+   "type_code": "T",
+   "gamma": -0.6396,
+   "magnitude": 1.0332
+  },
+  {
+   "catalog_number": "9723",
+   "date": "2095-Nov-27",
+   "greatest_td": "01:02:57",
+   "delta_t_s": 193,
+   "type_code": "A",
+   "gamma": 0.4903,
+   "magnitude": 0.933
+  },
+  {
+   "catalog_number": "9724",
+   "date": "2096-May-22",
+   "greatest_td": "01:37:14",
+   "delta_t_s": 194,
+   "type_code": "T",
+   "gamma": 0.1196,
+   "magnitude": 1.0737
+  },
+  {
+   "catalog_number": "9725",
+   "date": "2096-Nov-15",
+   "greatest_td": "00:36:15",
+   "delta_t_s": 195,
+   "type_code": "A",
+   "gamma": -0.2018,
+   "magnitude": 0.9237
+  },
+  {
+   "catalog_number": "9726",
+   "date": "2097-May-11",
+   "greatest_td": "18:34:31",
+   "delta_t_s": 196,
+   "type_code": "T",
+   "gamma": 0.8516,
+   "magnitude": 1.0538
+  },
+  {
+   "catalog_number": "9727",
+   "date": "2097-Nov-04",
+   "greatest_td": "02:01:25",
+   "delta_t_s": 197,
+   "type_code": "A",
+   "gamma": -0.8926,
+   "magnitude": 0.9494
+  },
+  {
+   "catalog_number": "9728",
+   "date": "2098-Apr-01",
+   "greatest_td": "20:02:31",
+   "delta_t_s": 198,
+   "type_code": "P",
+   "gamma": -1.1005,
+   "magnitude": 0.7984
+  },
+  {
+   "catalog_number": "9729",
+   "date": "2098-Sep-25",
+   "greatest_td": "00:31:16",
+   "delta_t_s": 199,
+   "type_code": "P",
+   "gamma": 1.1184,
+   "magnitude": 0.7871
+  },
+  {
+   "catalog_number": "9730",
+   "date": "2098-Oct-24",
+   "greatest_td": "10:36:11",
+   "delta_t_s": 200,
+   "type_code": "Pb",
+   "gamma": -1.5407,
+   "magnitude": 0.0056
+  },
+  {
+   "catalog_number": "9731",
+   "date": "2099-Mar-21",
+   "greatest_td": "22:54:32",
+   "delta_t_s": 201,
+   "type_code": "A",
+   "gamma": -0.4016,
+   "magnitude": 0.9318
+  },
+  {
+   "catalog_number": "9732",
+   "date": "2099-Sep-14",
+   "greatest_td": "16:57:53",
+   "delta_t_s": 202,
+   "type_code": "T",
+   "gamma": 0.3942,
+   "magnitude": 1.0684
+  },
+  {
+   "catalog_number": "9733",
+   "date": "2100-Mar-10",
+   "greatest_td": "22:28:11",
+   "delta_t_s": 203,
+   "type_code": "A",
+   "gamma": 0.3077,
+   "magnitude": 0.9338
+  },
+  {
+   "catalog_number": "9734",
+   "date": "2100-Sep-04",
+   "greatest_td": "08:49:20",
+   "delta_t_s": 204,
+   "type_code": "T",
+   "gamma": -0.3384,
+   "magnitude": 1.0402
+  }
+ ],
+ "lunar": [
+  {
+   "catalog_number": "09422",
+   "date": "1901-May-03",
+   "greatest_td": "18:30:38",
+   "delta_t_s": -1,
+   "type_code": "Nx",
+   "gamma": -1.0101,
+   "penumbral_magnitude": 1.0431,
+   "umbral_magnitude": -0.0334
+  },
+  {
+   "catalog_number": "09423",
+   "date": "1901-Oct-27",
+   "greatest_td": "15:15:18",
+   "delta_t_s": 0,
+   "type_code": "P",
+   "gamma": 0.9021,
+   "penumbral_magnitude": 1.1841,
+   "umbral_magnitude": 0.2208
+  },
+  {
+   "catalog_number": "09424",
+   "date": "1902-Apr-22",
+   "greatest_td": "18:52:40",
+   "delta_t_s": 0,
+   "type_code": "T-",
+   "gamma": -0.268,
+   "penumbral_magnitude": 2.4002,
+   "umbral_magnitude": 1.3327
+  },
+  {
+   "catalog_number": "09425",
+   "date": "1902-Oct-17",
+   "greatest_td": "06:03:26",
+   "delta_t_s": 1,
+   "type_code": "T+",
+   "gamma": 0.2201,
+   "penumbral_magnitude": 2.4514,
+   "umbral_magnitude": 1.4566
+  },
+  {
+   "catalog_number": "09426",
+   "date": "1903-Apr-12",
+   "greatest_td": "00:12:59",
+   "delta_t_s": 2,
+   "type_code": "P",
+   "gamma": 0.4798,
+   "penumbral_magnitude": 1.9877,
+   "umbral_magnitude": 0.9677
+  },
+  {
+   "catalog_number": "09427",
+   "date": "1903-Oct-06",
+   "greatest_td": "15:17:33",
+   "delta_t_s": 2,
+   "type_code": "P",
+   "gamma": -0.528,
+   "penumbral_magnitude": 1.9133,
+   "umbral_magnitude": 0.8654
+  },
+  {
+   "catalog_number": "09428",
+   "date": "1904-Mar-02",
+   "greatest_td": "03:02:34",
+   "delta_t_s": 3,
+   "type_code": "N",
+   "gamma": -1.4528,
+   "penumbral_magnitude": 0.1748,
+   "umbral_magnitude": -0.791
+  },
+  {
+   "catalog_number": "09429",
+   "date": "1904-Mar-31",
+   "greatest_td": "12:32:28",
+   "delta_t_s": 3,
+   "type_code": "N",
+   "gamma": 1.1665,
+   "penumbral_magnitude": 0.7036,
+   "umbral_magnitude": -0.2688
+  },
+  {
+   "catalog_number": "09430",
+   "date": "1904-Sep-24",
+   "greatest_td": "17:34:44",
+   "delta_t_s": 3,
+   "type_code": "N",
+   "gamma": -1.2837,
+   "penumbral_magnitude": 0.544,
+   "umbral_magnitude": -0.5384
+  },
+  {
+   "catalog_number": "09431",
+   "date": "1905-Feb-19",
+   "greatest_td": "19:00:02",
+   "delta_t_s": 4,
+   "type_code": "P",
+   "gamma": -0.7984,
+   "penumbral_magnitude": 1.3809,
+   "umbral_magnitude": 0.4049
+  },
+  {
+   "catalog_number": "09432",
+   "date": "1905-Aug-15",
+   "greatest_td": "03:40:59",
+   "delta_t_s": 5,
+   "type_code": "P",
+   "gamma": 0.8456,
+   "penumbral_magnitude": 1.3259,
+   "umbral_magnitude": 0.2871
+  },
+  {
+   "catalog_number": "09433",
+   "date": "1906-Feb-09",
+   "greatest_td": "07:46:58",
+   "delta_t_s": 5,
+   "type_code": "T-",
+   "gamma": -0.1199,
+   "penumbral_magnitude": 2.6507,
+   "umbral_magnitude": 1.6254
+  },
+  {
+   "catalog_number": "09434",
+   "date": "1906-Aug-04",
+   "greatest_td": "13:00:10",
+   "delta_t_s": 6,
+   "type_code": "T+",
+   "gamma": 0.0477,
+   "penumbral_magnitude": 2.7615,
+   "umbral_magnitude": 1.7793
+  },
+  {
+   "catalog_number": "09435",
+   "date": "1907-Jan-29",
+   "greatest_td": "13:38:00",
+   "delta_t_s": 6,
+   "type_code": "P",
+   "gamma": 0.6027,
+   "penumbral_magnitude": 1.7936,
+   "umbral_magnitude": 0.711
+  },
+  {
+   "catalog_number": "09436",
+   "date": "1907-Jul-25",
+   "greatest_td": "04:22:27",
+   "delta_t_s": 7,
+   "type_code": "P",
+   "gamma": -0.6924,
+   "penumbral_magnitude": 1.5595,
+   "umbral_magnitude": 0.6149
+  },
+  {
+   "catalog_number": "09437",
+   "date": "1908-Jan-18",
+   "greatest_td": "13:21:36",
+   "delta_t_s": 8,
+   "type_code": "N",
+   "gamma": 1.2939,
+   "penumbral_magnitude": 0.537,
+   "umbral_magnitude": -0.5685
+  },
+  {
+   "catalog_number": "09438",
+   "date": "1908-Jun-14",
+   "greatest_td": "14:06:32",
+   "delta_t_s": 8,
+   "type_code": "N",
+   "gamma": 1.1053,
+   "penumbral_magnitude": 0.8135,
+   "umbral_magnitude": -0.1541
+  },
+  {
+   "catalog_number": "09439",
+   "date": "1908-Jul-13",
+   "greatest_td": "21:33:55",
+   "delta_t_s": 8,
+   "type_code": "N",
+   "gamma": -1.4185,
+   "penumbral_magnitude": 0.2292,
+   "umbral_magnitude": -0.7195
+  },
+  {
+   "catalog_number": "09440",
+   "date": "1908-Dec-07",
+   "greatest_td": "21:55:09",
+   "delta_t_s": 9,
+   "type_code": "Nx",
+   "gamma": -1.0059,
+   "penumbral_magnitude": 1.0344,
+   "umbral_magnitude": -0.0096
+  },
+  {
+   "catalog_number": "09441",
+   "date": "1909-Jun-04",
+   "greatest_td": "01:28:51",
+   "delta_t_s": 10,
+   "type_code": "T",
+   "gamma": 0.3755,
+   "penumbral_magnitude": 2.18,
+   "umbral_magnitude": 1.158
+  },
+  {
+   "catalog_number": "09442",
+   "date": "1909-Nov-27",
+   "greatest_td": "08:54:41",
+   "delta_t_s": 10,
+   "type_code": "T-",
+   "gamma": -0.2712,
+   "penumbral_magnitude": 2.3544,
+   "umbral_magnitude": 1.366
+  },
+  {
+   "catalog_number": "09443",
+   "date": "1910-May-24",
+   "greatest_td": "05:34:16",
+   "delta_t_s": 11,
+   "type_code": "T",
+   "gamma": -0.3975,
+   "penumbral_magnitude": 2.1625,
+   "umbral_magnitude": 1.095
+  },
+  {
+   "catalog_number": "09444",
+   "date": "1910-Nov-17",
+   "greatest_td": "00:20:52",
+   "delta_t_s": 12,
+   "type_code": "T",
+   "gamma": 0.4089,
+   "penumbral_magnitude": 2.0905,
+   "umbral_magnitude": 1.1246
+  },
+  {
+   "catalog_number": "09445",
+   "date": "1911-May-13",
+   "greatest_td": "05:56:24",
+   "delta_t_s": 12,
+   "type_code": "N",
+   "gamma": -1.1413,
+   "penumbral_magnitude": 0.7987,
+   "umbral_magnitude": -0.2706
+  },
+  {
+   "catalog_number": "09446",
+   "date": "1911-Nov-06",
+   "greatest_td": "15:36:45",
+   "delta_t_s": 13,
+   "type_code": "N",
+   "gamma": 1.11,
+   "penumbral_magnitude": 0.8154,
+   "umbral_magnitude": -0.1733
+  },
+  {
+   "catalog_number": "09447",
+   "date": "1912-Apr-01",
+   "greatest_td": "22:14:16",
+   "delta_t_s": 13,
+   "type_code": "P",
+   "gamma": 0.9116,
+   "penumbral_magnitude": 1.1884,
+   "umbral_magnitude": 0.182
+  },
+  {
+   "catalog_number": "09448",
+   "date": "1912-Sep-26",
+   "greatest_td": "11:44:50",
+   "delta_t_s": 14,
+   "type_code": "P",
+   "gamma": -0.932,
+   "penumbral_magnitude": 1.1779,
+   "umbral_magnitude": 0.1183
+  },
+  {
+   "catalog_number": "09449",
+   "date": "1913-Mar-22",
+   "greatest_td": "11:57:49",
+   "delta_t_s": 15,
+   "type_code": "T+",
+   "gamma": 0.1671,
+   "penumbral_magnitude": 2.534,
+   "umbral_magnitude": 1.5683
+  },
+  {
+   "catalog_number": "09450",
+   "date": "1913-Sep-15",
+   "greatest_td": "12:48:19",
+   "delta_t_s": 15,
+   "type_code": "T-",
+   "gamma": -0.2109,
+   "penumbral_magnitude": 2.5122,
+   "umbral_magnitude": 1.4304
+  },
+  {
+   "catalog_number": "09451",
+   "date": "1914-Mar-12",
+   "greatest_td": "04:13:08",
+   "delta_t_s": 16,
+   "type_code": "P",
+   "gamma": -0.5254,
+   "penumbral_magnitude": 1.8764,
+   "umbral_magnitude": 0.9111
+  },
+  {
+   "catalog_number": "09452",
+   "date": "1914-Sep-04",
+   "greatest_td": "13:54:57",
+   "delta_t_s": 17,
+   "type_code": "P",
+   "gamma": 0.5301,
+   "penumbral_magnitude": 1.9127,
+   "umbral_magnitude": 0.8585
+  },
+  {
+   "catalog_number": "09453",
+   "date": "1915-Jan-31",
+   "greatest_td": "04:57:42",
+   "delta_t_s": 17,
+   "type_code": "N",
+   "gamma": 1.545,
+   "penumbral_magnitude": 0.0451,
+   "umbral_magnitude": -0.9989
+  },
+  {
+   "catalog_number": "09454",
+   "date": "1915-Mar-01",
+   "greatest_td": "18:19:32",
+   "delta_t_s": 17,
+   "type_code": "N",
+   "gamma": -1.2573,
+   "penumbral_magnitude": 0.5548,
+   "umbral_magnitude": -0.4528
+  },
+  {
+   "catalog_number": "09455",
+   "date": "1915-Jul-26",
+   "greatest_td": "12:24:39",
+   "delta_t_s": 18,
+   "type_code": "N",
+   "gamma": -1.3553,
+   "penumbral_magnitude": 0.3545,
+   "umbral_magnitude": -0.6129
+  },
+  {
+   "catalog_number": "09456",
+   "date": "1915-Aug-24",
+   "greatest_td": "21:27:17",
+   "delta_t_s": 18,
+   "type_code": "N",
+   "gamma": 1.2435,
+   "penumbral_magnitude": 0.575,
+   "umbral_magnitude": -0.4226
+  },
+  {
+   "catalog_number": "09457",
+   "date": "1916-Jan-20",
+   "greatest_td": "08:39:41",
+   "delta_t_s": 18,
+   "type_code": "P",
+   "gamma": 0.9146,
+   "penumbral_magnitude": 1.2277,
+   "umbral_magnitude": 0.1327
+  },
+  {
+   "catalog_number": "09458",
+   "date": "1916-Jul-15",
+   "greatest_td": "04:46:07",
+   "delta_t_s": 19,
+   "type_code": "P",
+   "gamma": -0.5956,
+   "penumbral_magnitude": 1.7351,
+   "umbral_magnitude": 0.7944
+  },
+  {
+   "catalog_number": "09459",
+   "date": "1917-Jan-08",
+   "greatest_td": "07:44:48",
+   "delta_t_s": 19,
+   "type_code": "T+",
+   "gamma": 0.2415,
+   "penumbral_magnitude": 2.4663,
+   "umbral_magnitude": 1.3642
+  },
+  {
+   "catalog_number": "09460",
+   "date": "1917-Jul-04",
+   "greatest_td": "21:39:04",
+   "delta_t_s": 20,
+   "type_code": "T+",
+   "gamma": 0.1419,
+   "penumbral_magnitude": 2.5762,
+   "umbral_magnitude": 1.6185
+  },
+  {
+   "catalog_number": "09461",
+   "date": "1917-Dec-28",
+   "greatest_td": "09:46:32",
+   "delta_t_s": 20,
+   "type_code": "T",
+   "gamma": -0.4484,
+   "penumbral_magnitude": 2.0652,
+   "umbral_magnitude": 1.0056
+  },
+  {
+   "catalog_number": "09462",
+   "date": "1918-Jun-24",
+   "greatest_td": "10:28:03",
+   "delta_t_s": 20,
+   "type_code": "P",
+   "gamma": 0.9397,
+   "penumbral_magnitude": 1.1376,
+   "umbral_magnitude": 0.1297
+  },
+  {
+   "catalog_number": "09463",
+   "date": "1918-Dec-17",
+   "greatest_td": "19:06:01",
+   "delta_t_s": 21,
+   "type_code": "N",
+   "gamma": -1.1035,
+   "penumbral_magnitude": 0.834,
+   "umbral_magnitude": -0.1679
+  },
+  {
+   "catalog_number": "09464",
+   "date": "1919-May-15",
+   "greatest_td": "01:14:00",
+   "delta_t_s": 21,
+   "type_code": "N",
+   "gamma": -1.082,
+   "penumbral_magnitude": 0.9103,
+   "umbral_magnitude": -0.1644
+  },
+  {
+   "catalog_number": "09465",
+   "date": "1919-Nov-07",
+   "greatest_td": "23:44:28",
+   "delta_t_s": 21,
+   "type_code": "P",
+   "gamma": 0.9246,
+   "penumbral_magnitude": 1.1445,
+   "umbral_magnitude": 0.178
+  },
+  {
+   "catalog_number": "09466",
+   "date": "1920-May-03",
+   "greatest_td": "01:51:08",
+   "delta_t_s": 21,
+   "type_code": "T",
+   "gamma": -0.3312,
+   "penumbral_magnitude": 2.2818,
+   "umbral_magnitude": 1.2194
+  },
+  {
+   "catalog_number": "09467",
+   "date": "1920-Oct-27",
+   "greatest_td": "14:11:38",
+   "delta_t_s": 22,
+   "type_code": "T+",
+   "gamma": 0.2502,
+   "penumbral_magnitude": 2.3992,
+   "umbral_magnitude": 1.3987
+  },
+  {
+   "catalog_number": "09468",
+   "date": "1921-Apr-22",
+   "greatest_td": "07:44:39",
+   "delta_t_s": 22,
+   "type_code": "T",
+   "gamma": 0.4269,
+   "penumbral_magnitude": 2.0816,
+   "umbral_magnitude": 1.0678
+  },
+  {
+   "catalog_number": "09469",
+   "date": "1921-Oct-16",
+   "greatest_td": "22:53:59",
+   "delta_t_s": 22,
+   "type_code": "P",
+   "gamma": -0.4902,
+   "penumbral_magnitude": 1.9858,
+   "umbral_magnitude": 0.9317
+  },
+  {
+   "catalog_number": "09470",
+   "date": "1922-Mar-13",
+   "greatest_td": "11:28:48",
+   "delta_t_s": 23,
+   "type_code": "N",
+   "gamma": -1.4752,
+   "penumbral_magnitude": 0.132,
+   "umbral_magnitude": -0.8304
+  },
+  {
+   "catalog_number": "09471",
+   "date": "1922-Apr-11",
+   "greatest_td": "20:32:12",
+   "delta_t_s": 23,
+   "type_code": "N",
+   "gamma": 1.1228,
+   "penumbral_magnitude": 0.7812,
+   "umbral_magnitude": -0.1863
+  },
+  {
+   "catalog_number": "09472",
+   "date": "1922-Oct-06",
+   "greatest_td": "00:43:50",
+   "delta_t_s": 23,
+   "type_code": "N",
+   "gamma": -1.2348,
+   "penumbral_magnitude": 0.6358,
+   "umbral_magnitude": -0.4508
+  },
+  {
+   "catalog_number": "09473",
+   "date": "1923-Mar-03",
+   "greatest_td": "03:32:09",
+   "delta_t_s": 23,
+   "type_code": "P",
+   "gamma": -0.8175,
+   "penumbral_magnitude": 1.3453,
+   "umbral_magnitude": 0.3701
+  },
+  {
+   "catalog_number": "09474",
+   "date": "1923-Aug-26",
+   "greatest_td": "10:39:52",
+   "delta_t_s": 23,
+   "type_code": "P",
+   "gamma": 0.9133,
+   "penumbral_magnitude": 1.2013,
+   "umbral_magnitude": 0.1634
+  },
+  {
+   "catalog_number": "09475",
+   "date": "1924-Feb-20",
+   "greatest_td": "16:08:55",
+   "delta_t_s": 24,
+   "type_code": "T-",
+   "gamma": -0.1338,
+   "penumbral_magnitude": 2.6256,
+   "umbral_magnitude": 1.5995
+  },
+  {
+   "catalog_number": "09476",
+   "date": "1924-Aug-14",
+   "greatest_td": "20:20:30",
+   "delta_t_s": 24,
+   "type_code": "T+",
+   "gamma": 0.1175,
+   "penumbral_magnitude": 2.6326,
+   "umbral_magnitude": 1.6519
+  },
+  {
+   "catalog_number": "09477",
+   "date": "1925-Feb-08",
+   "greatest_td": "21:42:22",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.5921,
+   "penumbral_magnitude": 1.8134,
+   "umbral_magnitude": 0.7304
+  },
+  {
+   "catalog_number": "09478",
+   "date": "1925-Aug-04",
+   "greatest_td": "11:52:57",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -0.6208,
+   "penumbral_magnitude": 1.6909,
+   "umbral_magnitude": 0.7463
+  },
+  {
+   "catalog_number": "09479",
+   "date": "1926-Jan-28",
+   "greatest_td": "21:20:24",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": 1.2836,
+   "penumbral_magnitude": 0.5551,
+   "umbral_magnitude": -0.5488
+  },
+  {
+   "catalog_number": "09480",
+   "date": "1926-Jun-25",
+   "greatest_td": "21:25:07",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": 1.1814,
+   "penumbral_magnitude": 0.6749,
+   "umbral_magnitude": -0.2948
+  },
+  {
+   "catalog_number": "09481",
+   "date": "1926-Jul-25",
+   "greatest_td": "05:00:12",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.3511,
+   "penumbral_magnitude": 0.3542,
+   "umbral_magnitude": -0.597
+  },
+  {
+   "catalog_number": "09482",
+   "date": "1926-Dec-19",
+   "greatest_td": "06:20:07",
+   "delta_t_s": 24,
+   "type_code": "Nx",
+   "gamma": -1.0101,
+   "penumbral_magnitude": 1.0257,
+   "umbral_magnitude": -0.0163
+  },
+  {
+   "catalog_number": "09483",
+   "date": "1927-Jun-15",
+   "greatest_td": "08:24:41",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.4543,
+   "penumbral_magnitude": 2.0365,
+   "umbral_magnitude": 1.0123
+  },
+  {
+   "catalog_number": "09484",
+   "date": "1927-Dec-08",
+   "greatest_td": "17:35:10",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.2796,
+   "penumbral_magnitude": 2.3389,
+   "umbral_magnitude": 1.351
+  },
+  {
+   "catalog_number": "09485",
+   "date": "1928-Jun-03",
+   "greatest_td": "12:09:57",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.3175,
+   "penumbral_magnitude": 2.3092,
+   "umbral_magnitude": 1.2421
+  },
+  {
+   "catalog_number": "09486",
+   "date": "1928-Nov-27",
+   "greatest_td": "09:01:47",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.3952,
+   "penumbral_magnitude": 2.1166,
+   "umbral_magnitude": 1.1486
+  },
+  {
+   "catalog_number": "09487",
+   "date": "1929-May-23",
+   "greatest_td": "12:37:45",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.065,
+   "penumbral_magnitude": 0.9367,
+   "umbral_magnitude": -0.1287
+  },
+  {
+   "catalog_number": "09488",
+   "date": "1929-Nov-17",
+   "greatest_td": "00:03:13",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": 1.0947,
+   "penumbral_magnitude": 0.846,
+   "umbral_magnitude": -0.1474
+  },
+  {
+   "catalog_number": "09489",
+   "date": "1930-Apr-13",
+   "greatest_td": "05:58:54",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.9545,
+   "penumbral_magnitude": 1.1066,
+   "umbral_magnitude": 0.1064
+  },
+  {
+   "catalog_number": "09490",
+   "date": "1930-Oct-07",
+   "greatest_td": "19:07:10",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -0.9811,
+   "penumbral_magnitude": 1.0906,
+   "umbral_magnitude": 0.0252
+  },
+  {
+   "catalog_number": "09491",
+   "date": "1931-Apr-02",
+   "greatest_td": "20:07:55",
+   "delta_t_s": 24,
+   "type_code": "T+",
+   "gamma": 0.2043,
+   "penumbral_magnitude": 2.4637,
+   "umbral_magnitude": 1.5021
+  },
+  {
+   "catalog_number": "09492",
+   "date": "1931-Sep-26",
+   "greatest_td": "19:48:29",
+   "delta_t_s": 24,
+   "type_code": "T-",
+   "gamma": -0.2698,
+   "penumbral_magnitude": 2.4058,
+   "umbral_magnitude": 1.3208
+  },
+  {
+   "catalog_number": "09493",
+   "date": "1932-Mar-22",
+   "greatest_td": "12:32:39",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -0.4956,
+   "penumbral_magnitude": 1.9303,
+   "umbral_magnitude": 0.9666
+  },
+  {
+   "catalog_number": "09494",
+   "date": "1932-Sep-14",
+   "greatest_td": "21:01:00",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.4664,
+   "penumbral_magnitude": 2.0296,
+   "umbral_magnitude": 0.9752
+  },
+  {
+   "catalog_number": "09495",
+   "date": "1933-Feb-10",
+   "greatest_td": "13:17:33",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": 1.56,
+   "penumbral_magnitude": 0.0182,
+   "umbral_magnitude": -1.027
+  },
+  {
+   "catalog_number": "09496",
+   "date": "1933-Mar-12",
+   "greatest_td": "02:33:03",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.2369,
+   "penumbral_magnitude": 0.5923,
+   "umbral_magnitude": -0.4154
+  },
+  {
+   "catalog_number": "09497",
+   "date": "1933-Aug-05",
+   "greatest_td": "19:46:05",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.4216,
+   "penumbral_magnitude": 0.2322,
+   "umbral_magnitude": -0.7338
+  },
+  {
+   "catalog_number": "09498",
+   "date": "1933-Sep-04",
+   "greatest_td": "04:52:20",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": 1.1776,
+   "penumbral_magnitude": 0.6955,
+   "umbral_magnitude": -0.3013
+  },
+  {
+   "catalog_number": "09499",
+   "date": "1934-Jan-30",
+   "greatest_td": "16:42:42",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.9258,
+   "penumbral_magnitude": 1.2073,
+   "umbral_magnitude": 0.112
+  },
+  {
+   "catalog_number": "09500",
+   "date": "1934-Jul-26",
+   "greatest_td": "12:15:38",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -0.6681,
+   "penumbral_magnitude": 1.6025,
+   "umbral_magnitude": 0.6612
+  },
+  {
+   "catalog_number": "09501",
+   "date": "1935-Jan-19",
+   "greatest_td": "15:47:35",
+   "delta_t_s": 24,
+   "type_code": "T+",
+   "gamma": 0.2498,
+   "penumbral_magnitude": 2.4502,
+   "umbral_magnitude": 1.3499
+  },
+  {
+   "catalog_number": "09502",
+   "date": "1935-Jul-16",
+   "greatest_td": "05:00:05",
+   "delta_t_s": 24,
+   "type_code": "T+",
+   "gamma": 0.0672,
+   "penumbral_magnitude": 2.7146,
+   "umbral_magnitude": 1.7542
+  },
+  {
+   "catalog_number": "09503",
+   "date": "1936-Jan-08",
+   "greatest_td": "18:09:58",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.4428,
+   "penumbral_magnitude": 2.074,
+   "umbral_magnitude": 1.0173
+  },
+  {
+   "catalog_number": "09504",
+   "date": "1936-Jul-04",
+   "greatest_td": "17:25:23",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.8642,
+   "penumbral_magnitude": 1.2778,
+   "umbral_magnitude": 0.2668
+  },
+  {
+   "catalog_number": "09505",
+   "date": "1936-Dec-28",
+   "greatest_td": "03:49:09",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.097,
+   "penumbral_magnitude": 0.8451,
+   "umbral_magnitude": -0.155
+  },
+  {
+   "catalog_number": "09506",
+   "date": "1937-May-25",
+   "greatest_td": "07:51:34",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.1581,
+   "penumbral_magnitude": 0.7697,
+   "umbral_magnitude": -0.3033
+  },
+  {
+   "catalog_number": "09507",
+   "date": "1937-Nov-18",
+   "greatest_td": "08:19:26",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": 0.9421,
+   "penumbral_magnitude": 1.1141,
+   "umbral_magnitude": 0.1443
+  },
+  {
+   "catalog_number": "09508",
+   "date": "1938-May-14",
+   "greatest_td": "08:44:00",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": -0.3994,
+   "penumbral_magnitude": 2.154,
+   "umbral_magnitude": 1.0966
+  },
+  {
+   "catalog_number": "09509",
+   "date": "1938-Nov-07",
+   "greatest_td": "22:26:42",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.2738,
+   "penumbral_magnitude": 2.3585,
+   "umbral_magnitude": 1.3525
+  },
+  {
+   "catalog_number": "09510",
+   "date": "1939-May-03",
+   "greatest_td": "15:11:43",
+   "delta_t_s": 24,
+   "type_code": "T",
+   "gamma": 0.3693,
+   "penumbral_magnitude": 2.1842,
+   "umbral_magnitude": 1.1765
+  },
+  {
+   "catalog_number": "09511",
+   "date": "1939-Oct-28",
+   "greatest_td": "06:36:43",
+   "delta_t_s": 24,
+   "type_code": "P",
+   "gamma": -0.4581,
+   "penumbral_magnitude": 2.0477,
+   "umbral_magnitude": 0.9877
+  },
+  {
+   "catalog_number": "09512",
+   "date": "1940-Mar-23",
+   "greatest_td": "19:48:19",
+   "delta_t_s": 24,
+   "type_code": "N",
+   "gamma": -1.5033,
+   "penumbral_magnitude": 0.0788,
+   "umbral_magnitude": -0.8803
+  },
+  {
+   "catalog_number": "09513",
+   "date": "1940-Apr-22",
+   "greatest_td": "04:26:25",
+   "delta_t_s": 25,
+   "type_code": "N",
+   "gamma": 1.0741,
+   "penumbral_magnitude": 0.8683,
+   "umbral_magnitude": -0.0945
+  },
+  {
+   "catalog_number": "09514",
+   "date": "1940-Oct-16",
+   "greatest_td": "08:01:17",
+   "delta_t_s": 25,
+   "type_code": "N",
+   "gamma": -1.1924,
+   "penumbral_magnitude": 0.7156,
+   "umbral_magnitude": -0.3749
+  },
+  {
+   "catalog_number": "09515",
+   "date": "1941-Mar-13",
+   "greatest_td": "11:55:47",
+   "delta_t_s": 25,
+   "type_code": "P",
+   "gamma": -0.8436,
+   "penumbral_magnitude": 1.297,
+   "umbral_magnitude": 0.3226
+  },
+  {
+   "catalog_number": "09516",
+   "date": "1941-Sep-05",
+   "greatest_td": "17:47:15",
+   "delta_t_s": 25,
+   "type_code": "P",
+   "gamma": 0.9746,
+   "penumbral_magnitude": 1.0884,
+   "umbral_magnitude": 0.0511
+  },
+  {
+   "catalog_number": "09517",
+   "date": "1942-Mar-03",
+   "greatest_td": "00:21:54",
+   "delta_t_s": 25,
+   "type_code": "T-",
+   "gamma": -0.1545,
+   "penumbral_magnitude": 2.5879,
+   "umbral_magnitude": 1.5612
+  },
+  {
+   "catalog_number": "09518",
+   "date": "1942-Aug-26",
+   "greatest_td": "03:48:25",
+   "delta_t_s": 26,
+   "type_code": "T+",
+   "gamma": 0.1818,
+   "penumbral_magnitude": 2.5142,
+   "umbral_magnitude": 1.5344
+  },
+  {
+   "catalog_number": "09519",
+   "date": "1943-Feb-20",
+   "greatest_td": "05:38:23",
+   "delta_t_s": 26,
+   "type_code": "P",
+   "gamma": 0.5751,
+   "penumbral_magnitude": 1.8444,
+   "umbral_magnitude": 0.7616
+  },
+  {
+   "catalog_number": "09520",
+   "date": "1943-Aug-15",
+   "greatest_td": "19:28:46",
+   "delta_t_s": 26,
+   "type_code": "P",
+   "gamma": -0.5533,
+   "penumbral_magnitude": 1.8152,
+   "umbral_magnitude": 0.8697
+  },
+  {
+   "catalog_number": "09521",
+   "date": "1944-Feb-09",
+   "greatest_td": "05:14:57",
+   "delta_t_s": 26,
+   "type_code": "N",
+   "gamma": 1.2698,
+   "penumbral_magnitude": 0.5792,
+   "umbral_magnitude": -0.5223
+  },
+  {
+   "catalog_number": "09522",
+   "date": "1944-Jul-06",
+   "greatest_td": "04:40:01",
+   "delta_t_s": 27,
+   "type_code": "N",
+   "gamma": 1.2596,
+   "penumbral_magnitude": 0.5328,
+   "umbral_magnitude": -0.4398
+  },
+  {
+   "catalog_number": "09523",
+   "date": "1944-Aug-04",
+   "greatest_td": "12:26:51",
+   "delta_t_s": 27,
+   "type_code": "N",
+   "gamma": -1.2842,
+   "penumbral_magnitude": 0.4785,
+   "umbral_magnitude": -0.4758
+  },
+  {
+   "catalog_number": "09524",
+   "date": "1944-Dec-29",
+   "greatest_td": "14:49:35",
+   "delta_t_s": 27,
+   "type_code": "Nx",
+   "gamma": -1.0114,
+   "penumbral_magnitude": 1.022,
+   "umbral_magnitude": -0.0176
+  },
+  {
+   "catalog_number": "09525",
+   "date": "1945-Jun-25",
+   "greatest_td": "15:14:22",
+   "delta_t_s": 27,
+   "type_code": "P",
+   "gamma": 0.537,
+   "penumbral_magnitude": 1.8862,
+   "umbral_magnitude": 0.8593
+  },
+  {
+   "catalog_number": "09526",
+   "date": "1945-Dec-19",
+   "greatest_td": "02:20:47",
+   "delta_t_s": 27,
+   "type_code": "T",
+   "gamma": -0.2845,
+   "penumbral_magnitude": 2.3293,
+   "umbral_magnitude": 1.3424
+  },
+  {
+   "catalog_number": "09527",
+   "date": "1946-Jun-14",
+   "greatest_td": "18:39:17",
+   "delta_t_s": 28,
+   "type_code": "T-",
+   "gamma": -0.2324,
+   "penumbral_magnitude": 2.4654,
+   "umbral_magnitude": 1.3983
+  },
+  {
+   "catalog_number": "09528",
+   "date": "1946-Dec-08",
+   "greatest_td": "17:48:28",
+   "delta_t_s": 28,
+   "type_code": "T",
+   "gamma": 0.3864,
+   "penumbral_magnitude": 2.1337,
+   "umbral_magnitude": 1.1639
+  },
+  {
+   "catalog_number": "09529",
+   "date": "1947-Jun-03",
+   "greatest_td": "19:15:44",
+   "delta_t_s": 28,
+   "type_code": "P",
+   "gamma": -0.9849,
+   "penumbral_magnitude": 1.0818,
+   "umbral_magnitude": 0.0202
+  },
+  {
+   "catalog_number": "09530",
+   "date": "1947-Nov-28",
+   "greatest_td": "08:34:29",
+   "delta_t_s": 28,
+   "type_code": "N",
+   "gamma": 1.0838,
+   "penumbral_magnitude": 0.8683,
+   "umbral_magnitude": -0.1297
+  },
+  {
+   "catalog_number": "09531",
+   "date": "1948-Apr-23",
+   "greatest_td": "13:39:18",
+   "delta_t_s": 28,
+   "type_code": "P",
+   "gamma": 1.0016,
+   "penumbral_magnitude": 1.0171,
+   "umbral_magnitude": 0.0229
+  },
+  {
+   "catalog_number": "09532",
+   "date": "1948-Oct-18",
+   "greatest_td": "02:35:41",
+   "delta_t_s": 29,
+   "type_code": "Nx",
+   "gamma": -1.0245,
+   "penumbral_magnitude": 1.014,
+   "umbral_magnitude": -0.0572
+  },
+  {
+   "catalog_number": "09533",
+   "date": "1949-Apr-13",
+   "greatest_td": "04:11:25",
+   "delta_t_s": 29,
+   "type_code": "T+",
+   "gamma": 0.2474,
+   "penumbral_magnitude": 2.3825,
+   "umbral_magnitude": 1.4251
+  },
+  {
+   "catalog_number": "09534",
+   "date": "1949-Oct-07",
+   "greatest_td": "02:56:55",
+   "delta_t_s": 29,
+   "type_code": "T",
+   "gamma": -0.3219,
+   "penumbral_magnitude": 2.3118,
+   "umbral_magnitude": 1.2236
+  },
+  {
+   "catalog_number": "09535",
+   "date": "1950-Apr-02",
+   "greatest_td": "20:44:34",
+   "delta_t_s": 29,
+   "type_code": "T",
+   "gamma": -0.4598,
+   "penumbral_magnitude": 1.9951,
+   "umbral_magnitude": 1.0329
+  },
+  {
+   "catalog_number": "09536",
+   "date": "1950-Sep-26",
+   "greatest_td": "04:17:11",
+   "delta_t_s": 29,
+   "type_code": "T",
+   "gamma": 0.4101,
+   "penumbral_magnitude": 2.1331,
+   "umbral_magnitude": 1.0783
+  },
+  {
+   "catalog_number": "09537",
+   "date": "1951-Mar-23",
+   "greatest_td": "10:37:33",
+   "delta_t_s": 30,
+   "type_code": "N",
+   "gamma": -1.2099,
+   "penumbral_magnitude": 0.6418,
+   "umbral_magnitude": -0.3661
+  },
+  {
+   "catalog_number": "09538",
+   "date": "1951-Aug-17",
+   "greatest_td": "03:14:39",
+   "delta_t_s": 30,
+   "type_code": "N",
+   "gamma": -1.4828,
+   "penumbral_magnitude": 0.1195,
+   "umbral_magnitude": -0.8456
+  },
+  {
+   "catalog_number": "09539",
+   "date": "1951-Sep-15",
+   "greatest_td": "12:27:06",
+   "delta_t_s": 30,
+   "type_code": "N",
+   "gamma": 1.1186,
+   "penumbral_magnitude": 0.8034,
+   "umbral_magnitude": -0.1928
+  },
+  {
+   "catalog_number": "09540",
+   "date": "1952-Feb-11",
+   "greatest_td": "00:39:48",
+   "delta_t_s": 30,
+   "type_code": "P",
+   "gamma": 0.9416,
+   "penumbral_magnitude": 1.1781,
+   "umbral_magnitude": 0.0832
+  },
+  {
+   "catalog_number": "09541",
+   "date": "1952-Aug-05",
+   "greatest_td": "19:47:55",
+   "delta_t_s": 30,
+   "type_code": "P",
+   "gamma": -0.7383,
+   "penumbral_magnitude": 1.4741,
+   "umbral_magnitude": 0.5317
+  },
+  {
+   "catalog_number": "09542",
+   "date": "1953-Jan-29",
+   "greatest_td": "23:47:49",
+   "delta_t_s": 30,
+   "type_code": "T+",
+   "gamma": 0.2606,
+   "penumbral_magnitude": 2.4291,
+   "umbral_magnitude": 1.3314
+  },
+  {
+   "catalog_number": "09543",
+   "date": "1953-Jul-26",
+   "greatest_td": "12:21:10",
+   "delta_t_s": 30,
+   "type_code": "T-",
+   "gamma": -0.0071,
+   "penumbral_magnitude": 2.8265,
+   "umbral_magnitude": 1.8628
+  },
+  {
+   "catalog_number": "09544",
+   "date": "1954-Jan-19",
+   "greatest_td": "02:32:21",
+   "delta_t_s": 31,
+   "type_code": "T",
+   "gamma": -0.4357,
+   "penumbral_magnitude": 2.0853,
+   "umbral_magnitude": 1.0322
+  },
+  {
+   "catalog_number": "09545",
+   "date": "1954-Jul-16",
+   "greatest_td": "00:20:51",
+   "delta_t_s": 31,
+   "type_code": "P",
+   "gamma": 0.7876,
+   "penumbral_magnitude": 1.4202,
+   "umbral_magnitude": 0.4054
+  },
+  {
+   "catalog_number": "09546",
+   "date": "1955-Jan-08",
+   "greatest_td": "12:33:20",
+   "delta_t_s": 31,
+   "type_code": "N",
+   "gamma": -1.0906,
+   "penumbral_magnitude": 0.8555,
+   "umbral_magnitude": -0.1421
+  },
+  {
+   "catalog_number": "09547",
+   "date": "1955-Jun-05",
+   "greatest_td": "14:23:23",
+   "delta_t_s": 31,
+   "type_code": "N",
+   "gamma": -1.2383,
+   "penumbral_magnitude": 0.6218,
+   "umbral_magnitude": -0.4498
+  },
+  {
+   "catalog_number": "09548",
+   "date": "1955-Nov-29",
+   "greatest_td": "17:00:00",
+   "delta_t_s": 31,
+   "type_code": "P",
+   "gamma": 0.9551,
+   "penumbral_magnitude": 1.0917,
+   "umbral_magnitude": 0.119
+  },
+  {
+   "catalog_number": "09549",
+   "date": "1956-May-24",
+   "greatest_td": "15:31:52",
+   "delta_t_s": 32,
+   "type_code": "P",
+   "gamma": -0.4726,
+   "penumbral_magnitude": 2.0174,
+   "umbral_magnitude": 0.9647
+  },
+  {
+   "catalog_number": "09550",
+   "date": "1956-Nov-18",
+   "greatest_td": "06:48:16",
+   "delta_t_s": 32,
+   "type_code": "T",
+   "gamma": 0.2917,
+   "penumbral_magnitude": 2.3285,
+   "umbral_magnitude": 1.3172
+  },
+  {
+   "catalog_number": "09551",
+   "date": "1957-May-13",
+   "greatest_td": "22:31:28",
+   "delta_t_s": 32,
+   "type_code": "T",
+   "gamma": 0.3045,
+   "penumbral_magnitude": 2.3001,
+   "umbral_magnitude": 1.2982
+  },
+  {
+   "catalog_number": "09552",
+   "date": "1957-Nov-07",
+   "greatest_td": "14:27:30",
+   "delta_t_s": 32,
+   "type_code": "T",
+   "gamma": -0.4332,
+   "penumbral_magnitude": 2.0963,
+   "umbral_magnitude": 1.0305
+  },
+  {
+   "catalog_number": "09553",
+   "date": "1958-Apr-04",
+   "greatest_td": "04:00:15",
+   "delta_t_s": 32,
+   "type_code": "Ne",
+   "gamma": -1.538,
+   "penumbral_magnitude": 0.0135,
+   "umbral_magnitude": -0.9422
+  },
+  {
+   "catalog_number": "09554",
+   "date": "1958-May-03",
+   "greatest_td": "12:13:29",
+   "delta_t_s": 32,
+   "type_code": "P",
+   "gamma": 1.0188,
+   "penumbral_magnitude": 0.9676,
+   "umbral_magnitude": 0.0092
+  },
+  {
+   "catalog_number": "09555",
+   "date": "1958-Oct-27",
+   "greatest_td": "15:27:50",
+   "delta_t_s": 33,
+   "type_code": "N",
+   "gamma": -1.157,
+   "penumbral_magnitude": 0.7825,
+   "umbral_magnitude": -0.3118
+  },
+  {
+   "catalog_number": "09556",
+   "date": "1959-Mar-24",
+   "greatest_td": "20:11:57",
+   "delta_t_s": 33,
+   "type_code": "P",
+   "gamma": -0.8757,
+   "penumbral_magnitude": 1.2379,
+   "umbral_magnitude": 0.2643
+  },
+  {
+   "catalog_number": "09557",
+   "date": "1959-Sep-17",
+   "greatest_td": "01:03:37",
+   "delta_t_s": 33,
+   "type_code": "N",
+   "gamma": 1.0296,
+   "penumbral_magnitude": 0.9874,
+   "umbral_magnitude": -0.0496
+  },
+  {
+   "catalog_number": "09558",
+   "date": "1960-Mar-13",
+   "greatest_td": "08:28:21",
+   "delta_t_s": 33,
+   "type_code": "T-",
+   "gamma": -0.1799,
+   "penumbral_magnitude": 2.5415,
+   "umbral_magnitude": 1.5145
+  },
+  {
+   "catalog_number": "09559",
+   "date": "1960-Sep-05",
+   "greatest_td": "11:21:51",
+   "delta_t_s": 33,
+   "type_code": "T+",
+   "gamma": 0.2422,
+   "penumbral_magnitude": 2.4031,
+   "umbral_magnitude": 1.4239
+  },
+  {
+   "catalog_number": "09560",
+   "date": "1961-Mar-02",
+   "greatest_td": "13:28:40",
+   "delta_t_s": 34,
+   "type_code": "P",
+   "gamma": 0.554,
+   "penumbral_magnitude": 1.8828,
+   "umbral_magnitude": 0.8006
+  },
+  {
+   "catalog_number": "09561",
+   "date": "1961-Aug-26",
+   "greatest_td": "03:08:51",
+   "delta_t_s": 34,
+   "type_code": "P",
+   "gamma": -0.4894,
+   "penumbral_magnitude": 1.933,
+   "umbral_magnitude": 0.9863
+  },
+  {
+   "catalog_number": "09562",
+   "date": "1962-Feb-19",
+   "greatest_td": "13:03:42",
+   "delta_t_s": 34,
+   "type_code": "N",
+   "gamma": 1.2511,
+   "penumbral_magnitude": 0.612,
+   "umbral_magnitude": -0.4865
+  },
+  {
+   "catalog_number": "09563",
+   "date": "1962-Jul-17",
+   "greatest_td": "11:54:49",
+   "delta_t_s": 34,
+   "type_code": "N",
+   "gamma": 1.337,
+   "penumbral_magnitude": 0.3924,
+   "umbral_magnitude": -0.5835
+  },
+  {
+   "catalog_number": "09564",
+   "date": "1962-Aug-15",
+   "greatest_td": "19:57:30",
+   "delta_t_s": 34,
+   "type_code": "N",
+   "gamma": -1.221,
+   "penumbral_magnitude": 0.5963,
+   "umbral_magnitude": -0.3616
+  },
+  {
+   "catalog_number": "09565",
+   "date": "1963-Jan-09",
+   "greatest_td": "23:19:42",
+   "delta_t_s": 35,
+   "type_code": "Nx",
+   "gamma": -1.0128,
+   "penumbral_magnitude": 1.018,
+   "umbral_magnitude": -0.0185
+  },
+  {
+   "catalog_number": "09566",
+   "date": "1963-Jul-06",
+   "greatest_td": "22:02:59",
+   "delta_t_s": 35,
+   "type_code": "P",
+   "gamma": 0.6197,
+   "penumbral_magnitude": 1.736,
+   "umbral_magnitude": 0.706
+  },
+  {
+   "catalog_number": "09567",
+   "date": "1963-Dec-30",
+   "greatest_td": "11:07:25",
+   "delta_t_s": 35,
+   "type_code": "T",
+   "gamma": -0.2889,
+   "penumbral_magnitude": 2.3206,
+   "umbral_magnitude": 1.335
+  },
+  {
+   "catalog_number": "09568",
+   "date": "1964-Jun-25",
+   "greatest_td": "01:06:50",
+   "delta_t_s": 35,
+   "type_code": "T-",
+   "gamma": -0.1461,
+   "penumbral_magnitude": 2.6238,
+   "umbral_magnitude": 1.5565
+  },
+  {
+   "catalog_number": "09569",
+   "date": "1964-Dec-19",
+   "greatest_td": "02:37:54",
+   "delta_t_s": 36,
+   "type_code": "T",
+   "gamma": 0.3801,
+   "penumbral_magnitude": 2.1461,
+   "umbral_magnitude": 1.1748
+  },
+  {
+   "catalog_number": "09570",
+   "date": "1965-Jun-14",
+   "greatest_td": "01:49:26",
+   "delta_t_s": 36,
+   "type_code": "P",
+   "gamma": -0.9005,
+   "penumbral_magnitude": 1.2351,
+   "umbral_magnitude": 0.1767
+  },
+  {
+   "catalog_number": "09571",
+   "date": "1965-Dec-08",
+   "greatest_td": "17:10:32",
+   "delta_t_s": 36,
+   "type_code": "N",
+   "gamma": 1.0774,
+   "penumbral_magnitude": 0.882,
+   "umbral_magnitude": -0.1201
+  },
+  {
+   "catalog_number": "09572",
+   "date": "1966-May-04",
+   "greatest_td": "21:12:06",
+   "delta_t_s": 37,
+   "type_code": "N",
+   "gamma": 1.0553,
+   "penumbral_magnitude": 0.9157,
+   "umbral_magnitude": -0.0728
+  },
+  {
+   "catalog_number": "09573",
+   "date": "1966-Oct-29",
+   "greatest_td": "10:12:53",
+   "delta_t_s": 37,
+   "type_code": "N",
+   "gamma": -1.0599,
+   "penumbral_magnitude": 0.9517,
+   "umbral_magnitude": -0.1249
+  },
+  {
+   "catalog_number": "09574",
+   "date": "1967-Apr-24",
+   "greatest_td": "12:07:04",
+   "delta_t_s": 38,
+   "type_code": "T",
+   "gamma": 0.2972,
+   "penumbral_magnitude": 2.2892,
+   "umbral_magnitude": 1.3356
+  },
+  {
+   "catalog_number": "09575",
+   "date": "1967-Oct-18",
+   "greatest_td": "10:15:48",
+   "delta_t_s": 38,
+   "type_code": "T",
+   "gamma": -0.3653,
+   "penumbral_magnitude": 2.2337,
+   "umbral_magnitude": 1.1426
+  },
+  {
+   "catalog_number": "09576",
+   "date": "1968-Apr-13",
+   "greatest_td": "04:48:01",
+   "delta_t_s": 39,
+   "type_code": "T",
+   "gamma": -0.4173,
+   "penumbral_magnitude": 2.0725,
+   "umbral_magnitude": 1.1116
+  },
+  {
+   "catalog_number": "09577",
+   "date": "1968-Oct-06",
+   "greatest_td": "11:42:35",
+   "delta_t_s": 39,
+   "type_code": "T",
+   "gamma": 0.3605,
+   "penumbral_magnitude": 2.2242,
+   "umbral_magnitude": 1.1691
+  },
+  {
+   "catalog_number": "09578",
+   "date": "1969-Apr-02",
+   "greatest_td": "18:33:06",
+   "delta_t_s": 39,
+   "type_code": "N",
+   "gamma": -1.1764,
+   "penumbral_magnitude": 0.7033,
+   "umbral_magnitude": -0.3047
+  },
+  {
+   "catalog_number": "09579",
+   "date": "1969-Aug-27",
+   "greatest_td": "10:48:15",
+   "delta_t_s": 40,
+   "type_code": "Ne",
+   "gamma": -1.5407,
+   "penumbral_magnitude": 0.0131,
+   "umbral_magnitude": -0.9516
+  },
+  {
+   "catalog_number": "09580",
+   "date": "1969-Sep-25",
+   "greatest_td": "20:10:19",
+   "delta_t_s": 40,
+   "type_code": "N",
+   "gamma": 1.0655,
+   "penumbral_magnitude": 0.9007,
+   "umbral_magnitude": -0.0953
+  },
+  {
+   "catalog_number": "09581",
+   "date": "1970-Feb-21",
+   "greatest_td": "08:30:43",
+   "delta_t_s": 40,
+   "type_code": "P",
+   "gamma": 0.9619,
+   "penumbral_magnitude": 1.1402,
+   "umbral_magnitude": 0.0463
+  },
+  {
+   "catalog_number": "09582",
+   "date": "1970-Aug-17",
+   "greatest_td": "03:24:06",
+   "delta_t_s": 41,
+   "type_code": "P",
+   "gamma": -0.8053,
+   "penumbral_magnitude": 1.3521,
+   "umbral_magnitude": 0.4079
+  },
+  {
+   "catalog_number": "09583",
+   "date": "1971-Feb-10",
+   "greatest_td": "07:45:21",
+   "delta_t_s": 41,
+   "type_code": "T",
+   "gamma": 0.2741,
+   "penumbral_magnitude": 2.4026,
+   "umbral_magnitude": 1.3082
+  },
+  {
+   "catalog_number": "09584",
+   "date": "1971-Aug-06",
+   "greatest_td": "19:43:52",
+   "delta_t_s": 42,
+   "type_code": "T-",
+   "gamma": -0.0794,
+   "penumbral_magnitude": 2.6958,
+   "umbral_magnitude": 1.7283
+  },
+  {
+   "catalog_number": "09585",
+   "date": "1972-Jan-30",
+   "greatest_td": "10:54:05",
+   "delta_t_s": 42,
+   "type_code": "T",
+   "gamma": -0.4273,
+   "penumbral_magnitude": 2.0987,
+   "umbral_magnitude": 1.0497
+  },
+  {
+   "catalog_number": "09586",
+   "date": "1972-Jul-26",
+   "greatest_td": "07:16:22",
+   "delta_t_s": 43,
+   "type_code": "P",
+   "gamma": 0.7116,
+   "penumbral_magnitude": 1.5618,
+   "umbral_magnitude": 0.5427
+  },
+  {
+   "catalog_number": "09587",
+   "date": "1973-Jan-18",
+   "greatest_td": "21:17:58",
+   "delta_t_s": 43,
+   "type_code": "N",
+   "gamma": -1.0844,
+   "penumbral_magnitude": 0.8655,
+   "umbral_magnitude": -0.1293
+  },
+  {
+   "catalog_number": "09588",
+   "date": "1973-Jun-15",
+   "greatest_td": "20:50:41",
+   "delta_t_s": 44,
+   "type_code": "N",
+   "gamma": -1.3216,
+   "penumbral_magnitude": 0.4685,
+   "umbral_magnitude": -0.602
+  },
+  {
+   "catalog_number": "09589",
+   "date": "1973-Jul-15",
+   "greatest_td": "11:39:19",
+   "delta_t_s": 44,
+   "type_code": "Nb",
+   "gamma": 1.5177,
+   "penumbral_magnitude": 0.1046,
+   "umbral_magnitude": -0.9581
+  },
+  {
+   "catalog_number": "09590",
+   "date": "1973-Dec-10",
+   "greatest_td": "01:45:06",
+   "delta_t_s": 44,
+   "type_code": "P",
+   "gamma": 0.9644,
+   "penumbral_magnitude": 1.076,
+   "umbral_magnitude": 0.1007
+  },
+  {
+   "catalog_number": "09591",
+   "date": "1974-Jun-04",
+   "greatest_td": "22:16:44",
+   "delta_t_s": 45,
+   "type_code": "P",
+   "gamma": -0.5488,
+   "penumbral_magnitude": 1.8752,
+   "umbral_magnitude": 0.8269
+  },
+  {
+   "catalog_number": "09592",
+   "date": "1974-Nov-29",
+   "greatest_td": "15:14:07",
+   "delta_t_s": 45,
+   "type_code": "T",
+   "gamma": 0.3054,
+   "penumbral_magnitude": 2.3057,
+   "umbral_magnitude": 1.2896
+  },
+  {
+   "catalog_number": "09593",
+   "date": "1975-May-25",
+   "greatest_td": "05:48:47",
+   "delta_t_s": 46,
+   "type_code": "T+",
+   "gamma": 0.2367,
+   "penumbral_magnitude": 2.4218,
+   "umbral_magnitude": 1.4253
+  },
+  {
+   "catalog_number": "09594",
+   "date": "1975-Nov-18",
+   "greatest_td": "22:24:12",
+   "delta_t_s": 46,
+   "type_code": "T",
+   "gamma": -0.4134,
+   "penumbral_magnitude": 2.1352,
+   "umbral_magnitude": 1.0642
+  },
+  {
+   "catalog_number": "09595",
+   "date": "1976-May-13",
+   "greatest_td": "19:55:08",
+   "delta_t_s": 47,
+   "type_code": "P",
+   "gamma": 0.9585,
+   "penumbral_magnitude": 1.0761,
+   "umbral_magnitude": 0.1217
+  },
+  {
+   "catalog_number": "09596",
+   "date": "1976-Nov-06",
+   "greatest_td": "23:01:59",
+   "delta_t_s": 47,
+   "type_code": "N",
+   "gamma": -1.1275,
+   "penumbral_magnitude": 0.8383,
+   "umbral_magnitude": -0.2594
+  },
+  {
+   "catalog_number": "09597",
+   "date": "1977-Apr-04",
+   "greatest_td": "04:19:04",
+   "delta_t_s": 48,
+   "type_code": "P",
+   "gamma": -0.9148,
+   "penumbral_magnitude": 1.1657,
+   "umbral_magnitude": 0.1928
+  },
+  {
+   "catalog_number": "09598",
+   "date": "1977-Sep-27",
+   "greatest_td": "08:30:08",
+   "delta_t_s": 48,
+   "type_code": "N",
+   "gamma": 1.0768,
+   "penumbral_magnitude": 0.9007,
+   "umbral_magnitude": -0.1361
+  },
+  {
+   "catalog_number": "09599",
+   "date": "1978-Mar-24",
+   "greatest_td": "16:23:11",
+   "delta_t_s": 49,
+   "type_code": "T-",
+   "gamma": -0.214,
+   "penumbral_magnitude": 2.479,
+   "umbral_magnitude": 1.4518
+  },
+  {
+   "catalog_number": "09600",
+   "date": "1978-Sep-16",
+   "greatest_td": "19:05:01",
+   "delta_t_s": 49,
+   "type_code": "T",
+   "gamma": 0.2951,
+   "penumbral_magnitude": 2.306,
+   "umbral_magnitude": 1.3268
+  },
+  {
+   "catalog_number": "09601",
+   "date": "1979-Mar-13",
+   "greatest_td": "21:08:52",
+   "delta_t_s": 50,
+   "type_code": "P",
+   "gamma": 0.5253,
+   "penumbral_magnitude": 1.935,
+   "umbral_magnitude": 0.8538
+  },
+  {
+   "catalog_number": "09602",
+   "date": "1979-Sep-06",
+   "greatest_td": "10:55:02",
+   "delta_t_s": 50,
+   "type_code": "T",
+   "gamma": -0.4305,
+   "penumbral_magnitude": 2.0421,
+   "umbral_magnitude": 1.0936
+  },
+  {
+   "catalog_number": "09603",
+   "date": "1980-Mar-01",
+   "greatest_td": "20:46:03",
+   "delta_t_s": 51,
+   "type_code": "N",
+   "gamma": 1.2269,
+   "penumbral_magnitude": 0.6545,
+   "umbral_magnitude": -0.4405
+  },
+  {
+   "catalog_number": "09604",
+   "date": "1980-Jul-27",
+   "greatest_td": "19:08:59",
+   "delta_t_s": 51,
+   "type_code": "N",
+   "gamma": 1.4138,
+   "penumbral_magnitude": 0.2535,
+   "umbral_magnitude": -0.7264
+  },
+  {
+   "catalog_number": "09605",
+   "date": "1980-Aug-26",
+   "greatest_td": "03:31:20",
+   "delta_t_s": 51,
+   "type_code": "N",
+   "gamma": -1.1608,
+   "penumbral_magnitude": 0.7089,
+   "umbral_magnitude": -0.2531
+  },
+  {
+   "catalog_number": "09606",
+   "date": "1981-Jan-20",
+   "greatest_td": "07:50:48",
+   "delta_t_s": 51,
+   "type_code": "Nx",
+   "gamma": -1.0141,
+   "penumbral_magnitude": 1.0136,
+   "umbral_magnitude": -0.0192
+  },
+  {
+   "catalog_number": "09607",
+   "date": "1981-Jul-17",
+   "greatest_td": "04:47:40",
+   "delta_t_s": 52,
+   "type_code": "P",
+   "gamma": 0.7045,
+   "penumbral_magnitude": 1.5822,
+   "umbral_magnitude": 0.5486
+  },
+  {
+   "catalog_number": "09608",
+   "date": "1982-Jan-09",
+   "greatest_td": "19:56:44",
+   "delta_t_s": 52,
+   "type_code": "T",
+   "gamma": -0.2916,
+   "penumbral_magnitude": 2.3147,
+   "umbral_magnitude": 1.331
+  },
+  {
+   "catalog_number": "09609",
+   "date": "1982-Jul-06",
+   "greatest_td": "07:31:47",
+   "delta_t_s": 53,
+   "type_code": "T-",
+   "gamma": -0.0579,
+   "penumbral_magnitude": 2.786,
+   "umbral_magnitude": 1.7179
+  },
+  {
+   "catalog_number": "09610",
+   "date": "1982-Dec-30",
+   "greatest_td": "11:29:37",
+   "delta_t_s": 53,
+   "type_code": "T",
+   "gamma": 0.3758,
+   "penumbral_magnitude": 2.1545,
+   "umbral_magnitude": 1.1822
+  },
+  {
+   "catalog_number": "09611",
+   "date": "1983-Jun-25",
+   "greatest_td": "08:23:11",
+   "delta_t_s": 53,
+   "type_code": "P",
+   "gamma": -0.8151,
+   "penumbral_magnitude": 1.3901,
+   "umbral_magnitude": 0.3348
+  },
+  {
+   "catalog_number": "09612",
+   "date": "1983-Dec-20",
+   "greatest_td": "01:49:57",
+   "delta_t_s": 54,
+   "type_code": "N",
+   "gamma": 1.0746,
+   "penumbral_magnitude": 0.889,
+   "umbral_magnitude": -0.1167
+  },
+  {
+   "catalog_number": "09613",
+   "date": "1984-May-15",
+   "greatest_td": "04:41:03",
+   "delta_t_s": 54,
+   "type_code": "N",
+   "gamma": 1.113,
+   "penumbral_magnitude": 0.8071,
+   "umbral_magnitude": -0.176
+  },
+  {
+   "catalog_number": "09614",
+   "date": "1984-Jun-13",
+   "greatest_td": "14:26:39",
+   "delta_t_s": 54,
+   "type_code": "Nb",
+   "gamma": -1.5239,
+   "penumbral_magnitude": 0.0647,
+   "umbral_magnitude": -0.9414
+  },
+  {
+   "catalog_number": "09615",
+   "date": "1984-Nov-08",
+   "greatest_td": "17:56:08",
+   "delta_t_s": 54,
+   "type_code": "N",
+   "gamma": -1.0899,
+   "penumbral_magnitude": 0.8992,
+   "umbral_magnitude": -0.1825
+  },
+  {
+   "catalog_number": "09616",
+   "date": "1985-May-04",
+   "greatest_td": "19:57:19",
+   "delta_t_s": 55,
+   "type_code": "T",
+   "gamma": 0.3519,
+   "penumbral_magnitude": 2.187,
+   "umbral_magnitude": 1.2369
+  },
+  {
+   "catalog_number": "09617",
+   "date": "1985-Oct-28",
+   "greatest_td": "17:43:17",
+   "delta_t_s": 55,
+   "type_code": "T",
+   "gamma": -0.4022,
+   "penumbral_magnitude": 2.1673,
+   "umbral_magnitude": 1.0736
+  },
+  {
+   "catalog_number": "09618",
+   "date": "1986-Apr-24",
+   "greatest_td": "12:43:30",
+   "delta_t_s": 55,
+   "type_code": "T",
+   "gamma": -0.3682,
+   "penumbral_magnitude": 2.162,
+   "umbral_magnitude": 1.2022
+  },
+  {
+   "catalog_number": "09619",
+   "date": "1986-Oct-17",
+   "greatest_td": "19:18:54",
+   "delta_t_s": 55,
+   "type_code": "T",
+   "gamma": 0.3188,
+   "penumbral_magnitude": 2.3008,
+   "umbral_magnitude": 1.2455
+  },
+  {
+   "catalog_number": "09620",
+   "date": "1987-Apr-14",
+   "greatest_td": "02:19:50",
+   "delta_t_s": 55,
+   "type_code": "N",
+   "gamma": -1.1364,
+   "penumbral_magnitude": 0.7769,
+   "umbral_magnitude": -0.2313
+  },
+  {
+   "catalog_number": "09621",
+   "date": "1987-Oct-07",
+   "greatest_td": "04:02:30",
+   "delta_t_s": 56,
+   "type_code": "N",
+   "gamma": 1.0189,
+   "penumbral_magnitude": 0.9863,
+   "umbral_magnitude": -0.0096
+  },
+  {
+   "catalog_number": "09622",
+   "date": "1988-Mar-03",
+   "greatest_td": "16:13:41",
+   "delta_t_s": 56,
+   "type_code": "Nx",
+   "gamma": 0.9885,
+   "penumbral_magnitude": 1.0907,
+   "umbral_magnitude": -0.0017
+  },
+  {
+   "catalog_number": "09623",
+   "date": "1988-Aug-27",
+   "greatest_td": "11:05:29",
+   "delta_t_s": 56,
+   "type_code": "P",
+   "gamma": -0.8681,
+   "penumbral_magnitude": 1.238,
+   "umbral_magnitude": 0.2915
+  },
+  {
+   "catalog_number": "09624",
+   "date": "1989-Feb-20",
+   "greatest_td": "15:36:18",
+   "delta_t_s": 56,
+   "type_code": "T",
+   "gamma": 0.2934,
+   "penumbral_magnitude": 2.3651,
+   "umbral_magnitude": 1.2747
+  },
+  {
+   "catalog_number": "09625",
+   "date": "1989-Aug-17",
+   "greatest_td": "03:09:07",
+   "delta_t_s": 57,
+   "type_code": "T-",
+   "gamma": -0.149,
+   "penumbral_magnitude": 2.5703,
+   "umbral_magnitude": 1.5984
+  },
+  {
+   "catalog_number": "09626",
+   "date": "1990-Feb-09",
+   "greatest_td": "19:12:02",
+   "delta_t_s": 57,
+   "type_code": "T",
+   "gamma": -0.4148,
+   "penumbral_magnitude": 2.1191,
+   "umbral_magnitude": 1.075
+  },
+  {
+   "catalog_number": "09627",
+   "date": "1990-Aug-06",
+   "greatest_td": "14:13:16",
+   "delta_t_s": 57,
+   "type_code": "P",
+   "gamma": 0.6374,
+   "penumbral_magnitude": 1.7005,
+   "umbral_magnitude": 0.6766
+  },
+  {
+   "catalog_number": "09628",
+   "date": "1991-Jan-30",
+   "greatest_td": "05:59:38",
+   "delta_t_s": 58,
+   "type_code": "N",
+   "gamma": -1.0752,
+   "penumbral_magnitude": 0.8807,
+   "umbral_magnitude": -0.1106
+  },
+  {
+   "catalog_number": "09629",
+   "date": "1991-Jun-27",
+   "greatest_td": "03:15:41",
+   "delta_t_s": 58,
+   "type_code": "N",
+   "gamma": -1.4063,
+   "penumbral_magnitude": 0.3126,
+   "umbral_magnitude": -0.7572
+  },
+  {
+   "catalog_number": "09630",
+   "date": "1991-Jul-26",
+   "greatest_td": "18:08:50",
+   "delta_t_s": 58,
+   "type_code": "N",
+   "gamma": 1.4369,
+   "penumbral_magnitude": 0.2542,
+   "umbral_magnitude": -0.811
+  },
+  {
+   "catalog_number": "09631",
+   "date": "1991-Dec-21",
+   "greatest_td": "10:34:00",
+   "delta_t_s": 58,
+   "type_code": "P",
+   "gamma": 0.9709,
+   "penumbral_magnitude": 1.0651,
+   "umbral_magnitude": 0.0876
+  },
+  {
+   "catalog_number": "09632",
+   "date": "1992-Jun-15",
+   "greatest_td": "04:57:57",
+   "delta_t_s": 59,
+   "type_code": "P",
+   "gamma": -0.6288,
+   "penumbral_magnitude": 1.7264,
+   "umbral_magnitude": 0.6822
+  },
+  {
+   "catalog_number": "09633",
+   "date": "1992-Dec-09",
+   "greatest_td": "23:45:05",
+   "delta_t_s": 59,
+   "type_code": "T",
+   "gamma": 0.3144,
+   "penumbral_magnitude": 2.2915,
+   "umbral_magnitude": 1.2709
+  },
+  {
+   "catalog_number": "09634",
+   "date": "1993-Jun-04",
+   "greatest_td": "13:01:26",
+   "delta_t_s": 59,
+   "type_code": "T+",
+   "gamma": 0.1638,
+   "penumbral_magnitude": 2.5532,
+   "umbral_magnitude": 1.5617
+  },
+  {
+   "catalog_number": "09635",
+   "date": "1993-Nov-29",
+   "greatest_td": "06:27:06",
+   "delta_t_s": 60,
+   "type_code": "T",
+   "gamma": -0.3994,
+   "penumbral_magnitude": 2.1633,
+   "umbral_magnitude": 1.0876
+  },
+  {
+   "catalog_number": "09636",
+   "date": "1994-May-25",
+   "greatest_td": "03:31:20",
+   "delta_t_s": 60,
+   "type_code": "P",
+   "gamma": 0.8933,
+   "penumbral_magnitude": 1.1941,
+   "umbral_magnitude": 0.2432
+  },
+  {
+   "catalog_number": "09637",
+   "date": "1994-Nov-18",
+   "greatest_td": "06:44:54",
+   "delta_t_s": 61,
+   "type_code": "N",
+   "gamma": -1.1047,
+   "penumbral_magnitude": 0.8815,
+   "umbral_magnitude": -0.2189
+  },
+  {
+   "catalog_number": "09638",
+   "date": "1995-Apr-15",
+   "greatest_td": "12:19:04",
+   "delta_t_s": 61,
+   "type_code": "P",
+   "gamma": -0.9593,
+   "penumbral_magnitude": 1.0836,
+   "umbral_magnitude": 0.1114
+  },
+  {
+   "catalog_number": "09639",
+   "date": "1995-Oct-08",
+   "greatest_td": "16:05:12",
+   "delta_t_s": 61,
+   "type_code": "N",
+   "gamma": 1.1179,
+   "penumbral_magnitude": 0.8252,
+   "umbral_magnitude": -0.2115
+  },
+  {
+   "catalog_number": "09640",
+   "date": "1996-Apr-04",
+   "greatest_td": "00:10:47",
+   "delta_t_s": 62,
+   "type_code": "T-",
+   "gamma": -0.2534,
+   "penumbral_magnitude": 2.4068,
+   "umbral_magnitude": 1.3795
+  },
+  {
+   "catalog_number": "09641",
+   "date": "1996-Sep-27",
+   "greatest_td": "02:55:24",
+   "delta_t_s": 62,
+   "type_code": "T",
+   "gamma": 0.3426,
+   "penumbral_magnitude": 2.2188,
+   "umbral_magnitude": 1.2395
+  },
+  {
+   "catalog_number": "09642",
+   "date": "1997-Mar-24",
+   "greatest_td": "04:40:28",
+   "delta_t_s": 62,
+   "type_code": "P",
+   "gamma": 0.4899,
+   "penumbral_magnitude": 1.9994,
+   "umbral_magnitude": 0.9195
+  },
+  {
+   "catalog_number": "09643",
+   "date": "1997-Sep-16",
+   "greatest_td": "18:47:42",
+   "delta_t_s": 63,
+   "type_code": "T",
+   "gamma": -0.3768,
+   "penumbral_magnitude": 2.1417,
+   "umbral_magnitude": 1.1909
+  },
+  {
+   "catalog_number": "09644",
+   "date": "1998-Mar-13",
+   "greatest_td": "04:21:08",
+   "delta_t_s": 63,
+   "type_code": "N",
+   "gamma": 1.1964,
+   "penumbral_magnitude": 0.7086,
+   "umbral_magnitude": -0.3824
+  },
+  {
+   "catalog_number": "09645",
+   "date": "1998-Aug-08",
+   "greatest_td": "02:25:57",
+   "delta_t_s": 63,
+   "type_code": "N",
+   "gamma": 1.4875,
+   "penumbral_magnitude": 0.1206,
+   "umbral_magnitude": -0.8637
+  },
+  {
+   "catalog_number": "09646",
+   "date": "1998-Sep-06",
+   "greatest_td": "11:11:11",
+   "delta_t_s": 63,
+   "type_code": "N",
+   "gamma": -1.1057,
+   "penumbral_magnitude": 0.8121,
+   "umbral_magnitude": -0.1544
+  },
+  {
+   "catalog_number": "09647",
+   "date": "1999-Jan-31",
+   "greatest_td": "16:18:35",
+   "delta_t_s": 63,
+   "type_code": "Nx",
+   "gamma": -1.0189,
+   "penumbral_magnitude": 1.0027,
+   "umbral_magnitude": -0.0258
+  },
+  {
+   "catalog_number": "09648",
+   "date": "1999-Jul-28",
+   "greatest_td": "11:34:46",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": 0.7862,
+   "penumbral_magnitude": 1.4342,
+   "umbral_magnitude": 0.3966
+  },
+  {
+   "catalog_number": "09649",
+   "date": "2000-Jan-21",
+   "greatest_td": "04:44:34",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": -0.2957,
+   "penumbral_magnitude": 2.306,
+   "umbral_magnitude": 1.3246
+  },
+  {
+   "catalog_number": "09650",
+   "date": "2000-Jul-16",
+   "greatest_td": "13:56:39",
+   "delta_t_s": 64,
+   "type_code": "T+",
+   "gamma": 0.0302,
+   "penumbral_magnitude": 2.8375,
+   "umbral_magnitude": 1.7684
+  },
+  {
+   "catalog_number": "09651",
+   "date": "2001-Jan-09",
+   "greatest_td": "20:21:40",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": 0.372,
+   "penumbral_magnitude": 2.1618,
+   "umbral_magnitude": 1.1889
+  },
+  {
+   "catalog_number": "09652",
+   "date": "2001-Jul-05",
+   "greatest_td": "14:56:23",
+   "delta_t_s": 64,
+   "type_code": "P",
+   "gamma": -0.7287,
+   "penumbral_magnitude": 1.5475,
+   "umbral_magnitude": 0.4947
+  },
+  {
+   "catalog_number": "09653",
+   "date": "2001-Dec-30",
+   "greatest_td": "10:30:22",
+   "delta_t_s": 64,
+   "type_code": "N",
+   "gamma": 1.0731,
+   "penumbral_magnitude": 0.8933,
+   "umbral_magnitude": -0.1155
+  },
+  {
+   "catalog_number": "09654",
+   "date": "2002-May-26",
+   "greatest_td": "12:04:26",
+   "delta_t_s": 64,
+   "type_code": "N",
+   "gamma": 1.1758,
+   "penumbral_magnitude": 0.6893,
+   "umbral_magnitude": -0.2888
+  },
+  {
+   "catalog_number": "09655",
+   "date": "2002-Jun-24",
+   "greatest_td": "21:28:13",
+   "delta_t_s": 64,
+   "type_code": "N",
+   "gamma": -1.4439,
+   "penumbral_magnitude": 0.2095,
+   "umbral_magnitude": -0.7925
+  },
+  {
+   "catalog_number": "09656",
+   "date": "2002-Nov-20",
+   "greatest_td": "01:47:40",
+   "delta_t_s": 64,
+   "type_code": "N",
+   "gamma": -1.1126,
+   "penumbral_magnitude": 0.86,
+   "umbral_magnitude": -0.2264
+  },
+  {
+   "catalog_number": "09657",
+   "date": "2003-May-16",
+   "greatest_td": "03:41:13",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": 0.4123,
+   "penumbral_magnitude": 2.0747,
+   "umbral_magnitude": 1.1276
+  },
+  {
+   "catalog_number": "09658",
+   "date": "2003-Nov-09",
+   "greatest_td": "01:19:38",
+   "delta_t_s": 64,
+   "type_code": "T",
+   "gamma": -0.4319,
+   "penumbral_magnitude": 2.1139,
+   "umbral_magnitude": 1.0178
+  },
+  {
+   "catalog_number": "09659",
+   "date": "2004-May-04",
+   "greatest_td": "20:31:17",
+   "delta_t_s": 65,
+   "type_code": "T",
+   "gamma": -0.3132,
+   "penumbral_magnitude": 2.2627,
+   "umbral_magnitude": 1.3035
+  },
+  {
+   "catalog_number": "09660",
+   "date": "2004-Oct-28",
+   "greatest_td": "03:05:11",
+   "delta_t_s": 65,
+   "type_code": "T",
+   "gamma": 0.2846,
+   "penumbral_magnitude": 2.3637,
+   "umbral_magnitude": 1.3081
+  },
+  {
+   "catalog_number": "09661",
+   "date": "2005-Apr-24",
+   "greatest_td": "09:55:55",
+   "delta_t_s": 65,
+   "type_code": "N",
+   "gamma": -1.0885,
+   "penumbral_magnitude": 0.865,
+   "umbral_magnitude": -0.1436
+  },
+  {
+   "catalog_number": "09662",
+   "date": "2005-Oct-17",
+   "greatest_td": "12:04:27",
+   "delta_t_s": 65,
+   "type_code": "P",
+   "gamma": 0.9796,
+   "penumbral_magnitude": 1.0585,
+   "umbral_magnitude": 0.0625
+  },
+  {
+   "catalog_number": "09663",
+   "date": "2006-Mar-14",
+   "greatest_td": "23:48:34",
+   "delta_t_s": 65,
+   "type_code": "Nx",
+   "gamma": 1.021,
+   "penumbral_magnitude": 1.03,
+   "umbral_magnitude": -0.0604
+  },
+  {
+   "catalog_number": "09664",
+   "date": "2006-Sep-07",
+   "greatest_td": "18:52:25",
+   "delta_t_s": 65,
+   "type_code": "P",
+   "gamma": -0.9262,
+   "penumbral_magnitude": 1.1329,
+   "umbral_magnitude": 0.1837
+  },
+  {
+   "catalog_number": "09665",
+   "date": "2007-Mar-03",
+   "greatest_td": "23:21:59",
+   "delta_t_s": 65,
+   "type_code": "T",
+   "gamma": 0.3175,
+   "penumbral_magnitude": 2.3188,
+   "umbral_magnitude": 1.2328
+  },
+  {
+   "catalog_number": "09666",
+   "date": "2007-Aug-28",
+   "greatest_td": "10:38:27",
+   "delta_t_s": 66,
+   "type_code": "T-",
+   "gamma": -0.2145,
+   "penumbral_magnitude": 2.4526,
+   "umbral_magnitude": 1.4758
+  },
+  {
+   "catalog_number": "09667",
+   "date": "2008-Feb-21",
+   "greatest_td": "03:27:09",
+   "delta_t_s": 66,
+   "type_code": "T",
+   "gamma": -0.3992,
+   "penumbral_magnitude": 2.1451,
+   "umbral_magnitude": 1.1062
+  },
+  {
+   "catalog_number": "09668",
+   "date": "2008-Aug-16",
+   "greatest_td": "21:11:12",
+   "delta_t_s": 66,
+   "type_code": "P",
+   "gamma": 0.5646,
+   "penumbral_magnitude": 1.8366,
+   "umbral_magnitude": 0.8076
+  },
+  {
+   "catalog_number": "09669",
+   "date": "2009-Feb-09",
+   "greatest_td": "14:39:22",
+   "delta_t_s": 66,
+   "type_code": "N",
+   "gamma": -1.064,
+   "penumbral_magnitude": 0.8994,
+   "umbral_magnitude": -0.0882
+  },
+  {
+   "catalog_number": "09670",
+   "date": "2009-Jul-07",
+   "greatest_td": "09:39:43",
+   "delta_t_s": 66,
+   "type_code": "N",
+   "gamma": -1.4915,
+   "penumbral_magnitude": 0.1562,
+   "umbral_magnitude": -0.9133
+  },
+  {
+   "catalog_number": "09671",
+   "date": "2009-Aug-06",
+   "greatest_td": "00:40:18",
+   "delta_t_s": 66,
+   "type_code": "N",
+   "gamma": 1.3572,
+   "penumbral_magnitude": 0.4019,
+   "umbral_magnitude": -0.6661
+  },
+  {
+   "catalog_number": "09672",
+   "date": "2009-Dec-31",
+   "greatest_td": "19:23:46",
+   "delta_t_s": 67,
+   "type_code": "P",
+   "gamma": 0.9765,
+   "penumbral_magnitude": 1.0556,
+   "umbral_magnitude": 0.0763
+  },
+  {
+   "catalog_number": "09673",
+   "date": "2010-Jun-26",
+   "greatest_td": "11:39:34",
+   "delta_t_s": 67,
+   "type_code": "P",
+   "gamma": -0.7091,
+   "penumbral_magnitude": 1.5773,
+   "umbral_magnitude": 0.5368
+  },
+  {
+   "catalog_number": "09674",
+   "date": "2010-Dec-21",
+   "greatest_td": "08:18:04",
+   "delta_t_s": 67,
+   "type_code": "T",
+   "gamma": 0.3214,
+   "penumbral_magnitude": 2.2807,
+   "umbral_magnitude": 1.2561
+  },
+  {
+   "catalog_number": "09675",
+   "date": "2011-Jun-15",
+   "greatest_td": "20:13:43",
+   "delta_t_s": 67,
+   "type_code": "T+",
+   "gamma": 0.0897,
+   "penumbral_magnitude": 2.6868,
+   "umbral_magnitude": 1.6999
+  },
+  {
+   "catalog_number": "09676",
+   "date": "2011-Dec-10",
+   "greatest_td": "14:32:56",
+   "delta_t_s": 68,
+   "type_code": "T",
+   "gamma": -0.3882,
+   "penumbral_magnitude": 2.186,
+   "umbral_magnitude": 1.1061
+  },
+  {
+   "catalog_number": "09677",
+   "date": "2012-Jun-04",
+   "greatest_td": "11:04:20",
+   "delta_t_s": 68,
+   "type_code": "P",
+   "gamma": 0.8247,
+   "penumbral_magnitude": 1.3183,
+   "umbral_magnitude": 0.3704
+  },
+  {
+   "catalog_number": "09678",
+   "date": "2012-Nov-28",
+   "greatest_td": "14:34:07",
+   "delta_t_s": 68,
+   "type_code": "N",
+   "gamma": -1.0869,
+   "penumbral_magnitude": 0.9155,
+   "umbral_magnitude": -0.1873
+  },
+  {
+   "catalog_number": "09679",
+   "date": "2013-Apr-25",
+   "greatest_td": "20:08:38",
+   "delta_t_s": 68,
+   "type_code": "P",
+   "gamma": -1.0121,
+   "penumbral_magnitude": 0.9866,
+   "umbral_magnitude": 0.0148
+  },
+  {
+   "catalog_number": "09680",
+   "date": "2013-May-25",
+   "greatest_td": "04:11:06",
+   "delta_t_s": 68,
+   "type_code": "Nb",
+   "gamma": 1.535,
+   "penumbral_magnitude": 0.0157,
+   "umbral_magnitude": -0.9335
+  },
+  {
+   "catalog_number": "09681",
+   "date": "2013-Oct-18",
+   "greatest_td": "23:51:25",
+   "delta_t_s": 68,
+   "type_code": "N",
+   "gamma": 1.1508,
+   "penumbral_magnitude": 0.7649,
+   "umbral_magnitude": -0.2718
+  },
+  {
+   "catalog_number": "09682",
+   "date": "2014-Apr-15",
+   "greatest_td": "07:46:48",
+   "delta_t_s": 69,
+   "type_code": "T",
+   "gamma": -0.3017,
+   "penumbral_magnitude": 2.3182,
+   "umbral_magnitude": 1.2907
+  },
+  {
+   "catalog_number": "09683",
+   "date": "2014-Oct-08",
+   "greatest_td": "10:55:44",
+   "delta_t_s": 69,
+   "type_code": "T",
+   "gamma": 0.3826,
+   "penumbral_magnitude": 2.1456,
+   "umbral_magnitude": 1.1659
+  },
+  {
+   "catalog_number": "09684",
+   "date": "2015-Apr-04",
+   "greatest_td": "12:01:24",
+   "delta_t_s": 69,
+   "type_code": "T",
+   "gamma": 0.446,
+   "penumbral_magnitude": 2.0792,
+   "umbral_magnitude": 1.0008
+  },
+  {
+   "catalog_number": "09685",
+   "date": "2015-Sep-28",
+   "greatest_td": "02:48:17",
+   "delta_t_s": 69,
+   "type_code": "T",
+   "gamma": -0.3296,
+   "penumbral_magnitude": 2.2296,
+   "umbral_magnitude": 1.2764
+  },
+  {
+   "catalog_number": "09686",
+   "date": "2016-Mar-23",
+   "greatest_td": "11:48:21",
+   "delta_t_s": 70,
+   "type_code": "N",
+   "gamma": 1.1591,
+   "penumbral_magnitude": 0.7747,
+   "umbral_magnitude": -0.3118
+  },
+  {
+   "catalog_number": "09687",
+   "date": "2016-Sep-16",
+   "greatest_td": "18:55:27",
+   "delta_t_s": 70,
+   "type_code": "N",
+   "gamma": -1.0548,
+   "penumbral_magnitude": 0.908,
+   "umbral_magnitude": -0.0635
+  },
+  {
+   "catalog_number": "09688",
+   "date": "2017-Feb-11",
+   "greatest_td": "00:45:03",
+   "delta_t_s": 70,
+   "type_code": "N",
+   "gamma": -1.0254,
+   "penumbral_magnitude": 0.9884,
+   "umbral_magnitude": -0.0354
+  },
+  {
+   "catalog_number": "09689",
+   "date": "2017-Aug-07",
+   "greatest_td": "18:21:38",
+   "delta_t_s": 70,
+   "type_code": "P",
+   "gamma": 0.8668,
+   "penumbral_magnitude": 1.2886,
+   "umbral_magnitude": 0.2464
+  },
+  {
+   "catalog_number": "09690",
+   "date": "2018-Jan-31",
+   "greatest_td": "13:31:00",
+   "delta_t_s": 71,
+   "type_code": "T",
+   "gamma": -0.3014,
+   "penumbral_magnitude": 2.2941,
+   "umbral_magnitude": 1.3155
+  },
+  {
+   "catalog_number": "09691",
+   "date": "2018-Jul-27",
+   "greatest_td": "20:22:54",
+   "delta_t_s": 71,
+   "type_code": "T+",
+   "gamma": 0.1168,
+   "penumbral_magnitude": 2.6792,
+   "umbral_magnitude": 1.6087
+  },
+  {
+   "catalog_number": "09692",
+   "date": "2019-Jan-21",
+   "greatest_td": "05:13:27",
+   "delta_t_s": 71,
+   "type_code": "T",
+   "gamma": 0.3684,
+   "penumbral_magnitude": 2.1684,
+   "umbral_magnitude": 1.1953
+  },
+  {
+   "catalog_number": "09693",
+   "date": "2019-Jul-16",
+   "greatest_td": "21:31:55",
+   "delta_t_s": 71,
+   "type_code": "P",
+   "gamma": -0.643,
+   "penumbral_magnitude": 1.7037,
+   "umbral_magnitude": 0.6531
+  },
+  {
+   "catalog_number": "09694",
+   "date": "2020-Jan-10",
+   "greatest_td": "19:11:11",
+   "delta_t_s": 72,
+   "type_code": "N",
+   "gamma": 1.0726,
+   "penumbral_magnitude": 0.8956,
+   "umbral_magnitude": -0.116
+  },
+  {
+   "catalog_number": "09695",
+   "date": "2020-Jun-05",
+   "greatest_td": "19:26:14",
+   "delta_t_s": 72,
+   "type_code": "N",
+   "gamma": 1.2406,
+   "penumbral_magnitude": 0.5683,
+   "umbral_magnitude": -0.4053
+  },
+  {
+   "catalog_number": "09696",
+   "date": "2020-Jul-05",
+   "greatest_td": "04:31:12",
+   "delta_t_s": 72,
+   "type_code": "N",
+   "gamma": -1.3638,
+   "penumbral_magnitude": 0.3546,
+   "umbral_magnitude": -0.6436
+  },
+  {
+   "catalog_number": "09697",
+   "date": "2020-Nov-30",
+   "greatest_td": "09:44:01",
+   "delta_t_s": 72,
+   "type_code": "N",
+   "gamma": -1.1309,
+   "penumbral_magnitude": 0.8285,
+   "umbral_magnitude": -0.262
+  },
+  {
+   "catalog_number": "09698",
+   "date": "2021-May-26",
+   "greatest_td": "11:19:53",
+   "delta_t_s": 72,
+   "type_code": "T",
+   "gamma": 0.4774,
+   "penumbral_magnitude": 1.954,
+   "umbral_magnitude": 1.0095
+  },
+  {
+   "catalog_number": "09699",
+   "date": "2021-Nov-19",
+   "greatest_td": "09:04:06",
+   "delta_t_s": 73,
+   "type_code": "P",
+   "gamma": -0.4552,
+   "penumbral_magnitude": 2.072,
+   "umbral_magnitude": 0.9742
+  },
+  {
+   "catalog_number": "09700",
+   "date": "2022-May-16",
+   "greatest_td": "04:12:42",
+   "delta_t_s": 73,
+   "type_code": "T-",
+   "gamma": -0.2532,
+   "penumbral_magnitude": 2.3726,
+   "umbral_magnitude": 1.4137
+  },
+  {
+   "catalog_number": "09701",
+   "date": "2022-Nov-08",
+   "greatest_td": "11:00:22",
+   "delta_t_s": 73,
+   "type_code": "T+",
+   "gamma": 0.257,
+   "penumbral_magnitude": 2.4143,
+   "umbral_magnitude": 1.3589
+  },
+  {
+   "catalog_number": "09702",
+   "date": "2023-May-05",
+   "greatest_td": "17:24:05",
+   "delta_t_s": 73,
+   "type_code": "N",
+   "gamma": -1.0349,
+   "penumbral_magnitude": 0.9636,
+   "umbral_magnitude": -0.0457
+  },
+  {
+   "catalog_number": "09703",
+   "date": "2023-Oct-28",
+   "greatest_td": "20:15:18",
+   "delta_t_s": 74,
+   "type_code": "P",
+   "gamma": 0.9471,
+   "penumbral_magnitude": 1.1181,
+   "umbral_magnitude": 0.122
+  },
+  {
+   "catalog_number": "09704",
+   "date": "2024-Mar-25",
+   "greatest_td": "07:13:59",
+   "delta_t_s": 74,
+   "type_code": "N",
+   "gamma": 1.0609,
+   "penumbral_magnitude": 0.9557,
+   "umbral_magnitude": -0.1325
+  },
+  {
+   "catalog_number": "09705",
+   "date": "2024-Sep-18",
+   "greatest_td": "02:45:25",
+   "delta_t_s": 74,
+   "type_code": "P",
+   "gamma": -0.9792,
+   "penumbral_magnitude": 1.0372,
+   "umbral_magnitude": 0.0848
+  },
+  {
+   "catalog_number": "09706",
+   "date": "2025-Mar-14",
+   "greatest_td": "06:59:56",
+   "delta_t_s": 75,
+   "type_code": "T",
+   "gamma": 0.3484,
+   "penumbral_magnitude": 2.2595,
+   "umbral_magnitude": 1.1784
+  },
+  {
+   "catalog_number": "09707",
+   "date": "2025-Sep-07",
+   "greatest_td": "18:12:58",
+   "delta_t_s": 75,
+   "type_code": "T",
+   "gamma": -0.2752,
+   "penumbral_magnitude": 2.344,
+   "umbral_magnitude": 1.3619
+  },
+  {
+   "catalog_number": "09708",
+   "date": "2026-Mar-03",
+   "greatest_td": "11:34:52",
+   "delta_t_s": 75,
+   "type_code": "T",
+   "gamma": -0.3765,
+   "penumbral_magnitude": 2.1838,
+   "umbral_magnitude": 1.1507
+  },
+  {
+   "catalog_number": "09709",
+   "date": "2026-Aug-28",
+   "greatest_td": "04:14:04",
+   "delta_t_s": 75,
+   "type_code": "P",
+   "gamma": 0.4964,
+   "penumbral_magnitude": 1.9645,
+   "umbral_magnitude": 0.9299
+  },
+  {
+   "catalog_number": "09710",
+   "date": "2027-Feb-20",
+   "greatest_td": "23:14:06",
+   "delta_t_s": 76,
+   "type_code": "N",
+   "gamma": -1.048,
+   "penumbral_magnitude": 0.9266,
+   "umbral_magnitude": -0.0569
+  },
+  {
+   "catalog_number": "09711",
+   "date": "2027-Jul-18",
+   "greatest_td": "16:04:09",
+   "delta_t_s": 76,
+   "type_code": "Ne",
+   "gamma": -1.5758,
+   "penumbral_magnitude": 0.0014,
+   "umbral_magnitude": -1.068
+  },
+  {
+   "catalog_number": "09712",
+   "date": "2027-Aug-17",
+   "greatest_td": "07:14:59",
+   "delta_t_s": 76,
+   "type_code": "N",
+   "gamma": 1.2797,
+   "penumbral_magnitude": 0.5456,
+   "umbral_magnitude": -0.5254
+  },
+  {
+   "catalog_number": "09713",
+   "date": "2028-Jan-12",
+   "greatest_td": "04:14:13",
+   "delta_t_s": 76,
+   "type_code": "P",
+   "gamma": 0.9817,
+   "penumbral_magnitude": 1.0468,
+   "umbral_magnitude": 0.0662
+  },
+  {
+   "catalog_number": "09714",
+   "date": "2028-Jul-06",
+   "greatest_td": "18:20:57",
+   "delta_t_s": 77,
+   "type_code": "P",
+   "gamma": -0.7903,
+   "penumbral_magnitude": 1.4266,
+   "umbral_magnitude": 0.3892
+  },
+  {
+   "catalog_number": "09715",
+   "date": "2028-Dec-31",
+   "greatest_td": "16:53:15",
+   "delta_t_s": 77,
+   "type_code": "T",
+   "gamma": 0.3258,
+   "penumbral_magnitude": 2.2742,
+   "umbral_magnitude": 1.2463
+  },
+  {
+   "catalog_number": "09716",
+   "date": "2029-Jun-26",
+   "greatest_td": "03:23:22",
+   "delta_t_s": 77,
+   "type_code": "T+",
+   "gamma": 0.0124,
+   "penumbral_magnitude": 2.8266,
+   "umbral_magnitude": 1.8436
+  },
+  {
+   "catalog_number": "09717",
+   "date": "2029-Dec-20",
+   "greatest_td": "22:43:12",
+   "delta_t_s": 78,
+   "type_code": "T",
+   "gamma": -0.3811,
+   "penumbral_magnitude": 2.2008,
+   "umbral_magnitude": 1.1174
+  },
+  {
+   "catalog_number": "09718",
+   "date": "2030-Jun-15",
+   "greatest_td": "18:34:34",
+   "delta_t_s": 78,
+   "type_code": "P",
+   "gamma": 0.7534,
+   "penumbral_magnitude": 1.448,
+   "umbral_magnitude": 0.5025
+  },
+  {
+   "catalog_number": "09719",
+   "date": "2030-Dec-09",
+   "greatest_td": "22:28:51",
+   "delta_t_s": 78,
+   "type_code": "N",
+   "gamma": -1.0731,
+   "penumbral_magnitude": 0.9416,
+   "umbral_magnitude": -0.1628
+  },
+  {
+   "catalog_number": "09720",
+   "date": "2031-May-07",
+   "greatest_td": "03:52:02",
+   "delta_t_s": 78,
+   "type_code": "N",
+   "gamma": -1.0694,
+   "penumbral_magnitude": 0.8814,
+   "umbral_magnitude": -0.0904
+  },
+  {
+   "catalog_number": "09721",
+   "date": "2031-Jun-05",
+   "greatest_td": "11:45:17",
+   "delta_t_s": 78,
+   "type_code": "N",
+   "gamma": 1.4731,
+   "penumbral_magnitude": 0.1292,
+   "umbral_magnitude": -0.8199
+  },
+  {
+   "catalog_number": "09722",
+   "date": "2031-Oct-30",
+   "greatest_td": "07:46:45",
+   "delta_t_s": 79,
+   "type_code": "N",
+   "gamma": 1.1773,
+   "penumbral_magnitude": 0.7161,
+   "umbral_magnitude": -0.3204
+  },
+  {
+   "catalog_number": "09723",
+   "date": "2032-Apr-25",
+   "greatest_td": "15:14:51",
+   "delta_t_s": 79,
+   "type_code": "T",
+   "gamma": -0.3558,
+   "penumbral_magnitude": 2.2192,
+   "umbral_magnitude": 1.1913
+  },
+  {
+   "catalog_number": "09724",
+   "date": "2032-Oct-18",
+   "greatest_td": "19:03:40",
+   "delta_t_s": 79,
+   "type_code": "T",
+   "gamma": 0.4169,
+   "penumbral_magnitude": 2.083,
+   "umbral_magnitude": 1.1028
+  },
+  {
+   "catalog_number": "09725",
+   "date": "2033-Apr-14",
+   "greatest_td": "19:13:51",
+   "delta_t_s": 80,
+   "type_code": "T",
+   "gamma": 0.3954,
+   "penumbral_magnitude": 2.1711,
+   "umbral_magnitude": 1.0944
+  },
+  {
+   "catalog_number": "09726",
+   "date": "2033-Oct-08",
+   "greatest_td": "10:56:23",
+   "delta_t_s": 80,
+   "type_code": "T",
+   "gamma": -0.2889,
+   "penumbral_magnitude": 2.3057,
+   "umbral_magnitude": 1.3497
+  },
+  {
+   "catalog_number": "09727",
+   "date": "2034-Apr-03",
+   "greatest_td": "19:06:59",
+   "delta_t_s": 80,
+   "type_code": "N",
+   "gamma": 1.1144,
+   "penumbral_magnitude": 0.8545,
+   "umbral_magnitude": -0.2274
+  },
+  {
+   "catalog_number": "09728",
+   "date": "2034-Sep-28",
+   "greatest_td": "02:47:37",
+   "delta_t_s": 81,
+   "type_code": "P",
+   "gamma": -1.011,
+   "penumbral_magnitude": 0.9911,
+   "umbral_magnitude": 0.0144
+  },
+  {
+   "catalog_number": "09729",
+   "date": "2035-Feb-22",
+   "greatest_td": "09:06:12",
+   "delta_t_s": 81,
+   "type_code": "N",
+   "gamma": -1.0367,
+   "penumbral_magnitude": 0.9652,
+   "umbral_magnitude": -0.0535
+  },
+  {
+   "catalog_number": "09730",
+   "date": "2035-Aug-19",
+   "greatest_td": "01:12:15",
+   "delta_t_s": 81,
+   "type_code": "P",
+   "gamma": 0.9433,
+   "penumbral_magnitude": 1.1507,
+   "umbral_magnitude": 0.1037
+  },
+  {
+   "catalog_number": "09731",
+   "date": "2036-Feb-11",
+   "greatest_td": "22:13:06",
+   "delta_t_s": 82,
+   "type_code": "T",
+   "gamma": -0.311,
+   "penumbral_magnitude": 2.2751,
+   "umbral_magnitude": 1.2995
+  },
+  {
+   "catalog_number": "09732",
+   "date": "2036-Aug-07",
+   "greatest_td": "02:52:32",
+   "delta_t_s": 82,
+   "type_code": "T+",
+   "gamma": 0.2004,
+   "penumbral_magnitude": 2.5266,
+   "umbral_magnitude": 1.4544
+  },
+  {
+   "catalog_number": "09733",
+   "date": "2037-Jan-31",
+   "greatest_td": "14:01:38",
+   "delta_t_s": 82,
+   "type_code": "T",
+   "gamma": 0.3619,
+   "penumbral_magnitude": 2.1803,
+   "umbral_magnitude": 1.2074
+  },
+  {
+   "catalog_number": "09734",
+   "date": "2037-Jul-27",
+   "greatest_td": "04:09:53",
+   "delta_t_s": 83,
+   "type_code": "P",
+   "gamma": -0.5582,
+   "penumbral_magnitude": 1.8584,
+   "umbral_magnitude": 0.8095
+  },
+  {
+   "catalog_number": "09735",
+   "date": "2038-Jan-21",
+   "greatest_td": "03:49:52",
+   "delta_t_s": 83,
+   "type_code": "N",
+   "gamma": 1.071,
+   "penumbral_magnitude": 0.8996,
+   "umbral_magnitude": -0.114
+  },
+  {
+   "catalog_number": "09736",
+   "date": "2038-Jun-17",
+   "greatest_td": "02:45:02",
+   "delta_t_s": 83,
+   "type_code": "N",
+   "gamma": 1.3082,
+   "penumbral_magnitude": 0.4422,
+   "umbral_magnitude": -0.5275
+  },
+  {
+   "catalog_number": "09737",
+   "date": "2038-Jul-16",
+   "greatest_td": "11:35:56",
+   "delta_t_s": 84,
+   "type_code": "N",
+   "gamma": -1.2837,
+   "penumbral_magnitude": 0.4999,
+   "umbral_magnitude": -0.4952
+  },
+  {
+   "catalog_number": "09738",
+   "date": "2038-Dec-11",
+   "greatest_td": "17:45:00",
+   "delta_t_s": 84,
+   "type_code": "N",
+   "gamma": -1.1448,
+   "penumbral_magnitude": 0.8046,
+   "umbral_magnitude": -0.2892
+  },
+  {
+   "catalog_number": "09739",
+   "date": "2039-Jun-06",
+   "greatest_td": "18:54:25",
+   "delta_t_s": 84,
+   "type_code": "P",
+   "gamma": 0.546,
+   "penumbral_magnitude": 1.8272,
+   "umbral_magnitude": 0.8846
+  },
+  {
+   "catalog_number": "09740",
+   "date": "2039-Nov-30",
+   "greatest_td": "16:56:28",
+   "delta_t_s": 85,
+   "type_code": "P",
+   "gamma": -0.4721,
+   "penumbral_magnitude": 2.0418,
+   "umbral_magnitude": 0.9426
+  },
+  {
+   "catalog_number": "09741",
+   "date": "2040-May-26",
+   "greatest_td": "11:46:22",
+   "delta_t_s": 85,
+   "type_code": "T-",
+   "gamma": -0.1872,
+   "penumbral_magnitude": 2.4938,
+   "umbral_magnitude": 1.5348
+  },
+  {
+   "catalog_number": "09742",
+   "date": "2040-Nov-18",
+   "greatest_td": "19:04:40",
+   "delta_t_s": 85,
+   "type_code": "T+",
+   "gamma": 0.2361,
+   "penumbral_magnitude": 2.4525,
+   "umbral_magnitude": 1.3974
+  },
+  {
+   "catalog_number": "09743",
+   "date": "2041-May-16",
+   "greatest_td": "00:43:03",
+   "delta_t_s": 86,
+   "type_code": "P",
+   "gamma": -0.9746,
+   "penumbral_magnitude": 1.0747,
+   "umbral_magnitude": 0.0645
+  },
+  {
+   "catalog_number": "09744",
+   "date": "2041-Nov-08",
+   "greatest_td": "04:35:05",
+   "delta_t_s": 86,
+   "type_code": "P",
+   "gamma": 0.9212,
+   "penumbral_magnitude": 1.1656,
+   "umbral_magnitude": 0.1696
+  },
+  {
+   "catalog_number": "09745",
+   "date": "2042-Apr-05",
+   "greatest_td": "14:30:11",
+   "delta_t_s": 86,
+   "type_code": "N",
+   "gamma": 1.108,
+   "penumbral_magnitude": 0.868,
+   "umbral_magnitude": -0.2176
+  },
+  {
+   "catalog_number": "09746",
+   "date": "2042-Sep-29",
+   "greatest_td": "10:45:47",
+   "delta_t_s": 87,
+   "type_code": "N",
+   "gamma": -1.0261,
+   "penumbral_magnitude": 0.9528,
+   "umbral_magnitude": -0.0031
+  },
+  {
+   "catalog_number": "09747",
+   "date": "2043-Mar-25",
+   "greatest_td": "14:32:04",
+   "delta_t_s": 87,
+   "type_code": "T",
+   "gamma": 0.3849,
+   "penumbral_magnitude": 2.19,
+   "umbral_magnitude": 1.1142
+  },
+  {
+   "catalog_number": "09748",
+   "date": "2043-Sep-19",
+   "greatest_td": "01:51:50",
+   "delta_t_s": 88,
+   "type_code": "T",
+   "gamma": -0.3316,
+   "penumbral_magnitude": 2.2433,
+   "umbral_magnitude": 1.2556
+  },
+  {
+   "catalog_number": "09749",
+   "date": "2044-Mar-13",
+   "greatest_td": "19:38:33",
+   "delta_t_s": 88,
+   "type_code": "T",
+   "gamma": -0.3496,
+   "penumbral_magnitude": 2.2303,
+   "umbral_magnitude": 1.2031
+  },
+  {
+   "catalog_number": "09750",
+   "date": "2044-Sep-07",
+   "greatest_td": "11:20:44",
+   "delta_t_s": 88,
+   "type_code": "T",
+   "gamma": 0.4318,
+   "penumbral_magnitude": 2.086,
+   "umbral_magnitude": 1.0456
+  },
+  {
+   "catalog_number": "09751",
+   "date": "2045-Mar-03",
+   "greatest_td": "07:43:26",
+   "delta_t_s": 89,
+   "type_code": "N",
+   "gamma": -1.0274,
+   "penumbral_magnitude": 0.9623,
+   "umbral_magnitude": -0.0168
+  },
+  {
+   "catalog_number": "09752",
+   "date": "2045-Aug-27",
+   "greatest_td": "13:54:50",
+   "delta_t_s": 89,
+   "type_code": "N",
+   "gamma": 1.206,
+   "penumbral_magnitude": 0.6825,
+   "umbral_magnitude": -0.3919
+  },
+  {
+   "catalog_number": "09753",
+   "date": "2046-Jan-22",
+   "greatest_td": "13:02:37",
+   "delta_t_s": 90,
+   "type_code": "P",
+   "gamma": 0.9885,
+   "penumbral_magnitude": 1.0347,
+   "umbral_magnitude": 0.0532
+  },
+  {
+   "catalog_number": "09754",
+   "date": "2046-Jul-18",
+   "greatest_td": "01:06:05",
+   "delta_t_s": 90,
+   "type_code": "P",
+   "gamma": -0.8691,
+   "penumbral_magnitude": 1.2807,
+   "umbral_magnitude": 0.2461
+  },
+  {
+   "catalog_number": "09755",
+   "date": "2047-Jan-12",
+   "greatest_td": "01:26:14",
+   "delta_t_s": 90,
+   "type_code": "T",
+   "gamma": 0.3317,
+   "penumbral_magnitude": 2.2649,
+   "umbral_magnitude": 1.2341
+  },
+  {
+   "catalog_number": "09756",
+   "date": "2047-Jul-07",
+   "greatest_td": "10:35:45",
+   "delta_t_s": 91,
+   "type_code": "T-",
+   "gamma": -0.0636,
+   "penumbral_magnitude": 2.731,
+   "umbral_magnitude": 1.7513
+  },
+  {
+   "catalog_number": "09757",
+   "date": "2048-Jan-01",
+   "greatest_td": "06:53:55",
+   "delta_t_s": 91,
+   "type_code": "T",
+   "gamma": -0.3745,
+   "penumbral_magnitude": 2.2141,
+   "umbral_magnitude": 1.128
+  },
+  {
+   "catalog_number": "09758",
+   "date": "2048-Jun-26",
+   "greatest_td": "02:02:28",
+   "delta_t_s": 92,
+   "type_code": "P",
+   "gamma": 0.6796,
+   "penumbral_magnitude": 1.5825,
+   "umbral_magnitude": 0.6388
+  },
+  {
+   "catalog_number": "09759",
+   "date": "2048-Dec-20",
+   "greatest_td": "06:27:48",
+   "delta_t_s": 92,
+   "type_code": "N",
+   "gamma": -1.0624,
+   "penumbral_magnitude": 0.9617,
+   "umbral_magnitude": -0.1436
+  },
+  {
+   "catalog_number": "09760",
+   "date": "2049-May-17",
+   "greatest_td": "11:26:39",
+   "delta_t_s": 92,
+   "type_code": "N",
+   "gamma": -1.1337,
+   "penumbral_magnitude": 0.7638,
+   "umbral_magnitude": -0.2085
+  },
+  {
+   "catalog_number": "09761",
+   "date": "2049-Jun-15",
+   "greatest_td": "19:14:12",
+   "delta_t_s": 92,
+   "type_code": "N",
+   "gamma": 1.4068,
+   "penumbral_magnitude": 0.2511,
+   "umbral_magnitude": -0.6985
+  },
+  {
+   "catalog_number": "09762",
+   "date": "2049-Nov-09",
+   "greatest_td": "15:52:11",
+   "delta_t_s": 93,
+   "type_code": "N",
+   "gamma": 1.1964,
+   "penumbral_magnitude": 0.6808,
+   "umbral_magnitude": -0.3553
+  },
+  {
+   "catalog_number": "09763",
+   "date": "2050-May-06",
+   "greatest_td": "22:32:02",
+   "delta_t_s": 94,
+   "type_code": "T",
+   "gamma": -0.4181,
+   "penumbral_magnitude": 2.1052,
+   "umbral_magnitude": 1.0767
+  },
+  {
+   "catalog_number": "09764",
+   "date": "2050-Oct-30",
+   "greatest_td": "03:21:47",
+   "delta_t_s": 95,
+   "type_code": "T",
+   "gamma": 0.4435,
+   "penumbral_magnitude": 2.0345,
+   "umbral_magnitude": 1.0538
+  },
+  {
+   "catalog_number": "09765",
+   "date": "2051-Apr-26",
+   "greatest_td": "02:16:28",
+   "delta_t_s": 96,
+   "type_code": "T",
+   "gamma": 0.3371,
+   "penumbral_magnitude": 2.2773,
+   "umbral_magnitude": 1.2022
+  },
+  {
+   "catalog_number": "09766",
+   "date": "2051-Oct-19",
+   "greatest_td": "19:11:50",
+   "delta_t_s": 97,
+   "type_code": "T-",
+   "gamma": -0.2542,
+   "penumbral_magnitude": 2.3708,
+   "umbral_magnitude": 1.4118
+  },
+  {
+   "catalog_number": "09767",
+   "date": "2052-Apr-14",
+   "greatest_td": "02:18:06",
+   "delta_t_s": 98,
+   "type_code": "N",
+   "gamma": 1.0628,
+   "penumbral_magnitude": 0.9466,
+   "umbral_magnitude": -0.1305
+  },
+  {
+   "catalog_number": "09768",
+   "date": "2052-Oct-08",
+   "greatest_td": "10:45:58",
+   "delta_t_s": 99,
+   "type_code": "P",
+   "gamma": -0.9726,
+   "penumbral_magnitude": 1.0642,
+   "umbral_magnitude": 0.0821
+  },
+  {
+   "catalog_number": "09769",
+   "date": "2053-Mar-04",
+   "greatest_td": "17:22:10",
+   "delta_t_s": 99,
+   "type_code": "N",
+   "gamma": -1.053,
+   "penumbral_magnitude": 0.9323,
+   "umbral_magnitude": -0.0808
+  },
+  {
+   "catalog_number": "09770",
+   "date": "2053-Aug-29",
+   "greatest_td": "08:05:50",
+   "delta_t_s": 100,
+   "type_code": "Nx",
+   "gamma": 1.0164,
+   "penumbral_magnitude": 1.0191,
+   "umbral_magnitude": -0.033
+  },
+  {
+   "catalog_number": "09771",
+   "date": "2054-Feb-22",
+   "greatest_td": "06:51:27",
+   "delta_t_s": 101,
+   "type_code": "T",
+   "gamma": -0.3242,
+   "penumbral_magnitude": 2.2491,
+   "umbral_magnitude": 1.2769
+  },
+  {
+   "catalog_number": "09772",
+   "date": "2054-Aug-18",
+   "greatest_td": "09:26:30",
+   "delta_t_s": 102,
+   "type_code": "T",
+   "gamma": 0.2806,
+   "penumbral_magnitude": 2.3805,
+   "umbral_magnitude": 1.3062
+  },
+  {
+   "catalog_number": "09773",
+   "date": "2055-Feb-11",
+   "greatest_td": "22:46:17",
+   "delta_t_s": 103,
+   "type_code": "T",
+   "gamma": 0.3526,
+   "penumbral_magnitude": 2.197,
+   "umbral_magnitude": 1.2246
+  },
+  {
+   "catalog_number": "09774",
+   "date": "2055-Aug-07",
+   "greatest_td": "10:53:18",
+   "delta_t_s": 104,
+   "type_code": "P",
+   "gamma": -0.4769,
+   "penumbral_magnitude": 2.0069,
+   "umbral_magnitude": 0.9594
+  },
+  {
+   "catalog_number": "09775",
+   "date": "2056-Feb-01",
+   "greatest_td": "12:26:06",
+   "delta_t_s": 105,
+   "type_code": "N",
+   "gamma": 1.0682,
+   "penumbral_magnitude": 0.9056,
+   "umbral_magnitude": -0.1096
+  },
+  {
+   "catalog_number": "09776",
+   "date": "2056-Jun-27",
+   "greatest_td": "10:03:09",
+   "delta_t_s": 106,
+   "type_code": "N",
+   "gamma": 1.3769,
+   "penumbral_magnitude": 0.3143,
+   "umbral_magnitude": -0.6519
+  },
+  {
+   "catalog_number": "09777",
+   "date": "2056-Jul-26",
+   "greatest_td": "18:43:24",
+   "delta_t_s": 106,
+   "type_code": "N",
+   "gamma": -1.2048,
+   "penumbral_magnitude": 0.6435,
+   "umbral_magnitude": -0.3489
+  },
+  {
+   "catalog_number": "09778",
+   "date": "2056-Dec-22",
+   "greatest_td": "01:48:56",
+   "delta_t_s": 107,
+   "type_code": "N",
+   "gamma": -1.1559,
+   "penumbral_magnitude": 0.7857,
+   "umbral_magnitude": -0.3109
+  },
+  {
+   "catalog_number": "09779",
+   "date": "2057-Jun-17",
+   "greatest_td": "02:26:20",
+   "delta_t_s": 108,
+   "type_code": "P",
+   "gamma": 0.6167,
+   "penumbral_magnitude": 1.6967,
+   "umbral_magnitude": 0.7555
+  },
+  {
+   "catalog_number": "09780",
+   "date": "2057-Dec-11",
+   "greatest_td": "00:53:38",
+   "delta_t_s": 109,
+   "type_code": "P",
+   "gamma": -0.4853,
+   "penumbral_magnitude": 2.0178,
+   "umbral_magnitude": 0.9181
+  },
+  {
+   "catalog_number": "09781",
+   "date": "2058-Jun-06",
+   "greatest_td": "19:15:48",
+   "delta_t_s": 110,
+   "type_code": "T-",
+   "gamma": -0.1181,
+   "penumbral_magnitude": 2.621,
+   "umbral_magnitude": 1.6611
+  },
+  {
+   "catalog_number": "09782",
+   "date": "2058-Nov-30",
+   "greatest_td": "03:16:18",
+   "delta_t_s": 111,
+   "type_code": "T+",
+   "gamma": 0.2208,
+   "penumbral_magnitude": 2.4802,
+   "umbral_magnitude": 1.426
+  },
+  {
+   "catalog_number": "09783",
+   "date": "2059-May-27",
+   "greatest_td": "07:55:35",
+   "delta_t_s": 112,
+   "type_code": "P",
+   "gamma": -0.9097,
+   "penumbral_magnitude": 1.1946,
+   "umbral_magnitude": 0.1829
+  },
+  {
+   "catalog_number": "09784",
+   "date": "2059-Nov-19",
+   "greatest_td": "13:01:36",
+   "delta_t_s": 113,
+   "type_code": "P",
+   "gamma": 0.9004,
+   "penumbral_magnitude": 1.2037,
+   "umbral_magnitude": 0.2079
+  },
+  {
+   "catalog_number": "09785",
+   "date": "2060-Apr-15",
+   "greatest_td": "21:37:04",
+   "delta_t_s": 114,
+   "type_code": "N",
+   "gamma": 1.1621,
+   "penumbral_magnitude": 0.7674,
+   "umbral_magnitude": -0.3156
+  },
+  {
+   "catalog_number": "09786",
+   "date": "2060-Oct-09",
+   "greatest_td": "18:53:32",
+   "delta_t_s": 115,
+   "type_code": "N",
+   "gamma": -1.067,
+   "penumbral_magnitude": 0.8796,
+   "umbral_magnitude": -0.0799
+  },
+  {
+   "catalog_number": "09787",
+   "date": "2060-Nov-08",
+   "greatest_td": "04:04:15",
+   "delta_t_s": 115,
+   "type_code": "N",
+   "gamma": 1.5332,
+   "penumbral_magnitude": 0.0266,
+   "umbral_magnitude": -0.9375
+  },
+  {
+   "catalog_number": "09788",
+   "date": "2061-Apr-04",
+   "greatest_td": "21:54:05",
+   "delta_t_s": 116,
+   "type_code": "T",
+   "gamma": 0.43,
+   "penumbral_magnitude": 2.1044,
+   "umbral_magnitude": 1.0341
+  },
+  {
+   "catalog_number": "09789",
+   "date": "2061-Sep-29",
+   "greatest_td": "09:38:13",
+   "delta_t_s": 117,
+   "type_code": "T",
+   "gamma": -0.381,
+   "penumbral_magnitude": 2.1556,
+   "umbral_magnitude": 1.1621
+  },
+  {
+   "catalog_number": "09790",
+   "date": "2062-Mar-25",
+   "greatest_td": "03:33:50",
+   "delta_t_s": 118,
+   "type_code": "T",
+   "gamma": -0.315,
+   "penumbral_magnitude": 2.2905,
+   "umbral_magnitude": 1.2695
+  },
+  {
+   "catalog_number": "09791",
+   "date": "2062-Sep-18",
+   "greatest_td": "18:34:02",
+   "delta_t_s": 119,
+   "type_code": "T",
+   "gamma": 0.3735,
+   "penumbral_magnitude": 2.1959,
+   "umbral_magnitude": 1.1496
+  },
+  {
+   "catalog_number": "09792",
+   "date": "2063-Mar-14",
+   "greatest_td": "16:05:49",
+   "delta_t_s": 120,
+   "type_code": "P",
+   "gamma": -1.0007,
+   "penumbral_magnitude": 1.0088,
+   "umbral_magnitude": 0.0342
+  },
+  {
+   "catalog_number": "09793",
+   "date": "2063-Sep-07",
+   "greatest_td": "20:41:12",
+   "delta_t_s": 121,
+   "type_code": "N",
+   "gamma": 1.1374,
+   "penumbral_magnitude": 0.8101,
+   "umbral_magnitude": -0.2678
+  },
+  {
+   "catalog_number": "09794",
+   "date": "2064-Feb-02",
+   "greatest_td": "21:48:57",
+   "delta_t_s": 122,
+   "type_code": "P",
+   "gamma": 0.9969,
+   "penumbral_magnitude": 1.0197,
+   "umbral_magnitude": 0.0377
+  },
+  {
+   "catalog_number": "09795",
+   "date": "2064-Jul-28",
+   "greatest_td": "07:52:48",
+   "delta_t_s": 123,
+   "type_code": "P",
+   "gamma": -0.9473,
+   "penumbral_magnitude": 1.1361,
+   "umbral_magnitude": 0.1038
+  },
+  {
+   "catalog_number": "09796",
+   "date": "2065-Jan-22",
+   "greatest_td": "09:58:58",
+   "delta_t_s": 124,
+   "type_code": "T",
+   "gamma": 0.3371,
+   "penumbral_magnitude": 2.2561,
+   "umbral_magnitude": 1.2231
+  },
+  {
+   "catalog_number": "09797",
+   "date": "2065-Jul-17",
+   "greatest_td": "17:48:40",
+   "delta_t_s": 125,
+   "type_code": "T-",
+   "gamma": -0.1402,
+   "penumbral_magnitude": 2.589,
+   "umbral_magnitude": 1.6121
+  },
+  {
+   "catalog_number": "09798",
+   "date": "2066-Jan-11",
+   "greatest_td": "15:04:47",
+   "delta_t_s": 126,
+   "type_code": "T",
+   "gamma": -0.3687,
+   "penumbral_magnitude": 2.2259,
+   "umbral_magnitude": 1.1378
+  },
+  {
+   "catalog_number": "09799",
+   "date": "2066-Jul-07",
+   "greatest_td": "09:30:29",
+   "delta_t_s": 127,
+   "type_code": "P",
+   "gamma": 0.6055,
+   "penumbral_magnitude": 1.7179,
+   "umbral_magnitude": 0.7753
+  },
+  {
+   "catalog_number": "09800",
+   "date": "2066-Dec-31",
+   "greatest_td": "14:30:10",
+   "delta_t_s": 128,
+   "type_code": "N",
+   "gamma": -1.0539,
+   "penumbral_magnitude": 0.9773,
+   "umbral_magnitude": -0.1281
+  },
+  {
+   "catalog_number": "09801",
+   "date": "2067-May-28",
+   "greatest_td": "18:56:08",
+   "delta_t_s": 129,
+   "type_code": "N",
+   "gamma": -1.2012,
+   "penumbral_magnitude": 0.6403,
+   "umbral_magnitude": -0.3329
+  },
+  {
+   "catalog_number": "09802",
+   "date": "2067-Jun-27",
+   "greatest_td": "02:41:06",
+   "delta_t_s": 129,
+   "type_code": "N",
+   "gamma": 1.3394,
+   "penumbral_magnitude": 0.3754,
+   "umbral_magnitude": -0.5753
+  },
+  {
+   "catalog_number": "09803",
+   "date": "2067-Nov-21",
+   "greatest_td": "00:04:42",
+   "delta_t_s": 130,
+   "type_code": "N",
+   "gamma": 1.2106,
+   "penumbral_magnitude": 0.6544,
+   "umbral_magnitude": -0.3811
+  },
+  {
+   "catalog_number": "09804",
+   "date": "2068-May-17",
+   "greatest_td": "05:42:17",
+   "delta_t_s": 131,
+   "type_code": "P",
+   "gamma": -0.4851,
+   "penumbral_magnitude": 1.9826,
+   "umbral_magnitude": 0.9532
+  },
+  {
+   "catalog_number": "09805",
+   "date": "2068-Nov-09",
+   "greatest_td": "11:47:00",
+   "delta_t_s": 132,
+   "type_code": "T",
+   "gamma": 0.4645,
+   "penumbral_magnitude": 1.9962,
+   "umbral_magnitude": 1.0149
+  },
+  {
+   "catalog_number": "09806",
+   "date": "2069-May-06",
+   "greatest_td": "09:09:57",
+   "delta_t_s": 133,
+   "type_code": "T+",
+   "gamma": 0.2717,
+   "penumbral_magnitude": 2.3965,
+   "umbral_magnitude": 1.3229
+  },
+  {
+   "catalog_number": "09807",
+   "date": "2069-Oct-30",
+   "greatest_td": "03:35:06",
+   "delta_t_s": 134,
+   "type_code": "T-",
+   "gamma": -0.2263,
+   "penumbral_magnitude": 2.4235,
+   "umbral_magnitude": 1.4616
+  },
+  {
+   "catalog_number": "09808",
+   "date": "2070-Apr-25",
+   "greatest_td": "09:21:24",
+   "delta_t_s": 135,
+   "type_code": "Nx",
+   "gamma": 1.0044,
+   "penumbral_magnitude": 1.0515,
+   "umbral_magnitude": -0.0209
+  },
+  {
+   "catalog_number": "09809",
+   "date": "2070-Oct-19",
+   "greatest_td": "18:51:12",
+   "delta_t_s": 137,
+   "type_code": "P",
+   "gamma": -0.9406,
+   "penumbral_magnitude": 1.1258,
+   "umbral_magnitude": 0.1383
+  },
+  {
+   "catalog_number": "09810",
+   "date": "2071-Mar-16",
+   "greatest_td": "01:31:09",
+   "delta_t_s": 137,
+   "type_code": "N",
+   "gamma": -1.0756,
+   "penumbral_magnitude": 0.8879,
+   "umbral_magnitude": -0.1194
+  },
+  {
+   "catalog_number": "09811",
+   "date": "2071-Sep-09",
+   "greatest_td": "15:05:41",
+   "delta_t_s": 138,
+   "type_code": "N",
+   "gamma": 1.0834,
+   "penumbral_magnitude": 0.8989,
+   "umbral_magnitude": -0.1586
+  },
+  {
+   "catalog_number": "09812",
+   "date": "2072-Mar-04",
+   "greatest_td": "15:23:07",
+   "delta_t_s": 140,
+   "type_code": "T",
+   "gamma": -0.343,
+   "penumbral_magnitude": 2.2127,
+   "umbral_magnitude": 1.2441
+  },
+  {
+   "catalog_number": "09813",
+   "date": "2072-Aug-28",
+   "greatest_td": "16:05:42",
+   "delta_t_s": 141,
+   "type_code": "T",
+   "gamma": 0.3563,
+   "penumbral_magnitude": 2.2428,
+   "umbral_magnitude": 1.1662
+  },
+  {
+   "catalog_number": "09814",
+   "date": "2073-Feb-22",
+   "greatest_td": "07:24:53",
+   "delta_t_s": 142,
+   "type_code": "T",
+   "gamma": 0.3388,
+   "penumbral_magnitude": 2.2218,
+   "umbral_magnitude": 1.2503
+  },
+  {
+   "catalog_number": "09815",
+   "date": "2073-Aug-17",
+   "greatest_td": "17:42:41",
+   "delta_t_s": 143,
+   "type_code": "T",
+   "gamma": -0.3998,
+   "penumbral_magnitude": 2.1479,
+   "umbral_magnitude": 1.1013
+  },
+  {
+   "catalog_number": "09816",
+   "date": "2074-Feb-11",
+   "greatest_td": "20:55:58",
+   "delta_t_s": 144,
+   "type_code": "N",
+   "gamma": 1.0611,
+   "penumbral_magnitude": 0.9191,
+   "umbral_magnitude": -0.0972
+  },
+  {
+   "catalog_number": "09817",
+   "date": "2074-Jul-08",
+   "greatest_td": "17:21:38",
+   "delta_t_s": 145,
+   "type_code": "N",
+   "gamma": 1.4456,
+   "penumbral_magnitude": 0.187,
+   "umbral_magnitude": -0.7765
+  },
+  {
+   "catalog_number": "09818",
+   "date": "2074-Aug-07",
+   "greatest_td": "01:56:03",
+   "delta_t_s": 145,
+   "type_code": "N",
+   "gamma": -1.1291,
+   "penumbral_magnitude": 0.7813,
+   "umbral_magnitude": -0.2091
+  },
+  {
+   "catalog_number": "09819",
+   "date": "2075-Jan-02",
+   "greatest_td": "09:55:03",
+   "delta_t_s": 146,
+   "type_code": "N",
+   "gamma": -1.1642,
+   "penumbral_magnitude": 0.7714,
+   "umbral_magnitude": -0.3271
+  },
+  {
+   "catalog_number": "09820",
+   "date": "2075-Jun-28",
+   "greatest_td": "09:55:35",
+   "delta_t_s": 147,
+   "type_code": "P",
+   "gamma": 0.6897,
+   "penumbral_magnitude": 1.5624,
+   "umbral_magnitude": 0.622
+  },
+  {
+   "catalog_number": "09821",
+   "date": "2075-Dec-22",
+   "greatest_td": "08:55:55",
+   "delta_t_s": 148,
+   "type_code": "P",
+   "gamma": -0.4945,
+   "penumbral_magnitude": 2.0008,
+   "umbral_magnitude": 0.9013
+  },
+  {
+   "catalog_number": "09822",
+   "date": "2076-Jun-17",
+   "greatest_td": "02:39:47",
+   "delta_t_s": 149,
+   "type_code": "T-",
+   "gamma": -0.0452,
+   "penumbral_magnitude": 2.7554,
+   "umbral_magnitude": 1.7943
+  },
+  {
+   "catalog_number": "09823",
+   "date": "2076-Dec-10",
+   "greatest_td": "11:34:51",
+   "delta_t_s": 150,
+   "type_code": "T+",
+   "gamma": 0.2102,
+   "penumbral_magnitude": 2.499,
+   "umbral_magnitude": 1.446
+  },
+  {
+   "catalog_number": "09824",
+   "date": "2077-Jun-06",
+   "greatest_td": "14:59:52",
+   "delta_t_s": 151,
+   "type_code": "P",
+   "gamma": -0.8387,
+   "penumbral_magnitude": 1.3257,
+   "umbral_magnitude": 0.3123
+  },
+  {
+   "catalog_number": "09825",
+   "date": "2077-Nov-29",
+   "greatest_td": "21:35:53",
+   "delta_t_s": 152,
+   "type_code": "P",
+   "gamma": 0.8854,
+   "penumbral_magnitude": 1.2309,
+   "umbral_magnitude": 0.2356
+  },
+  {
+   "catalog_number": "09826",
+   "date": "2078-Apr-27",
+   "greatest_td": "04:35:44",
+   "delta_t_s": 153,
+   "type_code": "N",
+   "gamma": 1.2222,
+   "penumbral_magnitude": 0.6558,
+   "umbral_magnitude": -0.4246
+  },
+  {
+   "catalog_number": "09827",
+   "date": "2078-Oct-21",
+   "greatest_td": "03:08:03",
+   "delta_t_s": 154,
+   "type_code": "N",
+   "gamma": -1.1021,
+   "penumbral_magnitude": 0.8171,
+   "umbral_magnitude": -0.1462
+  },
+  {
+   "catalog_number": "09828",
+   "date": "2078-Nov-19",
+   "greatest_td": "12:40:04",
+   "delta_t_s": 154,
+   "type_code": "N",
+   "gamma": 1.5147,
+   "penumbral_magnitude": 0.0615,
+   "umbral_magnitude": -0.9047
+  },
+  {
+   "catalog_number": "09829",
+   "date": "2079-Apr-16",
+   "greatest_td": "05:10:45",
+   "delta_t_s": 155,
+   "type_code": "P",
+   "gamma": 0.4799,
+   "penumbral_magnitude": 2.01,
+   "umbral_magnitude": 0.9451
+  },
+  {
+   "catalog_number": "09830",
+   "date": "2079-Oct-10",
+   "greatest_td": "17:30:30",
+   "delta_t_s": 156,
+   "type_code": "T",
+   "gamma": -0.4246,
+   "penumbral_magnitude": 2.0786,
+   "umbral_magnitude": 1.0791
+  },
+  {
+   "catalog_number": "09831",
+   "date": "2080-Apr-04",
+   "greatest_td": "11:23:38",
+   "delta_t_s": 157,
+   "type_code": "T",
+   "gamma": -0.2751,
+   "penumbral_magnitude": 2.3607,
+   "umbral_magnitude": 1.346
+  },
+  {
+   "catalog_number": "09832",
+   "date": "2080-Sep-29",
+   "greatest_td": "01:52:42",
+   "delta_t_s": 158,
+   "type_code": "T",
+   "gamma": 0.3203,
+   "penumbral_magnitude": 2.2967,
+   "umbral_magnitude": 1.2443
+  },
+  {
+   "catalog_number": "09833",
+   "date": "2081-Mar-25",
+   "greatest_td": "00:22:01",
+   "delta_t_s": 159,
+   "type_code": "P",
+   "gamma": -0.9687,
+   "penumbral_magnitude": 1.0652,
+   "umbral_magnitude": 0.0953
+  },
+  {
+   "catalog_number": "09834",
+   "date": "2081-Sep-18",
+   "greatest_td": "03:35:26",
+   "delta_t_s": 161,
+   "type_code": "N",
+   "gamma": 1.0747,
+   "penumbral_magnitude": 0.927,
+   "umbral_magnitude": -0.1545
+  },
+  {
+   "catalog_number": "09835",
+   "date": "2082-Feb-13",
+   "greatest_td": "06:29:19",
+   "delta_t_s": 161,
+   "type_code": "P",
+   "gamma": 1.0101,
+   "penumbral_magnitude": 0.9955,
+   "umbral_magnitude": 0.0134
+  },
+  {
+   "catalog_number": "09836",
+   "date": "2082-Aug-08",
+   "greatest_td": "14:46:42",
+   "delta_t_s": 163,
+   "type_code": "Nx",
+   "gamma": -1.0203,
+   "penumbral_magnitude": 1.0011,
+   "umbral_magnitude": -0.0294
+  },
+  {
+   "catalog_number": "09837",
+   "date": "2083-Feb-02",
+   "greatest_td": "18:26:46",
+   "delta_t_s": 164,
+   "type_code": "T",
+   "gamma": 0.3463,
+   "penumbral_magnitude": 2.24,
+   "umbral_magnitude": 1.2052
+  },
+  {
+   "catalog_number": "09838",
+   "date": "2083-Jul-29",
+   "greatest_td": "01:05:34",
+   "delta_t_s": 165,
+   "type_code": "T-",
+   "gamma": -0.2143,
+   "penumbral_magnitude": 2.452,
+   "umbral_magnitude": 1.4773
+  },
+  {
+   "catalog_number": "09839",
+   "date": "2084-Jan-22",
+   "greatest_td": "23:13:00",
+   "delta_t_s": 166,
+   "type_code": "T",
+   "gamma": -0.361,
+   "penumbral_magnitude": 2.2407,
+   "umbral_magnitude": 1.1513
+  },
+  {
+   "catalog_number": "09840",
+   "date": "2084-Jul-17",
+   "greatest_td": "16:58:51",
+   "delta_t_s": 167,
+   "type_code": "P",
+   "gamma": 0.5312,
+   "penumbral_magnitude": 1.854,
+   "umbral_magnitude": 0.9119
+  },
+  {
+   "catalog_number": "09841",
+   "date": "2085-Jan-10",
+   "greatest_td": "22:32:29",
+   "delta_t_s": 168,
+   "type_code": "N",
+   "gamma": -1.0453,
+   "penumbral_magnitude": 0.9927,
+   "umbral_magnitude": -0.1119
+  },
+  {
+   "catalog_number": "09842",
+   "date": "2085-Jun-08",
+   "greatest_td": "02:17:36",
+   "delta_t_s": 169,
+   "type_code": "N",
+   "gamma": -1.2745,
+   "penumbral_magnitude": 0.5065,
+   "umbral_magnitude": -0.4682
+  },
+  {
+   "catalog_number": "09843",
+   "date": "2085-Jul-07",
+   "greatest_td": "10:04:40",
+   "delta_t_s": 169,
+   "type_code": "N",
+   "gamma": 1.2694,
+   "penumbral_magnitude": 0.5047,
+   "umbral_magnitude": -0.4478
+  },
+  {
+   "catalog_number": "09844",
+   "date": "2085-Dec-01",
+   "greatest_td": "08:25:35",
+   "delta_t_s": 170,
+   "type_code": "N",
+   "gamma": 1.2189,
+   "penumbral_magnitude": 0.6387,
+   "umbral_magnitude": -0.3957
+  },
+  {
+   "catalog_number": "09845",
+   "date": "2086-May-28",
+   "greatest_td": "12:43:47",
+   "delta_t_s": 171,
+   "type_code": "P",
+   "gamma": -0.5585,
+   "penumbral_magnitude": 1.8486,
+   "umbral_magnitude": 0.818
+  },
+  {
+   "catalog_number": "09846",
+   "date": "2086-Nov-20",
+   "greatest_td": "20:19:42",
+   "delta_t_s": 172,
+   "type_code": "P",
+   "gamma": 0.4799,
+   "penumbral_magnitude": 1.9679,
+   "umbral_magnitude": 0.9865
+  },
+  {
+   "catalog_number": "09847",
+   "date": "2087-May-17",
+   "greatest_td": "15:55:20",
+   "delta_t_s": 173,
+   "type_code": "T+",
+   "gamma": 0.1999,
+   "penumbral_magnitude": 2.5276,
+   "umbral_magnitude": 1.4554
+  },
+  {
+   "catalog_number": "09848",
+   "date": "2087-Nov-10",
+   "greatest_td": "12:05:33",
+   "delta_t_s": 174,
+   "type_code": "T-",
+   "gamma": -0.2043,
+   "penumbral_magnitude": 2.4654,
+   "umbral_magnitude": 1.5006
+  },
+  {
+   "catalog_number": "09849",
+   "date": "2088-May-05",
+   "greatest_td": "16:16:50",
+   "delta_t_s": 175,
+   "type_code": "P",
+   "gamma": 0.9387,
+   "penumbral_magnitude": 1.1695,
+   "umbral_magnitude": 0.1019
+  },
+  {
+   "catalog_number": "09850",
+   "date": "2088-Oct-30",
+   "greatest_td": "03:03:20",
+   "delta_t_s": 177,
+   "type_code": "P",
+   "gamma": -0.9147,
+   "penumbral_magnitude": 1.1761,
+   "umbral_magnitude": 0.1831
+  },
+  {
+   "catalog_number": "09851",
+   "date": "2089-Mar-26",
+   "greatest_td": "09:34:14",
+   "delta_t_s": 178,
+   "type_code": "N",
+   "gamma": -1.1038,
+   "penumbral_magnitude": 0.8332,
+   "umbral_magnitude": -0.1681
+  },
+  {
+   "catalog_number": "09852",
+   "date": "2089-Sep-19",
+   "greatest_td": "22:11:17",
+   "delta_t_s": 179,
+   "type_code": "N",
+   "gamma": 1.1447,
+   "penumbral_magnitude": 0.7893,
+   "umbral_magnitude": -0.2737
+  },
+  {
+   "catalog_number": "09853",
+   "date": "2090-Mar-15",
+   "greatest_td": "23:48:31",
+   "delta_t_s": 180,
+   "type_code": "T",
+   "gamma": -0.3674,
+   "penumbral_magnitude": 2.1659,
+   "umbral_magnitude": 1.2012
+  },
+  {
+   "catalog_number": "09854",
+   "date": "2090-Sep-08",
+   "greatest_td": "22:52:29",
+   "delta_t_s": 181,
+   "type_code": "T",
+   "gamma": 0.4257,
+   "penumbral_magnitude": 2.1167,
+   "umbral_magnitude": 1.0377
+  },
+  {
+   "catalog_number": "09855",
+   "date": "2091-Mar-05",
+   "greatest_td": "15:58:22",
+   "delta_t_s": 182,
+   "type_code": "T",
+   "gamma": 0.3212,
+   "penumbral_magnitude": 2.2537,
+   "umbral_magnitude": 1.2832
+  },
+  {
+   "catalog_number": "09856",
+   "date": "2091-Aug-29",
+   "greatest_td": "00:38:25",
+   "delta_t_s": 183,
+   "type_code": "T",
+   "gamma": -0.327,
+   "penumbral_magnitude": 2.281,
+   "umbral_magnitude": 1.2351
+  },
+  {
+   "catalog_number": "09857",
+   "date": "2092-Feb-23",
+   "greatest_td": "05:20:59",
+   "delta_t_s": 184,
+   "type_code": "N",
+   "gamma": 1.0509,
+   "penumbral_magnitude": 0.9383,
+   "umbral_magnitude": -0.0789
+  },
+  {
+   "catalog_number": "09858",
+   "date": "2092-Jul-19",
+   "greatest_td": "00:41:58",
+   "delta_t_s": 185,
+   "type_code": "Ne",
+   "gamma": 1.5131,
+   "penumbral_magnitude": 0.062,
+   "umbral_magnitude": -0.8992
+  },
+  {
+   "catalog_number": "09859",
+   "date": "2092-Aug-17",
+   "greatest_td": "09:13:59",
+   "delta_t_s": 185,
+   "type_code": "N",
+   "gamma": -1.0568,
+   "penumbral_magnitude": 0.9131,
+   "umbral_magnitude": -0.0757
+  },
+  {
+   "catalog_number": "09860",
+   "date": "2093-Jan-12",
+   "greatest_td": "18:00:03",
+   "delta_t_s": 186,
+   "type_code": "N",
+   "gamma": -1.1733,
+   "penumbral_magnitude": 0.7553,
+   "umbral_magnitude": -0.3444
+  },
+  {
+   "catalog_number": "09861",
+   "date": "2093-Jul-08",
+   "greatest_td": "17:24:18",
+   "delta_t_s": 187,
+   "type_code": "P",
+   "gamma": 0.7632,
+   "penumbral_magnitude": 1.4275,
+   "umbral_magnitude": 0.4872
+  },
+  {
+   "catalog_number": "09862",
+   "date": "2094-Jan-01",
+   "greatest_td": "17:00:06",
+   "delta_t_s": 188,
+   "type_code": "P",
+   "gamma": -0.5024,
+   "penumbral_magnitude": 1.9858,
+   "umbral_magnitude": 0.8871
+  },
+  {
+   "catalog_number": "09863",
+   "date": "2094-Jun-28",
+   "greatest_td": "10:01:57",
+   "delta_t_s": 190,
+   "type_code": "T+",
+   "gamma": 0.0288,
+   "penumbral_magnitude": 2.7865,
+   "umbral_magnitude": 1.8234
+  },
+  {
+   "catalog_number": "09864",
+   "date": "2094-Dec-21",
+   "greatest_td": "19:56:32",
+   "delta_t_s": 191,
+   "type_code": "T+",
+   "gamma": 0.2016,
+   "penumbral_magnitude": 2.5138,
+   "umbral_magnitude": 1.4627
+  },
+  {
+   "catalog_number": "09865",
+   "date": "2095-Jun-17",
+   "greatest_td": "22:00:11",
+   "delta_t_s": 192,
+   "type_code": "P",
+   "gamma": -0.7653,
+   "penumbral_magnitude": 1.4617,
+   "umbral_magnitude": 0.4459
+  },
+  {
+   "catalog_number": "09866",
+   "date": "2095-Dec-11",
+   "greatest_td": "06:15:02",
+   "delta_t_s": 193,
+   "type_code": "P",
+   "gamma": 0.8742,
+   "penumbral_magnitude": 1.251,
+   "umbral_magnitude": 0.2565
+  },
+  {
+   "catalog_number": "09867",
+   "date": "2096-May-07",
+   "greatest_td": "11:24:42",
+   "delta_t_s": 194,
+   "type_code": "N",
+   "gamma": 1.2896,
+   "penumbral_magnitude": 0.5309,
+   "umbral_magnitude": -0.5469
+  },
+  {
+   "catalog_number": "09868",
+   "date": "2096-Jun-06",
+   "greatest_td": "02:43:41",
+   "delta_t_s": 194,
+   "type_code": "Nb",
+   "gamma": -1.5723,
+   "penumbral_magnitude": 0.0047,
+   "umbral_magnitude": -1.0584
+  },
+  {
+   "catalog_number": "09869",
+   "date": "2096-Oct-31",
+   "greatest_td": "11:30:23",
+   "delta_t_s": 195,
+   "type_code": "N",
+   "gamma": -1.1307,
+   "penumbral_magnitude": 0.7666,
+   "umbral_magnitude": -0.2006
+  },
+  {
+   "catalog_number": "09870",
+   "date": "2096-Nov-29",
+   "greatest_td": "21:22:22",
+   "delta_t_s": 195,
+   "type_code": "N",
+   "gamma": 1.5017,
+   "penumbral_magnitude": 0.0862,
+   "umbral_magnitude": -0.8816
+  },
+  {
+   "catalog_number": "09871",
+   "date": "2097-Apr-26",
+   "greatest_td": "12:18:17",
+   "delta_t_s": 196,
+   "type_code": "P",
+   "gamma": 0.5377,
+   "penumbral_magnitude": 1.9013,
+   "umbral_magnitude": 0.842
+  },
+  {
+   "catalog_number": "09872",
+   "date": "2097-Oct-21",
+   "greatest_td": "01:30:55",
+   "delta_t_s": 197,
+   "type_code": "T",
+   "gamma": -0.4608,
+   "penumbral_magnitude": 2.0152,
+   "umbral_magnitude": 1.0097
+  },
+  {
+   "catalog_number": "09873",
+   "date": "2098-Apr-15",
+   "greatest_td": "19:04:48",
+   "delta_t_s": 198,
+   "type_code": "T-",
+   "gamma": -0.2272,
+   "penumbral_magnitude": 2.4454,
+   "umbral_magnitude": 1.4369
+  },
+  {
+   "catalog_number": "09874",
+   "date": "2098-Oct-10",
+   "greatest_td": "09:19:58",
+   "delta_t_s": 200,
+   "type_code": "T",
+   "gamma": 0.2749,
+   "penumbral_magnitude": 2.3831,
+   "umbral_magnitude": 1.3246
+  },
+  {
+   "catalog_number": "09875",
+   "date": "2099-Apr-05",
+   "greatest_td": "08:30:56",
+   "delta_t_s": 201,
+   "type_code": "P",
+   "gamma": -0.9304,
+   "penumbral_magnitude": 1.1333,
+   "umbral_magnitude": 0.168
+  },
+  {
+   "catalog_number": "09876",
+   "date": "2099-Sep-29",
+   "greatest_td": "10:36:38",
+   "delta_t_s": 202,
+   "type_code": "Nx",
+   "gamma": 1.0174,
+   "penumbral_magnitude": 1.034,
+   "umbral_magnitude": -0.0512
+  },
+  {
+   "catalog_number": "09877",
+   "date": "2100-Feb-24",
+   "greatest_td": "15:05:11",
+   "delta_t_s": 203,
+   "type_code": "N",
+   "gamma": 1.0267,
+   "penumbral_magnitude": 0.9649,
+   "umbral_magnitude": -0.017
+  },
+  {
+   "catalog_number": "09878",
+   "date": "2100-Aug-19",
+   "greatest_td": "21:44:58",
+   "delta_t_s": 204,
+   "type_code": "N",
+   "gamma": -1.0905,
+   "penumbral_magnitude": 0.8716,
+   "umbral_magnitude": -0.1575
+  }
+ ]
+}
