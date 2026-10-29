@@ -12,10 +12,12 @@ Bound by the September 28, 2026 admission:
 - `comets-2026.07.28.1.json`: SHA-256
   `31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1`.
 
-Bound by the October 29, 2026 successor admission (asteroids only):
+Bound by the October 29, 2026 successor admissions:
 
 - `asteroids-2026.10.10.1.json`: SHA-256
   `3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d`.
+- `comets-2026.10.10.1.json`: SHA-256
+  `2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671`.
 
 The current manifests live under `moira/kernels/asteroids/` and
 `moira/kernels/comets/`. A historical oracle receipt must not be relabelled to

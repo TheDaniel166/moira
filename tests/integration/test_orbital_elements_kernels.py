@@ -21,6 +21,7 @@ from moira.spk_reader import KernelPool
 from support.orbital_catalog_admission import (
     ACCEPTANCE_GATES as CATALOG_ACCEPTANCE_GATES,
     CATALOG_RECORDS,
+    CATALOG_RECORD_IDS,
     admitted_release_for_record,
 )
 
@@ -262,7 +263,7 @@ def test_packaged_twenty_five_asteroids_have_strict_receipted_elements(
 @pytest.mark.parametrize(
     "record",
     CATALOG_RECORDS,
-    ids=[record["body"] for record in CATALOG_RECORDS],
+    ids=CATALOG_RECORD_IDS,
 )
 def test_admitted_catalog_elements_match_current_frozen_horizons(
     record,

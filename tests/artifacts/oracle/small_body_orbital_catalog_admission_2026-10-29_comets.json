@@ -1,0 +1,125 @@
+{
+ "acceptance_gates": {
+  "apocenter_distance_absolute_au": 1e-05,
+  "arg_pericenter_angular_absolute_deg": 0.05,
+  "eccentricity_absolute": 1e-05,
+  "inclination_absolute_deg": 0.001,
+  "mean_anomaly_angular_absolute_deg": 0.05,
+  "node_angular_absolute_deg": 0.001,
+  "pericenter_distance_absolute_au": 1e-05,
+  "semi_major_axis_absolute_au": 1e-05
+ },
+ "authority_fixture": {
+  "bytes": 7888,
+  "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_10_29.json",
+  "record_count": 2,
+  "retrieved_utc": "2026-10-29T10:42:29.116195Z",
+  "sha256": "21fb5314311bbc7a795512968d35cf8cfd3d7f1e246bd68397cc39a0b8f60c24",
+  "source": "official NASA/JPL Horizons API",
+  "target_solutions": {
+   "1P/Halley": "JPL#75",
+   "2P/Encke": "JPL#K273/24"
+  }
+ },
+ "authority_shards": {
+  "1P/Halley": {
+   "shard": "comet_shard_000.bsp"
+  },
+  "2P/Encke": {
+   "shard": "comet_shard_000.bsp"
+  }
+ },
+ "catalog_release_identity": [
+  {
+   "authority_bodies": [
+    "1P/Halley",
+    "2P/Encke"
+   ],
+   "authority_records": 2,
+   "body_count": 497,
+   "catalog_id": "moira-comets",
+   "catalog_version": "2026.10.10.1",
+   "manifest_sha256": "2c147176c66ea1b3c007bb779357c6afcc23ace6fbe9cc18ce169980b3198671",
+   "sampling_base_step_days": 10,
+   "sampling_policy_version": "moira-comet-type13-apsidal-adaptive-v5",
+   "shard_count": 20
+  }
+ ],
+ "evidence_classes": {
+  "authority_validation": "Two exact-JDTDB comet states from the sealed 2026.10.10.1 release are compared with freshly frozen official JPL Horizons geometric osculating ELEMENTS under the established live-product gates.",
+  "physical_and_geometric_invariants": "Every catalog member must produce finite elements and a finite normalized geometric-node projection inside admitted coverage.",
+  "release_integrity": "Every catalog leg is bound to the declared manifest and shard SHA-256 identities."
+ },
+ "full_catalog_gate": {
+  "bodies_passed": 11720,
+  "releases_passed": 2,
+  "scope": "11223 asteroids (moira-asteroids@2026.10.10.1) plus 497 periodic comets (moira-comets@2026.10.10.1)",
+  "status": "passed"
+ },
+ "gate_origin": "Pre-existing product tolerances from tests/integration/test_horizons_orbits.py::test_orbital_elements_match_horizons; no tolerance was widened from the measured catalog residuals.",
+ "limitations": [
+  "The two authority cases are a representative release holdout, not 497 independent Horizons queries.",
+  "The release was built from Encke solution JPL#K273/22, which Horizons no longer serves; Encke is compared with the current JPL#K273/24 solution, so its residual includes the difference between the two solutions.",
+  "Halley's record is unchanged from 2026-09-28 in values and solution (JPL#75); it was re-retrieved so that both comets bind one fixture.",
+  "The asteroid holdouts are admitted by the separate 2026-10-29 asteroid receipt, not by this one."
+ ],
+ "measured_maxima": {
+  "apocenter_distance_absolute_au": 5.772710309770446e-08,
+  "arg_pericenter_angular_absolute_deg": 1.4899555623060223e-05,
+  "eccentricity_absolute": 1.2763192080988972e-07,
+  "inclination_absolute_deg": 8.635303373694114e-06,
+  "mean_anomaly_angular_absolute_deg": 1.1087602814541242e-05,
+  "node_angular_absolute_deg": 1.7525127304907073e-07,
+  "pericenter_distance_absolute_au": 3.113480710470462e-07,
+  "semi_major_axis_absolute_au": 1.845375865450194e-07
+ },
+ "measurement_date": "2026-10-29",
+ "network_boundary": {
+  "authority_retrieval": "scripts/build_orbital_elements_fixtures.py, 2026-10-29; candidates reviewed against the 2026-09-28 fixture before promotion",
+  "external_network_used": true,
+  "live_drift_audit_cases_passed": 17,
+  "live_drift_audit_cases_total": 17,
+  "live_drift_audit_date": "2026-10-29",
+  "source": "official NASA/JPL Horizons API"
+ },
+ "predecessor": "tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json",
+ "release_build_solutions": {
+  "1P/Halley": "JPL#75",
+  "2P/Encke": "JPL#K273/22",
+  "source": "comet_shard_000.metadata.json in moira-comets@2026.10.10.1"
+ },
+ "release_or_deployment_performed": false,
+ "schema": "moira.small-body-orbital-catalog-admission/v1",
+ "status": "admitted",
+ "verification": {
+  "exhaustive_elements": {
+   "bodies": 11720,
+   "call_seconds": 93.75,
+   "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_orbital_elements_full_catalog.py -q -rA --durations=5",
+   "note": "run on 2026-10-29 for the asteroid receipt, on the same installed 2026.10.10.1 releases",
+   "passed": 1,
+   "skipped": 0
+  },
+  "exhaustive_geometric_nodes": {
+   "asteroid_call_seconds": 85.66,
+   "bodies": 11720,
+   "comet_call_seconds": 4.78,
+   "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_geometric_nodes_full_catalog.py -q -rA --durations=5",
+   "note": "run on 2026-10-29 for the asteroid receipt, on the same installed 2026.10.10.1 releases",
+   "passed": 2,
+   "skipped": 0
+  },
+  "focused_offline_authority": {
+   "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_orbital_elements_kernels.py tests/integration/test_geometric_nodes_kernels.py -q -rA",
+   "passed": 45,
+   "skipped": 4,
+   "skipped_reason": "the 2026-09-28 1P/Halley and 2P/Encke records, which remain bound to the uninstalled moira-comets@2026.07.28.1"
+  },
+  "live_primary_drift": {
+   "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_horizons_orbits.py::test_stage1_exact_tdb_horizons_authority_has_not_drifted -m external_network --run-external-network -q -rA",
+   "failed": 0,
+   "passed": 17,
+   "skipped": 0
+  }
+ }
+}

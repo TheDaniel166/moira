@@ -24,17 +24,42 @@ from tools.horizons import (
 
 
 _FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures"
-_STAGE1_AUTHORITY_RECORDS = tuple(
-    record
-    for filename in (
-        "horizons_orbital_elements_calibration.json",
-        "horizons_orbital_elements_holdout.json",
-        "horizons_orbital_elements_catalog_holdout_2026_09_28.json",
-    )
-    for record in json.loads(
-        (_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
-    )["records"]
-)
+
+
+def _current_stage1_authority_records() -> tuple[dict, ...]:
+    """Return the current frozen authority records, in fixture order.
+
+    A refreshed fixture names the earlier records it supersedes. Those stay
+    frozen for the receipts that bind them but are no longer expected to match
+    live Horizons, so the drift audit checks their replacements instead.
+    """
+
+    fixtures = [
+        json.loads((_FIXTURE_ROOT / filename).read_text(encoding="utf-8"))
+        for filename in (
+            "horizons_orbital_elements_calibration.json",
+            "horizons_orbital_elements_holdout.json",
+            "horizons_orbital_elements_catalog_holdout_2026_09_28.json",
+            "horizons_orbital_elements_catalog_holdout_2026_10_29.json",
+        )
+    ]
+    superseded = {
+        key
+        for fixture in fixtures
+        for key in fixture.get("supersedes", {}).get("case_keys", ())
+    }
+    records = []
+    for fixture in fixtures:
+        replaces = set(fixture.get("supersedes", {}).get("case_keys", ()))
+        records.extend(
+            record
+            for record in fixture["records"]
+            if record["case_key"] not in superseded or record["case_key"] in replaces
+        )
+    return tuple(records)
+
+
+_STAGE1_AUTHORITY_RECORDS = _current_stage1_authority_records()
 
 
 def _wrapped_angle_error_deg(a_deg: float, b_deg: float) -> float:

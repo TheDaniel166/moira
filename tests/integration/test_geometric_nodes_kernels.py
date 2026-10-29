@@ -25,6 +25,7 @@ from moira_server.services.nodes import compute_geometric_node
 from support.orbital_catalog_admission import (
     ACCEPTANCE_GATES as CATALOG_ACCEPTANCE_GATES,
     CATALOG_RECORDS,
+    CATALOG_RECORD_IDS,
     admitted_release_for_record,
 )
 
@@ -139,7 +140,7 @@ def test_geometric_node_service_serializes_the_real_core_receipt(
 @pytest.mark.parametrize(
     "record",
     CATALOG_RECORDS,
-    ids=[record["body"] for record in CATALOG_RECORDS],
+    ids=CATALOG_RECORD_IDS,
 )
 def test_loaded_catalog_geometric_nodes_are_exact_true_date_core_adapters(
     record,
@@ -182,7 +183,7 @@ def test_loaded_catalog_geometric_nodes_are_exact_true_date_core_adapters(
 @pytest.mark.parametrize(
     "record",
     CATALOG_RECORDS,
-    ids=[record["body"] for record in CATALOG_RECORDS],
+    ids=CATALOG_RECORD_IDS,
 )
 def test_admitted_catalog_geometric_nodes_match_current_frozen_horizons(
     record,

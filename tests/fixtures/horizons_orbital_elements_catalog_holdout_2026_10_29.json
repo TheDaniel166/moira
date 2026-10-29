@@ -1,0 +1,200 @@
+{
+  "fixture_role": "catalog_holdout",
+  "generator_version": "moira-horizons-orbital-elements-builder-v1",
+  "records": [
+    {
+      "authority": {
+        "api_source": "NASA/JPL Horizons API",
+        "api_version": "1.2",
+        "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+        "keplerian_gm_au3_day2": 0.0002959122082841195,
+        "output_type": "GEOMETRIC osculating elements",
+        "reference_frame": "Ecliptic of J2000.0",
+        "solution_date": null,
+        "target_body_line": "Target body name: 1P/Halley                       {source: JPL#75}",
+        "target_solution": "JPL#75"
+      },
+      "body": "1P/Halley",
+      "body_naif_id": 1000001,
+      "case_key": "1000001:10:2460676.500000000000",
+      "center_naif_id": 10,
+      "elements_j2000_ecliptic_au_day": {
+        "aphelion_distance_au": 35.14382535810686,
+        "arg_perihelion_deg": 112.5786928121987,
+        "eccentricity": 0.9676732521673835,
+        "inclination_deg": 162.1371204825295,
+        "lon_ascending_node_deg": 59.68008781984391,
+        "mean_anomaly_deg": 185.1677338191776,
+        "mean_motion_deg_per_day": 0.01305749892560296,
+        "orbital_period_days": 27570.36412954375,
+        "perihelion_distance_au": 0.5773751200681503,
+        "perihelion_jd_tdb": 2474065.914556107,
+        "semi_major_axis_au": 17.86060023908751,
+        "true_anomaly_deg": 180.3367451228733
+      },
+      "fixture_role": "exact_jdtdb_vectors_and_elements",
+      "jd_tdb": 2460676.5,
+      "requests": {
+        "elements": {
+          "CENTER": "'500@10'",
+          "COMMAND": "'DES=1P;NOFRAG;CAP'",
+          "CSV_FORMAT": "YES",
+          "ELM_LABELS": "NO",
+          "EPHEM_TYPE": "ELEMENTS",
+          "MAKE_EPHEM": "YES",
+          "OBJ_DATA": "YES",
+          "OUT_UNITS": "AU-D",
+          "REF_PLANE": "ECLIPTIC",
+          "REF_SYSTEM": "J2000",
+          "TIME_TYPE": "'TDB'",
+          "TLIST": "'2460676.500000000000'",
+          "TLIST_TYPE": "'JD'",
+          "format": "text"
+        },
+        "vectors": {
+          "CENTER": "'500@10'",
+          "COMMAND": "'DES=1P;NOFRAG;CAP'",
+          "CSV_FORMAT": "YES",
+          "EPHEM_TYPE": "VECTORS",
+          "MAKE_EPHEM": "YES",
+          "OBJ_DATA": "YES",
+          "OUT_UNITS": "KM-S",
+          "REF_PLANE": "FRAME",
+          "REF_SYSTEM": "ICRF",
+          "TIME_TYPE": "'TDB'",
+          "TLIST": "'2460676.500000000000'",
+          "TLIST_TYPE": "'JD'",
+          "VEC_CORR": "NONE",
+          "VEC_LABELS": "NO",
+          "VEC_TABLE": "2",
+          "format": "text"
+        }
+      },
+      "responses": {
+        "elements_byte_count": 8578,
+        "elements_sha256": "a27342c76b1b02b2a146fa168816109ab632e24c59dd16b2921a4820a8e95c81",
+        "vectors_byte_count": 7726,
+        "vectors_sha256": "5bf7cf0d9f93b1e2a656fd0c78050aea55871d14d63ac8a0c8b338a90a12f030"
+      },
+      "source": {
+        "generator_version": "moira-horizons-orbital-elements-builder-v1",
+        "owner": "NASA/JPL Solar System Dynamics",
+        "retrieved_utc": "2026-10-29T10:42:29.116195Z",
+        "source_url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+      },
+      "vector_icrf_km_km_s": {
+        "vx": 0.798423469513821,
+        "vy": 0.3298319449811345,
+        "vz": 0.309594933070949,
+        "x": -2943699734.276359,
+        "y": 4344683705.40886,
+        "z": 265494656.4454018
+      }
+    },
+    {
+      "authority": {
+        "api_source": "NASA/JPL Horizons API",
+        "api_version": "1.2",
+        "center_body_line": "Center body name: Sun (10)                        {source: DE441}",
+        "keplerian_gm_au3_day2": 0.0002959122082841195,
+        "output_type": "GEOMETRIC osculating elements",
+        "reference_frame": "Ecliptic of J2000.0",
+        "solution_date": null,
+        "target_body_line": "Target body name: 2P/Encke                        {source: JPL#K273/24}",
+        "target_solution": "JPL#K273/24"
+      },
+      "body": "2P/Encke",
+      "body_naif_id": 1000002,
+      "case_key": "1000002:10:2460676.500000000000",
+      "center_naif_id": 10,
+      "elements_j2000_ecliptic_au_day": {
+        "aphelion_distance_au": 4.097217476674525,
+        "arg_perihelion_deg": 187.281506053378,
+        "eccentricity": 0.8470392124427497,
+        "inclination_deg": 11.34132938065775,
+        "lon_ascending_node_deg": 334.0134287693298,
+        "mean_anomaly_deg": 130.2041355562755,
+        "mean_motion_deg_per_day": 0.2983216156722372,
+        "orbital_period_days": 1206.751308277735,
+        "perihelion_distance_au": 0.3393071504944514,
+        "perihelion_jd_tdb": 2460240.044414095,
+        "semi_major_axis_au": 2.218262313584488,
+        "true_anomaly_deg": 171.9636826791537
+      },
+      "fixture_role": "exact_jdtdb_vectors_and_elements",
+      "jd_tdb": 2460676.5,
+      "requests": {
+        "elements": {
+          "CENTER": "'500@10'",
+          "COMMAND": "'DES=2P;NOFRAG;CAP'",
+          "CSV_FORMAT": "YES",
+          "ELM_LABELS": "NO",
+          "EPHEM_TYPE": "ELEMENTS",
+          "MAKE_EPHEM": "YES",
+          "OBJ_DATA": "YES",
+          "OUT_UNITS": "AU-D",
+          "REF_PLANE": "ECLIPTIC",
+          "REF_SYSTEM": "J2000",
+          "TIME_TYPE": "'TDB'",
+          "TLIST": "'2460676.500000000000'",
+          "TLIST_TYPE": "'JD'",
+          "format": "text"
+        },
+        "vectors": {
+          "CENTER": "'500@10'",
+          "COMMAND": "'DES=2P;NOFRAG;CAP'",
+          "CSV_FORMAT": "YES",
+          "EPHEM_TYPE": "VECTORS",
+          "MAKE_EPHEM": "YES",
+          "OBJ_DATA": "YES",
+          "OUT_UNITS": "KM-S",
+          "REF_PLANE": "FRAME",
+          "REF_SYSTEM": "ICRF",
+          "TIME_TYPE": "'TDB'",
+          "TLIST": "'2460676.500000000000'",
+          "TLIST_TYPE": "'JD'",
+          "VEC_CORR": "NONE",
+          "VEC_LABELS": "NO",
+          "VEC_TABLE": "2",
+          "format": "text"
+        }
+      },
+      "responses": {
+        "elements_byte_count": 8560,
+        "elements_sha256": "31a05ec0223a83959e0312ac6d45b439242a53b932c407a453f09df68f2f8011",
+        "vectors_byte_count": 7708,
+        "vectors_sha256": "500cbe3a499ed70abc055f8f2507be4d83ffda05168fb7f96c2260374199a5b4"
+      },
+      "source": {
+        "generator_version": "moira-horizons-orbital-elements-builder-v1",
+        "owner": "NASA/JPL Solar System Dynamics",
+        "retrieved_utc": "2026-10-29T10:42:29.116195Z",
+        "source_url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+      },
+      "vector_icrf_km_km_s": {
+        "vx": 6.657656534397828,
+        "vy": 2.565672263428804,
+        "vz": 2.400252102181977,
+        "x": 519213107.0939301,
+        "y": -239267089.3177094,
+        "z": -105376414.4713795
+      }
+    }
+  ],
+  "review": {
+    "builder": "scripts/build_orbital_elements_fixtures.py",
+    "compared_with": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json",
+    "date": "2026-10-29",
+    "result": "Requests are identical. 1P/Halley is unchanged in values and solution (JPL#75). 2P/Encke changed solution from JPL#K273/17 to JPL#K273/24; its elements moved by up to 1.0e-6 AU and 7.4e-5 degree and its vector by about 163 km. The other 15 Stage 1 authority records were regenerated and found unchanged."
+  },
+  "schema_version": "moira.horizons-orbital-elements.v1",
+  "source_url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "supersedes": {
+    "case_keys": [
+      "1000001:10:2460676.500000000000",
+      "1000002:10:2460676.500000000000"
+    ],
+    "fixture": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json",
+    "scope": "live drift audit only; the earlier fixture stays frozen for the receipts that bind it"
+  }
+}
