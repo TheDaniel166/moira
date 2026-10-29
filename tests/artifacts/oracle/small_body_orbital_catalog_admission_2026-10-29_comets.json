@@ -10,11 +10,11 @@
   "semi_major_axis_absolute_au": 1e-05
  },
  "authority_fixture": {
-  "bytes": 7888,
+  "bytes": 7688,
   "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_10_29.json",
   "record_count": 2,
   "retrieved_utc": "2026-10-29T10:42:29.116195Z",
-  "sha256": "21fb5314311bbc7a795512968d35cf8cfd3d7f1e246bd68397cc39a0b8f60c24",
+  "sha256": "c4a79a02965fb1cbbdbb72014cd5c0f9e6b14e30c6c683e431c31859694ace22",
   "source": "official NASA/JPL Horizons API",
   "target_solutions": {
    "1P/Halley": "JPL#75",
