@@ -388,16 +388,108 @@ Shukla's printed catalogue is a composite of several manuscripts. Kṛttikā
   4°, Kṛttikā about 7¼°); Puṣya is short by about 11° against δ Cnc. A
   different zero point or epoch would shift every star equally. Polar and
   ecliptic longitudes differ by less than 30′ for these near-ecliptic stars.
-- **Probably a different tradition, or a corrupt numeral.** The latitude
-  (about 3°10′ N) fits γ Cnc rather than δ Cnc, the Sūrya Siddhānta's star at
-  latitude 0. But no candidate star sits near 97°. Within the list's own
-  typical offset, the expected place is Puṣya's 11th–12th degree, not its 4th.
-  This is an inference: no source read explains it. Neugebauer & Pingree's
-  commentary, Pingree & Morrissey (1989) and Dvivedi's commentary were not
-  available.
+- **A different star in a different tradition.** The first reading above
+  guessed γ Cnc from the latitude and found no star near 97°. Pingree &
+  Morrissey (1989) settle it; see the next section.
 - **For Moira:** the Pañcasiddhāntikā's Puṣya is not evidence against the
   δ Cnc = 106° anchor (True Pushya), which rests on the Sūrya Siddhānta and the
   Grahalāghava.
+
+### The Pushya value explained (Pingree & Morrissey 1989, Kharegat 1895, Dvivedi 1889)
+
+Sources read:
+
+- **Pingree & Morrissey,** "On the identification of the yogatārās of the
+  Indian nakṣatras", *Journal for the History of Astronomy* 20 (1989),
+  pp. 99–119. Read in full from the ADS scan,
+  `articles.adsabs.harvard.edu/pdf/1989JHA....20...99P`. Some citations give
+  99–109, which is wrong.
+- **Kharegat,** "On the interpretation of certain passages in the Pancha
+  Siddhántiká of Varáhamihira", *JBBRAS* 19 (1895), Art. IX. Chapter XIV is on
+  pp. 135–136 (archive.org `jasb-volume-19-1895`, leaves n137–n138).
+- **Dvivedi,** *Pañcasiddhāntikāprakāśikā* (in Thibaut & Dvivedi 1889),
+  p. 79f. (archive.org `wg1078`, leaves n198–n199).
+- **Neugebauer & Pingree, Part 2 (1971 commentary):** not reachable online.
+  Only Part 1 (text and translation) is available, through the Royal Danish
+  Academy's archived PDF; it carries no commentary on XIV.33–38.
+
+**The Pañcasiddhāntikā's Puṣya star is μ Cnc.**
+
+- Pingree reads the XIV.33–37 list as *tropical ecliptic* coordinates for
+  about the mid-5th century, possibly translated from a Greek catalogue
+  (p. 116, note 14 and Table 19). It stands apart from the Indian sidereal
+  polar tradition.
+- He identifies Puṣya (97;20°, 4;3° N) with **μ Cnc**, magnitude 5.3. He puts
+  **γ and δ Cnc in Āśleṣā** (107;40°, 0;54° N and S), while noting that δ Cnc
+  is normally Puṣya's star.
+
+**With those stars the offsets are uniform.** Table 19 compares the list with
+Ptolemy's positions for 100 CE. Every star sits +2½° to +6½° ahead of Ptolemy,
+most of them +4° to +5½°. That is about the precession from 100 to the 5th
+century (about 5° by 450).
+
+| Nakṣatra | PS λ | Star | Ptolemy λ (100 CE) | PS − Ptolemy |
+|---|---|---|---|---|
+| Kṛttikā | 32;40° | η Tau | 33;34° | −0;54° (likely scribal error) |
+| Rohiṇī | 48;30° | α Tau | 43;20° | +5;10° |
+| Punarvasu | 88° | α Gem / λ Gem | 83;52° / 82;23° | +4;08° / +5;37° |
+| **Puṣya** | **97;20°** | **μ Cnc** | **93;3°** | **+4;17°** |
+| Āśleṣā | 107;40° | γ Cnc / δ Cnc | 101;8° / 102;16° | +6;32° / +5;24° |
+| Maghā | 126° | α Leo | 123;31° | +2;29° |
+| Citrā | 181;50° | α Vir | 177;26° | +4;24° |
+
+The values are from Table 19, checked against the page image. Its latitudes
+follow Neugebauer & Pingree's "4½ hastas" reading for Puṣya.
+
+The earlier "−11° outlier" came from measuring Puṣya against δ Cnc. Against
+μ Cnc it lines up with the other stars.
+
+**One residual.** The latitude does not fit: the text's 4;3° N against
+Ptolemy's 1;8° for μ Cnc. The paper does not address it.
+
+**What the 19th-century readers say.**
+
+- **Kharegat (1895)** reached the same structural point without naming a star.
+  He reads the longitudes as true (ecliptic) longitudes, not polar ones.
+  - He finds Rohiṇī, Punarvasu, Maghā and Citrā 1°–3° short of their true
+    places at Varāhamihira's epoch.
+  - He says that "if the reading be correct" Puṣya and Āśleṣā are different
+    stars from the Sūrya Siddhānta's.
+  - He compares the list with Ptolemy and suggests either an old catalogue or
+    an older zodiac origin.
+- **Dvivedi (1889)** takes the text as written.
+  - He calls the list junction stars "found by observation" (*vedhena*) for
+    computing conjunctions.
+  - He gives Puṣya *caturthabhāge 'rdhacaturthahastāntare krāntivṛttād udak*:
+    in the 4th degree, *ardhacaturtha* hastas north of the ecliptic.
+  - He offers no emendation, no star identification and no comparison with
+    other siddhāntas.
+
+**What the same paper shows about the four Moira anchors.** These are the
+polar longitudes from Pingree & Morrissey's Table 21.
+
+| Text | Puṣya | Citrā | Revatī | Mūla |
+|---|---|---|---|---|
+| Paitāmaha | 106° | 183° | 0° | 240;4° |
+| Brahmagupta | 106° | 183° | 0° | 241° |
+| Sūrya Siddhānta | 106° | **180°** | **359;50°** | 241° |
+| Vaṭeśvara | 106° | 183° | 0° | 241° |
+| Gaṇeśa (Grahalāghava) | 106° | 183° | 0° | 242° |
+
+- **Puṣya:** 106° (latitude 0) in every sidereal catalogue. The authors list
+  Puṣya = δ Cnc, Revatī = ζ Psc and Aśvinī = β Ari among the identifications
+  "beyond doubt" (Table 5).
+- **Citrā:** 180° and **Revatī:** 359°50′ are the Sūrya Siddhānta's alone; the
+  other texts give 183° and 0°. Citrā = α Vir is not certain (76 Vir is the
+  alternative); it fits within 1° only for a base year of 500.
+- **Mūla:** 240° matches no text exactly. The Paitāmaha's position fits
+  45 Oph better than λ Sco, though Brahmagupta's 241° points to λ Sco.
+- **Revatī:** ζ Psc is accepted but called "disturbing", being dim and nearly
+  2° off. The authors say no Indian astronomer except Varāhamihira moved the
+  zodiac's origin.
+- **Precision:** the authors fit a base year of about 425 CE and say the
+  catalogue is accurate to about ½° at best, with errors of up to 4° to be
+  tolerated.
 
 ### What changes in the conclusions
 
@@ -408,3 +500,12 @@ Shukla's printed catalogue is a composite of several manuscripts. Kṛttikā
 - The Āryabhaṭa-school zero year is a convention with two historical variants,
   499 CE and 522 CE. A text-faithful mode must name which one it uses.
 - True Pushya's 106° stands; the Pañcasiddhāntikā outlier does not bear on it.
+  It is μ Cnc in a tropical, Greek-derived list (Pingree & Morrissey 1989), and
+  every sidereal polar catalogue gives Puṣya 106° at latitude 0.
+- Two of Moira's anchor targets, True Chitrapaksha's 180° and True Revati's
+  359°50′, follow the Sūrya Siddhānta specifically; the other catalogues give
+  183° and 0°. True Mula's 240° matches no catalogue exactly. All four are
+  conventions inherited from a 5th-century catalogue good to about a degree,
+  not observational truths. A text-faithful mode should name its source text.
+- Neugebauer & Pingree's 1971 commentary remains unread; nothing here relies
+  on it.
