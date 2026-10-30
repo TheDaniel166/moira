@@ -1,0 +1,1456 @@
+{
+ "source": "Wellcome b30338724 (S01), Christian Astrology 1647",
+ "rights": "http://creativecommons.org/publicdomain/mark/1.0/",
+ "canvas_rule_checked": "image suffix = printed page + 34",
+ "cache": "C:/dev/outputs/lilly-p4-bookii-20261030/pages",
+ "images": [
+  {
+   "printed_page": 149,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0183.jp2/full/1800,/0/default.jpg",
+   "bytes": 863254,
+   "sha256": "2945e659b3c9ae3525df9711d38f367f2ef662130fcbd7997c58fd43f71791b5",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 150,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0184.jp2/full/1800,/0/default.jpg",
+   "bytes": 890557,
+   "sha256": "d4e768e4e54c5cbc4d69e5f3e18379fa128bf0098dedb8af990b272302d746a2",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 151,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0185.jp2/full/1800,/0/default.jpg",
+   "bytes": 846780,
+   "sha256": "5bef8bc117fbee5b7faa788e81aec703827e2f0e5b4e8b28dfdea08a395e313d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 152,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0186.jp2/full/1800,/0/default.jpg",
+   "bytes": 799551,
+   "sha256": "720a35857c436ba17fab953fbc7367ce9e9c9fec9dd3e04fb80b7964e72d4d23",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 153,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0187.jp2/full/1800,/0/default.jpg",
+   "bytes": 857307,
+   "sha256": "8f45ed0b7cb6cc450a24a708a49ba1f48006cb680742c727adaa6129c974ea22",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 154,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0188.jp2/full/1800,/0/default.jpg",
+   "bytes": 924409,
+   "sha256": "e568dccc3ad1116be52b87b7499167c24e925f090a308efb9d74b68ce5b172b8",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 155,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0189.jp2/full/1800,/0/default.jpg",
+   "bytes": 828726,
+   "sha256": "be9ea8db8b7a41fd6fa3a77d626b40e6faaa7dcdb4a2df259235526906aa9781",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 156,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0190.jp2/full/1800,/0/default.jpg",
+   "bytes": 914469,
+   "sha256": "a4230885e821ab85aeb8e687176c56f352f9eff70ca23bc3bc8c9d111f7582aa",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 157,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0191.jp2/full/1800,/0/default.jpg",
+   "bytes": 864064,
+   "sha256": "d2996b3673e9fb77cd7103ef3796f55b70fdfedcfbd2a92980a7eafc5fb6734f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 158,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0192.jp2/full/1800,/0/default.jpg",
+   "bytes": 909666,
+   "sha256": "1b67084e3ed40ffdbfdd13f6b1426b3389828dbce6aa17cc52204d9efc75a361",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 183,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0217.jp2/full/1800,/0/default.jpg",
+   "bytes": 835264,
+   "sha256": "3ba7f45fe44166ecaa189f5bf1ec70583d7f61654ec33ecf04fc06d8684579dc",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 184,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0218.jp2/full/1800,/0/default.jpg",
+   "bytes": 902202,
+   "sha256": "e2506c7cd2247b495e866ee5efe80d08be1e3f30dcee9e65805ce951b7cfd33d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 185,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0219.jp2/full/1800,/0/default.jpg",
+   "bytes": 800323,
+   "sha256": "5921eeaec54a033a584d68c034326b2cc64eea83bb00bb1f015e91499d294d44",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 186,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0220.jp2/full/1800,/0/default.jpg",
+   "bytes": 851107,
+   "sha256": "aaedf00d7786e858755fb5705450f09e64f749ad6b45c9c9fb60638627c9f809",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 187,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0221.jp2/full/1800,/0/default.jpg",
+   "bytes": 761653,
+   "sha256": "62c268c337d9ade7845efe965927f6ff9e4815c9295d85659d09c7d626f1bfcb",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 188,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0222.jp2/full/1800,/0/default.jpg",
+   "bytes": 854462,
+   "sha256": "59890ecac4fa47c3dcac45bda091b63824af5a7f6663565227b124b349752a3f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 189,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0223.jp2/full/1800,/0/default.jpg",
+   "bytes": 830864,
+   "sha256": "c0def1b9bcda77ef2b2d77f98eb854aed615422f6662e60dc82c24c169804a75",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 190,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0224.jp2/full/1800,/0/default.jpg",
+   "bytes": 864372,
+   "sha256": "555f3414c821d27e360dabb32f4fa1305632051a9dcc07f7cb1f70505f3555ff",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 191,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0225.jp2/full/1800,/0/default.jpg",
+   "bytes": 813197,
+   "sha256": "b481eb291a18bc590874598951dba8ee86356e12e849aeb4e3ee4ae585def540",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 192,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0226.jp2/full/1800,/0/default.jpg",
+   "bytes": 841230,
+   "sha256": "7d22fceabfb362fdb0c894b5ce1d481f2f7a380e5dfe2c607133e583a1b0fc08",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 193,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0227.jp2/full/1800,/0/default.jpg",
+   "bytes": 824237,
+   "sha256": "aca8f669c49ee3b8f5a6166b1121be9182a9e226364d8d6da2aae827ca47341b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 194,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0228.jp2/full/1800,/0/default.jpg",
+   "bytes": 854305,
+   "sha256": "b874c14549791e12ea76f01b043314ee72f267b41aebb212b244aeab2320017b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 195,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0229.jp2/full/1800,/0/default.jpg",
+   "bytes": 801827,
+   "sha256": "14775b16cd8ff15dc84b7c55f69ccadf94af7ba42e4214b66069b1724a25a54f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 196,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0230.jp2/full/1800,/0/default.jpg",
+   "bytes": 806704,
+   "sha256": "a0773f000bbeb319a99e1e14cecaa5c5bbbd0c40de8a90de6b35713e1a40c735",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 197,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0231.jp2/full/1800,/0/default.jpg",
+   "bytes": 783301,
+   "sha256": "f68e22d0cb1213af755e0d31db520445f0428cb7626d471b62983f1633a5b37f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 198,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0232.jp2/full/1800,/0/default.jpg",
+   "bytes": 843306,
+   "sha256": "2e34f36cea1e4066512965a273556caa479200724cb28c0df0427031dbbad2f9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 199,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0233.jp2/full/1800,/0/default.jpg",
+   "bytes": 729985,
+   "sha256": "07c0d399e56c247ba5e847c9884b70ebcddd7b71c639f415186e4e1037613754",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 200,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0234.jp2/full/1800,/0/default.jpg",
+   "bytes": 794413,
+   "sha256": "b052c3ca09d9480ec4d11a5cd7c25d5d6f1c29e084cd99d8aaaca36f490d2bff",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 201,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0235.jp2/full/1800,/0/default.jpg",
+   "bytes": 790468,
+   "sha256": "a991672f242629af3a94828c984c6901f2cc08bab1bf8b36e4190cc391940b17",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 202,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0236.jp2/full/1800,/0/default.jpg",
+   "bytes": 854861,
+   "sha256": "a66103bbe887fa53a574d065d5fd16f28d69e8ce7d3b3161f5d027ea7bdf6c19",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 203,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0237.jp2/full/1800,/0/default.jpg",
+   "bytes": 853330,
+   "sha256": "f1add5126e201a23f0540fcf1b3e9f5c1a917bb7300f8a86c6c8fb149929286f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 204,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0238.jp2/full/1800,/0/default.jpg",
+   "bytes": 865742,
+   "sha256": "317f5559e72878de86c3180830689022b3a523a16810dc238a79c9dbe3bbb819",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 205,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0239.jp2/full/1800,/0/default.jpg",
+   "bytes": 850301,
+   "sha256": "2fbc74aa67776a757ce70a4333a2408bb3506d5ac3806e3a8b8bbf98607190b1",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 206,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0240.jp2/full/1800,/0/default.jpg",
+   "bytes": 909327,
+   "sha256": "e8254ec5b621a55bcdf3aa34e58e03c71485d5370f5c2020fe4b3bd185601ccf",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 207,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0241.jp2/full/1800,/0/default.jpg",
+   "bytes": 854070,
+   "sha256": "8030e5bd32666f476929617549d5e1dd4db77a7219f1c388dd95048ab4a3e2d8",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 208,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0242.jp2/full/1800,/0/default.jpg",
+   "bytes": 872131,
+   "sha256": "a0537f559aca5abc7e25c357cdadebb6483e2e590a9e17392e55f25bc0b77cc5",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 209,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0243.jp2/full/1800,/0/default.jpg",
+   "bytes": 799016,
+   "sha256": "babe0a974803b12137a6e2bbfb8f46c73d6f3fc24fd7b9416eb608e512850bc9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 210,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0244.jp2/full/1800,/0/default.jpg",
+   "bytes": 890569,
+   "sha256": "5bd441e5630aa3de7e60ea251a5b36d8d23c83417f6ec5275f30f9aae29f95cd",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 211,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0245.jp2/full/1800,/0/default.jpg",
+   "bytes": 828491,
+   "sha256": "2f55db648bd6bb19bb51d370d0b0ce8d3708e03f9752ba8b79095e454959e461",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 212,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0246.jp2/full/1800,/0/default.jpg",
+   "bytes": 870527,
+   "sha256": "0e0cfb3727dfee75aa2441db36cf911c35ce6588ca49e2ad476e61bc86641687",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 213,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0247.jp2/full/1800,/0/default.jpg",
+   "bytes": 827122,
+   "sha256": "153c829842ea4f31a111ccc6529512c44c05921a6ac991436c78ecb24812f49a",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 214,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0248.jp2/full/1800,/0/default.jpg",
+   "bytes": 861256,
+   "sha256": "a3cc0c3a63250cfeb6ba452c8a51b7c4ce0677faa6ffcd842677f752fa8c5d19",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 215,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0249.jp2/full/1800,/0/default.jpg",
+   "bytes": 813681,
+   "sha256": "4c113d353f6a969a71e433f4f55185819a6c8908544f78261f683ec619a5b23b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 216,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0250.jp2/full/1800,/0/default.jpg",
+   "bytes": 892372,
+   "sha256": "a5ad924b265c58d0ca22c5652ab16cdde4a6e3477257b7eca93491972fa403db",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 217,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0251.jp2/full/1800,/0/default.jpg",
+   "bytes": 803628,
+   "sha256": "80d9c1b051d7ba0c1cf9ca13c42404a72a7ce2fca5f488504500537a5e6cf804",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 218,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0252.jp2/full/1800,/0/default.jpg",
+   "bytes": 803421,
+   "sha256": "dd98a1899eb1915c51153de34339c5f1452b92a3f0e6fad8988869e3db4959f9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 219,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0253.jp2/full/1800,/0/default.jpg",
+   "bytes": 706662,
+   "sha256": "f133645703919bca26e239dc16e02393a9dd978a9bd825b831add5a59e75501f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 220,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0254.jp2/full/1800,/0/default.jpg",
+   "bytes": 902868,
+   "sha256": "888e90b26516baa998f781aeb76f2bb332dee506d7170c7a14305ac95a6f0ea9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 221,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0255.jp2/full/1800,/0/default.jpg",
+   "bytes": 837041,
+   "sha256": "625e19b7a7605ba3ff5fe37028e94e170c3fd9df08d26a44136952850e2915b4",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 222,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0256.jp2/full/1800,/0/default.jpg",
+   "bytes": 816202,
+   "sha256": "bd25cc5b689c75a36e86c7bcfc5ed3ffdd941c2bba894ed018bfae3505a6f688",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 223,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0257.jp2/full/1800,/0/default.jpg",
+   "bytes": 782652,
+   "sha256": "431b0ea295bf26f54b32736b0d72272efa2f155b29a30b67281a38db087c63ba",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 224,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0258.jp2/full/1800,/0/default.jpg",
+   "bytes": 852139,
+   "sha256": "4f64ab00541cc75e8c5d384e231757f4b6605c18492bb5a0fecd1c762ec48a4b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 225,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0259.jp2/full/1800,/0/default.jpg",
+   "bytes": 807966,
+   "sha256": "30b4c1d0ea1623f884792c220c46e0aa315cac791c87cdd58e3261452e7133d8",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 226,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0260.jp2/full/1800,/0/default.jpg",
+   "bytes": 872490,
+   "sha256": "c5046bc95d84ed9fb8fc26fd5841ce1ca1502fd38bbe8c4ffb16f5f16b9cc486",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 227,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0261.jp2/full/1800,/0/default.jpg",
+   "bytes": 799858,
+   "sha256": "85f42c527249e43e8abab97485ec6f79426aea312aec49cac0919debfacc4d57",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 228,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0262.jp2/full/1800,/0/default.jpg",
+   "bytes": 850264,
+   "sha256": "ea27be603ecf8b1f2f47addd5319d4f45328c8f20b2afb98e71f53b75a706cd8",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 229,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0263.jp2/full/1800,/0/default.jpg",
+   "bytes": 785360,
+   "sha256": "5c40dd656d94b1813519d46a35dcfef0bf6dfb50796411e131d7bafd6947db1f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 230,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0264.jp2/full/1800,/0/default.jpg",
+   "bytes": 813177,
+   "sha256": "b5000883881d0237ecc6a8a9b4c914e789dcd4e35d037ca9bf718836e2c0ab66",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 231,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0265.jp2/full/1800,/0/default.jpg",
+   "bytes": 786621,
+   "sha256": "11c5e592993d0775e9d85375953069241c5ee1bbda64386baa12b6eacb016c1d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 232,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0266.jp2/full/1800,/0/default.jpg",
+   "bytes": 855508,
+   "sha256": "f806d1b2691a2ad98c911cd791c27469352b0759f5eaaec8662ebe669108216b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 233,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0267.jp2/full/1800,/0/default.jpg",
+   "bytes": 832086,
+   "sha256": "2e1fe4fc516da29c8735be6bf131153fa52f30ba2ff166f41ab07f7b95bd28f9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 234,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0268.jp2/full/1800,/0/default.jpg",
+   "bytes": 915394,
+   "sha256": "dcf312ce469d1e63d03f141468904977004d2affd9dbc88b3406fd17d6c46971",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 235,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0269.jp2/full/1800,/0/default.jpg",
+   "bytes": 847780,
+   "sha256": "f7d68c9431fd0332d9cb27ffd84a34de3f9c92888de6076044fb010fb2445c7b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 236,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0270.jp2/full/1800,/0/default.jpg",
+   "bytes": 868955,
+   "sha256": "2f5f266137af78aa1b6b12254c929aea8e4ed49a40e13803a025cc417f127fb3",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 237,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0271.jp2/full/1800,/0/default.jpg",
+   "bytes": 851673,
+   "sha256": "94f2ce79286bbebe87e7e6d78bea40a7a0d52ee27df2e8cb2281607009f918df",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 238,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0272.jp2/full/1800,/0/default.jpg",
+   "bytes": 819280,
+   "sha256": "97841249ce7eef8ffbdb3a87e2bbdb91d7c52e60a710a5915dcaa29cb99084c1",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 239,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0273.jp2/full/1800,/0/default.jpg",
+   "bytes": 881882,
+   "sha256": "26e360a7160483ac31445770d158768b251841456191dd5e6cd1cdfcef393d25",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 240,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0274.jp2/full/1800,/0/default.jpg",
+   "bytes": 829105,
+   "sha256": "c0ba72e06d66a51c44ca31f2a321aa998614eb678922083e43e80d1017ab9986",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 241,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0275.jp2/full/1800,/0/default.jpg",
+   "bytes": 688396,
+   "sha256": "610ec39574817773cc5a0157cf8405fffdd42a8e9734879de5c7932e578bece7",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 242,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0276.jp2/full/1800,/0/default.jpg",
+   "bytes": 774969,
+   "sha256": "ef101949561891416fab15c0dedd37da6590a25909cb4c11976b31f1926fb32f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 298,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0332.jp2/full/1800,/0/default.jpg",
+   "bytes": 800195,
+   "sha256": "cbfbb29c6f3b5f2b6325e220ea78487f21912f7e8318b426c1c7cc17e7da44f6",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 299,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0333.jp2/full/1800,/0/default.jpg",
+   "bytes": 797340,
+   "sha256": "3537599984a98afda122f8eff84525b6f4423d4603021432834e31cf27761008",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 300,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0334.jp2/full/1800,/0/default.jpg",
+   "bytes": 809775,
+   "sha256": "1d49a5d8a496cf34e0692c20a018890cd2eb52258f769e92d4b0fb59aa02f6a7",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 301,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0335.jp2/full/1800,/0/default.jpg",
+   "bytes": 801954,
+   "sha256": "2f02268d61de6c83786b442fd40d6e29ca3060482055e3f1fa99f0032ebb4448",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 302,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0336.jp2/full/1800,/0/default.jpg",
+   "bytes": 836345,
+   "sha256": "773e8b60a6e6029cfef90544f58d36c654b2010a5e1e9b891b2e7674b57fd719",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 303,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0337.jp2/full/1800,/0/default.jpg",
+   "bytes": 788372,
+   "sha256": "44e3be55f8298d4c2ee3eea9d88628f26ef6e766a3c0a1251d2730c116a2a883",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 304,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0338.jp2/full/1800,/0/default.jpg",
+   "bytes": 823090,
+   "sha256": "acecc80d9e422da08dd2ca83642c139838fa407457c1cec32220459e305bed71",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 305,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0339.jp2/full/1800,/0/default.jpg",
+   "bytes": 768807,
+   "sha256": "166c64d2739fe9861418ef294f512810e940aca9469a4fc89f7cb075baa3c8aa",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 306,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0340.jp2/full/1800,/0/default.jpg",
+   "bytes": 823177,
+   "sha256": "1fc0f8a4defb96b7d7a558966cedb2b11eaaf44685230b880dac106531ad1aa9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 307,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0341.jp2/full/1800,/0/default.jpg",
+   "bytes": 733475,
+   "sha256": "25f9ae3257e7f9f48ece800926cda6c6e7e2092fc8e72cfdfc16e89a52326a63",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 308,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0342.jp2/full/1800,/0/default.jpg",
+   "bytes": 785796,
+   "sha256": "c42fdcfd5818ceca9b81713b157d7572d0aeaf67c34b82d494843111d2fb5a65",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 309,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0343.jp2/full/1800,/0/default.jpg",
+   "bytes": 727378,
+   "sha256": "aed5910c04d1aaf136e8de74e6110fbb879f7d111b52afad02743a3b087415d4",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 310,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0344.jp2/full/1800,/0/default.jpg",
+   "bytes": 784431,
+   "sha256": "c1f934f7ad139e67dc9ca5808b11609d14588305506542925ff3d8890103e590",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 311,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0345.jp2/full/1800,/0/default.jpg",
+   "bytes": 771527,
+   "sha256": "e63f2ff5711048a4999a210409899489ddb20fc5c552b0061f0d5fb5ccc92e4c",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 312,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0346.jp2/full/1800,/0/default.jpg",
+   "bytes": 763555,
+   "sha256": "12cb673dab530182d5ec38879e5931054726c01dddd9cad872da7f0721d0dc03",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 313,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0347.jp2/full/1800,/0/default.jpg",
+   "bytes": 761700,
+   "sha256": "de75c750ad37205a48d3f7ba1d635e723e6aaa9c2ad7572963f3df608dabe11b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 314,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0348.jp2/full/1800,/0/default.jpg",
+   "bytes": 838185,
+   "sha256": "f48f3fedd6cc68ddd555ab0c72a854733b8159b5ab4bedac326d841aa2ab7c32",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 315,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0349.jp2/full/1800,/0/default.jpg",
+   "bytes": 808554,
+   "sha256": "2f6328a4b85f98fc132a4d5c4db25d4b5b231db160e832ed072f65bc713b3124",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 316,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0350.jp2/full/1800,/0/default.jpg",
+   "bytes": 787687,
+   "sha256": "52274d93675bbe43b199a277584de168a294042709cd96eec327e4f40546c299",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 317,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0351.jp2/full/1800,/0/default.jpg",
+   "bytes": 784012,
+   "sha256": "9b8a9d45df5544377f214fdfb607ccf4bc4bcb89894de99adcd999b9f47fe88f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 318,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0352.jp2/full/1800,/0/default.jpg",
+   "bytes": 807878,
+   "sha256": "2ee2f2233a725534984d5ce295198b65c81d95a153f0ef2bbe464bb6c500fbbd",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 319,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0353.jp2/full/1800,/0/default.jpg",
+   "bytes": 793212,
+   "sha256": "bb595bc603c6dfc36f2028d5dbca42430ac8ea4634ba982a2c28bec03f202977",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 320,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0354.jp2/full/1800,/0/default.jpg",
+   "bytes": 816427,
+   "sha256": "7c08b998e90bb16befa56e5da5b14103dc689586c2a6b026becd6f08f2ef5be4",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 321,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0355.jp2/full/1800,/0/default.jpg",
+   "bytes": 823156,
+   "sha256": "8ae85f43e27ee8fb4d9f59c53285611258e7efa78d936b1cc185dbc279547c33",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 322,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0356.jp2/full/1800,/0/default.jpg",
+   "bytes": 815571,
+   "sha256": "7910bd40a68f164cae860e74ac6ca713a2a9dbd616527c08916541add3b44faa",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 323,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0357.jp2/full/1800,/0/default.jpg",
+   "bytes": 781829,
+   "sha256": "6ed47c1edefa18b898de4dcefe3f50da568c52a173ef73298857dc5fcb6a1044",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 324,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0358.jp2/full/1800,/0/default.jpg",
+   "bytes": 823120,
+   "sha256": "6645e5406941a40c42508b8db29b32d33847622048747888da9d09926ccdfdcb",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 325,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0359.jp2/full/1800,/0/default.jpg",
+   "bytes": 771842,
+   "sha256": "5161206aa669cc7ffb4d7fa7d2c3993451db9a30e146b8bbf6c8bffa8be504d4",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 326,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0360.jp2/full/1800,/0/default.jpg",
+   "bytes": 767727,
+   "sha256": "064e795299b3eff88f6680922b82d8c2d6d37fabe006ab6bed92e6cf89a4cd23",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 327,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0361.jp2/full/1800,/0/default.jpg",
+   "bytes": 743259,
+   "sha256": "b91f32f8e084c98fd1be24ff25247f896e6c3b0d237e6f29f14cdaf71cddf65b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 328,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0362.jp2/full/1800,/0/default.jpg",
+   "bytes": 784927,
+   "sha256": "d34f9614eb005443cbf2ffbdedcfefb20e885a93f5ad0c96b292ace0977de520",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 329,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0363.jp2/full/1800,/0/default.jpg",
+   "bytes": 773110,
+   "sha256": "fe5b842575680663c3c10bb057ddd6c629e9be0baac21cb1ab302abb78d93ebe",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 330,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0364.jp2/full/1800,/0/default.jpg",
+   "bytes": 800841,
+   "sha256": "ce8db7f4fe728d356be2162fec582c66a8447347c874050d3ecb8ce36b912ce9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 331,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0365.jp2/full/1800,/0/default.jpg",
+   "bytes": 817319,
+   "sha256": "0b390b8ff7f2fa8bd1006fd9eb32123e4f7d5c371291603addd8cf953b89aeeb",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 332,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0366.jp2/full/1800,/0/default.jpg",
+   "bytes": 848021,
+   "sha256": "733708cd9d5238f40458f6c4db2a34d53cd0b3a017dabd256fc5484e7ef552a0",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 358,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0392.jp2/full/1800,/0/default.jpg",
+   "bytes": 817343,
+   "sha256": "f674ff66c23a304af7aabff2f49c227d5777c5470f3089201fe1e3fcf6614d58",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 359,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0393.jp2/full/1800,/0/default.jpg",
+   "bytes": 775325,
+   "sha256": "2732a848f750e7ea06363972b6baa3b5270434a480d862abe1cbe334982f704b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 360,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0394.jp2/full/1800,/0/default.jpg",
+   "bytes": 760385,
+   "sha256": "395ba5aeae00915275db34b991bcb5a974d2011a6f6460c0703c47de2c33c345",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 361,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0395.jp2/full/1800,/0/default.jpg",
+   "bytes": 785047,
+   "sha256": "2a3ee17fbd317d986845051d6a6a5b7ed968ef1a9d932fe85b75d069d49bb480",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 362,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0396.jp2/full/1800,/0/default.jpg",
+   "bytes": 760787,
+   "sha256": "850e9a63fb21cac7ecf815d0d7bf8a43e7b733142eb7cbc152039eaec1634bdf",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 367,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0401.jp2/full/1800,/0/default.jpg",
+   "bytes": 795923,
+   "sha256": "b5d4d333d8675df0e0ffa68f3f8232a1065b60942dc9a53ec712af61cf8a317d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 368,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0402.jp2/full/1800,/0/default.jpg",
+   "bytes": 809290,
+   "sha256": "7a00a871ec951c27d229782417ea6948b5a9b182ba8ac031eb5387c28636a750",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 369,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0403.jp2/full/1800,/0/default.jpg",
+   "bytes": 748865,
+   "sha256": "3f079dbf6e76571640bfec2e2cc8a2b5f0b9c835aa492c6c5294d1a8d581e352",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 370,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0404.jp2/full/1800,/0/default.jpg",
+   "bytes": 761071,
+   "sha256": "947b200cab8a9d4d02e09f77e1fa1ccc15c620005016dc6b1325e49f27715c0c",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 371,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0405.jp2/full/1800,/0/default.jpg",
+   "bytes": 772344,
+   "sha256": "334aaf036cbf8d92140676b932791eeba3d0d0007973f443eb266d54e290b092",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 372,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0406.jp2/full/1800,/0/default.jpg",
+   "bytes": 812186,
+   "sha256": "5395a5349d267344b8b52304dd9e74b573ccd139d7fe3247f16598a7bfb41f7d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 373,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0407.jp2/full/1800,/0/default.jpg",
+   "bytes": 833697,
+   "sha256": "f226b38d324b19539ccef20b33e653664de146ec8f40f88a66f055a5e8f25a02",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 374,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0408.jp2/full/1800,/0/default.jpg",
+   "bytes": 809294,
+   "sha256": "bc40d3dbdcdbd785ade1f8d044f8305c95997aba07eedff68a371f63572c3e3a",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 375,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0409.jp2/full/1800,/0/default.jpg",
+   "bytes": 794585,
+   "sha256": "528ebad973ec98525a2efa5163563164c0eea59a6155db2faff2d54173c93743",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 376,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0410.jp2/full/1800,/0/default.jpg",
+   "bytes": 777893,
+   "sha256": "5605b789c59a194459380c93f51b69067f4a9d1c77b4625ec875ceb36878e710",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 377,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0411.jp2/full/1800,/0/default.jpg",
+   "bytes": 758279,
+   "sha256": "c8291f30402d2765e7baa30af619080488a74e25214a474d5987dae0b5b95813",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 378,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0412.jp2/full/1800,/0/default.jpg",
+   "bytes": 815372,
+   "sha256": "3c6611be07f502971013add1968ee4d7772fc637c3daa673ec889bc0f4cad165",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 379,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0413.jp2/full/1800,/0/default.jpg",
+   "bytes": 788741,
+   "sha256": "bb57e4c0e1d093af06f810d7a9d383bf73141249c1f8b3be402be0d7085513de",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 380,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0414.jp2/full/1800,/0/default.jpg",
+   "bytes": 790426,
+   "sha256": "e686527f89097b82d6220fac7ee13ac0482938e27e747f2e226ff14578bc8847",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 381,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0415.jp2/full/1800,/0/default.jpg",
+   "bytes": 789112,
+   "sha256": "afb8055d48506443b075a61ddccc9d8f0991b2eb3553785494fafa948746c34e",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 382,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0416.jp2/full/1800,/0/default.jpg",
+   "bytes": 804902,
+   "sha256": "f9a7d4a71efcaf42808ce3e8163c39052372d02a7c99ac88ca7c96f2842f367b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 383,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0417.jp2/full/1800,/0/default.jpg",
+   "bytes": 777622,
+   "sha256": "7753b0af10f915d8c0c1e20bcbd027eec64c54733b034b8155305731b901d910",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 384,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0418.jp2/full/1800,/0/default.jpg",
+   "bytes": 836527,
+   "sha256": "493bdf11190f965107b729ab7ccfc4cbe2c370b9e50384c4d4d3dc20e63fd472",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 385,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0419.jp2/full/1800,/0/default.jpg",
+   "bytes": 720833,
+   "sha256": "b04e274016583c73d6f61d1ed12dd762238f0b10dfb5a4787f65eb51085cc3ae",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 386,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0420.jp2/full/1800,/0/default.jpg",
+   "bytes": 837761,
+   "sha256": "ec6b8c5a89e9f1b8d5f830dd56557750d9fa39eb63998a0ca0b988622d80c2bd",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 387,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0421.jp2/full/1800,/0/default.jpg",
+   "bytes": 825570,
+   "sha256": "cfd53ca5573e881ab91d064c210a0f1672b45ea52fa30fb63b60f01965d4c709",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 388,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0422.jp2/full/1800,/0/default.jpg",
+   "bytes": 805062,
+   "sha256": "b86f2b847a93d936785e986a08ded7fe9c0ec75e42baf1ba74aa312d629714f9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 389,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0423.jp2/full/1800,/0/default.jpg",
+   "bytes": 725107,
+   "sha256": "7c32ab549ad65d9e940d8e2cd810d34f7c1629eaa8fb402dbc1eec01e5bda89e",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 390,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0424.jp2/full/1800,/0/default.jpg",
+   "bytes": 751710,
+   "sha256": "9247432d88d99c6dff929067c1f190781dcf660bdb06b3257a2abea43d5ee841",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 391,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0425.jp2/full/1800,/0/default.jpg",
+   "bytes": 809337,
+   "sha256": "c67927f2e1d43d52d1f0d4bd5f64daa350b5d98c380408ea1497e1246d79c4f9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 392,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0426.jp2/full/1800,/0/default.jpg",
+   "bytes": 767735,
+   "sha256": "863f3ee2fa1e26955089b3efe2e4a0e635f4d07d7bb1f967c71da8a104a18a7c",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 393,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0427.jp2/full/1800,/0/default.jpg",
+   "bytes": 824559,
+   "sha256": "d3384f69d9237b6162ac071d51a9fa0aa92ed5a70c587933f673232c1d0bae31",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 394,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0428.jp2/full/1800,/0/default.jpg",
+   "bytes": 841455,
+   "sha256": "8799226f5e21a9020bed70fe1b7875db8dd80909d0a88ef262ba3f53cfc0db56",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 395,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0429.jp2/full/1800,/0/default.jpg",
+   "bytes": 738774,
+   "sha256": "f421671a8ddc5ff6968a0491be0a0134c4939ac8b9e3c21177b590d771b10f9a",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 396,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0430.jp2/full/1800,/0/default.jpg",
+   "bytes": 832487,
+   "sha256": "298bbe30027a9ab100fd92f5ce7c310fbf91468f5f0f10403bb767157774ecb5",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 397,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0431.jp2/full/1800,/0/default.jpg",
+   "bytes": 771708,
+   "sha256": "387aa26fa50fa5db6863262fe793f13a460b2fb57bedd872640dd449261cef72",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 398,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0432.jp2/full/1800,/0/default.jpg",
+   "bytes": 846560,
+   "sha256": "64e084fb9507a62472286be3099a9058371894bf611624556ce9e463e5e3eacb",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 399,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0433.jp2/full/1800,/0/default.jpg",
+   "bytes": 770221,
+   "sha256": "eedbb8adaa59413125b201f8ff7a46c1d40c7c4be1bdca6227fd9f08c71080f1",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 400,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0434.jp2/full/1800,/0/default.jpg",
+   "bytes": 810751,
+   "sha256": "62fdfb64b284dc795531b49f3bf275e4aa0b9272ccb190d6ac79d5046ef653c4",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 401,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0435.jp2/full/1800,/0/default.jpg",
+   "bytes": 753125,
+   "sha256": "901182203db70c326cd16b099c86ba78b31b397e84490ec6ae4a8968561d826e",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 402,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0436.jp2/full/1800,/0/default.jpg",
+   "bytes": 835900,
+   "sha256": "43989e1179e62934e390d2420d7f6bee9146593c90e28d3b6208a530f790bc43",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 403,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0437.jp2/full/1800,/0/default.jpg",
+   "bytes": 805988,
+   "sha256": "0bec7f2eea858e899e7bd5725c33daececacdb26d8627318aa88cb6cc358ef09",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 404,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0438.jp2/full/1800,/0/default.jpg",
+   "bytes": 794860,
+   "sha256": "6bd69a56e3ba993752a5a52438297bc51bb6e6a598cb199d491c1814706cfb32",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 405,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0439.jp2/full/1800,/0/default.jpg",
+   "bytes": 814923,
+   "sha256": "ad071d735a5222f3d8b88f309b20c2a4189122c131b3648f2185ff6d129f7adc",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 406,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0440.jp2/full/1800,/0/default.jpg",
+   "bytes": 818707,
+   "sha256": "62fafc82413b787e7384938eaa7e912d4d8eeefd102db2aca4da394fa01d6ccf",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 407,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0441.jp2/full/1800,/0/default.jpg",
+   "bytes": 812275,
+   "sha256": "7133e3d93624bde1af41f793c1ed4550da9b575023db5d2e7bca0a70c828c3a8",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 408,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0442.jp2/full/1800,/0/default.jpg",
+   "bytes": 831763,
+   "sha256": "3e93ab1db61407dff7aa705d056132a954bcc640a1ff809fa1c6f493784d0d01",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 409,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0443.jp2/full/1800,/0/default.jpg",
+   "bytes": 822617,
+   "sha256": "d98911ed3f1149b22ccb601d3f9d8ccc89f125b06671c9b5a0822e0c302fd951",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 410,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0444.jp2/full/1800,/0/default.jpg",
+   "bytes": 859965,
+   "sha256": "b04497f1326df0c19c7039646efbf8ef16801ef1b0861993a7f652d16ad89154",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 432,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0466.jp2/full/1800,/0/default.jpg",
+   "bytes": 786205,
+   "sha256": "b18e614f859576e1e7d2bfc6ea35b58b3b38096c5362450857795fbc5fca51c9",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 433,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0467.jp2/full/1800,/0/default.jpg",
+   "bytes": 871302,
+   "sha256": "749ca90a44f891e7e5adf0900c69cd937e2c7cedf20251c2baf6d88457ebab4a",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 434,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0468.jp2/full/1800,/0/default.jpg",
+   "bytes": 850098,
+   "sha256": "f8729a147602d2ecac389ac22f339cbb90043a5714a4a310224ee1eadade34fe",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 435,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0469.jp2/full/1800,/0/default.jpg",
+   "bytes": 804052,
+   "sha256": "9ce501b607c65ca65daccd8efae255421ce584866227147c1f4cc5c2092e8549",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 436,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0470.jp2/full/1800,/0/default.jpg",
+   "bytes": 811262,
+   "sha256": "35b0e2ab51e5d771075b32e9af3bbc745209ddd4add4e2d28b4c10d63d20ac2b",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 437,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0471.jp2/full/1800,/0/default.jpg",
+   "bytes": 722970,
+   "sha256": "5c63646b39ac7094a7654c68a231b11f0ed14d0b6fdacf8c94d15620492e1d31",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 438,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0472.jp2/full/1800,/0/default.jpg",
+   "bytes": 768679,
+   "sha256": "34d1328392b0b358c3bec427e9bfaa99c3893064e226874af00e2b51b072586d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 439,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0473.jp2/full/1800,/0/default.jpg",
+   "bytes": 698277,
+   "sha256": "9df4bcf517c5c639959bc0d7ef2d152fa1239ce2743e03362dcdb734134ac42d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 440,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0474.jp2/full/1800,/0/default.jpg",
+   "bytes": 850706,
+   "sha256": "74de0f669ba65dafb5c9063d0f941d3f7aa45cf02233a9d9415001050b6fb5b5",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 441,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0475.jp2/full/1800,/0/default.jpg",
+   "bytes": 802734,
+   "sha256": "36f439f3d88bbdf8f1098221445b1094889a2c5f306f382986849bee189490a0",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 442,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0476.jp2/full/1800,/0/default.jpg",
+   "bytes": 758030,
+   "sha256": "223ee2d0b2d892a824263ab6342af5b287a91fea03707e2ac4d16dad597afc2e",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 443,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0477.jp2/full/1800,/0/default.jpg",
+   "bytes": 798514,
+   "sha256": "5d857921f2725617f5405a0cdf2aa2b96521a50a49f5efb075703feedeb159e7",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 444,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0478.jp2/full/1800,/0/default.jpg",
+   "bytes": 786811,
+   "sha256": "1a9cd0df7a5653ede8aa56751a1554aef5e6a4b30b9d2dc537a1479abd09d163",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 445,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0479.jp2/full/1800,/0/default.jpg",
+   "bytes": 821136,
+   "sha256": "757eb8e982db49f0b9a6f66a47e02976d0af4735799bce5481d467fe5dccbc7d",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 446,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0480.jp2/full/1800,/0/default.jpg",
+   "bytes": 803095,
+   "sha256": "3c00982def109f3dfce482172e97599f9e1bf4faa8ce9aef3615f42b4953781f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 447,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0481.jp2/full/1800,/0/default.jpg",
+   "bytes": 808176,
+   "sha256": "9cf33c1663d75fa46d6bb08686149e7e29a1643aa0471134888263bf632c440c",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 448,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0482.jp2/full/1800,/0/default.jpg",
+   "bytes": 788201,
+   "sha256": "918e73816a34c769f974384aeb19e4fe097513e119b0d862739fc0712a93cf0f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 449,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0483.jp2/full/1800,/0/default.jpg",
+   "bytes": 808214,
+   "sha256": "91c00e5a1f45c3f801cbc34826015d57fc69bfc8b587c70dfcae15f0c7eb3c00",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 450,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0484.jp2/full/1800,/0/default.jpg",
+   "bytes": 779213,
+   "sha256": "dd9a0773eae490d6426712b5295e9f9259cc417d4c2ad35c9d04d98ae2751ee1",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 451,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0485.jp2/full/1800,/0/default.jpg",
+   "bytes": 803546,
+   "sha256": "2573dec6a02c9a8618e53e8c66d265aff761f4b181bdbdd2efcbaf49971e9517",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 452,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0486.jp2/full/1800,/0/default.jpg",
+   "bytes": 711060,
+   "sha256": "25e5d5daa524d7a3e8a06c1b0ff3e45967a7c1062d1c64f2b0125521fe2728b7",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 453,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0487.jp2/full/1800,/0/default.jpg",
+   "bytes": 833458,
+   "sha256": "26bd1389cea2c8ae580ddfc798c386c1b6ef752db2f6e2344c983beea983a3db",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 454,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0488.jp2/full/1800,/0/default.jpg",
+   "bytes": 787941,
+   "sha256": "beeb037e994b9008cc154de0b21f1933fb2f9875817d4e1b2044629c7ae9a28f",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 455,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0489.jp2/full/1800,/0/default.jpg",
+   "bytes": 775045,
+   "sha256": "50dbbf79240d87bf0fb716c9d89afbabd621658849d9c80df5586e44772841d5",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 456,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0490.jp2/full/1800,/0/default.jpg",
+   "bytes": 780164,
+   "sha256": "3cf65aab74e807fd2d79e8ff3b70b6ba0424e5d31a5100e56d47aa3c2d2a1be3",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 457,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0491.jp2/full/1800,/0/default.jpg",
+   "bytes": 781995,
+   "sha256": "3f747fe45f9001e129635c99c211e0a9048844d515f6fcae64caae2389560cf0",
+   "visual_status": "printed_page_checked"
+  },
+  {
+   "printed_page": 458,
+   "witness": "S01",
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0492.jp2/full/1800,/0/default.jpg",
+   "bytes": 816232,
+   "sha256": "40733f87feb037de323566703ac7d362a6859ff2ebac78be00a85102a9dc749f",
+   "visual_status": "printed_page_checked"
+  }
+ ]
+}

@@ -86,6 +86,15 @@ the derivation of every route for one principal pair under five explicitly
 selected readings, continuation across windows, and the fixture and DE441
 validation. v1, P2 and P3 behavior is unchanged; no verdict is produced.
 
+## P4 readings checked against Book II: 2026-10-30
+
+The [Book II collation](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) reads 181
+pages of Book II doctrine and cases C02, C05-C10, C13-C20 and C26-C30 for how
+Lilly applies each P4 mechanism. Book II uses structural translation,
+interposition from either side, frustration of aspects, a fixed sense of
+heaviness and a collector that receives the principals; it also treats
+dwelling as a route. Proposed runtime changes are listed there; none is made.
+
 ## Decision at this checkpoint
 
 The original 1647 photographed pages govern. OCR and modern editorial material
