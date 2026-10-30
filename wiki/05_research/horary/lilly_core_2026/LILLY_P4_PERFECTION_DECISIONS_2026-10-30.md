@@ -1,7 +1,7 @@
 # Lilly P4 perfection routes and chronology decisions
 
 Date: 2026-10-30. Baseline: `60ac6a18da993b1dd1401a86a0581a58920c79ef`.
-Status: **source decisions; fixture bundle and runtime admission pending**.
+Status: **source decisions and test-only fixture packet; runtime admission pending**.
 
 This tranche specifies how Lilly's 1647 general doctrine brings a matter to
 perfection or prevents it: the routes, the events that interrupt them, the
@@ -10,7 +10,10 @@ changes no code. The v1 perfection classifier (`moira/classical_perfection.py`,
 profile `lilly_1647_perfection_v1`), P2 reception evidence and P3 Moon
 evidence keep their meanings. Read with the
 [P4 source collation](LILLY_P4_SOURCE_COLLATION_2026-10-30.md), whose
-passage IDs (S4-xx) are cited below, and with the open register entries in
+passage IDs (S4-xx) are cited below, the
+[fixture bundle](../../../../tests/fixtures/horary/lilly_p4_perfection_routes_2026_10_30.json),
+[reference checks](../../../../tests/unit/test_lilly_p4_source_fixtures.py) and
+[read-only validator](validate_p4_packet.py), and with the open register entries in
 [Rules and ambiguities](RULES_AND_AMBIGUITIES.md) (R18-R28, A07, A09,
 A16-A23).
 
@@ -58,6 +61,9 @@ Decisions on the routes:
   alias. The v1 classifier's mix (heaviness by speed, reception, no
   intervening contact, no principal history) is neither reading and stays a v1
   operational profile.
+- **P07 non-beholding has two named readings, with no default:**
+  `sign_aversion` (the principals' signs do not behold) and
+  `no_current_aspect` (no aspect is in force between them).
 - **P08 is a candidate route, unadmitted as an override.** S4-08 says mutual
   reception brings the matter to pass when aspects deny it, are absent, or are
   doubtful. It does not say whether refranation or frustration are among
@@ -130,7 +136,7 @@ Decisions on the blockers:
 
 ## Heaviness, epochs and conditions
 
-- **Heaviness (A07) has three named readings, selected per mechanism:**
+- **H01. Heaviness (A07) has three named readings, selected per mechanism:**
   - `traditional_order`: Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon,
     heaviest first;
   - `instantaneous_speed`: absolute longitude rate at the evaluation epoch
@@ -141,25 +147,25 @@ Decisions on the blockers:
   Every printed example agrees with all three. A record states which reading
   it used, and the fixtures must include stations and slow inner planets where
   the readings disagree.
-- **Condition epochs are explicit.** Reception, dignity, house class and the
+- **E01. Condition epochs are explicit.** Reception, dignity, house class and the
   Moon's sequence are evaluated at a named epoch: the question, the start of
   the leg, or the completing contact. The pages do not settle this: P03's
   "dignity in the degrees wherein they are" and "apply out of" read most
   naturally at the application, and P01's "this conjunction ... in a succedent
   house" at the contact. No epoch is defaulted; a condition known at one epoch
   is not transported to another.
-- **Undefined qualities are qualitative evidence.** "Good", "proper",
+- **Q01. Undefined qualities are qualitative evidence.** "Good", "proper",
   "friendly" houses, "essentially well dignified", "swift" and "accidentally
   strong" are not defined on these pages. They enter as P3-style
   `LillyQualitativeEvidence`: bound to subjects, epoch, source and supporting
   evidence. A dignity score or a house list chosen by Moira cannot establish
   them. P2 can supply specific dignity facts (for P03, whether a planet has
   term or face at its degree) without deciding "well dignified".
-- **Opposition's Moon condition reuses P3.** "The Moon separating from the
+- **Q02. Opposition's Moon condition reuses P3.** "The Moon separating from the
   quesited's significator and applying presently to the Lord of the
   Ascendant" is evaluated from the P3 lunar sequence, with P3's coverage
   rules. "Presently" receives no numerical meaning.
-- **Timing stays qualitative (A23).** P01's house-class speed and S4-01's
+- **T01. Timing stays qualitative (A23).** P01's house-class speed and S4-01's
   sign-quality and degree statements are reported as qualifiers. No conversion
   of degrees into weeks, months or years is admitted.
 
@@ -180,30 +186,55 @@ original packet) are now specified, not repaired:
 A P4 runtime will be additive, like P2 and P3, under a new fixed profile
 (proposed `lilly_1647_perfection_routes_v1`).
 
-## Fixture plan
+## Fixture contract
 
-The next step is a fixture bundle and read-only validator in the P3 format:
-source references by provenance only, documentary examples with null epochs
-and speeds, and clearly synthetic controls.
+The bundle holds 16 page images by provenance reference, 26 decisions (P01-P09,
+B01-B05, K01-K07, H01, E01, Q01, Q02, T01), 13 documentary claims and 149
+fixtures in 15 families. Six fixtures reproduce the printed teaching examples
+(p.111 translation, p.111 bodily prohibition, p.111 aspectual prohibition under
+each witness's Saturn degree, p.111 refranation, pp.112-113 frustration); they
+carry the source's asserted ordering (`time_basis: source_asserted_ordering`),
+not computed times. The other 143 are explicitly synthetic controls in
+relative seconds. Every expectation was written by hand; the reference test
+re-derives each one with small independent predicates.
 
-| Family | Documentary fixtures | Synthetic controls |
+| Family | Fixtures | What it pins down |
 |---|---|---|
-| Conjunction (P01) | none dated | angle, succedent and cadent qualifiers; prohibition and refranation before and after the contact |
-| Sextile/trine (P02) | none dated | good-house and dignity evidence present, absent, unknown; B05 under both readings |
-| Square (P03) | none dated | degree dignity present or absent; "otherwise not" |
-| Opposition (P04) | none dated | each of the three conditions removed in turn; completion and regret reported separately |
-| Translation (P05/P06) | p.111 Mercury-Mars-Saturn | reading disagreement; missing principal history; reverse reception; intervening contact; several translators |
-| Collection (P07) | none dated | sign-aversion versus no-current-aspect; one leg incomplete; collector not heavier; reception by one principal only |
-| Prohibition (B01/B02) | p.111 bodily; p.111 aspectual with Saturn 15 and with Saturn 13 | interposition to one principal only; translation-versus-prohibition pair with the same later contact |
-| Refranation (B03) | p.111 | no later exact contact; station of the heavier principal; station after perfection |
-| Frustration (B04) | pp.112-113 Mercury-Mars-Jupiter | aspect instead of conjunction; frustrating contact after the intended one |
-| Reception route (P08) | none dated | coexisting refranation, recorded but not overridden |
-| Dwelling (P09) | none dated | placement alone (rejected); lunar translation present |
-| Heaviness (A07) | none | station, slow Mercury or Venus, Sun versus inner planets |
-| Chronology (K01-K07) | none | envelope overlap, partial coverage, cross-window continuation |
+| `conjunction` | 19 | P01 house qualifiers; each blocker's distinct effect; envelope ties; partial coverage; ingress recorded, not blocking |
+| `sextile_trine` | 14 | P02 conditions; B05 under `malefic_planet` and `hard_aspect` |
+| `square` | 8 | P03 "otherwise not" |
+| `opposition` | 8 | P04's three joint conditions; completion and regret separate |
+| `translation` | 20 | P05 and P06 side by side, including the printed example (P05 complete, P06 unmet: the principals had not separated) |
+| `collection` | 12 | P07 under both beholding readings; reception by each principal; leg order reported |
+| `prohibition` | 12 | B01/B02 under both readings; the same later contact as prohibition or translation by initial relation |
+| `refranation` | 9 | B03 without a later exact; station of the heavier principal |
+| `frustration` | 9 | B04 conjunction-only; intercepting contact after the intended one |
+| `reception_route` | 6 | P08 present alongside a blocked direct route, without overriding it |
+| `dwelling` | 6 | P09 placement rejected; lunar-translation form |
+| `heaviness` | 10 | H01 readings, disagreeing in eight cases |
+| `continuation` | 6 | K07 carried versus discarded state |
+| `multi_route` | 4 | K03/K04 all routes kept, earliest reported, no verdict |
+| `condition_epoch` | 6 | E01 no transport between epochs |
 
-Undated printed examples assert an ordering; their fixtures record that
-ordering as the source's premise, not as a computed ephemeris result.
+The bundle's policies record every unselected reading as `null` (translation,
+prohibition, malevolent intervention, beholding, heaviness, route aggregation,
+timing conversion, condition epoch). The validator fails if any is set. The
+fixture builder and acquisition receipt stay with the images under
+`C:/dev/outputs/lilly-p4-perfection-20261030/`.
+
+Before runtime admission: implement typed route records and blocker
+detection under these named readings; derive legs and blockers from the P3
+event search with its coverage receipts; carry continuation state; verify the
+printed orderings and synthetic controls through the production path without
+changing v1; and record an implementation receipt.
+
+Run the portable packet check with the project's interpreter:
+
+```powershell
+.\.venv\Scripts\python.exe wiki/05_research/horary/lilly_core_2026/validate_p4_packet.py
+.\.venv\Scripts\python.exe wiki/05_research/horary/lilly_core_2026/validate_p4_packet.py --cache C:/dev/outputs/lilly-p4-perfection-20261030
+.\.venv\Scripts\python.exe -m pytest tests/unit/test_lilly_p4_source_fixtures.py -q
+```
 
 ## Open questions this tranche does not settle
 

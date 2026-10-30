@@ -73,8 +73,11 @@ readings, collection, reception without aspect, the rejected dwelling rule),
 the blocking events and their distinct effects, envelope chronology, coverage,
 continuation, and named heaviness readings. The
 [P4 photograph collation](LILLY_P4_SOURCE_COLLATION_2026-10-30.md) records 16
-checked images and two witness variants on p.111. No code, fixture or v1/P2/P3
-behavior changes; the fixture bundle and runtime are the next gates.
+checked images and two witness variants on p.111. Its test-only fixture
+bundle (149 fixtures in 15 families, six of them Lilly's printed examples) and
+[read-only validator](validate_p4_packet.py) pin down every named reading
+without selecting one. No code or v1/P2/P3 behavior changes; the runtime is the
+next gate.
 
 ## Decision at this checkpoint
 

@@ -1,0 +1,6932 @@
+{
+ "schema": "moira.research.lilly_p4_perfection_routes.v1",
+ "date": "2026-10-30",
+ "baseline_commit": "a7ac6a7769aef0b5f4f38558ba7e9cae3669d992",
+ "profile_id": "lilly_1647_p4_decisions_candidate_2026_10_30",
+ "runtime_admitted": false,
+ "predictive_admitted": false,
+ "complete_judgement_admitted": false,
+ "rights": "http://creativecommons.org/publicdomain/mark/1.0/",
+ "source_locations": [
+  {
+   "id": "P4-S01-P110",
+   "witness": "S01",
+   "printed_page": 110,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0144.jp2",
+   "canvas_index_zero_based": 143,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0144.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p110.jpg",
+   "bytes": 943882,
+   "sha256": "00ae656067fc8551bb7d56dc98886366c54f72c239f2bd9ee16c142613e89412",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P111",
+   "witness": "S01",
+   "printed_page": 111,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0145.jp2",
+   "canvas_index_zero_based": 144,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0145.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p111.jpg",
+   "bytes": 861350,
+   "sha256": "189c2b5836f55e1ab6640dea510c146a7fae7e2fdc0b6a6ed69bb23a3b236b00",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P112",
+   "witness": "S01",
+   "printed_page": 112,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0146.jp2",
+   "canvas_index_zero_based": 145,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0146.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p112.jpg",
+   "bytes": 943377,
+   "sha256": "3fcb3249b6eb20927c6d533eb5f4ef63d8aabcf9dbdfce7fbbdc05d5f3369dc2",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P113",
+   "witness": "S01",
+   "printed_page": 113,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0147.jp2",
+   "canvas_index_zero_based": 146,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0147.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p113.jpg",
+   "bytes": 825951,
+   "sha256": "08d7d8c4eab1d5d46a12d38baea24aa57337f04b37431952b617ac376c6806b1",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P124",
+   "witness": "S01",
+   "printed_page": 124,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0158.jp2",
+   "canvas_index_zero_based": 157,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0158.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p124.jpg",
+   "bytes": 914046,
+   "sha256": "8cd568ea1fa53858e69e9a05af1837499455632235896239801987de2f12d058",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P125",
+   "witness": "S01",
+   "printed_page": 125,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0159.jp2",
+   "canvas_index_zero_based": 158,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0159.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p125.jpg",
+   "bytes": 875886,
+   "sha256": "1a3987d0f5a40ef7c55f8cee1fa95cf2590abd0cce869d2b6252ead34251373e",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P126",
+   "witness": "S01",
+   "printed_page": 126,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0160.jp2",
+   "canvas_index_zero_based": 159,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0160.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p126.jpg",
+   "bytes": 909928,
+   "sha256": "df68a17cadfbf3bd5151c200fe698756928645b84f8b4ca0ddd827d993f5b858",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S01-P127",
+   "witness": "S01",
+   "printed_page": 127,
+   "canvas_id": "https://iiif.wellcomecollection.org/presentation/b30338724/canvases/b30338724_0161.jp2",
+   "canvas_index_zero_based": 160,
+   "url": "https://iiif.wellcomecollection.org/image/b30338724_0161.jp2/full/1800,/0/default.jpg",
+   "cache_path": "pages/s01_p127.jpg",
+   "bytes": 796690,
+   "sha256": "22504a5e35d4284a02a6a8d163713fc3fcc49420e7dab370d383fa956302191f",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P110",
+   "witness": "S02",
+   "printed_page": 110,
+   "leaf_index": 139,
+   "metadata_page_label": "112",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0139.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p110.jpg",
+   "bytes": 1710716,
+   "sha256": "37393be388157d51fa507a899eceeb3ec6b8f4924e1ad82c743a273ebc4e6f8b",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P111",
+   "witness": "S02",
+   "printed_page": 111,
+   "leaf_index": 140,
+   "metadata_page_label": "113",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0140.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p111.jpg",
+   "bytes": 1689278,
+   "sha256": "5f8b8523ea46a8e939354c550a43610ccb70e5e18136a985197c84a827602b7d",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P112",
+   "witness": "S02",
+   "printed_page": 112,
+   "leaf_index": 141,
+   "metadata_page_label": "114",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0141.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p112.jpg",
+   "bytes": 1698511,
+   "sha256": "2ffa8dbe1fbb4591022dba7846c5c5403245891abdb6097b579db04509bd1322",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P113",
+   "witness": "S02",
+   "printed_page": 113,
+   "leaf_index": 142,
+   "metadata_page_label": "115",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0142.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p113.jpg",
+   "bytes": 1693207,
+   "sha256": "a45d176f946ec0ea2f4bc0ebf611917dfcdbf7b228c40340a276c189f2a518dd",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P124",
+   "witness": "S02",
+   "printed_page": 124,
+   "leaf_index": 153,
+   "metadata_page_label": "126",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0153.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p124.jpg",
+   "bytes": 1653797,
+   "sha256": "a10455d7577b372183e3de82f7bcbf3d3c1bf00f0e3140be41e2eb1b524e8f35",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P125",
+   "witness": "S02",
+   "printed_page": 125,
+   "leaf_index": 154,
+   "metadata_page_label": "127",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0154.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p125.jpg",
+   "bytes": 1708501,
+   "sha256": "a34b6c3852c1cbd2ad93dfeae7245a8073388414d3cd3a706884e9158339a64e",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P126",
+   "witness": "S02",
+   "printed_page": 126,
+   "leaf_index": 155,
+   "metadata_page_label": "128",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0155.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p126.jpg",
+   "bytes": 1718584,
+   "sha256": "e247f47ce0c14eeb8fcc450fa38b8953060c609be07d5e68a605f19b0ca1a0b5",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  },
+  {
+   "id": "P4-S02-P127",
+   "witness": "S02",
+   "printed_page": 127,
+   "leaf_index": 156,
+   "metadata_page_label": "129",
+   "url": "https://ia601605.us.archive.org/BookReader/BookReaderImages.php?zip=%2F9%2Fitems%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2.zip&file=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_jp2%2Fbim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647_0156.jp2&id=bim_early-english-books-1641-1700_christian-astrology-_lilly-william_1647&scale=1&rotate=0",
+   "cache_path": "pages/s02_p127.jpg",
+   "bytes": 1672357,
+   "sha256": "c998133b5474bb1a4654eab947be6905bda825f479ec4ec7f5ff70384a5aee9a",
+   "visual_status": "printed_page_and_selected_passages_checked"
+  }
+ ],
+ "decisions": [
+  {
+   "id": "P01",
+   "parent_rule_id": "R18",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Conjunction of the principals perfects unless prohibition or refranation (or frustration, B04) precedes it; angle/first house, succedent and cadent qualify ease and speed only.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P02",
+   "parent_rule_id": "R19",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Sextile/trine needs good houses, essential dignity and no malevolent aspect intervening before partile; the qualities are qualitative evidence.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P03",
+   "parent_rule_id": "R20",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Square needs dignity in the degrees of each planet and application out of proper and good houses; otherwise not.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P04",
+   "parent_rule_id": "R21",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Opposition needs mutual house reception, friendly houses and the Moon separating from the quesited significator and applying presently to the Lord of the Ascendant; completion and regret are separate results.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P05",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A17",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision": "Structural translation (p.111): a lighter planet separates from one principal and applies to the other; no reception or principal-history condition.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P06",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A17",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "Full translation (p.126): principals separated from conjunction/sextile/trine; translator received by the principal it leaves by house, triplicity or term; no contact with another planet before the second leg. No default between P05 and P06.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P07",
+   "parent_rule_id": "R23",
+   "parent_ambiguity_id": "A18",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "Collection: non-beholding principals each apply to a heavier collector that each receives by some essential dignity. Non-beholding has two named readings: sign_aversion and no_current_aspect.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P08",
+   "parent_rule_id": "R10",
+   "parent_ambiguity_id": "A09",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision": "Mutual reception of the principals is its own route; it never cancels a blocker on another route and no aggregation is admitted.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "P09",
+   "parent_rule_id": "R27",
+   "parent_ambiguity_id": "A22",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision": "Dwelling in houses alone is reported as the Ancients' rule rejected by Lilly; the only positive form adds the Moon translating the quesited significator's light to the Lord of the Ascendant.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "B01",
+   "parent_rule_id": "R24",
+   "parent_ambiguity_id": "A19",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision": "Bodily prohibition; readings interposition_to_either and successive_to_both, no default. Stated effect: hindered and retarded.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "B02",
+   "parent_rule_id": "R24",
+   "parent_ambiguity_id": "A19",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision": "Prohibition by aspect; same readings as B01. A third planet already separating from the applying principal is a translation candidate, not a prohibitor.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "B03",
+   "parent_rule_id": "R25",
+   "parent_ambiguity_id": "A19",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision": "Refranation is the applying planet stationing retrograde within an established application before exactitude; no later exact contact is required. A station of the heavier principal is not refranation. Stated effect: never effected.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "B04",
+   "parent_rule_id": "R26",
+   "parent_ambiguity_id": "A07",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision": "Frustration is conjunction-specific: the heavier principal conjoins a third before the lighter reaches it. Stated effect: a third party gains.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "B05",
+   "parent_rule_id": "R19",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Malevolent intervention has readings malefic_planet (aspect from Saturn or Mars) and hard_aspect (square or opposition from any planet); applies to P02 only.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K01",
+   "parent_rule_id": "R24",
+   "parent_ambiguity_id": "A20",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "A blocker counts only when its envelope ends before the blocked contact's envelope begins; overlap is unresolved; no one-second constant.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K02",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A17",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "A route completes only when every leg completes in order; collection leg order is reported, not required.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K03",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A21",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "Every candidate route and blocker is kept; no first-candidate truncation.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K04",
+   "parent_rule_id": "R18",
+   "parent_ambiguity_id": "A21",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "No precedence or aggregation across routes; the earliest completing route is a reported fact, not a verdict.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K05",
+   "parent_rule_id": "R18",
+   "parent_ambiguity_id": "A19",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Sign ingress is recorded, not treated as a blocker; its effect is a separately selectable policy.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K06",
+   "parent_rule_id": "R18",
+   "parent_ambiguity_id": "A21",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Absence needs complete coverage up to the completing contact; partial coverage gives unresolved, never negative.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "K07",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A21",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "Continuation carries open legs and unresolved envelopes across search windows; a route cannot complete from discarded state.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "H01",
+   "parent_rule_id": "R22",
+   "parent_ambiguity_id": "A07",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision": "Heaviness readings traditional_order, instantaneous_speed and superior_inferior, selected per mechanism, no default.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "E01",
+   "parent_rule_id": "R19",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Condition epochs (question, leg start, completing contact) are explicit; a value known at one epoch is not transported to another.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "Q01",
+   "parent_rule_id": "R19",
+   "parent_ambiguity_id": "A16",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Good, proper and friendly houses, essential well-dignity, swiftness and accidental strength are bound qualitative evidence; no score or house list supplied by Moira establishes them.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "Q02",
+   "parent_rule_id": "R21",
+   "parent_ambiguity_id": "A10",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "The opposition route's Moon condition is read from the P3 lunar sequence and coverage; \"presently\" has no numerical meaning.",
+   "runtime_admitted": false
+  },
+  {
+   "id": "T01",
+   "parent_rule_id": "R28",
+   "parent_ambiguity_id": "A23",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision": "Timing statements are qualitative qualifiers; no degree-to-time-unit conversion is admitted.",
+   "runtime_admitted": false
+  }
+ ],
+ "source_claims": [
+  {
+   "id": "P4-SRC-TIMING",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110"
+   ],
+   "paraphrase": "Degrees still needed for full separation give weeks, days, months or years; movable/angular/swift hasten, common longer, fixed longest.",
+   "facts": {
+    "units_named": [
+     "weeks",
+     "days",
+     "months",
+     "years"
+    ],
+    "unit_selection_rule": null,
+    "concerns": "dissolution_after_separation"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-PROHIBITION",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "paraphrase": "Another planet interposes body or aspect before two applying significators perfect; the matter is hindered and retarded.",
+   "facts": {
+    "interposition_target_named": false,
+    "effect": "hindered_and_retarded"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-PROHIBITION-BODILY",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "paraphrase": "Sun 6 Aries overtakes Mars 7 Aries and conjoins Saturn 12 Aries first, impeding Mars then Saturn.",
+   "facts": {
+    "applying": "Mars",
+    "heavier": "Saturn",
+    "third": "Sun",
+    "third_contacts_in_order": [
+     "Mars",
+     "Saturn"
+    ],
+    "mode": "body",
+    "speeds_supplied": false
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-PROHIBITION-ASPECT",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "paraphrase": "Sun 5 Gemini passes the dexter sextile of Mars 7 Aries and reaches a dexter sextile of Saturn before Mars reaches Saturn.",
+   "facts": {
+    "applying": "Mars",
+    "heavier": "Saturn",
+    "third": "Sun",
+    "third_contacts_in_order": [
+     "Mars",
+     "Saturn"
+    ],
+    "mode": "aspect",
+    "saturn_degree_by_witness": {
+     "S01": 15,
+     "S02": 13
+    },
+    "emended": false
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-REFRANATION",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "paraphrase": "Mars 7 Aries hastens to Saturn 12 Aries but turns retrograde before the tenth or eleventh degree; nothing signified will ever be effected.",
+   "facts": {
+    "applying": "Mars",
+    "heavier": "Saturn",
+    "later_exact_contact": false,
+    "effect": "never_effected",
+    "sign_glyph_by_witness": {
+     "S01": "Aries",
+     "S02": "unreadable"
+    }
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-TRANSLATION-P111",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "paraphrase": "Mercury 16 Aries separates from Mars 15 Aries and translates his virtue to Saturn 20 Aries; any aspect also serves.",
+   "facts": {
+    "translator": "Mercury",
+    "from": "Mars",
+    "to": "Saturn",
+    "reception_condition": null,
+    "principal_history_condition": null,
+    "any_aspect": true
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-RECEPTION",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "paraphrase": "Mutual reception by house is strongest; it brings the matter to pass when aspects deny it, are absent or doubtful.",
+   "facts": {
+    "strongest_basis": "house",
+    "overrides_named_blockers": null
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-FRUSTRATION",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "paraphrase": "Mercury 10 Aries would conjoin Mars 12 Aries, but Mars first conjoins Jupiter 13 Aries; two dogs quarrel, a third gets the bone.",
+   "facts": {
+    "lighter": "Mercury",
+    "heavier": "Mars",
+    "third": "Jupiter",
+    "aspect": "conjunction",
+    "effect": "third_party_gains"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-WEIGHTY",
+   "source_ids": [
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "paraphrase": "Saturn, Jupiter and Mars are superior and more weighty; Venus, Mercury and Moon inferior.",
+   "facts": {
+    "superior": [
+     "Saturn",
+     "Jupiter",
+     "Mars"
+    ],
+    "inferior": [
+     "Venus",
+     "Mercury",
+     "Moon"
+    ],
+    "sun_classified": false,
+    "ranks_within_class": false
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-ASPECT-ROUTES",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "paraphrase": "Conjunction qualified by house class; sextile/trine by good houses, dignity and no malevolent aspect; square by dignity in the degrees and good houses, otherwise not; opposition only with three conditions and with regret.",
+   "facts": {
+    "conjunction_house_class_denies": false,
+    "square_gate": "otherwise_not",
+    "opposition_conditions": 3,
+    "opposition_desirability": "regret"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-TRANSLATION-P126",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "paraphrase": "Principals separated from conjunction/sextile/trine; translator received by house, triplicity or term from the principal it leaves; applies to the other before meeting any other planet.",
+   "facts": {
+    "allowed_bases": [
+     "house",
+     "triplicity",
+     "term"
+    ],
+    "heaviness_condition": null
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-COLLECTION",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "paraphrase": "Principals do not behold one another; both aspect a more weighty planet whom both receive in some essential dignity.",
+   "facts": {
+    "beholding_definition": null,
+    "reception_direction": "principal_receives_collector"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  },
+  {
+   "id": "P4-SRC-DWELLING",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "paraphrase": "The quesited significator in the Ascendant is the Ancients' rule, rejected unless the Moon also transfers its light to the Lord of the Ascendant.",
+   "facts": {
+    "stance": "rejected",
+    "exception": "moon_translation"
+   },
+   "historical_epoch": null,
+   "predictive_admitted": false
+  }
+ ],
+ "policies": {
+  "translation_default": null,
+  "translation_variants": [
+   "p111_structural",
+   "p126_full"
+  ],
+  "prohibition_default": null,
+  "prohibition_variants": [
+   "interposition_to_either",
+   "successive_to_both"
+  ],
+  "malevolent_intervention_default": null,
+  "malevolent_intervention_variants": [
+   "malefic_planet",
+   "hard_aspect"
+  ],
+  "beholding_default": null,
+  "beholding_variants": [
+   "sign_aversion",
+   "no_current_aspect"
+  ],
+  "heaviness_default": null,
+  "heaviness_variants": [
+   "traditional_order",
+   "instantaneous_speed",
+   "superior_inferior"
+  ],
+  "traditional_order_heaviest_first": [
+   "Saturn",
+   "Jupiter",
+   "Mars",
+   "Sun",
+   "Venus",
+   "Mercury",
+   "Moon"
+  ],
+  "superior_planets": [
+   "Saturn",
+   "Jupiter",
+   "Mars"
+  ],
+  "inferior_planets": [
+   "Venus",
+   "Mercury",
+   "Moon"
+  ],
+  "p06_reception_bases": [
+   "house",
+   "triplicity",
+   "term"
+  ],
+  "collection_reception_bases": [
+   "house",
+   "exaltation",
+   "triplicity",
+   "term",
+   "face"
+  ],
+  "blocker_effects": {
+   "prohibition_bodily": "hindered_and_retarded",
+   "prohibition_aspect": "hindered_and_retarded",
+   "refranation": "never_effected",
+   "frustration": "third_party_gains"
+  },
+  "conjunction_house_qualifiers": {
+   "angular": "without_let",
+   "succedent": "perfected_not_so_soon",
+   "cadent": "loss_of_time_difficulty"
+  },
+  "ingress_policy": "recorded_not_blocking",
+  "tie_policy": "envelope_overlap_unresolved",
+  "route_aggregation": null,
+  "timing_unit_conversion": null,
+  "condition_epoch_default": null,
+  "fixture_timescale": "synthetic_relative_seconds"
+ },
+ "fixtures": [
+  {
+   "id": "P4-CONJ-ANGULAR",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "without_let",
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-SUCCEDENT",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "succedent",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "perfected_not_so_soon",
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-CADENT",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "cadent",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "loss_of_time_difficulty",
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-HOUSE-UNKNOWN",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": null,
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "not_evaluable",
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-NO-CONTACT",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": null,
+    "house_class": "angular",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-NO-CONTACT-PARTIAL",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": null,
+    "house_class": "angular",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-PARTIAL-COVERAGE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [],
+    "ingresses": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-PROHIBITION-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "p"
+    ],
+    "effects": [
+     "hindered_and_retarded"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-ASPECT-PROHIBITION-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_aspect",
+      "t_s": 60,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "p"
+    ],
+    "effects": [
+     "hindered_and_retarded"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-PROHIBITION-AFTER",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 150,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "without_let",
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-REFRANATION-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 70,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "r"
+    ],
+    "effects": [
+     "never_effected"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-FRUSTRATION-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "f",
+      "kind": "frustration",
+      "t_s": 40,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "f"
+    ],
+    "effects": [
+     "third_party_gains"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-TWO-BLOCKERS",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 80,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 30,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "p",
+     "r"
+    ],
+    "effects": [
+     "hindered_and_retarded",
+     "never_effected"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-ENVELOPE-OVERLAP",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 5
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 97,
+      "uncertainty_s": 2
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-ENVELOPE-JUST-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 5
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 92,
+      "uncertainty_s": 2
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "p"
+    ],
+    "effects": [
+     "hindered_and_retarded"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-SIMULTANEOUS",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_bodily",
+      "t_s": 100,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-BLOCKER-UNDER-PARTIAL",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 20,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "r"
+    ],
+    "effects": [
+     "never_effected"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": false
+   }
+  },
+  {
+   "id": "P4-CONJ-INGRESS-BEFORE",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [],
+    "ingresses": [
+     {
+      "id": "i",
+      "t_s": 40,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "blocking_ids": [],
+    "effects": [],
+    "qualifier": "without_let",
+    "ingress_recorded_only": true
+   }
+  },
+  {
+   "id": "P4-CONJ-INGRESS-AND-PROHIBITION",
+   "family": "conjunction",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P01",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "K01",
+    "K05",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "house_class": "angular",
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_aspect",
+      "t_s": 60,
+      "uncertainty_s": 0
+     }
+    ],
+    "ingresses": [
+     {
+      "id": "i",
+      "t_s": 40,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "blocking_ids": [
+     "p"
+    ],
+    "effects": [
+     "hindered_and_retarded"
+    ],
+    "qualifier": null,
+    "ingress_recorded_only": true
+   }
+  },
+  {
+   "id": "P4-ST-PLAIN-TRINE",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "complete",
+    "hard_aspect": "complete"
+   }
+  },
+  {
+   "id": "P4-ST-PLAIN-SEXTILE",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "sextile",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "complete",
+    "hard_aspect": "complete"
+   }
+  },
+  {
+   "id": "P4-ST-BAD-HOUSES",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": false,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "condition_unmet",
+    "hard_aspect": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-ST-NOT-DIGNIFIED",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": false,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "condition_unmet",
+    "hard_aspect": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-ST-HOUSES-UNKNOWN",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": null,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "not_evaluable",
+    "hard_aspect": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-ST-MALEFIC-TRINE-BEFORE",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 50,
+      "uncertainty_s": 0,
+      "from_malefic": true,
+      "aspect": "trine"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "blocked",
+    "hard_aspect": "complete"
+   }
+  },
+  {
+   "id": "P4-ST-BENEFIC-SQUARE-BEFORE",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 50,
+      "uncertainty_s": 0,
+      "from_malefic": false,
+      "aspect": "square"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "complete",
+    "hard_aspect": "blocked"
+   }
+  },
+  {
+   "id": "P4-ST-MALEFIC-OPPOSITION-BEFORE",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 50,
+      "uncertainty_s": 0,
+      "from_malefic": true,
+      "aspect": "opposition"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "blocked",
+    "hard_aspect": "blocked"
+   }
+  },
+  {
+   "id": "P4-ST-MALEFIC-AFTER",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 150,
+      "uncertainty_s": 0,
+      "from_malefic": true,
+      "aspect": "square"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "complete",
+    "hard_aspect": "complete"
+   }
+  },
+  {
+   "id": "P4-ST-MALEFIC-OVERLAP",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 99,
+      "uncertainty_s": 3,
+      "from_malefic": true,
+      "aspect": "square"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "not_evaluable",
+    "hard_aspect": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-ST-NO-CONTACT",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": null,
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "absent",
+    "hard_aspect": "absent"
+   }
+  },
+  {
+   "id": "P4-ST-PARTIAL",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": true,
+    "interventions": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "malefic_planet": "not_evaluable",
+    "hard_aspect": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-ST-UNMET-BEATS-BLOCK",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": false,
+    "well_dignified": true,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 50,
+      "uncertainty_s": 0,
+      "from_malefic": true,
+      "aspect": "square"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "condition_unmet",
+    "hard_aspect": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-ST-BLOCK-WITH-UNKNOWN-DIGNITY",
+   "family": "sextile_trine",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P02",
+    "B05",
+    "Q01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "aspect": "trine",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "good_houses": true,
+    "well_dignified": null,
+    "interventions": [
+     {
+      "id": "m",
+      "t_s": 50,
+      "uncertainty_s": 0,
+      "from_malefic": true,
+      "aspect": "square"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "malefic_planet": "blocked",
+    "hard_aspect": "blocked"
+   }
+  },
+  {
+   "id": "P4-SQ-ALL-MET",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": true
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete"
+   }
+  },
+  {
+   "id": "P4-SQ-QUERENT-NO-DIGNITY",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": false,
+     "quesited": true
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-SQ-QUESITED-NO-DIGNITY",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": false
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-SQ-HOUSES-NOT-GOOD",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": true
+    },
+    "proper_good_houses": false,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-SQ-DIGNITY-UNKNOWN",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": null
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-SQ-REFRANATION-BEFORE",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": true
+    },
+    "proper_good_houses": true,
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked"
+   }
+  },
+  {
+   "id": "P4-SQ-NO-CONTACT",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": null,
+    "degree_dignity": {
+     "querent": true,
+     "quesited": true
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-SQ-PARTIAL",
+   "family": "square",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P03",
+    "Q01",
+    "E01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "degree_dignity": {
+     "querent": true,
+     "quesited": true
+    },
+    "proper_good_houses": true,
+    "blockers": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-OP-ALL-MET",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "complete",
+    "desirability": "regret_reported"
+   }
+  },
+  {
+   "id": "P4-OP-NO-MUTUAL-RECEPTION",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": false,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-NOT-FRIENDLY",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": false,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-NO-MOON-CONDITION",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": false,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "condition_unmet",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-MOON-UNKNOWN",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": null,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-PROHIBITED",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [
+     {
+      "id": "p",
+      "kind": "prohibition_aspect",
+      "t_s": 40,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "blocked",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-NO-CONTACT",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": null,
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-OP-PARTIAL",
+   "family": "opposition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "P04",
+    "Q01",
+    "Q02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "mutual_house_reception": true,
+    "friendly_houses": true,
+    "moon_separates_from_quesited_applies_to_ascendant_lord": true,
+    "blockers": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "desirability": null
+   }
+  },
+  {
+   "id": "P4-TR-P111-EXAMPLE",
+   "family": "translation",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": false,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "printed_positions": {
+     "Saturn": "20 Aries",
+     "Mars": "15 Aries",
+     "Mercury": "16 Aries"
+    }
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-TR-BOTH-READINGS",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-NOT-LIGHTER",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": false,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "condition_unmet",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-LIGHTER-UNKNOWN",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": null,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "not_evaluable",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-NO-PRIOR-SEPARATION",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": false,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-TR-HISTORY-UNKNOWN",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": null,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-TR-EXALTATION-ONLY",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "exaltation"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-TR-NO-RECEPTION",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-TR-RECEPTION-UNKNOWN",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": null,
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-TR-TRIPLICITY",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "triplicity"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-TERM-AND-FACE",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "face",
+     "term"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-INTERVENING-CONTACT",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [
+     {
+      "id": "x",
+      "t_s": 40,
+      "uncertainty_s": 0
+     }
+    ],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "condition_unmet"
+   }
+  },
+  {
+   "id": "P4-TR-INTERVENING-OVERLAP",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [
+     {
+      "id": "x",
+      "t_s": 98,
+      "uncertainty_s": 4
+     }
+    ],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-TR-INTERVENING-AFTER",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [
+     {
+      "id": "x",
+      "t_s": 120,
+      "uncertainty_s": 0
+     }
+    ],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "complete",
+    "p06": "complete"
+   }
+  },
+  {
+   "id": "P4-TR-SEPARATION-AFTER-SECOND",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": 150,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "absent",
+    "p06": "absent"
+   }
+  },
+  {
+   "id": "P4-TR-NO-SECOND-LEG",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": null,
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "absent",
+    "p06": "absent"
+   }
+  },
+  {
+   "id": "P4-TR-NO-SECOND-LEG-PARTIAL",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": null,
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "p05": "not_evaluable",
+    "p06": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-TR-TRANSLATOR-REFRAINS",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 60,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "blocked",
+    "p06": "blocked"
+   }
+  },
+  {
+   "id": "P4-TR-PARTIAL",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": true,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "p05": "not_evaluable",
+    "p06": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-TR-UNMET-AND-BLOCKED",
+   "family": "translation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P05",
+    "P06",
+    "H01",
+    "K01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "translator": "Mercury",
+    "from_principal": "Mars",
+    "to_principal": "Saturn",
+    "separation_from_source": {
+     "id": "s",
+     "t_s": -10,
+     "uncertainty_s": 0
+    },
+    "second_leg": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "translator_lighter_than_both": false,
+    "principals_prior_separation": true,
+    "reception_bases": [
+     "house"
+    ],
+    "intervening_contacts": [],
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 60,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "p05": "condition_unmet",
+    "p06": "blocked"
+   }
+  },
+  {
+   "id": "P4-CO-COMPLETE",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "complete",
+    "no_current_aspect": "complete",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-QUESITED-FIRST",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "complete",
+    "no_current_aspect": "complete",
+    "leg_order": "quesited_first"
+   }
+  },
+  {
+   "id": "P4-CO-SIMULTANEOUS-LEGS",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 80,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 80,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "complete",
+    "no_current_aspect": "complete",
+    "leg_order": "simultaneous_or_unresolved"
+   }
+  },
+  {
+   "id": "P4-CO-READINGS-DISAGREE",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": true,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "condition_unmet",
+    "no_current_aspect": "complete",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-READINGS-DISAGREE-REVERSE",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": true,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "complete",
+    "no_current_aspect": "condition_unmet",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-BEHOLDING-UNKNOWN",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": null,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "not_evaluable",
+    "no_current_aspect": "complete",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-COLLECTOR-LIGHTER",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": false,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "condition_unmet",
+    "no_current_aspect": "condition_unmet",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-ONE-RECEPTION",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "condition_unmet",
+    "no_current_aspect": "condition_unmet",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-RECEPTION-UNKNOWN",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": null,
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "not_evaluable",
+    "no_current_aspect": "not_evaluable",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-CO-ONE-LEG",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": null,
+    "blockers": [],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "absent",
+    "no_current_aspect": "absent",
+    "leg_order": null
+   }
+  },
+  {
+   "id": "P4-CO-ONE-LEG-PARTIAL",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": null,
+    "blockers": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "sign_aversion": "not_evaluable",
+    "no_current_aspect": "not_evaluable",
+    "leg_order": null
+   }
+  },
+  {
+   "id": "P4-CO-LEG-BLOCKED",
+   "family": "collection",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "P07",
+    "H01",
+    "K02",
+    "K03",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "principals_behold_by_sign": false,
+    "principals_current_aspect": false,
+    "collector_heavier_than_both": true,
+    "reception_by_querent": [
+     "term"
+    ],
+    "reception_by_quesited": [
+     "house"
+    ],
+    "leg_querent": {
+     "id": "a",
+     "t_s": 60,
+     "uncertainty_s": 0
+    },
+    "leg_quesited": {
+     "id": "b",
+     "t_s": 90,
+     "uncertainty_s": 0
+    },
+    "blockers": [
+     {
+      "id": "r",
+      "kind": "refranation",
+      "t_s": 30,
+      "uncertainty_s": 0,
+      "leg": "querent"
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "sign_aversion": "blocked",
+    "no_current_aspect": "blocked",
+    "leg_order": "querent_first"
+   }
+  },
+  {
+   "id": "P4-PR-P111-BODILY",
+   "family": "prohibition",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "mars_saturn",
+     "t_s": 3,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "sun_mars",
+      "principal": "applying",
+      "mode": "body",
+      "t_s": 1,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "sun_saturn",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 2,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "printed_positions": {
+     "Mars": "7 Aries",
+     "Saturn": "12 Aries",
+     "Sun": "6 Aries"
+    }
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "present",
+    "third_role": "prohibitor_candidate",
+    "kind": "bodily"
+   }
+  },
+  {
+   "id": "P4-PR-P111-ASPECT-S01",
+   "family": "prohibition",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "mars_saturn",
+     "t_s": 3,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "sun_mars",
+      "principal": "applying",
+      "mode": "aspect",
+      "t_s": 1,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "sun_saturn",
+      "principal": "heavier",
+      "mode": "aspect",
+      "t_s": 2,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "witness": "S01",
+    "printed_positions": {
+     "Mars": "7 Aries",
+     "Saturn": "15 Aries",
+     "Sun": "5 Gemini"
+    }
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "present",
+    "third_role": "prohibitor_candidate",
+    "kind": "aspect"
+   }
+  },
+  {
+   "id": "P4-PR-P111-ASPECT-S02",
+   "family": "prohibition",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "mars_saturn",
+     "t_s": 3,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "sun_mars",
+      "principal": "applying",
+      "mode": "aspect",
+      "t_s": 1,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "sun_saturn",
+      "principal": "heavier",
+      "mode": "aspect",
+      "t_s": 2,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "witness": "S02",
+    "printed_positions": {
+     "Mars": "7 Aries",
+     "Saturn": "13 Aries",
+     "Sun": "5 Gemini"
+    }
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "present",
+    "third_role": "prohibitor_candidate",
+    "kind": "aspect"
+   }
+  },
+  {
+   "id": "P4-PR-HEAVIER-ONLY",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "absent",
+    "third_role": "prohibitor_candidate",
+    "kind": "bodily"
+   }
+  },
+  {
+   "id": "P4-PR-APPLYING-ONLY",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "a",
+      "principal": "applying",
+      "mode": "aspect",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "absent",
+    "third_role": "prohibitor_candidate",
+    "kind": "aspect"
+   }
+  },
+  {
+   "id": "P4-PR-WRONG-ORDER",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 30,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "a",
+      "principal": "applying",
+      "mode": "aspect",
+      "t_s": 60,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "absent",
+    "third_role": "prohibitor_candidate",
+    "kind": "mixed"
+   }
+  },
+  {
+   "id": "P4-PR-SECOND-AFTER-INTENDED",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "a",
+      "principal": "applying",
+      "mode": "body",
+      "t_s": 30,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 130,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "absent",
+    "third_role": "prohibitor_candidate",
+    "kind": "bodily"
+   }
+  },
+  {
+   "id": "P4-PR-ALL-AFTER",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "a",
+      "principal": "applying",
+      "mode": "body",
+      "t_s": 130,
+      "uncertainty_s": 0
+     },
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 140,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "absent",
+    "successive_to_both": "absent",
+    "third_role": "prohibitor_candidate",
+    "kind": null
+   }
+  },
+  {
+   "id": "P4-PR-ORDER-OVERLAP",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [
+     {
+      "id": "a",
+      "principal": "applying",
+      "mode": "body",
+      "t_s": 50,
+      "uncertainty_s": 5
+     },
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 52,
+      "uncertainty_s": 5
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "present",
+    "successive_to_both": "not_evaluable",
+    "third_role": "prohibitor_candidate",
+    "kind": "bodily"
+   }
+  },
+  {
+   "id": "P4-PR-NONE-PARTIAL",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "applying",
+    "third_contacts": [],
+    "coverage": "partial"
+   },
+   "expected": {
+    "interposition_to_either": "not_evaluable",
+    "successive_to_both": "not_evaluable",
+    "third_role": "prohibitor_candidate",
+    "kind": null
+   }
+  },
+  {
+   "id": "P4-PR-TRANSLATOR-NOT-PROHIBITOR",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": "separating",
+    "third_contacts": [
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "absent",
+    "successive_to_both": "absent",
+    "third_role": "translator_candidate",
+    "kind": null
+   }
+  },
+  {
+   "id": "P4-PR-RELATION-UNKNOWN",
+   "family": "prohibition",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P110",
+    "P4-S02-P110",
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B01",
+    "B02",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "third_initial_relation_to_applying": null,
+    "third_contacts": [
+     {
+      "id": "h",
+      "principal": "heavier",
+      "mode": "body",
+      "t_s": 50,
+      "uncertainty_s": 0
+     }
+    ],
+    "coverage": "complete"
+   },
+   "expected": {
+    "interposition_to_either": "not_evaluable",
+    "successive_to_both": "not_evaluable",
+    "third_role": "not_evaluable",
+    "kind": null
+   }
+  },
+  {
+   "id": "P4-RF-P111-EXAMPLE",
+   "family": "refranation",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 1,
+     "uncertainty_s": 0
+    },
+    "exact_contact": null,
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "printed_positions": {
+     "Saturn": "12 Aries",
+     "Mars": "7 Aries"
+    }
+   },
+   "expected": {
+    "status": "present",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-BEFORE-EXACT",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 40,
+     "uncertainty_s": 0
+    },
+    "exact_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "present",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-AFTER-EXACT",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 140,
+     "uncertainty_s": 0
+    },
+    "exact_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-OVERLAP",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 99,
+     "uncertainty_s": 3
+    },
+    "exact_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-HEAVIER-STATIONS",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": {
+     "id": "st",
+     "body_role": "heavier",
+     "t_s": 40,
+     "uncertainty_s": 0
+    },
+    "exact_contact": null,
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "note": "station_of_heavier_not_refranation"
+   }
+  },
+  {
+   "id": "P4-RF-NO-STATION",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": null,
+    "exact_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-NO-STATION-PARTIAL",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": true,
+    "station": null,
+    "exact_contact": null,
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-NO-APPLICATION",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": false,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 40,
+     "uncertainty_s": 0
+    },
+    "exact_contact": null,
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-RF-APPLICATION-UNKNOWN",
+   "family": "refranation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111"
+   ],
+   "decision_ids": [
+    "B03",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "application_established": null,
+    "station": {
+     "id": "st",
+     "body_role": "applying",
+     "t_s": 40,
+     "uncertainty_s": 0
+    },
+    "exact_contact": null,
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable",
+    "note": null
+   }
+  },
+  {
+   "id": "P4-FR-P112-EXAMPLE",
+   "family": "frustration",
+   "origin": "source_teaching_example",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 1,
+     "uncertainty_s": 0
+    },
+    "intended_contact": {
+     "id": "c",
+     "t_s": 2,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete",
+    "time_basis": "source_asserted_ordering",
+    "printed_positions": {
+     "Mercury": "10 Aries",
+     "Mars": "12 Aries",
+     "Jupiter": "13 Aries"
+    }
+   },
+   "expected": {
+    "status": "present"
+   }
+  },
+  {
+   "id": "P4-FR-NEVER-COMPLETES",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 50,
+     "uncertainty_s": 0
+    },
+    "intended_contact": null,
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "present"
+   }
+  },
+  {
+   "id": "P4-FR-THIRD-AFTER",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 150,
+     "uncertainty_s": 0
+    },
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-FR-THIRD-BY-ASPECT",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "trine",
+     "t_s": 50,
+     "uncertainty_s": 0
+    },
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-FR-INTENDED-ASPECT",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "sextile",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 50,
+     "uncertainty_s": 0
+    },
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-FR-OVERLAP",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 99,
+     "uncertainty_s": 3
+    },
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-FR-NO-THIRD",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": null,
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-FR-NO-THIRD-PARTIAL",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": true,
+    "heavier_contact_with_third": null,
+    "intended_contact": {
+     "id": "c",
+     "t_s": 100,
+     "uncertainty_s": 0
+    },
+    "coverage": "partial"
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-FR-NO-APPLICATION",
+   "family": "frustration",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "B04",
+    "H01",
+    "K01",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "clock": "synthetic_relative_seconds",
+    "intended_aspect": "conjunction",
+    "application_established": false,
+    "heavier_contact_with_third": {
+     "id": "h3",
+     "aspect": "conjunction",
+     "t_s": 50,
+     "uncertainty_s": 0
+    },
+    "intended_contact": null,
+    "coverage": "complete"
+   },
+   "expected": {
+    "status": "absent"
+   }
+  },
+  {
+   "id": "P4-RR-MUTUAL-HOUSE-WITH-REFRANATION",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": [
+     "house"
+    ],
+    "quesited_in_querent_dignity": [
+     "house"
+    ],
+    "direct_route_status": "blocked"
+   },
+   "expected": {
+    "p08": "present",
+    "strongest_by_house": true,
+    "direct_route_status": "blocked"
+   }
+  },
+  {
+   "id": "P4-RR-MUTUAL-MIXED",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": [
+     "triplicity"
+    ],
+    "quesited_in_querent_dignity": [
+     "house"
+    ],
+    "direct_route_status": "absent"
+   },
+   "expected": {
+    "p08": "present",
+    "strongest_by_house": false,
+    "direct_route_status": "absent"
+   }
+  },
+  {
+   "id": "P4-RR-ONE-WAY",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": [
+     "house"
+    ],
+    "quesited_in_querent_dignity": [],
+    "direct_route_status": "absent"
+   },
+   "expected": {
+    "p08": "absent",
+    "strongest_by_house": null,
+    "direct_route_status": "absent"
+   }
+  },
+  {
+   "id": "P4-RR-UNKNOWN",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": null,
+    "quesited_in_querent_dignity": [
+     "house"
+    ],
+    "direct_route_status": "not_evaluable"
+   },
+   "expected": {
+    "p08": "not_evaluable",
+    "strongest_by_house": null,
+    "direct_route_status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-RR-NO-ASPECT-ROUTE",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": [
+     "house"
+    ],
+    "quesited_in_querent_dignity": [
+     "house"
+    ],
+    "direct_route_status": "absent"
+   },
+   "expected": {
+    "p08": "present",
+    "strongest_by_house": true,
+    "direct_route_status": "absent"
+   }
+  },
+  {
+   "id": "P4-RR-ALONGSIDE-COMPLETE",
+   "family": "reception_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P112",
+    "P4-S02-P112"
+   ],
+   "decision_ids": [
+    "P08",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "querent_in_quesited_dignity": [
+     "term"
+    ],
+    "quesited_in_querent_dignity": [
+     "face"
+    ],
+    "direct_route_status": "complete"
+   },
+   "expected": {
+    "p08": "present",
+    "strongest_by_house": false,
+    "direct_route_status": "complete"
+   }
+  },
+  {
+   "id": "P4-DW-WITH-MOON",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": true,
+    "moon_translation_status": "complete"
+   },
+   "expected": {
+    "placement": "reported_rejected_by_lilly",
+    "route": "complete"
+   }
+  },
+  {
+   "id": "P4-DW-PLACEMENT-ALONE",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": true,
+    "moon_translation_status": "absent"
+   },
+   "expected": {
+    "placement": "reported_rejected_by_lilly",
+    "route": "absent"
+   }
+  },
+  {
+   "id": "P4-DW-MOON-BLOCKED",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": true,
+    "moon_translation_status": "blocked"
+   },
+   "expected": {
+    "placement": "reported_rejected_by_lilly",
+    "route": "blocked"
+   }
+  },
+  {
+   "id": "P4-DW-MOON-UNKNOWN",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": true,
+    "moon_translation_status": "not_evaluable"
+   },
+   "expected": {
+    "placement": "reported_rejected_by_lilly",
+    "route": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-DW-NO-PLACEMENT",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": false,
+    "moon_translation_status": "complete"
+   },
+   "expected": {
+    "placement": "absent",
+    "route": "absent"
+   }
+  },
+  {
+   "id": "P4-DW-PLACEMENT-UNKNOWN",
+   "family": "dwelling",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126",
+    "P4-S01-P127",
+    "P4-S02-P127"
+   ],
+   "decision_ids": [
+    "P09",
+    "P05",
+    "P06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "quesited_significator_in_ascendant": null,
+    "moon_translation_status": "complete"
+   },
+   "expected": {
+    "placement": "not_evaluable",
+    "route": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-HV-MARS-SATURN",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Mars",
+    "body_b": "Saturn",
+    "abs_speed_a_deg_per_day": 0.6,
+    "abs_speed_b_deg_per_day": 0.1
+   },
+   "expected": {
+    "traditional_order": "Saturn",
+    "instantaneous_speed": "Saturn",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-MERCURY-MARS",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Mercury",
+    "body_b": "Mars",
+    "abs_speed_a_deg_per_day": 1.4,
+    "abs_speed_b_deg_per_day": 0.6
+   },
+   "expected": {
+    "traditional_order": "Mars",
+    "instantaneous_speed": "Mars",
+    "superior_inferior": "Mars"
+   }
+  },
+  {
+   "id": "P4-HV-VENUS-NEAR-STATION",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Venus",
+    "body_b": "Mars",
+    "abs_speed_a_deg_per_day": 0.05,
+    "abs_speed_b_deg_per_day": 0.7
+   },
+   "expected": {
+    "traditional_order": "Mars",
+    "instantaneous_speed": "Venus",
+    "superior_inferior": "Mars"
+   }
+  },
+  {
+   "id": "P4-HV-MERCURY-SLOW-RETRO",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Mercury",
+    "body_b": "Sun",
+    "abs_speed_a_deg_per_day": 0.2,
+    "abs_speed_b_deg_per_day": 1.0
+   },
+   "expected": {
+    "traditional_order": "Sun",
+    "instantaneous_speed": "Mercury",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-SUN-JUPITER",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Sun",
+    "body_b": "Jupiter",
+    "abs_speed_a_deg_per_day": 1.0,
+    "abs_speed_b_deg_per_day": 0.2
+   },
+   "expected": {
+    "traditional_order": "Jupiter",
+    "instantaneous_speed": "Jupiter",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-MOON-VENUS",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Moon",
+    "body_b": "Venus",
+    "abs_speed_a_deg_per_day": 13.0,
+    "abs_speed_b_deg_per_day": 1.2
+   },
+   "expected": {
+    "traditional_order": "Venus",
+    "instantaneous_speed": "Venus",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-MARS-STATION-JUPITER",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Mars",
+    "body_b": "Jupiter",
+    "abs_speed_a_deg_per_day": 0.01,
+    "abs_speed_b_deg_per_day": 0.2
+   },
+   "expected": {
+    "traditional_order": "Jupiter",
+    "instantaneous_speed": "Mars",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-EQUAL-SPEED",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Venus",
+    "body_b": "Mercury",
+    "abs_speed_a_deg_per_day": 1.2,
+    "abs_speed_b_deg_per_day": 1.2
+   },
+   "expected": {
+    "traditional_order": "Venus",
+    "instantaneous_speed": "unresolved",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-HV-MOON-SATURN",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Moon",
+    "body_b": "Saturn",
+    "abs_speed_a_deg_per_day": 12.0,
+    "abs_speed_b_deg_per_day": 0.05
+   },
+   "expected": {
+    "traditional_order": "Saturn",
+    "instantaneous_speed": "Saturn",
+    "superior_inferior": "Saturn"
+   }
+  },
+  {
+   "id": "P4-HV-SATURN-JUPITER",
+   "family": "heaviness",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P111",
+    "P4-S02-P111",
+    "P4-S01-P112",
+    "P4-S02-P112",
+    "P4-S01-P113",
+    "P4-S02-P113"
+   ],
+   "decision_ids": [
+    "H01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "body_a": "Saturn",
+    "body_b": "Jupiter",
+    "abs_speed_a_deg_per_day": 0.12,
+    "abs_speed_b_deg_per_day": 0.08
+   },
+   "expected": {
+    "traditional_order": "Saturn",
+    "instantaneous_speed": "Jupiter",
+    "superior_inferior": "unresolved"
+   }
+  },
+  {
+   "id": "P4-CH-SAME-WINDOW",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "complete",
+    "second_window_coverage": "complete",
+    "separation_window": 1,
+    "contact_window": 1,
+    "state_carried": true
+   },
+   "expected": {
+    "status": "complete"
+   }
+  },
+  {
+   "id": "P4-CH-SAME-WINDOW-PARTIAL",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "partial",
+    "second_window_coverage": "complete",
+    "separation_window": 1,
+    "contact_window": 1,
+    "state_carried": true
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-CH-CARRIED",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "complete",
+    "second_window_coverage": "complete",
+    "separation_window": 1,
+    "contact_window": 2,
+    "state_carried": true
+   },
+   "expected": {
+    "status": "complete"
+   }
+  },
+  {
+   "id": "P4-CH-DISCARDED",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "complete",
+    "second_window_coverage": "complete",
+    "separation_window": 1,
+    "contact_window": 2,
+    "state_carried": false
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-CH-SECOND-PARTIAL",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "complete",
+    "second_window_coverage": "partial",
+    "separation_window": 1,
+    "contact_window": 2,
+    "state_carried": true
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-CH-FIRST-PARTIAL",
+   "family": "continuation",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04",
+    "K07",
+    "K06"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "first_window_coverage": "partial",
+    "second_window_coverage": "complete",
+    "separation_window": 1,
+    "contact_window": 2,
+    "state_carried": true
+   },
+   "expected": {
+    "status": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-MR-TRANSLATION-BEFORE-DIRECT",
+   "family": "multi_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "routes": [
+     {
+      "id": "direct",
+      "kind": "conjunction",
+      "status": "complete",
+      "completion_t_s": 100
+     },
+     {
+      "id": "tr",
+      "kind": "translation",
+      "status": "complete",
+      "completion_t_s": 60
+     }
+    ]
+   },
+   "expected": {
+    "all_route_ids": [
+     "direct",
+     "tr"
+    ],
+    "earliest_complete_ids": [
+     "tr"
+    ],
+    "verdict": null
+   }
+  },
+  {
+   "id": "P4-MR-BLOCKED-DIRECT-COMPLETE-TRANSLATION",
+   "family": "multi_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "routes": [
+     {
+      "id": "direct",
+      "kind": "conjunction",
+      "status": "blocked",
+      "completion_t_s": null
+     },
+     {
+      "id": "tr",
+      "kind": "translation",
+      "status": "complete",
+      "completion_t_s": 60
+     }
+    ]
+   },
+   "expected": {
+    "all_route_ids": [
+     "direct",
+     "tr"
+    ],
+    "earliest_complete_ids": [
+     "tr"
+    ],
+    "verdict": null
+   }
+  },
+  {
+   "id": "P4-MR-TWO-TRANSLATORS",
+   "family": "multi_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "routes": [
+     {
+      "id": "tr1",
+      "kind": "translation",
+      "status": "complete",
+      "completion_t_s": 70
+     },
+     {
+      "id": "tr2",
+      "kind": "translation",
+      "status": "complete",
+      "completion_t_s": 70
+     },
+     {
+      "id": "co",
+      "kind": "collection",
+      "status": "complete",
+      "completion_t_s": 90
+     }
+    ]
+   },
+   "expected": {
+    "all_route_ids": [
+     "tr1",
+     "tr2",
+     "co"
+    ],
+    "earliest_complete_ids": [
+     "tr1",
+     "tr2"
+    ],
+    "verdict": null
+   }
+  },
+  {
+   "id": "P4-MR-NONE-COMPLETE",
+   "family": "multi_route",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P124",
+    "P4-S02-P124",
+    "P4-S01-P125",
+    "P4-S02-P125",
+    "P4-S01-P126",
+    "P4-S02-P126"
+   ],
+   "decision_ids": [
+    "K03",
+    "K04"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "routes": [
+     {
+      "id": "direct",
+      "kind": "square",
+      "status": "condition_unmet",
+      "completion_t_s": null
+     },
+     {
+      "id": "co",
+      "kind": "collection",
+      "status": "not_evaluable",
+      "completion_t_s": null
+     }
+    ]
+   },
+   "expected": {
+    "all_route_ids": [
+     "direct",
+     "co"
+    ],
+    "earliest_complete_ids": [],
+    "verdict": null
+   }
+  },
+  {
+   "id": "P4-EP-AT-QUESTION",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "question": true,
+     "contact": false
+    },
+    "required_epoch": "question"
+   },
+   "expected": {
+    "value": "present"
+   }
+  },
+  {
+   "id": "P4-EP-AT-CONTACT",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "question": true,
+     "contact": false
+    },
+    "required_epoch": "contact"
+   },
+   "expected": {
+    "value": "absent"
+   }
+  },
+  {
+   "id": "P4-EP-NOT-TRANSPORTED",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "question": true
+    },
+    "required_epoch": "contact"
+   },
+   "expected": {
+    "value": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-EP-LEG-START",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "leg_start": true,
+     "contact": null
+    },
+    "required_epoch": "leg_start"
+   },
+   "expected": {
+    "value": "present"
+   }
+  },
+  {
+   "id": "P4-EP-UNKNOWN-AT-CONTACT",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "question": false,
+     "contact": null
+    },
+    "required_epoch": "contact"
+   },
+   "expected": {
+    "value": "not_evaluable"
+   }
+  },
+  {
+   "id": "P4-EP-NOT-BACKDATED",
+   "family": "condition_epoch",
+   "origin": "synthetic_control",
+   "source_ids": [
+    "P4-S01-P125",
+    "P4-S02-P125"
+   ],
+   "decision_ids": [
+    "E01",
+    "Q01"
+   ],
+   "historical_epoch": null,
+   "predictive_admitted": false,
+   "complete_judgement_admitted": false,
+   "inputs": {
+    "values_by_epoch": {
+     "contact": true
+    },
+    "required_epoch": "question"
+   },
+   "expected": {
+    "value": "not_evaluable"
+   }
+  }
+ ],
+ "deferred": [
+  "Runtime route records and event search over real ephemerides",
+  "Which P05/P06, prohibition, beholding and heaviness readings Lilly applies in his Book II judgements",
+  "Whether mutual reception overcomes refranation or frustration",
+  "Definitions of good, proper and friendly houses and of malevolent aspect",
+  "House of a conjunction whose principals occupy different houses",
+  "Symbolic timing and degree-to-unit conversion",
+  "Historical chart reconstruction and observed outcomes"
+ ],
+ "counts": {
+  "source_images": 16,
+  "printed_pages": 8,
+  "decisions": 26,
+  "source_claims": 13,
+  "fixtures": 149,
+  "fixture_families": 15
+ }
+}
