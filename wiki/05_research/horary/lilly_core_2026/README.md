@@ -65,6 +65,17 @@ considerations, binding checks and independent geometric regressions. It
 preserves v1/P2 and the historical source-packet admission records. Full
 perfection-route chronology remains P4.
 
+## P4 perfection routes and chronology decisions: 2026-10-30
+
+The [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md) specify the
+perfection routes (aspect-specific direct perfection, two translation
+readings, collection, reception without aspect, the rejected dwelling rule),
+the blocking events and their distinct effects, envelope chronology, coverage,
+continuation, and named heaviness readings. The
+[P4 photograph collation](LILLY_P4_SOURCE_COLLATION_2026-10-30.md) records 16
+checked images and two witness variants on p.111. No code, fixture or v1/P2/P3
+behavior changes; the fixture bundle and runtime are the next gates.
+
 ## Decision at this checkpoint
 
 The original 1647 photographed pages govern. OCR and modern editorial material
