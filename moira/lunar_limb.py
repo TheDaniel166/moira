@@ -74,7 +74,7 @@ except ImportError as exc:
     _spiceypy_exc = exc
 
 from .constants import MOON_RADIUS_KM
-from .julian import J2000, _ut1_to_utc
+from .julian import J2000, _leap_second_gap_utc, _ut1_to_utc
 from .spk_reader import KernelReader
 try:
     from . import moira_native
@@ -1288,9 +1288,18 @@ def _jd_ut_to_et(jd_ut: float) -> float:
     The private name remains for compatibility with the existing lunar-limb
     call sites, but its input is now truthfully UT1. It is never passed to
     SPICE as though it were already UTC.
+
+    An instant inside an inserted leap second (23:59:60) has no UTC-coded
+    Julian Day, so the UTC detour would be up to 0.5 s off there.  That one
+    second is timed from TT directly: ET is TDB, and TDB follows TT through the
+    same pinned NAIF LSK periodic term SPICE applies.
     """
 
     admitted_ut1 = _finite_float("jd_ut", jd_ut)
+    if _leap_second_gap_utc(admitted_ut1) is not None:
+        from .julian import tt_to_tdb, ut_to_tt
+
+        return (tt_to_tdb(ut_to_tt(admitted_ut1)) - J2000) * 86_400.0
     return _jd_utc_to_et(_ut1_to_utc(admitted_ut1))
 
 

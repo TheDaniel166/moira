@@ -2388,6 +2388,44 @@ def utc_to_tt_with_truth(jd_utc: float) -> UtcToTtTruth:
     )
 
 
+def _leap_second_gap_utc(jd_ut1: float) -> float | None:
+    """UTC label for a UT1 instant that falls inside an inserted leap second.
+
+    A UTC-coded Julian Day has 86400 seconds per day, so the inserted second
+    23:59:60 has no label: :func:`utc_to_tt` steps by one second at the leap
+    boundary ``D`` and no UTC JD maps to the TT interval
+    ``[D + (pre + 32.184 s), D + (post + 32.184 s))``.  Without a rule the
+    inversion alternated between the two sides of the step, which made the
+    label run backwards in time and put the round trip through TT one second
+    out.  The rule here is monotone and nearest-boundary: the first half of the
+    gap takes the last representable instant before ``D``, the second half takes
+    ``D``, so the TT round trip is off by at most 0.5 s and only inside that
+    one second.  Timing code must not use the label inside the gap; it takes TT
+    directly (``moira.lunar_limb._jd_ut_to_et`` does).
+
+    Returns ``None`` when ``jd_ut1`` is not inside a leap second.
+
+    Side effects: None.
+    """
+
+    index = bisect.bisect_right(LEAP_SECONDS, (jd_ut1 + 2.0, float("inf"))) - 1
+    for candidate in (index, index - 1):
+        if candidate < 1:
+            continue
+        leap_jd, post_offset = LEAP_SECONDS[candidate]
+        pre_offset = LEAP_SECONDS[candidate - 1][1]
+        if post_offset <= pre_offset:
+            continue
+        gap_start_tt = leap_jd + (pre_offset + TAI_TT_OFFSET) / 86400.0
+        gap_end_tt = leap_jd + (post_offset + TAI_TT_OFFSET) / 86400.0
+        jd_tt = ut_to_tt(jd_ut1)
+        if gap_start_tt <= jd_tt < gap_end_tt:
+            if jd_tt < 0.5 * (gap_start_tt + gap_end_tt):
+                return math.nextafter(leap_jd, -math.inf)
+            return leap_jd
+    return None
+
+
 def _ut1_to_utc(jd_ut1: float) -> float:
     """Convert a UT1 JD to the corresponding civil UTC-coded JD.
 
@@ -2395,9 +2433,14 @@ def _ut1_to_utc(jd_ut1: float) -> float:
     coverage it inverts the admitted daily segment directly.  Outside that
     coverage it preserves the pre-1972 historical UT1-proxy convention, or
     solves the post-1972 atomic UTC relation through the shared TT instant.
+    An instant inside an inserted leap second has no UTC-coded JD and takes the
+    deterministic label of :func:`_leap_second_gap_utc`.
     """
 
     _require_representable_time_jd("jd_ut1", jd_ut1)
+    gap_label = _leap_second_gap_utc(jd_ut1)
+    if gap_label is not None:
+        return gap_label
     admitted_utc = EOPRegistry._utc_from_ut1(jd_ut1)
     if admitted_utc is not None:
         return admitted_utc

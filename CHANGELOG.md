@@ -319,6 +319,15 @@ publication, or production pin is implied by these entries.
   position matches ERFA `c2t06a` to 1 mm. Distance now equals the DE441
   reader-bound path exactly; direction agrees with it to 0.7 arcsec once the
   stellar-aberration term (`LT+S`) is set aside.
+- **Leap-second instants no longer run the UTC label backwards.** A UTC-coded
+  Julian Day has no label for 23:59:60, and `_ut1_to_utc` alternated between the
+  two sides of the leap step there: the label moved backwards in time and the
+  round trip through TT was one second out for the one second after each leap
+  boundary (reached lunar-limb ET and printed UTC times). The gap now takes a
+  monotone nearest-boundary label, so the TT round trip is within 0.5 s inside
+  the gap and unchanged outside it. `lunar_limb._jd_ut_to_et` times that second
+  from TT directly and agrees with SPICE `str2et("... 23:59:60.x UTC")` to
+  0.04 ms (the old route was up to 450 ms off). Checked at five leap seconds.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged
