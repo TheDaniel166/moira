@@ -1376,26 +1376,93 @@ def _earth_observer_position_km(
     return (float(pos[0]), float(pos[1]), float(pos[2]))
 
 
+def _observer_state_j2000(
+    observer_lat: float,
+    observer_lon: float,
+    observer_elev_m: float,
+    jd_ut1: float,
+    jd_tt: float,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Observer position (km) and velocity (km/s) relative to Earth's centre in J2000.
+
+    Earth orientation follows the IERS/SOFA chain Moira uses everywhere else:
+    ITRS to true equator of date through polar motion and the apparent sidereal
+    angle (Earth rotation at UT1, equinox terms at TT), then to J2000 through
+    the transpose of the TT frame bias, precession and nutation.  SPICE's
+    ``IAU_EARTH`` frame is deliberately not used: its prime-meridian angle is a
+    function of dynamical time, so it rotated the observer by Delta-T times the
+    Earth's rotation rate (0.29 degrees, about 32 km, in 2026).
+
+    The velocity is the diurnal rotation velocity, which SPICE needs for the
+    stellar-aberration part of ``LT+S``.
+
+    Side effects: None.
+    """
+    from .constants import EARTH_ROTATION_RATE_RAD_PER_SEC
+    from .corrections import _observer_position_icrf
+    from .julian import local_sidereal_time
+    from .obliquity import nutation, true_obliquity
+    from .planets import _compose_rotation_matrix
+
+    dpsi_deg, _deps_deg = nutation(jd_tt)
+    lst_deg = local_sidereal_time(
+        jd_ut1, observer_lon, dpsi_deg, true_obliquity(jd_tt), jd_tt
+    )
+    position_of_date = _observer_position_icrf(
+        observer_lat,
+        observer_lon,
+        lst_deg,
+        observer_elev_m,
+        jd_ut=jd_ut1,
+        observer_frame="equatorial_of_date",
+    )
+    velocity_of_date = (
+        -EARTH_ROTATION_RATE_RAD_PER_SEC * position_of_date[1],
+        EARTH_ROTATION_RATE_RAD_PER_SEC * position_of_date[0],
+        0.0,
+    )
+    icrf_to_true_of_date = _compose_rotation_matrix(jd_tt, with_nutation=True)
+    return (
+        _transpose_matrix_vector(icrf_to_true_of_date, position_of_date),
+        _transpose_matrix_vector(icrf_to_true_of_date, velocity_of_date),
+    )
+
+
 def _observer_limb_context(
     et: float,
     observer_lat: float,
     observer_lon: float,
     observer_elev_m: float,
+    *,
+    jd_ut1: float,
 ) -> _ObserverLimbContext:
-    observer_pos_iau_earth = _earth_observer_position_km(
+    """Observer-to-Moon geometry in the lunar ME frame (SPICE ``LT+S`` route).
+
+    ``et`` (TDB seconds from J2000) times the Moon; ``jd_ut1`` times the Earth's
+    rotation.  The TT used for precession and nutation is the one implied by
+    ``et``, so Earth orientation and Moon timing share one instant.
+    """
+
+    from .julian import tdb_to_tt
+
+    jd_tt = tdb_to_tt(J2000 + et / 86_400.0)
+    observer_position_j2000, observer_velocity_j2000 = _observer_state_j2000(
         observer_lat,
         observer_lon,
         observer_elev_m,
+        jd_ut1,
+        jd_tt,
     )
-    moon_state_j2000, _ = sp.spkcpo(
+    moon_state_j2000, _ = sp.spkcvo(
         "MOON",
         et,
         "J2000",
         "OBSERVER",
         "LT+S",
-        list(observer_pos_iau_earth),
+        [*observer_position_j2000, *observer_velocity_j2000],
+        et,
         "EARTH",
-        "IAU_EARTH",
+        "J2000",
     )
     observer_to_moon_j2000 = (float(moon_state_j2000[0]), float(moon_state_j2000[1]), float(moon_state_j2000[2]))
     observer_distance_km = math.sqrt(
@@ -1591,6 +1658,7 @@ def _limb_point_lon_lat_deg(
         observer_lat,
         observer_lon,
         observer_elev_m,
+        jd_ut1=jd_ut,
     )
     return _limb_point_lon_lat_from_context(context, position_angle_deg)
 
@@ -3219,6 +3287,7 @@ def official_lunar_limb_profile_adjustment(
         observer_lat,
         observer_lon,
         observer_elev_m,
+        jd_ut1=jd_ut,
     )
     limb_lon_deg, limb_lat_deg = _limb_point_lon_lat_from_context(
         observer_context,

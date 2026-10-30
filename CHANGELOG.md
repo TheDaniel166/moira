@@ -308,6 +308,17 @@ publication, or production pin is implied by these entries.
   arcsec of Sun longitude at -500). `_heliacal_signed_elongation` and the
   Delta-T policy passed to the native heliacal search now use the reader-bound
   TT. Results from 1955 on are unchanged.
+- **Lunar-limb observer rotates with UT1.** The SPICE-route limb context
+  (`official_lunar_limb_profile_adjustment`) placed the observer through
+  SPICE's `IAU_EARTH` frame, whose prime meridian turns with dynamical time, so
+  the observer was rotated by Delta-T times the Earth's rotation rate: 0.29 deg
+  (about 32 km, 4.8 km of Moon distance, 10-17 arcsec of direction) in 2026 and
+  tens of degrees at -500. The observer state now comes from the IERS/SOFA chain
+  used elsewhere (polar motion, UT1 rotation, TT precession-nutation) and is
+  handed to SPICE in J2000 with its rotation velocity, keeping `LT+S`. Observer
+  position matches ERFA `c2t06a` to 1 mm. Distance now equals the DE441
+  reader-bound path exactly; direction agrees with it to 0.7 arcsec once the
+  stellar-aberration term (`LT+S`) is set aside.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged
