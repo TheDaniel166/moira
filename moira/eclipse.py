@@ -68,14 +68,13 @@ from .eclipse_search import (
 )
 from .julian import (
     CalendarDateTime,
-    _ut1_to_utc,
     apparent_sidereal_time,
-    calendar_datetime_from_jd,
-    datetime_from_jd,
     decimal_year_from_jd,
     jd_from_datetime,
     utc_to_ut1,
     ut_to_tt_nasa_canon,
+    utc_datetime_from_ut1,
+    utc_calendar_from_ut1,
 )
 from ._ephemeris_time import (
     _ephemeris_tt_to_ut1,
@@ -630,13 +629,13 @@ class EclipseEvent:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_datetime_from_ut1(self.jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
         """Return the greatest epoch in the BCE-safe UTC calendar vessel."""
 
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_calendar_from_ut1(self.jd_ut)
 
 
 class SolarEclipseFootprintBoundaryKind(str, Enum):
@@ -710,13 +709,13 @@ class SolarEclipseFootprintPoint:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_datetime_from_ut1(self.jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
         """Return this boundary epoch in the BCE-safe UTC calendar vessel."""
 
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_calendar_from_ut1(self.jd_ut)
 
 
 @dataclass(frozen=True, slots=True)

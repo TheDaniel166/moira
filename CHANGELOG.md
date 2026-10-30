@@ -354,6 +354,18 @@ publication, or production pin is implied by these entries.
   `tt_to_tdb(ut_to_tt(...))` agrees with SPICE `str2et("... 23:59:60.x UTC")`
   to 0.04 ms, where a route through the UTC label was up to 450 ms off. Checked
   at five leap seconds.
+- **UTC display shows a leap second as `23:59:60`.** A UT1 instant inside an
+  inserted leap second has no UTC-coded Julian Day or Python `datetime`, so
+  printed times there were up to 0.5 s off. New `julian.utc_calendar_from_ut1`
+  returns the true civil time: second 60 on the leap day with the real elapsed
+  fraction (`CalendarDateTime.is_leap_second`; ISO 8601 and RFC 3339 allow it).
+  `utc_datetime_from_ut1` and `safe_utc_datetime_from_ut1` keep the
+  nearest-boundary `datetime` label (0.5 s at most). The 33 display call sites
+  (`calendar_utc`, `datetime_utc`, eclipse, phenomena, parans, planetary hours,
+  progressions, primary-direction timelines, panchanga and the matching REST
+  serializers) now use them instead of `datetime_from_jd(_ut1_to_utc(...))`, so
+  there is one policy. Outside a leap second nothing changes. REST
+  `datetime_utc` strings still carry the `datetime` label.
 - **Hermetic decan Ascendant uses the engine's sidereal time.** `decan_at`
   computed RAMC from a private IAU 1982 mean-sidereal-time polynomial at one UT
   argument: no equation of the equinoxes (up to 17 arcsec) and a different

@@ -415,7 +415,7 @@ class CalendarDateTime:
       "id": "moira.julian.CalendarDateTime",
       "risk": "medium",
       "api": {
-        "frozen": ["isoformat", "date_string", "time_string"],
+        "frozen": ["isoformat", "date_string", "time_string", "is_leap_second"],
         "internal": []
       },
       "state": {"mutable": false, "owners": ["CalendarDateTime"]},
@@ -461,6 +461,11 @@ class CalendarDateTime:
     def time_string(self) -> str:
         """Return a zero-padded time string ``HH:MM:SS``."""
         return f"{self.hour:02d}:{self.minute:02d}:{self.second:02d}"
+
+    @property
+    def is_leap_second(self) -> bool:
+        """True for an inserted leap second (``23:59:60.x``), which ``datetime`` cannot hold."""
+        return self.second == 60
 
 
 @dataclass(frozen=True, slots=True)
@@ -2388,22 +2393,13 @@ def utc_to_tt_with_truth(jd_utc: float) -> UtcToTtTruth:
     )
 
 
-def _leap_second_gap_utc(jd_ut1: float) -> float | None:
-    """UTC label for a UT1 instant that falls inside an inserted leap second.
+def _leap_second_gap(jd_ut1: float) -> tuple[float, float, float, float] | None:
+    """Locate a UT1 instant inside an inserted leap second.
 
-    A UTC-coded Julian Day has 86400 seconds per day, so the inserted second
-    23:59:60 has no label: :func:`utc_to_tt` steps by one second at the leap
-    boundary ``D`` and no UTC JD maps to the TT interval
-    ``[D + (pre + 32.184 s), D + (post + 32.184 s))``.  Without a rule the
-    inversion alternated between the two sides of the step, which made the
-    label run backwards in time and put the round trip through TT one second
-    out.  The rule here is monotone and nearest-boundary: the first half of the
-    gap takes the last representable instant before ``D``, the second half takes
-    ``D``, so the TT round trip is off by at most 0.5 s and only inside that
-    one second.  Timing code must not use the label inside the gap; it takes TT
-    directly (every event path does, through ``_ut1_to_ephemeris_tt``).
-
-    Returns ``None`` when ``jd_ut1`` is not inside a leap second.
+    Returns ``(leap_jd, jd_tt, gap_start_tt, gap_end_tt)``, where ``leap_jd`` is the
+    UTC-coded Julian Day of the boundary 00:00 after the leap day and the two
+    ``gap`` values bound the one-second TT interval that no UTC-coded Julian Day
+    labels; ``None`` when ``jd_ut1`` is not inside a leap second.
 
     Side effects: None.
     """
@@ -2420,10 +2416,38 @@ def _leap_second_gap_utc(jd_ut1: float) -> float | None:
         gap_end_tt = leap_jd + (post_offset + TAI_TT_OFFSET) / 86400.0
         jd_tt = ut_to_tt(jd_ut1)
         if gap_start_tt <= jd_tt < gap_end_tt:
-            if jd_tt < 0.5 * (gap_start_tt + gap_end_tt):
-                return math.nextafter(leap_jd, -math.inf)
-            return leap_jd
+            return leap_jd, jd_tt, gap_start_tt, gap_end_tt
     return None
+
+
+def _leap_second_gap_utc(jd_ut1: float) -> float | None:
+    """UTC label for a UT1 instant that falls inside an inserted leap second.
+
+    A UTC-coded Julian Day has 86400 seconds per day, so the inserted second
+    23:59:60 has no label: :func:`utc_to_tt` steps by one second at the leap
+    boundary ``D`` and no UTC JD maps to the TT interval
+    ``[D + (pre + 32.184 s), D + (post + 32.184 s))``.  Without a rule the
+    inversion alternated between the two sides of the step, which made the
+    label run backwards in time and put the round trip through TT one second
+    out.  The rule here is monotone and nearest-boundary: the first half of the
+    gap takes the last representable instant before ``D``, the second half takes
+    ``D``, so the TT round trip is off by at most 0.5 s and only inside that
+    one second.  Timing code must not use the label inside the gap; it takes TT
+    directly (every event path does, through ``_ut1_to_ephemeris_tt``).
+
+    Returns ``None`` when ``jd_ut1`` is not inside a leap second.  Civil display
+    that can carry second 60 uses :func:`utc_calendar_from_ut1` instead.
+
+    Side effects: None.
+    """
+
+    gap = _leap_second_gap(jd_ut1)
+    if gap is None:
+        return None
+    leap_jd, jd_tt, gap_start_tt, gap_end_tt = gap
+    if jd_tt < 0.5 * (gap_start_tt + gap_end_tt):
+        return math.nextafter(leap_jd, -math.inf)
+    return leap_jd
 
 
 def _ut1_to_utc(jd_ut1: float) -> float:
@@ -2474,6 +2498,57 @@ def _ut1_to_utc(jd_ut1: float) -> float:
             break
         jd_utc = next_utc
     return jd_utc
+
+
+def utc_calendar_from_ut1(jd_ut1: float) -> CalendarDateTime:
+    """Civil UTC calendar time of a UT1 instant, carrying an inserted leap second.
+
+    Inside a leap second the result is ``23:59:60.x`` on the leap day (``x`` the
+    real elapsed fraction of that second from TT), which :class:`CalendarDateTime`
+    holds and ISO 8601 / RFC 3339 allow but ``datetime`` cannot.  Everywhere else
+    it is the calendar form of :func:`_ut1_to_utc`.  Use this for display and
+    serialization of a UT1 instant; timing code takes TT, never a civil label.
+
+    Raises:
+        ValueError: If ``jd_ut1`` is not finite and representable.
+
+    Side effects: None.
+    """
+
+    _require_representable_time_jd("jd_ut1", jd_ut1)
+    gap = _leap_second_gap(jd_ut1)
+    if gap is not None:
+        leap_jd, jd_tt, gap_start_tt, _gap_end_tt = gap
+        year, month, day, _hour = calendar_from_jd(leap_jd - 0.5)
+        microsecond = min(999_999, int((jd_tt - gap_start_tt) * 86_400.0 * 1_000_000.0))
+        return CalendarDateTime(year, month, day, 23, 59, 60, microsecond)
+    return calendar_datetime_from_jd(_ut1_to_utc(jd_ut1))
+
+
+def utc_datetime_from_ut1(jd_ut1: float) -> datetime:
+    """UTC ``datetime`` of a UT1 instant, for CE years only.
+
+    ``datetime`` has no second 60, so an instant inside a leap second takes the
+    monotone nearest-boundary label of :func:`_leap_second_gap_utc` (23:59:59.999999
+    or the following 00:00:00, at most 0.5 s away).  :func:`utc_calendar_from_ut1`
+    shows the true ``23:59:60.x``.
+
+    Raises:
+        ValueError: If the instant lies outside astronomical years 1-9999.
+
+    Side effects: None.
+    """
+
+    return datetime_from_jd(_ut1_to_utc(jd_ut1))
+
+
+def safe_utc_datetime_from_ut1(jd_ut1: float) -> datetime | None:
+    """:func:`utc_datetime_from_ut1`, returning ``None`` outside years 1-9999.
+
+    Side effects: None.
+    """
+
+    return safe_datetime_from_jd(_ut1_to_utc(jd_ut1))
 
 
 def ut_to_tt(

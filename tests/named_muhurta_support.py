@@ -3,7 +3,7 @@ from datetime import datetime, time
 import importlib
 from types import SimpleNamespace
 
-from moira.julian import jd_from_datetime
+from moira.julian import datetime_from_jd, jd_from_datetime
 from moira.spk_reader import get_active_reader
 
 
@@ -13,7 +13,8 @@ def install_analytic_solar(monkeypatch, *, sunrise_hour=6, sunset_hour=18):
     reader, calls, roots = object(), [], []
     state = SimpleNamespace(omit_rises=False, omit_sets=False, multiple=False, fail_signal=False)
     monkeypatch.setattr(daily, "utc_to_ut1", lambda jd: jd)
-    monkeypatch.setattr(daily, "_ut1_to_utc", lambda jd: jd)
+    # Synthetic JDs are taken as UT1 == UTC here; the leap-second-aware helper would convert them.
+    monkeypatch.setattr(daily, "utc_datetime_from_ut1", datetime_from_jd)
     monkeypatch.setattr(owner, "get_reader", lambda: reader)
 
     def solar(day, zone, lat, lon, altitude):

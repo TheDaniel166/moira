@@ -8,6 +8,9 @@ trip is off by at most 0.5 s, and only inside that one second.  Timing never use
 label: ET comes from TT (``tt_to_tdb(ut_to_tt(...))``).  Checked at five leap seconds
 (EOP-covered and pre-EOP), one-millisecond steps.
 
+Civil display: ``utc_calendar_from_ut1`` shows the real ``23:59:60.x`` (``CalendarDateTime``
+and RFC 3339 allow it); ``utc_datetime_from_ut1`` cannot, and takes the nearest-boundary label.
+
 Authority for ET: SPICE ``str2et`` on the real ``... 23:59:60.x UTC`` string with the pinned
 ``naif0012.tls``; measured agreement of Moira's TT-derived ET 0.04 ms (binary64 Julian-day
 quantisation), against up to 450 ms for a route through the UTC label.
@@ -95,3 +98,48 @@ def test_et_inside_leap_second_matches_spice_str2et(leap_jd, label, fraction) ->
     expected = sp.str2et(f"{label} 23:59:{60 + fraction:012.9f} UTC")
     moira_et = (J.tt_to_tdb(J.ut_to_tt(ut1)) - J.J2000) * 86400.0
     assert moira_et == pytest.approx(expected, abs=1.0e-4)
+
+
+
+@pytest.mark.parametrize(("leap_jd", "label"), _LEAPS)
+@pytest.mark.parametrize("fraction", (0.0, 0.25, 0.5, 0.9))
+def test_civil_calendar_shows_the_real_leap_second(leap_jd, label, fraction) -> None:
+    start_tt, _ = _gap_tt_bounds(leap_jd)
+    ut1 = J.tt_to_ut(start_tt + fraction / 86400.0)
+    civil = J.utc_calendar_from_ut1(ut1)
+    assert civil.is_leap_second
+    assert (civil.hour, civil.minute, civil.second) == (23, 59, 60)
+    assert civil.date_string() == label
+    # The fraction of the leap second is the real elapsed time from TT (float-JD precision ~40 us).
+    assert civil.microsecond / 1e6 == pytest.approx(fraction, abs=2.0e-4)
+    assert civil.isoformat().startswith(f"{label}T23:59:60.")
+    assert J.format_calendar_utc(civil, include_seconds=True) == f"{label} 23:59:60 UTC"
+    # datetime cannot hold second 60: it keeps the nearest-boundary label, within half a second.
+    clamped = J.utc_datetime_from_ut1(ut1)
+    assert J.safe_utc_datetime_from_ut1(ut1) == clamped
+    assert clamped == J.datetime_from_jd(J._ut1_to_utc(ut1))
+
+
+def test_civil_calendar_is_unchanged_outside_a_leap_second() -> None:
+    for jd_utc in (J.julian_day(2000, 1, 1, 12.0), J.julian_day(2017, 1, 1, 0.5), J.julian_day(2016, 12, 31, 12.0)):
+        ut1 = J.utc_to_ut1(jd_utc)
+        civil = J.utc_calendar_from_ut1(ut1)
+        assert not civil.is_leap_second
+        assert civil == J.calendar_datetime_from_jd(J._ut1_to_utc(ut1))
+        moment = J.utc_datetime_from_ut1(ut1)
+        assert (moment.year, moment.month, moment.day, moment.hour, moment.minute, moment.second, moment.microsecond) == (
+            civil.year, civil.month, civil.day, civil.hour, civil.minute, civil.second, civil.microsecond
+        )
+
+
+def test_civil_calendar_runs_forward_through_the_leap_second() -> None:
+    """Seconds shown across a leap second never go backwards (...:59.9 -> :60.x -> 00:00.x)."""
+    start_tt, _ = _gap_tt_bounds(2457754.5)
+    start_ut1 = J.tt_to_ut(start_tt)
+    previous = None
+    for step in range(-1500, 2500):
+        civil = J.utc_calendar_from_ut1(start_ut1 + step * 0.001 / 86400.0)
+        key = (civil.year, civil.month, civil.day, civil.hour, civil.minute, civil.second, civil.microsecond)
+        if previous is not None:
+            assert key >= previous, "civil time must not run backwards"
+        previous = key

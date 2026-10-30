@@ -29,7 +29,7 @@ from .chart import ChartContext, create_chart
 from .constants import Body, HouseSystem, SIGNS, sign_of
 from .coordinates import angular_distance
 from .houses import HouseCusps, HousePolicy, house_of, calculate_houses
-from .julian import _ut1_to_utc, calendar_datetime_from_jd
+from .julian import utc_calendar_from_ut1
 from .profections import DOMICILE_RULERS
 from .planets import all_planets_at
 from .rise_set import twilight_times
@@ -1859,7 +1859,7 @@ def _require_birth_civil_year(value: int) -> int:
 def _birth_civil_year_from_ut1(birth_jd: float) -> int:
     """Recover the UTC civil year without treating UT1 as civil time."""
 
-    return calendar_datetime_from_jd(_ut1_to_utc(birth_jd)).year
+    return utc_calendar_from_ut1(birth_jd).year
 
 
 def mudda_dasha(

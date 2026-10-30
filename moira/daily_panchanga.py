@@ -19,7 +19,7 @@ from enum import Enum
 from functools import lru_cache
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from .julian import _ut1_to_utc, datetime_from_jd, jd_from_datetime, utc_to_ut1
+from .julian import jd_from_datetime, utc_to_ut1, utc_datetime_from_ut1
 from .panchanga import (
     PanchangaElement, PanchangaResult, VARA_LORDS, VARA_NAMES,
     _normalize_ayanamsa_system_name, panchanga_at,
@@ -265,7 +265,7 @@ def _civil_bounds(local_date: date, zone: tzinfo) -> tuple[float, float]:
 
 
 def _moment(jd: float, zone: tzinfo) -> PanchangaMoment:
-    utc = datetime_from_jd(_ut1_to_utc(jd))
+    utc = utc_datetime_from_ut1(jd)
     return PanchangaMoment(jd, utc, utc.astimezone(zone))
 
 

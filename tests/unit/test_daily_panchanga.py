@@ -13,7 +13,7 @@ import pytest
 import moira
 import moira.facade as facade
 import moira.vedic as vedic
-from moira.julian import jd_from_datetime
+from moira.julian import datetime_from_jd, jd_from_datetime
 from moira.spk_reader import get_active_reader
 
 daily = importlib.import_module("moira.daily_panchanga")
@@ -25,7 +25,8 @@ def analytic_day(monkeypatch):
     anchor = jd_from_datetime(datetime(2000, 1, 2, 6, tzinfo=timezone.utc))
     reader = object()
     monkeypatch.setattr(daily, "utc_to_ut1", lambda jd: jd)
-    monkeypatch.setattr(daily, "_ut1_to_utc", lambda jd: jd)
+    # Synthetic JDs are taken as UT1 == UTC here; the leap-second-aware helper would convert them.
+    monkeypatch.setattr(daily, "utc_datetime_from_ut1", datetime_from_jd)
     monkeypatch.setattr(daily, "get_reader", lambda: reader)
     monkeypatch.setattr(daily, "tropical_to_sidereal", lambda lon, jd, system: lon % 360)
     monkeypatch.setattr(sidereal, "tropical_to_sidereal", lambda lon, jd, system: lon % 360)

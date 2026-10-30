@@ -18,7 +18,7 @@ from dataclasses import dataclass, replace
 from numbers import Real
 from typing import Iterable
 
-from ..julian import safe_datetime_from_jd, _ut1_to_utc
+from ..julian import safe_utc_datetime_from_ut1
 from ..constants import Body
 from ._chart_time import _chart_ut1
 from .derived_points import _resolve_primary_direction_derived_points
@@ -348,8 +348,8 @@ def compute_primary_directions_timeline(
                         solar_rate=natal_solar_rate,
                     )
 
-                    ent_iso = safe_datetime_from_jd(_ut1_to_utc(ent_jd)).isoformat()
-                    ext_iso = safe_datetime_from_jd(_ut1_to_utc(ext_jd)).isoformat()
+                    ent_iso = safe_utc_datetime_from_ut1(ent_jd).isoformat()
+                    ext_iso = safe_utc_datetime_from_ut1(ext_jd).isoformat()
 
                     enriched_periods.append(
                         replace(
@@ -376,7 +376,7 @@ def compute_primary_directions_timeline(
         if not (0.0 < age <= max_age_years):
             continue
 
-        perf_iso = safe_datetime_from_jd(_ut1_to_utc(perf_jd)).isoformat()
+        perf_iso = safe_utc_datetime_from_ut1(perf_jd).isoformat()
 
         # Check distributor and bound context
         is_bound_boundary = arc.relational_kind is PrimaryDirectionRelationalKind.TERM_BOUND

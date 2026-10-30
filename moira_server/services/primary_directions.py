@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 
 from moira import Moira
 from moira.constants import Body, HouseSystem
-from moira.julian import safe_datetime_from_jd, utc_to_tt, utc_to_ut1, _ut1_to_utc
+from moira.julian import utc_to_tt, utc_to_ut1, safe_utc_datetime_from_ut1
 from moira.primary_directions.keys import project_primary_direction_arc_time
 from moira.primary_directions import (
     PLACIDIAN_MUNDANE_ASPECT_OFFSETS,
@@ -73,7 +73,7 @@ def compute_time_keys_service(
                     chart.jd_ut, item.arc_deg, key,
                     solar_rate=rate, reader=engine._reader_obj,
                 )
-                stamp = safe_datetime_from_jd(_ut1_to_utc(jd))
+                stamp = safe_utc_datetime_from_ut1(jd)
                 if stamp is None:
                     raise ValueError("The time-key perfection lies outside the supported calendar")
                 cache[identity] = PrimaryDirectionTimeKeyResponse(

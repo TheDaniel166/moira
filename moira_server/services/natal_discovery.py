@@ -15,7 +15,7 @@ from moira.chart_shape import _compute_gaps, _sorted_longitudes, classify_chart_
 from moira.constants import Aspect, Body, SIGNS
 from moira.coordinates import angular_distance, normalize_degrees
 from moira.dignities import DOMICILE, calculate_dispositorship
-from moira.julian import _ut1_to_utc, datetime_from_jd, jd_from_datetime, utc_to_ut1
+from moira.julian import jd_from_datetime, utc_to_ut1, utc_datetime_from_ut1
 from moira.phase import illuminated_fraction, phase_angle, synodic_phase_state
 from moira.planets import planet_at
 from moira.sidereal import ayanamsa
@@ -210,7 +210,7 @@ def _compute_known_lunar_context(
             phase=label, jd_ut1=jd,
             # Solvers return UT1; civil display uses Moira's admitted inverse,
             # preserving the historical proxy / atomic UTC boundary policy.
-            datetime_utc=datetime_from_jd(_ut1_to_utc(jd)).isoformat(),
+            datetime_utc=utc_datetime_from_ut1(jd).isoformat(),
             sun_longitude_deg=event_sun, moon_longitude_deg=event_moon,
             ayanamsa_deg=event_offset, days_before_reference=source.jd_ut1 - jd,
             is_prenatal_syzygy=jd == latest,

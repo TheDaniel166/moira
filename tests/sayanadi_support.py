@@ -4,7 +4,7 @@ import importlib
 from types import SimpleNamespace
 
 from moira.gochara_dated import GocharaEpoch
-from moira.julian import jd_from_datetime
+from moira.julian import datetime_from_jd, jd_from_datetime
 from moira.spk_reader import get_active_reader
 
 
@@ -13,7 +13,8 @@ def install_analytic_birth(monkeypatch):
     daily = importlib.import_module("moira.daily_panchanga")
     reader, calls, roots = object(), [], []
     monkeypatch.setattr(dated, "utc_to_ut1", lambda jd: jd)
-    monkeypatch.setattr(daily, "_ut1_to_utc", lambda jd: jd)
+    # Synthetic JDs are taken as UT1 == UTC here; the leap-second-aware helper would convert them.
+    monkeypatch.setattr(daily, "utc_datetime_from_ut1", datetime_from_jd)
     monkeypatch.setattr(dated, "get_reader", lambda: reader)
 
     def solar_date(day, zone, lat, lon, altitude):

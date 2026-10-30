@@ -20,14 +20,15 @@ def test_local_contact_serializer_converts_ut1_back_to_utc(
         visible=True,
     )
 
-    monkeypatch.setattr(serializers, "_ut1_to_utc", lambda jd: jd - 0.25)
+    # The serializer hands the UT1 value to the leap-second-aware UT1 -> UTC helper; it never
+    # decodes a UT1 Julian Day as if it were already UTC.
     monkeypatch.setattr(
         serializers,
-        "datetime_from_jd",
+        "utc_datetime_from_ut1",
         lambda jd: received.append(jd) or expected,
     )
 
     response = serializers.serialize_local_contact(contact)
 
     assert response.datetime_utc == expected.isoformat()
-    assert received == [100.0]
+    assert received == [100.25]

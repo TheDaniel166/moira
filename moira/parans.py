@@ -40,6 +40,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 from .constants import Body
+from .julian import utc_calendar_from_ut1, utc_datetime_from_ut1
 
 
 # ---------------------------------------------------------------------------
@@ -268,8 +269,8 @@ class ParanCrossing:
             - Does not compute crossing times (delegated to ``_crossing_times``).
             - Does not validate that ``circle`` is one of ``CIRCLE_TYPES``.
         Dependencies:
-            - ``datetime_utc`` delegates to ``moira.julian.datetime_from_jd``.
-            - ``calendar_utc`` delegates to ``moira.julian.calendar_datetime_from_jd``.
+            - ``datetime_utc`` delegates to ``moira.julian.utc_datetime_from_ut1``.
+            - ``calendar_utc`` delegates to ``moira.julian.utc_calendar_from_ut1``.
         Structural invariants:
             - ``circle`` is always one of "Rising", "Setting", "Culminating",
               "AntiCulminating".
@@ -330,14 +331,12 @@ class ParanCrossing:
     @property
     def datetime_utc(self) -> datetime:
         """Return the crossing time as a timezone-aware UTC datetime."""
-        from .julian import _ut1_to_utc, datetime_from_jd
-        return datetime_from_jd(_ut1_to_utc(self.jd))
+        return utc_datetime_from_ut1(self.jd)
 
     @property
     def calendar_utc(self):
         """Return the crossing time as a BCE-safe UTC calendar object."""
-        from .julian import _ut1_to_utc, calendar_datetime_from_jd
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd))
+        return utc_calendar_from_ut1(self.jd)
 
     def __repr__(self) -> str:
         return (

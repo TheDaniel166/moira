@@ -20,7 +20,7 @@ from moira.geodetic_analysis import (
 from moira.geodetic_curves import GeodeticLociResult
 from moira.geodetic_inputs import GeodeticBodySnapshot
 from moira.geodetic_timing import GeodeticTimingResult
-from moira.julian import _ut1_to_utc, datetime_from_jd
+from moira.julian import utc_datetime_from_ut1
 
 from ..models.geodetic import (
     GeodeticAngleDerivativesResponse,
@@ -431,7 +431,7 @@ def serialize_geodetic_loci(result: GeodeticLociResult) -> GeodeticLociResponse:
 
 def _epoch(jd_ut1: float) -> GeodeticEpochResponse:
     # JD UT1 is authoritative; datetime_utc renders the same epoch in UTC.
-    return GeodeticEpochResponse(jd_ut1=jd_ut1, datetime_utc=datetime_from_jd(_ut1_to_utc(jd_ut1)).isoformat())
+    return GeodeticEpochResponse(jd_ut1=jd_ut1, datetime_utc=utc_datetime_from_ut1(jd_ut1).isoformat())
 
 
 def _interval(interval) -> GeodeticIntervalResponse:

@@ -54,11 +54,10 @@ from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from .houses import HouseCusps, HousePolicy, calculate_houses
 from .julian import (
     CalendarDateTime,
-    _ut1_to_utc,
-    calendar_datetime_from_jd,
-    datetime_from_jd,
     jd_from_datetime,
     utc_to_ut1,
+    utc_datetime_from_ut1,
+    utc_calendar_from_ut1,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at, all_planets_at
@@ -780,11 +779,11 @@ class ProgressedDeclinationChart:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_datetime_from_ut1(self.progressed_jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_calendar_from_ut1(self.progressed_jd_ut)
 
     @property
     def doctrine_family(self) -> str:
@@ -826,8 +825,8 @@ class ProgressedChart:
             - Resolving body positions from ephemeris (delegates to planets)
         Dependencies:
             - positions dict populated by the owning progression function
-            - datetime_utc delegates to datetime_from_jd()
-            - calendar_utc delegates to calendar_datetime_from_jd()
+            - datetime_utc delegates to utc_datetime_from_ut1()
+            - calendar_utc delegates to utc_calendar_from_ut1()
         Structural invariants:
             - chart_type is one of the recognised progression type labels
             - solar_arc_deg is 0.0 for non-solar-arc techniques
@@ -898,11 +897,11 @@ class ProgressedChart:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_datetime_from_ut1(self.progressed_jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_calendar_from_ut1(self.progressed_jd_ut)
 
     @property
     def doctrine_family(self) -> str | None:
@@ -1024,11 +1023,11 @@ class ProgressedHouseFrame:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_datetime_from_ut1(self.progressed_jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
+        return utc_calendar_from_ut1(self.progressed_jd_ut)
 
     @property
     def doctrine_family(self) -> str:

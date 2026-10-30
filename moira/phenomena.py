@@ -45,7 +45,12 @@ from fractions import Fraction
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .dignities_types import SOLAR_CONDITION_THRESHOLDS_DEG, SolarConditionTruth
-from .julian import CalendarDateTime, _ut1_to_utc, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
+from .julian import (
+    CalendarDateTime,
+    utc_datetime_from_ut1,
+    utc_calendar_from_ut1,
+    format_calendar_utc,
+)
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at, planet_relative_to
 from .spk_reader import get_reader, SpkReader
@@ -114,8 +119,8 @@ class PhenomenonEvent:
             - Does not validate that phenomenon is a known label.
             - Does not perform any I/O or kernel access.
         Dependencies:
-            - moira.julian.datetime_from_jd, calendar_datetime_from_jd,
-              format_jd_utc for time formatting.
+            - moira.julian.utc_datetime_from_ut1, utc_calendar_from_ut1,
+              format_calendar_utc for time formatting (jd_ut is UT1).
         Structural invariants:
             - jd_ut is a finite float representing a valid Julian Day.
             - value semantics depend on phenomenon type (documented per function).
@@ -151,16 +156,16 @@ class PhenomenonEvent:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_datetime_from_ut1(self.jd_ut)
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_ut))
+        return utc_calendar_from_ut1(self.jd_ut)
 
     def __repr__(self) -> str:
         return (f"{self.body} {self.phenomenon}: "
                 f"{self.value:.4f}  "
-                f"{format_jd_utc(_ut1_to_utc(self.jd_ut))}")
+                f"{format_calendar_utc(utc_calendar_from_ut1(self.jd_ut))}")
 
 
 @dataclass(slots=True)

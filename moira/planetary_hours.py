@@ -37,10 +37,9 @@ from ._local_solar_day import (
 from .constants import Body
 from .julian import (
     CalendarDateTime,
-    _ut1_to_utc,
-    calendar_datetime_from_jd,
-    datetime_from_jd,
-    format_jd_utc,
+    utc_datetime_from_ut1,
+    utc_calendar_from_ut1,
+    format_calendar_utc,
 )
 from .spk_reader import SpkReader
 
@@ -136,24 +135,24 @@ class PlanetaryHour:
 
     @property
     def start_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.jd_start))
+        return utc_datetime_from_ut1(self.jd_start)
 
     @property
     def start_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_start))
+        return utc_calendar_from_ut1(self.jd_start)
 
     @property
     def end_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.jd_end))
+        return utc_datetime_from_ut1(self.jd_end)
 
     @property
     def end_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_end))
+        return utc_calendar_from_ut1(self.jd_end)
 
     def __repr__(self) -> str:
         label = "Day" if self.is_daytime else "Night"
         return (f"Hour {self.hour_number:2d} ({label}) — {self.ruler:<8}  "
-                f"{format_jd_utc(_ut1_to_utc(self.jd_start))}–{self.end_calendar_utc.time_string()} UTC")
+                f"{format_calendar_utc(utc_calendar_from_ut1(self.jd_start))}–{self.end_calendar_utc.time_string()} UTC")
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,7 +185,7 @@ class PlanetaryHoursDay:
             - Resolving the local solar day (delegates to _local_solar_day)
         Dependencies:
             - Populated by planetary_hours()
-            - sunrise_utc / sunset_utc delegate to datetime_from_jd()
+            - sunrise_utc / sunset_utc delegate to utc_datetime_from_ut1()
         Structural invariants:
             - hours has exactly 24 PlanetaryHour instances
             - hours[0:12] are daytime, hours[12:24] are nighttime
@@ -226,19 +225,19 @@ class PlanetaryHoursDay:
 
     @property
     def sunrise_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.sunrise_jd))
+        return utc_datetime_from_ut1(self.sunrise_jd)
 
     @property
     def sunrise_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.sunrise_jd))
+        return utc_calendar_from_ut1(self.sunrise_jd)
 
     @property
     def sunset_utc(self) -> datetime:
-        return datetime_from_jd(_ut1_to_utc(self.sunset_jd))
+        return utc_datetime_from_ut1(self.sunset_jd)
 
     @property
     def sunset_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(_ut1_to_utc(self.sunset_jd))
+        return utc_calendar_from_ut1(self.sunset_jd)
 
     def hour_at(self, jd: float) -> PlanetaryHour | None:
         """Return the planetary hour that contains the given JD."""

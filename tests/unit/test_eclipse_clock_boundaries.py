@@ -32,14 +32,15 @@ def test_eclipse_event_datetime_converts_ut1_back_to_utc(
     received: list[float] = []
     expected = datetime(2026, 7, 17, 12, tzinfo=timezone.utc)
 
-    monkeypatch.setattr(eclipse, "_ut1_to_utc", lambda jd: jd - 0.25)
+    # The event hands its UT1 value to the leap-second-aware UT1 -> UTC helper; it never decodes
+    # a UT1 Julian Day as if it were already UTC.
     monkeypatch.setattr(
         eclipse,
-        "datetime_from_jd",
+        "utc_datetime_from_ut1",
         lambda jd: received.append(jd) or expected,
     )
 
     event = eclipse.EclipseEvent(jd_ut=100.25, data=None)  # type: ignore[arg-type]
 
     assert event.datetime_utc is expected
-    assert received == [100.0]
+    assert received == [100.25]
