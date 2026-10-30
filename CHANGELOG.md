@@ -328,6 +328,14 @@ publication, or production pin is implied by these entries.
   the gap and unchanged outside it. `lunar_limb._jd_ut_to_et` times that second
   from TT directly and agrees with SPICE `str2et("... 23:59:60.x UTC")` to
   0.04 ms (the old route was up to 450 ms off). Checked at five leap seconds.
+- **Hermetic decan Ascendant uses the engine's sidereal time.** `decan_at`
+  computed RAMC from a private IAU 1982 mean-sidereal-time polynomial at one UT
+  argument: no equation of the equinoxes (up to 17 arcsec) and a different
+  quantity from `HouseCusps.armc`. `_lst_to_ramc` now returns the apparent local
+  sidereal time through `local_sidereal_time` with nutation at TT, identical to
+  the house engine's ARMC. It matches Meeus Example 12.a's apparent value to
+  0.06 arcsec; the oracle test now compares that value (the mean value is 3.5
+  arcsec away).
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged

@@ -73,8 +73,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .julian import ut_to_tt
-from .obliquity import true_obliquity
+from .julian import local_sidereal_time, ut_to_tt
+from .obliquity import nutation, true_obliquity
 
 # ---------------------------------------------------------------------------
 # Source-reconstructed Harley MS 3731 catalog
@@ -322,23 +322,27 @@ def decan_star_at(name: str, jd: float) -> None:
 # Local Sidereal Time → RAMC
 # ---------------------------------------------------------------------------
 
-def _lst_to_ramc(jd: float, geo_lon: float) -> float:
+def _lst_to_ramc(jd: float, geo_lon: float, jd_tt: float | None = None) -> float:
     """Return the Right Ascension of the Midheaven Culminating (RAMC) in degrees.
+
+    RAMC is the *apparent* local sidereal time, the same ARMC the house engine
+    uses: Earth rotation at UT1, the IAU 2006 precession polynomial, the
+    equation of the equinoxes (nutation in longitude at TT) and the
+    complementary terms.  This replaced a private IAU 1982 mean-sidereal-time
+    polynomial evaluated at one UT argument, which omitted the equation of the
+    equinoxes (up to 17 arcseconds) and disagreed with ``HouseCusps.armc``.
 
     Parameters
     ----------
-    jd      : Julian Day (UT)
+    jd      : Julian Day (UT1)
     geo_lon : geographic longitude in degrees (positive east)
+    jd_tt   : Julian Day (TT) of the same instant; derived with ``ut_to_tt``
+              when omitted
     """
-    T = (jd - 2451545.0) / 36525.0
-    gmst_deg = (
-        280.46061837
-        + 360.98564736629 * (jd - 2451545.0)
-        + 0.000387933 * T * T
-        - T * T * T / 38710000.0
-    ) % 360.0
-    lst = (gmst_deg + geo_lon) % 360.0
-    return lst  # RAMC == LST
+    if jd_tt is None:
+        jd_tt = ut_to_tt(jd)
+    dpsi, _deps = nutation(jd_tt)
+    return local_sidereal_time(jd, geo_lon, dpsi, true_obliquity(jd_tt), jd_tt)
 
 
 # ---------------------------------------------------------------------------
@@ -365,9 +369,10 @@ def decan_at(
     -------
     Decan name (member of list_decans())
     """
-    ramc = _lst_to_ramc(jd, lon)
+    jd_tt = ut_to_tt(jd)
+    ramc = _lst_to_ramc(jd, lon, jd_tt)
     ramc_r = math.radians(ramc)
-    obl_r  = math.radians(true_obliquity(ut_to_tt(jd)))
+    obl_r  = math.radians(true_obliquity(jd_tt))
     lat_r  = math.radians(lat)
 
     asc_lon = math.degrees(math.atan2(

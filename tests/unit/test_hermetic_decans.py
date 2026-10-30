@@ -429,20 +429,35 @@ def test_prop8_decan_planetary_face_consistency(d):
 
 # Oracle constants — do not edit without re-running the verification script.
 _MEEUS_JD          = 2446895.5      # April 10 1987, 0h UT
-_MEEUS_GMST        = 197.693195     # deg — Meeus Ex 12.a ground truth
+_MEEUS_GMST        = 197.693195     # deg — Meeus Ex 12.a mean sidereal time, 13h10m46.3668s
+_MEEUS_GAST        = 197.692229     # deg — Meeus Ex 12.a apparent sidereal time, 13h10m46.1351s
 
 
 class TestLstToRamcMeeusOracle:
-    """_lst_to_ramc agrees with Meeus Example 12.a to sub-arcsecond precision."""
+    """_lst_to_ramc is the apparent sidereal time and agrees with Meeus Example 12.a."""
 
-    def test_gmst_matches_meeus_example_12a(self):
-        """GMST at JD 2446895.5 (lon=0) must equal Meeus 197.693195° within 0.001°."""
+    def test_ramc_matches_meeus_example_12a_apparent_sidereal_time(self):
+        """RAMC at JD 2446895.5 (lon=0) is Meeus's *apparent* 197.692229° within 1e-4°.
+
+        1e-4° is 0.36 arcsec: Meeus uses the 1980 nutation series and quotes the time to
+        0.0001 s; the measured difference from IAU 2000A/2006 here is 1.6e-5° (0.06 arcsec).
+        The mean value 197.693195° is 3.5 arcsec away, so this separates the two.
+        """
         from moira.hermetic_decans import _lst_to_ramc
         result = _lst_to_ramc(_MEEUS_JD, 0.0)
-        assert abs(result - _MEEUS_GMST) < 0.001, (
-            f"GMST {result:.6f}° diverges from Meeus oracle {_MEEUS_GMST}° "
-            f"by {abs(result - _MEEUS_GMST)*3600:.2f} arcsec"
+        assert abs(result - _MEEUS_GAST) < 1.0e-4, (
+            f"RAMC {result:.6f}° diverges from Meeus apparent oracle {_MEEUS_GAST}° "
+            f"by {abs(result - _MEEUS_GAST)*3600:.2f} arcsec"
         )
+        assert abs(result - _MEEUS_GMST) > 5.0e-4
+
+    def test_ramc_equals_the_house_engine_armc(self):
+        """RAMC and ``HouseCusps.armc`` are one quantity: identical for the same instant."""
+        from moira.hermetic_decans import _lst_to_ramc
+        from moira.houses import calculate_houses
+        for jd, lat, lon in ((2446895.5, 37.98, 23.72), (2451545.0, 51.5, -0.1), (2415020.5, 10.0, 100.0)):
+            armc = calculate_houses(jd, lat, lon).armc
+            assert abs((_lst_to_ramc(jd, lon) - armc + 180.0) % 360.0 - 180.0) < 1.0e-9
 
     def test_lst_shifts_by_geo_longitude(self):
         """LST at lon=25° must equal GMST + 25° (modulo 360)."""
