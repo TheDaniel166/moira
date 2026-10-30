@@ -14,6 +14,7 @@ from moira.sidereal import (
     NakshatraPosition,
     SiderealLongitudeConversionTruth,
     all_nakshatras_at_with_truth,
+    ayanamsa_doctrine,
     ayanamsa_with_truth,
     list_ayanamsa_systems,
     nakshatra_of_with_truth,
@@ -23,6 +24,7 @@ from moira.sidereal import (
 
 from ..models.sidereal import (
     AyanamsaComputationTruthResponse,
+    AyanamsaDoctrineResponse,
     AyanamsaSystemResponse,
     AyanamsaSystemsEnvelopeResponse,
     NakshatraComputationTruthResponse,
@@ -136,22 +138,34 @@ def _serialize_nakshatra_position(
     )
 
 
+def _truth_payload(truth) -> dict:
+    """``asdict`` with every nested ayanamsa's ``doctrine_terms`` pairs as a mapping."""
+    payload = asdict(truth)
+    ayanamsa_payload = payload.get("ayanamsa", payload)
+    ayanamsa_payload["doctrine_terms"] = dict(ayanamsa_payload["doctrine_terms"])
+    return payload
+
+
 def _serialize_ayanamsa_truth(
     truth: AyanamsaComputationTruth,
 ) -> AyanamsaComputationTruthResponse:
-    return AyanamsaComputationTruthResponse.model_validate(asdict(truth))
+    return AyanamsaComputationTruthResponse.model_validate(_truth_payload(truth))
 
 
 def _serialize_conversion_truth(
     truth: SiderealLongitudeConversionTruth,
 ) -> SiderealLongitudeConversionTruthResponse:
-    return SiderealLongitudeConversionTruthResponse.model_validate(asdict(truth))
+    return SiderealLongitudeConversionTruthResponse.model_validate(_truth_payload(truth))
 
 
 def _serialize_nakshatra_truth(
     truth: NakshatraComputationTruth,
 ) -> NakshatraComputationTruthResponse:
-    return NakshatraComputationTruthResponse.model_validate(asdict(truth))
+    return NakshatraComputationTruthResponse.model_validate(_truth_payload(truth))
+
+
+def _serialize_doctrine(system) -> AyanamsaDoctrineResponse:
+    return AyanamsaDoctrineResponse.model_validate(asdict(ayanamsa_doctrine(system)))
 
 
 def list_sidereal_ayanamsa_systems() -> AyanamsaSystemsEnvelopeResponse:
@@ -163,6 +177,7 @@ def list_sidereal_ayanamsa_systems() -> AyanamsaSystemsEnvelopeResponse:
             reference_value_j2000_deg=reference_values[system],
             is_star_anchored=system in star_anchored,
             supported_modes=["true", "mean"],
+            doctrine=_serialize_doctrine(system),
         )
         for system in Ayanamsa.ALL
     ]
@@ -176,21 +191,22 @@ def list_sidereal_ayanamsa_systems() -> AyanamsaSystemsEnvelopeResponse:
 def compute_sidereal_ayanamsa(
     request: SiderealAyanamsaRequest,
 ) -> SiderealAyanamsaResponse:
+    system = request.engine_system()
     truth = ayanamsa_with_truth(
         request.jd_ut,
-        request.ayanamsa_system,
+        system,
         request.mode,
     )
     return SiderealAyanamsaResponse(
         jd_ut=request.jd_ut,
-        ayanamsa_system=request.ayanamsa_system,
+        ayanamsa_system=request.system_name(),
         mode=request.mode,
         ayanamsa_deg=truth.ayanamsa_deg,
         value_range=_LONGITUDE_RANGE,
         provenance=_ayanamsa_provenance(
             engine_entrypoint="ayanamsa",
             product_kind="date_specific_ayanamsa_value",
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
             mode=request.mode,
             stage_sequence=[
                 "input_validation",
@@ -200,6 +216,7 @@ def compute_sidereal_ayanamsa(
             ],
         ),
         computation_truth=_serialize_ayanamsa_truth(truth),
+        doctrine=_serialize_doctrine(system),
     )
 
 
@@ -210,7 +227,7 @@ def convert_sidereal_longitude(
         truth = tropical_to_sidereal_with_truth(
             request.longitude_deg,
             request.jd_ut,
-            system=request.ayanamsa_system,
+            system=request.engine_system(),
             mode=request.mode,
         )
         engine_entrypoint = "tropical_to_sidereal"
@@ -218,7 +235,7 @@ def convert_sidereal_longitude(
         truth = sidereal_to_tropical_with_truth(
             request.longitude_deg,
             request.jd_ut,
-            system=request.ayanamsa_system,
+            system=request.engine_system(),
             mode=request.mode,
         )
         engine_entrypoint = "sidereal_to_tropical"
@@ -226,7 +243,7 @@ def convert_sidereal_longitude(
     return SiderealConversionResponse(
         direction=request.direction,
         jd_ut=request.jd_ut,
-        ayanamsa_system=request.ayanamsa_system,
+        ayanamsa_system=request.system_name(),
         mode=request.mode,
         input_longitude_deg=request.longitude_deg,
         output_longitude_deg=truth.output_longitude_deg,
@@ -235,7 +252,7 @@ def convert_sidereal_longitude(
         provenance=_ayanamsa_provenance(
             engine_entrypoint=engine_entrypoint,
             product_kind="sidereal_longitude_conversion",
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
             mode=request.mode,
             conversion_direction=request.direction,
             stage_sequence=[
@@ -256,7 +273,7 @@ def compute_nakshatra_position(
     resolved = nakshatra_of_with_truth(
         request.tropical_longitude_deg,
         request.jd_ut,
-        request.ayanamsa_system,
+        request.engine_system(),
     )
     return SiderealNakshatraPositionEnvelopeResponse(
         request=request,
@@ -265,11 +282,11 @@ def compute_nakshatra_position(
             resolved.truth,
             tropical_longitude_deg=request.tropical_longitude_deg,
             jd_ut=request.jd_ut,
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
         ),
         provenance=_nakshatra_provenance(
             engine_entrypoint="nakshatra_of",
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
             stage_sequence=[
                 "input_validation",
                 "tropical_to_sidereal_conversion",
@@ -287,7 +304,7 @@ def compute_nakshatra_bulk(
     resolved = all_nakshatras_at_with_truth(
         request.positions,
         request.jd_ut,
-        request.ayanamsa_system,
+        request.engine_system(),
     )
     serialized = [
         _serialize_nakshatra_position(
@@ -296,7 +313,7 @@ def compute_nakshatra_bulk(
             name=name,
             tropical_longitude_deg=longitude,
             jd_ut=request.jd_ut,
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
         )
         for name, longitude in request.positions.items()
     ]
@@ -306,7 +323,7 @@ def compute_nakshatra_bulk(
         total=len(serialized),
         provenance=_nakshatra_provenance(
             engine_entrypoint="all_nakshatras_at",
-            ayanamsa_system=request.ayanamsa_system,
+            ayanamsa_system=request.system_name(),
             stage_sequence=[
                 "input_validation",
                 "bulk_tropical_to_sidereal_conversion",

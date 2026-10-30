@@ -1580,6 +1580,23 @@ J2000 reference values. `/v1/sidereal/ayanamsa` exposes one date-specific
 ayanamsa value for an admitted named system and mode. `/v1/sidereal/convert`
 converts one longitude between tropical and sidereal frames.
 
+Every registry entry carries a `doctrine` record: what the system holds
+fixed, its layer (`modern_convention`, `verse`, `commentary`,
+`reconstruction`), and for star anchors the textual values and the
+identification certainty. Instead of `ayanamsa_system`, the ayanamsa,
+conversion and Nakshatra requests accept `ayanamsa_doctrine`:
+
+```json
+{"family": "grahalaghava", "year_convention": "current", "stepping": "annual"}
+{"family": "polar_star", "source": "surya_siddhanta", "nakshatra": "chitra", "star_product": "astrometric"}
+{"family": "surya_siddhanta_libration", "cycles_per_mahayuga": 600}
+{"family": "suryadeva_trepidation"}
+```
+
+Giving both fields is `422`. A polar star with `star_product: "apparent"`
+needs the server's planetary kernel (`503 kernel_not_ready` without it).
+Gochara, Muhurta and Kalachakra routes accept named systems only.
+
 `/v1/nakshatra/position` and `/v1/nakshatra/bulk` expose mechanical placement
 into Moira's current 27-equal-Nakshatra taxonomy. Responses preserve
 Nakshatra name, 0-based index, 1-based number, lord, pada, degrees elapsed,
@@ -1587,8 +1604,8 @@ degrees remaining, and sidereal longitude.
 
 This admission does not expose Panchanga judgement, Muhurta classification,
 Dasha balance, chart-backed Moon derivation, chart-backed sidereal houses,
-Varga projection, Manazil, Abhijit Nakshatra, user-defined ayanamsa REST
-payloads, mutable global sidereal mode, interpretation text, recommendations,
+Varga projection, Manazil, Abhijit Nakshatra, user-defined (J2000
+reference value) ayanamsa REST payloads, mutable global sidereal mode, interpretation text, recommendations,
 dense tables, async sweeps, or kernel path mutation.
 
 ### Muhurta REST Admission Boundary

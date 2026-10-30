@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Literal
+from typing import Annotated, Any, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from moira.sidereal import Ayanamsa
+from moira.sidereal import (
+    Ayanamsa,
+    GrahalaghavaAyanamsa,
+    PolarStarAyanamsa,
+    SuryaSiddhantaLibrationAyanamsa,
+    SuryadevaTrepidationAyanamsa,
+)
 
 
 SIDEREAL_NAKSHATRA_MAX_BULK_POSITIONS = 64
@@ -34,6 +40,88 @@ def _validate_ayanamsa_system(value: str) -> str:
     return system
 
 
+class GrahalaghavaSelection(_StrictModel):
+    """Grahalāghava 2.7 formula (AYANAMSA_DOCTRINE_STANDARD.md, Section 2.2)."""
+
+    family: Literal["grahalaghava"]
+    year_convention: Literal["current", "elapsed"] = "current"
+    stepping: Literal["annual", "continuous"] = "annual"
+
+    def to_engine(self) -> GrahalaghavaAyanamsa:
+        return GrahalaghavaAyanamsa(self.year_convention, self.stepping)
+
+
+class PolarStarSelection(_StrictModel):
+    """A junction star at its textual polar longitude (Section 2.3)."""
+
+    family: Literal["polar_star"]
+    source: Literal["surya_siddhanta", "grahalaghava"]
+    nakshatra: Literal["ashvini", "pushya", "chitra", "mula", "revati"]
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
+
+    def to_engine(self) -> PolarStarAyanamsa:
+        return PolarStarAyanamsa(self.source, self.nakshatra, self.star_product)
+
+
+class SuryaSiddhantaLibrationSelection(_StrictModel):
+    """Sūrya Siddhānta iii.9–10 libration reconstruction (Section 2.4)."""
+
+    family: Literal["surya_siddhanta_libration"]
+    cycles_per_mahayuga: Literal[600, 30] = 600
+
+    def to_engine(self) -> SuryaSiddhantaLibrationAyanamsa:
+        return SuryaSiddhantaLibrationAyanamsa(self.cycles_per_mahayuga)
+
+
+class SuryadevaTrepidationSelection(_StrictModel):
+    """The ±24° rule quoted by Sūryadeva (Section 2.4)."""
+
+    family: Literal["suryadeva_trepidation"]
+
+    def to_engine(self) -> SuryadevaTrepidationAyanamsa:
+        return SuryadevaTrepidationAyanamsa()
+
+
+AyanamsaDoctrineSelection = Annotated[
+    Union[
+        GrahalaghavaSelection,
+        PolarStarSelection,
+        SuryaSiddhantaLibrationSelection,
+        SuryadevaTrepidationSelection,
+    ],
+    Field(discriminator="family"),
+]
+
+
+class _AyanamsaChoice(_StrictModel):
+    """A named ``ayanamsa_system`` or, instead, a doctrinal ``ayanamsa_doctrine``."""
+
+    ayanamsa_system: str = Ayanamsa.LAHIRI
+    ayanamsa_doctrine: AyanamsaDoctrineSelection | None = None
+
+    @field_validator("ayanamsa_system")
+    @classmethod
+    def _valid_ayanamsa_system(cls, value: str) -> str:
+        return _validate_ayanamsa_system(value)
+
+    @model_validator(mode="after")
+    def _one_ayanamsa(self):
+        if self.ayanamsa_doctrine is not None and "ayanamsa_system" in self.model_fields_set:
+            raise ValueError("give either ayanamsa_system or ayanamsa_doctrine, not both")
+        return self
+
+    def engine_system(self):
+        """The engine system: a typed doctrinal value or the named system."""
+        if self.ayanamsa_doctrine is not None:
+            return self.ayanamsa_doctrine.to_engine()
+        return self.ayanamsa_system
+
+    def system_name(self) -> str:
+        if self.ayanamsa_doctrine is not None:
+            return self.ayanamsa_doctrine.to_engine().name
+        return self.ayanamsa_system
+
+
 def _validate_mode(value: str) -> str:
     mode = value.strip().lower()
     if mode not in SIDEREAL_AYANAMSA_MODES:
@@ -41,20 +129,14 @@ def _validate_mode(value: str) -> str:
     return mode
 
 
-class SiderealAyanamsaRequest(_StrictModel):
+class SiderealAyanamsaRequest(_AyanamsaChoice):
     jd_ut: float
-    ayanamsa_system: str = Ayanamsa.LAHIRI
     mode: Literal["true", "mean"] = "true"
 
     @field_validator("jd_ut")
     @classmethod
     def _finite_jd_ut(cls, value: float) -> float:
         return _validate_finite(value, "jd_ut")
-
-    @field_validator("ayanamsa_system")
-    @classmethod
-    def _valid_ayanamsa_system(cls, value: str) -> str:
-        return _validate_ayanamsa_system(value)
 
     @field_validator("mode", mode="before")
     @classmethod
@@ -82,10 +164,9 @@ class SiderealConversionRequest(SiderealAyanamsaRequest):
         return direction
 
 
-class SiderealNakshatraPositionRequest(_StrictModel):
+class SiderealNakshatraPositionRequest(_AyanamsaChoice):
     tropical_longitude_deg: float
     jd_ut: float
-    ayanamsa_system: str = Ayanamsa.LAHIRI
 
     @field_validator("tropical_longitude_deg")
     @classmethod
@@ -97,19 +178,13 @@ class SiderealNakshatraPositionRequest(_StrictModel):
     def _finite_jd_ut(cls, value: float) -> float:
         return _validate_finite(value, "jd_ut")
 
-    @field_validator("ayanamsa_system")
-    @classmethod
-    def _valid_ayanamsa_system(cls, value: str) -> str:
-        return _validate_ayanamsa_system(value)
 
-
-class SiderealNakshatraBulkRequest(_StrictModel):
+class SiderealNakshatraBulkRequest(_AyanamsaChoice):
     positions: dict[str, float] = Field(
         min_length=1,
         max_length=SIDEREAL_NAKSHATRA_MAX_BULK_POSITIONS,
     )
     jd_ut: float
-    ayanamsa_system: str = Ayanamsa.LAHIRI
 
     @field_validator("positions", mode="before")
     @classmethod
@@ -144,11 +219,6 @@ class SiderealNakshatraBulkRequest(_StrictModel):
     @classmethod
     def _finite_jd_ut(cls, value: float) -> float:
         return _validate_finite(value, "jd_ut")
-
-    @field_validator("ayanamsa_system")
-    @classmethod
-    def _valid_ayanamsa_system(cls, value: str) -> str:
-        return _validate_ayanamsa_system(value)
 
 
 class SiderealUtilityProvenanceResponse(_StrictModel):
@@ -198,6 +268,11 @@ class AyanamsaComputationTruthResponse(_StrictModel):
     output_normalization: str
     # "astrometric" or "apparent" for a live star anchor, else null.
     anchor_product: str | None = None
+    # Provenance (AYANAMSA_DOCTRINE_STANDARD.md): family, layer, and the
+    # doctrinal family's resolved parameters.
+    doctrine_family: str | None = None
+    doctrine_layer: str | None = None
+    doctrine_terms: dict[str, float | int | str] = Field(default_factory=dict)
 
 
 class SiderealLongitudeConversionTruthResponse(_StrictModel):
@@ -224,12 +299,41 @@ class NakshatraComputationTruthResponse(_StrictModel):
     interpretation: str
 
 
+class TextualAttestationResponse(_StrictModel):
+    source: str
+    date: str
+    value_deg: float
+    coordinate: str
+    latitude_deg: float | None = None
+    note: str | None = None
+
+
+class AyanamsaDoctrineResponse(_StrictModel):
+    """What a system holds fixed and where its anchor value comes from."""
+
+    system: str
+    family: str
+    layer: str
+    definition: str
+    anchor_star: str | None = None
+    anchor_identification: str | None = None
+    anchor_target_deg: float | None = None
+    anchor_coordinate: str | None = None
+    anchor_product: str | None = None
+    identification_certainty: str | None = None
+    attestations: list[TextualAttestationResponse] = Field(default_factory=list)
+    zero_epoch: str | None = None
+    sources: list[str] = Field(default_factory=list)
+    caveats: list[str] = Field(default_factory=list)
+
+
 class AyanamsaSystemResponse(_StrictModel):
     system: str
     reference_value_j2000_deg: float
     is_star_anchored: bool
     default_mode: str = "true"
     supported_modes: list[str]
+    doctrine: AyanamsaDoctrineResponse
 
 
 class AyanamsaSystemsEnvelopeResponse(_StrictModel):
@@ -246,6 +350,7 @@ class SiderealAyanamsaResponse(_StrictModel):
     value_range: list[float | str]
     provenance: SiderealUtilityProvenanceResponse
     computation_truth: AyanamsaComputationTruthResponse
+    doctrine: AyanamsaDoctrineResponse | None = None
 
 
 class SiderealConversionResponse(_StrictModel):

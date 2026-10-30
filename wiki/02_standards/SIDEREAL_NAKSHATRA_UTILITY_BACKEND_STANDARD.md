@@ -205,6 +205,20 @@ Transport must reject:
 - empty ayanamsa names
 - invalid modes
 - user-defined ayanamsa payloads
+- a request that gives both `ayanamsa_system` and `ayanamsa_doctrine`
+
+Doctrinal families. Instead of a name, a request may give `ayanamsa_doctrine`,
+one of the four families of AYANAMSA_DOCTRINE_STANDARD.md, selected by
+`family`: `grahalaghava` (`year_convention`, `stepping`), `polar_star`
+(`source`, `nakshatra`, `star_product`), `surya_siddhanta_libration`
+(`cycles_per_mahayuga`), or `suryadeva_trepidation`. The response
+`ayanamsa_system` is the family's descriptive name.
+
+Provenance. Every system in the registry route carries a `doctrine` record
+(family, layer, anchor, textual attestations, identification certainty,
+sources, caveats); `/v1/sidereal/ayanamsa` returns the record of the system it
+used, and every `computation_truth` carries `doctrine_family`,
+`doctrine_layer` and `doctrine_terms`.
 
 Reason:
 

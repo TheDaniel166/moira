@@ -29,6 +29,26 @@ publication, or production pin is implied by these entries.
     then one shared Earth stage, then the frame of date.
   - REST star provenance carries `position_product` and `motion_model`.
   - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
+- **Ayanamsa Doctrine**: every ayanamsa now says what kind of claim it makes,
+  and the textual families the sources support are computable
+  (`moira/ayanamsa_doctrine.py`; wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).
+  No existing system's value changes.
+  - Provenance: `ayanamsa_doctrine(system)` returns family, layer, anchor,
+    the textual values for the anchor star (e.g. Citrā 180° in the Sūrya
+    Siddhānta only, 183° elsewhere), identification certainty (Pingree &
+    Morrissey 1989), sources and caveats. `AyanamsaComputationTruth` gains
+    `doctrine_family`, `doctrine_layer` and `doctrine_terms`.
+  - `GrahalaghavaAyanamsa`: Grahalāghava 2.7, (Śaka − 444)/60°, with the
+    year convention and stepping stated; checked against the published
+    worked values.
+  - `PolarStarAyanamsa`: a junction star held at its Sūrya Siddhānta or
+    Grahalāghava polar longitude of date; matches an ERFA composition within
+    0.00001″. `siddhantic_polar_to_ecliptic` reduces catalogue entries.
+  - `SuryaSiddhantaLibrationAyanamsa` (reproduces Burgess's 20°24′38.67″ for
+    1860 to 0.001″) and `SuryadevaTrepidationAyanamsa`, both labelled
+    reconstructions.
+  - REST: the sidereal and Nakshatra requests accept `ayanamsa_doctrine`; the
+    systems list and ayanamsa responses carry the `doctrine` record.
 - **Star Product Policy Choices For Star Techniques**: three techniques keep
   their astrometric default and offer the apparent star explicitly.
   - Ayanamsa: new systems `True Chitrapaksha (apparent)`, `True Revati

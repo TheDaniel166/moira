@@ -14,13 +14,21 @@ an independently sourced default set of ayanamsa systems, and nakshatra position
 Additional or niche systems are supported through ``UserDefinedAyanamsa``
 by supplying a source-backed J2000 reference value and optional drift term.
 
+Every system carries a provenance record (``ayanamsa_doctrine``), and the
+textual families of ``moira.ayanamsa_doctrine`` are accepted wherever a system
+is: ``GrahalaghavaAyanamsa``, ``PolarStarAyanamsa``,
+``SuryaSiddhantaLibrationAyanamsa`` and ``SuryadevaTrepidationAyanamsa``
+(wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).
+
 Boundary declaration
 --------------------
 Owns: ayanamsa system name constants, J2000 reference values, drift terms,
       star-anchored ayanamsa resolution, tropical/sidereal conversion,
       nakshatra span arithmetic, and the ``Ayanamsa`` and
       ``NakshatraPosition`` vessels.
-Delegates: general precession to ``moira.precession``,
+Delegates: provenance records and the doctrinal families to
+           ``moira.ayanamsa_doctrine``,
+           general precession to ``moira.precession``,
            nutation to ``moira.obliquity``,
            fixed star positions to ``moira.stars``,
            Julian century arithmetic to ``moira.julian``.
@@ -43,7 +51,18 @@ nakshatra-sector evidence without changing those legacy return types.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from .ayanamsa_doctrine import (
+    DOCTRINAL_TYPES,
+    AyanamsaDoctrine,
+    DoctrinalAyanamsa,
+    GrahalaghavaAyanamsa,
+    PolarStarAyanamsa,
+    SuryaSiddhantaLibrationAyanamsa,
+    SuryadevaTrepidationAyanamsa,
+    _resolve_doctrinal,
+    ayanamsa_doctrine,
+)
 from .julian import centuries_from_j2000, ut_to_tt
 from .precession import general_precession_in_longitude
 from .obliquity import nutation
@@ -51,6 +70,12 @@ from .obliquity import nutation
 __all__ = [
     "Ayanamsa",
     "UserDefinedAyanamsa",
+    "GrahalaghavaAyanamsa",
+    "PolarStarAyanamsa",
+    "SuryaSiddhantaLibrationAyanamsa",
+    "SuryadevaTrepidationAyanamsa",
+    "AyanamsaDoctrine",
+    "ayanamsa_doctrine",
     "AyanamsaComputationTruth",
     "SiderealLongitudeConversionTruth",
     "NakshatraPosition",
@@ -173,6 +198,11 @@ class AyanamsaComputationTruth:
     anchor_product: str | None = None
     computation_timescale: str = "TT"
     output_normalization: str = "degrees_modulo_360"
+    # The system's provenance (AYANAMSA_DOCTRINE_STANDARD.md): family, layer,
+    # and the family's resolved parameters as (name, value) pairs.
+    doctrine_family: str | None = None
+    doctrine_layer: str | None = None
+    doctrine_terms: tuple = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -215,7 +245,8 @@ class Ayanamsa:
         Dependencies:
             - None. Pure namespace class with no runtime dependencies.
         Structural invariants:
-            - ``ALL`` contains exactly 12 entries in canonical order.
+            - ``ALL`` contains exactly 17 entries in canonical order: 12
+              systems and the 5 ``(apparent)`` anchor variants.
         Succession stance: terminal — not designed for subclassing.
 
     Canon: Lahiri Commission (1955); historical sidereal literature;
@@ -410,7 +441,7 @@ def _star_anchored_ayanamsa_at_tt(system: str, jd_tt: float) -> float:
 
 def _ayanamsa_truth_at_tt(
     jd_tt: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
     *,
     jd_ut: float | None = None,
@@ -422,6 +453,58 @@ def _ayanamsa_truth_at_tt(
         jd_ut = _require_finite("jd_ut", jd_ut)
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
+
+    if isinstance(system, DOCTRINAL_TYPES):
+        return _doctrinal_truth_at_tt(jd_tt, system, mode, jd_ut)
+    truth = _named_ayanamsa_truth_at_tt(jd_tt, system, mode, jd_ut)
+    doctrine = ayanamsa_doctrine(system)
+    return replace(truth, doctrine_family=doctrine.family, doctrine_layer=doctrine.layer)
+
+
+def _doctrinal_truth_at_tt(
+    jd_tt: float,
+    system: 'DoctrinalAyanamsa',
+    mode: str,
+    jd_ut: float | None,
+) -> AyanamsaComputationTruth:
+    """Assemble the truth of one doctrinal ayanamsa (ayanamsa_doctrine.py)."""
+
+    resolved = _resolve_doctrinal(jd_tt, system, mode)
+    doctrine = ayanamsa_doctrine(system)
+    is_star = resolved.anchor_star is not None
+    return AyanamsaComputationTruth(
+        jd_ut=jd_ut,
+        jd_tt=jd_tt,
+        ayanamsa_system=system.name,
+        system_kind=f"doctrinal_{doctrine.family}",
+        requested_mode=mode,
+        effective_path=resolved.effective_path,
+        ayanamsa_unwrapped_deg=resolved.value_deg,
+        ayanamsa_deg=resolved.value_deg % 360.0,
+        reference_value_j2000_deg=None,
+        precession_longitude_deg=None,
+        drift_correction_deg=None,
+        nutation_longitude_deg=resolved.nutation_longitude_deg,
+        anchor_star=resolved.anchor_star,
+        anchor_target_sidereal_longitude_deg=resolved.anchor_target_deg,
+        anchor_tropical_longitude_deg=resolved.anchor_tropical_longitude_deg,
+        anchor_source_mode=resolved.anchor_source_mode,
+        fallback_applied=False,
+        fallback_reason=None,
+        anchor_product=resolved.anchor_product if is_star else None,
+        doctrine_family=doctrine.family,
+        doctrine_layer=doctrine.layer,
+        doctrine_terms=resolved.terms,
+    )
+
+
+def _named_ayanamsa_truth_at_tt(
+    jd_tt: float,
+    system: 'str | UserDefinedAyanamsa',
+    mode: str,
+    jd_ut: float | None,
+) -> AyanamsaComputationTruth:
+    """Resolve a named or user-defined ayanamsa at TT."""
 
     if isinstance(system, UserDefinedAyanamsa):
         system_name = "UserDefinedAyanamsa"
@@ -553,7 +636,7 @@ def _ayanamsa_truth_at_tt(
 
 def _ayanamsa_at_tt(
     jd_tt: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """Compute an ayanamsa from an epoch already expressed in TT.
@@ -572,7 +655,7 @@ def _ayanamsa_at_tt(
 
 def ayanamsa(
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """
@@ -586,8 +669,11 @@ def ayanamsa(
     Parameters
     ----------
     jd     : Julian Day Number
-    system : one of the Ayanamsa.* constants, or a :class:`UserDefinedAyanamsa`
-             instance for a caller-supplied reference value.
+    system : one of the Ayanamsa.* constants, a :class:`UserDefinedAyanamsa`
+             instance for a caller-supplied reference value, or a doctrinal
+             value (:class:`GrahalaghavaAyanamsa`, :class:`PolarStarAyanamsa`,
+             :class:`SuryaSiddhantaLibrationAyanamsa`,
+             :class:`SuryadevaTrepidationAyanamsa`).
     mode   : "mean" (precession only; polynomial for all systems) or
              "true" (live star-anchored for systems in ``_STAR_ANCHORED``;
              precession + nutation Δψ for all other polynomial systems).
@@ -617,7 +703,7 @@ def ayanamsa(
 
 def ayanamsa_with_truth(
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> AyanamsaComputationTruth:
     """Compute one ayanamsa and expose the effective clock/model branch."""
@@ -632,7 +718,7 @@ def ayanamsa_with_truth(
 def _tropical_to_sidereal_at_tt(
     tropical_longitude: float,
     jd_tt: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """Convert a tropical longitude using an epoch already expressed in TT."""
@@ -645,7 +731,7 @@ def _tropical_to_sidereal_at_tt(
 def tropical_to_sidereal(
     tropical_longitude: float,
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """
@@ -666,7 +752,7 @@ def tropical_to_sidereal(
 def tropical_to_sidereal_with_truth(
     tropical_longitude: float,
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> SiderealLongitudeConversionTruth:
     """Convert tropical longitude with one inspectable ayanamsa resolution."""
@@ -691,7 +777,7 @@ def tropical_to_sidereal_with_truth(
 def sidereal_to_tropical(
     sidereal_longitude: float,
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> float:
     """
@@ -712,7 +798,7 @@ def sidereal_to_tropical(
 def sidereal_to_tropical_with_truth(
     sidereal_longitude: float,
     jd: float,
-    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
     mode: str = "true",
 ) -> SiderealLongitudeConversionTruth:
     """Convert sidereal longitude with one inspectable ayanamsa resolution."""
@@ -993,7 +1079,7 @@ def _nakshatra_truth_from_conversion(
 def nakshatra_of_with_truth(
     tropical_longitude: float,
     jd: float,
-    ayanamsa_system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    ayanamsa_system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
 ) -> NakshatraWithTruth:
     """Return a nakshatra position with its effective sidereal reduction."""
 
@@ -1035,7 +1121,7 @@ def all_nakshatras_at(
 def all_nakshatras_at_with_truth(
     positions: dict[str, float],
     jd: float,
-    ayanamsa_system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    ayanamsa_system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
 ) -> NakshatraCollectionWithTruth:
     """Compute a position map while resolving its ayanamsa exactly once."""
 

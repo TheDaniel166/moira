@@ -509,3 +509,8 @@ polar longitudes from Pingree & Morrissey's Table 21.
   not observational truths. A text-faithful mode should name its source text.
 - Neugebauer & Pingree's 1971 commentary remains unread; nothing here relies
   on it.
+
+**Implemented (2026-10-30).** Moira now carries these findings as provenance
+records for every system and computes the Grahalāghava formula, the
+siddhantic polar star modes and the two trepidation reconstructions
+(wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).

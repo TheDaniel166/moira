@@ -5,7 +5,7 @@ import pytest
 from moira.muhurta import MuhurtaPolicy, personal_muhurta_score
 from moira.muhurta_search import MuhurtaSearchPolicy, MuhurtaResourceError
 from moira.panchanga import panchanga_at, PanchangaPolicy
-from moira.sidereal import tropical_to_sidereal
+from moira.sidereal import Ayanamsa, tropical_to_sidereal
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -176,5 +176,6 @@ def test_search_openapi_and_method_boundary(client):
     assert "/v1/muhurta/search" in schema["paths"]
     props=schema["components"]["schemas"]["MuhurtaSearchPolicyRequest"]["properties"]
     assert props["max_results"]["maximum"] == 128
-    assert len(props["ayanamsa_system"]["enum"]) == 12
+    # The 12 systems and their 5 "(apparent)" anchor variants.
+    assert props["ayanamsa_system"]["enum"] == list(Ayanamsa.ALL)
     assert client.get("/v1/muhurta/search").status_code == 405

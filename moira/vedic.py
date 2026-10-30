@@ -61,6 +61,12 @@ from .essentials import __all__ as _essentials_all
 # ── Sidereal / Ayanamsa (full) ───────────────────────────────────────────
 from .sidereal import (
     UserDefinedAyanamsa,
+    GrahalaghavaAyanamsa,
+    PolarStarAyanamsa,
+    SuryaSiddhantaLibrationAyanamsa,
+    SuryadevaTrepidationAyanamsa,
+    AyanamsaDoctrine,
+    ayanamsa_doctrine,
     NakshatraPosition,
     nakshatra_of,
     all_nakshatras_at,
@@ -832,6 +838,12 @@ _VEDIC_OWN: list[str] = [
     "D60Method", "D60SignResult", "d60_sign",
     # Sidereal (extended)
     "UserDefinedAyanamsa",
+    "GrahalaghavaAyanamsa",
+    "PolarStarAyanamsa",
+    "SuryaSiddhantaLibrationAyanamsa",
+    "SuryadevaTrepidationAyanamsa",
+    "AyanamsaDoctrine",
+    "ayanamsa_doctrine",
     "NakshatraPosition",
     "nakshatra_of",
     "all_nakshatras_at",
