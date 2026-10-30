@@ -1,0 +1,9 @@
+{
+  "source": "IERS Bulletin A, Vol. XXXIX No. 044, 2026-10-29 (https://maia.usno.navy.mil/ser7/ser7.dat)",
+  "verified_against_primary_source": "2026-10-30",
+  "prediction_mjd_61343": {"date": "2026-10-30", "mjd": 61343, "x_arcsec": 0.1414, "y_arcsec": 0.3181, "ut1_utc_s": -0.05324, "tai_utc_s": 37},
+  "rapid_mjd_61336": {"date": "2026-10-23", "mjd": 61336, "x_arcsec": 0.14842, "y_arcsec": 0.31756, "ut1_utc_s": -0.044448},
+  "rapid_mjd_61342": {"date": "2026-10-29", "mjd": 61342, "x_arcsec": 0.14284, "y_arcsec": 0.31828, "ut1_utc_s": -0.052612},
+  "bulletin_a_43_prediction_mjd_61336": {"x_arcsec": 0.14820, "y_arcsec": 0.31750, "ut1_utc_s": -0.044480},
+  "broadcast_dut1_after_2026_10_29_s": -0.1
+}
