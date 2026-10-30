@@ -1,7 +1,8 @@
 # Lilly P4 perfection routes and chronology decisions
 
 Date: 2026-10-30. Baseline: `60ac6a18da993b1dd1401a86a0581a58920c79ef`.
-Status: **source decisions and test-only fixture packet; runtime admission pending**.
+Status: **source decisions and fixture packet; runtime implemented** (see the
+[P4 runtime contract](LILLY_P4_RUNTIME_2026-10-30.md)).
 
 This tranche specifies how Lilly's 1647 general doctrine brings a matter to
 perfection or prevents it: the routes, the events that interrupt them, the

@@ -76,8 +76,15 @@ continuation, and named heaviness readings. The
 checked images and two witness variants on p.111. Its test-only fixture
 bundle (149 fixtures in 15 families, six of them Lilly's printed examples) and
 [read-only validator](validate_p4_packet.py) pin down every named reading
-without selecting one. No code or v1/P2/P3 behavior changes; the runtime is the
-next gate.
+without selecting one.
+
+## P4 runtime implementation: 2026-10-30
+
+The [P4 runtime contract](LILLY_P4_RUNTIME_2026-10-30.md) documents the additive
+route and blocker evaluators, the seven-planet contact/station/ingress trace,
+the derivation of every route for one principal pair under five explicitly
+selected readings, continuation across windows, and the fixture and DE441
+validation. v1, P2 and P3 behavior is unchanged; no verdict is produced.
 
 ## Decision at this checkpoint
 
