@@ -1358,33 +1358,6 @@ def _scale(vec: Sequence[float], s: float) -> tuple[float, float, float]:
     return (vec[0] * s, vec[1] * s, vec[2] * s)
 
 
-def _earth_observer_position_km(
-    observer_lat: float,
-    observer_lon: float,
-    observer_elev_m: float,
-) -> tuple[float, float, float]:
-    if moira_native is not None and hasattr(moira_native, "geodetic_to_cartesian_wgs84"):
-        pos = moira_native.geodetic_to_cartesian_wgs84(
-            observer_lon,
-            observer_lat,
-            observer_elev_m,
-        )
-        return (float(pos.x), float(pos.y), float(pos.z))
-
-    _, radii = sp.bodvrd("EARTH", "RADII", 3)
-    equatorial_radius_km = float(radii[0])
-    polar_radius_km = float(radii[2])
-    flattening = (equatorial_radius_km - polar_radius_km) / equatorial_radius_km
-    pos = sp.georec(
-        math.radians(observer_lon),
-        math.radians(observer_lat),
-        observer_elev_m / 1000.0,
-        equatorial_radius_km,
-        flattening,
-    )
-    return (float(pos[0]), float(pos[1]), float(pos[2]))
-
-
 def _observer_state_j2000(
     observer_lat: float,
     observer_lon: float,
