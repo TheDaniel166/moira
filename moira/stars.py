@@ -1105,19 +1105,42 @@ def stars_by_magnitude(
     return matches
 
 
+def _heliacal_jd_tt(jd_ut: float, reader=None) -> float:
+    """TT coordinate of one UT1 instant on the clock the heliacal search shares.
+
+    The active (or supplied) planetary reader owns the Earth clock: its
+    ephemeris-identity Delta-T translation is applied, exactly as in
+    ``heliacal._target_signed_elongation`` and ``rise_set``.  Without a reader
+    the default Delta-T policy applies.  A bare ``ut_to_tt`` would place the Sun
+    and the horizon geometry of one event on two clocks before about 1955
+    (47 s at -500, 7 s at 1000).
+
+    Side effects: None.
+    """
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+    from .julian import ut_to_tt
+    from .spk_reader import get_active_reader
+
+    if reader is None:
+        reader = get_active_reader()
+    if reader is None:
+        return ut_to_tt(jd_ut)
+    return _ut1_to_ephemeris_tt(jd_ut, reader)
+
+
 def _heliacal_signed_elongation(name: str, jd_ut: float, *, star_product: str = "astrometric") -> float:
     """Signed ecliptic elongation of a fixed star from the Sun in degrees.
 
     Negative values indicate morning sky (west of Sun); positive values indicate
     evening sky (east of Sun). The star is ``star_product``; the Sun is apparent.
+    Star and Sun share the reader-bound TT of :func:`_heliacal_jd_tt`.
 
     Side effects: None.
     """
     from .constants import Body
-    from .julian import ut_to_tt
     from .planets import planet_at
 
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _heliacal_jd_tt(jd_ut)
     # The policy's star product; the native search evaluates the same one
     # (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
     star = star_at(name, jd_tt, product=star_product)
@@ -1229,8 +1252,12 @@ def _native_heliacal_time_policy(
     jd_start: float,
     search_days: int,
     longitude: float = 0.0,
+    reader=None,
 ) -> tuple[float, float, float, float]:
     """Return native evaluator bounds and the linear Delta-T search policy.
+
+    Delta-T is the reader-bound TT-UT1 of :func:`_heliacal_jd_tt`, the same
+    clock the Python searches use; ``reader`` selects it explicitly.
 
     Native morning searches evaluate each admitted local mean solar day from
     midnight through noon while applying the Delta-T value anchored at that
@@ -1239,12 +1266,11 @@ def _native_heliacal_time_policy(
     """
 
     from .heliacal import _local_mean_solar_midnight
-    from .julian import ut_to_tt
 
-    jd_tt = ut_to_tt(jd_start)
+    jd_tt = _heliacal_jd_tt(jd_start, reader)
     jd_end = jd_start + search_days
     delta_t_start = (jd_tt - jd_start) * 86400.0
-    delta_t_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
+    delta_t_end = (_heliacal_jd_tt(jd_end, reader) - jd_end) * 86400.0
     delta_t_rate = (delta_t_end - delta_t_start) / search_days
     jd_mid0 = _local_mean_solar_midnight(jd_start, longitude)
     guard_midnight = jd_mid0 - 1.0
@@ -1302,7 +1328,7 @@ def _native_heliacal_event(
 
     reader = get_reader()
     interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate = (
-        _native_heliacal_time_policy(jd_start, search_days, longitude)
+        _native_heliacal_time_policy(jd_start, search_days, longitude, reader)
     )
     earth_barycentric = reader.evaluator(
         399, 3, interval_start_tt, jd_end_tt=interval_end_tt
@@ -1939,7 +1965,7 @@ def heliacal_catalog_batch(
         
         reader = get_reader()
         interval_start_tt, interval_end_tt, dt_val, dt_rate = (
-            _native_heliacal_time_policy(jd_start, search_days, longitude)
+            _native_heliacal_time_policy(jd_start, search_days, longitude, reader)
         )
         
         # 1. Get Earth and Sun evaluators

@@ -301,6 +301,13 @@ publication, or production pin is implied by these entries.
   0.0003 mas and GAST with `gmst06 + ee00` to 2.6 uas over -2000..2500. The
   Besselian ephemeris hour angle passes its TT explicitly. The certified
   muhurta sidereal enclosure takes the TT jet for the TT terms.
+- **Star heliacal search shares the engine's Earth clock.** `stars.py`
+  converted UT1 to TT with the bare default Delta-T policy, while the Sun, rise
+  and set geometry and `heliacal.py` use the planetary reader's clock, so one
+  event ran on two clocks before about 1955 (47 s at -500, 7 s at 1000; about 2
+  arcsec of Sun longitude at -500). `_heliacal_signed_elongation` and the
+  Delta-T policy passed to the native heliacal search now use the reader-bound
+  TT. Results from 1955 on are unchanged.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged

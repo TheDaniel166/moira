@@ -311,13 +311,15 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
     jd_start = julian_day(2024, 7, 1, 0.0)
     latitude = 31.2
     longitude = 29.9
-    interval_start_tt, interval_end_tt, delta_t, delta_t_rate = (
-        stars._native_heliacal_time_policy(jd_start, 45, longitude)
-    )
     record, _ = stars._resolve_star_record("Sirius", stars.DEFAULT_FIXED_STAR_POLICY.lookup)
     policy = stars.FixedStarComputationPolicy(use_native_heliacal=True)
 
     with SpkReader(kernel_path) as reader:
+        # The production search takes its clock from this reader, so the reference
+        # search must use the same reader-bound Delta-T policy.
+        interval_start_tt, interval_end_tt, delta_t, delta_t_rate = (
+            stars._native_heliacal_time_policy(jd_start, 45, longitude, reader)
+        )
         earth_ssb, sun_geo = _earth_sun_geo(
             reader,
             interval_start_tt,

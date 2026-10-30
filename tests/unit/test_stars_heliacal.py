@@ -470,3 +470,53 @@ def test_batch_rejects_unknown_names() -> None:
         stars.heliacal_catalog_batch(
             "heliacal_rising", 2451545.0, 31.2, 29.9, names=["NotAStarXYZ"]
         )
+
+
+def test_star_heliacal_clock_uses_reader_bound_tt_when_a_reader_is_active(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Star and Sun must share the reader's Earth clock, not the bare ``ut_to_tt``."""
+    reader = object()
+    captured: dict[str, float] = {}
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.123)
+    monkeypatch.setattr("moira.spk_reader.get_active_reader", lambda: reader)
+    monkeypatch.setattr(
+        "moira._ephemeris_time._ut1_to_ephemeris_tt",
+        lambda jd, bound_reader, **_: jd + 0.456 if bound_reader is reader else jd,
+    )
+    monkeypatch.setattr(
+        stars, "star_at",
+        lambda name, jd_tt, **_: captured.setdefault("star_tt", jd_tt) and _FakeBody(120.0, magnitude=1.0),
+    )
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
+        captured["sun_tt"] = float(kwargs["jd_tt"])
+        return _FakeBody(100.0)
+
+    monkeypatch.setattr("moira.planets.planet_at", _fake_planet_at)
+
+    stars._heliacal_signed_elongation("Sirius", 2451545.0)
+
+    assert captured["star_tt"] == pytest.approx(2451545.456)
+    assert captured["sun_tt"] == pytest.approx(2451545.456)
+
+
+def test_native_heliacal_time_policy_takes_delta_t_from_the_supplied_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reader = object()
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 100.0 / 86400.0)
+    monkeypatch.setattr(
+        "moira._ephemeris_time._ut1_to_ephemeris_tt",
+        lambda jd, bound_reader, **_: jd + (150.0 + 0.5 * (jd - 2451545.0)) / 86400.0,
+    )
+
+    _start, _end, delta_t, rate = stars._native_heliacal_time_policy(2451545.0, 40, 0.0, reader)
+    assert delta_t == pytest.approx(150.0)
+    assert rate == pytest.approx(0.5)
+
+    # Without a reader (and no active one) the default Delta-T policy is unchanged.
+    monkeypatch.setattr("moira.spk_reader.get_active_reader", lambda: None)
+    _start, _end, delta_t, rate = stars._native_heliacal_time_policy(2451545.0, 40, 0.0)
+    assert delta_t == pytest.approx(100.0)
+    assert rate == pytest.approx(0.0, abs=1e-9)
