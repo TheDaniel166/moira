@@ -294,7 +294,7 @@ Product-specific validation examples:
     .\.venv\Scripts\python.exe scripts\check_doc_consistency.py
 
     # Focused engine docstring check; pass the engine files actually touched
-    .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py moira\horary_reception.py
+    .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py moira\horary_moon.py
 
     # Full engine docstring preflight for release preparation (no engine import)
     .\.venv\Scripts\python.exe tests\unit\test_docstring_governance.py

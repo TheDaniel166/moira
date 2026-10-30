@@ -48,6 +48,23 @@ It reuses the collated fixtures as independent tests and preserves v1.
 The earlier source-decision and fixture-admission statements remain historical
 checkpoints; their records are not rewritten as a broader judgement admission.
 
+## P3 Moon and considerations decisions: 2026-10-23
+
+The [P3 decisions and fixture contract](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md)
+specifies two explicit VOC candidates, lunar sequence/coverage boundaries,
+contextual cautions and source qualifications. The
+[P3 photograph collation](LILLY_P3_SOURCE_COLLATION_2026-10-23.md) records the
+22 checked images. This is a test-only admission packet; it preserves v1 and
+P2 runtime behavior and does not implement a new Moon/judgement API.
+
+## P3 runtime implementation: 2026-10-24
+
+The [P3 runtime contract](LILLY_P3_RUNTIME_2026-10-24.md) documents the additive
+lunar trace, explicit VOC candidates, numerical coverage, source-qualified
+considerations, binding checks and independent geometric regressions. It
+preserves v1/P2 and the historical source-packet admission records. Full
+perfection-route chronology remains P4.
+
 ## Decision at this checkpoint
 
 The original 1647 photographed pages govern. OCR and modern editorial material
