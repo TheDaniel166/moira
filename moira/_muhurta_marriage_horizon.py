@@ -17,6 +17,9 @@ from .polar_motion import PolarMotionRegistry
 
 _AS=PI/648000
 _GMST=(.014506,4612.156534,1.3915817,-.00000044,-.000029956,-.0000000368)
+# IAU 2006 mean obliquity (arcseconds); the equation of the equinoxes uses it, not the true
+# obliquity (SOFA iauEe00; moira.julian.apparent_sidereal_time).
+_EPSA=(84381.406,-46.836769,-.0001831,.0020034,-.000000576,-.0000000434)
 
 
 def _last(u,longitude,angles):
@@ -38,11 +41,12 @@ def _last(u,longitude,angles):
         -.00000087*t*om.sin())
     era=(.7790572732640+(u-2451545.)*1.00273781191135448)*2*PI
     gmst=_jet_polynomial(_GMST,t).with_error((gamma(64)*norm_polynomial(_GMST,t.value.magnitude)).hi)
-    result=era+gmst*_AS+angles[1]*angles[3].cos()+ct*_AS+longitude*PI/180
+    epsa=_jet_polynomial(_EPSA,t).with_error((gamma(64)*norm_polynomial(_EPSA,t.value.magnitude)).hi)*_AS
+    result=era+gmst*_AS+angles[1]*epsa.cos()+ct*_AS+longitude*PI/180
     # Source's degree/radian staging, expanded powers, and angle additions.
     # ERA modulo-one itself subtracts an exactly represented integer. The
     # larger unwrapped magnitude bounds every wrapped multiplication stage.
-    staging=(gamma(64)*(era.value.magnitude+gmst.value.magnitude*_AS+2*PI)).hi
+    staging=(gamma(64)*(era.value.magnitude+gmst.value.magnitude*_AS+epsa.value.magnitude+2*PI)).hi
     return result.with_error(staging)
 
 

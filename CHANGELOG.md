@@ -256,6 +256,19 @@ publication, or production pin is implied by these entries.
   the new `start_shift_truth` field.
 
 ### Fixed
+- **Equation of the equinoxes uses the IAU 2006 mean obliquity.**
+  `apparent_sidereal_time` (Python and native) now follows SOFA `iauEe00`, so
+  GAST/LAST agree with ERFA `gst06a` to the UT1-argument residual (~0.1 mas)
+  instead of up to 0.26 mas. The `obliquity` argument is retained for
+  compatibility and ignored. Houses, angles and topocentric directions shift by
+  at most ~7e-8 deg. Pinned values in the experimental polar-house tests, the
+  vertex golden/snapshot and `EXPERIMENTAL_POLAR_HOUSE_PROOF.md` were
+  re-derived with unchanged tolerances. The certified muhurta sidereal
+  enclosure mirrors the new convention.
+- **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
+  to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
+  payload validation, recorded checksums and all-or-nothing writes. The packaged
+  loader admits |UT1-UTC| up to 3600 s for continuous UTC.
 - **Fixed-Star Light-Time Split**: `star_light_time_split` moved the
   "observed" position backward by the light-travel time, reversing the
   correction. It now returns the astrometric position and the geometric

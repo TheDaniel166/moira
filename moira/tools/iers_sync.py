@@ -62,6 +62,8 @@ class SyncError(RuntimeError):
 
 @dataclass(frozen=True)
 class Fetched:
+    """A validated payload with the URL it came from, its SHA-256 and primary/fallback status."""
+
     text: str
     url: str
     sha256: str
@@ -70,6 +72,8 @@ class Fetched:
 
 @dataclass(frozen=True)
 class EopRow:
+    """One daily finals2000A row; unpublished fields are ``None`` (kept as the source text)."""
+
     mjd: int
     x_pole: str | None
     y_pole: str | None

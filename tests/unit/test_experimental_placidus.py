@@ -18,7 +18,10 @@ _JD_J2000 = 2451545.0
 _LAT_77 = 77.0
 _OB_J2000 = true_obliquity(ut_to_tt(_JD_J2000))
 _ARMC_VALID = 90.0
-_LON_FOR_ARMC_VALID = 169.54292771060392
+# Re-derived 2026-10-30 when GAST moved to the SOFA ee00 mean-obliquity convention (see
+# tests/integration/test_gast_matches_erfa.py): lon = 90 - GAST(J2000), so ARMC == 90 exactly with GAST = 280.4570723324535.
+# Cross-checked through houses_from_armc; tolerances unchanged.
+_LON_FOR_ARMC_VALID = 169.5429276675465
 
 
 def test_search_experimental_placidus_finds_unique_ordered_solution_at_77n_armc_90() -> None:

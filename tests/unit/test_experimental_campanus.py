@@ -69,9 +69,11 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_campanus()
     assert houses.system == HouseSystem.CAMPANUS
     assert houses.effective_system == HouseSystem.CAMPANUS
     assert houses.fallback is False
-    assert houses.asc == pytest.approx(180.14403852474203, abs=1e-9)
-    assert houses.mc == pytest.approx(90.41936215629704, abs=1e-9)
-    assert houses.cusps[1] == pytest.approx(226.62440634830227, abs=1e-8)
+    # Re-derived 2026-10-30 (GAST on the SOFA ee00 convention): ARMC = GAST(J2000) + lon = 90.45707233245349;
+    # asc/mc cross-checked through houses_from_armc. Tolerance unchanged.
+    assert houses.asc == pytest.approx(180.14403853831075, abs=1e-9)
+    assert houses.mc == pytest.approx(90.41936219580234, abs=1e-9)
+    assert houses.cusps[1] == pytest.approx(226.62440637545347, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_uses_real_campanus_at_polar_latitude() -> None:
@@ -85,7 +87,7 @@ def test_calculate_houses_default_policy_uses_real_campanus_at_polar_latitude() 
     assert houses.system == HouseSystem.CAMPANUS
     assert houses.effective_system == HouseSystem.CAMPANUS
     assert houses.fallback is False
-    assert houses.cusps[1] == pytest.approx(226.62440634830227, abs=1e-8)
+    assert houses.cusps[1] == pytest.approx(226.62440637545347, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_still_falls_back_for_campanus_no_solution_high_lat() -> None:

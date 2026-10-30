@@ -2904,20 +2904,41 @@ def _local_sidereal_time_at_tt(jd_ut1: float, jd_tt: float, longitude: float,
     return (gmst + ee + longitude) % 360.0
 
 
+def _mean_obliquity_p03_degrees(jd: float) -> float:
+    """IAU 2006 mean obliquity ε_A in degrees (SOFA ``iauObl06``).
+
+    Mirrors ``moira.precession.mean_obliquity_p03`` and the native
+    ``mean_obliquity_p03``; it lives here because ``precession`` imports this
+    module.  Term order matches the native evaluation.
+    """
+    T = (jd - J2000) / JULIAN_CENTURY
+    return (84381.406
+            - 46.836769 * T
+            - 0.0001831 * T * T
+            + 0.00200340 * T * T * T
+            - 0.000000576 * T * T * T * T
+            - 0.0000000434 * T * T * T * T * T) / 3600.0
+
+
 @accelerate("apparent_sidereal_time")
 def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: float) -> float:
     """
     Compute Greenwich Apparent Sidereal Time (GAST) in degrees.
 
-    Governs the full IAU 2006 equation of the equinoxes:
-        EE = Δψ · cos(ε) + CT
-    where CT are the Capitaine et al. (2003) complementary terms (≤ 0.04″)
-    computed by ``_gast_complementary_terms()``.
+    Governs the full IAU 2006 equation of the equinoxes (SOFA ``iauEe00``):
+        EE = Δψ · cos(ε_A) + CT
+    where ε_A is the IAU 2006 *mean* obliquity and CT are the Capitaine et
+    al. (2003) complementary terms (≤ 0.04″) computed by
+    ``_gast_complementary_terms()``.  ε_A is evaluated here from ``jd_ut``;
+    the TT-UT offset moves it by ~1e-6″, which changes EE by ~1e-11″.
 
     Args:
         jd_ut:              Julian Day Number in UT1.
         nutation_longitude: Δψ (nutation in longitude) in degrees.
-        obliquity:          True obliquity of the ecliptic in degrees.
+        obliquity:          Retained for API compatibility and ignored.
+                            Callers pass the *true* obliquity they use for
+                            horizon/ecliptic geometry; using it in EE would
+                            bias GAST by up to ~0.26 mas against SOFA.
 
     Returns:
         GAST in degrees, normalised to [0, 360).
@@ -2929,7 +2950,7 @@ def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: f
         None.
     """
     gmst = greenwich_mean_sidereal_time(jd_ut)
-    ee   = (nutation_longitude * math.cos(obliquity * math.pi / 180.0)
+    ee   = (nutation_longitude * math.cos(_mean_obliquity_p03_degrees(jd_ut) * math.pi / 180.0)
             + _gast_complementary_terms(jd_ut))
     return (gmst + ee) % 360.0
 

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "constants.hpp"
 #include "math_utils.hpp"
+#include "precession.hpp"
 
 namespace moira {
 namespace native {
@@ -56,9 +57,13 @@ inline double gast_complementary_terms(double jd_ut) {
     return ct / 3600.0;
 }
 
+// SOFA iauEe00: the equation of the equinoxes uses the IAU 2006 *mean*
+// obliquity.  `obliquity` (the caller's true obliquity) is retained for API
+// compatibility and ignored; see moira.julian.apparent_sidereal_time.
 inline double apparent_sidereal_time(double jd_ut, double nutation_longitude, double obliquity) {
+    (void)obliquity;
     double gmst = greenwich_mean_sidereal_time(jd_ut);
-    double ee = nutation_longitude * std::cos(obliquity * DEG2RAD)
+    double ee = nutation_longitude * std::cos(mean_obliquity_p03(jd_ut) * DEG2RAD)
               + gast_complementary_terms(jd_ut);
     return mod_floor(gmst + ee, 360.0);
 }
