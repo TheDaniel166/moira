@@ -35,7 +35,7 @@ Stars sourced from the Sovereign Star Registry.
 """
 
 from __future__ import annotations
-from ..stars import star_at, StarPosition
+from ..stars import DEFAULT_STAR_PRODUCT, star_at, StarPosition
 from . import _star_name_is_resolvable
 
 DUBHE              = "Dubhe"
@@ -77,8 +77,14 @@ URSA_MAJOR_STAR_NAMES = {
 }
 
 
-def ursa_major_star_at(name: str, jd_tt: float) -> StarPosition:
-    return star_at(name, jd_tt)
+def ursa_major_star_at(
+    name: str,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+) -> StarPosition:
+    return star_at(name, jd_tt, product=product, reader=reader)
 
 
 def dubhe_at(jd_tt: float) -> StarPosition:

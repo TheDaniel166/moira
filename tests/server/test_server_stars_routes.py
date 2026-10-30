@@ -75,10 +75,11 @@ def test_server_startup_includes_stars_router(
 @pytest.mark.requires_ephemeris
 def test_star_position_route_converts_transport_datetime_to_jd_tt(
     client_with_engine: TestClient,
+    moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     jd_tt = ut_to_tt(jd_from_datetime(dt))
-    direct = star_at("Sirius", jd_tt)
+    direct = star_at("Sirius", jd_tt, reader=moira_engine._reader)
 
     response = client_with_engine.post(
         "/v1/stars/position",
@@ -99,10 +100,13 @@ def test_star_position_route_converts_transport_datetime_to_jd_tt(
     assert provenance["source"] == direct.source
     assert provenance["source_mode"] == direct.computation_truth.source_mode
     assert provenance["motion_model"] == "binary_orbit"
-    # REST_API_REFERENCE.md, Fixed-Star Position Contract.
-    assert provenance["position_product"] == "astrometric"
+    # REST_API_REFERENCE.md, Fixed-Star Position Contract: apparent by default.
+    assert provenance["position_product"] == "apparent"
     assert provenance["true_position"] is False
-    assert provenance["observer_mode"] == "barycentric"
+    assert provenance["observer_mode"] == "geocentric"
+    assert provenance["stage_sequence"][3:7] == [
+        "space_motion", "annual_parallax", "light_deflection", "annual_aberration",
+    ]
     assert provenance["lookup_kind"] == direct.computation_truth.lookup_kind
     assert provenance["hipparcos_name"] == direct.computation_truth.hipparcos_name
     assert provenance["gaia_match_status"] == direct.computation_truth.gaia_match_status
@@ -120,10 +124,11 @@ def test_star_position_route_converts_transport_datetime_to_jd_tt(
 @pytest.mark.requires_ephemeris
 def test_stars_bulk_route_preserves_valid_results_and_collects_missing_names(
     client_with_engine: TestClient,
+    moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     jd_tt = ut_to_tt(jd_from_datetime(dt))
-    direct = star_at("Sirius", jd_tt)
+    direct = star_at("Sirius", jd_tt, reader=moira_engine._reader)
 
     response = client_with_engine.post(
         "/v1/stars/bulk",
@@ -141,6 +146,119 @@ def test_stars_bulk_route_preserves_valid_results_and_collects_missing_names(
     assert body["results"]["Sirius"]["provenance"]["coordinate_source"] == "sovereign_star_registry"
     assert body["results"]["Sirius"]["provenance"]["lookup_kind"] == direct.computation_truth.lookup_kind
     assert body["missing"] == ["DefinitelyNotAStar"]
+    assert body["product"] == "apparent"
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("product", ["apparent", "astrometric", "geometric"])
+def test_star_position_route_returns_each_requested_product(
+    client_with_engine: TestClient,
+    moira_engine,
+    product: str,
+) -> None:
+    from moira.julian import utc_to_tt
+
+    dt = datetime(2024, 10, 15, 0, 0, tzinfo=timezone.utc)
+    jd_tt = utc_to_tt(jd_from_datetime(dt))  # the service's own clock conversion
+    direct = star_at("Arcturus", jd_tt, product=product, reader=moira_engine._reader)
+
+    response = client_with_engine.post(
+        "/v1/stars/position",
+        json={"dt": dt.isoformat(), "star": "Arcturus", "product": product},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["longitude"] == pytest.approx(direct.longitude, abs=1e-12)
+    assert body["latitude"] == pytest.approx(direct.latitude, abs=1e-12)
+    provenance = body["provenance"]
+    assert provenance["position_product"] == product
+    assert provenance["true_position"] is (product == "geometric")
+    assert provenance["observer_mode"] == ("geocentric" if product == "apparent" else "barycentric")
+    stages = provenance["stage_sequence"]
+    assert ("annual_aberration" in stages) is (product == "apparent")
+    assert ("light_time_advance" in stages) is (product == "geometric")
+
+
+@pytest.mark.requires_ephemeris
+def test_star_products_differ_by_physical_amounts(client_with_engine: TestClient) -> None:
+    dt = datetime(2024, 10, 15, 0, 0, tzinfo=timezone.utc).isoformat()
+    longitudes = {
+        product: client_with_engine.post(
+            "/v1/stars/position", json={"dt": dt, "star": "Spica", "product": product},
+        ).json()["longitude"]
+        for product in ("apparent", "astrometric")
+    }
+    # Annual aberration plus solar deflection: nonzero, never above ~21 arcsec.
+    difference = abs(longitudes["apparent"] - longitudes["astrometric"]) * 3600.0
+    assert 1.0 < difference < 21.0
+
+
+def test_star_position_route_rejects_unknown_product(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post(
+        "/v1/stars/position",
+        json={"dt": "2000-01-01T12:00:00+00:00", "star": "Sirius", "product": "true"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_star_product_schema_matches_engine_products() -> None:
+    from typing import get_args
+
+    from moira.stars import DEFAULT_STAR_PRODUCT, POSITION_PRODUCTS
+    from moira_server.models.stars import (
+        DEFAULT_STAR_POSITION_PRODUCT,
+        StarPositionProduct,
+        StarPositionRequest,
+        StarsBulkRequest,
+    )
+
+    assert set(get_args(StarPositionProduct)) == set(POSITION_PRODUCTS)
+    assert DEFAULT_STAR_POSITION_PRODUCT == DEFAULT_STAR_PRODUCT
+    for model in (StarPositionRequest, StarsBulkRequest):
+        assert model.model_fields["product"].default == DEFAULT_STAR_PRODUCT
+
+
+def test_apparent_star_needs_the_engine_kernel_and_astrometric_does_not(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from types import SimpleNamespace
+
+    engine = SimpleNamespace(_reader=None)
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    dt = "2000-01-01T12:00:00+00:00"
+    with TestClient(app) as client:
+        apparent = client.post("/v1/stars/position", json={"dt": dt, "star": "Sirius"})
+        bulk = client.post("/v1/stars/bulk", json={"dt": dt, "stars": ["Sirius"]})
+        astrometric = client.post(
+            "/v1/stars/position", json={"dt": dt, "star": "Sirius", "product": "astrometric"},
+        )
+
+    assert apparent.status_code == 503
+    assert apparent.json()["error_code"] == "kernel_not_ready"
+    assert bulk.status_code == 503
+    assert astrometric.status_code == 200
+    assert astrometric.json()["provenance"]["position_product"] == "astrometric"
+
+
+@pytest.mark.requires_ephemeris
+def test_stars_bulk_skip_missing_skips_only_unknown_names(
+    client_with_engine: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira_server.services.stars as service
+
+    def failing_star_at(name, jd_tt, **kwargs):
+        raise RuntimeError("computation failure")
+
+    monkeypatch.setattr(service, "star_at", failing_star_at)
+    with pytest.raises(RuntimeError, match="computation failure"):
+        client_with_engine.post(
+            "/v1/stars/bulk",
+            json={"dt": "2000-01-01T12:00:00+00:00", "stars": ["Sirius"], "skip_missing": True},
+        )
 
 
 def test_star_position_route_rejects_naive_datetime(client_with_engine: TestClient) -> None:

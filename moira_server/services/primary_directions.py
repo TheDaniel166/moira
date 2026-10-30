@@ -665,6 +665,7 @@ def _prepare_request(
         promissors=request.promissors,
         obliquity=request.obliquity,
         policy=resolved.policy,
+        reader=engine._reader,
     )
     return _PreparedPrimaryDirections(
         arcs=arcs,

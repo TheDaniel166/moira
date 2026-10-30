@@ -277,7 +277,7 @@ def _epoch(jd_ut1, reader, policy):
     if policy.ayanamsa_system in _STAR_ANCHORED:
         anchor, target = _STAR_ANCHORED[policy.ayanamsa_system]
         try:
-            offset = (star_at(anchor, bound.epoch_tt).longitude - target) % 360
+            offset = (star_at(anchor, bound.epoch_tt, product="astrometric").longitude - target) % 360
         except ValueError as exc:
             raise GocharaResourceError("required Gochar live anchor catalogue is invalid") from exc
     else:

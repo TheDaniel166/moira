@@ -15,9 +15,9 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 104.07749769750625,
-    "expected_latitude": -39.604900732132286,
-    "expected_arc": 18.80977062393532
+    "expected_longitude": 104.08500247424091,
+    "expected_latitude": -39.604730811546354,
+    "expected_arc": 18.803746360036186
   },
   {
     "example_id": "fixed_star_ptolemy_algol_to_mc",
@@ -35,9 +35,9 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 56.16371242149682,
-    "expected_latitude": 22.42853288122916,
-    "expected_arc": 12.846229756647318
+    "expected_longitude": 56.16819003550728,
+    "expected_latitude": 22.4300766291425,
+    "expected_arc": 12.850841354327308
   },
   {
     "example_id": "fixed_star_meridian_sirius_to_venus",
@@ -55,9 +55,9 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 104.07749769750625,
-    "expected_latitude": -39.604900732132286,
-    "expected_arc": 35.790735021771425
+    "expected_longitude": 104.08500247424091,
+    "expected_latitude": -39.604730811546354,
+    "expected_arc": 35.78471075787229
   },
   {
     "example_id": "fixed_star_ptolemy_algol_to_sun",
@@ -75,8 +75,8 @@
     "mc": 41.0,
     "dsc": 298.0,
     "ic": 221.0,
-    "expected_longitude": 56.16371242149682,
-    "expected_latitude": 22.42853288122916,
-    "expected_arc": 340.4605928276593
+    "expected_longitude": 56.16819003550728,
+    "expected_latitude": 22.4300766291425,
+    "expected_arc": 340.46474383340467
   }
 ]

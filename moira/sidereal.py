@@ -432,7 +432,10 @@ def _ayanamsa_truth_at_tt(
 
         star_name, target_sidereal = anchor
         try:
-            star = star_at(star_name, jd_tt)
+            # Ayanamsa anchors use the astrometric star (FIXED_STARS_BACKEND_STANDARD.md,
+            # Section 5): the Gochara interval enclosure encloses that same product, and
+            # an apparent anchor would add a yearly aberration swing to the ayanamsa.
+            star = star_at(star_name, jd_tt, product="astrometric")
         except LookupError:
             fallback_reason = "anchor_star_not_found"
         except FileNotFoundError:

@@ -3914,7 +3914,8 @@ def _physical_target_photometry_context(
         if reader is None
         else _ut1_to_ephemeris_tt(jd_ut, reader)
     )
-    star = star_at(body, jd_tt)
+    # Only the catalog magnitude and identity are read here.
+    star = star_at(body, jd_tt, product="astrometric")
     return _PhysicalTargetPhotometryContext(
         apparent_magnitude=star.magnitude,
         phase_angle_deg=None,
@@ -3975,7 +3976,9 @@ def _target_signed_elongation(body: str, jd_ut: float) -> float:
         if reader is None
         else _ut1_to_ephemeris_tt(jd_ut, reader)
     )
-    # Explicit product (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    # Astrometric: the native heliacal search (src/native/include/visibility.hpp)
+    # evaluates the straight-line star without aberration, and the Python
+    # oracle must match it (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
     star = star_at(body, jd_tt, product="astrometric")
     sun = planet_at(_Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0

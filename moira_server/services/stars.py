@@ -13,6 +13,7 @@ from moira.multiple_stars import (
     multiple_star,
     multiple_stars_by_type,
 )
+from moira.spk_reader import MissingEphemerisKernelError
 from moira.stars import StarPosition, find_stars, list_stars, star_at
 from moira.variable_stars import (
     VarStarPolicy,
@@ -70,30 +71,51 @@ def _to_jd_tt(dt: datetime) -> float:
     return utc_to_tt(jd_from_datetime(dt))
 
 
+def _star_reader(engine: Moira, product: str):
+    """The engine's own kernel; the apparent product refuses to run without it.
+
+    The server never falls back to an ambient or global reader.
+    """
+    reader = engine._reader
+    if reader is None and product == "apparent":
+        raise MissingEphemerisKernelError(
+            "Apparent star positions need this server's planetary kernel, which is not loaded."
+        )
+    return reader
+
+
 def compute_star_position(engine: Moira, request: StarPositionRequest) -> StarPositionResponse:
-    """Single star position using the sovereign star catalog."""
+    """Single star position using the sovereign star catalog, as the requested product."""
     jd_tt = _to_jd_tt(request.dt)
-    data: StarPosition = star_at(request.star, jd_tt)
+    reader = _star_reader(engine, request.product)
+    data: StarPosition = star_at(request.star, jd_tt, product=request.product, reader=reader)
     return serialize_star(data, requested_datetime=request.dt, jd_tt=jd_tt)
 
 
 def compute_stars_bulk(engine: Moira, request: StarsBulkRequest) -> StarsBulkResponse:
-    """Bulk stars at one time; suited to website constellation rendering."""
+    """Bulk stars at one time and one product; suited to constellation rendering.
+
+    ``skip_missing`` skips only names the catalog cannot resolve; a kernel or
+    computation failure always fails the request.
+    """
     jd_tt = _to_jd_tt(request.dt)
+    reader = _star_reader(engine, request.product)
     results = {}
     missing = []
 
     for name in request.stars:
         try:
-            data = star_at(name, jd_tt)
-            results[name] = data
-        except Exception:
+            data = star_at(name, jd_tt, product=request.product, reader=reader)
+        except KeyError:
             if not request.skip_missing:
                 raise
             missing.append(name)
+            continue
+        results[name] = data
 
     return StarsBulkResponse(
         dt=request.dt,
+        product=request.product,
         results={k: serialize_star(v, requested_datetime=request.dt, jd_tt=jd_tt) for k, v in results.items()},
         missing=missing,
     )

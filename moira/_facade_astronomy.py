@@ -230,15 +230,17 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
             "phase_state": _sps(ang),
         }
 
-    def fixed_star(self, name: str, dt: datetime, product: str = "astrometric"):
+    def fixed_star(self, name: str, dt: datetime, product: str | None = None):
         """Return the tropical ecliptic position of a fixed star.
 
-        ``product`` is ``"astrometric"`` (default), ``"apparent"`` (as seen from
-        Earth, using this facade's kernel), or ``"geometric"``; see
+        ``product`` is ``"apparent"`` (the default: as seen from Earth, using
+        this facade's kernel), ``"astrometric"``, or ``"geometric"``; see
         ``moira.stars.star_at``.
         """
         facade = _facade_module()
-        from .stars import star_at as _star_at
+        from .stars import DEFAULT_STAR_PRODUCT, star_at as _star_at
+
+        product = DEFAULT_STAR_PRODUCT if product is None else product
 
         jd = facade.jd_from_datetime(dt)
         jd_tt = facade.utc_to_tt(jd)

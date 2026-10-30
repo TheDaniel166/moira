@@ -686,6 +686,10 @@ def _distance_ly_from_parallax(parallax_mas: float) -> float:
 
 _DAYS_PER_YEAR = 365.25
 POSITION_PRODUCTS = ("astrometric", "apparent", "geometric")
+# The product returned when a caller names none: where the star is seen from
+# Earth's centre, matching Moira's apparent planets
+# (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+DEFAULT_STAR_PRODUCT = "apparent"
 _PARSEC_KM = 206264.806247096355 * 149597870.7
 # A star without a usable parallax is placed this far away for the
 # Earth-based stage: far enough that its parallax vanishes and its light
@@ -922,17 +926,18 @@ def star_at(
     jd_tt: float,
     policy: UnifiedStarComputationPolicy | FixedStarComputationPolicy | None = None,
     *,
-    product: str = "astrometric",
+    product: str = DEFAULT_STAR_PRODUCT,
     reader: object | None = None,
     **_: object,
 ) -> FixedStar:
     """Return a sovereign fixed-star position at a TT epoch.
 
-    ``product`` selects ``"astrometric"`` (the catalog direction propagated to
-    the date; the default), ``"apparent"`` (as seen from Earth's center:
-    adds annual parallax, light deflection and annual aberration, and needs a
-    planetary ``reader`` or an active one), or ``"geometric"`` (where the star
-    physically is). All are true ecliptic and equinox of date.
+    ``product`` selects ``"apparent"`` (the default: as seen from Earth's
+    center, with annual parallax, light deflection and annual aberration; it
+    needs a planetary ``reader`` or an active one), ``"astrometric"`` (the
+    catalog direction propagated to the date, kernel-free), or
+    ``"geometric"`` (where the star physically is). All are true ecliptic and
+    equinox of date.
 
     Raises:
         ValueError: If ``jd_tt`` is non-finite or ``product`` is unknown.
@@ -984,7 +989,7 @@ def star_light_time_split(
 def all_stars_at(
     jd_tt: float,
     *,
-    product: str = "astrometric",
+    product: str = DEFAULT_STAR_PRODUCT,
     reader: object | None = None,
 ) -> dict[str, FixedStar]:
     """Return all sovereign stars at a TT epoch as the requested ``product``.
@@ -1049,31 +1054,50 @@ def _longitude_delta(a: float, b: float) -> float:
     return abs(((a - b + 180.0) % 360.0) - 180.0)
 
 
-def stars_near(longitude_deg: float, jd_tt: float, orb: float = 1.0, **_: object) -> list[FixedStar]:
+def stars_near(
+    longitude_deg: float,
+    jd_tt: float,
+    orb: float = 1.0,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+    **_: object,
+) -> list[FixedStar]:
     """Return stars within ``orb`` degrees of target ecliptic longitude.
 
-    Results are sorted by angular distance, then magnitude, then name.
+    Positions are the requested ``product`` (see :func:`star_at`). Results
+    are sorted by angular distance, then magnitude, then name.
 
     Side effects: None.
     """
+    reader = _resolve_product_reader(product, reader)
     matches: list[FixedStar] = []
     for record in _load_registry_records():
-        star = _build_fixed_star(record, record.name, "traditional_name", jd_tt)
+        star = _build_fixed_star(record, record.name, "traditional_name", jd_tt, product, reader)
         if _longitude_delta(star.longitude, longitude_deg) <= orb:
             matches.append(star)
     matches.sort(key=lambda star: (_longitude_delta(star.longitude, longitude_deg), star.magnitude, star.name))
     return matches
 
 
-def stars_by_magnitude(max_magnitude: float, jd_tt: float, **_: object) -> list[FixedStar]:
+def stars_by_magnitude(
+    max_magnitude: float,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+    **_: object,
+) -> list[FixedStar]:
     """Return stars brighter than or equal to ``max_magnitude`` at TT epoch.
 
-    Results are sorted by magnitude then name.
+    Positions are the requested ``product`` (see :func:`star_at`). Results
+    are sorted by magnitude then name.
 
     Side effects: None.
     """
+    reader = _resolve_product_reader(product, reader)
     matches = [
-        _build_fixed_star(record, record.name, "traditional_name", jd_tt)
+        _build_fixed_star(record, record.name, "traditional_name", jd_tt, product, reader)
         for record in _load_registry_records()
         if record.magnitude_v <= max_magnitude
     ]
@@ -1094,7 +1118,10 @@ def _heliacal_signed_elongation(name: str, jd_ut: float) -> float:
     from .planets import planet_at
 
     jd_tt = ut_to_tt(jd_ut)
-    star = star_at(name, jd_tt)
+    # Astrometric: the native heliacal search (src/native/include/visibility.hpp)
+    # evaluates the straight-line star without aberration, and the Python
+    # oracle must match it (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    star = star_at(name, jd_tt, product="astrometric")
     sun = planet_at(Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0
 

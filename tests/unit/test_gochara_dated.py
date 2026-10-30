@@ -106,7 +106,9 @@ def test_raw_bav_uses_natal_clock_lagna_and_absolute_transit_sign(astronomy, mon
     ("Aldebaran (15 Tau)", "Aldebaran", 45)])
 def test_live_anchor_is_at_each_tt_and_never_falls_back(astronomy, monkeypatch, system, anchor, target):
     reader, _ = astronomy
-    def star(name, tt):
+    def star(name, tt, **kwargs):
+        # Ayanamsa anchors are astrometric (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+        assert kwargs.get("product") == "astrometric"
         assert name == anchor and get_active_reader() is reader
         return SimpleNamespace(longitude=(target+20+(tt-NATAL)*0.001) % 360)
     monkeypatch.setattr(dated, "star_at", star)
@@ -114,7 +116,7 @@ def test_live_anchor_is_at_each_tt_and_never_falls_back(astronomy, monkeypatch, 
                               policy=dated.GocharaDatePolicy(ayanamsa_system=system))
     assert result.natal.ayanamsa_method == result.transit.ayanamsa_method == "live_star_anchor"
     assert result.natal.ayanamsa_anchor == anchor
-    monkeypatch.setattr(dated, "star_at", lambda *args: (_ for _ in ()).throw(KeyError("missing private path")))
+    monkeypatch.setattr(dated, "star_at", lambda *args, **kwargs: (_ for _ in ()).throw(KeyError("missing private path")))
     outer = object()
     with use_reader_override(outer), pytest.raises(dated.GocharaResourceError, match="natal") as error:
         dated.gochara_at(NATAL, TRANSIT, reader=reader, policy=result.policy)

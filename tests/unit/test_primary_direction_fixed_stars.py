@@ -29,6 +29,15 @@ from moira.primary_directions import (
 )
 from moira.stars import star_at
 
+@pytest.fixture
+def apparent_star_reader(planetary_reader):
+    """Fixed-star targets are apparent places: Earth's state comes from the kernel."""
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(planetary_reader):
+        yield planetary_reader
+
+
 
 def test_primary_direction_fixed_star_target_requires_sovereign_catalog_name() -> None:
     target = PrimaryDirectionFixedStarTarget("Sirius")
@@ -39,7 +48,8 @@ def test_primary_direction_fixed_star_target_requires_sovereign_catalog_name() -
         PrimaryDirectionFixedStarTarget("Not A Real Star")
 
 
-def test_resolve_primary_direction_fixed_star_point_uses_sovereign_star_engine() -> None:
+@pytest.mark.requires_ephemeris
+def test_resolve_primary_direction_fixed_star_point_uses_sovereign_star_engine(apparent_star_reader) -> None:
     jd_tt = 2451545.0
 
     name, longitude, latitude = resolve_primary_direction_fixed_star_point(
@@ -53,7 +63,8 @@ def test_resolve_primary_direction_fixed_star_point_uses_sovereign_star_engine()
     assert latitude == pytest.approx(star.latitude)
 
 
-def test_zodiacal_suppressed_fixed_star_is_projected_at_zero_latitude_before_speculum() -> None:
+@pytest.mark.requires_ephemeris
+def test_zodiacal_suppressed_fixed_star_is_projected_at_zero_latitude_before_speculum(apparent_star_reader) -> None:
     target = PublicPrimaryDirectionFixedStarTarget("Algol")
     star = star_at("Algol", 2451545.0)
 
@@ -141,7 +152,8 @@ def _fixture_chart(example: dict[str, object]) -> tuple[_FixtureChart, _FixtureH
         "fixed_star_ptolemy_algol_to_sun",
     ],
 )
-def test_fixed_star_examples_match_fixture_points_and_arcs(example_id: str) -> None:
+@pytest.mark.requires_ephemeris
+def test_fixed_star_examples_match_fixture_points_and_arcs(example_id: str, apparent_star_reader) -> None:
     example = next(item for item in _fixed_star_examples() if item["example_id"] == example_id)
     chart, houses = _fixture_chart(example)
     geo_lat = float(example["geo_lat"])

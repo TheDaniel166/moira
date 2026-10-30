@@ -4,6 +4,8 @@ usage:
   augment_star_registry_astrometry.py epoch
   augment_star_registry_astrometry.py fetch-rv --out CANDIDATE.json     (network)
   augment_star_registry_astrometry.py apply-rv --candidate CANDIDATE.json
+  augment_star_registry_astrometry.py fetch-hg --hip NAME=HIP[:GAIA_ID] ... --out CANDIDATE.json  (network)
+  augment_star_registry_astrometry.py apply-hg --candidate CANDIDATE.json
 
 ``epoch`` adds ``ref_epoch_jd`` and ``frame`` to every row that lacks them.
 Every current row was resolved through astroquery's SIMBAD interface, whose
@@ -22,6 +24,23 @@ and ``radial_velocity_status`` to the registry and the per-field sources to
 ``star_provenance.json``. A velocity is admitted only when SIMBAD reports a
 radial velocity (type ``v``) with quality A to D; otherwise the status is
 ``unknown`` and the value zero. Existing cell text is written back verbatim.
+
+``fetch-hg`` is for a star whose catalog proper motion is a snapshot of an
+orbit (a binary whose Hipparcos and Gaia proper motions disagree). For each
+named row it fetches, from the ESA Gaia archive, the Hipparcos new reduction
+(van Leeuwen 2007, J1991.25) and the Gaia DR3 source matched to it by Gaia's
+own cross-match (``gaiadr3.hipparcos2_best_neighbour``, J2016.0), and derives
+(a star the cross-match omits needs its Gaia DR3 source named explicitly, and
+the candidate records that the match was stated, not catalogued):
+
+- the long-term proper motion: the change of position between the two
+  catalogs divided by their 24.75-year separation;
+- the J2000.0 position on that chord; and
+- the parallax: Gaia DR3 when its solution is well behaved (RUWE at most
+  ``GAIA_RUWE_LIMIT``), otherwise Hipparcos.
+
+``apply-hg`` writes a reviewed candidate's astrometry into the registry rows
+and records the inputs and derivation in ``star_provenance.json``.
 
 Governing record: wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md, Section 3.
 """
@@ -47,6 +66,29 @@ SIMBAD_TAP = "https://simbad.cds.unistra.fr/simbad/sim-tap/sync"
 # Official SIMBAD mirror at the Harvard-Smithsonian Center for Astrophysics.
 SIMBAD_TAP_MIRROR = "https://simbad.harvard.edu/simbad/sim-tap/sync"
 ADMITTED_RV_QUALITY = ("A", "B", "C", "D")
+GAIA_TAP = "https://gea.esac.esa.int/tap-server/tap/sync"
+HIPPARCOS_EPOCH_YEAR = 1991.25
+GAIA_DR3_EPOCH_YEAR = 2016.0
+# Gaia DR3's usual threshold for a well-behaved single-star astrometric fit.
+GAIA_RUWE_LIMIT = 1.4
+_HG_QUERY = (
+    "SELECT n.original_ext_source_id AS hip, g.source_id, g.ra, g.dec, g.parallax, "
+    "g.parallax_error, g.pmra, g.pmdec, g.ruwe, g.ref_epoch, "
+    "h.ra AS hip_ra, h.dec AS hip_dec, h.plx AS hip_plx, h.e_plx AS hip_plx_error, "
+    "h.pm_ra AS hip_pmra, h.pm_de AS hip_pmdec, h.sn AS hip_solution, h.nc AS hip_components "
+    "FROM gaiadr3.hipparcos2_best_neighbour AS n "
+    "JOIN gaiadr3.gaia_source AS g ON g.source_id = n.source_id "
+    "JOIN public.hipparcos_newreduction AS h ON h.hip = n.original_ext_source_id "
+    "WHERE n.original_ext_source_id IN ({ids})"
+)
+_HG_STATED_QUERY = (
+    "SELECT {hip} AS hip, g.source_id, g.ra, g.dec, g.parallax, "
+    "g.parallax_error, g.pmra, g.pmdec, g.ruwe, g.ref_epoch, "
+    "h.ra AS hip_ra, h.dec AS hip_dec, h.plx AS hip_plx, h.e_plx AS hip_plx_error, "
+    "h.pm_ra AS hip_pmra, h.pm_de AS hip_pmdec, h.sn AS hip_solution, h.nc AS hip_components "
+    "FROM gaiadr3.gaia_source AS g, public.hipparcos_newreduction AS h "
+    "WHERE g.source_id = {source_id} AND h.hip = {hip}"
+)
 _QUERY = (
     "SELECT i.id, b.main_id, b.rvz_type, b.rvz_radvel, b.rvz_err, b.rvz_qual, b.rvz_bibcode, "
     "b.coo_bibcode, b.pm_bibcode, b.plx_bibcode, b.ra, b.dec, b.pmra, b.pmdec, b.plx_value "
@@ -200,21 +242,145 @@ def apply_rv(candidate_path: Path) -> None:
     print(f"radial velocities admitted: {measured} of {len(rows)}")
 
 
+def _unit(ra_deg: float, dec_deg: float) -> tuple[float, float, float]:
+    ra, dec = math.radians(ra_deg), math.radians(dec_deg)
+    return (math.cos(dec) * math.cos(ra), math.cos(dec) * math.sin(ra), math.sin(dec))
+
+
+def _offset_mas(ra0: float, dec0: float, ra1: float, dec1: float) -> tuple[float, float]:
+    """Gnomonic (east, north) offset of (ra1, dec1) from (ra0, dec0), in mas."""
+    ra0, dec0, ra1, dec1 = map(math.radians, (ra0, dec0, ra1, dec1))
+    cos_c = math.sin(dec0) * math.sin(dec1) + math.cos(dec0) * math.cos(dec1) * math.cos(ra1 - ra0)
+    x = math.cos(dec1) * math.sin(ra1 - ra0) / cos_c
+    y = (math.cos(dec0) * math.sin(dec1) - math.sin(dec0) * math.cos(dec1) * math.cos(ra1 - ra0)) / cos_c
+    return math.degrees(x) * 3.6e6, math.degrees(y) * 3.6e6
+
+
+def hipparcos_gaia_astrometry(record: dict) -> dict:
+    """Long-term astrometry at J2000.0 from one Hipparcos/Gaia DR3 pair."""
+    span = GAIA_DR3_EPOCH_YEAR - HIPPARCOS_EPOCH_YEAR
+    east, north = _offset_mas(record["hip_ra"], record["hip_dec"], record["ra"], record["dec"])
+    fraction = (2000.0 - HIPPARCOS_EPOCH_YEAR) / span
+    a, b = _unit(record["hip_ra"], record["hip_dec"]), _unit(record["ra"], record["dec"])
+    point = [x + fraction * (y - x) for x, y in zip(a, b)]
+    norm = math.sqrt(sum(c * c for c in point))
+    ra = math.degrees(math.atan2(point[1], point[0])) % 360.0
+    dec = math.degrees(math.asin(point[2] / norm))
+    gaia_parallax_ok = record["ruwe"] is not None and record["ruwe"] <= GAIA_RUWE_LIMIT
+    return {
+        "ra_deg": ra,
+        "dec_deg": dec,
+        "pmra_mas_yr": round(east / span, 3),
+        "pmdec_mas_yr": round(north / span, 3),
+        "parallax_mas": round(record["parallax"] if gaia_parallax_ok else record["hip_plx"], 4),
+        "parallax_source": "gaia_dr3" if gaia_parallax_ok else "hipparcos_2007",
+    }
+
+
+def _gaia_tap(query: str) -> list[dict]:
+    body = urllib.parse.urlencode({"REQUEST": "doQuery", "LANG": "ADQL", "FORMAT": "json", "QUERY": query}).encode()
+    with urllib.request.urlopen(urllib.request.Request(GAIA_TAP, data=body), timeout=120) as response:
+        payload = json.load(response)
+    names = [column["name"] for column in payload["metadata"]]
+    return [dict(zip(names, row)) for row in payload["data"]]
+
+
+def fetch_hg(targets: dict[str, tuple[int, int | None]], out: Path) -> None:
+    """``targets`` maps a registry name to (HIP number, stated Gaia DR3 source or None)."""
+    ids = ",".join(str(hip) for hip, _ in targets.values())
+    by_hip = {int(r["hip"]): r for r in _gaia_tap(_HG_QUERY.format(ids=ids))}
+    stars = {}
+    for name, (hip, stated) in targets.items():
+        if stated is not None:
+            rows = _gaia_tap(_HG_STATED_QUERY.format(hip=hip, source_id=stated))
+            if len(rows) != 1:
+                raise SystemExit(f"stated Gaia DR3 source {stated} or HIP {hip} not found ({name})")
+            record, match = rows[0], "stated"
+        else:
+            record, match = by_hip.get(hip), "gaia_dr3_hipparcos2_best_neighbour"
+            if record is None:
+                raise SystemExit(f"no Gaia DR3 cross-match for HIP {hip} ({name}); state the source")
+        record["match"] = match
+        stars[name] = {"inputs": record, "derived": hipparcos_gaia_astrometry(record)}
+    out.write_text(json.dumps({
+        "source": {"service": GAIA_TAP, "query": _HG_QUERY, "stated_query": _HG_STATED_QUERY,
+                   "retrieved_utc": datetime.now(timezone.utc).isoformat()},
+        "stars": stars,
+    }, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(f"derived {len(stars)} rows -> {out}")
+
+
+def apply_hg(candidate_path: Path) -> None:
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    fieldnames, rows = _read(REGISTRY)
+    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    applied = 0
+    for row in rows:
+        entry = candidate["stars"].get(row["name"])
+        if entry is None:
+            continue
+        derived, inputs = entry["derived"], entry["inputs"]
+        if derived != hipparcos_gaia_astrometry(inputs):
+            raise SystemExit(f"{row['name']}: candidate derivation does not reproduce")
+        row["ra_deg"] = repr(derived["ra_deg"])
+        row["dec_deg"] = repr(derived["dec_deg"])
+        row["pmra_mas_yr"] = repr(derived["pmra_mas_yr"])
+        row["pmdec_mas_yr"] = repr(derived["pmdec_mas_yr"])
+        row["parallax_mas"] = repr(derived["parallax_mas"])
+        row["ref_epoch_jd"] = SIMBAD_EPOCH_JD
+        row["frame"] = SIMBAD_FRAME
+        sources = provenance[row["name"]].setdefault("astrometry_sources", {})
+        sources["position_bibcode"] = "Hipparcos 2007 / Gaia DR3 chord at J2000.0"
+        sources["proper_motion_bibcode"] = "Hipparcos 2007 to Gaia DR3 long-term proper motion"
+        sources["parallax_bibcode"] = (
+            "2023A&A...674A...1G" if derived["parallax_source"] == "gaia_dr3" else "2007A&A...474..653V"
+        )
+        sources["hipparcos_gaia"] = {
+            "service": candidate["source"]["service"],
+            "retrieved_utc": candidate["source"]["retrieved_utc"],
+            "hip": inputs["hip"],
+            "gaia_dr3_source_id": inputs["source_id"],
+            "gaia_match": inputs["match"],
+            "gaia_ruwe": inputs["ruwe"],
+            "parallax_source": derived["parallax_source"],
+            "method": (
+                "proper motion = (Gaia DR3 J2016.0 position - Hipparcos J1991.25 position) / "
+                "24.75 yr; position = that chord at J2000.0; replaces the snapshot "
+                "proper motion of a binary"
+            ),
+        }
+        applied += 1
+    _write(REGISTRY, fieldnames, rows)
+    PROVENANCE.write_text(json.dumps(provenance, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"rows refreshed from Hipparcos and Gaia: {applied}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("step", choices=["epoch", "fetch-rv", "apply-rv"])
+    parser.add_argument("step", choices=["epoch", "fetch-rv", "apply-rv", "fetch-hg", "apply-hg"])
     parser.add_argument("--registry", type=Path, default=REGISTRY)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--candidate", type=Path)
     parser.add_argument("--service", default=SIMBAD_TAP,
                         help=f"SIMBAD TAP endpoint (mirror: {SIMBAD_TAP_MIRROR})")
+    parser.add_argument("--hip", action="append", default=[],
+                        help="NAME=HIP: a registry row and its Hipparcos number (fetch-hg)")
     args = parser.parse_args()
     if args.step == "epoch":
         print(f"rows given an explicit epoch: {add_epoch(args.registry)}")
     elif args.step == "fetch-rv":
         fetch_rv(args.out, args.service)
-    else:
+    elif args.step == "apply-rv":
         apply_rv(args.candidate)
+    elif args.step == "fetch-hg":
+        targets = {}
+        for pair in args.hip:
+            name, ids = pair.split("=", 1)
+            hip, _, gaia = ids.partition(":")
+            targets[name] = (int(hip), int(gaia) if gaia else None)
+        fetch_hg(targets, args.out)
+    else:
+        apply_hg(args.candidate)
 
 
 if __name__ == "__main__":

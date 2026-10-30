@@ -13,12 +13,14 @@ from moira.astrocartography import (
 from moira.obliquity import true_obliquity
 
 
-def test_fixed_star_equatorial_subject_preserves_identity_and_true_of_date_frame() -> None:
+@pytest.mark.requires_ephemeris
+def test_fixed_star_equatorial_subject_preserves_identity_and_true_of_date_frame(planetary_reader) -> None:
     jd_tt = 2_451_545.0
     subject = fixed_star_equatorial_subject(
         "Sirius",
         jd_tt,
         true_obliquity(jd_tt),
+        reader=planetary_reader,
     )
 
     assert subject.requested_name == "Sirius"
@@ -28,9 +30,9 @@ def test_fixed_star_equatorial_subject_preserves_identity_and_true_of_date_frame
     assert subject.source_mode == "sovereign_registry"
     assert subject.gaia_match_status == "native_registry"
     assert subject.merge_state == "native_registry"
-    # The default astrometric product is barycentric and is not the star's
-    # geometric "true" place; see FIXED_STARS_BACKEND_STANDARD.md, Section 4.
-    assert subject.observer_mode == "barycentric"
+    # Astrocartography uses the apparent place, seen from Earth's centre; it is
+    # not the star's geometric "true" place (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    assert subject.observer_mode == "geocentric"
     assert subject.relation_kind == "catalog_merge"
     assert subject.relation_basis == "sovereign_registry"
     assert subject.true_position is False
@@ -40,12 +42,14 @@ def test_fixed_star_equatorial_subject_preserves_identity_and_true_of_date_frame
     assert -90.0 <= subject.declination <= 90.0
 
 
-def test_fixed_star_astrocartography_returns_full_line_and_point_parity() -> None:
+@pytest.mark.requires_ephemeris
+def test_fixed_star_astrocartography_returns_full_line_and_point_parity(planetary_reader) -> None:
     result = fixed_star_astrocartography(
         ("Sirius", "Regulus"),
         jd_ut=2_451_544.9992,
         jd_tt=2_451_545.0,
         lat_step=10.0,
+        reader=planetary_reader,
     )
 
     assert result.computation_truth.requested_names == ("Sirius", "Regulus")
@@ -71,16 +75,19 @@ def test_fixed_star_astrocartography_returns_full_line_and_point_parity() -> Non
         replace(result, lines=(result.lines[0],) * len(result.lines))
 
 
-def test_fixed_star_astrocartography_rejects_alias_identity_collisions() -> None:
+@pytest.mark.requires_ephemeris
+def test_fixed_star_astrocartography_rejects_alias_identity_collisions(planetary_reader) -> None:
     with pytest.raises(ValueError, match="duplicate canonical identities"):
         fixed_star_astrocartography(
             ("Mizar", "zet01 UMa"),
             jd_ut=2_451_544.9992,
             jd_tt=2_451_545.0,
+            reader=planetary_reader,
         )
 
 
-def test_fixed_star_astrocartography_chart_wrapper_requires_explicit_tt() -> None:
+@pytest.mark.requires_ephemeris
+def test_fixed_star_astrocartography_chart_wrapper_requires_explicit_tt(planetary_reader) -> None:
     with pytest.raises(TypeError, match="explicit jd_ut and jd_tt"):
         fixed_star_astrocartography_from_chart(
             SimpleNamespace(jd_ut=2_451_544.9992),
@@ -91,6 +98,7 @@ def test_fixed_star_astrocartography_chart_wrapper_requires_explicit_tt() -> Non
         SimpleNamespace(jd_ut=2_451_544.9992, jd_tt=2_451_545.0),
         ("Sirius",),
         lat_step=20.0,
+        reader=planetary_reader,
     )
     assert result.subjects[0].canonical_name == "Sirius"
 

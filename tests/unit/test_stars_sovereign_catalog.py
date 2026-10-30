@@ -144,7 +144,7 @@ def _straight_line_direction(row: dict[str, str], jd_tt: float, radial_velocity_
 def _straight_line_star(name: str, jd_tt: float):
     """star_at for ordinary stars; the straight-line row path for binary components."""
     if name not in stars._binary_components():
-        return star_at(name, jd_tt)
+        return star_at(name, jd_tt, product="astrometric")
     from types import SimpleNamespace
 
     from moira._stellar_space_motion import astrometric_direction
@@ -250,7 +250,7 @@ def test_public_catalog_matches_registry_count_and_anchors() -> None:
 @pytest.mark.parametrize("name", ["Sirius", "Algol", "Spica", "Aldebaran", "Regulus"])
 def test_star_at_matches_registry_reference_longitude_and_latitude(name: str) -> None:
     row = _registry_by_name()[name]
-    star = star_at(name, J2000)
+    star = star_at(name, J2000, product="astrometric")
 
     assert star.source == "sovereign"
     assert star.name == name
@@ -276,7 +276,7 @@ def test_oracle_anchor_reference_positions(name: str, date_key: str) -> None:
 @pytest.mark.unit
 @pytest.mark.parametrize("name", ["Sirius", "Algol", "Spica", "Aldebaran"])
 def test_oracle_anchor_longitude_progression_across_millennial_span(name: str) -> None:
-    samples = [star_at(name, ORACLE_DATE_POINTS[key]) for key in ("j1000", "j1500", "j1900", "j2000", "j2100", "j2500", "j3000")]
+    samples = [star_at(name, ORACLE_DATE_POINTS[key], product="astrometric") for key in ("j1000", "j1500", "j1900", "j2000", "j2100", "j2500", "j3000")]
     longitudes = [sample.longitude for sample in samples]
     assert longitudes == sorted(longitudes)
 
@@ -285,7 +285,7 @@ def test_oracle_anchor_longitude_progression_across_millennial_span(name: str) -
 @pytest.mark.parametrize("name", ["Sirius", "Algol", "Spica", "Aldebaran"])
 def test_oracle_anchor_far_past_future_positions_remain_valid(name: str) -> None:
     for date_key in ("j1000", "j3000"):
-        star = star_at(name, ORACLE_DATE_POINTS[date_key])
+        star = star_at(name, ORACLE_DATE_POINTS[date_key], product="astrometric")
         assert 0.0 <= star.longitude < 360.0
         assert -90.0 <= star.latitude <= 90.0
         assert star.source == "sovereign"
@@ -293,8 +293,8 @@ def test_oracle_anchor_far_past_future_positions_remain_valid(name: str) -> None
 
 @pytest.mark.unit
 def test_star_lookup_is_case_insensitive_but_returns_canonical_name() -> None:
-    lower = star_at("algol", J2000)
-    upper = star_at("ALGOL", J2000)
+    lower = star_at("algol", J2000, product="astrometric")
+    upper = star_at("ALGOL", J2000, product="astrometric")
 
     assert lower.name == "Algol"
     assert upper.name == "Algol"
@@ -304,26 +304,26 @@ def test_star_lookup_is_case_insensitive_but_returns_canonical_name() -> None:
 
 @pytest.mark.unit
 def test_bayer_case_collisions_require_exact_casing() -> None:
-    upper = star_at("Q Car", J2000)
-    lower = star_at("q Car", J2000)
+    upper = star_at("Q Car", J2000, product="astrometric")
+    lower = star_at("q Car", J2000, product="astrometric")
 
     assert upper.name == "Q Car"
     assert lower.name == "q Car"
     assert upper.longitude != pytest.approx(lower.longitude, abs=1.0)
 
     with pytest.raises(KeyError):
-        star_at("q car", J2000)
+        star_at("q car", J2000, product="astrometric")
 
 
 @pytest.mark.unit
 def test_find_and_search_views_are_catalog_native() -> None:
     assert "Algol" in find_named_stars("alg")
 
-    nearby = stars_near(104.08, J2000, orb=0.2)
+    nearby = stars_near(104.08, J2000, orb=0.2, product="astrometric")
     assert nearby
     assert nearby[0].name == "Sirius"
 
-    bright = stars_by_magnitude(1.0, J2000)
+    bright = stars_by_magnitude(1.0, J2000, product="astrometric")
     assert bright
     assert bright == sorted(bright, key=lambda star: (star.magnitude, star.name))
     assert any(star.name == "Sirius" for star in bright)
@@ -331,7 +331,7 @@ def test_find_and_search_views_are_catalog_native() -> None:
 
 @pytest.mark.unit
 def test_fixed_star_results_preserve_unified_merge_condition_profile() -> None:
-    star = star_at("Sirius", J2000)
+    star = star_at("Sirius", J2000, product="astrometric")
 
     assert star.condition_profile is not None
     assert star.condition_profile.result_kind == "fixed_star"
@@ -343,8 +343,8 @@ def test_fixed_star_results_preserve_unified_merge_condition_profile() -> None:
 
 @pytest.mark.unit
 def test_fixed_star_search_surfaces_preserve_condition_profile() -> None:
-    nearby = stars_near(104.08, J2000, orb=0.2)
-    bright = stars_by_magnitude(1.0, J2000)
+    nearby = stars_near(104.08, J2000, orb=0.2, product="astrometric")
+    bright = stars_by_magnitude(1.0, J2000, product="astrometric")
 
     assert nearby
     assert bright
@@ -368,8 +368,8 @@ def test_star_light_time_split_preserves_condition_profile_on_both_positions() -
 
 @pytest.mark.unit
 def test_fixed_star_exposes_constellation_membership() -> None:
-    sirius = star_at("Sirius", J2000)
-    betelgeuse = star_at("Betelgeuse", J2000)
+    sirius = star_at("Sirius", J2000, product="astrometric")
+    betelgeuse = star_at("Betelgeuse", J2000, product="astrometric")
 
     assert sirius.constellation == "Canis Major"
     assert sirius.computation_truth is not None
@@ -384,7 +384,7 @@ def test_fixed_star_exposes_constellation_membership() -> None:
 def test_full_catalog_j2000_reference_sweep_has_no_large_outliers() -> None:
     outliers: list[tuple[str, float, float]] = []
     for name, row in _registry_by_name().items():
-        star = star_at(name, J2000)
+        star = star_at(name, J2000, product="astrometric")
         lon_err = _angular_delta(star.longitude, float(row["ecl_lon_deg"]))
         lat_err = abs(star.latitude - float(row["ecl_lat_deg"]))
         if max(lon_err, lat_err) > 1.0:

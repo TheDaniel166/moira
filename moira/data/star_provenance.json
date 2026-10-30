@@ -22278,9 +22278,9 @@
       "service": "https://simbad.harvard.edu/simbad/sim-tap/sync",
       "retrieved_utc": "2026-10-29T21:03:11.975942+00:00",
       "simbad_id": "HR 3616",
-      "position_bibcode": "2020yCat.1350....0G",
-      "proper_motion_bibcode": "2020yCat.1350....0G",
-      "parallax_bibcode": "2020yCat.1350....0G",
+      "position_bibcode": "Hipparcos 2007 / Gaia DR3 chord at J2000.0",
+      "proper_motion_bibcode": "Hipparcos 2007 to Gaia DR3 long-term proper motion",
+      "parallax_bibcode": "2023A&A...674A...1G",
       "radial_velocity": {
         "admitted": true,
         "value_km_s": -2.92,
@@ -22288,6 +22288,16 @@
         "quality": "D",
         "type": "v",
         "bibcode": "1999A&AS..139..433D"
+      },
+      "hipparcos_gaia": {
+        "service": "https://gea.esac.esa.int/tap-server/tap/sync",
+        "retrieved_utc": "2026-10-30T10:38:58.906065+00:00",
+        "hip": 45038,
+        "gaia_dr3_source_id": 1068982214258617216,
+        "gaia_match": "gaia_dr3_hipparcos2_best_neighbour",
+        "gaia_ruwe": 0.859881,
+        "parallax_source": "gaia_dr3",
+        "method": "proper motion = (Gaia DR3 J2016.0 position - Hipparcos J1991.25 position) / 24.75 yr; position = that chord at J2000.0; replaces the snapshot proper motion of a binary"
       }
     }
   },
@@ -37414,9 +37424,9 @@
       "service": "https://simbad.harvard.edu/simbad/sim-tap/sync",
       "retrieved_utc": "2026-10-29T21:03:11.975942+00:00",
       "simbad_id": "HR 8368",
-      "position_bibcode": "2020yCat.1350....0G",
-      "proper_motion_bibcode": "2020yCat.1350....0G",
-      "parallax_bibcode": "2020yCat.1350....0G",
+      "position_bibcode": "Hipparcos 2007 / Gaia DR3 chord at J2000.0",
+      "proper_motion_bibcode": "Hipparcos 2007 to Gaia DR3 long-term proper motion",
+      "parallax_bibcode": "2007A&A...474..653V",
       "radial_velocity": {
         "admitted": true,
         "value_km_s": 9.4,
@@ -37424,6 +37434,16 @@
         "quality": "C",
         "type": "v",
         "bibcode": "2007AN....328..889K"
+      },
+      "hipparcos_gaia": {
+        "service": "https://gea.esac.esa.int/tap-server/tap/sync",
+        "retrieved_utc": "2026-10-30T10:38:58.906065+00:00",
+        "hip": 108431,
+        "gaia_dr3_source_id": 6413081274731392256,
+        "gaia_match": "stated",
+        "gaia_ruwe": 11.619547,
+        "parallax_source": "hipparcos_2007",
+        "method": "proper motion = (Gaia DR3 J2016.0 position - Hipparcos J1991.25 position) / 24.75 yr; position = that chord at J2000.0; replaces the snapshot proper motion of a binary"
       }
     }
   },

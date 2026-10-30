@@ -1,0 +1,73 @@
+{
+ "source": {
+  "service": "https://gea.esac.esa.int/tap-server/tap/sync",
+  "query": "SELECT n.original_ext_source_id AS hip, g.source_id, g.ra, g.dec, g.parallax, g.parallax_error, g.pmra, g.pmdec, g.ruwe, g.ref_epoch, h.ra AS hip_ra, h.dec AS hip_dec, h.plx AS hip_plx, h.e_plx AS hip_plx_error, h.pm_ra AS hip_pmra, h.pm_de AS hip_pmdec, h.sn AS hip_solution, h.nc AS hip_components FROM gaiadr3.hipparcos2_best_neighbour AS n JOIN gaiadr3.gaia_source AS g ON g.source_id = n.source_id JOIN public.hipparcos_newreduction AS h ON h.hip = n.original_ext_source_id WHERE n.original_ext_source_id IN ({ids})",
+  "stated_query": "SELECT {hip} AS hip, g.source_id, g.ra, g.dec, g.parallax, g.parallax_error, g.pmra, g.pmdec, g.ruwe, g.ref_epoch, h.ra AS hip_ra, h.dec AS hip_dec, h.plx AS hip_plx, h.e_plx AS hip_plx_error, h.pm_ra AS hip_pmra, h.pm_de AS hip_pmdec, h.sn AS hip_solution, h.nc AS hip_components FROM gaiadr3.gaia_source AS g, public.hipparcos_newreduction AS h WHERE g.source_id = {source_id} AND h.hip = {hip}",
+  "retrieved_utc": "2026-10-30T10:38:58.906065+00:00"
+ },
+ "stars": {
+  "del Ind": {
+   "inputs": {
+    "hip": 108431,
+    "source_id": 6413081274731392256,
+    "ra": 329.47986679144515,
+    "dec": -54.99259895540606,
+    "parallax": 21.22153377386448,
+    "parallax_error": 1.0734351,
+    "pmra": 31.808321286637437,
+    "pmdec": -0.1806538963033899,
+    "ruwe": 11.619547,
+    "ref_epoch": 2016.0,
+    "hip_ra": 329.47929537244033,
+    "hip_dec": -54.992566566065804,
+    "hip_plx": 17.34,
+    "hip_plx_error": 0.48,
+    "hip_pmra": 41.94,
+    "hip_pmdec": -3.93,
+    "hip_solution": 55,
+    "hip_components": 2,
+    "match": "stated"
+   },
+   "derived": {
+    "ra_deg": 329.4794973891548,
+    "dec_deg": -54.99257801714867,
+    "pmra_mas_yr": 47.682,
+    "pmdec_mas_yr": -4.711,
+    "parallax_mas": 17.34,
+    "parallax_source": "hipparcos_2007"
+   }
+  },
+  "sig02 UMa": {
+   "inputs": {
+    "hip": 45038,
+    "source_id": 1068982214258617216,
+    "ra": 137.59826115667667,
+    "dec": 67.13362657576307,
+    "parallax": 48.740394987611786,
+    "parallax_error": 0.07627328,
+    "pmra": 13.118896132255593,
+    "pmdec": -87.8814638931786,
+    "ruwe": 0.859881,
+    "ref_epoch": 2016.0,
+    "hip_ra": 137.59802610056767,
+    "hip_dec": 67.13423885270484,
+    "hip_plx": 49.07,
+    "hip_plx_error": 0.37,
+    "hip_pmra": 13.13,
+    "hip_pmdec": -90.93,
+    "hip_solution": 15,
+    "hip_components": 2,
+    "match": "gaia_dr3_hipparcos2_best_neighbour"
+   },
+   "derived": {
+    "ra_deg": 137.59810920257357,
+    "dec_deg": 67.13402239119924,
+    "pmra_mas_yr": 13.286,
+    "pmdec_mas_yr": -89.058,
+    "parallax_mas": 48.7404,
+    "parallax_source": "gaia_dr3"
+   }
+  }
+ },
+ "purpose": "Reviewed Hipparcos/Gaia DR3 inputs for the 2026-10-30 refresh of del Ind and sig02 UMa (scripts/data_ingestion/augment_star_registry_astrometry.py fetch-hg / apply-hg). Both are binaries whose catalog proper motions are snapshots of an orbit: ORB6 FIN 307 (del Ind, P = 12.16 yr, grade 1) and STF1306AB (sig02 UMa, P = 921 yr, grade 4)."
+}

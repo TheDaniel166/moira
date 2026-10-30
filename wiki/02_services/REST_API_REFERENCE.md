@@ -2073,7 +2073,9 @@ Track A adds two bounded routes:
 - `/v1/astrocartography/fixed-stars` resolves each requested star through the
   sovereign star registry, rejects duplicate canonical identities, and returns
   true-of-date RA/Dec, MC/IC/ASC/DSC lines, zenith/nadir points, and complete
-  source/frame receipts.
+  source/frame receipts. Star positions are the apparent place (as the
+  planets' lines are), read from the server engine's own kernel; without one
+  the route returns `503 kernel_not_ready`.
 - `/v1/astrocartography/dynamic/transits` accepts only strictly increasing,
   explicit transit epochs and returns exact snapshots plus adjacent meridian
   or matched-latitude curve displacement receipts.
@@ -2516,21 +2518,40 @@ reduced from UTC to UT1 before astronomical computation.
 
 ### Fixed-Star Position Contract
 
-`/v1/stars/position` and `/v1/stars/bulk` return the engine's default
-`astrometric` product: the catalog direction moved to the date, from the
-solar-system barycentre, in the true ecliptic and equinox of date. The routes
-do not accept a product choice; the apparent and geometric products are
-Python-only. Each star's `provenance` records:
+`/v1/stars/position` and `/v1/stars/bulk` take an optional `product`:
 
-- `position_product`: `astrometric`;
+| `product` | Position | Kernel |
+|---|---|---|
+| `apparent` (default) | as seen from Earth's centre: annual parallax, light deflection by the Sun, Jupiter and Saturn, annual aberration | the server engine's own planetary kernel |
+| `astrometric` | the catalog direction moved to the date, from the solar-system barycentre | none |
+| `geometric` | where the star physically is: the astrometric direction one light-travel time later | none |
+
+All products are true ecliptic and equinox of date, computed at the request's
+UTC instant converted to TT.
+
+- Any other `product` value is rejected with HTTP `422`.
+- An `apparent` request on a server engine without a planetary kernel fails
+  with HTTP `503` (`kernel_not_ready`). The server never falls back to an
+  ambient or global reader; the other two products still answer.
+- A bulk request applies one `product` to every star and echoes it as
+  `product`. `skip_missing` skips only names the catalog cannot resolve; any
+  other failure fails the request.
+
+Each star's `provenance` records:
+
+- `position_product`: the product returned;
+- `observer_mode`: `geocentric` for `apparent`, otherwise `barycentric`;
+- `true_position`: a legacy flag, `true` only for `geometric`;
 - `motion_model`: `binary_orbit` for Sirius, Rigil Kentaurus and Toliman,
   which are placed on their published orbits about their system's centre of
-  mass, and `straight_line` for every other star;
-- `true_position`: a legacy flag, `false` for this product (it is `true` only
-  for the geometric product); and
-- `observer_mode`: `barycentric`.
+  mass, and `straight_line` for every other star; and
+- `stage_sequence`: the pipeline stages run, which include
+  `annual_parallax`, `light_deflection` and `annual_aberration` only for
+  `apparent`, and `light_time_advance` only for `geometric`.
 
-The governing record is
+The allowed values and the default are the engine's
+(`moira.stars.POSITION_PRODUCTS`, `DEFAULT_STAR_PRODUCT`); a server test
+holds them equal. The governing record is
 [the fixed-stars backend standard](../02_standards/FIXED_STARS_BACKEND_STANDARD.md).
 
 ### Chart-Wheel Packet Truth

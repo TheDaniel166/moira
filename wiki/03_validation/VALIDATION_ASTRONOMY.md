@@ -957,11 +957,10 @@ Every catalog star runs through one pipeline:
 A star has three positions, and every result names the one it carries in
 `position_product`:
 
-- `astrometric`: the catalog direction moved to the date. This is the default
-  and needs no kernel.
-- `apparent`: as seen from Earth's centre, with annual parallax, light
-  deflection by the Sun, Jupiter and Saturn, and annual aberration from the
-  DE441 Earth state.
+- `apparent` (the default since 2026-10-30): as seen from Earth's centre,
+  with annual parallax, light deflection by the Sun, Jupiter and Saturn, and
+  annual aberration from the DE441 Earth state.
+- `astrometric`: the catalog direction moved to the date; needs no kernel.
 - `geometric`: where the star physically is, the astrometric direction one
   light-travel time later.
 
@@ -1097,12 +1096,12 @@ parity).
 - Only Sirius A and α Centauri A and B are placed on orbits. Every other
   star, including Proxima Centauri and the other catalog binaries, moves in a
   straight line from its own row.
-- The default product is `astrometric`. The apparent product is computed only
-  when a caller asks for it, and the REST star routes do not expose a product
-  choice. Astrocartography, heliacal elongation and primary directions state
-  `astrometric` explicitly.
-- Two rows that SIMBAD has re-solved since the registry was built, δ Indi and
-  σ² Ursae Majoris, keep their older astrometry.
+- Ayanamsa anchors (true Chitrapaksha and the other star-anchored systems)
+  use the astrometric star, which the Gochara interval enclosure certifies;
+  an apparent anchor is a separate doctrinal decision.
+- δ Indi and σ² Ursae Majoris carry long-term Hipparcos-to-Gaia proper
+  motions (standard, Section 3.3). Their orbits are not modelled, so a
+  residual orbital wobble of up to about 0.03 arcsec (δ Indi) remains.
 - An earlier Swiss Ephemeris cross-engine star comparison predates these
   commits and used DE431-based files. It is not evidence for this section.
 - Agreement with ERFA validates the computation from a catalog row. It does
@@ -1318,9 +1317,8 @@ Open items from the 2026-10-28 rerun:
   Encke on the current solution (Section 5.6); and
 - the eclipse completeness windows outside 1901-2100 in Section 6.1 are
   diagnostic audit runs, not executable tests; and
-- the fixed-star items listed in Section 8.5: the default product, the two
-  unrefreshed catalog rows, and the Swiss star comparison, which has not been
-  rerun on DE441-based files.
+- the Swiss star comparison, which has not been rerun on DE441-based files
+  (Section 8.5).
 
 Calculation speed is reported separately in Appendix A as performance
 evidence.
@@ -1372,7 +1370,7 @@ Time per call, in milliseconds:
 | Apparent places, 10 bodies at one epoch | `all_planets_at` | 1.22 | 0.84 | 0.86 | 0.81 |
 | Topocentric RA/Dec/Az/Alt with refraction, one body | `sky_position_at` | 0.254 | 0.251 | 0.302 | 0.289 |
 | Full chart: default bodies, nodes and Lilith | `Moira.chart` | 2.34 | 2.18 | — | — |
-| Catalog star position (astrometric, the default) | `Moira.fixed_star` | 0.129 | 0.126 | — | — |
+| Catalog star position (astrometric; the default was astrometric when measured) | `Moira.fixed_star` | 0.129 | 0.126 | — | — |
 | IAU 2000A nutation | `nutation_2000a` | 0.060 | 0.059 | — | — |
 | IAU 2006 precession matrix | `precession_matrix` | 0.0065 | 0.0062 | — | — |
 | Apparent local sidereal time | `apparent_sidereal_time_at` | 0.171 | 0.161 | — | — |

@@ -600,7 +600,7 @@ def test_algol_golden(golden):
     """
     Compare Algol's tropical longitude with approved read-only golden storage.
     """
-    pos = star_at("Algol", 2451545.0)
+    pos = star_at("Algol", 2451545.0, product="astrometric")
     golden("algol_j2000_longitude", round(pos.longitude, 6))
 
 
@@ -617,7 +617,7 @@ def test_bright_star_golden(golden, star_name):
 
     Ordinary pytest cannot create or update the protected storage files.
     """
-    pos = star_at(star_name, 2451545.0)
+    pos = star_at(star_name, 2451545.0, product="astrometric")
     golden(f"star_{star_name.lower()}_j2000_longitude", round(pos.longitude, 6))
 
 
@@ -633,7 +633,7 @@ def test_all_stars_snapshot(snapshot):
     The snapshot is read-only under ordinary pytest and detects catalog drift;
     it does not by itself establish external correctness.
     """
-    result = all_stars_at(2451545.0)
+    result = all_stars_at(2451545.0, product="astrometric")
     star_dict = {
         name: {"lon": round(pos.longitude, 4), "lat": round(pos.latitude, 4)}
         for name, pos in result.items()

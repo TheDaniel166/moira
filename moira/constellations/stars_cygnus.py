@@ -33,7 +33,7 @@ Stars sourced from the Sovereign Star Registry.
 """
 
 from __future__ import annotations
-from ..stars import star_at, StarPosition
+from ..stars import DEFAULT_STAR_PRODUCT, star_at, StarPosition
 from . import _star_name_is_resolvable
 
 DENEB   = "Deneb"
@@ -47,8 +47,14 @@ CYGNUS_STAR_NAMES = {
 }
 
 
-def cygnus_star_at(name: str, jd_tt: float) -> StarPosition:
-    return star_at(name, jd_tt)
+def cygnus_star_at(
+    name: str,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+) -> StarPosition:
+    return star_at(name, jd_tt, product=product, reader=reader)
 
 
 def deneb_at(jd_tt: float) -> StarPosition:

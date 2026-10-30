@@ -25,7 +25,7 @@ def test_registry_coverage():
 
 def test_star_at_returns_unified_result(jd_j2000, assert_longitude):
     """Summon a star and witness its sovereign truth."""
-    star = star_at("Algol", jd_j2000)
+    star = star_at("Algol", jd_j2000, product="astrometric")
 
     assert isinstance(star, FixedStar)
     assert star.name == "Algol"
@@ -35,13 +35,13 @@ def test_star_at_returns_unified_result(jd_j2000, assert_longitude):
 
 def test_star_position_invariants(jd_j2000):
     """Witness longitude agreement for a known star."""
-    sirius = star_at("Sirius", jd_j2000)
+    sirius = star_at("Sirius", jd_j2000, product="astrometric")
 
     assert sirius.longitude == pytest.approx(104.08, abs=0.01)
 
 def test_lookup_is_case_insensitive(jd_j2000):
     """Verify that the engine is resilient to user input casing."""
-    s1 = star_at("algol", jd_j2000)
-    s2 = star_at("ALGOL", jd_j2000)
+    s1 = star_at("algol", jd_j2000, product="astrometric")
+    s2 = star_at("ALGOL", jd_j2000, product="astrometric")
     assert s1.longitude == s2.longitude
     assert s1.name == "Algol"

@@ -12,17 +12,22 @@ publication, or production pin is implied by these entries.
 
 ### Added
 - **Fixed-Star Position Products**:
-  - `star_at`, `all_stars_at` and `Moira.fixed_star` take
-    `product="astrometric"` (default), `"apparent"` or `"geometric"`.
-    `FixedStarTruth.position_product` names the product.
+  - `star_at`, `all_stars_at`, `stars_near`, `stars_by_magnitude`,
+    `Moira.fixed_star` and the constellation, Behenian, royal-star and
+    star-group helpers take `product="apparent"` (default), `"astrometric"`
+    or `"geometric"`. `FixedStarTruth.position_product` names the product.
+  - `POST /v1/stars/position` and `/v1/stars/bulk` take the same `product`
+    (default `apparent`). An apparent request without the server's planetary
+    kernel returns `503`; an unknown product returns `422`. Bulk `skip_missing`
+    now skips only unresolvable names, and the response echoes `product`.
+  - Provenance `stage_sequence` names the pipeline stages for each product.
   - The apparent product adds annual parallax, light deflection by the Sun,
     Jupiter and Saturn, and annual aberration from the DE441 Earth state. It
     needs a planetary reader and fails closed without one.
   - All catalog stars now go through one pipeline: a shared space-motion core
     (`moira/_stellar_space_motion.py`) from each row's own reference epoch,
     then one shared Earth stage, then the frame of date.
-  - REST star provenance carries `position_product` and `motion_model`; the
-    routes still return the astrometric product.
+  - REST star provenance carries `position_product` and `motion_model`.
   - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
 - **Catalog Radial Velocities**: the star registry gains `ref_epoch_jd`,
   `frame`, `radial_velocity_km_s` and `radial_velocity_status`. SIMBAD
@@ -163,6 +168,16 @@ publication, or production pin is implied by these entries.
   U2/U3 contacts, including REST serialization.
 
 ### Breaking Changes
+- **Fixed Stars Default To The Apparent Place**: a star position without a
+  named product is now `apparent`, matching Moira's apparent planets: it moves
+  by up to about 20 arcsec of annual aberration, plus parallax and light
+  deflection, and needs a planetary kernel. Astrocartography (REST: `503`
+  without the engine's kernel), primary directions (`find_primary_arcs`
+  gains `reader`), fixed-star transits and the REST dignities route now use
+  it. Ayanamsa anchors, heliacal elongation (native parity), star rise/set
+  and parans (kernel-free contract), and deep-sky host stars stay astrometric
+  explicitly. Pass `product="astrometric"` for the previous kernel-free
+  result. The server maps `MissingKernelError` to `503 kernel_not_ready`.
 - **Fixed-Star Positions**:
   - Sirius moves by up to 3.9 arcsec (1.5 arcsec at 2000) and α Centauri A
     and B by tens of arcseconds over past centuries: 50 and 28 arcsec at
@@ -407,6 +422,14 @@ publication, or production pin is implied by these entries.
   mirrored locally (`scripts/check_ci.py`).
 
 ### Validation
+- **δ Indi And σ² UMa Astrometry**: both rows now carry long-term proper
+  motions from the Hipparcos and Gaia DR3 positions, 24.75 years apart: δ Indi
+  (47.68, −4.71) mas/yr, replacing Hipparcos (41.94, −3.93); σ² UMa (13.29,
+  −89.06), replacing (13.13, −90.93). Each is a binary whose catalog proper
+  motions are snapshots of its orbit. σ² UMa takes Gaia's parallax; δ Indi
+  keeps Hipparcos's, because Gaia's fit of it is poor (RUWE 11.6). New
+  `fetch-hg`/`apply-hg` ingestion steps; the inputs are frozen in
+  `tests/fixtures/star_hipparcos_gaia_refresh_2026_10_30.json`.
 - **Fixed Stars** (`VALIDATION_ASTRONOMY.md` revision 2.2, Section 8):
   - space motion vs ERFA `pmsafe` for all 1,809 stars at 1800 and 2200,
     worst 0.0048 arcsec;

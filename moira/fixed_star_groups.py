@@ -48,7 +48,7 @@ Stars sourced from moira/data/star_registry.csv via moira.stars.
 
 from __future__ import annotations
 
-from .stars import star_at as star_at, list_named_stars as list_stars, FixedStar as StarPosition
+from .stars import DEFAULT_STAR_PRODUCT, star_at as star_at, list_named_stars as list_stars, FixedStar as StarPosition
 
 # ---------------------------------------------------------------------------
 # Group tuples
@@ -252,9 +252,15 @@ FIXED_STAR_NAMES = {
 # Dispatcher and per-body functions
 # ---------------------------------------------------------------------------
 
-def fixed_star_group_at(name: str, jd_tt: float) -> StarPosition:
+def fixed_star_group_at(
+    name: str,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+) -> StarPosition:
     """Return the position of a named fixed star at jd_tt."""
-    return star_at(name, jd_tt)
+    return star_at(name, jd_tt, product=product, reader=reader)
 
 
 def algol_at(jd_tt: float) -> StarPosition:

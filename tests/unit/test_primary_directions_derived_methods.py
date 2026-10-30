@@ -26,6 +26,15 @@ from moira.primary_directions import (
     primary_directions_policy_preset,
 )
 
+@pytest.fixture
+def apparent_star_reader(planetary_reader):
+    """Fixed-star targets are apparent places: Earth's state comes from the kernel."""
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(planetary_reader):
+        yield planetary_reader
+
+
 
 BASE_PRESETS = (
     Preset.PLACIDUS_MUNDANE, Preset.PTOLEMY_MUNDANE,
@@ -162,8 +171,9 @@ def test_direct_only_policy_does_not_invent_a_converse_for_derived_points(preset
     assert arcs and {a.motion for a in arcs} == {PrimaryDirectionMotion.DIRECT}
 
 
+@pytest.mark.requires_ephemeris
 @pytest.mark.parametrize("preset", BASE_PRESETS)
-def test_fixed_star_conjunction_accepts_only_explicit_typed_derived_significators(preset):
+def test_fixed_star_conjunction_accepts_only_explicit_typed_derived_significators(preset, apparent_star_reader):
     chart, houses, target = _figure("lot")
     policy, _ = _policy(preset, target, fixed_star_targets=(PrimaryDirectionFixedStarTarget("Regulus"),))
     arcs = find_primary_arcs(chart, houses, 35., policy=policy, max_arc=360.,

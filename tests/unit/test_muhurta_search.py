@@ -228,7 +228,7 @@ def test_legacy_scanner_settings_cannot_silently_change_product(monkeypatch,poli
     (MissingKernelError("missing"), search.MuhurtaResourceError),
 ])
 def test_reader_failure_does_not_return_partial_selection(monkeypatch, error, expected):
-    def fail(*args):
+    def fail(*args, **kwargs):
         raise error
     monkeypatch.setattr(search, "_bind_ephemeris_time", fail)
     with pytest.raises(expected):
@@ -236,7 +236,7 @@ def test_reader_failure_does_not_return_partial_selection(monkeypatch, error, ex
 
 
 def test_live_anchor_never_uses_polynomial_fallback(monkeypatch):
-    def fail(*args):
+    def fail(*args, **kwargs):
         raise FileNotFoundError("anchor absent")
     monkeypatch.setattr(search, "star_at", fail)
     with pytest.raises(search.MuhurtaResourceError):

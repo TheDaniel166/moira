@@ -1,8 +1,8 @@
 # Fixed Stars Backend Standard
 
-Version: 0.4 (draft)<br>
-Date: 2026-10-29<br>
-Status: Phases 0-4 implemented; Phase 5 (documentation and release evidence) planned
+Version: 0.5 (draft)<br>
+Date: 2026-10-30<br>
+Status: Phases 0-5 implemented; default product decided (apparent)
 Scope: catalog-star positions from the sovereign star registry
 
 This standard governs:
@@ -26,8 +26,8 @@ every result names which one it carries.
 
 | Product | Meaning | Earth-based effects | Kernel |
 |---|---|---|---|
+| `apparent` (default) | Where the star is seen from Earth's center at the date | annual parallax, gravitational light deflection, annual aberration | DE441 Earth state |
 | `astrometric` | The catalog direction propagated to the date: the direction from the solar-system barycenter along which the star's light arrives | none | not needed |
-| `apparent` | Where the star is seen from Earth's center at the date | annual parallax, gravitational light deflection, annual aberration | DE441 Earth state |
 | `geometric` | Where the star physically is at the date, ignoring that its light takes time to arrive | none | not needed |
 
 An astrometric catalog (Hipparcos, Gaia, SIMBAD's adopted values) records the
@@ -113,7 +113,7 @@ The same fetch compared the registry's astrometry with SIMBAD's current
 values. All rows agree except two, which SIMBAD has re-solved since the
 registry was built: δ Indi (0.31 arcsec in position, 10.8 mas/yr in proper
 motion, 3.9 mas in parallax) and σ² Ursae Majoris (3.0 mas/yr in proper
-motion). Their positions are not refreshed by Phase 2.
+motion). Section 3.3 refreshes them.
 
 ### 3.2 Declared residual: light time along the line of sight
 
@@ -123,6 +123,39 @@ motion is already the observed rate, the effect is of second order. With the
 catalog radial velocities it measured, over the whole registry on 2026-10-29:
 at most 0.005 arcsec between 1800 and 2200, 0.11 arcsec at 1000 CE, and
 0.82 arcsec at 1000 BCE, the largest in each case being Barnard's Star.
+
+### 3.3 Binaries with snapshot proper motions: δ Indi and σ² UMa
+
+Both rows held Hipparcos 2007 astrometry; SIMBAD now adopts Gaia DR3. Both
+stars are binaries, so each catalog proper motion is a three-year snapshot of
+an orbit and neither is the star's long-term motion:
+
+| Star | Orbit (ORB6) | Hipparcos | Gaia DR3 | Hipparcos-Gaia long-term |
+|---|---|---|---|---|
+| δ Indi | FIN 307, P = 12.16 yr, grade 1 | (41.94, −3.93) | (31.81, −0.18), RUWE 11.6 | (47.68, −4.71) |
+| σ² UMa | STF1306AB, P = 921 yr, grade 4 | (13.13, −90.93) | (13.12, −87.88), RUWE 0.86 | (13.29, −89.06) |
+
+(proper motions in mas/yr, right ascension times cos δ first)
+
+The refresh (2026-10-30, `fetch-hg` / `apply-hg` in
+`scripts/data_ingestion/augment_star_registry_astrometry.py`) adopts:
+
+- **proper motion:** the change of position between the Hipparcos (J1991.25)
+  and Gaia DR3 (J2016.0) catalogs divided by their 24.75-year separation. For
+  δ Indi that span is two orbital periods, so the orbit largely cancels; for
+  σ² UMa it is the best measured mean motion near the present (its grade-4
+  orbit is not admitted for Section 6);
+- **position:** that chord at J2000.0;
+- **parallax:** Gaia DR3 when its fit is well behaved (RUWE at most 1.4),
+  otherwise Hipparcos: σ² UMa takes Gaia's 48.74 mas, δ Indi keeps
+  Hipparcos's 17.34 mas.
+
+Gaia's own cross-match omits δ Indi; its DR3 source (6413081274731392256, the
+only bright source at that position) is stated explicitly and recorded as a
+stated match. The inputs are frozen in
+`tests/fixtures/star_hipparcos_gaia_refresh_2026_10_30.json`, and
+`tests/unit/test_star_hipparcos_gaia_refresh.py` re-derives both rows. The
+residual Hipparcos-Gaia frame spin (about 0.1 mas/yr) is not corrected.
 
 ## 4. Result contract
 
@@ -145,26 +178,41 @@ which reversed the correction.
 
 ## 5. Default product and consumers
 
-Open decision: whether `star_at` returns `apparent` (consistent with Moira's
-apparent planets) or `astrometric` (kernel-free, current numbers) when no
-product is requested. Until it is decided the default remains `astrometric`.
+The default product is `apparent` (`moira.stars.DEFAULT_STAR_PRODUCT`): a
+star is placed where it is seen from Earth's center, as Moira's planets are.
+`star_at`, `all_stars_at`, `stars_near`, `stars_by_magnitude`,
+`Moira.fixed_star`, the constellation, Behenian, royal-star and star-group
+helpers, and the REST star routes all take `product` and default to it. The
+apparent product needs a planetary reader (passed, active, or the facade's)
+and fails closed without one; `astrometric` and `geometric` are kernel-free.
 
-`star_at(name, jd_tt, product=..., reader=...)`, `all_stars_at(...)` and
-`Moira.fixed_star(name, dt, product=...)` accept the product. The apparent
-product needs a planetary reader (passed, active, or the facade's) and fails
-closed without one.
+Every engine consumer states its product:
 
-Technique consumers state their product explicitly:
-
-| Consumer | Product | Note |
+| Consumer | Product | Reason |
 |---|---|---|
+| `moira/astrocartography.py` | `apparent` | lines drawn with the apparent planets |
+| `moira/primary_directions/fixed_stars.py` (`find_primary_arcs(..., reader=)`) | `apparent` | speculum built from apparent planets |
+| `moira/transits.py`, `moira/transits_equatorial.py` | `apparent` | compared with apparent planets |
+| REST fixed-star astrocartography | `apparent` | the engine's own kernel; `503` without it |
 | `moira/occultations.py` coarse search | `apparent` | compared with the observer-apparent Moon |
 | `moira/occultations.py` star rays | stage 2 on the caller's direction | topocentric diurnal aberration follows; the physical ray omits aberration |
-| `moira/astrocartography.py` | `astrometric` | current convention; open with the default decision |
-| `moira/heliacal.py` solar elongation | `astrometric` | current convention; open with the default decision |
-| `moira/primary_directions/fixed_stars.py` | `astrometric` | current convention; open with the default decision |
+| REST dignities fixed-star longitudes | `apparent` | compared with the chart's apparent planets |
+| `moira/heliacal.py` and `stars.py` solar elongation | `astrometric` | parity with the native heliacal search, which evaluates the straight-line star without aberration |
+| `moira/rise_set.py` star rise/set, and parans through it | `astrometric` | star rise/set and star-only parans are served without a kernel |
+| `moira/heliacal.py` photometry context | `astrometric` | reads only the catalog magnitude and identity |
+| `moira/deep_sky.py` host stars | `astrometric` | deep-sky anchors are astrometric catalog projections |
+| ayanamsa anchors: `sidereal.py`, `gochara_dated.py`, `muhurta_search.py`, `_kalachakra_astronomy.py` | `astrometric` | see below |
 
-Catalog lookups (constellation and Behenian helpers) inherit the default.
+**Ayanamsa anchors** (true Chitrapaksha, Revati, Aldebaran, Pushya, Mula) use
+the astrometric star. The Gochara interval enclosure
+(`_gochara_window_astronomy.py`) certifies that same product, and an apparent
+anchor would carry annual aberration into the ayanamsa as a yearly swing of up
+to about 20 arcsec. Changing the anchor product is a separate doctrinal
+decision that would move every true star-anchored sidereal chart.
+
+**Open follow-ups.** Making heliacal elongation apparent needs the native
+heliacal search to aberrate the star as well; making star rise/set and parans
+apparent ends their kernel-free REST contract. Both are separate decisions.
 
 ### 5.1 Repairs made with Phase 3
 

@@ -6,6 +6,7 @@ Designed for high-performance website use with the sovereign star registry.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -15,6 +16,19 @@ VARIABLE_STAR_RANGE_MAX_DAYS = 366.0
 VARIABLE_STAR_ECLIPSE_THRESHOLD_MAX = 5.0
 MULTIPLE_STAR_APERTURE_MAX_MM = 10000.0
 
+# The engine's star position products (moira.stars.POSITION_PRODUCTS) and its
+# default (moira.stars.DEFAULT_STAR_PRODUCT); a server test holds them equal.
+StarPositionProduct = Literal["apparent", "astrometric", "geometric"]
+DEFAULT_STAR_POSITION_PRODUCT: StarPositionProduct = "apparent"
+_PRODUCT_DESCRIPTION = (
+    "Which position to return. apparent (default): as seen from Earth's centre, "
+    "with annual parallax, light deflection and annual aberration from the "
+    "server's planetary kernel. astrometric: the catalog direction moved to the "
+    "date, from the solar-system barycentre. geometric: where the star physically "
+    "is, one light-travel time ahead of the astrometric direction. All are true "
+    "ecliptic and equinox of date."
+)
+
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -23,6 +37,7 @@ class _StrictModel(BaseModel):
 class StarPositionRequest(_StrictModel):
     dt: datetime
     star: str = Field(min_length=1)  # name, designation, or common name
+    product: StarPositionProduct = Field(DEFAULT_STAR_POSITION_PRODUCT, description=_PRODUCT_DESCRIPTION)
 
     @field_validator("dt")
     @classmethod
@@ -85,7 +100,8 @@ class StarPositionResponse(_StrictModel):
 class StarsBulkRequest(_StrictModel):
     dt: datetime
     stars: list[str] = Field(min_length=1, max_length=STARS_BULK_MAX_ITEMS)
-    skip_missing: bool = True
+    skip_missing: bool = True  # skips names the catalog cannot resolve, nothing else
+    product: StarPositionProduct = Field(DEFAULT_STAR_POSITION_PRODUCT, description=_PRODUCT_DESCRIPTION)
 
     @field_validator("dt")
     @classmethod
@@ -105,6 +121,7 @@ class StarsBulkRequest(_StrictModel):
 
 class StarsBulkResponse(_StrictModel):
     dt: datetime
+    product: StarPositionProduct | None = None
     results: dict[str, StarPositionResponse]
     missing: list[str] = []
 

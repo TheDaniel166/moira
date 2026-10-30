@@ -232,7 +232,9 @@ def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
         pos = planet_at(resolved_planet, jd_ut, jd_tt=jd_tt)
     else:
         from .stars import star_at
-        pos = star_at(body_name, jd_tt)
+        # Astrometric: star rise/set and star-only parans are served without a
+        # planetary kernel (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+        pos = star_at(body_name, jd_tt, product="astrometric")
 
     return ecliptic_to_equatorial(pos.longitude, pos.latitude, eps)
 

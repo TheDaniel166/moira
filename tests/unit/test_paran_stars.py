@@ -22,7 +22,7 @@ def test_paran_star_canon_is_stable_unique_and_catalog_resolved() -> None:
     assert [entry.name for entry in available][:4] == ["Algol", "Mirfak", "Alcyone", "Maia"]
     assert all(entry.tiers[0] is ParanStarTier.WORKING_CANON for entry in PARAN_STAR_CANON)
     for entry in available:
-        assert star_at(entry.name, 2451545.0).name == entry.name
+        assert star_at(entry.name, 2451545.0, product="astrometric").name == entry.name
 
 
 def test_paran_star_tier_memberships_reuse_existing_groups() -> None:

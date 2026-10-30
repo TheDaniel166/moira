@@ -140,8 +140,8 @@ def test_oracle_hostile_public_fixed_star_path_matches_cached_swiss_reference(
     exact identity.
     """
     jd_ut = float(ref["jd_ut"])
-    public = moira_engine.fixed_star(star_name, datetime_from_jd(jd_ut).astimezone(timezone.utc))
-    direct = star_at(star_name, float(ref["jd_tt"]))
+    public = moira_engine.fixed_star(star_name, datetime_from_jd(jd_ut).astimezone(timezone.utc), product="astrometric")
+    direct = star_at(star_name, float(ref["jd_tt"]), product="astrometric")
 
     lon_err = _angular_diff(public.longitude, float(ref["longitude_deg"]))
     lat_err = abs(public.latitude - float(ref["latitude_deg"]))
@@ -178,12 +178,12 @@ def test_oracle_hostile_public_fixed_star_path_matches_erfa_anchor_cases(
 
     failures: list[str] = []
     for name, jd_tt in test_stars_erfa_reference.ANCHOR_CASES:
-        public = moira_engine.fixed_star(name, datetime_from_jd(tt_to_ut(jd_tt)).astimezone(timezone.utc))
+        public = moira_engine.fixed_star(name, datetime_from_jd(tt_to_ut(jd_tt)).astimezone(timezone.utc), product="astrometric")
         if name in stars._binary_components():
             # A binary component follows its orbit, not ERFA's straight line
             # for its catalog row (test_stars_binary_orbits.py validates the
             # orbit); here the public path must equal the engine path.
-            erfa_lon, erfa_lat = star_at(name, jd_tt).longitude, star_at(name, jd_tt).latitude
+            erfa_lon, erfa_lat = star_at(name, jd_tt, product="astrometric").longitude, star_at(name, jd_tt, product="astrometric").latitude
         else:
             erfa_lon, erfa_lat = test_stars_erfa_reference._erfa_fixed_star_position(
                 test_stars_erfa_reference._registry_by_name()[name],

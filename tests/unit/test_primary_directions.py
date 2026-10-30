@@ -66,6 +66,15 @@ from moira.primary_directions.relations import (
     zodiacal_aspect_relation_policy,
 )
 
+@pytest.fixture
+def apparent_star_reader(planetary_reader):
+    """Fixed-star targets are apparent places: Earth's state comes from the kernel."""
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(planetary_reader):
+        yield planetary_reader
+
+
 
 @dataclass
 class _FakePlanet:
@@ -658,7 +667,8 @@ def test_ptolemy_antiscia_target_requires_admitted_relation_kind() -> None:
         )
 
 
-def test_catalog_fixed_star_target_is_admitted_narrowly_to_angles() -> None:
+@pytest.mark.requires_ephemeris
+def test_catalog_fixed_star_target_is_admitted_narrowly_to_angles(apparent_star_reader) -> None:
     chart, houses = _oblique_chart()
     policy = PrimaryDirectionsPolicy(
         method=PrimaryDirectionMethod.MERIDIAN,
@@ -708,7 +718,8 @@ def test_catalog_fixed_star_target_is_admitted_narrowly_to_angles() -> None:
     assert arcs[0].arc == pytest.approx((mc_entry.ra - expected_entry.ra) % 360.0)
 
 
-def test_catalog_fixed_star_target_is_admitted_narrowly_to_planets() -> None:
+@pytest.mark.requires_ephemeris
+def test_catalog_fixed_star_target_is_admitted_narrowly_to_planets(apparent_star_reader) -> None:
     chart, houses = _oblique_chart()
     policy = PrimaryDirectionsPolicy(
         method=PrimaryDirectionMethod.MERIDIAN,
@@ -960,7 +971,8 @@ def test_placidian_converse_rapt_parallel_target_uses_explicit_converse_law() ->
     assert arcs[0].arc == pytest.approx(expected_arc)
 
 
-def test_converse_rapt_and_fixed_star_composition_is_target_and_motion_specific() -> None:
+@pytest.mark.requires_ephemeris
+def test_converse_rapt_and_fixed_star_composition_is_target_and_motion_specific(apparent_star_reader) -> None:
     chart, houses = _oblique_chart()
     policy = primary_directions_policy_preset(
         PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,

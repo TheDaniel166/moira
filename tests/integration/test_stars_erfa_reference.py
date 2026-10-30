@@ -62,7 +62,7 @@ def _moira_position(name: str, jd_tt: float) -> SimpleNamespace:
     test_stars_binary_orbits.py.
     """
     if name not in stars._binary_components():
-        return star_at(name, jd_tt)
+        return star_at(name, jd_tt, product="astrometric")
     record = {r.name: r for r in stars._load_registry_records()}[name]
     direction, _ = astrometric_direction(
         record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,

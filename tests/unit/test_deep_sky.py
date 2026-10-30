@@ -151,7 +151,7 @@ def test_host_stars_delegate_to_sovereign_star_positions(
     jd_tt = J2000 + 9131.25
     record = deep_sky_object(query)
     position = deep_sky_at(query, jd_tt)
-    star = star_at(star_name, jd_tt)
+    star = star_at(star_name, jd_tt, product="astrometric")
     assert record.confirmed_planet_count == planet_count
     assert position.position_source == "sovereign_star_registry"
     assert position.longitude == pytest.approx(star.longitude, abs=1e-12)

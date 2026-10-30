@@ -1333,7 +1333,7 @@ def _resolve_longitude_truth(
             resolved_kind="fixed_star",
             resolved_name=name,
             jd_ut=jd,
-            longitude=star_at(name, _ut1_to_ephemeris_tt(jd, reader)).longitude,
+            longitude=star_at(name, _ut1_to_ephemeris_tt(jd, reader), product="apparent", reader=reader).longitude,
         )
     except Exception as exc:
         raise ValueError(f"Transit target specification could not be resolved: {name}") from exc

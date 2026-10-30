@@ -244,6 +244,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             solar_speed=solar_speed,
             obliquity=obliquity,
             policy=policy,
+            reader=self._reader,
         )
 
     def primary_directions_policy_preset(self, preset, **kwargs):

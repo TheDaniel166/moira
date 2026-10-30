@@ -2496,12 +2496,14 @@ def _fixed_star_promissor_entries(
     obliquity: float,
     geo_lat: float,
     latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
+    reader: object | None = None,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
         _catalog_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
             target,
             jd_tt=jd_tt,
+            reader=reader,
         )
         derived[target.name] = SpeculumEntry.build(
             target.name,
@@ -2719,7 +2721,11 @@ def find_primary_arcs(
     solar_speed: float | None = None,
     obliquity: float | None = None,
     policy: PrimaryDirectionsPolicy | None = None,
+    reader: object | None = None,
 ) -> list[PrimaryArc]:
+    """``reader`` supplies Earth's state for apparent fixed-star targets; when
+    omitted the active reader is used, and a fixed-star target without one
+    fails closed."""
     if not isinstance(include_converse, bool):
         raise ValueError("find_primary_arcs include_converse must be bool")
     if policy is not None and not isinstance(policy, PrimaryDirectionsPolicy):
@@ -3061,6 +3067,7 @@ def find_primary_arcs(
         obliquity=obl,
         geo_lat=geo_lat,
         latitude_doctrine=resolved_policy.latitude_policy.doctrine,
+        reader=reader,
     )
     if derived_fixed_stars:
         sp_map.update(derived_fixed_stars)

@@ -281,10 +281,10 @@ def test_alpha_cen_components_stay_with_their_barycentre_unlike_straight_line_ro
 
 @pytest.mark.integration
 def test_results_name_their_motion_model() -> None:
-    assert stars.star_at("Sirius", 2451545.0).computation_truth.motion_model == "binary_orbit"
-    assert stars.star_at("Toliman", 2451545.0).computation_truth.motion_model == "binary_orbit"
-    assert stars.star_at("Aldebaran", 2451545.0).computation_truth.motion_model == "straight_line"
-    assert stars.star_at("Proxima Centauri", 2451545.0).computation_truth.motion_model == "straight_line"
+    assert stars.star_at("Sirius", 2451545.0, product="astrometric").computation_truth.motion_model == "binary_orbit"
+    assert stars.star_at("Toliman", 2451545.0, product="astrometric").computation_truth.motion_model == "binary_orbit"
+    assert stars.star_at("Aldebaran", 2451545.0, product="astrometric").computation_truth.motion_model == "straight_line"
+    assert stars.star_at("Proxima Centauri", 2451545.0, product="astrometric").computation_truth.motion_model == "straight_line"
 
 
 @pytest.mark.integration

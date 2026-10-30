@@ -64,7 +64,7 @@ def test_stars_match_offline_swiss_reference_at_jd_tt(
     expected_longitude: float,
     expected_latitude: float,
 ) -> None:
-    actual = star_at(star_name, jd_tt)
+    actual = star_at(star_name, jd_tt, product="astrometric")
     lon_err = _angular_diff(actual.longitude, expected_longitude)
     lat_err = abs(actual.latitude - expected_latitude)
 
@@ -86,8 +86,8 @@ def test_fixed_star_external_residual_is_not_driven_by_delta_t(star_reference_da
 
     for case in star_reference_data["cases"]:
         for star_name, ref in case["stars"].items():
-            tt_star = star_at(star_name, ref["jd_tt"])
-            ut_star = star_at(star_name, ref["jd_ut"])
+            tt_star = star_at(star_name, ref["jd_tt"], product="astrometric")
+            ut_star = star_at(star_name, ref["jd_ut"], product="astrometric")
 
             tt_total = max(
                 _angular_diff(tt_star.longitude, ref["longitude_deg"]),

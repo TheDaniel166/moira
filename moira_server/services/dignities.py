@@ -161,7 +161,7 @@ def _derive_dignity_support_truth(
     }
     jd_tt = utc_to_tt(jd_from_datetime(request.dt))
     fixed_star_positions = {
-        name: star_at(name, jd_tt).longitude
+        name: star_at(name, jd_tt, product="apparent", reader=engine._reader).longitude
         for name in ("Regulus", "Spica", "Algol")
     }
     house_positions = [

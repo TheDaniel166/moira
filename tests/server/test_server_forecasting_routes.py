@@ -81,23 +81,38 @@ def test_forecasting_routes_are_present_in_openapi() -> None:
     } <= set(dynamic_schema["required"])
 
 
-def test_fixed_star_route_exposes_identity_geometry_and_receipts(
+def test_fixed_star_route_needs_the_engine_kernel(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    fake_engine = SimpleNamespace(is_kernel_available=lambda: False)
+    fake_engine = SimpleNamespace(is_kernel_available=lambda: False, _reader=None)
     monkeypatch.setattr("moira_server.app.create_engine", lambda config: fake_engine)
     app = create_app(ServerConfig(docs_enabled=False, prewarm_enabled=False))
     with TestClient(app) as client:
         response = client.post(
             "/v1/astrocartography/fixed-stars",
-            json={
-                "star_names": ["Sirius"],
-                "jd_ut": 2_451_544.9992,
-                "jd_tt": 2_451_545.0,
-                "lat_step": 20.0,
-                "refraction": False,
-            },
+            json={"star_names": ["Sirius"], "jd_ut": 2_451_544.9992, "jd_tt": 2_451_545.0,
+                  "lat_step": 20.0, "refraction": False},
         )
+
+    assert response.status_code == 503
+    assert response.json()["error_code"] == "kernel_not_ready"
+
+
+@pytest.mark.requires_ephemeris
+def test_fixed_star_route_exposes_identity_geometry_and_receipts(
+    client_with_engine: TestClient,
+) -> None:
+    client = client_with_engine
+    response = client.post(
+        "/v1/astrocartography/fixed-stars",
+        json={
+            "star_names": ["Sirius"],
+            "jd_ut": 2_451_544.9992,
+            "jd_tt": 2_451_545.0,
+            "lat_step": 20.0,
+            "refraction": False,
+        },
+    )
 
     assert response.status_code == 200
     body = response.json()
@@ -107,9 +122,10 @@ def test_fixed_star_route_exposes_identity_geometry_and_receipts(
     )
     assert body["subjects"][0]["source_mode"] == "sovereign_registry"
     assert body["subjects"][0]["relation_basis"] == "sovereign_registry"
-    # An astrometric position (the default) is not the star's geometric
-    # "true" place; see FIXED_STARS_BACKEND_STANDARD.md, Section 4.
+    # The apparent place (FIXED_STARS_BACKEND_STANDARD.md, Section 5) is
+    # geocentric and is not the star's geometric "true" place.
     assert body["subjects"][0]["true_position"] is False
+    assert body["subjects"][0]["observer_mode"] == "geocentric"
     assert {line["line_type"] for line in body["lines"]} == {
         "MC",
         "IC",

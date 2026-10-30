@@ -50,7 +50,7 @@ def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
         lon, lat = a.longitude, a.latitude
     else:
         try:
-            s = star_at(name, jd_tt)
+            s = star_at(name, jd_tt, product="apparent", reader=reader)
             lon, lat = s.longitude, s.latitude
         except Exception as exc:
             raise ValueError(f"Equatorial target specification could not be resolved: {name}") from exc

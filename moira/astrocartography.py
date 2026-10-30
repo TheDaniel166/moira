@@ -322,6 +322,8 @@ def fixed_star_equatorial_subject(
     name: str,
     jd_tt: float,
     obliquity_deg: float,
+    *,
+    reader=None,
 ) -> FixedStarAstrocartographySubject:
     """Resolve one star and convert its true-of-date ecliptic position to RA/Dec."""
 
@@ -339,8 +341,9 @@ def fixed_star_equatorial_subject(
         or not math.isfinite(obliquity_deg)
     ):
         raise ValueError("fixed-star astrocartography epoch and obliquity must be finite")
-    # Explicit product (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
-    star = star_at(name, jd_tt, product="astrometric")
+    # Apparent, like the planets' lines (FIXED_STARS_BACKEND_STANDARD.md,
+    # Section 5).
+    star = star_at(name, jd_tt, product="apparent", reader=reader)
     right_ascension, declination = ecliptic_to_equatorial(
         star.longitude,
         star.latitude,
@@ -384,6 +387,7 @@ def fixed_star_astrocartography(
     *,
     lat_step: float = 2.0,
     refraction: bool = False,
+    reader=None,
 ) -> FixedStarAstrocartographyResult:
     """Compute fixed-star ACG lines and subplanetary points at one epoch.
 
@@ -424,7 +428,7 @@ def fixed_star_astrocartography(
     obliquity = true_obliquity(jd_tt)
     sidereal_time = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)
     subjects = tuple(
-        fixed_star_equatorial_subject(name, jd_tt, obliquity)
+        fixed_star_equatorial_subject(name, jd_tt, obliquity, reader=reader)
         for name in names
     )
     canonical_names = tuple(subject.canonical_name for subject in subjects)
@@ -469,6 +473,7 @@ def fixed_star_astrocartography_from_chart(
     *,
     lat_step: float = 2.0,
     refraction: bool = False,
+    reader=None,
 ) -> FixedStarAstrocartographyResult:
     """Compute fixed-star ACG geometry from a chart's explicit UT1/TT pair."""
 
@@ -482,6 +487,7 @@ def fixed_star_astrocartography_from_chart(
         jd_tt,
         lat_step=lat_step,
         refraction=refraction,
+        reader=reader,
     )
 
 

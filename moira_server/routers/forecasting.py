@@ -75,11 +75,12 @@ def davison_transits_route(
 )
 def fixed_star_astrocartography_route(
     request: FixedStarAstrocartographyRequest,
+    engine=Depends(get_engine),
 ) -> FixedStarAstrocartographyResponse:
     """Resolve star identity/provenance and compute equatorial ACG geometry."""
 
     return serialize_fixed_star_astrocartography(
-        compute_fixed_star_astrocartography(request)
+        compute_fixed_star_astrocartography(engine, request)
     )
 
 

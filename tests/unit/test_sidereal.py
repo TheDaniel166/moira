@@ -119,7 +119,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_chitrapaksha_spica_at_exactly_180(self):
         for jd in [J1956, J2000, J2020]:
             ayan = ayanamsa(jd, Ayanamsa.TRUE_CHITRAPAKSHA, "true")
-            spica = star_at("Spica", jd)
+            spica = star_at("Spica", jd, product="astrometric")
             sidereal_lon = (spica.longitude - ayan) % 360.0
             assert abs(sidereal_lon - 180.0) < 0.001, (
                 f"At JD {jd}: Spica sidereal = {sidereal_lon:.6f}, expected 180.000"
@@ -139,7 +139,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_revati_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.TRUE_REVATI, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.TRUE_REVATI]
-        star = star_at(star_name, J2000)
+        star = star_at(star_name, J2000, product="astrometric")
         sidereal_lon = (star.longitude - ayan) % 360.0
         expected = target_sid % 360.0
         diff = min(abs(sidereal_lon - expected), 360.0 - abs(sidereal_lon - expected))
@@ -150,7 +150,7 @@ class TestStarAnchoredAyanamsa:
     def test_aldebaran_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.ALDEBARAN_15_TAU, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.ALDEBARAN_15_TAU]
-        star = star_at(star_name, J2000)
+        star = star_at(star_name, J2000, product="astrometric")
         sidereal_lon = (star.longitude - ayan) % 360.0
         assert abs(sidereal_lon - target_sid) < 0.001, (
             f"ALDEBARAN: sidereal = {sidereal_lon:.6f}, expected {target_sid}"
@@ -159,7 +159,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_pushya_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.TRUE_PUSHYA, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.TRUE_PUSHYA]
-        star = star_at(star_name, J2000)
+        star = star_at(star_name, J2000, product="astrometric")
         sidereal_lon = (star.longitude - ayan) % 360.0
         assert abs(sidereal_lon - target_sid) < 0.001, (
             f"TRUE_PUSHYA: sidereal = {sidereal_lon:.6f}, expected {target_sid}"
@@ -413,7 +413,7 @@ class TestSiderealCalculationTruthAndFiniteBoundary:
         assert truth.fallback_applied is False
 
     def test_star_anchor_fallback_is_explicit(self, monkeypatch):
-        def missing_star(_name: str, _jd_tt: float):
+        def missing_star(_name: str, _jd_tt: float, **_kwargs):
             raise KeyError("not present")
 
         monkeypatch.setattr("moira.stars.star_at", missing_star)

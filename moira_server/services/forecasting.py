@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from moira import Body, Moira
 from moira.astrocartography import fixed_star_astrocartography
+from moira.spk_reader import MissingEphemerisKernelError
 from moira.aspect_registry import _select_aspects
 from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.locational_forecasting import (
@@ -232,13 +233,21 @@ def compute_davison_transits(engine: Moira, request: DavisonTransitRequest):
     )
 
 
-def compute_fixed_star_astrocartography(request: FixedStarAstrocartographyRequest):
+def compute_fixed_star_astrocartography(engine: Moira, request: FixedStarAstrocartographyRequest):
+    # Apparent stars need Earth's state from this engine's own kernel; the
+    # server never falls back to an ambient or global reader.
+    reader = _reader(engine)
+    if reader is None:
+        raise MissingEphemerisKernelError(
+            "Fixed-star astrocartography uses apparent star positions and needs this server's planetary kernel."
+        )
     return fixed_star_astrocartography(
         request.star_names,
         request.jd_ut,
         request.jd_tt,
         lat_step=request.lat_step,
         refraction=request.refraction,
+        reader=reader,
     )
 
 

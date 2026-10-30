@@ -31,7 +31,7 @@ def derive(epoch, ayanamsa_system, tropical, reader):
             if ayanamsa_system in _STAR_ANCHORED:
                 anchor,target = _STAR_ANCHORED[ayanamsa_system]
                 try:
-                    star = star_at(anchor,bound.epoch_tt)
+                    star = star_at(anchor,bound.epoch_tt,product="astrometric")
                 except (KeyError,ValueError) as exc:
                     # These errors belong to the anchor lookup/catalogue contract.
                     raise KalachakraResourceError("required live anchor catalogue is unavailable or invalid") from exc

@@ -97,7 +97,7 @@ def test_apparent_minus_astrometric_stays_within_physical_bounds(name, planetary
     bound = 20.6 + max(record.parallax_mas, 0.0) / 1000.0 + 1.0
     for jd_tt in EPOCHS:
         apparent = stars.star_at(name, jd_tt, product="apparent", reader=planetary_reader)
-        astrometric = stars.star_at(name, jd_tt)
+        astrometric = stars.star_at(name, jd_tt, product="astrometric")
         shift = math.hypot(
             ((apparent.longitude - astrometric.longitude + 180.0) % 360.0 - 180.0)
             * math.cos(math.radians(astrometric.latitude)),
@@ -108,7 +108,7 @@ def test_apparent_minus_astrometric_stays_within_physical_bounds(name, planetary
 
 @pytest.mark.integration
 def test_products_are_named_on_every_result(planetary_reader):
-    astrometric = stars.star_at("Spica", 2460311.0)
+    astrometric = stars.star_at("Spica", 2460311.0, product="astrometric")
     apparent = stars.star_at("Spica", 2460311.0, product="apparent", reader=planetary_reader)
     geometric = stars.star_at("Spica", 2460311.0, product="geometric")
     for star, product, observer in (
@@ -126,8 +126,8 @@ def test_geometric_is_the_observed_direction_one_light_time_later():
     jd_tt = 2460311.0
     light_days = 3261.56 / record.parallax_mas * 365.25
     observed, geometric = stars.star_light_time_split("Arcturus", jd_tt)
-    later = stars.star_at("Arcturus", jd_tt + light_days)
-    assert observed.longitude == stars.star_at("Arcturus", jd_tt).longitude
+    later = stars.star_at("Arcturus", jd_tt + light_days, product="astrometric")
+    assert observed.longitude == stars.star_at("Arcturus", jd_tt, product="astrometric").longitude
     assert observed.computation_truth.position_product == "astrometric"
     assert geometric.computation_truth.position_product == "geometric"
     # Same space motion, evaluated one light time later; only the frame of

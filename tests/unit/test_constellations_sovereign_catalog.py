@@ -35,7 +35,7 @@ def test_constellation_star_mappings_resolve_sovereign_names(module: object) -> 
             f"{module.__name__} advertises {advertised_name!r}, but the sovereign star engine "
             "does not resolve it."
         )
-        star = star_at(advertised_name, J2000)
+        star = star_at(advertised_name, J2000, product="astrometric")
         assert star.name
 
 

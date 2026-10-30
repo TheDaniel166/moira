@@ -41,7 +41,7 @@ Stars sourced from moira/data/star_registry.csv via moira.stars.
 
 from __future__ import annotations
 
-from .stars import star_at, StarPosition, list_stars
+from .stars import DEFAULT_STAR_PRODUCT, star_at, StarPosition, list_stars
 
 ALGOL     = "Algol"
 ALCYONE   = "Alcyone"
@@ -78,9 +78,15 @@ BEHENIAN_STAR_NAMES = {
 }
 
 
-def behenian_star_at(name: str, jd_tt: float) -> StarPosition:
+def behenian_star_at(
+    name: str,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+) -> StarPosition:
     """Return the position of a Behenian star at jd_tt."""
-    return star_at(name, jd_tt)
+    return star_at(name, jd_tt, product=product, reader=reader)
 
 
 def algol_at(jd_tt: float) -> StarPosition:

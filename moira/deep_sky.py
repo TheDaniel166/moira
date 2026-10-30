@@ -312,7 +312,9 @@ def deep_sky_at(name: str, jd_tt: float) -> DeepSkyPosition:
     record = deep_sky_object(name)
     if record.object_class is DeepSkyClass.HOST_STAR:
         assert record.star_registry_name is not None
-        star = star_at(record.star_registry_name, jd_tt)
+        # Deep-sky anchors are astrometric catalog projections; a host star
+        # uses the same product.
+        star = star_at(record.star_registry_name, jd_tt, product="astrometric")
         longitude = star.longitude
         latitude = star.latitude
         position_source = "sovereign_star_registry"

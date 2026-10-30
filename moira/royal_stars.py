@@ -36,7 +36,7 @@ Stars sourced from moira/data/star_registry.csv via moira.stars.
 
 from __future__ import annotations
 
-from .stars import star_at, StarPosition, list_stars
+from .stars import DEFAULT_STAR_PRODUCT, star_at, StarPosition, list_stars
 
 ALDEBARAN = "Aldebaran"
 REGULUS   = "Regulus"
@@ -51,9 +51,15 @@ ROYAL_STAR_NAMES = {
 }
 
 
-def royal_star_at(name: str, jd_tt: float) -> StarPosition:
+def royal_star_at(
+    name: str,
+    jd_tt: float,
+    *,
+    product: str = DEFAULT_STAR_PRODUCT,
+    reader: object | None = None,
+) -> StarPosition:
     """Return the position of a Royal Star at jd_tt."""
-    return star_at(name, jd_tt)
+    return star_at(name, jd_tt, product=product, reader=reader)
 
 
 def aldebaran_at(jd_tt: float) -> StarPosition:

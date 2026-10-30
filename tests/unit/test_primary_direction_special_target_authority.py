@@ -31,6 +31,15 @@ from moira.primary_directions.ptolemy import (
     project_ptolemaic_declination_point,
 )
 
+@pytest.fixture
+def apparent_star_reader(planetary_reader):
+    """Fixed-star targets are apparent places: Earth's state comes from the kernel."""
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(planetary_reader):
+        yield planetary_reader
+
+
 
 _FIXTURE_PATH = (
     Path(__file__).resolve().parents[1]
@@ -160,7 +169,8 @@ def test_special_target_authority_corpus_has_explicit_evidence_and_deferrals() -
         assert all(source_id in sources for source_id in branch["source_ids"])
 
 
-def test_lilly_vega_zodiacal_direction_matches_original_and_reconstruction() -> None:
+@pytest.mark.requires_ephemeris
+def test_lilly_vega_zodiacal_direction_matches_original_and_reconstruction(apparent_star_reader) -> None:
     case = _case("lilly_vega_zodiacal_projection_to_asc")
     inputs = case["inputs"]
     civil = inputs["gregorian_ut1_proxy"]

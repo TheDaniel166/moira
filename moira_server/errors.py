@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from moira.spk_reader import MissingKernelError
 from moira import (
     LunarApparentGeometryError,
     LunarOrientationCoverageError,
@@ -644,9 +645,10 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(MissingEphemerisKernelError)
+    @app.exception_handler(MissingKernelError)
     async def handle_missing_kernel(
         request: Request,
-        exc: MissingEphemerisKernelError,
+        exc: MissingEphemerisKernelError | MissingKernelError,
     ) -> JSONResponse:
         request_id = getattr(request.state, "request_id", str(uuid4()))
         return JSONResponse(

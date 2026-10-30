@@ -240,7 +240,7 @@ def _offset(jd_tt, system):
     if system in _STAR_ANCHORED:
         star, target = _STAR_ANCHORED[system]
         try:
-            return (star_at(star, jd_tt).longitude - target) % 360
+            return (star_at(star, jd_tt, product="astrometric").longitude - target) % 360
         except (ValueError, FileNotFoundError, KeyError) as exc:
             raise MuhurtaResourceError("required live ayanamsa anchor is unavailable") from exc
     return _ayanamsa_at_tt(jd_tt, system, "true")

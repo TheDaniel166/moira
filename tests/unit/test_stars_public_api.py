@@ -43,7 +43,7 @@ def test_moira_root_import_remains_thin_and_importable():
 def test_all_stars_at_and_star_magnitude_preserve_truth_and_catalog_consistency():
     """Verify FixedStar computation truth and catalog magnitude parity."""
     regulus_mag = stars.star_magnitude("Regulus")
-    catalog = stars.all_stars_at(2451545.0)
+    catalog = stars.all_stars_at(2451545.0, product="astrometric")
     regulus = catalog["Regulus"]
     assert regulus.magnitude == regulus_mag
     assert regulus.computation_truth is not None
