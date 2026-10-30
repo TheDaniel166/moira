@@ -2,7 +2,7 @@
 from ._ephemeris_time import _bind_ephemeris_time, _EphemerisTimeBasisError
 from .julian import utc_to_ut1
 from .planets import planet_at
-from .sidereal import _ayanamsa_at_tt, _STAR_ANCHORED
+from .sidereal import _ayanamsa_at_tt, _STAR_ANCHORED, _anchor_product
 from .spk_reader import get_reader, use_reader_override, MissingKernelError, OutOfRangeError
 from .stars import star_at
 from ._kalachakra_types import (
@@ -31,7 +31,7 @@ def derive(epoch, ayanamsa_system, tropical, reader):
             if ayanamsa_system in _STAR_ANCHORED:
                 anchor,target = _STAR_ANCHORED[ayanamsa_system]
                 try:
-                    star = star_at(anchor,bound.epoch_tt,product="astrometric")
+                    star = star_at(anchor,bound.epoch_tt,product=_anchor_product(ayanamsa_system))
                 except (KeyError,ValueError) as exc:
                     # These errors belong to the anchor lookup/catalogue contract.
                     raise KalachakraResourceError("required live anchor catalogue is unavailable or invalid") from exc

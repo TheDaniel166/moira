@@ -46,7 +46,8 @@ J2020 = 2458849.5  # JD of 2020 Jan 1.5 TT
 class TestAyanamsaConstants:
 
     def test_all_length(self):
-        assert len(Ayanamsa.ALL) == 12
+        # 12 systems plus the 5 apparent-anchor variants.
+        assert len(Ayanamsa.ALL) == 17
 
     def test_lahiri_in_all(self):
         assert Ayanamsa.LAHIRI in Ayanamsa.ALL
@@ -182,7 +183,9 @@ class TestStarAnchoredAyanamsa:
 class TestAyanamsaRouting:
 
     def test_true_mode_star_anchored_differs_from_mean(self):
-        for system in _STAR_ANCHORED:
+        # Kernel-free: the "(apparent)" anchor variants need a planetary kernel
+        # and are covered in test_ayanamsa_anchor_product.py.
+        for system in set(_STAR_ANCHORED) - set(sidereal_module._APPARENT_VARIANTS):
             true_val = ayanamsa(J2000, system, "true")
             mean_val = ayanamsa(J2000, system, "mean")
             assert true_val != mean_val, f"{system}: true == mean unexpectedly"
@@ -222,7 +225,9 @@ class TestAyanamsaRouting:
             ayanamsa(J2000, "NonExistentSystem", "true")
 
     def test_all_systems_compute_without_error(self):
-        for system in Ayanamsa.ALL:
+        # Kernel-free; the apparent-anchor variants fail closed without a kernel
+        # (test_ayanamsa_anchor_product.py).
+        for system in set(Ayanamsa.ALL) - set(sidereal_module._APPARENT_VARIANTS):
             val = ayanamsa(J2000, system, "true")
             assert isinstance(val, float)
             assert 0.0 <= val < 360.0
@@ -327,7 +332,7 @@ class TestListAyanamsaSystems:
 
     def test_contains_all_active(self):
         result = list_ayanamsa_systems()
-        assert len(result) == 12
+        assert len(result) == 17
 
     def test_lahiri_present(self):
         result = list_ayanamsa_systems()

@@ -2133,6 +2133,12 @@ PYBIND11_MODULE(_moira_native, m) {
              py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"),
              py::arg("ref_epoch_jd") = 2451545.0);
 
+    py::class_<ApparentStarEvaluator, IEvaluator, std::shared_ptr<ApparentStarEvaluator>>(m, "ApparentStarEvaluator")
+        .def(py::init<std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>,
+                      std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>>(),
+             py::arg("star_ssb"), py::arg("earth_ssb"), py::arg("sun_ssb"),
+             py::arg("jupiter_ssb") = nullptr, py::arg("saturn_ssb") = nullptr);
+
     // Legacy observer-grid cartography is intentionally not admitted here.
     // Its magnitude/raster products are distinct from the public footprint.
 

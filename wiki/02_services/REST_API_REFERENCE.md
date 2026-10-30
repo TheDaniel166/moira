@@ -2554,6 +2554,17 @@ The allowed values and the default are the engine's
 holds them equal. The governing record is
 [the fixed-stars backend standard](../02_standards/FIXED_STARS_BACKEND_STANDARD.md).
 
+### Fixed-Star Event Product Contract
+
+The rise/set policy (`policy.star_product` on `/v1/rise-set/phenomena`),
+`/v1/rise-set/transit`, every `/v1/parans/*` request and
+`/v1/website/parans/packet` take an optional `star_product`: `astrometric`
+(default; served without a planetary kernel) or `apparent` (needs the server
+engine's own kernel; `503 kernel_not_ready` without it). Any other value is
+`422`. Planets are always apparent. Star-anchored ayanamsas take their anchor
+product from the system name: the `(apparent)` systems anchor on the apparent
+star.
+
 ### Chart-Wheel Packet Truth
 
 `POST /v1/website/chart-wheel/packet` preserves the calculated longitude,

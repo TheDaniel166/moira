@@ -393,11 +393,13 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
+@pytest.mark.parametrize("star_product", ["astrometric", "apparent"])
 @pytest.mark.parametrize("event_kind", ["heliacal_rising", "last_morning_visibility"])
 @pytest.mark.parametrize("latitude", [-30.0, 0.0, 31.2, 60.0])
 def test_native_heliacal_batch_matches_python_event_oracle(
     event_kind: str,
     latitude: float,
+    star_product: str,
 ) -> None:
     kernel_path = find_planetary_kernel()
     jd_start = julian_day(2024, 1, 1, 0.0)
@@ -412,7 +414,10 @@ def test_native_heliacal_batch_matches_python_event_oracle(
             names=names,
             max_magnitude=3.0,
             search_days=400,
-            policy=stars.FixedStarComputationPolicy(use_native_heliacal=False),
+            policy=stars.FixedStarComputationPolicy(
+                use_native_heliacal=False,
+                heliacal=stars.HeliacalSearchPolicy(star_product=star_product),
+            ),
         )
         native_result = stars.heliacal_catalog_batch(
             event_kind,
@@ -422,7 +427,10 @@ def test_native_heliacal_batch_matches_python_event_oracle(
             names=names,
             max_magnitude=3.0,
             search_days=400,
-            policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+            policy=stars.FixedStarComputationPolicy(
+                use_native_heliacal=True,
+                heliacal=stars.HeliacalSearchPolicy(star_product=star_product),
+            ),
         )
 
     assert native_result.not_found == python_result.not_found

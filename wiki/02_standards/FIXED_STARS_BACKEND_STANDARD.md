@@ -1,8 +1,8 @@
 # Fixed Stars Backend Standard
 
-Version: 0.5 (draft)<br>
+Version: 0.6 (draft)<br>
 Date: 2026-10-30<br>
-Status: Phases 0-5 implemented; default product decided (apparent)
+Status: Phases 0-5 implemented; default product apparent; technique defaults and policy choices decided
 Scope: catalog-star positions from the sovereign star registry
 
 This standard governs:
@@ -197,46 +197,47 @@ Every engine consumer states its product:
 | `moira/occultations.py` coarse search | `apparent` | compared with the observer-apparent Moon |
 | `moira/occultations.py` star rays | stage 2 on the caller's direction | topocentric diurnal aberration follows; the physical ray omits aberration |
 | REST dignities fixed-star longitudes | `apparent` | compared with the chart's apparent planets |
-| `moira/heliacal.py` and `stars.py` solar elongation | `astrometric` | parity with the native heliacal search, which evaluates the straight-line star without aberration |
-| `moira/rise_set.py` star rise/set, and parans through it | `astrometric` | star rise/set and star-only parans are served without a kernel |
+| fixed-star heliacal search (`stars.heliacal_*`, native and Python) | `HeliacalSearchPolicy.star_product`, default `astrometric` | policy choice, below |
+| star rise/set and transit (`RiseSetPolicy.star_product`, `get_transit`) and parans | `star_product`, default `astrometric` | policy choice, below |
+| ayanamsa anchors (`sidereal.py`, Gochara, Muhurta, Kalachakra) | astrometric for the base systems; apparent for the `(apparent)` systems | policy choice, below |
+| `moira/heliacal.py` general visibility search, solar elongation | `astrometric` | not yet a policy choice (follow-up) |
 | `moira/heliacal.py` photometry context | `astrometric` | reads only the catalog magnitude and identity |
 | `moira/deep_sky.py` host stars | `astrometric` | deep-sky anchors are astrometric catalog projections |
-| ayanamsa anchors: `sidereal.py`, `gochara_dated.py`, `muhurta_search.py`, `_kalachakra_astronomy.py` | `astrometric` | see below |
 
-**Ayanamsa anchors** (true Chitrapaksha, Revati, Aldebaran, Pushya, Mula) use
-the astrometric star. The Gochara interval enclosure
-(`_gochara_window_astronomy.py`) certifies that same product, and an apparent
-anchor would carry annual aberration into the ayanamsa as a yearly swing of up
-to about 20 arcsec. Changing the anchor product is a separate doctrinal
-decision that would move every true star-anchored sidereal chart.
+### 5.0 Technique defaults and policy choices
 
-**Open follow-ups.** Making heliacal elongation apparent needs the native
-heliacal search to aberrate the star as well; making star rise/set and parans
-apparent ends their kernel-free REST contract. Both are separate decisions.
+Plain star positions default to `apparent`. Three star-dependent techniques
+keep Moira's established astrometric default and offer the apparent star as
+an explicit policy choice; every result reports which product it used.
 
-### 5.1 Repairs made with Phase 3
+| Technique | Default (Moira's choice) | Policy choice | Why the default |
+|---|---|---|---|
+| Ayanamsa anchors | base systems: astrometric star | `Ayanamsa.*_APPARENT` systems, e.g. `"True Chitrapaksha (apparent)"` | a smooth frame without the yearly aberration swing of up to about 20 arcsec; existing sidereal charts unchanged |
+| Fixed-star heliacal search | `star_product="astrometric"` | `HeliacalSearchPolicy(star_product="apparent")` | established event dates; the apparent star moves the elongation by up to about 20 arcsec |
+| Star rise/set, transit and parans | `star_product="astrometric"` | `RiseSetPolicy(star_product="apparent")`; `star_product=` on the paran functions and REST requests | served without a planetary kernel |
 
-- `star_light_time_split` previously moved the "observed" position backward
-  by the light-travel time. It now returns the astrometric product as the
-  observed position and the geometric product one light time ahead.
-- `FixedStarTruth.true_position` is now `True` only for the geometric
-  product, and `FixedStarClassification.observer_mode` is `barycentric`
-  except for the apparent product.
-- The occultation star rays passed a unit vector to light deflection, which
-  treated the star as 1 km away and made the solar deflection vanish. The
-  shared stage 2 places a direction-only star at effectively infinite
-  distance. Measured on 80 star rays, the change is a median of 0.003 arcsec
-  and at most 0.22 arcsec (Spica a few degrees from the Sun in October 2024).
-- The occultation coarse search passed observer arguments that `star_at`
-  silently ignored and compared an astrometric star with the apparent Moon.
-  It now requests the apparent product.
-
-### 5.2 Apparent product validation
-
-Against ERFA `apcg` (with Moira's DE441 Earth state) and `atciq`, for 12
-stars at 6 epochs from 1800 to 2100: median 0.000003 arcsec, worst 0.00014
-arcsec (Barnard's Star, 2100). Gate: 0.001 arcsec, in
-`tests/integration/test_stars_apparent_erfa.py`.
+- **Ayanamsa anchors.** The `(apparent)` systems use the same star and target
+  as their base systems, placed on the apparent star: the anchor star is then
+  exactly at its target in the apparent chart, as the Swiss Ephemeris true
+  ayanamshas compute their anchor with the same corrections as the planet.
+  `AyanamsaComputationTruth.anchor_product` names the product. The Gochara
+  interval search encloses the apparent anchor through the same Earth stage as
+  the apparent planets (`AstronomyEnclosures._earth_stage`); Muhurta and
+  Kalachakra resolve it from the system. An apparent system needs a planetary
+  kernel and fails closed without one. The research record is
+  [the star-anchored ayanamsa doctrine report](../05_research/fixed_stars/STAR_ANCHORED_AYANAMSA_DOCTRINE.md).
+- **Fixed-star heliacal search.** The native search receives
+  `moira_native.ApparentStarEvaluator` (parallax, deflection by the Sun,
+  Jupiter and Saturn, annual aberration, through the shared native helpers in
+  `apparent_place.hpp`), and the Python oracle uses the same product. Native
+  and Python agree on the apparent star within 0.005 arcsec and on events
+  within 0.05 s (`tests/integration/test_native_apparent_star.py`,
+  `tests/unit/test_native_runtime_verification.py`).
+- **Star rise/set and parans.** `star_product` threads through every rise/set,
+  transit, paran, paran-site, paran-field and natal-contact path, and into the
+  paran crossing cache key. The REST rise/set, transit, paran and paran-packet
+  requests take `star_product`; an apparent request without the server's own
+  kernel returns `503`.
 
 ## 6. Binary components (Phase 4)
 

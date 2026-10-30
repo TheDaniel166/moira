@@ -85,6 +85,20 @@ _PLANET_NAME_LOOKUP = {
 }
 
 
+# Star rise/set, transit and paran events default to the astrometric star,
+# which needs no planetary kernel; ``'apparent'`` is the opt-in alternative
+# (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+DEFAULT_STAR_EVENT_PRODUCT = "astrometric"
+STAR_EVENT_PRODUCTS = ("astrometric", "apparent")
+
+
+def _validate_star_product(star_product: str) -> None:
+    if star_product not in STAR_EVENT_PRODUCTS:
+        raise ValueError(
+            f"star_product must be one of {STAR_EVENT_PRODUCTS!r}, got {star_product!r}"
+        )
+
+
 def _resolve_planet_name(body_name: str) -> str | None:
     """Return the canonical planet name if *body_name* names a supported planet."""
     return _PLANET_NAME_LOOKUP.get(body_name.strip().lower())
@@ -139,6 +153,14 @@ class RiseSetPolicy:
         atmospheric refraction or limb contact while the altitude solver itself
         remains geometric.  Default: ``None`` (compute automatically).
 
+    star_product : str
+        Which fixed-star position defines a star's rise, set and transit.
+        ``'astrometric'`` (default): the catalog direction moved to the date;
+        needs no planetary kernel.  ``'apparent'``: as seen from Earth's
+        centre (parallax, light deflection, annual aberration); needs a
+        planetary kernel.  Planets are unaffected (FIXED_STARS_BACKEND_STANDARD.md,
+        Section 5).
+
     Examples
     --------
     >>> # Geometric rise/set — no refraction, disc centre
@@ -155,8 +177,10 @@ class RiseSetPolicy:
     hindu_rising: bool = False
     refraction: bool = True
     horizon_altitude: float | None = None
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT
 
     def __post_init__(self) -> None:
+        _validate_star_product(self.star_product)
         allowed = ('limb', 'center', 'bottom')
         if self.disc_reference not in allowed:
             raise ValueError(
@@ -223,8 +247,11 @@ def _lst(jd_ut: float, longitude: float) -> float:
     return local_sidereal_time(jd_ut, longitude, dpsi, eps)
 
 
-def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
-    """Return apparent RA/Dec of a planet or named fixed star at the given UT JD."""
+def _body_ra_dec(jd_ut: float, body_name: str, *, star_product: str = DEFAULT_STAR_EVENT_PRODUCT) -> tuple[float, float]:
+    """Return true-of-date RA/Dec of a planet (apparent) or a named fixed star.
+
+    A fixed star is the requested ``star_product``.
+    """
     jd_tt = _jd_tt_for_active_reader(jd_ut)
     eps = true_obliquity(jd_tt)
     resolved_planet = _resolve_planet_name(body_name)
@@ -232,9 +259,9 @@ def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
         pos = planet_at(resolved_planet, jd_ut, jd_tt=jd_tt)
     else:
         from .stars import star_at
-        # Astrometric: star rise/set and star-only parans are served without a
-        # planetary kernel (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
-        pos = star_at(body_name, jd_tt, product="astrometric")
+        # The requested star product: astrometric by default, served without
+        # a planetary kernel (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+        pos = star_at(body_name, jd_tt, product=star_product)
 
     return ecliptic_to_equatorial(pos.longitude, pos.latitude, eps)
 
@@ -250,6 +277,8 @@ def _hour_angle_error(
     lat: float,
     lon: float,
     target_ha: float = 0.0,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> float:
     """Signed hour-angle error in degrees relative to the requested meridian target."""
     resolved_planet = _resolve_planet_name(body_name)
@@ -257,7 +286,7 @@ def _hour_angle_error(
         from .planets import sky_position_at
         ra = sky_position_at(resolved_planet, jd_ut, lat, lon).right_ascension
     else:
-        ra, _ = _body_ra_dec(jd_ut, body_name)
+        ra, _ = _body_ra_dec(jd_ut, body_name, star_product=star_product)
     lst = _lst(jd_ut, lon)
     ha = (lst - ra) % 360.0
     return _signed_angle_diff(ha, target_ha)
@@ -286,6 +315,8 @@ def _altitude(
     body_name: str,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> float:
     """Geometric altitude of a body at a given time and location (degrees).
 
@@ -310,7 +341,7 @@ def _altitude(
             refraction=False,
         ).altitude
     else:
-        ra, dec = _body_ra_dec(jd_ut, body_name)
+        ra, dec = _body_ra_dec(jd_ut, body_name, star_product=star_product)
         lst = _lst(jd_ut, lon)
         ha = _signed_angle_diff(lst - ra, 0.0)
 
@@ -330,10 +361,12 @@ def _stellar_horizon_geometry(
     jd_center: float,
     lat: float,
     target_altitude: float,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> tuple[float, float, float, float, float | None]:
     """Return fixed-star RA, Dec, exact daily altitude extrema, and cos(H0)."""
 
-    ra, dec = _body_ra_dec(jd_center, body_name)
+    ra, dec = _body_ra_dec(jd_center, body_name, star_product=star_product)
     lat_r = math.radians(lat)
     dec_r = math.radians(dec)
     altitude_r = math.radians(target_altitude)
@@ -381,6 +414,8 @@ def _stellar_horizon_events(
     effective_altitude: float,
     pressure_mbar: float,
     temperature_c: float,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> dict[str, float] | None:
     """Bracket fixed-star rise/set analytically and refine the exact signal.
 
@@ -394,6 +429,7 @@ def _stellar_horizon_events(
         jd_start + 0.5,
         lat,
         effective_altitude,
+        star_product=star_product,
     )
     if minimum > effective_altitude or maximum < effective_altitude:
         return {}
@@ -412,6 +448,7 @@ def _stellar_horizon_events(
             body_name,
             pressure_mbar,
             temperature_c,
+            star_product=star_product,
         )
         - effective_altitude
     )
@@ -453,6 +490,8 @@ def _planet_horizon_events(
     effective_altitude: float,
     pressure_mbar: float,
     temperature_c: float,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> dict[str, float] | None:
     """Bracket moving-body horizon events cheaply and refine topocentrically.
 
@@ -461,7 +500,7 @@ def _planet_horizon_events(
     estimate falls back to the bounded scan.
     """
 
-    ra, dec = _body_ra_dec(jd_start + 0.5, body_name)
+    ra, dec = _body_ra_dec(jd_start + 0.5, body_name, star_product=star_product)
     lat_r = math.radians(lat)
     dec_r = math.radians(dec)
     altitude_r = math.radians(effective_altitude)
@@ -485,6 +524,7 @@ def _planet_horizon_events(
             body_name,
             pressure_mbar,
             temperature_c,
+            star_product=star_product,
         )
         - effective_altitude
     )
@@ -522,13 +562,16 @@ def _scan_horizon_events(
     effective_altitude: float,
     pressure_mbar: float,
     temperature_c: float,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> dict[str, float]:
     """Return rise/set events through the legacy bounded exact-signal scan."""
 
     results: dict[str, float] = {}
     steps = 144
     altitude_error = lambda jd: _altitude(
-        jd, lat, lon, body_name, pressure_mbar, temperature_c
+        jd, lat, lon, body_name, pressure_mbar, temperature_c,
+        star_product=star_product,
     ) - effective_altitude
     prev_alt = altitude_error(jd_start)
     for i in range(1, steps + 1):
@@ -573,8 +616,11 @@ def _find_horizon_events(
     effective_altitude: float,
     pressure_mbar: float,
     temperature_c: float,
+    *,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> dict[str, float]:
     """Find rise/set only, preserving analytic-star and scan fallback law."""
+    _validate_star_product(star_product)
 
     if _resolve_planet_name(body_name) is None:
         stellar = _stellar_horizon_events(
@@ -585,6 +631,7 @@ def _find_horizon_events(
             effective_altitude,
             pressure_mbar,
             temperature_c,
+            star_product=star_product,
         )
         if stellar is not None:
             return stellar
@@ -597,6 +644,7 @@ def _find_horizon_events(
             effective_altitude,
             pressure_mbar,
             temperature_c,
+            star_product=star_product,
         )
         if planetary is not None:
             return planetary
@@ -608,6 +656,7 @@ def _find_horizon_events(
         effective_altitude,
         pressure_mbar,
         temperature_c,
+        star_product=star_product,
     )
 
 
@@ -619,6 +668,7 @@ def horizon_crossing_availability(
     *,
     altitude: float = -0.5667,
     steps: int = 144,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> HorizonCrossingAvailability:
     """Classify whether a body crosses a target horizon during 24 hours.
 
@@ -637,6 +687,7 @@ def horizon_crossing_availability(
         raise ValueError("lon must be within [-180, 180]")
     if steps <= 0:
         raise ValueError("steps must be positive")
+    _validate_star_product(star_product)
 
     if _resolve_planet_name(body_name) is None:
         _ra, _dec, minimum, maximum, _cos_h0 = _stellar_horizon_geometry(
@@ -644,12 +695,13 @@ def horizon_crossing_availability(
             jd_start + 0.5,
             lat,
             altitude,
+            star_product=star_product,
         )
         sample_count = 1
         method = "analytic_fixed_star_diurnal_extrema"
     else:
         altitudes = tuple(
-            _altitude(jd_start + index / steps, lat, lon, body_name)
+            _altitude(jd_start + index / steps, lat, lon, body_name, star_product=star_product)
             for index in range(steps + 1)
         )
         minimum = min(altitudes)
@@ -713,6 +765,7 @@ def find_phenomena(
         occur within the 24-hour window.  Keys for absent events are omitted.
     """
     effective_altitude = _effective_horizon_altitude(body_name, altitude, policy)
+    star_product = DEFAULT_STAR_EVENT_PRODUCT if policy is None else policy.star_product
     results = _find_horizon_events(
         body_name,
         jd_start,
@@ -721,11 +774,12 @@ def find_phenomena(
         effective_altitude,
         pressure_mbar,
         temperature_c,
+        star_product=star_product,
     )
 
     for event_name, upper in (("Transit", True), ("AntiTransit", False)):
         try:
-            transit = get_transit(body_name, jd_start, lat, lon, upper=upper)
+            transit = get_transit(body_name, jd_start, lat, lon, upper=upper, star_product=star_product)
         except RuntimeError as exc:
             if str(exc) != "no meridian transit bracket found in the 24-hour window":
                 raise
@@ -743,11 +797,12 @@ def _scan_transit(
     lon: float,
     *,
     upper: bool,
+    star_product: str = DEFAULT_STAR_EVENT_PRODUCT,
 ) -> float:
     """Find a meridian transit by bounded scan and exact bisection."""
 
     target_ha = 0.0 if upper else 180.0
-    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha)
+    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha, star_product=star_product)
     steps = 288  # 5-minute cadence
     prev_jd = jd_day
     prev_err = error(prev_jd)
@@ -766,7 +821,7 @@ def _scan_transit(
     raise RuntimeError("no meridian transit bracket found in the 24-hour window")
 
 
-def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper: bool = True) -> float:
+def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper: bool = True, star_product: str = DEFAULT_STAR_EVENT_PRODUCT) -> float:
     """Find the precise JD of the upper or lower meridian transit in the next 24h.
 
     A Newton solve is attempted first from the forward hour-angle estimate for
@@ -776,8 +831,9 @@ def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper:
     or wrap geometry.
     """
 
+    _validate_star_product(star_product)
     target_ha = 0.0 if upper else 180.0
-    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha)
+    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha, star_product=star_product)
 
     sidereal_rate = 360.98564736629
     initial_error = error(jd_day)
@@ -790,7 +846,7 @@ def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper:
 
     if jd_day <= jd < jd_day + 1.0 and abs(error(jd)) < 1e-5:
         return jd
-    return _scan_transit(body_name, jd_day, lat, lon, upper=upper)
+    return _scan_transit(body_name, jd_day, lat, lon, upper=upper, star_product=star_product)
 
 
 def _find_sun_altitude_crossing(

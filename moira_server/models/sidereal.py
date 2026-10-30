@@ -196,6 +196,8 @@ class AyanamsaComputationTruthResponse(_StrictModel):
     input_timescale: str
     computation_timescale: str
     output_normalization: str
+    # "astrometric" or "apparent" for a live star anchor, else null.
+    anchor_product: str | None = None
 
 
 class SiderealLongitudeConversionTruthResponse(_StrictModel):

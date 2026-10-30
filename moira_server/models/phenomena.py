@@ -307,6 +307,7 @@ class RiseSetPolicyRequest(_StrictModel):
     hindu_rising: bool = False
     refraction: bool = True
     horizon_altitude: float | None = None
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class RiseSetPhenomenaRequest(_StrictModel):
@@ -324,6 +325,7 @@ class RiseSetTransitRequest(_StrictModel):
     lat: float
     lon: float
     upper: bool = True
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class TwilightRequest(_StrictModel):
@@ -1441,6 +1443,7 @@ class ParanSearchRequest(_StrictModel):
     orb_minutes: float = 4.0
     include_crossing_inventory: bool = False
     policy_preset: str = "permissive"
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanStarCanonEntryResponse(_StrictModel):
@@ -1465,6 +1468,7 @@ class NatalParanSearchRequest(_StrictModel):
     orb_minutes: float = 4.0
     include_crossing_inventory: bool = False
     policy_preset: str = "permissive"
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class NatalAngularContactsRequest(_StrictModel):
@@ -1473,6 +1477,7 @@ class NatalAngularContactsRequest(_StrictModel):
     lat: float
     lon: float
     orb_minutes: float = 2.0
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanTargetRequest(_StrictModel):
@@ -1493,6 +1498,7 @@ class ParanSiteRequest(_StrictModel):
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
     policy_preset: str = "permissive"
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanFieldGridRequest(_StrictModel):
@@ -1503,6 +1509,7 @@ class ParanFieldGridRequest(_StrictModel):
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
     policy_preset: str = "permissive"
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanFieldMetricRequest(_StrictModel):
@@ -1515,6 +1522,7 @@ class ParanFieldMetricRequest(_StrictModel):
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
     policy_preset: str = "permissive"
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanCrossingResponse(_StrictModel):

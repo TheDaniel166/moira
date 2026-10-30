@@ -35,7 +35,7 @@ def fake_astronomy(monkeypatch):
         counts['ayanamsa'] += 1
         assert args[2]=='true'
         return 23.8
-    def star(*args):
+    def star(*args, **_kwargs):
         counts['star'] += 1
         return SimpleNamespace(longitude=203.8)
     monkeypatch.setattr(astronomy,'_bind_ephemeris_time',bind)
@@ -81,7 +81,7 @@ def test_typed_resource_translation(monkeypatch,exc,expected):
 
 @pytest.mark.parametrize('error',[KeyError,FileNotFoundError,ValueError])
 def test_live_anchor_never_falls_back(fake_astronomy,monkeypatch,error):
-    def missing(*args):
+    def missing(*args, **_kwargs):
         raise error('private catalogue path')
     monkeypatch.setattr(astronomy,'star_at',missing)
     with pytest.raises(KalachakraResourceError):

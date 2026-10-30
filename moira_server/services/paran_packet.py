@@ -16,7 +16,7 @@ from moira.parans import (
     natal_parans_with_inventory,
     paran_policy_preset,
 )
-from moira.spk_reader import MissingKernelError, use_reader_override
+from moira.spk_reader import MissingEphemerisKernelError, MissingKernelError, use_reader_override
 from moira.stars import star_name_resolves
 
 from ..models.paran_packet import ParanPacketRequest, ParanPacketResponse
@@ -53,6 +53,11 @@ def compute_paran_packet(engine, request: ParanPacketRequest) -> ParanPacketResp
         available_only=True,
     )
     reader = getattr(engine, "_reader", None)
+    if reader is None and request.star_product == "apparent":
+        # The server never falls back to an ambient or global reader.
+        raise MissingEphemerisKernelError(
+            "Apparent fixed-star parans need this server's planetary kernel, which is not loaded."
+        )
     with use_reader_override(reader), _paran_crossing_cache_scope():
         if request.include_crossing_inventory:
             detailed = natal_parans_with_inventory(
@@ -62,6 +67,7 @@ def compute_paran_packet(engine, request: ParanPacketRequest) -> ParanPacketResp
                 request.lon,
                 orb_minutes=request.orb_minutes,
                 policy=policy,
+                star_product=request.star_product,
             )
             parans = ParanSearchResponse(
                 events=[serialize_paran(event) for event in detailed.events],
@@ -79,6 +85,7 @@ def compute_paran_packet(engine, request: ParanPacketRequest) -> ParanPacketResp
                 request.lon,
                 orb_minutes=request.orb_minutes,
                 policy=policy,
+                star_product=request.star_product,
             )
             parans = ParanSearchResponse(
                 events=[serialize_paran(event) for event in events],
@@ -93,6 +100,7 @@ def compute_paran_packet(engine, request: ParanPacketRequest) -> ParanPacketResp
                 request.lat,
                 request.lon,
                 orb_minutes=request.angular_orb_minutes,
+                star_product=request.star_product,
             )
             angular_response = NatalAngularContactsResponse(
                 contacts=[serialize_natal_angular_contact(contact) for contact in contacts]

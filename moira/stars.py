@@ -1105,11 +1105,11 @@ def stars_by_magnitude(
     return matches
 
 
-def _heliacal_signed_elongation(name: str, jd_ut: float) -> float:
+def _heliacal_signed_elongation(name: str, jd_ut: float, *, star_product: str = "astrometric") -> float:
     """Signed ecliptic elongation of a fixed star from the Sun in degrees.
 
     Negative values indicate morning sky (west of Sun); positive values indicate
-    evening sky (east of Sun).
+    evening sky (east of Sun). The star is ``star_product``; the Sun is apparent.
 
     Side effects: None.
     """
@@ -1118,10 +1118,9 @@ def _heliacal_signed_elongation(name: str, jd_ut: float) -> float:
     from .planets import planet_at
 
     jd_tt = ut_to_tt(jd_ut)
-    # Astrometric: the native heliacal search (src/native/include/visibility.hpp)
-    # evaluates the straight-line star without aberration, and the Python
-    # oracle must match it (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
-    star = star_at(name, jd_tt, product="astrometric")
+    # The policy's star product; the native search evaluates the same one
+    # (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+    star = star_at(name, jd_tt, product=star_product)
     sun = planet_at(Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0
 
@@ -1134,8 +1133,9 @@ def _star_altitude(
     *,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    star_product: str = "astrometric",
 ) -> float:
-    """Return geometric star altitude in degrees.
+    """Return geometric star altitude in degrees (the star is ``star_product``).
 
     The stellar heliacal solver compares this unrefracted altitude against the
     apparent-horizon threshold ``-0.5667``.  Refraction is therefore encoded in
@@ -1152,6 +1152,7 @@ def _star_altitude(
         name,
         pressure_mbar=pressure_mbar,
         temperature_c=temperature_c,
+        star_product=star_product,
     )
 
 
@@ -1256,6 +1257,25 @@ def _native_heliacal_time_policy(
     return interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate
 
 
+def _native_star_product_evaluator(
+    star_ssb, star_product, reader, earth_ssb, sun_ssb, start_tt, end_tt,
+):
+    """Return the native star evaluator for ``star_product``.
+
+    ``astrometric`` keeps the straight-line catalog star. ``apparent`` wraps it
+    in the native stage 2 (parallax, deflection by the Sun, Jupiter and
+    Saturn, annual aberration), the same corrections as
+    :func:`_earth_based_effects`.
+    """
+    if star_product == "astrometric":
+        return star_ssb
+    if star_product != "apparent":
+        raise ValueError(f"unknown heliacal star_product {star_product!r}")
+    jupiter = reader.evaluator(5, 0, start_tt, jd_end_tt=end_tt)
+    saturn = reader.evaluator(6, 0, start_tt, jd_end_tt=end_tt)
+    return mn.ApparentStarEvaluator(star_ssb, earth_ssb, sun_ssb, jupiter, saturn)
+
+
 def _native_heliacal_event(
     event_kind: str,
     record: _SovereignStarRecord,
@@ -1309,6 +1329,10 @@ def _native_heliacal_event(
         parallax,
         radial_velocity,
         ref_epoch_jd=ref_epoch,
+    )
+    star_icrs = _native_star_product_evaluator(
+        star_icrs, policy.heliacal.star_product, reader, earth_ssb, sun_barycentric,
+        interval_start_tt, interval_end_tt,
     )
     search_kwargs: dict[str, object] = {
         "delta_t": delta_t_start,
@@ -1468,13 +1492,18 @@ def heliacal_rising_event(
 
     def qualifying_sample(day_offset: int) -> tuple[float, float] | None:
         jd_midnight = jd_mid0 + day_offset
-        se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
+        se = _heliacal_signed_elongation(
+            name, jd_midnight + 0.5, star_product=resolved_policy.heliacal.star_product
+        )
         if se >= 0.0:
             return None
         twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
         if twilight_jd is None:
             return None
-        star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
+        star_alt = _star_altitude(
+                name, twilight_jd, latitude, longitude,
+                star_product=resolved_policy.heliacal.star_product,
+            )
         # The apparent horizon lies at geometric altitude −0.5667° (standard
         # atmospheric refraction at the horizon lifts objects by ~34 arcmin).
         # A star at geometric altitude −0.5667° is at apparent altitude 0° and
@@ -1593,14 +1622,19 @@ def heliacal_setting_event(
 
     for day_offset in range(search_days):
         jd_midnight = jd_mid0 + day_offset
-        se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
+        se = _heliacal_signed_elongation(
+            name, jd_midnight + 0.5, star_product=resolved_policy.heliacal.star_product
+        )
         abs_se = abs(se)
 
         if se > 0.0 and abs_se >= setting_elongation_threshold:
             twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, False)
             if twilight_jd is None or twilight_jd < jd_ut:
                 continue
-            star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
+            star_alt = _star_altitude(
+                name, twilight_jd, latitude, longitude,
+                star_product=resolved_policy.heliacal.star_product,
+            )
             # Same apparent-horizon correction as heliacal rising.
             if star_alt > -0.5667:
                 last_visible = (day_offset, se, twilight_jd)
@@ -1742,7 +1776,9 @@ def last_morning_visibility_event(
 
     for day_offset in range(search_days):
         jd_midnight = jd_mid0 + day_offset
-        se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
+        se = _heliacal_signed_elongation(
+            name, jd_midnight + 0.5, star_product=resolved_policy.heliacal.star_product
+        )
         abs_se = abs(se)
 
         if se < 0.0 and abs_se >= setting_elongation_threshold:
@@ -1751,7 +1787,10 @@ def last_morning_visibility_event(
                 continue
             if twilight_jd < jd_ut:
                 continue
-            star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
+            star_alt = _star_altitude(
+                name, twilight_jd, latitude, longitude,
+                star_product=resolved_policy.heliacal.star_product,
+            )
             # Same apparent-horizon correction as heliacal rising.
             if star_alt > -0.5667:
                 last_visible = (day_offset, se, twilight_jd)
@@ -1946,6 +1985,10 @@ def heliacal_catalog_batch(
                 star_ssb = mn.FixedStarEvaluator(
                     ra_deg, dec_deg, pmra, pmdec, parallax, radial_velocity,
                     ref_epoch_jd=ref_epoch,
+                )
+                star_ssb = _native_star_product_evaluator(
+                    star_ssb, resolved_policy.heliacal.star_product, reader, earth_ssb, sun_ssb,
+                    interval_start_tt, interval_end_tt,
                 )
                 if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0:
                     arcus = record.arc_vis_deg

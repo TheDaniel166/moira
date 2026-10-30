@@ -169,6 +169,8 @@ class AyanamsaComputationTruth:
     fallback_applied: bool
     fallback_reason: str | None
     input_timescale: str = "UT"
+    # "astrometric" or "apparent" for a live star anchor, else None.
+    anchor_product: str | None = None
     computation_timescale: str = "TT"
     output_normalization: str = "degrees_modulo_360"
 
@@ -265,6 +267,14 @@ class Ayanamsa:
     TRUE_REVATI     = "True Revati"
     TRUE_PUSHYA     = "True Pushya"
     TRUE_MULA        = "True Mula"              # Star-anchored: Shaula (λ Sco) at 240°
+    # The same star anchors placed on the apparent star (as seen from Earth's
+    # centre, like the planets) instead of the astrometric star; see
+    # FIXED_STARS_BACKEND_STANDARD.md, Section 5.
+    TRUE_CHITRAPAKSHA_APPARENT = "True Chitrapaksha (apparent)"
+    ALDEBARAN_15_TAU_APPARENT = "Aldebaran (15 Tau, apparent)"
+    TRUE_REVATI_APPARENT = "True Revati (apparent)"
+    TRUE_PUSHYA_APPARENT = "True Pushya (apparent)"
+    TRUE_MULA_APPARENT = "True Mula (apparent)"
 
     ALL = [
         LAHIRI, FAGAN_BRADLEY, KRISHNAMURTI, RAMAN,
@@ -272,6 +282,8 @@ class Ayanamsa:
         DE_LUCE, ALDEBARAN_15_TAU,
         TRUE_REVATI, TRUE_PUSHYA,
         TRUE_MULA,
+        TRUE_CHITRAPAKSHA_APPARENT, ALDEBARAN_15_TAU_APPARENT,
+        TRUE_REVATI_APPARENT, TRUE_PUSHYA_APPARENT, TRUE_MULA_APPARENT,
     ]
 
 
@@ -347,6 +359,31 @@ _STAR_ANCHORED: dict[str, tuple[str, float]] = {
     # Mula-paksha (Chandra Hari): λ Scorpii (Shaula) at 0° Mula sidereal (240°)
     Ayanamsa.TRUE_MULA:         ("Shaula",    240.0),
 }
+
+# Apparent variants: the same star and target, placed on the apparent star.
+_APPARENT_VARIANTS: dict[str, str] = {
+    Ayanamsa.TRUE_CHITRAPAKSHA_APPARENT: Ayanamsa.TRUE_CHITRAPAKSHA,
+    Ayanamsa.ALDEBARAN_15_TAU_APPARENT: Ayanamsa.ALDEBARAN_15_TAU,
+    Ayanamsa.TRUE_REVATI_APPARENT: Ayanamsa.TRUE_REVATI,
+    Ayanamsa.TRUE_PUSHYA_APPARENT: Ayanamsa.TRUE_PUSHYA,
+    Ayanamsa.TRUE_MULA_APPARENT: Ayanamsa.TRUE_MULA,
+}
+for _apparent, _base in _APPARENT_VARIANTS.items():
+    _STAR_ANCHORED[_apparent] = _STAR_ANCHORED[_base]
+    _AYANAMSA_AT_J2000[_apparent] = _AYANAMSA_AT_J2000[_base]
+    if _base in _AYANAMSA_DRIFT_PER_CENTURY:
+        _AYANAMSA_DRIFT_PER_CENTURY[_apparent] = _AYANAMSA_DRIFT_PER_CENTURY[_base]
+del _apparent, _base
+
+
+def _anchor_product(system: str) -> str:
+    """Return the star product a star-anchored system places its anchor on.
+
+    The base systems use the astrometric star: a smooth frame without the
+    yearly aberration swing, which the Gochara interval search also encloses.
+    The ``(apparent)`` variants use the apparent star, as the planets are.
+    """
+    return "apparent" if system in _APPARENT_VARIANTS else "astrometric"
 
 
 def _star_anchored_ayanamsa_at_tt(system: str, jd_tt: float) -> float:
@@ -431,11 +468,12 @@ def _ayanamsa_truth_at_tt(
         from .stars import star_at
 
         star_name, target_sidereal = anchor
+        anchor_product = _anchor_product(system)
         try:
-            # Ayanamsa anchors use the astrometric star (FIXED_STARS_BACKEND_STANDARD.md,
-            # Section 5): the Gochara interval enclosure encloses that same product, and
-            # an apparent anchor would add a yearly aberration swing to the ayanamsa.
-            star = star_at(star_name, jd_tt, product="astrometric")
+            # The system's anchor product (FIXED_STARS_BACKEND_STANDARD.md,
+            # Section 5): astrometric for the base systems, apparent for the
+            # ``(apparent)`` variants, which need a planetary kernel.
+            star = star_at(star_name, jd_tt, product=anchor_product)
         except LookupError:
             fallback_reason = "anchor_star_not_found"
         except FileNotFoundError:
@@ -464,6 +502,7 @@ def _ayanamsa_truth_at_tt(
                 ),
                 fallback_applied=False,
                 fallback_reason=None,
+                anchor_product=anchor_product,
             )
     else:
         fallback_reason = None
@@ -562,9 +601,9 @@ def ayanamsa(
     Notes
     -----
     Systems listed in ``_STAR_ANCHORED`` (TRUE_CHITRAPAKSHA, TRUE_REVATI,
-    ALDEBARAN_15_TAU, TRUE_PUSHYA) use the actual apparent tropical longitude
-    of their anchor star at ``jd`` to derive the ayanamsa, matching the
-    behaviour of star-anchored true sidereal systems.  The polynomial
+    ALDEBARAN_15_TAU, TRUE_PUSHYA, TRUE_MULA) use the live tropical longitude
+    of their anchor star at ``jd``: the astrometric star for the base systems,
+    the apparent star for their ``(apparent)`` variants.  The polynomial
     path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
     for all other systems and as a fallback when the star catalog is absent.
 

@@ -71,7 +71,12 @@ TRUE_CASES = _cases(REFERENCE_DATA, "true")
 @pytest.mark.integration
 def test_fixture_covers_all_supported_moira_systems() -> None:
     covered = {system for case in REFERENCE_DATA["cases"] for system in case["systems"]}
-    expected = set(Ayanamsa.ALL)
+    # The "(apparent)" anchor variants are Moira policy choices without offline
+    # swetest values; tests/unit/test_ayanamsa_anchor_product.py and the Gochara
+    # ERFA composition test cover them.
+    from moira.sidereal import _APPARENT_VARIANTS
+
+    expected = set(Ayanamsa.ALL) - set(_APPARENT_VARIANTS)
     assert expected.issubset(covered)
 
 

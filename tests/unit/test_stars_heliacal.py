@@ -166,7 +166,7 @@ def test_python_heliacal_rising_does_not_relabel_open_apparition_after_start(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     jd_start = 2451545.3
-    monkeypatch.setattr(stars, "_heliacal_signed_elongation", lambda *args: -15.0)
+    monkeypatch.setattr(stars, "_heliacal_signed_elongation", lambda *args, **kwargs: -15.0)
     monkeypatch.setattr(
         "moira.heliacal._find_sun_at_alt",
         lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25,
@@ -200,7 +200,7 @@ def test_python_setting_searches_never_remember_visibility_before_forward_start(
 ) -> None:
     jd_start = 2451545.3
 
-    def _signed_elongation(_name: str, jd_ut: float) -> float:
+    def _signed_elongation(_name: str, jd_ut: float, **_kwargs) -> float:
         return side * (15.0 if jd_ut < 2451546.0 else 4.0)
 
     monkeypatch.setattr(stars, "_heliacal_signed_elongation", _signed_elongation)

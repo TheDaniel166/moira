@@ -22,7 +22,7 @@ from .houses import _asc_from_armc
 from .julian import _local_sidereal_time_at_tt, jd_from_datetime, utc_to_ut1
 from .obliquity import mean_obliquity, nutation
 from .planets import planet_at
-from .sidereal import Ayanamsa, _ayanamsa_at_tt, _STAR_ANCHORED
+from .sidereal import Ayanamsa, _ayanamsa_at_tt, _STAR_ANCHORED, _anchor_product
 from .spk_reader import (
     KernelReader, MissingKernelError, OutOfRangeError, get_reader,
     use_reader_override,
@@ -277,7 +277,7 @@ def _epoch(jd_ut1, reader, policy):
     if policy.ayanamsa_system in _STAR_ANCHORED:
         anchor, target = _STAR_ANCHORED[policy.ayanamsa_system]
         try:
-            offset = (star_at(anchor, bound.epoch_tt, product="astrometric").longitude - target) % 360
+            offset = (star_at(anchor, bound.epoch_tt, product=_anchor_product(policy.ayanamsa_system)).longitude - target) % 360
         except ValueError as exc:
             raise GocharaResourceError("required Gochar live anchor catalogue is invalid") from exc
     else:

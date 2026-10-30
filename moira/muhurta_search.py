@@ -21,8 +21,7 @@ from .panchanga import PanchangaResult, _panchanga_from_resolved_longitudes
 from .planets import planet_at
 from .sidereal import (
     Ayanamsa, NAKSHATRA_NAMES, _ayanamsa_at_tt, _STAR_ANCHORED,
-    _nakshatra_position_from_sidereal,
-)
+    _nakshatra_position_from_sidereal, _anchor_product)
 from .spk_reader import get_reader, use_reader_override, MissingKernelError, OutOfRangeError
 from .stars import star_at
 from .julian import utc_to_ut1
@@ -240,7 +239,7 @@ def _offset(jd_tt, system):
     if system in _STAR_ANCHORED:
         star, target = _STAR_ANCHORED[system]
         try:
-            return (star_at(star, jd_tt, product="astrometric").longitude - target) % 360
+            return (star_at(star, jd_tt, product=_anchor_product(system)).longitude - target) % 360
         except (ValueError, FileNotFoundError, KeyError) as exc:
             raise MuhurtaResourceError("required live ayanamsa anchor is unavailable") from exc
     return _ayanamsa_at_tt(jd_tt, system, "true")

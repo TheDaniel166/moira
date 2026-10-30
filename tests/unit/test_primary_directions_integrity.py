@@ -288,7 +288,7 @@ def test_fixed_star_receives_facade_tt_without_adding_delta_t_to_utc(figure, mon
     chart, houses, _ = figure
     witnessed = []
 
-    def star(target, *, jd_tt):
+    def star(target, *, jd_tt, reader=None):
         witnessed.append(jd_tt)
         return target.star_name, 140., 0.
 

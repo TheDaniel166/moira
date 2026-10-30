@@ -132,6 +132,8 @@ def test_special_facade_preserves_legacy_primary_direction_arguments_and_adds_po
                 "solar_speed": 0.9,
                 "obliquity": 23.4,
                 "policy": "policy",
+                # The facade's own kernel, for apparent fixed-star targets.
+                "reader": None,
             },
         )
     ]

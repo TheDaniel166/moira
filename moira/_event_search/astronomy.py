@@ -308,6 +308,14 @@ class AstronomyEnclosures:
     def _apparent(self,body,tt,*,with_distance=False):
         earth,velocity=self.barycentric('Earth',tt)
         xyz=self._light_time(body,tt,earth)
+        return self._earth_stage(xyz,tt,earth,velocity,body,with_distance=with_distance)
+
+    def _earth_stage(self,xyz,tt,earth,velocity,body=None,*,with_distance=False):
+        """Light deflection (Sun, Jupiter, Saturn) and annual aberration of a geocentric vector.
+
+        Shared by apparent bodies and apparent fixed-star anchors; ``body`` names
+        the target so a deflector never deflects its own light.
+        """
         if body not in ('Sun','Moon'):
             distance=norm(xyz)
             p=unit(xyz)

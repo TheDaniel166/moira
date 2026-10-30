@@ -17,6 +17,7 @@
 #include "sidereal.hpp"
 #include "math_utils.hpp"
 #include "geometry.hpp"
+#include "apparent_place.hpp"
 
 namespace moira {
 namespace native {
@@ -751,6 +752,66 @@ public:
         result[0] = propagated[0];
         result[1] = propagated[1];
         result[2] = propagated[2];
+        result[3] = result[4] = result[5] = 0.0;
+    }
+};
+
+/**
+ * @brief THEOREM: Apparent geocentric fixed star.
+ *
+ * Stage 2 of the fixed-star pipeline (FIXED_STARS_BACKEND_STANDARD.md,
+ * Section 2), mirroring moira.stars._earth_based_effects: annual parallax
+ * (barycentric star minus Earth's barycentric position), light deflection by
+ * the Sun and, when given, Jupiter and Saturn, then annual aberration from
+ * Earth's barycentric velocity. The output is the geocentric ICRS vector in
+ * km; velocity slots are zero.
+ */
+class ApparentStarEvaluator : public IEvaluator {
+public:
+    std::shared_ptr<IEvaluator> star_ssb;
+    std::shared_ptr<IEvaluator> earth_ssb;
+    std::shared_ptr<IEvaluator> sun_ssb;
+    std::shared_ptr<IEvaluator> jupiter_ssb;
+    std::shared_ptr<IEvaluator> saturn_ssb;
+
+    ApparentStarEvaluator(std::shared_ptr<IEvaluator> star,
+                          std::shared_ptr<IEvaluator> earth,
+                          std::shared_ptr<IEvaluator> sun,
+                          std::shared_ptr<IEvaluator> jupiter = nullptr,
+                          std::shared_ptr<IEvaluator> saturn = nullptr)
+        : star_ssb(std::move(star)), earth_ssb(std::move(earth)), sun_ssb(std::move(sun)),
+          jupiter_ssb(std::move(jupiter)), saturn_ssb(std::move(saturn)) {
+        if (!star_ssb || !earth_ssb || !sun_ssb) {
+            throw std::invalid_argument("ApparentStarEvaluator requires star, Earth and Sun evaluators");
+        }
+    }
+
+    void compute(double jd_tt, double* result) const override {
+        double star[6], earth[6], body[6];
+        star_ssb->evaluate(jd_tt, star);
+        earth_ssb->evaluate(jd_tt, earth);
+        const Vec3 earth_pos{earth[0], earth[1], earth[2]};
+        const Vec3 earth_vel{earth[3], earth[4], earth[5]};
+        Vec3 geo{star[0] - earth_pos[0], star[1] - earth_pos[1], star[2] - earth_pos[2]};
+
+        std::vector<std::pair<Vec3, double>> deflectors;
+        deflectors.reserve(3);
+        sun_ssb->evaluate(jd_tt, body);
+        deflectors.emplace_back(Vec3{body[0] - earth_pos[0], body[1] - earth_pos[1], body[2] - earth_pos[2]}, 2.95325008);
+        if (jupiter_ssb) {
+            jupiter_ssb->evaluate(jd_tt, body);
+            deflectors.emplace_back(Vec3{body[0] - earth_pos[0], body[1] - earth_pos[1], body[2] - earth_pos[2]}, 0.00282);
+        }
+        if (saturn_ssb) {
+            saturn_ssb->evaluate(jd_tt, body);
+            deflectors.emplace_back(Vec3{body[0] - earth_pos[0], body[1] - earth_pos[1], body[2] - earth_pos[2]}, 0.000838);
+        }
+        geo = apparent_deflection(geo, deflectors);
+        geo = apparent_aberration(geo, earth_vel);
+
+        result[0] = geo[0];
+        result[1] = geo[1];
+        result[2] = geo[2];
         result[3] = result[4] = result[5] = 0.0;
     }
 };

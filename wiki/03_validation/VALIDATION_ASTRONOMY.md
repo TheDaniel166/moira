@@ -1096,9 +1096,12 @@ parity).
 - Only Sirius A and α Centauri A and B are placed on orbits. Every other
   star, including Proxima Centauri and the other catalog binaries, moves in a
   straight line from its own row.
-- Ayanamsa anchors (true Chitrapaksha and the other star-anchored systems)
-  use the astrometric star, which the Gochara interval enclosure certifies;
-  an apparent anchor is a separate doctrinal decision.
+- Three star techniques default to the astrometric star and offer the
+  apparent star as a policy choice: ayanamsa anchors (the `(apparent)`
+  systems, enclosed by the Gochara interval search), the fixed-star heliacal
+  search (native and Python agree on apparent events within 0.05 s), and star
+  rise/set and parans. The general visibility search in `heliacal.py` stays
+  astrometric for stars.
 - δ Indi and σ² Ursae Majoris carry long-term Hipparcos-to-Gaia proper
   motions (standard, Section 3.3). Their orbits are not modelled, so a
   residual orbital wobble of up to about 0.03 arcsec (δ Indi) remains.

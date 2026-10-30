@@ -501,8 +501,13 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         longitude: float,
         bodies: list[str] | None = None,
         orb_minutes: float = 4.0,
+        star_product: str = "astrometric",
     ):
-        """Find natal parans on the birth day."""
+        """Find natal parans on the birth day.
+
+        ``star_product`` is ``"astrometric"`` (default) or ``"apparent"`` for
+        fixed stars (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
+        """
         facade = _facade_module()
         if bodies is None:
             bodies = list(facade.Body.ALL_PLANETS)
@@ -519,6 +524,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
             latitude,
             longitude,
             orb_minutes=orb_minutes,
+            star_product=star_product,
         )
 
     def gauquelin_sectors(

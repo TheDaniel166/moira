@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from .phenomena import (
@@ -30,6 +32,7 @@ class ParanPacketRequest(_StrictModel):
     include_heliacal: bool = False
     heliacal_kind: str = "heliacal_rising"
     heliacal_search_window_days: int = Field(default=400, gt=0, le=3660)
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
 class ParanPacketResponse(_StrictModel):

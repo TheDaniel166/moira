@@ -1172,6 +1172,8 @@ def evaluate_paran_stability(
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
     time_offsets_minutes: tuple[float, ...] = (-1.0, 1.0),
+    *,
+    star_product: str = "astrometric",
 ) -> ParanStability:
     """
     Evaluate Phase 6 perturbation stability for a single baseline paran.
@@ -1225,6 +1227,7 @@ def evaluate_paran_stability(
             lon,
             orb_minutes=orb_minutes,
             policy=policy,
+            star_product=star_product,
         )
         matches = _matching_perturbed_paran_candidates(paran, candidates)
         if not matches:
@@ -1285,6 +1288,8 @@ def evaluate_paran_site(
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
     stability_time_offsets_minutes: tuple[float, ...] | None = None,
+    *,
+    star_product: str = "astrometric",
 ) -> ParanSiteResult:
     """
     Evaluate whether a target paran exists at one geographic site.
@@ -1318,6 +1323,7 @@ def evaluate_paran_site(
         lon,
         orb_minutes=orb_minutes,
         policy=policy,
+        star_product=star_product,
     )
     matches = _matching_site_paran_candidates(target, candidates)
     if not matches:
@@ -1341,6 +1347,7 @@ def evaluate_paran_site(
             orb_minutes=orb_minutes,
             policy=policy,
             time_offsets_minutes=stability_time_offsets_minutes,
+            star_product=star_product,
         )
 
     return ParanSiteResult(
@@ -1361,6 +1368,8 @@ def sample_paran_field(
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
     stability_time_offsets_minutes: tuple[float, ...] | None = None,
+    *,
+    star_product: str = "astrometric",
 ) -> list[ParanFieldSample]:
     """
     Sample a bounded geographic grid for one target paran identity.
@@ -1381,6 +1390,7 @@ def sample_paran_field(
                     orb_minutes=orb_minutes,
                     policy=policy,
                     stability_time_offsets_minutes=stability_time_offsets_minutes,
+                    star_product=star_product,
                 )
                 samples.append(
                     ParanFieldSample(
@@ -2213,10 +2223,13 @@ class Paran:
 # Internal: find all four crossings for a single body on a given day
 # ---------------------------------------------------------------------------
 
-def _crossing_cache_reader_token(body: str):
-    """Return the active reader identity for kernel-bound crossing truth."""
+def _crossing_cache_reader_token(body: str, star_product: str = "astrometric"):
+    """Return the active reader identity for kernel-bound crossing truth.
 
-    if body.strip().lower() not in _PLANET_NAMES_LOWER:
+    Planets and apparent stars depend on the reader; an astrometric star does not.
+    """
+
+    if body.strip().lower() not in _PLANET_NAMES_LOWER and star_product != "apparent":
         return None
     from .spk_reader import get_reader
 
@@ -2228,16 +2241,18 @@ def _meridian_crossings(
     jd_day: float,
     lat: float,
     lon: float,
+    *,
+    star_product: str = "astrometric",
 ) -> tuple[ParanCrossing, ...]:
     """Return MC/IC crossings, reusing latitude-independent stellar solves."""
 
     from .rise_set import get_transit
 
     is_planet = body.strip().lower() in _PLANET_NAMES_LOWER
-    reader_token = _crossing_cache_reader_token(body)
+    reader_token = _crossing_cache_reader_token(body, star_product)
     effective_lat = lat if is_planet else None
     cache = _CROSSING_CACHE.get()
-    key = ("meridian", body, jd_day, effective_lat, lon, reader_token)
+    key = ("meridian", body, jd_day, effective_lat, lon, reader_token, star_product)
     if cache is not None and key in cache:
         return cache[key]  # type: ignore[return-value]
 
@@ -2249,7 +2264,7 @@ def _meridian_crossings(
                 ParanCrossing(
                     body=body,
                     circle=circle,
-                    jd=get_transit(body, jd_day, solve_lat, lon, upper=upper),
+                    jd=get_transit(body, jd_day, solve_lat, lon, upper=upper, star_product=star_product),
                     source_method="get_transit",
                 )
             )
@@ -2268,6 +2283,8 @@ def _compute_crossing_times(
     lon: float,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = "astrometric",
 ) -> tuple[ParanCrossing, ...]:
     """
     Find all four mundane circle crossings for *body* on the day starting
@@ -2315,6 +2332,7 @@ def _compute_crossing_times(
         -0.5667,
         pressure_mbar,
         temperature_c,
+        star_product=star_product,
     )
 
     if "Rise" in phenomena:
@@ -2338,7 +2356,7 @@ def _compute_crossing_times(
             )
         )
 
-    crossings.extend(_meridian_crossings(body, jd_day, lat, lon))
+    crossings.extend(_meridian_crossings(body, jd_day, lat, lon, star_product=star_product))
 
     return tuple(crossings)
 
@@ -2350,11 +2368,13 @@ def _crossing_times(
     lon: float,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = "astrometric",
 ) -> list[ParanCrossing]:
     """Return four crossings with immutable request-scoped reuse when active."""
 
     cache = _CROSSING_CACHE.get()
-    reader_token = _crossing_cache_reader_token(body)
+    reader_token = _crossing_cache_reader_token(body, star_product)
     key = (
         "all",
         body,
@@ -2364,6 +2384,7 @@ def _crossing_times(
         pressure_mbar,
         temperature_c,
         reader_token,
+        star_product,
     )
     if cache is not None and key in cache:
         return list(cache[key])  # type: ignore[arg-type]
@@ -2374,6 +2395,7 @@ def _crossing_times(
         lon,
         pressure_mbar,
         temperature_c,
+        star_product=star_product,
     )
     if cache is not None:
         cache[key] = result
@@ -2387,6 +2409,8 @@ def _body_crossing_inventory(
     lon: float,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = "astrometric",
 ) -> ParanBodyCrossingInventory:
     """Return four-circle availability evidence for one requested body."""
 
@@ -2399,6 +2423,7 @@ def _body_crossing_inventory(
         lon,
         pressure_mbar,
         temperature_c,
+        star_product=star_product,
     )
     by_circle = {crossing.circle: crossing for crossing in crossings}
     horizon_state = None
@@ -2409,6 +2434,7 @@ def _body_crossing_inventory(
             lat,
             lon,
             altitude=-0.5667,
+            star_product=star_product,
         ).state
 
     entries: list[ParanCircleInventoryEntry] = []
@@ -2493,6 +2519,8 @@ def find_parans(
     policy: ParanPolicy | None = None,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = "astrometric",
 ) -> list[Paran]:
     """
     Find all parans between the given bodies for a given day and location.
@@ -2569,7 +2597,7 @@ def find_parans(
     active_policy = DEFAULT_PARAN_POLICY if policy is None else policy
 
     body_crossings = {
-        body: _crossing_times(body, jd_day, lat, lon, pressure_mbar, temperature_c)
+        body: _crossing_times(body, jd_day, lat, lon, pressure_mbar, temperature_c, star_product=star_product)
         for body in bodies
     }
     return _match_parans_from_crossings(bodies, body_crossings, orb_minutes, active_policy)
@@ -2584,6 +2612,8 @@ def find_parans_with_inventory(
     policy: ParanPolicy | None = None,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    *,
+    star_product: str = "astrometric",
 ) -> ParanSearchResult:
     """Find parans and return explicit crossing availability for every body."""
 
@@ -2597,6 +2627,7 @@ def find_parans_with_inventory(
             lon,
             pressure_mbar,
             temperature_c,
+            star_product=star_product,
         )
         for body in bodies
     )
@@ -2628,6 +2659,8 @@ def natal_parans(
     lon: float,
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
+    *,
+    star_product: str = "astrometric",
 ) -> list[Paran]:
     """
     Find natal parans — the parans active on the birth day.
@@ -2659,7 +2692,7 @@ def natal_parans(
     # floor, add 0.5 back so the window begins at 00:00 UT).
     jd_day = math.floor(natal_jd - 0.5) + 0.5
     if policy is None:
-        return find_parans(bodies, jd_day, lat, lon, orb_minutes=orb_minutes)
+        return find_parans(bodies, jd_day, lat, lon, orb_minutes=orb_minutes, star_product=star_product)
     return find_parans(
         bodies,
         jd_day,
@@ -2667,6 +2700,7 @@ def natal_parans(
         lon,
         orb_minutes=orb_minutes,
         policy=policy,
+        star_product=star_product,
     )
 
 
@@ -2677,6 +2711,8 @@ def natal_parans_with_inventory(
     lon: float,
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
+    *,
+    star_product: str = "astrometric",
 ) -> ParanSearchResult:
     """Return birth-day parans with four-circle evidence for every body."""
 
@@ -2688,6 +2724,7 @@ def natal_parans_with_inventory(
         lon,
         orb_minutes=orb_minutes,
         policy=policy,
+        star_product=star_product,
     )
 
 
@@ -2697,6 +2734,8 @@ def natal_angular_contacts(
     lat: float,
     lon: float,
     orb_minutes: float = 2.0,
+    *,
+    star_product: str = "astrometric",
 ) -> list[NatalAngularContact]:
     """Find individual body crossings within time orb of the natal moment.
 
@@ -2716,7 +2755,7 @@ def natal_angular_contacts(
     circle_order = {circle: index for index, circle in enumerate(CIRCLE_TYPES)}
     contacts: list[NatalAngularContact] = []
     for body in bodies:
-        for crossing in _crossing_times(body, jd_day, lat, lon):
+        for crossing in _crossing_times(body, jd_day, lat, lon, star_product=star_product):
             delta_minutes = (crossing.jd - natal_jd) / _MINUTES_TO_JD
             absolute_delta = abs(delta_minutes)
             if absolute_delta <= orb_minutes:

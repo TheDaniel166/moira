@@ -22,12 +22,24 @@ class HeliacalSearchPolicy:
     governing heliacal computation has ever consumed it, so values other than
     the historical default are rejected rather than silently pretending to
     alter visibility doctrine.
+
+    ``star_product`` selects the star's position in the heliacal search:
+    ``"astrometric"`` (default; the catalog direction moved to the date) or
+    ``"apparent"`` (parallax, light deflection by the Sun, Jupiter and
+    Saturn, and annual aberration, matching the apparent Sun).  The native
+    search and the Python oracle evaluate the same product
+    (FIXED_STARS_BACKEND_STANDARD.md, Section 5).
     """
     setting_elongation_threshold: float = 12.0
     visibility_tolerance: float = 1.0
     setting_visibility_factor: float = 0.5
+    star_product: str = "astrometric"
 
     def __post_init__(self) -> None:
+        if self.star_product not in ("astrometric", "apparent"):
+            raise ValueError(
+                f"star_product must be 'astrometric' or 'apparent', got {self.star_product!r}"
+            )
         if (
             isinstance(self.setting_elongation_threshold, bool)
             or not math.isfinite(self.setting_elongation_threshold)

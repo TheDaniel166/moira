@@ -47,7 +47,7 @@ from moira.parans import (
 )
 from moira.paran_stars import PARAN_STAR_CANON, list_paran_stars, paran_star_tiers
 from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, twilight_times
-from moira.spk_reader import use_reader_override
+from moira.spk_reader import MissingEphemerisKernelError, use_reader_override
 from moira.stations import (
     find_stations,
     find_stations_with_truth,
@@ -358,6 +358,19 @@ def _validate_coordinate_list(values: list[float], name: str, *, lat: bool) -> N
                 raise ValueError(f"{name} entries must be between -180 and 180 degrees")
 
 
+def _star_event_reader(engine: Moira, star_product: str):
+    """The engine's own kernel; an apparent star refuses to run without it.
+
+    The server never falls back to an ambient or global reader.
+    """
+    reader = getattr(engine, "_reader", None)
+    if reader is None and star_product == "apparent":
+        raise MissingEphemerisKernelError(
+            "Apparent fixed-star events need this server's planetary kernel, which is not loaded."
+        )
+    return reader
+
+
 def _resolve_policy(request: RiseSetPolicyRequest | None) -> RiseSetPolicy | None:
     if request is None:
         return None
@@ -367,6 +380,7 @@ def _resolve_policy(request: RiseSetPolicyRequest | None) -> RiseSetPolicy | Non
         hindu_rising=request.hindu_rising,
         refraction=request.refraction,
         horizon_altitude=request.horizon_altitude,
+        star_product=request.star_product,
     )
 
 
@@ -542,7 +556,7 @@ def compute_rise_set_phenomena(engine: Moira, request: RiseSetPhenomenaRequest):
     if request.altitude is not None:
         _require_finite(request.altitude, "altitude")
     policy = _resolve_policy(request.policy)
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, "astrometric" if policy is None else policy.star_product)
     with use_reader_override(reader):
         return find_phenomena(
             request.body,
@@ -557,7 +571,7 @@ def compute_rise_set_phenomena(engine: Moira, request: RiseSetPhenomenaRequest):
 def compute_rise_set_transit(engine: Moira, request: RiseSetTransitRequest) -> float:
     _require_finite(request.jd_day, "jd_day")
     _validate_lat_lon(request.lat, request.lon)
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return get_transit(
             request.body,
@@ -565,6 +579,7 @@ def compute_rise_set_transit(engine: Moira, request: RiseSetTransitRequest) -> f
             request.lat,
             request.lon,
             upper=request.upper,
+            star_product=request.star_product,
         )
 
 
@@ -1064,7 +1079,7 @@ def compute_parans(engine: Moira, request: ParanSearchRequest):
     _require_finite(request.jd_day, "jd_day")
     _validate_lat_lon(request.lat, request.lon)
     _require_non_negative(request.orb_minutes, "orb_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return find_parans(
             request.bodies,
@@ -1073,6 +1088,7 @@ def compute_parans(engine: Moira, request: ParanSearchRequest):
             request.lon,
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
+            star_product=request.star_product,
         )
 
 
@@ -1080,7 +1096,7 @@ def compute_parans_with_inventory(engine: Moira, request: ParanSearchRequest):
     _require_finite(request.jd_day, "jd_day")
     _validate_lat_lon(request.lat, request.lon)
     _require_non_negative(request.orb_minutes, "orb_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return find_parans_with_inventory(
             request.bodies,
@@ -1089,6 +1105,7 @@ def compute_parans_with_inventory(engine: Moira, request: ParanSearchRequest):
             request.lon,
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
+            star_product=request.star_product,
         )
 
 
@@ -1096,7 +1113,7 @@ def compute_natal_parans(engine: Moira, request: NatalParanSearchRequest):
     _require_finite(request.natal_jd, "natal_jd")
     _validate_lat_lon(request.lat, request.lon)
     _require_non_negative(request.orb_minutes, "orb_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return natal_parans(
             request.bodies,
@@ -1105,6 +1122,7 @@ def compute_natal_parans(engine: Moira, request: NatalParanSearchRequest):
             request.lon,
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
+            star_product=request.star_product,
         )
 
 
@@ -1112,7 +1130,7 @@ def compute_natal_parans_with_inventory(engine: Moira, request: NatalParanSearch
     _require_finite(request.natal_jd, "natal_jd")
     _validate_lat_lon(request.lat, request.lon)
     _require_non_negative(request.orb_minutes, "orb_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return natal_parans_with_inventory(
             request.bodies,
@@ -1121,6 +1139,7 @@ def compute_natal_parans_with_inventory(engine: Moira, request: NatalParanSearch
             request.lon,
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
+            star_product=request.star_product,
         )
 
 
@@ -1128,7 +1147,7 @@ def compute_natal_angular_contacts(engine: Moira, request: NatalAngularContactsR
     _require_finite(request.natal_jd, "natal_jd")
     _validate_lat_lon(request.lat, request.lon)
     _require_non_negative(request.orb_minutes, "orb_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return natal_angular_contacts(
             request.bodies,
@@ -1136,6 +1155,7 @@ def compute_natal_angular_contacts(engine: Moira, request: NatalAngularContactsR
             request.lat,
             request.lon,
             orb_minutes=request.orb_minutes,
+            star_product=request.star_product,
         )
 
 
@@ -1149,7 +1169,7 @@ def compute_paran_site(engine: Moira, request: ParanSiteRequest):
         offsets = tuple(request.stability_time_offsets_minutes)
         for value in offsets:
             _require_finite(value, "stability_time_offsets_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return evaluate_paran_site(
             target,
@@ -1159,6 +1179,7 @@ def compute_paran_site(engine: Moira, request: ParanSiteRequest):
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
             stability_time_offsets_minutes=offsets,
+            star_product=request.star_product,
         )
 
 
@@ -1173,7 +1194,7 @@ def compute_paran_field_samples(engine: Moira, request: ParanFieldGridRequest):
         offsets = tuple(request.stability_time_offsets_minutes)
         for value in offsets:
             _require_finite(value, "stability_time_offsets_minutes")
-    reader = getattr(engine, "_reader", None)
+    reader = _star_event_reader(engine, request.star_product)
     with use_reader_override(reader):
         return sample_paran_field(
             target,
@@ -1183,6 +1204,7 @@ def compute_paran_field_samples(engine: Moira, request: ParanFieldGridRequest):
             orb_minutes=request.orb_minutes,
             policy=paran_policy_preset(request.policy_preset),
             stability_time_offsets_minutes=offsets,
+            star_product=request.star_product,
         )
 
 
@@ -1198,6 +1220,7 @@ def _compute_field_components(engine: Moira, request: ParanFieldMetricRequest):
             orb_minutes=request.orb_minutes,
             stability_time_offsets_minutes=request.stability_time_offsets_minutes,
             policy_preset=request.policy_preset,
+            star_product=request.star_product,
         ),
     )
     analysis = analyze_paran_field(samples, metric=metric, threshold=request.threshold)

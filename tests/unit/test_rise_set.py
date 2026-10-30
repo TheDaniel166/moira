@@ -188,7 +188,7 @@ def test_get_transit_uses_verified_newton_before_scan(
 ) -> None:
     calls: list[float] = []
 
-    def _error(jd, body, lat, lon, target):
+    def _error(jd, body, lat, lon, target, **_kwargs):
         calls.append(jd)
         expected = 100.25 if target == 0.0 else 100.75
         return (jd - expected) * 360.98564736629

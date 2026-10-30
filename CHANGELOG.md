@@ -29,6 +29,20 @@ publication, or production pin is implied by these entries.
     then one shared Earth stage, then the frame of date.
   - REST star provenance carries `position_product` and `motion_model`.
   - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
+- **Star Product Policy Choices For Star Techniques**: three techniques keep
+  their astrometric default and offer the apparent star explicitly.
+  - Ayanamsa: new systems `True Chitrapaksha (apparent)`, `True Revati
+    (apparent)`, `Aldebaran (15 Tau, apparent)`, `True Pushya (apparent)` and
+    `True Mula (apparent)` place the anchor on the apparent star; supported by
+    the sidereal API, Gochara (certified interval search), Muhurta and
+    Kalachakra. `AyanamsaComputationTruth.anchor_product` names the product.
+  - Fixed-star heliacal search: `HeliacalSearchPolicy.star_product`. The native
+    search gains `ApparentStarEvaluator`; native apparent-place corrections now
+    live once in `src/native/include/apparent_place.hpp`.
+  - Star rise/set, transit and parans: `RiseSetPolicy.star_product` and
+    `star_product=` on `get_transit`, `horizon_crossing_availability`, the
+    paran search, site, field and natal functions, and the REST rise/set,
+    transit, paran and paran-packet requests (apparent without a kernel: `503`).
 - **Catalog Radial Velocities**: the star registry gains `ref_epoch_jd`,
   `frame`, `radial_velocity_km_s` and `radial_velocity_status`. SIMBAD
   velocities of grade A-D are admitted for 1,619 of 1,809 stars; the rest are

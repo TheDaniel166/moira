@@ -16,7 +16,7 @@ from ._bounded_memo import bounded_memo
 from ._event_search.frames import _differential_key
 from .gochara_dated import GocharaResourceError
 from .gochara_windows import GocharaWindowDomainError
-from .sidereal import _STAR_ANCHORED, _AYANAMSA_AT_J2000, _AYANAMSA_DRIFT_PER_CENTURY
+from .sidereal import _STAR_ANCHORED, _AYANAMSA_AT_J2000, _AYANAMSA_DRIFT_PER_CENTURY, _anchor_product
 from ._stellar_space_motion import JULIAN_YEAR_DAYS, StellarArithmetic, space_motion
 from . import stars, julian
 
@@ -43,8 +43,12 @@ _INTERVAL_ARITHMETIC = StellarArithmetic(
 )
 
 
-def _propagate(record, tt):
-    """Interval enclosure of the fixed-star astrometric direction at ``tt``."""
+def _propagate(record, tt, *, with_distance=False):
+    """Interval enclosure of the fixed-star astrometric direction at ``tt``.
+
+    With ``with_distance`` the barycentric position in km is returned, the
+    stage-1 vector that the apparent anchor reduces to Earth's centre.
+    """
     if stars._motion_model(record) != stars.MOTION_STRAIGHT_LINE:
         # Stage 1 places a binary component on its orbit; that path has no
         # certified interval enclosure here.
@@ -54,10 +58,18 @@ def _propagate(record, tt):
     if not all(isfinite(v) for v in values):
         raise GocharaResourceError("live anchor has nonfinite propagation inputs")
     dt = (tt-record.ref_epoch_jd)/JULIAN_YEAR_DAYS
-    p, vector, _ = space_motion(
+    p, vector, has_distance = space_motion(
         record.ra_deg, record.dec_deg, record.pmra_mas_yr, record.pmdec_mas_yr,
         record.parallax_mas, record.radial_velocity_km_s, dt, _INTERVAL_ARITHMETIC,
     )
+    if with_distance:
+        # Mirrors moira.stars._earth_based_effects: the stage-1 distance, or a
+        # star without parallax placed at _UNRESOLVED_DISTANCE_PC.
+        pc_km = D.point(stars._PARSEC_KM)
+        if has_distance:
+            return tuple(c * pc_km for c in vector)
+        direction = unit(vector)
+        return tuple(c * D.point(stars._UNRESOLVED_DISTANCE_PC) * pc_km for c in direction)
     normalized = unit(vector)
     if tt.value.lo <= record.ref_epoch_jd <= tt.value.hi:
         # The point owner returns p directly at the reference epoch, without
@@ -112,6 +124,9 @@ class SiderealFrames(FrameEnclosures):
     def __init__(self, meter, system):
         self.system = system
         self.anchor = _STAR_ANCHORED.get(system)
+        self.anchor_product = _anchor_product(system) if self.anchor else None
+        # Set by GocharaWindowAstronomy: the request's apparent-place enclosures.
+        self.astronomy = None
         self.record = None
         if self.anchor:
             self.record = stars._resolve_star_record(self.anchor[0], stars.DEFAULT_FIXED_STAR_POLICY.lookup)[0]
@@ -122,7 +137,16 @@ class SiderealFrames(FrameEnclosures):
     def offset(self, tt, coarse=False):
         angles = super().angles(tt, coarse=coarse)
         if self.anchor:
-            xyz = _propagate(self.record, tt)
+            if self.anchor_product == "apparent":
+                # The apparent anchor: stage 1, then the same Earth stage as the
+                # apparent planets (parallax, deflection, aberration).
+                earth, velocity = self.astronomy.barycentric('Earth', tt)
+                geocentric = tuple(
+                    s - e for s, e in zip(_propagate(self.record, tt, with_distance=True), earth)
+                )
+                xyz = unit(self.astronomy._earth_stage(geocentric, tt, earth, velocity))
+            else:
+                xyz = _propagate(self.record, tt)
             eq = true_equator(xyz, angles, sincos=self.sincos)
             tropical = rotate_x(eq, angles[3], sincos=self.sincos)
             reference = degrees(atan2(tropical[1].center.lo+tropical[1].center.hi,
@@ -199,6 +223,7 @@ class GocharaWindowAstronomy:
         self.frame_factory = lambda m: SiderealFrames(m, policy.ayanamsa_system)
         self.astro = AstronomyEnclosures(self)
         self.astro.clock = MarriageClockEnclosures(reader, identity)
+        self.astro.frames.astronomy = self.astro
         self.clock_signature = self._clock_signature()
         self.anchor_signature = repr(self.astro.frames.record)
         self.start, self.end = start, end
