@@ -1024,6 +1024,75 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             policy=facade.LillyPerfectionSearchPolicy() if policy is None else policy,
         )
 
+    def lilly_reception_at(
+        self,
+        jd_ut: float,
+        *,
+        is_day_chart: bool | None,
+        epoch: str | None = None,
+    ):
+        """Return Lilly P2 condition snapshots and the reception network of the seven planets.
+
+        Positions are the engine's apparent geocentric true-ecliptic longitudes
+        at ``jd_ut`` (UT1). Unknown sect leaves triplicity evidence unresolved.
+        """
+
+        from .horary_reception import LillySnapshotContext
+        from .planets import planet_at
+
+        facade = _facade_module()
+        reader = self._reader
+        context = LillySnapshotContext(
+            epoch if epoch is not None else f"moira-facade:{jd_ut!r}", is_day_chart, jd_ut,
+        )
+        snapshots = tuple(
+            facade.lilly_condition_snapshot(
+                facade.lilly_position_from_longitude(body, planet_at(body, jd_ut, reader=reader).longitude),
+                context=context,
+            )
+            for body in ("Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon")
+        )
+        return facade.lilly_reception_evidence(snapshots)
+
+    def lilly_moon_trace_at(
+        self,
+        jd_ut: float,
+        *,
+        is_day_chart: bool | None,
+        policy=None,
+        epoch: str | None = None,
+    ):
+        """Return the Lilly P3 lunar trace (contacts, applications, ingresses, coverage)."""
+
+        from .horary_reception import LillySnapshotContext
+
+        facade = _facade_module()
+        context = LillySnapshotContext(
+            epoch if epoch is not None else f"moira-facade:{jd_ut!r}", is_day_chart, jd_ut,
+        )
+        return facade.lilly_moon_at(
+            context, reader=self._reader,
+            policy=facade.LillyMoonSearchPolicy() if policy is None else policy,
+        )
+
+    def lilly_void_of_course_at(
+        self,
+        jd_ut: float,
+        *,
+        definition,
+        is_day_chart: bool | None,
+        policy=None,
+        epoch: str | None = None,
+    ):
+        """Return the Lilly P3 void-of-course result under an explicitly chosen definition.
+
+        ``definition`` is required (a ``LillyVOCDefinition``); there is no default.
+        """
+
+        facade = _facade_module()
+        trace = self.lilly_moon_trace_at(jd_ut, is_day_chart=is_day_chart, policy=policy, epoch=epoch)
+        return facade.lilly_void_of_course(trace, definition=definition)
+
     def western_electional_judgement_at(
         self,
         jd_ut: float,

@@ -11,13 +11,21 @@ from ..models.horary import (
     HoraryEvidenceProfileRequest,
     HoraryEvidenceProfileResponse,
 )
+from ..models.horary_lilly import (
+    LillyMoonRequest,
+    LillyMoonResponse,
+    LillyReceptionRequest,
+    LillyReceptionResponse,
+)
 from ..models.horary_perfection import (
     LillyPerfectionRoutesRequest,
     LillyPerfectionRoutesResponse,
 )
 from ..serializers.horary import serialize_horary_evidence_profile
+from ..serializers.horary_lilly import serialize_lilly_moon, serialize_lilly_reception
 from ..serializers.horary_perfection import serialize_lilly_perfection_routes
 from ..services.horary import compute_horary_evidence_profile
+from ..services.horary_lilly import compute_lilly_moon, compute_lilly_reception
 from ..services.horary_perfection import compute_lilly_perfection_routes
 
 
@@ -54,6 +62,34 @@ def horary_perfection_routes_route(
     return serialize_lilly_perfection_routes(
         compute_lilly_perfection_routes(engine, request)
     )
+
+
+@router.post(
+    "/lilly-reception",
+    response_model=LillyReceptionResponse,
+    operation_id="horary_lilly_reception",
+)
+def horary_lilly_reception_route(
+    request: LillyReceptionRequest,
+    engine: Moira = Depends(get_engine),
+) -> LillyReceptionResponse:
+    """Return Lilly P2 condition snapshots and the reception network, without score or verdict."""
+
+    return serialize_lilly_reception(compute_lilly_reception(engine, request))
+
+
+@router.post(
+    "/lilly-moon",
+    response_model=LillyMoonResponse,
+    operation_id="horary_lilly_moon",
+)
+def horary_lilly_moon_route(
+    request: LillyMoonRequest,
+    engine: Moira = Depends(get_engine),
+) -> LillyMoonResponse:
+    """Return the Lilly P3 lunar trace, sequence and the selected void-of-course result."""
+
+    return serialize_lilly_moon(*compute_lilly_moon(engine, request))
 
 
 __all__ = ["router"]

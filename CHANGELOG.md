@@ -29,6 +29,12 @@ publication, or production pin is implied by these entries.
     then one shared Earth stage, then the frame of date.
   - REST star provenance carries `position_product` and `motion_model`.
   - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
+- **Lilly Reception And Moon Exposure (P2, P3)**: `Moira.lilly_reception_at`,
+  `Moira.lilly_moon_trace_at` and `Moira.lilly_void_of_course_at` (definition
+  required), every P2/P3 name exported from `moira` and `moira.facade`, and
+  `POST /v1/horary/lilly-reception` and `POST /v1/horary/lilly-moon`. The P3
+  lunar trace now reads longitudes through the speed-free `planet_at` route
+  (about five times faster, identical results) and accepts a `KernelPool`.
 - **Lilly Perfection Routes (P4)**: `moira.horary_perfection_routes` computes
   Lilly's 1647 perfection routes and blocking events for one principal pair:
   aspect-specific direct perfection, translation (p.111 and p.126 readings),

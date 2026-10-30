@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 559
-- Registered OpenAPI operations: 559 (GET 51, POST 508)
+- Registered OpenAPI paths: 561
+- Registered OpenAPI operations: 561 (GET 51, POST 510)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 555
+- Versioned `/v1` paths: 557
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -256,6 +256,8 @@ Not yet broadly exposed as REST families:
 |---|---|---|---|---|
 | `POST /v1/horary/evidence-profile` | `HoraryEvidenceProfileRequest` | `HoraryEvidenceProfileResponse` | `horary` | `classical-vedic` |
 | `POST /v1/horary/perfection-routes` | `LillyPerfectionRoutesRequest` | `LillyPerfectionRoutesResponse` | `horary` | `classical-vedic` |
+| `POST /v1/horary/lilly-reception` | `LillyReceptionRequest` | `LillyReceptionResponse` | `horary` | `classical-vedic` |
+| `POST /v1/horary/lilly-moon` | `LillyMoonRequest` | `LillyMoonResponse` | `horary` | `classical-vedic` |
 | `POST /v1/mundane/event-chart-profile` | `MundaneEventChartProfileRequest` | `MundaneEventChartProfileResponse` | `mundane` | `predictive` |
 
 ## Route Families
@@ -1768,6 +1770,34 @@ paths, finite considerations, optional perfection, provenance, and explicit
 exclusions. The request cannot supply internal evidence receipts or an
 arbitrary doctrine bag. The route does not infer a topic and returns no yes/no
 answer, outcome, timing prose, score, confidence, advice, or recommendation.
+
+## Lilly Reception And Moon Routes
+
+| Method | Path | Handler | Discovery family |
+|---|---|---|---|
+| POST | `/v1/horary/lilly-reception` | `horary_lilly_reception_route` | `classical-vedic` |
+| POST | `/v1/horary/lilly-moon` | `horary_lilly_moon_route` | `classical-vedic` |
+
+`/v1/horary/lilly-reception` takes a question epoch (`jd_ut`, UT1), the chart
+sect (`true`, `false` or `null`) and an optional `epoch_label`. It returns the
+Lilly P2 condition snapshot of each of the seven planets (every positive
+dignity with its state, possible rulers, missing inputs and Lilly's printed
+points; detriment, fall, peregrine) and every directed and mutual reception
+(same and mixed bases). An unknown sect leaves triplicity unresolved. The
+response has `score: null` and `verdict: null`.
+
+`/v1/horary/lilly-moon` additionally requires `voc_definition`
+(`exact_before_ingress_candidate` or `application_in_remaining_sign_candidate`;
+there is no default) and an optional `search` window of at most 8 days each
+side (default 4). It returns the full P3 lunar trace (contacts, application
+episodes with their verification, ingresses, the three coverage receipts,
+prior-separation evidence and kernel provenance), the lunar sequence with no
+automatic role assignment, and the void-of-course result under the chosen
+definition with its connection, boundary and excluded evidence.
+
+Both delegate once to the facade (`Moira.lilly_reception_at`,
+`Moira.lilly_moon_trace_at`). Invalid input is `422`; a missing kernel is
+`503 kernel_not_ready`.
 
 ## Lilly Perfection Routes Route
 
@@ -3810,6 +3840,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/hellenistic/transmissions` | hellenistic-systems | `transmissions_route_v1_hellenistic_transmissions_post` |
 | `POST` | `/v1/hellenistic/twelfth-parts` | hellenistic-atoms | `twelfth_parts_route_v1_hellenistic_twelfth_parts_post` |
 | `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
+| `POST` | `/v1/horary/lilly-moon` | horary | `horary_lilly_moon` |
+| `POST` | `/v1/horary/lilly-reception` | horary | `horary_lilly_reception` |
 | `POST` | `/v1/horary/perfection-routes` | horary | `horary_perfection_routes` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/dynamics` | chart | `house_dynamics_route_v1_houses_dynamics_post` |

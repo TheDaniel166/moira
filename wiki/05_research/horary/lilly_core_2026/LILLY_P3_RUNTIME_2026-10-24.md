@@ -181,6 +181,20 @@ project the canonical equatorial Cartesian product and perform a separate
 uniform-bracket/bisection contact search. These are geometric/search invariants,
 not a claim of independent ephemeris accuracy or predictive validation.
 
+## Public surfaces (2026-10-30)
+
+Every P3 name (and every P2 name) is exported from `moira` and `moira.facade`
+with module identity. `Moira.lilly_moon_trace_at` and
+`Moira.lilly_void_of_course_at` (definition required) bind the engine's reader;
+`lilly_moon_at` accepts an `SpkReader` or a `KernelPool` and now reads
+longitudes through `moira.planets._default_apparent_longitude`, the speed-free
+form of `planet_at`'s default route, bit-identical in value; traces at J2000,
+2024 and 2026-10-30 are identical to the `planet_at` path and about five times
+faster. REST: `POST /v1/horary/lilly-moon` (trace, sequence and the selected
+void-of-course result) and `POST /v1/horary/lilly-reception` (P2 snapshots and
+reception network). The considerations remain Python functions; their
+qualitative inputs have no REST contract yet.
+
 P4 still owns complete perfection-route chronology, mechanism precedence,
 continuation and multi-window dependencies. Historical chart reconstruction,
 symbolic timing, a complete testimony ontology, and latitude/speed/visibility
