@@ -60,7 +60,7 @@ def horary_perfection_routes_route(
     """Return every Lilly P4 route and blocker for one principal pair, without a verdict."""
 
     return serialize_lilly_perfection_routes(
-        compute_lilly_perfection_routes(engine, request)
+        compute_lilly_perfection_routes(engine, request), readings_preset=request.readings_preset
     )
 
 

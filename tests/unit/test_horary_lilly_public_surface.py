@@ -12,7 +12,9 @@ def test_lilly_layers_share_object_identity_through_root_and_facade():
         for name in module.__all__:
             assert name in moira.__all__ and name in facade.__all__, name
             assert getattr(moira, name) is getattr(module, name) is getattr(facade, name), name
-    for name in ("lilly_perfection_routes_at", "LillyPerfectionReadings", "LillyRouteConditions"):
+    for name in ("lilly_perfection_routes_at", "LillyPerfectionReadings", "LillyRouteConditions",
+                 "LILLY_BOOK_II_PRACTICE", "LillyRefranationReading", "LillyFrustrationReading",
+                 "LillyCollectionReading", "LillyDwellingReading"):
         assert getattr(moira, name) is getattr(routes, name) is getattr(facade, name)
 
 

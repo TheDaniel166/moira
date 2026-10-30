@@ -139,8 +139,8 @@ unknown otherwise. Absence means absence within the declared study.
   planetary kernel is named in the provenance) and a dated snapshot context.
   A missing kernel raises `MissingEphemerisKernelError`.
 - **REST:** `POST /v1/horary/perfection-routes` (strict request and response
-  models in `moira_server/models/horary_perfection.py`). All five readings are
-  required with no default; conditions are typed and must cite evidence when
+  models in `moira_server/models/horary_perfection.py`). All nine readings
+  are required with no default, or the named `readings_preset`; conditions are typed and must cite evidence when
   known; the search window is at most 90 days each side; the response carries
   every route, blocker and trace event and `verdict: null`. Errors: `422` for
   invalid input, `503 kernel_not_ready` without a kernel.
@@ -149,7 +149,47 @@ unknown otherwise. Absence means absence within the declared study.
   mapping, thirteen rejected requests, the `503` mapping, the OpenAPI contract
   (required readings without defaults), and one DE441 end-to-end request.
 
-Still separate admissions: which reading Lilly applies in Book II, whether
-reception overcomes refranation, house class of a split conjunction, the
-meanings of good houses and malevolent aspect, symbolic timing, historical
-chart reconstruction, and any root/facade/REST exposure.
+## Book II readings (2026-10-30)
+
+Applied from `LILLY_P4_BOOK_II_COLLATION_2026-10-30.md`. Each is a further
+value of an explicit reading; the p.110-127 readings are unchanged, and
+`LILLY_BOOK_II_PRACTICE` names the Book II selection without becoming a
+default. `LillyPerfectionReadings` gains four required fields
+(`refranation`, `frustration`, `collection`, `dwelling`).
+
+| Reading | Value | Runtime behaviour | Pages |
+|---|---|---|---|
+| translation | `book_ii_practice` | first leg is a past separation **or** the translator's next contact with the first principal (C13); no heaviness, principal-history or intervening-contact test; conditions `translator_not_retrograde` (trace rate), `translator_not_combust` (P3 C06 solar proximity), `translator_not_cadent` (caller house class), `receiving_infortune_received` | 186, 317-318, 388, 433-434 |
+| refranation | `either_principal` | a retrograde station of either principal before the exact contact refrains; `applying_principal` keeps p.111 and its `station_of_heavier_not_refranation` note | 111, 317 |
+| frustration | `conjunction_or_aspect` | the intended contact and the heavier principal's contact with a planet heavier still may be aspects | 112-113, 220, 305, 373 |
+| collection | `book_ii_practice` | an infortune collector (a malefic, or listed in `impedited_planets`) must itself receive both principals; conditions `collector_not_retrograde`, `_not_combust`, `_not_cadent`, `collector_stays_in_sign` (no collector ingress before the later leg); collector heavier kept | 186, 225, 239, 433-434, 446 |
+| beholding | `not_required` | no "do not behold" condition | 239 (C09) |
+| malevolent | `malefic_or_evil_lord_hard_aspect` | a square or opposition from a malefic or a listed lord of the sixth, eighth or twelfth, without reception either way (P2) at the query; unknown lords or reception leave an earlier intervention unresolved | 227, 409, 433, 446 |
+| dwelling | `book_ii_route` | a present placement is a complete route (`attribution: book_ii_testimony`, no completion envelope) | 186, 205, 444 |
+
+Under every reading a direct square or opposition now carries
+`reception_qualifier:with_reception|without_reception|reception_not_evaluable`
+in `reasons` (reception either way between the principals, p.317, p.372); it
+never changes the route state, so reception still overrides no blocker.
+`LillyRouteConditions` gains `planet_house_classes`, `evil_house_lords` and
+`impedited_planets` (unknown when omitted).
+
+Interpretations that are Moira's and recorded as such: "againe received"
+(p.186) is read as the translator receiving the infortune; "without
+reception" counts reception in either direction; an "afflicted" translator
+and the p.433 hand-on of the light are not evaluated; Book II translation
+blockers are the translator's own stations only (prohibition of the second
+leg is not derived). Heaviness still assigns the applying and heavier roles;
+under the Book II selection (`either_principal`, `interposition_to_either`)
+those roles matter only for frustration.
+
+Tests: 18 Book II unit tests on synthetic trajectories (C13-shaped
+translation, heavier-principal station, frustration of a sextile, infortune
+collector inside and outside its domicile, collector leaving its sign,
+dwelling route, the malevolent truth table, the square's reception
+qualifier), the DE441 trace re-derived under the preset, and the REST preset
+and condition mapping.
+
+Still separate admissions: whether reception overcomes refranation (no
+passage found), house class of a split conjunction, attributed topic lists of
+good houses, symbolic timing and historical chart reconstruction.

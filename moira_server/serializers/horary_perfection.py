@@ -72,16 +72,17 @@ def _trace(t):
     }
 
 
-def serialize_lilly_perfection_routes(result: LillyPerfectionRoutes) -> LillyPerfectionRoutesResponse:
+def serialize_lilly_perfection_routes(result: LillyPerfectionRoutes, *,
+                                      readings_preset: str | None = None) -> LillyPerfectionRoutesResponse:
     """Serialize every route, blocker and trace event; no verdict is added."""
 
     readings = result.readings
     relation = result.relation
     evaluation = {
         "profile_id": result.profile_id, "querent": result.querent, "quesited": result.quesited,
-        "readings": {"translation": readings.translation.value, "prohibition": readings.prohibition.value,
-                     "malevolent": readings.malevolent.value, "beholding": readings.beholding.value,
-                     "heaviness": readings.heaviness.value},
+        "readings": {name: getattr(readings, name).value for name in (
+            "translation", "prohibition", "malevolent", "beholding", "heaviness", "refranation", "frustration",
+            "collection", "dwelling")},
         "relation": {"aspect": relation.aspect, "directed_angle_deg": relation.directed_angle_deg,
                      "residual_deg": relation.residual_deg, "within_moiety": relation.within_moiety,
                      "motion": relation.motion},
@@ -93,7 +94,8 @@ def serialize_lilly_perfection_routes(result: LillyPerfectionRoutes) -> LillyPer
         "verdict": None,
     }
     return LillyPerfectionRoutesResponse.model_validate(
-        {"evaluation": evaluation, "transport_provenance": {"stage_sequence": list(_STAGES)}})
+        {"evaluation": evaluation,
+         "transport_provenance": {"stage_sequence": list(_STAGES), "readings_preset": readings_preset}})
 
 
 __all__ = ["serialize_lilly_perfection_routes"]

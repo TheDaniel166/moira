@@ -5,8 +5,12 @@ from __future__ import annotations
 from moira import Moira
 from moira.horary_moon import LillyP3State
 from moira.horary_perfection_routes import (
+    LILLY_BOOK_II_PRACTICE,
     LillyBeholdingReading,
+    LillyCollectionReading,
     LillyConditionEpoch,
+    LillyDwellingReading,
+    LillyFrustrationReading,
     LillyHeavinessReading,
     LillyHouseClass,
     LillyMalevolentReading,
@@ -14,6 +18,7 @@ from moira.horary_perfection_routes import (
     LillyPerfectionRoutes,
     LillyPerfectionSearchPolicy,
     LillyProhibitionReading,
+    LillyRefranationReading,
     LillyRouteCondition,
     LillyRouteConditions,
     LillyTranslationReading,
@@ -43,11 +48,16 @@ def build_perfection_inputs(request: LillyPerfectionRoutesRequest):
     """Translate the strict request into engine readings, conditions and policy."""
 
     r = request.readings
-    readings = LillyPerfectionReadings(
-        LillyTranslationReading(r.translation), LillyProhibitionReading(r.prohibition),
-        LillyMalevolentReading(r.malevolent), LillyBeholdingReading(r.beholding),
-        LillyHeavinessReading(r.heaviness),
-    )
+    if request.readings_preset == "lilly_book_ii_practice":
+        readings = LILLY_BOOK_II_PRACTICE
+    else:
+        readings = LillyPerfectionReadings(
+            LillyTranslationReading(r.translation), LillyProhibitionReading(r.prohibition),
+            LillyMalevolentReading(r.malevolent), LillyBeholdingReading(r.beholding),
+            LillyHeavinessReading(r.heaviness), LillyRefranationReading(r.refranation),
+            LillyFrustrationReading(r.frustration), LillyCollectionReading(r.collection),
+            LillyDwellingReading(r.dwelling),
+        )
     supplied = request.conditions
     if supplied is None:
         conditions = LillyRouteConditions()
@@ -55,6 +65,10 @@ def build_perfection_inputs(request: LillyPerfectionRoutesRequest):
         conditions = LillyRouteConditions(
             house_class=None if supplied.house_class is None else LillyHouseClass(supplied.house_class),
             **{name: _condition(name, getattr(supplied, name)) for name in _CONDITION_FIELDS},
+            planet_house_classes=tuple((body, LillyHouseClass(value))
+                                       for body, value in sorted(supplied.planet_house_classes.items())),
+            evil_house_lords=None if supplied.evil_house_lords is None else tuple(supplied.evil_house_lords),
+            impedited_planets=None if supplied.impedited_planets is None else tuple(supplied.impedited_planets),
         )
     search = request.search
     policy = (LillyPerfectionSearchPolicy() if search is None

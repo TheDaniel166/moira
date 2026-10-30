@@ -217,8 +217,9 @@ these source lists by topic, attributed.
 
 ## What this means for the runtime
 
-These are proposed changes for a later, separately approved tranche; nothing
-changes here.
+Applied 2026-10-30 (see the Book II section of LILLY_P4_RUNTIME_2026-10-30.md).
+The table keeps the proposal as written before that tranche; "Current
+runtime" describes the runtime at the time of the collation.
 
 | Decision | Current runtime | Book II evidence | Proposal |
 |---|---|---|---|

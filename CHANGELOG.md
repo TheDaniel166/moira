@@ -47,6 +47,18 @@ publication, or production pin is implied by these entries.
   A call takes about 5 s (was about 50 s): the trace reads longitudes through
   a speed-free form of `planet_at`'s default route with shared per-epoch
   contexts, bit-identical to `planet_at(...).longitude`.
+  Book II readings (from the Book II collation): `book_ii_practice`
+  translation (a translator still applying to the first principal, C13;
+  translator not retrograde, combust or cadent; an impeded infortune receiving
+  the light must be received), refranation by either principal's station,
+  frustration of aspects, a Book II collection (an infortune collector must
+  receive both principals; collector unimpeded and staying in its sign), the
+  dwelling placement as a route of its own, malevolent aspect as a square or
+  opposition from a malefic or evil-house lord without reception, and
+  beholding not required. Reception now qualifies a direct square or
+  opposition without removing blockers. The four new reading fields are
+  required; `LILLY_BOOK_II_PRACTICE` names the attested selection, and REST
+  accepts `readings_preset: "lilly_book_ii_practice"` in place of `readings`.
 - **Ayanamsa Doctrine**: every ayanamsa now says what kind of claim it makes,
   and the textual families the sources support are computable
   (`moira/ayanamsa_doctrine.py`; wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).

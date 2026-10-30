@@ -12,9 +12,10 @@ import pytest
 from moira._kernel_paths import find_planetary_kernel
 from moira.horary_moon import LillyCoverageState
 from moira.horary_perfection_routes import (
-    LillyBeholdingReading, LillyHeavinessReading, LillyMalevolentReading, LillyPerfectionReadings,
+    LillyBeholdingReading, LillyCollectionReading, LillyDwellingReading, LillyFrustrationReading,
+    LillyHeavinessReading, LillyRefranationReading, LillyMalevolentReading, LillyPerfectionReadings,
     LillyPerfectionSearchPolicy, LillyProhibitionReading, LillyRouteState, LillyTranslationReading,
-    lilly_perfection_routes_at,
+    LILLY_BOOK_II_PRACTICE, lilly_perfection_routes, lilly_perfection_routes_at,
 )
 from moira.horary_reception import LillySnapshotContext
 from moira.julian import ut_to_tt
@@ -25,7 +26,10 @@ from moira.spk_reader import SpkReader
 pytestmark = pytest.mark.requires_ephemeris
 READINGS = LillyPerfectionReadings(LillyTranslationReading.P126_FULL, LillyProhibitionReading.INTERPOSITION_TO_EITHER,
                                    LillyMalevolentReading.HARD_ASPECT, LillyBeholdingReading.NO_CURRENT_ASPECT,
-                                   LillyHeavinessReading.TRADITIONAL_ORDER)
+                                   LillyHeavinessReading.TRADITIONAL_ORDER, LillyRefranationReading.APPLYING_PRINCIPAL,
+                                   LillyFrustrationReading.CONJUNCTION_ONLY,
+                                   LillyCollectionReading.P126_PRINCIPALS_RECEIVE,
+                                   LillyDwellingReading.P126_REJECTED_EXCEPT_LUNAR)
 POLICY = LillyPerfectionSearchPolicy(past_days=10., future_days=20.)
 
 
@@ -87,3 +91,20 @@ def test_route_records_are_consistent(routes):
         for leg in record.leg_ids:
             assert leg in ids, (key, leg)
     assert any(key == "mutual_reception" for key, _ in result.routes)
+
+
+def test_book_ii_readings_on_the_same_trace(routes):
+    # The Book II selection re-derives routes from the identical trace; its
+    # legs are trace events and nothing completes in the past.
+    result, _ = routes
+    book = lilly_perfection_routes(result.trace, "Mars", "Venus", readings=LILLY_BOOK_II_PRACTICE)
+    assert book.trace is result.trace and book.verdict is None and book.summary.verdict is None
+    ids = {c.event_id for c in result.trace.contacts}
+    q = result.trace.context.jd_ut
+    for key, record in book.routes:
+        assert all(leg in ids for leg in record.leg_ids), key
+        if record.completion is not None:
+            assert record.completion.low > q, key
+        if key.startswith("translation:"):
+            assert record.reading == "book_ii_practice" and "Book II" in record.source_reference
+    assert {k for k, _ in result.routes if not k.startswith(("translation:", "collection:"))} <= dict(book.routes).keys()

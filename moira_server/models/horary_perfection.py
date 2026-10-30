@@ -33,13 +33,27 @@ def _finite(value: float, name: str) -> float:
 
 
 class PerfectionReadingsRequest(_StrictModel):
-    """All five textual readings (P05/P06, B01/B02, B05, P07, H01); none has a default."""
+    """All nine textual readings (P05/P06, B01/B02, B05, P07, H01, B03, B04, P09); none has a default."""
 
-    translation: Literal["p111_structural", "p126_full"]
+    translation: Literal["p111_structural", "p126_full", "book_ii_practice"]
     prohibition: Literal["interposition_to_either", "successive_to_both"]
-    malevolent: Literal["malefic_planet", "hard_aspect"]
-    beholding: Literal["sign_aversion", "no_current_aspect"]
+    malevolent: Literal["malefic_planet", "hard_aspect", "malefic_or_evil_lord_hard_aspect"]
+    beholding: Literal["sign_aversion", "no_current_aspect", "not_required"]
     heaviness: Literal["traditional_order", "instantaneous_speed", "superior_inferior"]
+    refranation: Literal["applying_principal", "either_principal"]
+    frustration: Literal["conjunction_only", "conjunction_or_aspect"]
+    collection: Literal["p126_principals_receive_collector", "book_ii_practice"]
+    dwelling: Literal["p126_rejected_except_lunar", "book_ii_route"]
+
+
+ReadingsPresetValue = Literal["lilly_book_ii_practice"]
+HouseClassValue = Literal["angular", "succedent", "cadent"]
+
+
+def _distinct_planets(value, name):
+    if value is not None and len(set(value)) != len(value):
+        raise ValueError(f"{name} must name distinct planets")
+    return value
 
 
 class RouteConditionRequest(_StrictModel):
@@ -67,9 +81,14 @@ class RouteConditionRequest(_StrictModel):
 
 
 class RouteConditionsRequest(_StrictModel):
-    """Conditions the trace cannot decide; omitted ones stay unknown."""
+    """Conditions the trace cannot decide; omitted ones stay unknown.
 
-    house_class: Literal["angular", "succedent", "cadent"] | None = None
+    ``planet_house_classes`` (a translator's or collector's cadency),
+    ``evil_house_lords`` (lords of the sixth, eighth and twelfth) and
+    ``impedited_planets`` feed the Book II readings; ``null`` lists are unknown.
+    """
+
+    house_class: HouseClassValue | None = None
     good_houses: RouteConditionRequest | None = None
     well_dignified: RouteConditionRequest | None = None
     querent_degree_dignity: RouteConditionRequest | None = None
@@ -78,6 +97,14 @@ class RouteConditionsRequest(_StrictModel):
     friendly_houses: RouteConditionRequest | None = None
     moon_condition: RouteConditionRequest | None = None
     dwelling_placement: RouteConditionRequest | None = None
+    planet_house_classes: dict[TraditionalPlanetValue, HouseClassValue] = Field(default_factory=dict)
+    evil_house_lords: list[TraditionalPlanetValue] | None = Field(default=None, max_length=7)
+    impedited_planets: list[TraditionalPlanetValue] | None = Field(default=None, max_length=7)
+
+    @field_validator("evil_house_lords", "impedited_planets")
+    @classmethod
+    def _distinct(cls, value, info):
+        return _distinct_planets(value, info.field_name)
 
 
 class PerfectionSearchRequest(_StrictModel):
@@ -98,7 +125,8 @@ class LillyPerfectionRoutesRequest(_StrictModel):
     querent: TraditionalPlanetValue
     quesited: TraditionalPlanetValue
     is_day_chart: bool | None
-    readings: PerfectionReadingsRequest
+    readings: PerfectionReadingsRequest | None = None
+    readings_preset: ReadingsPresetValue | None = None
     conditions: RouteConditionsRequest | None = None
     search: PerfectionSearchRequest | None = None
     epoch_label: str | None = Field(default=None, min_length=1, max_length=120)
@@ -112,6 +140,8 @@ class LillyPerfectionRoutesRequest(_StrictModel):
     def _distinct_principals(self):
         if self.querent == self.quesited:
             raise ValueError("querent and quesited significators must differ")
+        if (self.readings is None) == (self.readings_preset is None):
+            raise ValueError("supply exactly one of readings or readings_preset")
         return self
 
 
@@ -250,6 +280,10 @@ class PerfectionReadingsResponse(_StrictModel):
     malevolent: str
     beholding: str
     heaviness: str
+    refranation: str
+    frustration: str
+    collection: str
+    dwelling: str
 
 
 class RouteSummaryResponse(_StrictModel):
@@ -278,6 +312,7 @@ class PerfectionRoutesTransportProvenanceResponse(_StrictModel):
     route_semantics: Literal["lilly_p4_route_records_without_verdict"] = "lilly_p4_route_records_without_verdict"
     doctrine: Literal["lilly_1647_only"] = "lilly_1647_only"
     reading_defaults: Literal["none"] = "none"
+    readings_preset: ReadingsPresetValue | None = None
     stage_sequence: list[str]
 
 

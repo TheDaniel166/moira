@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from moira import MissingEphemerisKernelError
 from moira.horary_moon import LillyMoonProvenance, LillyP3State
 from moira.horary_perfection_routes import (
-    LillyHouseClass, LillyPerfectionSearchPolicy, LillyRouteConditions, lilly_perfection_routes,
+    LILLY_BOOK_II_PRACTICE, LillyHouseClass, LillyPerfectionSearchPolicy, LillyRouteConditions, lilly_perfection_routes,
     trace_lilly_perfection,
 )
 from moira.horary_reception import LillySnapshotContext
@@ -24,7 +24,9 @@ pytestmark = pytest.mark.loopback
 Q0 = 2460000.5
 PATH = "/v1/horary/perfection-routes"
 READINGS = {"translation": "p111_structural", "prohibition": "successive_to_both", "malevolent": "malefic_planet",
-            "beholding": "sign_aversion", "heaviness": "traditional_order"}
+            "beholding": "sign_aversion", "heaviness": "traditional_order", "refranation": "applying_principal",
+            "frustration": "conjunction_only", "collection": "p126_principals_receive_collector",
+            "dwelling": "p126_rejected_except_lunar"}
 
 
 def _longitude(body, jd):
@@ -119,6 +121,12 @@ def test_conditions_are_mapped_and_reach_the_route(engine_client):
     {"readings": {k: v for k, v in READINGS.items() if k != "heaviness"}},
     {"readings": {**READINGS, "heaviness": "default"}},
     {"readings": None},
+    {"readings_preset": "lilly_book_ii_practice"},
+    {"readings": None, "readings_preset": "book_ii"},
+    {"readings": {**READINGS, "refranation": "heavier_principal"}},
+    {"conditions": {"planet_house_classes": {"Mercury": "fallen"}}},
+    {"conditions": {"evil_house_lords": ["Mars", "Mars"]}},
+    {"conditions": {"impedited_planets": ["Pluto"]}},
     {"quesited": "Mars"},
     {"querent": "Uranus"},
     {"jd_ut": float("inf")},
@@ -138,6 +146,27 @@ def test_invalid_requests_are_rejected_before_the_engine(engine_client, change):
     response = client.post(PATH, content=_dumps(payload), headers={"content-type": "application/json"})
     assert response.status_code == 422, response.text
     assert engine.calls == []
+
+
+def test_book_ii_preset_and_conditions_reach_the_engine(engine_client):
+    engine, client = engine_client
+    payload = _payload(conditions={"planet_house_classes": {"Mercury": "angular"}, "impedited_planets": [],
+                                   "evil_house_lords": ["Jupiter"]},
+                       readings_preset="lilly_book_ii_practice")
+    payload.pop("readings")
+    response = client.post(PATH, json=payload)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["transport_provenance"]["readings_preset"] == "lilly_book_ii_practice"
+    assert body["evaluation"]["readings"]["translation"] == "book_ii_practice"
+    assert body["evaluation"]["readings"]["dwelling"] == "book_ii_route"
+    supplied = engine.calls[0]["conditions"]
+    assert supplied.planet_house_classes == (("Mercury", LillyHouseClass.ANGULAR),)
+    assert supplied.impedited_planets == () and supplied.evil_house_lords == ("Jupiter",)
+    assert engine.calls[0]["readings"] is LILLY_BOOK_II_PRACTICE
+    routes = {r["route_id"]: r for r in body["evaluation"]["routes"]}
+    translation = routes["translation:Mercury:Mars->Saturn"]
+    assert translation["reading"] == "book_ii_practice" and translation["state"] == "complete"
 
 
 def _dumps(payload):
@@ -160,9 +189,10 @@ def test_openapi_is_exact_and_typed():
     assert operation["operationId"] == "horary_perfection_routes"
     components = schema["components"]["schemas"]
     request = components["LillyPerfectionRoutesRequest"]
-    assert set(request["required"]) >= {"jd_ut", "querent", "quesited", "is_day_chart", "readings"}
+    assert set(request["required"]) >= {"jd_ut", "querent", "quesited", "is_day_chart"}
     readings = components["PerfectionReadingsRequest"]
-    assert set(readings["required"]) == {"translation", "prohibition", "malevolent", "beholding", "heaviness"}
+    assert set(readings["required"]) == {"translation", "prohibition", "malevolent", "beholding", "heaviness",
+                                         "refranation", "frustration", "collection", "dwelling"}
     assert readings["properties"]["heaviness"]["enum"] == ["traditional_order", "instantaneous_speed",
                                                            "superior_inferior"]
     assert all("default" not in prop for prop in readings["properties"].values())

@@ -3,6 +3,10 @@
 Authority: Christian Astrology (1647), pp.110-113 and 124-127, and the P4
 decisions P01-P09, B01-B05, K01-K07, H01, E01, Q01, Q02 and T01
 (wiki/05_research/horary/lilly_core_2026/LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md).
+Book II readings (translation, refranation, frustration, collection,
+dwelling, malevolent aspect, beholding) follow the Book II collation
+(LILLY_P4_BOOK_II_COLLATION_2026-10-30.md); ``LILLY_BOOK_II_PRACTICE`` names
+the attested selection, which the caller must still pass explicitly.
 
 Two layers. The evaluators take typed evidence (legs, blocking events,
 conditions, coverage) and return route or blocker records; every textual
@@ -31,12 +35,14 @@ from .horary_reception import (
     LillyDignityBasis, LillyDirectedReception, LillyEvidenceState, LillySnapshotContext,
     lilly_condition_snapshot, lilly_orb_evidence, lilly_position_from_longitude,
 )
+from .horary_considerations import lilly_solar_proximity
 
 
 __all__ = [
     "LillyRouteState", "LillyRouteKind", "LillyBlockerKind", "LillyTranslationReading",
     "LillyProhibitionReading", "LillyMalevolentReading", "LillyBeholdingReading",
-    "LillyHeavinessReading", "LillyConditionEpoch", "LillyHouseClass", "LillyThirdRelation",
+    "LillyHeavinessReading", "LillyRefranationReading", "LillyFrustrationReading", "LillyCollectionReading",
+    "LillyDwellingReading", "LILLY_BOOK_II_PRACTICE", "LillyConditionEpoch", "LillyHouseClass", "LillyThirdRelation",
     "LillyRouteCondition", "LillyEpochValues", "LillyRouteEvent", "LillyRouteBlocker",
     "LillyAspectIntervention", "LillyThirdContact", "LillyRouteStation", "LillyThirdConjunction",
     "LillyReceptionBases", "LillyRouteRecord", "LillyBlockerRecord", "LillyRouteSummary",
@@ -103,9 +109,10 @@ class LillyBlockerKind(StrEnum):
 
 
 class LillyTranslationReading(StrEnum):
-    """P05 (p.111) and P06 (p.126); no default."""
+    """P05 (p.111), P06 (p.126) and Book II practice (pp.186, 317-318, 388); no default."""
     P111_STRUCTURAL = "p111_structural"
     P126_FULL = "p126_full"
+    BOOK_II_PRACTICE = "book_ii_practice"
 
 
 class LillyProhibitionReading(StrEnum):
@@ -115,15 +122,69 @@ class LillyProhibitionReading(StrEnum):
 
 
 class LillyMalevolentReading(StrEnum):
-    """B05 readings of "malevolent aspect"; no default."""
+    """B05 readings of "malevolent aspect"; no default.
+
+``MALEFIC_OR_EVIL_LORD`` is the Book II usage (pp.227, 409, 433, 446): a square
+or opposition from a malefic or from a lord of the sixth, eighth or twelfth,
+without reception.
+"""
     MALEFIC_PLANET = "malefic_planet"
     HARD_ASPECT = "hard_aspect"
+    MALEFIC_OR_EVIL_LORD = "malefic_or_evil_lord_hard_aspect"
 
 
 class LillyBeholdingReading(StrEnum):
-    """P07 readings of "do not behold"; no default."""
+    """P07 readings of "do not behold"; no default.
+
+``NOT_REQUIRED`` is Book II practice: the test is never applied (C09, p.239).
+"""
     SIGN_AVERSION = "sign_aversion"
     NO_CURRENT_ASPECT = "no_current_aspect"
+    NOT_REQUIRED = "not_required"
+
+
+class LillyRefranationReading(StrEnum):
+    """B03: whose station refrains; no default.
+
+``APPLYING_PRINCIPAL`` follows p.111; ``EITHER_PRINCIPAL`` follows p.317
+("Retrogradation of the principall Significators intervening").
+"""
+    APPLYING_PRINCIPAL = "applying_principal"
+    EITHER_PRINCIPAL = "either_principal"
+
+
+class LillyFrustrationReading(StrEnum):
+    """B04: what can be frustrated; no default.
+
+``CONJUNCTION_ONLY`` follows pp.112-113; ``CONJUNCTION_OR_ASPECT`` follows
+Book II ("frustrates their aspect", p.305; pp.220, 373).
+"""
+    CONJUNCTION_ONLY = "conjunction_only"
+    CONJUNCTION_OR_ASPECT = "conjunction_or_aspect"
+
+
+class LillyCollectionReading(StrEnum):
+    """P07: who receives whom, and the collector's condition; no default.
+
+``P126_PRINCIPALS_RECEIVE`` follows p.126 (both principals receive the
+collector). ``BOOK_II_PRACTICE`` follows pp.186, 239, 433-434 and 446: an
+infortune or impedited collector must itself receive both principals, and
+the collector is not retrograde, combust or cadent and does not leave its
+sign before both legs.
+"""
+    P126_PRINCIPALS_RECEIVE = "p126_principals_receive_collector"
+    BOOK_II_PRACTICE = "book_ii_practice"
+
+
+class LillyDwellingReading(StrEnum):
+    """P09: dwelling in houses; no default.
+
+``P126_REJECTED_EXCEPT_LUNAR`` follows pp.126-127 (the placement "holds not
+true" without a lunar translation); ``BOOK_II_ROUTE`` follows pp.186, 205
+and 444, where the placement is a route of its own.
+"""
+    P126_REJECTED_EXCEPT_LUNAR = "p126_rejected_except_lunar"
+    BOOK_II_ROUTE = "book_ii_route"
 
 
 class LillyHeavinessReading(StrEnum):
@@ -312,24 +373,42 @@ leave the route unresolved but never blocks it.
 
 @dataclass(frozen=True, slots=True)
 class LillyAspectIntervention:
-    """An aspect cast to a principal before a sextile or trine perfects (B05)."""
+    """An aspect cast to a principal before a sextile or trine perfects (B05).
+
+``from_evil_lord`` (the caster rules the sixth, eighth or twelfth) and
+``received`` (reception either way between caster and principal) are
+``None`` when unknown; only the Book II reading reads them.
+"""
     event_id: str
     time: LillyTimeInterval
     from_malefic: bool
     aspect: str
+    from_evil_lord: bool | None = None
+    received: bool | None = None
 
     def __post_init__(self):
         _text(self.event_id, "intervention ID")
         _typed(self.time, LillyTimeInterval, "intervention time")
         if type(self.from_malefic) is not bool or self.aspect not in _ASPECTS - {"conjunction"}:
             raise ValueError("intervention needs a malefic flag and an aspect")
+        for name in ("from_evil_lord", "received"):
+            if getattr(self, name) is not None and type(getattr(self, name)) is not bool:
+                raise TypeError(f"{name} must be bool or None")
 
-    def malevolent(self, reading: LillyMalevolentReading) -> bool:
-        """Return whether this intervention is malevolent under the reading."""
+    def malevolent(self, reading: LillyMalevolentReading) -> bool | None:
+        """Return whether this intervention is malevolent under the reading (``None``: unknown)."""
         _typed(reading, LillyMalevolentReading, "malevolent reading")
         if reading is LillyMalevolentReading.MALEFIC_PLANET:
             return self.from_malefic
-        return self.aspect in ("square", "opposition")
+        hard = self.aspect in ("square", "opposition")
+        if reading is LillyMalevolentReading.HARD_ASPECT:
+            return hard
+        if not hard or self.received is True:
+            return False
+        evil = True if self.from_malefic else self.from_evil_lord
+        if evil is False:
+            return False
+        return None if evil is None or self.received is None else True
 
 
 @dataclass(frozen=True, slots=True)
@@ -544,7 +623,14 @@ def lilly_sextile_trine_route(contact: LillyRouteEvent | None, *, aspect: str, g
     orders, blocking = [], ()
     if contact is not None:
         _typed(contact, LillyRouteEvent, "contact")
-        relevant = [(i, _order(i.time, contact.time)) for i in interventions if i.malevolent(reading)]
+        relevant = []
+        for i in interventions:
+            malevolent = i.malevolent(reading)
+            if malevolent is False:
+                continue
+            order = _order(i.time, contact.time)
+            # Unknown malevolence before the contact leaves the route unresolved.
+            relevant.append((i, order if malevolent else "overlap" if order != "after" else "after"))
         orders = [o for _, o in relevant]
         blocking = tuple(sorted(i.event_id for i, o in relevant if o == "before"))
     state = _route_state(leg_missing=contact is None, coverage=coverage, conditions=conditions, blocker_orders=orders)
@@ -583,15 +669,28 @@ def lilly_translation_route(reading: LillyTranslationReading, *, separation: Lil
                             reception: LillyReceptionBases | None,
                             intervening_contacts: tuple[LillyRouteEvent, ...],
                             blockers: tuple[LillyRouteBlocker, ...], coverage: LillyCoverageState,
-                            actors: tuple[str, ...] = ()) -> LillyRouteRecord:
-    """P05 or P06 under an explicitly selected reading (K02 leg order)."""
+                            actors: tuple[str, ...] = (),
+                            translator_conditions: tuple[LillyRouteCondition, ...] = (),
+                            infortune_received: LillyRouteCondition | None = None) -> LillyRouteRecord:
+    """P05, P06 or Book II practice under an explicitly selected reading (K02 leg order).
+
+``separation`` is the first leg. Under ``BOOK_II_PRACTICE`` it may also be a
+future contact with the first principal (C13, p.388); that reading uses no
+heaviness, principal-history or intervening-contact test, and instead the
+translator's condition (``translator_conditions``) and, for an infortune
+receiving the light, ``infortune_received`` (p.186; unknown when omitted).
+"""
     _typed(reading, LillyTranslationReading, "translation reading")
     _typed(separation, LillyRouteEvent, "separation")
     _typed(second_leg, LillyRouteEvent, "second leg", optional=True)
     _typed(reception, LillyReceptionBases, "reception", optional=True)
     _rows(intervening_contacts, LillyRouteEvent, "intervening contacts")
     _rows(blockers, LillyRouteBlocker, "blockers")
-    pages = "p.111; P05" if reading is LillyTranslationReading.P111_STRUCTURAL else "pp.125-126; P06"
+    _rows_conditions(translator_conditions)
+    _typed(infortune_received, LillyRouteCondition, "infortune reception", optional=True)
+    pages = {LillyTranslationReading.P111_STRUCTURAL: "p.111; P05",
+             LillyTranslationReading.P126_FULL: "pp.125-126; P06",
+             LillyTranslationReading.BOOK_II_PRACTICE: "pp.186, 317-318, 388, 433-434; P05/P06 Book II"}[reading]
     legs = (separation.event_id,) + (() if second_leg is None else (second_leg.event_id,))
     if second_leg is None:
         state = _route_state(leg_missing=True, coverage=coverage, conditions=(), blocker_orders=[])
@@ -604,6 +703,8 @@ def lilly_translation_route(reading: LillyTranslationReading, *, separation: Lil
                                 source_reference=_SOURCE + pages)
     if reading is LillyTranslationReading.P111_STRUCTURAL:
         conditions = (translator_lighter,)
+    elif reading is LillyTranslationReading.BOOK_II_PRACTICE:
+        conditions = translator_conditions + (infortune_received or _unknown("receiving_infortune_received"),)
     else:
         received = (LillyP3State.NOT_EVALUABLE if reception is None else reception.received(_P06_BASES))
         between = [_order(i.time, second_leg.time) for i in intervening_contacts
@@ -635,26 +736,60 @@ def lilly_collection_route(reading: LillyBeholdingReading, *, principals_behold_
                            reception_by_quesited: LillyReceptionBases | None,
                            leg_querent: LillyRouteEvent | None, leg_quesited: LillyRouteEvent | None,
                            blockers: tuple[LillyRouteBlocker, ...], coverage: LillyCoverageState,
-                           actors: tuple[str, ...] = ()) -> LillyRouteRecord:
-    """P07 under an explicitly selected beholding reading; leg order is reported."""
+                           actors: tuple[str, ...] = (), collection: LillyCollectionReading,
+                           querent_received_by_collector: LillyReceptionBases | None = None,
+                           quesited_received_by_collector: LillyReceptionBases | None = None,
+                           collector_infortune: LillyRouteCondition | None = None,
+                           collector_conditions: tuple[LillyRouteCondition, ...] = ()) -> LillyRouteRecord:
+    """P07 under explicitly selected beholding and collection readings; leg order is reported.
+
+Under ``P126_PRINCIPALS_RECEIVE`` both principals receive the collector.
+Under ``BOOK_II_PRACTICE`` an infortune or impedited collector
+(``collector_infortune``) must itself receive both principals, one being
+not enough (p.186), and ``collector_conditions`` carry the collector's
+condition (pp.433-434, 446).
+"""
     _typed(reading, LillyBeholdingReading, "beholding reading")
+    _typed(collection, LillyCollectionReading, "collection reading")
     _rows(blockers, LillyRouteBlocker, "blockers")
+    _rows_conditions(collector_conditions)
+    _typed(collector_infortune, LillyRouteCondition, "collector infortune", optional=True)
+    label = f"{collection.value}+{reading.value}"
+    pages = ("p.126; P07" if collection is LillyCollectionReading.P126_PRINCIPALS_RECEIVE
+             else "pp.186, 225, 239, 433-434, 446; P07 Book II")
     legs = tuple(leg.event_id for leg in (leg_querent, leg_quesited) if leg is not None)
     if leg_querent is None or leg_quesited is None:
         state = _route_state(leg_missing=True, coverage=coverage, conditions=(), blocker_orders=[])
-        return LillyRouteRecord(LillyRouteKind.COLLECTION, state, reading.value, actors, legs, (), (), (), None,
-                                source_reference=_SOURCE + "p.126; P07")
-    behold = (principals_behold_by_sign if reading is LillyBeholdingReading.SIGN_AVERSION
-              else principals_current_aspect)
-    flipped = {LillyP3State.PRESENT: LillyP3State.ABSENT, LillyP3State.ABSENT: LillyP3State.PRESENT}.get(
-        behold.state, LillyP3State.NOT_EVALUABLE)
-    receptions = []
-    for name, value in (("received_by_querent", reception_by_querent), ("received_by_quesited", reception_by_quesited)):
-        state = LillyP3State.NOT_EVALUABLE if value is None else value.received()
-        receptions.append(LillyRouteCondition(name, state, LillyConditionEpoch.QUESTION, "P2_directed_reception",
-                                              () if state is LillyP3State.NOT_EVALUABLE else (name,)))
-    conditions = (LillyRouteCondition("principals_do_not_behold", flipped, behold.epoch, behold.source,
-                                      behold.evidence_ids), collector_heavier, *receptions)
+        return LillyRouteRecord(LillyRouteKind.COLLECTION, state, label, actors, legs, (), (), (), None,
+                                source_reference=_SOURCE + pages)
+    conditions = []
+    if reading is not LillyBeholdingReading.NOT_REQUIRED:
+        behold = (principals_behold_by_sign if reading is LillyBeholdingReading.SIGN_AVERSION
+                  else principals_current_aspect)
+        flipped = {LillyP3State.PRESENT: LillyP3State.ABSENT, LillyP3State.ABSENT: LillyP3State.PRESENT}.get(
+            behold.state, LillyP3State.NOT_EVALUABLE)
+        conditions.append(LillyRouteCondition("principals_do_not_behold", flipped, behold.epoch, behold.source,
+                                              behold.evidence_ids))
+    conditions.append(collector_heavier)
+    if collection is LillyCollectionReading.P126_PRINCIPALS_RECEIVE:
+        for name, value in (("received_by_querent", reception_by_querent),
+                            ("received_by_quesited", reception_by_quesited)):
+            state = LillyP3State.NOT_EVALUABLE if value is None else value.received()
+            conditions.append(LillyRouteCondition(name, state, LillyConditionEpoch.QUESTION, "P2_directed_reception",
+                                                  () if state is LillyP3State.NOT_EVALUABLE else (name,)))
+    else:
+        both = _every(LillyP3State.NOT_EVALUABLE if value is None else value.received()
+                      for value in (querent_received_by_collector, quesited_received_by_collector))
+        infortune = (collector_infortune or _unknown("collector_infortune_or_impedited")).state
+        state = (LillyP3State.PRESENT if infortune is LillyP3State.ABSENT or both is LillyP3State.PRESENT
+                 else LillyP3State.ABSENT if infortune is LillyP3State.PRESENT and both is LillyP3State.ABSENT
+                 else LillyP3State.NOT_EVALUABLE)
+        evidence = () if state is LillyP3State.NOT_EVALUABLE else (
+            ("collector_not_infortune",) if infortune is LillyP3State.ABSENT else ("collector_reception",))
+        conditions.append(LillyRouteCondition("infortune_collector_receives_both", state, LillyConditionEpoch.QUESTION,
+                                              "P2_directed_reception", evidence))
+        conditions.extend(collector_conditions)
+    conditions = tuple(conditions)
     leg = {"querent": leg_querent, "quesited": leg_quesited}
     rows = []
     for b in blockers:
@@ -671,10 +806,10 @@ def lilly_collection_route(reading: LillyBeholdingReading, *, principals_behold_
     if state is LillyRouteState.COMPLETE:
         completion = LillyTimeInterval(max(leg_querent.time.low, leg_quesited.time.low),
                                        max(leg_querent.time.high, leg_quesited.time.high))
-    return LillyRouteRecord(LillyRouteKind.COLLECTION, state, reading.value, actors, legs,
+    return LillyRouteRecord(LillyRouteKind.COLLECTION, state, label, actors, legs,
                             blocking if state is LillyRouteState.BLOCKED else (),
                             effects if state is LillyRouteState.BLOCKED else (), conditions, completion,
-                            qualifier=order, source_reference=_SOURCE + "p.126; P07, K02")
+                            qualifier=order, source_reference=_SOURCE + pages + ", K02")
 
 
 def lilly_reception_route(querent_in_quesited_dignity: LillyReceptionBases | None,
@@ -700,12 +835,24 @@ def lilly_reception_route(querent_in_quesited_dignity: LillyReceptionBases | Non
 
 
 def lilly_dwelling_route(placement: LillyRouteCondition, moon_translation: LillyRouteRecord | None, *,
-                         actors: tuple[str, ...] = ()) -> LillyRouteRecord:
-    """P09: the placement is reported as rejected; only the lunar-translation form is a route."""
+                         reading: LillyDwellingReading, actors: tuple[str, ...] = ()) -> LillyRouteRecord:
+    """P09 under an explicitly selected reading.
+
+``P126_REJECTED_EXCEPT_LUNAR``: the placement is reported as rejected and only
+the lunar-translation form is a route. ``BOOK_II_ROUTE``: the placement is a
+route of its own (pp.186, 205, 444), with no completion envelope.
+"""
     _typed(placement, LillyRouteCondition, "placement")
     _typed(moon_translation, LillyRouteRecord, "Moon translation", optional=True)
+    _typed(reading, LillyDwellingReading, "dwelling reading")
     if moon_translation is not None and moon_translation.kind is not LillyRouteKind.TRANSLATION:
         raise ValueError("the dwelling exception is a lunar translation")
+    if reading is LillyDwellingReading.BOOK_II_ROUTE:
+        state = {LillyP3State.PRESENT: LillyRouteState.COMPLETE, LillyP3State.ABSENT: LillyRouteState.ABSENT}.get(
+            placement.state, LillyRouteState.NOT_EVALUABLE)
+        return LillyRouteRecord(LillyRouteKind.DWELLING, state, reading.value, actors, (), (), (), (placement,), None,
+                                attribution="book_ii_testimony" if state is LillyRouteState.COMPLETE else None,
+                                source_reference=_SOURCE + "pp.186, 205, 444; P09 Book II")
     attribution = {LillyP3State.PRESENT: "reported_rejected_by_lilly", LillyP3State.ABSENT: "absent"}.get(
         placement.state, "not_evaluable")
     if placement.state is LillyP3State.ABSENT:
@@ -717,7 +864,7 @@ def lilly_dwelling_route(placement: LillyRouteCondition, moon_translation: Lilly
     legs = () if moon_translation is None else moon_translation.leg_ids
     blocking = moon_translation.blocking_ids if state is LillyRouteState.BLOCKED else ()
     effects = moon_translation.effects if state is LillyRouteState.BLOCKED else ()
-    return LillyRouteRecord(LillyRouteKind.DWELLING, state, None, actors, legs, blocking, effects, (placement,),
+    return LillyRouteRecord(LillyRouteKind.DWELLING, state, reading.value, actors, legs, blocking, effects, (placement,),
                             moon_translation.completion if state is LillyRouteState.COMPLETE else None,
                             attribution=attribution, source_reference=_SOURCE + "pp.126-127; P09")
 
@@ -767,9 +914,15 @@ def lilly_prohibition(reading: LillyProhibitionReading, *, intended: LillyRouteE
                               source_reference=_SOURCE + "pp.110-111; B01, B02")
 
 
-def lilly_refranation(*, application_established: LillyP3State, station: LillyRouteStation | None,
-                      exact_contact: LillyRouteEvent | None, coverage: LillyCoverageState) -> LillyBlockerRecord:
-    """B03: the applying planet stations during an established application before exactitude."""
+def lilly_refranation(reading: LillyRefranationReading, *, application_established: LillyP3State,
+                      station: LillyRouteStation | None, exact_contact: LillyRouteEvent | None,
+                      coverage: LillyCoverageState) -> LillyBlockerRecord:
+    """B03: a principal stations during an established application before exactitude.
+
+Under ``APPLYING_PRINCIPAL`` (p.111) only the applying planet's station
+refrains; under ``EITHER_PRINCIPAL`` (p.317) either principal's does.
+"""
+    _typed(reading, LillyRefranationReading, "refranation reading")
     if application_established not in (LillyP3State.PRESENT, LillyP3State.ABSENT, LillyP3State.NOT_EVALUABLE):
         raise ValueError("application premise must be present, absent or not evaluable")
     _typed(station, LillyRouteStation, "station", optional=True)
@@ -779,7 +932,7 @@ def lilly_refranation(*, application_established: LillyP3State, station: LillyRo
         state = LillyP3State.ABSENT if application_established is LillyP3State.ABSENT else LillyP3State.NOT_EVALUABLE
     elif station is None:
         state = LillyP3State.ABSENT if _complete(coverage) else LillyP3State.NOT_EVALUABLE
-    elif station.body_role == "heavier":
+    elif station.body_role == "heavier" and reading is LillyRefranationReading.APPLYING_PRINCIPAL:
         state, note = LillyP3State.ABSENT, "station_of_heavier_not_refranation"
     elif exact_contact is None:
         state = LillyP3State.PRESENT
@@ -787,25 +940,32 @@ def lilly_refranation(*, application_established: LillyP3State, station: LillyRo
         state = {"before": LillyP3State.PRESENT, "after": LillyP3State.ABSENT,
                  "overlap": LillyP3State.NOT_EVALUABLE}[_order(station.time, exact_contact.time)]
     ids = (station.event_id,) if station is not None and state is LillyP3State.PRESENT else ()
-    return LillyBlockerRecord("refranation", None, state, ids, "never_effected", note=note,
-                              source_reference=_SOURCE + "p.111; B03")
+    pages = "p.111; B03" if reading is LillyRefranationReading.APPLYING_PRINCIPAL else "pp.111, 317; B03 Book II"
+    return LillyBlockerRecord("refranation", reading.value, state, ids, "never_effected", note=note,
+                              source_reference=_SOURCE + pages)
 
 
-def lilly_frustration(*, intended_aspect: str, application_established: LillyP3State,
-                      heavier_contact: LillyThirdConjunction | None, intended_contact: LillyRouteEvent | None,
-                      coverage: LillyCoverageState) -> LillyBlockerRecord:
-    """B04: bodily only; the heavier principal conjoins a third before the intended conjunction."""
+def lilly_frustration(reading: LillyFrustrationReading, *, intended_aspect: str,
+                      application_established: LillyP3State, heavier_contact: LillyThirdConjunction | None,
+                      intended_contact: LillyRouteEvent | None, coverage: LillyCoverageState) -> LillyBlockerRecord:
+    """B04: the heavier principal joins a third before the intended contact.
+
+Under ``CONJUNCTION_ONLY`` (pp.112-113) both contacts are bodily; under
+``CONJUNCTION_OR_ASPECT`` (Book II, pp.220, 305, 373) either may be an aspect.
+"""
+    _typed(reading, LillyFrustrationReading, "frustration reading")
     if intended_aspect not in _ASPECTS:
         raise ValueError("unknown intended aspect")
     _typed(heavier_contact, LillyThirdConjunction, "heavier contact", optional=True)
     _typed(intended_contact, LillyRouteEvent, "intended contact", optional=True)
-    if intended_aspect != "conjunction" or application_established is LillyP3State.ABSENT:
+    bodily = reading is LillyFrustrationReading.CONJUNCTION_ONLY
+    if (bodily and intended_aspect != "conjunction") or application_established is LillyP3State.ABSENT:
         state = LillyP3State.ABSENT
     elif application_established is not LillyP3State.PRESENT:
         state = LillyP3State.NOT_EVALUABLE
     elif heavier_contact is None:
         state = LillyP3State.ABSENT if _complete(coverage) else LillyP3State.NOT_EVALUABLE
-    elif heavier_contact.aspect != "conjunction":
+    elif bodily and heavier_contact.aspect != "conjunction":
         state = LillyP3State.ABSENT
     elif intended_contact is None:
         state = LillyP3State.PRESENT
@@ -813,8 +973,9 @@ def lilly_frustration(*, intended_aspect: str, application_established: LillyP3S
         state = {"before": LillyP3State.PRESENT, "after": LillyP3State.ABSENT,
                  "overlap": LillyP3State.NOT_EVALUABLE}[_order(heavier_contact.time, intended_contact.time)]
     ids = (heavier_contact.event_id,) if state is LillyP3State.PRESENT else ()
-    return LillyBlockerRecord("frustration", None, state, ids, "third_party_gains",
-                              source_reference=_SOURCE + "pp.112-113; B04")
+    pages = "pp.112-113; B04" if bodily else "pp.112-113, 220, 305, 373; B04 Book II"
+    return LillyBlockerRecord("frustration", reading.value, state, ids, "third_party_gains",
+                              source_reference=_SOURCE + pages)
 
 
 def lilly_heavier(body_a: str, body_b: str, reading: LillyHeavinessReading, *,
@@ -1246,17 +1407,46 @@ class LillyPerfectionReadings:
     malevolent: LillyMalevolentReading
     beholding: LillyBeholdingReading
     heaviness: LillyHeavinessReading
+    refranation: LillyRefranationReading
+    frustration: LillyFrustrationReading
+    collection: LillyCollectionReading
+    dwelling: LillyDwellingReading
 
     def __post_init__(self):
-        for name, cls in (("translation", LillyTranslationReading), ("prohibition", LillyProhibitionReading),
-                          ("malevolent", LillyMalevolentReading), ("beholding", LillyBeholdingReading),
-                          ("heaviness", LillyHeavinessReading)):
+        for name, cls in _READING_FIELDS:
             _typed(getattr(self, name), cls, name)
+
+
+_READING_FIELDS = (("translation", LillyTranslationReading), ("prohibition", LillyProhibitionReading),
+                   ("malevolent", LillyMalevolentReading), ("beholding", LillyBeholdingReading),
+                   ("heaviness", LillyHeavinessReading), ("refranation", LillyRefranationReading),
+                   ("frustration", LillyFrustrationReading), ("collection", LillyCollectionReading),
+                   ("dwelling", LillyDwellingReading))
+
+#: The readings Lilly's Book II judgements attest (LILLY_P4_BOOK_II_COLLATION_2026-10-30).
+#: A named selection the caller passes explicitly; never applied by default.
+LILLY_BOOK_II_PRACTICE = LillyPerfectionReadings(
+    translation=LillyTranslationReading.BOOK_II_PRACTICE,
+    prohibition=LillyProhibitionReading.INTERPOSITION_TO_EITHER,
+    malevolent=LillyMalevolentReading.MALEFIC_OR_EVIL_LORD,
+    beholding=LillyBeholdingReading.NOT_REQUIRED,
+    heaviness=LillyHeavinessReading.TRADITIONAL_ORDER,
+    refranation=LillyRefranationReading.EITHER_PRINCIPAL,
+    frustration=LillyFrustrationReading.CONJUNCTION_OR_ASPECT,
+    collection=LillyCollectionReading.BOOK_II_PRACTICE,
+    dwelling=LillyDwellingReading.BOOK_II_ROUTE,
+)
 
 
 @dataclass(frozen=True, slots=True)
 class LillyRouteConditions:
-    """Caller-supplied source conditions (Q01); anything not supplied stays unknown."""
+    """Caller-supplied source conditions (Q01); anything not supplied stays unknown.
+
+``planet_house_classes`` gives each listed planet's house class (cadency of a
+translator or collector), ``evil_house_lords`` the lords of the sixth, eighth
+and twelfth, and ``impedited_planets`` the planets the caller judges impeded
+(p.186); ``None`` or an unlisted planet is unknown.
+"""
     house_class: LillyHouseClass | None = None
     good_houses: LillyRouteCondition | None = None
     well_dignified: LillyRouteCondition | None = None
@@ -1266,16 +1456,42 @@ class LillyRouteConditions:
     friendly_houses: LillyRouteCondition | None = None
     moon_condition: LillyRouteCondition | None = None
     dwelling_placement: LillyRouteCondition | None = None
+    planet_house_classes: tuple[tuple[str, LillyHouseClass], ...] = ()
+    evil_house_lords: tuple[str, ...] | None = None
+    impedited_planets: tuple[str, ...] | None = None
 
     def __post_init__(self):
         _typed(self.house_class, LillyHouseClass, "house class", optional=True)
         for name in ("good_houses", "well_dignified", "querent_degree_dignity", "quesited_degree_dignity",
                      "proper_good_houses", "friendly_houses", "moon_condition", "dwelling_placement"):
             _typed(getattr(self, name), LillyRouteCondition, name, optional=True)
+        if not isinstance(self.planet_house_classes, tuple) or any(
+                not isinstance(r, tuple) or len(r) != 2 or not isinstance(r[1], LillyHouseClass)
+                for r in self.planet_house_classes):
+            raise TypeError("planet house classes must be a tuple of (planet, LillyHouseClass) pairs")
+        bodies = [b for b, _ in self.planet_house_classes]
+        for name, rows in (("planet house classes", bodies), ("evil house lords", self.evil_house_lords or ()),
+                           ("impedited planets", self.impedited_planets or ())):
+            for body in rows:
+                _planet(body)
+            if len(set(rows)) != len(rows):
+                raise ValueError(f"{name} must name distinct planets")
+        for name in ("evil_house_lords", "impedited_planets"):
+            if getattr(self, name) is not None and not isinstance(getattr(self, name), tuple):
+                raise TypeError(f"{name} must be a tuple or None")
 
     def get(self, name: str) -> LillyRouteCondition:
         """Return a supplied condition or an explicit unknown."""
         return getattr(self, name) or _unknown(name)
+
+    def house_class_of(self, body: str) -> LillyHouseClass | None:
+        """Return a planet's supplied house class, or ``None`` when unknown."""
+        return dict(self.planet_house_classes).get(body)
+
+    def member(self, name: str, body: str) -> bool | None:
+        """Membership of ``body`` in a supplied planet list, or ``None`` when the list is unknown."""
+        rows = getattr(self, name)
+        return None if rows is None else body in rows
 
 
 @dataclass(frozen=True, slots=True)
@@ -1331,6 +1547,73 @@ def _bases(host, guest, trace):
     position = lilly_position_from_longitude(guest, trace.motion(guest).longitude_deg)
     snapshot = lilly_condition_snapshot(position, context=trace.context)
     return LillyReceptionBases.from_directed(LillyDirectedReception(host, snapshot))
+
+
+def _received_either(a, b, trace):
+    """Reception in either direction between two planets at the query (P2)."""
+    states = (_bases(a, b, trace).received(), _bases(b, a, trace).received())
+    return (LillyP3State.PRESENT if LillyP3State.PRESENT in states else LillyP3State.ABSENT
+            if all(s is LillyP3State.ABSENT for s in states) else LillyP3State.NOT_EVALUABLE)
+
+
+def _known(name, state, source, evidence, epoch=LillyConditionEpoch.QUESTION):
+    return LillyRouteCondition(name, state, epoch, source, () if state is LillyP3State.NOT_EVALUABLE else evidence)
+
+
+def _unimpeded(body, role, trace, conditions):
+    """Book II: not retrograde, not combust, not cadent at the query (pp.317-318, 433-434, 446)."""
+    rate = trace.motion(body).rate_deg_per_day
+    retrograde = LillyP3State.ABSENT if rate < 0 else LillyP3State.PRESENT
+    combustion = lilly_solar_proximity(body, trace.motion("Sun").longitude_deg, trace.motion(body).longitude_deg,
+                                       context=trace.context).combustion
+    combust = {LillyP3State.PRESENT: LillyP3State.ABSENT,
+               LillyP3State.NOT_EVALUABLE: LillyP3State.NOT_EVALUABLE}.get(combustion, LillyP3State.PRESENT)
+    house = conditions.house_class_of(body)
+    cadent = (LillyP3State.NOT_EVALUABLE if house is None else LillyP3State.ABSENT
+              if house is LillyHouseClass.CADENT else LillyP3State.PRESENT)
+    return (_known(f"{role}_not_retrograde", retrograde, "trace_motion", ("motions",)),
+            _known(f"{role}_not_combust", combust, "P3_C06_solar_proximity", ("motions",)),
+            _known(f"{role}_not_cadent", cadent, "caller_house_class", (f"house_class:{body}",)))
+
+
+def _infortune_state(body, conditions):
+    """p.186: a malefic, or a planet the caller lists as impeded ("infortunate")."""
+    if body in _MALEFICS:
+        return LillyP3State.PRESENT
+    impeded = conditions.member("impedited_planets", body)
+    return LillyP3State.NOT_EVALUABLE if impeded is None else LillyP3State.PRESENT if impeded else LillyP3State.ABSENT
+
+
+def _infortune_received(translator, receiver, trace, conditions):
+    """p.186: an impeded infortune receiving the light spoils it "unlesse ... againe received".
+
+"Againe received" is read as the translator receiving the infortune (P2,
+any dignity); that reading of the phrase is Moira's, recorded in the source.
+"""
+    name, source = "receiving_infortune_received", "p186_translator_receives_infortune"
+    if receiver not in _MALEFICS:
+        return _known(name, LillyP3State.PRESENT, source, ("receiver_not_infortune",))
+    received = _bases(translator, receiver, trace).received()
+    impeded = conditions.member("impedited_planets", receiver)
+    if received is LillyP3State.PRESENT or impeded is False:
+        state = LillyP3State.PRESENT
+    elif impeded is True and received is LillyP3State.ABSENT:
+        state = LillyP3State.ABSENT
+    else:
+        state = LillyP3State.NOT_EVALUABLE
+    return _known(name, state, source, ("reception", f"impedited:{receiver}"))
+
+
+def _stays_in_sign(body, legs, trace, coverage):
+    """pp.433-434, 446: the collector does not "goe out of that Signe" before both legs."""
+    name, source = "collector_stays_in_sign", "trace_ingresses"
+    if None in legs:
+        return _unknown(name, LillyConditionEpoch.LEG_START)
+    last = max((leg.time for leg in legs), key=lambda t: t.high)
+    orders = [_order(i.time, last) for i in trace.ingresses if i.body == body and i.time.low > trace.context.jd_ut]
+    state = (LillyP3State.ABSENT if "before" in orders else LillyP3State.NOT_EVALUABLE
+             if "overlap" in orders or not _complete(coverage) else LillyP3State.PRESENT)
+    return _known(name, state, source, ("ingresses",), LillyConditionEpoch.LEG_START)
 
 
 def _lighter_condition(body, others, trace, reading):
@@ -1391,7 +1674,7 @@ and otherwise stay unknown.
                and s.body in (applying, heavier)]
         for s in own:
             role = "applying" if s.body == applying else "heavier"
-            record = lilly_refranation(application_established=established,
+            record = lilly_refranation(readings.refranation, application_established=established,
                                        station=LillyRouteStation(s.event_id, role, s.time),
                                        exact_contact=intended_event, coverage=coverage)
             blockers.append((f"refranation:{s.event_id}", record))
@@ -1400,7 +1683,8 @@ and otherwise stay unknown.
                                                         resolved=record.state is LillyP3State.PRESENT))
         if not own:
             blockers.append(("refranation:none", lilly_refranation(
-                application_established=established, station=None, exact_contact=intended_event, coverage=coverage)))
+                readings.refranation, application_established=established, station=None,
+                exact_contact=intended_event, coverage=coverage)))
         for third in (p for p in _PLANETS if p not in actors):
             rel = _relation(trace, third, applying, context)
             third_relation = (LillyThirdRelation.APPLYING if rel.motion == "applying" else
@@ -1422,9 +1706,11 @@ and otherwise stay unknown.
                 route_blockers.append(LillyRouteBlocker(f"prohibition:{third}", kind,
                                                         max(times, key=lambda t: t.high),
                                                         resolved=record.state is LillyP3State.PRESENT))
-        if relation.aspect == "conjunction":
+        by_aspect = readings.frustration is LillyFrustrationReading.CONJUNCTION_OR_ASPECT
+        if by_aspect or relation.aspect == "conjunction":
             for c in trace.contacts:
-                if after(c) and c.involves(heavier) and not c.involves(applying) and c.aspect == "conjunction":
+                if (after(c) and c.involves(heavier) and not c.involves(applying)
+                        and (by_aspect or c.aspect == "conjunction")):
                     # B04: the heavier principal joins a planet heavier still; a
                     # lighter planet catching it is a translator or prohibitor.
                     third = c.other(heavier)
@@ -1433,7 +1719,7 @@ and otherwise stay unknown.
                                                   abs_speed_b=abs(trace.motion(third).rate_deg_per_day))
                     if still_heavier == heavier:
                         continue
-                    record = lilly_frustration(intended_aspect="conjunction",
+                    record = lilly_frustration(readings.frustration, intended_aspect=relation.aspect,
                                                application_established=established if still_heavier == third
                                                else LillyP3State.NOT_EVALUABLE,
                                                heavier_contact=LillyThirdConjunction(c.event_id, c.aspect, c.time),
@@ -1455,11 +1741,20 @@ and otherwise stay unknown.
                                                              if i.body in actors and after(i) and (
                                                                  intended is None or i.time.high < intended.time.low)))
         elif kind in ("sextile", "trine"):
-            interventions = tuple(
-                LillyAspectIntervention(c.event_id, c.time,
-                                        (c.body_b if c.body_a in actors else c.body_a) in _MALEFICS, c.aspect)
-                for c in trace.contacts if after(c) and c.aspect != "conjunction"
-                and len({c.body_a, c.body_b} & set(actors)) == 1)
+            interventions = []
+            for c in trace.contacts:
+                if not after(c) or c.aspect == "conjunction" or len({c.body_a, c.body_b} & set(actors)) != 1:
+                    continue
+                caster = c.body_b if c.body_a in actors else c.body_a
+                principal = c.other(caster)
+                received = None
+                if readings.malevolent is LillyMalevolentReading.MALEFIC_OR_EVIL_LORD:
+                    either = _received_either(caster, principal, trace)
+                    received = None if either is LillyP3State.NOT_EVALUABLE else either is LillyP3State.PRESENT
+                interventions.append(LillyAspectIntervention(
+                    c.event_id, c.time, caster in _MALEFICS, c.aspect,
+                    from_evil_lord=conditions.member("evil_house_lords", caster), received=received))
+            interventions = tuple(interventions)
             record = lilly_sextile_trine_route(intended_event, aspect=kind, good_houses=conditions.get("good_houses"),
                                                well_dignified=conditions.get("well_dignified"),
                                                interventions=interventions, reading=readings.malevolent,
@@ -1481,6 +1776,12 @@ and otherwise stay unknown.
                                                            () if house_state is LillyP3State.NOT_EVALUABLE else ("mutual",)),
                 friendly_houses=conditions.get("friendly_houses"), moon_condition=conditions.get("moon_condition"),
                 blockers=blocker_tuple, coverage=direct_coverage, actors=actors)
+        if kind in ("square", "opposition"):
+            # P08 / p.317: reception qualifies a hard aspect ("with a little
+            # difficulty", otherwise "onely hopes"); it never removes a blocker.
+            reception = {LillyP3State.PRESENT: "with_reception", LillyP3State.ABSENT: "without_reception"}.get(
+                _received_either(querent, quesited, trace), "reception_not_evaluable")
+            record = _with(record, reasons=record.reasons + (f"reception_qualifier:{reception}",))
         unperfected = [b for b in blocker_tuple if b.resolved
                        and b.kind in (LillyBlockerKind.REFRANATION, LillyBlockerKind.FRUSTRATION)]
         if intended is None and unperfected and record.state in (LillyRouteState.ABSENT, LillyRouteState.NOT_EVALUABLE):
@@ -1505,16 +1806,28 @@ and otherwise stay unknown.
         "principals_separated_from_good_aspect", history, LillyConditionEpoch.QUESTION, "trace_contacts",
         () if history is LillyP3State.NOT_EVALUABLE else ((principal_contacts[-1].event_id,) if principal_contacts
                                                          else ("principal_relation",)))
+    book_ii = readings.translation is LillyTranslationReading.BOOK_II_PRACTICE
     for third in (p for p in _PLANETS if p not in actors):
         for source, destination in ((querent, quesited), (quesited, querent)):
             past = [c for c in trace.contacts if c.involves(third) and c.involves(source) and c.time.high < q]
-            if not past or _relation(trace, third, source, context).motion != "separating":
+            motion = _relation(trace, third, source, context).motion
+            meets = lambda c, start: (c.time.low > start and c.involves(third)  # noqa: E731
+                                      and (c.involves(source) or c.involves(destination)))
+            if past and motion == "separating":
+                separation = past[-1]
+                start = q
+            elif book_ii and motion == "applying":
+                # C13 (p.388): the translator still applies to the first
+                # principal and carries its light on after that contact.
+                separation = next((c for c in trace.contacts if meets(c, q)), None)
+                if separation is None or not separation.involves(source):
+                    continue
+                start = separation.time.high
+            else:
                 continue
-            separation = past[-1]
             # The translator's next meeting with either principal: a return to
             # the source is not a translation in this direction.
-            second = next((c for c in trace.contacts if after(c) and c.involves(third)
-                           and (c.involves(source) or c.involves(destination))), None)
+            second = next((c for c in trace.contacts if meets(c, start) and c is not separation), None)
             if second is not None and not second.involves(destination):
                 continue
             intervening = tuple(LillyRouteEvent(c.event_id, c.time) for c in trace.contacts
@@ -1522,6 +1835,10 @@ and otherwise stay unknown.
                                 and c.time.low > separation.time.high
                                 and (second is None or c.time.low <= second.time.high))
             station = [s for s in trace.stations if s.body == third and s.direction == "retrograde" and s.time.low > q]
+            extra = {}
+            if book_ii:
+                extra = {"translator_conditions": _unimpeded(third, "translator", trace, conditions),
+                         "infortune_received": _infortune_received(third, destination, trace, conditions)}
             route = lilly_translation_route(
                 readings.translation, separation=LillyRouteEvent(separation.event_id, separation.time),
                 second_leg=_event(second),
@@ -1529,7 +1846,7 @@ and otherwise stay unknown.
                 principals_prior_separation=history_condition, reception=_bases(source, third, trace),
                 intervening_contacts=intervening,
                 blockers=tuple(LillyRouteBlocker(s.event_id, LillyBlockerKind.REFRANATION, s.time) for s in station),
-                coverage=coverage, actors=(third, source, destination))
+                coverage=coverage, actors=(third, source, destination), **extra)
             routes.append((f"translation:{third}:{source}->{destination}", route))
 
     # ------------------------------------------------ collection
@@ -1558,6 +1875,15 @@ and otherwise stay unknown.
         station = [LillyRouteBlocker(s.event_id, LillyBlockerKind.REFRANATION, s.time,
                                      "querent" if s.body == querent else "quesited")
                    for s in trace.stations if s.body in actors and s.direction == "retrograde" and s.time.low > q]
+        extra = {}
+        if readings.collection is LillyCollectionReading.BOOK_II_PRACTICE:
+            extra = {"querent_received_by_collector": _bases(collector, querent, trace),
+                     "quesited_received_by_collector": _bases(collector, quesited, trace),
+                     "collector_infortune": _known("collector_infortune_or_impedited",
+                                                   _infortune_state(collector, conditions), "p186_infortune",
+                                                   (f"infortune:{collector}",)),
+                     "collector_conditions": _unimpeded(collector, "collector", trace, conditions)
+                     + (_stays_in_sign(collector, legs, trace, coverage),)}
         route = lilly_collection_route(
             readings.beholding, principals_behold_by_sign=behold_condition,
             principals_current_aspect=current_condition,
@@ -1566,7 +1892,7 @@ and otherwise stay unknown.
                                                   () if heavier_state is LillyP3State.NOT_EVALUABLE else ("motions",)),
             reception_by_querent=_bases(querent, collector, trace), reception_by_quesited=_bases(quesited, collector, trace),
             leg_querent=_event(legs[0]), leg_quesited=_event(legs[1]), blockers=tuple(station), coverage=coverage,
-            actors=(querent, quesited, collector))
+            actors=(querent, quesited, collector), collection=readings.collection, **extra)
         routes.append((f"collection:{collector}", route))
 
     # ------------------------------------------------ mutual reception and dwelling
@@ -1575,7 +1901,8 @@ and otherwise stay unknown.
     if conditions.dwelling_placement is not None:
         lunar = next((r for i, r in routes if i.startswith("translation:Moon:") and r.actors[1:] == (quesited, querent)),
                      None)
-        routes.append(("dwelling", lilly_dwelling_route(conditions.dwelling_placement, lunar, actors=actors)))
+        routes.append(("dwelling", lilly_dwelling_route(conditions.dwelling_placement, lunar,
+                                                        reading=readings.dwelling, actors=actors)))
     route_tuple = tuple(routes)
     return LillyPerfectionRoutes(trace, querent, quesited, readings, relation, route_tuple, tuple(blockers),
                                  lilly_route_summary(route_tuple))

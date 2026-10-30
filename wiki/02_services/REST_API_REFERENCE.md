@@ -1807,17 +1807,28 @@ Both delegate once to the facade (`Moira.lilly_reception_at`,
 
 The request names a question epoch (`jd_ut`, UT1), the querent's and quesited's
 significators (two distinct classical planets), the chart sect (`true`,
-`false` or `null`), and **all five readings**, none of which has a default:
-`translation` (`p111_structural` or `p126_full`), `prohibition`
-(`interposition_to_either` or `successive_to_both`), `malevolent`
-(`malefic_planet` or `hard_aspect`), `beholding` (`sign_aversion` or
-`no_current_aspect`) and `heaviness` (`traditional_order`,
-`instantaneous_speed` or `superior_inferior`). Optional `conditions` supply
-what the trace cannot decide (house class; good, proper and friendly houses;
+`false` or `null`), and the readings: either `readings` with **all nine
+readings**, none of which has a default, or `readings_preset:
+"lilly_book_ii_practice"` (exactly one of the two). The readings are
+`translation` (`p111_structural`, `p126_full` or `book_ii_practice`),
+`prohibition` (`interposition_to_either` or `successive_to_both`),
+`malevolent` (`malefic_planet`, `hard_aspect` or
+`malefic_or_evil_lord_hard_aspect`), `beholding` (`sign_aversion`,
+`no_current_aspect` or `not_required`), `heaviness` (`traditional_order`,
+`instantaneous_speed` or `superior_inferior`), `refranation`
+(`applying_principal` or `either_principal`), `frustration`
+(`conjunction_only` or `conjunction_or_aspect`), `collection`
+(`p126_principals_receive_collector` or `book_ii_practice`) and `dwelling`
+(`p126_rejected_except_lunar` or `book_ii_route`). The preset is the Book II
+selection (`LILLY_BOOK_II_PRACTICE`) and is echoed in
+`transport_provenance.readings_preset`. Optional `conditions` supply what the
+trace cannot decide (house class; good, proper and friendly houses;
 well-dignity; dignity in the degrees; the opposition's Moon condition; the
 dwelling placement). Each is `present`, `absent` or `not_evaluable` at a named
-epoch, and a known state must cite `evidence_ids`. Omitted conditions stay
-unknown. Optional `search` bounds the window (`past_days`, `future_days`, each
+epoch, and a known state must cite `evidence_ids`. For the Book II readings,
+`planet_house_classes` maps planets to `angular`, `succedent` or `cadent`, and
+`evil_house_lords` and `impedited_planets` list planets (`null` means
+unknown). Omitted conditions stay unknown. Optional `search` bounds the window (`past_days`, `future_days`, each
 at most 90; default 30) and an optional `epoch_label` names the question.
 
 The service delegates once to `Moira.lilly_perfection_routes_at`. The response
@@ -1827,7 +1838,8 @@ effects, conditions and source references; the principals' relation at the
 query; the earliest-completing route IDs; and the full trace (contacts,
 stations, ingresses, motions, coverage, kernel provenance and search policy).
 `verdict` is always `null`. An unknown field, a missing reading, a known
-condition without evidence or equal principals is `422`; a missing planetary
+condition without evidence, equal principals, or both or neither of
+`readings` and `readings_preset` is `422`; a missing planetary
 kernel is `503 kernel_not_ready`. Governing record:
 `wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md`.
 
