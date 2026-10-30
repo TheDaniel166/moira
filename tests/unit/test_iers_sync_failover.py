@@ -84,7 +84,7 @@ def test_stale_primary_falls_through_to_fresh_mirror() -> None:
 def test_invalid_payloads_are_rejected(bad: str) -> None:
     lines = _csv().splitlines()
     if bad == "dut1_out_of_range":
-        lines[5] = "1973;1;1;41688;0.1;0.1;1.5"
+        lines[5] = "1973;1;1;41688;0.1;0.1;3600.5"
     elif bad == "non_monotonic":
         lines[5] = lines[4]
     else:

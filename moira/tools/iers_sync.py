@@ -49,8 +49,9 @@ FINALS_SOURCES: tuple[str, ...] = (_URL_FINALS_ALL, _URL_FINALS_ALL_MIRROR)
 
 # Rows needed for a plausible finals file (1973 onward is ~20k daily rows).
 _MIN_EOP_ROWS = 10000
-# |UT1-UTC| bound enforced by the packaged loader (moira.julian.EOPRegistry).
-_MAX_ABS_DUT1_S = 1.0
+# |UT1-UTC| bound enforced by the packaged loader (moira.julian.EOPRegistry);
+# continuous UTC (2027-05-20) permits up to 3600 s.
+_MAX_ABS_DUT1_S = 3600.0
 
 Fetcher = Callable[[str], str]
 

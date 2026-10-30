@@ -66,6 +66,8 @@ def _require_finite(name: str, value: float) -> None:
 # below a millisecond at the boundary.
 _MAX_ABS_DELTA_T_YEAR: float = 100_000.0
 _MAX_ABS_TIME_JD: float = 40_000_000.0
+# Continuous UTC (effective 2027-05-20) permits |UT1-UTC| up to 3600 s.
+_MAX_ABS_DUT1_SECONDS: float = 3600.0
 
 
 def _require_representable_delta_t_year(year: float) -> None:
@@ -2253,10 +2255,10 @@ class EOPRegistry:
                     raise ValueError(
                         f"Malformed EOP row {cls._path}:{line_number}: MJD must be a finite integer"
                     )
-                if not math.isfinite(dut1) or abs(dut1) > 1.0:
+                if not math.isfinite(dut1) or abs(dut1) > _MAX_ABS_DUT1_SECONDS:
                     raise ValueError(
                         f"Malformed EOP row {cls._path}:{line_number}: "
-                        "DUT1 must be finite and within [-1, +1] seconds"
+                        f"DUT1 must be finite and within [-{_MAX_ABS_DUT1_SECONDS:g}, +{_MAX_ABS_DUT1_SECONDS:g}] seconds"
                     )
                 mjd = int(mjd_value)
                 if previous_mjd is not None and mjd <= previous_mjd:

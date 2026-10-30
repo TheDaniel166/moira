@@ -563,7 +563,7 @@ def test_far_historical_jd_uses_unmodified_source_model() -> None:
     [
         "60000.5 0.1\n",
         "60000 nan\n",
-        "60000 1.01\n",
+        "60000 3600.01\n",
         "60000 not-a-number\n",
         "60000\n",
         "60000 0.1 extra\n",
