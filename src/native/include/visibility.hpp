@@ -129,16 +129,20 @@ inline double arcus_visionis(double mag, double limiting_mag, double extinction_
  * Computes the topocentric altitude of a target relative to an observer.
  * When earth_eval is provided, applies annual aberration using Earth's
  * barycentric velocity (IAU SOFA relativistic formula).
+ *
+ * `delta_t` is TT-UT1 in seconds and is required everywhere in this header: the
+ * earlier fixed default (64.184 s) was correct for no epoch.  Earth rotation uses
+ * UT1 (`jd_ut`); precession, nutation and the target evaluators use `jd_tt`.
  */
 inline double target_topocentric_altitude(
     const IEvaluator& target_eval,
     double jd_ut,
     double lat_deg,
     double lon_deg,
-    double pressure_mbar = 1013.25,
-    double temperature_c = 10.0,
-    bool use_refraction = true,
-    double delta_t = 64.184,
+    double pressure_mbar,
+    double temperature_c,
+    bool use_refraction,
+    double delta_t,
     const IEvaluator* earth_eval = nullptr
 ) {
     double jd_tt = jd_ut + (delta_t / 86400.0);
@@ -228,7 +232,7 @@ inline std::optional<double> find_sun_at_alt(
     double lon_deg,
     double target_alt,
     bool morning,
-    double delta_t = 64.184,
+    double delta_t,
     const IEvaluator* earth_eval = nullptr
 ) {
     double t0 = morning ? jd_midnight : jd_midnight + 0.5;
@@ -308,7 +312,7 @@ inline double heliacal_signed_elongation(
     const IEvaluator& star_eval,
     const IEvaluator& sun_eval,
     double jd_ut,
-    double delta_t = 64.184,
+    double delta_t,
     const IEvaluator* earth_eval = nullptr,
     NutationEpochCache* nutation_cache = nullptr
 ) {
@@ -350,7 +354,7 @@ inline HeliacalEvent search_heliacal_rising(
     double lat, double lon,
     double arcus_visionis_val,
     int search_days,
-    double delta_t = 64.184,
+    double delta_t,
     const IEvaluator* earth_eval = nullptr,
     double delta_t_rate_seconds_per_day = 0.0,
     NutationEpochCache* nutation_cache = nullptr
@@ -434,7 +438,7 @@ inline HeliacalEvent search_heliacal_setting(
     double lat, double lon,
     double arcus_visionis_val,
     int search_days,
-    double delta_t = 64.184,
+    double delta_t,
     const IEvaluator* earth_eval = nullptr,
     double setting_elongation_threshold = 12.0,
     double setting_visibility_factor = 0.5,

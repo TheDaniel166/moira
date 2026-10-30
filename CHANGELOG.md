@@ -348,6 +348,13 @@ publication, or production pin is implied by these entries.
   the house engine's ARMC. It matches Meeus Example 12.a's apparent value to
   0.06 arcsec; the oracle test now compares that value (the mean value is 3.5
   arcsec away).
+- **Native visibility functions require `delta_t`.** `target_topocentric_altitude`,
+  `find_sun_at_alt`, `heliacal_signed_elongation`, `search_heliacal_rising` and
+  `search_heliacal_setting` defaulted `delta_t` to 64.184 s, a constant that is
+  TT-UT1 at no epoch (63.8 s at J2000, 69.2 s in 2026, 5 s of Earth rotation off
+  when a caller omitted it). The default is removed in C++ and in the bindings, so an
+  omitted value is a `TypeError` instead of a silent error. Every in-repo caller
+  already passed it.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged

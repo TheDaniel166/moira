@@ -2385,9 +2385,10 @@ PYBIND11_MODULE(_moira_native, m) {
                 pressure_mbar, temperature_c, use_refraction, delta_t, earth_eval);
         },
         py::arg("target_eval"), py::arg("jd_ut"), py::arg("lat_deg"), py::arg("lon_deg"),
-        py::arg("pressure_mbar") = 1013.25, py::arg("temperature_c") = 10.0, py::arg("use_refraction") = true,
-        py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
-        "Compute topocentric altitude with optional annual aberration via Earth evaluator.");
+        py::arg("pressure_mbar"), py::arg("temperature_c"), py::arg("use_refraction"),
+        py::arg("delta_t"), py::arg("earth_eval") = nullptr,
+        "Compute topocentric altitude with optional annual aberration via Earth evaluator. "
+        "delta_t is TT-UT1 in seconds and has no default: a fixed constant is wrong for every epoch but one.");
 
     m.def("find_sun_at_alt",
         [](const IEvaluator& sun_eval, double jd_midnight, double lat_deg, double lon_deg,
@@ -2397,7 +2398,7 @@ PYBIND11_MODULE(_moira_native, m) {
                 target_alt, morning, delta_t, earth_eval);
         },
         py::arg("sun_eval"), py::arg("jd_midnight"), py::arg("lat_deg"), py::arg("lon_deg"),
-        py::arg("target_alt"), py::arg("morning"), py::arg("delta_t") = 64.184,
+        py::arg("target_alt"), py::arg("morning"), py::arg("delta_t"),
         py::arg("earth_eval") = nullptr,
         "Solve for JD within a half-day window where the Sun reaches a target altitude.");
 
@@ -2413,7 +2414,7 @@ PYBIND11_MODULE(_moira_native, m) {
         },
         py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
         py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
-        py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("search_days"), py::arg("delta_t"), py::arg("earth_eval") = nullptr,
         py::arg("delta_t_rate_seconds_per_day") = 0.0,
         py::arg("nutation_cache") = nullptr,
         "Native fast-path search for star heliacal rising (morning appearance).");
@@ -2432,7 +2433,7 @@ PYBIND11_MODULE(_moira_native, m) {
         },
         py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
         py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
-        py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("search_days"), py::arg("delta_t"), py::arg("earth_eval") = nullptr,
         py::arg("setting_elongation_threshold") = 12.0,
         py::arg("setting_visibility_factor") = 0.5,
         py::arg("delta_t_rate_seconds_per_day") = 0.0,
@@ -2441,7 +2442,7 @@ PYBIND11_MODULE(_moira_native, m) {
 
     m.def("heliacal_signed_elongation", &heliacal_signed_elongation,
         py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_ut"),
-        py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("delta_t"), py::arg("earth_eval") = nullptr,
         py::arg("nutation_cache") = nullptr,
         "Compute signed ecliptic elongation between star and Sun.");
 

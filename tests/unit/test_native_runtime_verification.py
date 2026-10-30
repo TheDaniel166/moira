@@ -277,7 +277,7 @@ def test_native_heliacal_search_rejects_invalid_policy_inputs() -> None:
 
     with pytest.raises(ValueError, match="latitude"):
         moira_native.search_heliacal_rising(
-            evaluator, evaluator, 2451545.0, 91.0, 0.0, 10.0, 10
+            evaluator, evaluator, 2451545.0, 91.0, 0.0, 10.0, 10, 64.184
         )
     with pytest.raises(ValueError, match="setting_visibility_factor"):
         moira_native.search_heliacal_setting(
@@ -288,6 +288,7 @@ def test_native_heliacal_search_rejects_invalid_policy_inputs() -> None:
             0.0,
             10.0,
             10,
+            64.184,
             setting_visibility_factor=0.0,
         )
 
@@ -832,3 +833,20 @@ def test_native_syzygy_candidate_discovery_is_a_conservative_bulk_surface() -> N
     # Discovery is intentionally a superset, not final eclipse admission.
     assert len(solar) > 4
     assert len(lunar) > 2
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda e: moira_native.search_heliacal_rising(e, e, 2451545.0, 10.0, 0.0, 10.0, 10),
+        lambda e: moira_native.search_heliacal_setting(e, e, 2451545.0, 10.0, 0.0, 10.0, 10),
+        lambda e: moira_native.heliacal_signed_elongation(e, e, 2451545.0),
+        lambda e: moira_native.find_sun_at_alt(e, 2451545.0, 10.0, 0.0, -10.0, True),
+        lambda e: moira_native.target_topocentric_altitude(e, 2451545.0, 10.0, 0.0, 1013.25, 10.0, False),
+    ],
+)
+def test_native_visibility_functions_require_an_explicit_delta_t(call) -> None:
+    """TT-UT1 has no honest default: the old 64.184 s constant was right for no epoch."""
+    evaluator = moira_native.FixedStarEvaluator(100.0, 20.0, 0.0, 0.0, 1.0, 0.0)
+    with pytest.raises(TypeError):
+        call(evaluator)
