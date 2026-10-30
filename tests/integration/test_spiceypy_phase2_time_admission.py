@@ -5,12 +5,10 @@ from __future__ import annotations
 import pytest
 import spiceypy as sp
 
-from moira.julian import utc_to_ut1
 from moira.lunar_limb import (
     _default_cache_root,
     _ensure_kernels_loaded,
     _jd_utc_to_et,
-    _jd_ut_to_et,
 )
 
 try:
@@ -47,7 +45,6 @@ def test_utc_and_ut1_time_admission_match_the_same_spice_instant():
         actual = moira_native.jd_utc_to_et_seconds_past_j2000(jd_utc)
         assert actual == pytest.approx(expected, abs=1e-10), f"Parity failure at JD {jd_utc}"
         assert _jd_utc_to_et(jd_utc) == pytest.approx(expected, abs=1e-10)
-        assert _jd_ut_to_et(utc_to_ut1(jd_utc)) == pytest.approx(expected, abs=1e-10)
 
 
 @pytest.mark.integration
@@ -68,7 +65,3 @@ def test_pre1972_epochs_remain_on_spice_fallback():
 
     expected = sp.str2et(f"JD {historical_jd_utc}")
     assert _jd_utc_to_et(historical_jd_utc) == pytest.approx(expected, abs=1e-10)
-    assert _jd_ut_to_et(utc_to_ut1(historical_jd_utc)) == pytest.approx(
-        expected,
-        abs=1e-10,
-    )

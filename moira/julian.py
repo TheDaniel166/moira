@@ -2401,7 +2401,7 @@ def _leap_second_gap_utc(jd_ut1: float) -> float | None:
     gap takes the last representable instant before ``D``, the second half takes
     ``D``, so the TT round trip is off by at most 0.5 s and only inside that
     one second.  Timing code must not use the label inside the gap; it takes TT
-    directly (``moira.lunar_limb._jd_ut_to_et`` does).
+    directly (every event path does, through ``_ut1_to_ephemeris_tt``).
 
     Returns ``None`` when ``jd_ut1`` is not inside a leap second.
 

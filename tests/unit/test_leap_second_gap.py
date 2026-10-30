@@ -4,12 +4,13 @@ A UTC-coded Julian Day has 86400 seconds per day, so 23:59:60 has no label and
 ``utc_to_tt`` steps by one second at the leap boundary.  ``_ut1_to_utc`` used to alternate
 between the two sides of that step: the label ran backwards in time and the round trip
 through TT was one second out.  The rule is now monotone and nearest-boundary, so the round
-trip is off by at most 0.5 s, and only inside that one second.  ``_jd_ut_to_et`` takes TT
-directly there.  Checked at five leap seconds (EOP-covered and pre-EOP), one-millisecond steps.
+trip is off by at most 0.5 s, and only inside that one second.  Timing never uses the
+label: ET comes from TT (``tt_to_tdb(ut_to_tt(...))``).  Checked at five leap seconds
+(EOP-covered and pre-EOP), one-millisecond steps.
 
 Authority for ET: SPICE ``str2et`` on the real ``... 23:59:60.x UTC`` string with the pinned
-``naif0012.tls``; measured agreement 0.04 ms (binary64 Julian-day quantisation), against up to
-450 ms for the UTC-label route it replaces.
+``naif0012.tls``; measured agreement of Moira's TT-derived ET 0.04 ms (binary64 Julian-day
+quantisation), against up to 450 ms for a route through the UTC label.
 """
 import math
 from pathlib import Path
@@ -17,7 +18,7 @@ from pathlib import Path
 import pytest
 
 from moira import julian as J
-from moira.lunar_limb import _default_cache_root, _jd_ut_to_et
+from moira.lunar_limb import _default_cache_root
 
 # (effective JD of the post-leap day, UTC date string of the leap day for str2et)
 _LEAPS = (
@@ -92,4 +93,5 @@ def test_et_inside_leap_second_matches_spice_str2et(leap_jd, label, fraction) ->
     start_tt, _ = _gap_tt_bounds(leap_jd)
     ut1 = J.tt_to_ut(start_tt + fraction / 86400.0)
     expected = sp.str2et(f"{label} 23:59:{60 + fraction:012.9f} UTC")
-    assert _jd_ut_to_et(ut1) == pytest.approx(expected, abs=1.0e-4)
+    moira_et = (J.tt_to_tdb(J.ut_to_tt(ut1)) - J.J2000) * 86400.0
+    assert moira_et == pytest.approx(expected, abs=1.0e-4)

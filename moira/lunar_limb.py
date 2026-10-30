@@ -74,7 +74,7 @@ except ImportError as exc:
     _spiceypy_exc = exc
 
 from .constants import MOON_RADIUS_KM
-from .julian import J2000, _leap_second_gap_utc, _ut1_to_utc
+from .julian import J2000
 from .spk_reader import KernelReader
 try:
     from . import moira_native
@@ -1282,27 +1282,6 @@ def _jd_utc_to_et(jd_utc: float) -> float:
     return sp.str2et(f"JD {admitted_utc}")
 
 
-def _jd_ut_to_et(jd_ut: float) -> float:
-    """Convert a Moira UT1 Julian Day to ET through the admitted UTC inverse.
-
-    The private name remains for compatibility with the existing lunar-limb
-    call sites, but its input is now truthfully UT1. It is never passed to
-    SPICE as though it were already UTC.
-
-    An instant inside an inserted leap second (23:59:60) has no UTC-coded
-    Julian Day, so the UTC detour would be up to 0.5 s off there.  That one
-    second is timed from TT directly: ET is TDB, and TDB follows TT through the
-    same pinned NAIF LSK periodic term SPICE applies.
-    """
-
-    admitted_ut1 = _finite_float("jd_ut", jd_ut)
-    if _leap_second_gap_utc(admitted_ut1) is not None:
-        from .julian import tt_to_tdb, ut_to_tt
-
-        return (tt_to_tdb(ut_to_tt(admitted_ut1)) - J2000) * 86_400.0
-    return _jd_utc_to_et(_ut1_to_utc(admitted_ut1))
-
-
 def _normalize_lon_deg(lon_deg: float) -> float:
     return ((lon_deg + 180.0) % 360.0) - 180.0
 
@@ -1356,154 +1335,6 @@ def _add(v1: Sequence[float], v2: Sequence[float]) -> tuple[float, float, float]
 
 def _scale(vec: Sequence[float], s: float) -> tuple[float, float, float]:
     return (vec[0] * s, vec[1] * s, vec[2] * s)
-
-
-def _observer_state_j2000(
-    observer_lat: float,
-    observer_lon: float,
-    observer_elev_m: float,
-    jd_ut1: float,
-    jd_tt: float,
-) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Observer position (km) and velocity (km/s) relative to Earth's centre in J2000.
-
-    Earth orientation follows the IERS/SOFA chain Moira uses everywhere else:
-    ITRS to true equator of date through polar motion and the apparent sidereal
-    angle (Earth rotation at UT1, equinox terms at TT), then to J2000 through
-    the transpose of the TT frame bias, precession and nutation.  SPICE's
-    ``IAU_EARTH`` frame is deliberately not used: its prime-meridian angle is a
-    function of dynamical time, so it rotated the observer by Delta-T times the
-    Earth's rotation rate (0.29 degrees, about 32 km, in 2026).
-
-    The velocity is the diurnal rotation velocity, which SPICE needs for the
-    stellar-aberration part of ``LT+S``.
-
-    Side effects: None.
-    """
-    from .constants import EARTH_ROTATION_RATE_RAD_PER_SEC
-    from .corrections import _observer_position_icrf
-    from .julian import local_sidereal_time
-    from .obliquity import nutation, true_obliquity
-    from .planets import _compose_rotation_matrix
-
-    dpsi_deg, _deps_deg = nutation(jd_tt)
-    lst_deg = local_sidereal_time(
-        jd_ut1, observer_lon, dpsi_deg, true_obliquity(jd_tt), jd_tt
-    )
-    position_of_date = _observer_position_icrf(
-        observer_lat,
-        observer_lon,
-        lst_deg,
-        observer_elev_m,
-        jd_ut=jd_ut1,
-        observer_frame="equatorial_of_date",
-    )
-    velocity_of_date = (
-        -EARTH_ROTATION_RATE_RAD_PER_SEC * position_of_date[1],
-        EARTH_ROTATION_RATE_RAD_PER_SEC * position_of_date[0],
-        0.0,
-    )
-    icrf_to_true_of_date = _compose_rotation_matrix(jd_tt, with_nutation=True)
-    return (
-        _transpose_matrix_vector(icrf_to_true_of_date, position_of_date),
-        _transpose_matrix_vector(icrf_to_true_of_date, velocity_of_date),
-    )
-
-
-def _observer_limb_context(
-    et: float,
-    observer_lat: float,
-    observer_lon: float,
-    observer_elev_m: float,
-    *,
-    jd_ut1: float,
-) -> _ObserverLimbContext:
-    """Observer-to-Moon geometry in the lunar ME frame (SPICE ``LT+S`` route).
-
-    ``et`` (TDB seconds from J2000) times the Moon; ``jd_ut1`` times the Earth's
-    rotation.  The TT used for precession and nutation is the one implied by
-    ``et``, so Earth orientation and Moon timing share one instant.
-    """
-
-    from .julian import tdb_to_tt
-
-    jd_tt = tdb_to_tt(J2000 + et / 86_400.0)
-    observer_position_j2000, observer_velocity_j2000 = _observer_state_j2000(
-        observer_lat,
-        observer_lon,
-        observer_elev_m,
-        jd_ut1,
-        jd_tt,
-    )
-    moon_state_j2000, _ = sp.spkcvo(
-        "MOON",
-        et,
-        "J2000",
-        "OBSERVER",
-        "LT+S",
-        [*observer_position_j2000, *observer_velocity_j2000],
-        et,
-        "EARTH",
-        "J2000",
-    )
-    observer_to_moon_j2000 = (float(moon_state_j2000[0]), float(moon_state_j2000[1]), float(moon_state_j2000[2]))
-    observer_distance_km = math.sqrt(
-        sum(component * component for component in observer_to_moon_j2000)
-    )
-    los_j2000 = _norm(observer_to_moon_j2000)
-    moon_to_observer_j2000 = (-observer_to_moon_j2000[0], -observer_to_moon_j2000[1], -observer_to_moon_j2000[2])
-    j2000_to_moon = sp.pxform("J2000", "MOON_ME", et)
-    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
-        m_obs_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, moon_to_observer_j2000)
-    else:
-        m_obs_moon_raw = sp.mxv(j2000_to_moon, list(moon_to_observer_j2000))
-    moon_to_observer_moon = _norm((float(m_obs_moon_raw[0]), float(m_obs_moon_raw[1]), float(m_obs_moon_raw[2])))
-    
-    if moira_native is not None and hasattr(moira_native, "vec3_to_lonlat_signed"):
-        lon_deg, lat_deg, _ = moira_native.vec3_to_lonlat_signed(moira_native.Vec3(*moon_to_observer_moon))
-    else:
-        _, lon_rad, lat_rad = sp.reclat(list(moon_to_observer_moon))
-        lon_deg = lon_rad * sp.dpr()
-        lat_deg = lat_rad * sp.dpr()
-    moon_to_j2000 = sp.pxform("MOON_ME", "J2000", et)
-    
-    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
-        m_north_j2000_raw = moira_native.rotation_matrix_apply(moon_to_j2000, (0.0, 0.0, 1.0))
-    else:
-        m_north_j2000_raw = sp.mxv(moon_to_j2000, [0.0, 0.0, 1.0])
-    moon_north_j2000 = _norm((float(m_north_j2000_raw[0]), float(m_north_j2000_raw[1]), float(m_north_j2000_raw[2])))
-    
-    celestial_north_j2000 = (0.0, 0.0, 1.0)
-    sky_north_j2000 = _norm(_project_onto_sky(celestial_north_j2000, los_j2000))
-    
-    cross_raw = (
-        los_j2000[1]*sky_north_j2000[2] - los_j2000[2]*sky_north_j2000[1],
-        los_j2000[2]*sky_north_j2000[0] - los_j2000[0]*sky_north_j2000[2],
-        los_j2000[0]*sky_north_j2000[1] - los_j2000[1]*sky_north_j2000[0]
-    )
-    sky_east_j2000 = _norm(cross_raw)
-    
-    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
-        s_north_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, sky_north_j2000)
-    else:
-        s_north_moon_raw = sp.mxv(j2000_to_moon, list(sky_north_j2000))
-    sky_north_moon = _norm((float(s_north_moon_raw[0]), float(s_north_moon_raw[1]), float(s_north_moon_raw[2])))
-    
-    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
-        s_east_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, sky_east_j2000)
-    else:
-        s_east_moon_raw = sp.mxv(j2000_to_moon, list(sky_east_j2000))
-    sky_east_moon = _norm((float(s_east_moon_raw[0]), float(s_east_moon_raw[1]), float(s_east_moon_raw[2])))
-    
-    return _ObserverLimbContext(
-        subobserver_lon_deg=float(lon_deg),
-        subobserver_lat_deg=float(lat_deg),
-        observer_distance_km=observer_distance_km,
-        los_j2000=los_j2000,
-        observer_dir_moon=moon_to_observer_moon,
-        sky_north_moon=sky_north_moon,
-        sky_east_moon=sky_east_moon,
-    )
 
 
 def _transpose_matrix_vector(
@@ -1625,24 +1456,6 @@ def _reader_bound_observer_limb_context(
         sky_east_moon=sky_east_moon,
     )
     return context, light_cone.translation_label, light_cone.et_emission
-
-
-def _limb_point_lon_lat_deg(
-    jd_ut: float,
-    observer_lat: float,
-    observer_lon: float,
-    observer_elev_m: float,
-    position_angle_deg: float,
-) -> tuple[float, float]:
-    et = _jd_ut_to_et(jd_ut)
-    context = _observer_limb_context(
-        et,
-        observer_lat,
-        observer_lon,
-        observer_elev_m,
-        jd_ut1=jd_ut,
-    )
-    return _limb_point_lon_lat_from_context(context, position_angle_deg)
 
 
 def _limb_point_lon_lat_from_context(
@@ -3240,13 +3053,26 @@ def official_lunar_limb_profile_adjustment(
     moon_distance_km: float,
     *,
     lola_query_half_width_km: float = _DEFAULT_LOLA_QUERY_HALF_WIDTH_KM,
+    reader: KernelReader | None = None,
 ) -> float:
     """
     Return an official-source lunar-limb correction in angular degrees.
 
     The current implementation uses:
+    - the content-identified DE441/LE441 reader for the observer-to-Moon light
+      cone, on the engine's Earth clock (the same reader-bound TT as every other
+      event path)
     - NAIF lunar orientation kernels for body-frame geometry
     - official USGS/LOLA COPC tiles for limb topography
+
+    ``jd_ut`` is UT1.  ``reader`` defaults to the active reader (or the default
+    kernel); there is no kernel-free fallback.  An earlier SPICE-only route timed
+    the Moon from UT1 through the UTC leap-second kernel, which for dates before
+    1972 uses a fixed offset instead of Delta-T (up to 148 s in 1550) and has no
+    label for a leap second; it also downloaded a second planetary kernel.  It
+    is retired in favour of the reader-bound light cone.  The result is a
+    geometric physical ray, so it carries no stellar aberration (10-16
+    arcseconds of direction, about 0.1 km on the lunar surface).
 
     Runtime policy:
     - `lola_query_half_width_km` controls the bounded COPC neighborhood sampled
@@ -3262,14 +3088,20 @@ def official_lunar_limb_profile_adjustment(
         )
 
     cache_root = _default_cache_root()
-    _ensure_kernels_loaded(cache_root)
+    _ensure_contact_orientation_kernels_loaded(cache_root)
+    if reader is None:
+        from .spk_reader import get_reader
 
-    observer_context = _observer_limb_context(
-        _jd_ut_to_et(jd_ut),
-        observer_lat,
-        observer_lon,
-        observer_elev_m,
-        jd_ut1=jd_ut,
+        reader = get_reader()
+
+    observer_context, _translation_label, _orientation_et = (
+        _reader_bound_observer_limb_context(
+            jd_ut,
+            observer_lat,
+            observer_lon,
+            observer_elev_m,
+            reader,
+        )
     )
     limb_lon_deg, limb_lat_deg = _limb_point_lon_lat_from_context(
         observer_context,

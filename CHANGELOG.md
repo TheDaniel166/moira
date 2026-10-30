@@ -330,26 +330,30 @@ publication, or production pin is implied by these entries.
   arcsec of Sun longitude at -500). `_heliacal_signed_elongation` and the
   Delta-T policy passed to the native heliacal search now use the reader-bound
   TT. Results from 1955 on are unchanged.
-- **Lunar-limb observer rotates with UT1.** The SPICE-route limb context
-  (`official_lunar_limb_profile_adjustment`) placed the observer through
-  SPICE's `IAU_EARTH` frame, whose prime meridian turns with dynamical time, so
-  the observer was rotated by Delta-T times the Earth's rotation rate: 0.29 deg
-  (about 32 km, 4.8 km of Moon distance, 10-17 arcsec of direction) in 2026 and
-  tens of degrees at -500. The observer state now comes from the IERS/SOFA chain
-  used elsewhere (polar motion, UT1 rotation, TT precession-nutation) and is
-  handed to SPICE in J2000 with its rotation velocity, keeping `LT+S`. Observer
-  position matches ERFA `c2t06a` to 1 mm. Distance now equals the DE441
-  reader-bound path exactly; direction agrees with it to 0.7 arcsec once the
-  stellar-aberration term (`LT+S`) is set aside.
+- **Lunar-limb profile adjustment uses the DE441 reader path.**
+  `official_lunar_limb_profile_adjustment` ran a separate SPICE route: it timed
+  the Moon from UT1 through the UTC leap-second kernel (before 1972 that applies
+  a fixed offset instead of Delta-T: up to 148 s in 1550, 43 s in 1900; and no
+  label exists inside a leap second), placed the observer through SPICE's
+  `IAU_EARTH` frame, which turns with dynamical time (0.29 deg, about 32 km, in
+  2026), and downloaded a second planetary kernel. It now takes the observer-to-
+  Moon light cone from the content-identified DE441/LE441 reader on the engine's
+  Earth clock, the same path the event profile uses, and accepts `reader=`
+  (default: the active or default reader; there is no kernel-free fallback).
+  Moon-frame observer direction moves by 1-11 arcsec before 1972 (20-90 m on the
+  lunar surface) and 0.7 arcsec now; the result is a geometric ray, so the
+  10-16 arcsec stellar-aberration term the SPICE route carried is gone. Removed:
+  the SPICE-only observer, UT1-to-ET and limb-context helpers.
 - **Leap-second instants no longer run the UTC label backwards.** A UTC-coded
   Julian Day has no label for 23:59:60, and `_ut1_to_utc` alternated between the
   two sides of the leap step there: the label moved backwards in time and the
   round trip through TT was one second out for the one second after each leap
   boundary (reached lunar-limb ET and printed UTC times). The gap now takes a
   monotone nearest-boundary label, so the TT round trip is within 0.5 s inside
-  the gap and unchanged outside it. `lunar_limb._jd_ut_to_et` times that second
-  from TT directly and agrees with SPICE `str2et("... 23:59:60.x UTC")` to
-  0.04 ms (the old route was up to 450 ms off). Checked at five leap seconds.
+  the gap and unchanged outside it. Timing takes TT directly: ET from
+  `tt_to_tdb(ut_to_tt(...))` agrees with SPICE `str2et("... 23:59:60.x UTC")`
+  to 0.04 ms, where a route through the UTC label was up to 450 ms off. Checked
+  at five leap seconds.
 - **Hermetic decan Ascendant uses the engine's sidereal time.** `decan_at`
   computed RAMC from a private IAU 1982 mean-sidereal-time polynomial at one UT
   argument: no equation of the equinoxes (up to 17 arcsec) and a different

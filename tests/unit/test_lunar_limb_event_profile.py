@@ -1197,26 +1197,6 @@ def test_lola_wkt_admission_requires_the_iau_2015_moon_xyz_sphere() -> None:
         )
 
 
-def test_ut1_epoch_is_inverted_to_utc_before_et_conversion(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    calls: list[tuple[str, float]] = []
-
-    def fake_ut1_to_utc(value: float) -> float:
-        calls.append(("ut1_to_utc", value))
-        return value - 0.25
-
-    def fake_utc_to_et(value: float) -> float:
-        calls.append(("utc_to_et", value))
-        return value + 1000.0
-
-    monkeypatch.setattr(lunar_limb, "_ut1_to_utc", fake_ut1_to_utc)
-    monkeypatch.setattr(lunar_limb, "_jd_utc_to_et", fake_utc_to_et)
-
-    assert lunar_limb._jd_ut_to_et(100.0) == 1099.75
-    assert calls == [("ut1_to_utc", 100.0), ("utc_to_et", 99.75)]
-
-
 def test_reader_bound_light_cone_uses_physical_de441_translation_without_aberration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1268,3 +1248,68 @@ def test_reader_bound_light_cone_uses_physical_de441_translation_without_aberrat
     assert result.observer_to_moon_icrf == pytest.approx((1.0, 0.0, 0.0))
     assert result.jd_tt_emission == pytest.approx(100.0 - light_time_days)
     assert result.translation_label == "DE-0441LE-0441"
+
+
+
+def test_official_limb_adjustment_uses_the_reader_bound_light_cone_not_the_spice_route(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The profile adjustment takes its geometry and clock from the DE441 reader path.
+
+    The retired SPICE route timed the Moon from UT1 through the UTC leap-second kernel
+    (wrong before 1972, no label inside a leap second) and loaded a second planetary
+    kernel.  Neither the old kernel loader nor any UTC conversion may be reached.
+    """
+    reader = SimpleNamespace(name="reader")
+    seen: dict[str, object] = {}
+    context = SimpleNamespace(name="context")
+
+    def fake_context(jd_ut1, lat, lon, elevation, bound_reader):
+        seen["context"] = (jd_ut1, lat, lon, elevation, bound_reader)
+        return context, "translation", 0.0
+
+    def must_not_run(*_args, **_kwargs):
+        raise AssertionError("the retired SPICE-translation route was used")
+
+    monkeypatch.setattr(lunar_limb, "_ensure_contact_orientation_kernels_loaded", lambda root: ())
+    monkeypatch.setattr(lunar_limb, "_ensure_kernels_loaded", must_not_run)
+    monkeypatch.setattr(lunar_limb, "_reader_bound_observer_limb_context", fake_context)
+    monkeypatch.setattr(
+        lunar_limb, "_limb_point_lon_lat_from_context", lambda ctx, pa: (seen.setdefault("ctx", ctx) and 10.0, 20.0)
+    )
+    monkeypatch.setattr(
+        lunar_limb,
+        "_sample_lola_limb_elevation_m",
+        lambda lon, lat, ctx, pa, root, width: 1000.0,
+    )
+
+    adjustment = lunar_limb.official_lunar_limb_profile_adjustment(
+        2415020.5, 40.0, -75.0, 250.0, 33.0, 384400.0, reader=reader
+    )
+
+    assert seen["context"] == (2415020.5, 40.0, -75.0, 250.0, reader)
+    assert seen["ctx"] is context
+    expected = math.degrees(math.asin((lunar_limb.MOON_RADIUS_KM + 1.0) / 384400.0)) - math.degrees(
+        math.asin(lunar_limb.MOON_RADIUS_KM / 384400.0)
+    )
+    assert adjustment == pytest.approx(expected, rel=1e-12)
+
+
+def test_official_limb_adjustment_resolves_the_default_reader_when_none_is_given(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    default_reader = SimpleNamespace(name="default")
+    seen: dict[str, object] = {}
+    monkeypatch.setattr("moira.spk_reader.get_reader", lambda: default_reader)
+    monkeypatch.setattr(lunar_limb, "_ensure_contact_orientation_kernels_loaded", lambda root: ())
+    monkeypatch.setattr(
+        lunar_limb,
+        "_reader_bound_observer_limb_context",
+        lambda *args: (seen.setdefault("reader", args[4]) and SimpleNamespace(), "t", 0.0),
+    )
+    monkeypatch.setattr(lunar_limb, "_limb_point_lon_lat_from_context", lambda ctx, pa: (0.0, 0.0))
+    monkeypatch.setattr(lunar_limb, "_sample_lola_limb_elevation_m", lambda *args: 0.0)
+
+    lunar_limb.official_lunar_limb_profile_adjustment(2451545.0, 0.0, 0.0, 0.0, 0.0, 384400.0)
+
+    assert seen["reader"] is default_reader
