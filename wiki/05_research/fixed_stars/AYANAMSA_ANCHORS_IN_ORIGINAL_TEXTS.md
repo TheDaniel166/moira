@@ -332,3 +332,79 @@ Ranganātha's own doctrine adds a third possibility: a star held at a fixed *pol
 The independent reading moves the debate from "which star did the ancients use?" to "which layer of the tradition is being reproduced?". The verses define segments, mean-motion epochs and arithmetic corrections. The commentators define observing procedures that make the Revatī star the operational reference, in polar coordinates, valid only for their own time. Modern practice defines star-live ecliptic anchors. All three are legitimate, but they are three distinct objects, and an engine that names its modes by layer avoids the commonest error in this field: presenting a modern ecliptic convention as an ancient textual fact.
 
 The most consequential new fact is that Gaṇeśa states his star longitudes are polar, in the verse itself. That settles the "Burgess invented polar longitude" objection and gives Moira solid ground for a siddhantic polar family. The best-attested text-faithful ayanamsa in the whole corpus turns out to be one with no star at all: the Grahalaghava's one-line rule.
+
+## Follow-up checks (2026-10-30)
+
+Three items left open above were checked from the original editions. Notes:
+`research_notes/Ayanamsa original texts follow up/` in the session notes.
+
+### Parameśvara's Sūrya Siddhānta commentary (c. 1432 CE; Shukla, Lucknow 1957)
+
+The oldest surviving commentary on the Sūrya Siddhānta shows which of
+Raṅganātha's readings (1603) are older and which are later.
+
+| Raṅganātha's reading | In Parameśvara? |
+|---|---|
+| iii.9–12 as a ±27° libration, 600 cycles per yuga, 7,200-year period | **Yes.** He also adds a sign rule and states +14° for Kali 4533 (1432 CE). He does not call the "30" variant an error. His text reads *antarāṃśair athoddhṛtya* in v.11, where Raṅganātha's *athāvṛtya* ("turning back") had been read as evidence for libration. |
+| Zero point placed at, or just ahead of, the Revatī star (10′ offset) | **No.** He glosses *pauṣṇānte* only as the end of Pisces / start of Aries, and names no star. |
+| Star coordinates measured on circles through the pole, with an armillary procedure | **No.** He glosses the dhruvakas as minutes counted from the start of Aries; viii.12 gets only "one should observe". |
+| Catalogue valid only for the author's time; re-observe | **No.** |
+
+So the explicit polar statement starts with Gaṇeśa's Grahalāghava (1520, in
+the verse itself) and the commentaries of about 1600 (Raṅganātha, Mallāri).
+It is not attested in the Sūrya Siddhānta's commentary tradition before them.
+
+Shukla's printed catalogue is a composite of several manuscripts. Kṛttikā
+(36°0′ against 37°30′) and Ārdrā (74°50′ against 67°20′; latitude 11° against
+9°) differ between witnesses. Puṣya (106°, 0°), Citrā (180°, 2°S) and Revatī
+(359°50′) are stable; Mūla's latitude may read 9½°S.
+
+### The Āryabhaṭīya critical edition (Shukla & Sarma, INSA 1976)
+
+- **Confirmed:** no star catalogue and no precession in Āryabhaṭa's verses.
+  The editors name Deva's *Karaṇaratna* (689 CE) as the earliest
+  Āryabhaṭa-school statement of precession. All decoded numbers agree with
+  Kern's edition. Kern's printed "su" in the Earth-rotation number is a misprint
+  for "bu"; the Moon's-apogee forms are a letter-order variant of the same
+  value.
+- **The ±24° rule:** the "Prakāśikā" is Sūryadeva Yajvan's commentary (born
+  1191 CE). He quotes the two verses as composed by unnamed traditionists, so
+  their author and date remain unknown. The "×2" reading is confirmed: a ±24°
+  oscillation with a 5,808-year period, about 59.5″ a year.
+- **Two attested zero years:** Kali 3600 (499 CE) in Sūryadeva, the
+  *Vākya-karaṇa* and later writers; Śaka 444 (522 CE) in Mañjula (932),
+  Bhoja, Brahmadeva (1092) and Gaṇeśa (1520). Both are historical conventions,
+  not Āryabhaṭa's text.
+- **Correction:** the critical text makes Thursday the start of the kalpa and
+  Friday, 18 February 3102 BCE, the start of the Kali age.
+
+### The Pañcasiddhāntikā's Puṣya at about 97°
+
+- **The reading is secure.** XIV.35 reads "in the 4th degree" of Puṣya, with
+  latitude 3½ hastas north, in both columns of Thibaut & Dvivedi, with no
+  variant. That places the star at 96°20′–97°20′.
+- **Not an origin, epoch or coordinate effect.** Against modern positions at
+  500 CE, the list's other stars fall short by unequal amounts (about 1¾° to
+  4°, Kṛttikā about 7¼°); Puṣya is short by about 11° against δ Cnc. A
+  different zero point or epoch would shift every star equally. Polar and
+  ecliptic longitudes differ by less than 30′ for these near-ecliptic stars.
+- **Probably a different tradition, or a corrupt numeral.** The latitude
+  (about 3°10′ N) fits γ Cnc rather than δ Cnc, the Sūrya Siddhānta's star at
+  latitude 0. But no candidate star sits near 97°. Within the list's own
+  typical offset, the expected place is Puṣya's 11th–12th degree, not its 4th.
+  This is an inference: no source read explains it. Neugebauer & Pingree's
+  commentary, Pingree & Morrissey (1989) and Dvivedi's commentary were not
+  available.
+- **For Moira:** the Pañcasiddhāntikā's Puṣya is not evidence against the
+  δ Cnc = 106° anchor (True Pushya), which rests on the Sūrya Siddhānta and the
+  Grahalāghava.
+
+### What changes in the conclusions
+
+- The libration reading of the Sūrya Siddhānta is at least as old as 1432.
+- The polar-coordinate doctrine and the "re-observe the stars" doctrine are
+  attested from 1520 (Grahalāghava) and about 1600 (Raṅganātha, Mallāri), not
+  earlier in the Sūrya Siddhānta's commentaries.
+- The Āryabhaṭa-school zero year is a convention with two historical variants,
+  499 CE and 522 CE. A text-faithful mode must name which one it uses.
+- True Pushya's 106° stands; the Pañcasiddhāntikā outlier does not bear on it.
