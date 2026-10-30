@@ -494,7 +494,7 @@ def _sidereal_context(jd_utc: float) -> tuple[float, float, float, float, float]
     jd_tt = utc_to_tt(jd_utc)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    gmst_deg = apparent_sidereal_time(jd_ut, dpsi, obliquity)
+    gmst_deg = apparent_sidereal_time(jd_ut, dpsi, obliquity, jd_tt)
     return dpsi, obliquity, gmst_deg, jd_ut, jd_tt
 
 

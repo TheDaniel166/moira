@@ -1370,8 +1370,8 @@ class _LocalAngles:
 
 
 def _armc(jd_ut: float, longitude: float, jd_tt: float, dpsi: float, obliquity: float) -> float:
-    """Local Sidereal Time = ARMC (degrees)."""
-    return local_sidereal_time(jd_ut, longitude, dpsi, obliquity)
+    """Local Sidereal Time = ARMC (degrees): UT1 rotation, TT equinox terms."""
+    return local_sidereal_time(jd_ut, longitude, dpsi, obliquity, jd_tt)
 
 
 def _mc_from_armc(armc: float, obliquity: float, lat: float = 0.0) -> float:

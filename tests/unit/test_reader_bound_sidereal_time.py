@@ -4,13 +4,13 @@ import pytest
 
 from moira.julian import (
     _greenwich_mean_sidereal_time_at_tt, _local_sidereal_time_at_tt,
-    greenwich_mean_sidereal_time, julian_day,
+    greenwich_mean_sidereal_time, julian_day, ut_to_tt,
 )
 from moira.obliquity import nutation, mean_obliquity
 
 
 @pytest.mark.parametrize("year", [1600, 1900, 2000, 2026, 2100])
-def test_reader_bound_gmst_uses_tt_and_preserves_legacy_equal_epoch(year):
+def test_reader_bound_gmst_uses_tt_and_defaults_to_ut_to_tt(year):
     erfa = pytest.importorskip("erfa")
     ut1 = julian_day(year, 1, 1)
     tt = ut1 + 1  # Deliberately distinct scales, exposes using UT1 for both.
@@ -18,7 +18,10 @@ def test_reader_bound_gmst_uses_tt_and_preserves_legacy_equal_epoch(year):
     actual = _greenwich_mean_sidereal_time_at_tt(ut1, tt)
     assert abs((actual-expected+180) % 360-180) < 2e-7
     assert abs((actual-greenwich_mean_sidereal_time(ut1)+180) % 360-180) > 1e-5
-    assert _greenwich_mean_sidereal_time_at_tt(ut1, ut1) == pytest.approx(greenwich_mean_sidereal_time(ut1), abs=1e-10)
+    # An explicit equal pair is the caller's own choice and is honoured verbatim.
+    assert greenwich_mean_sidereal_time(ut1, ut1) == _greenwich_mean_sidereal_time_at_tt(ut1, ut1)
+    # Omitting jd_tt derives it with the default Delta-T policy, never reusing UT1 as TT.
+    assert greenwich_mean_sidereal_time(ut1) == _greenwich_mean_sidereal_time_at_tt(ut1, ut_to_tt(ut1))
 
 
 @pytest.mark.parametrize("year", [1600, 1900, 2000, 2026, 2100])

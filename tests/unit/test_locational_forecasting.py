@@ -179,7 +179,7 @@ def test_transiting_astrocartography_builds_explicit_snapshots_and_line_shifts(
     monkeypatch.setattr(
         locational,
         "apparent_sidereal_time",
-        lambda jd_ut, dpsi, obliquity: jd_ut % 360.0,
+        lambda jd_ut, dpsi, obliquity, jd_tt=None: jd_ut % 360.0,
     )
 
     def fake_sky_position_at(body, jd_ut, **kwargs):

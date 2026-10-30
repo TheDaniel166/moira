@@ -68,11 +68,11 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_regiomonta
     assert houses.system == HouseSystem.REGIOMONTANUS
     assert houses.effective_system == HouseSystem.REGIOMONTANUS
     assert houses.fallback is False
-    # Re-derived 2026-10-30 (GAST on the SOFA ee00 convention): ARMC = GAST(J2000) + lon = 90.45707233245349;
+    # Re-derived 2026-10-30 (GAST: SOFA ee00 convention, UT1 rotation with TT equinox terms): ARMC = GAST(J2000) + lon = 90.4570723583667;
     # asc/mc cross-checked through houses_from_armc. Tolerance unchanged.
-    assert houses.asc == pytest.approx(180.17311048931745, abs=1e-9)
-    assert houses.mc == pytest.approx(90.41936219580234, abs=1e-9)
-    assert houses.cusps[1] == pytest.approx(192.51869505028384, abs=1e-8)
+    assert houses.asc == pytest.approx(180.17311049913172, abs=1e-9)
+    assert houses.mc == pytest.approx(90.41936221957776, abs=1e-9)
+    assert houses.cusps[1] == pytest.approx(192.51869506072575, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_uses_real_regiomontanus_at_polar_latitude() -> None:
@@ -86,7 +86,7 @@ def test_calculate_houses_default_policy_uses_real_regiomontanus_at_polar_latitu
     assert houses.system == HouseSystem.REGIOMONTANUS
     assert houses.effective_system == HouseSystem.REGIOMONTANUS
     assert houses.fallback is False
-    assert houses.cusps[1] == pytest.approx(192.51869505028384, abs=1e-8)
+    assert houses.cusps[1] == pytest.approx(192.51869506072575, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_still_falls_back_for_regiomontanus_no_solution_high_lat() -> None:

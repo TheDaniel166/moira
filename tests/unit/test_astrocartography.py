@@ -238,7 +238,7 @@ def test_acg_from_chart_uses_apparent_sidereal_and_chart_planet_radec(monkeypatc
 
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
-    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
+    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq, jd_tt=None: 111.0)
 
     def fake_sky_position_at(
         body: str,
@@ -314,7 +314,7 @@ def test_subplanetary_from_chart_uses_geocentric_ecliptic_surface(monkeypatch: p
     monkeypatch.setattr("moira.julian.utc_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
-    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
+    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq, jd_tt=None: 111.0)
 
     def fake_planet_at(body: str, jd_ut: float, *, jd_tt: float):
         calls.setdefault("planet_at", []).append((body, jd_ut, jd_tt))
@@ -365,7 +365,7 @@ def test_subplanetary_from_chart_admits_small_body_through_planet_surface(
     monkeypatch.setattr("moira.julian.utc_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.0, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4392911)
-    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 0.0)
+    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq, jd_tt=None: 0.0)
 
     def fake_planet_at(body: str, jd_ut: float, *, jd_tt: float):
         calls.append((body, jd_ut, jd_tt))

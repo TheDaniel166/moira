@@ -52,7 +52,7 @@ jd = jd_from_datetime(dt)
 h = calculate_houses(
     jd,
     77.0,
-    169.5429276675465,
+    169.5429276416333,
     HouseSystem.PLACIDUS,
     policy=HousePolicy.experimental(),
 )
@@ -163,7 +163,7 @@ Run this chart:
 - Date: `2000-01-01`
 - Time: `12:00:00 UTC`
 - Latitude: `77.0`
-- Longitude: `169.5429276675465`
+- Longitude: `169.5429276416333`
 
 You should get:
 
@@ -316,7 +316,7 @@ Run this chart:
 - Date: `2000-01-01`
 - Time: `12:00:00 UTC`
 - Latitude: `77.0`
-- Longitude: `169.5429276675465`
+- Longitude: `169.5429276416333`
 
 You should get:
 

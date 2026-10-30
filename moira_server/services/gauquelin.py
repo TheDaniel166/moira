@@ -180,7 +180,7 @@ def compute_gauquelin_chart_sectors(
     jd_ut1 = utc_to_ut1(chart.jd_ut)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    lst = local_sidereal_time(jd_ut1, request.longitude, dpsi, obliquity)
+    lst = local_sidereal_time(jd_ut1, request.longitude, dpsi, obliquity, jd_tt)
     reader = getattr(engine, "_reader", None)
 
     positions: list[GauquelinPositionResult] = []

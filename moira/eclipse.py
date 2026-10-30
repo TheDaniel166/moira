@@ -4270,6 +4270,7 @@ def _earth_fixed_solar_shadow(
             jd_ut,
             dpsi_deg,
             true_obliquity(jd_tt),
+            jd_tt,
         )
     )
     cos_gast = math.cos(gast_rad)
@@ -4380,7 +4381,7 @@ def _earth_fixed_lunar_reception_vector(
 
     dpsi_deg, _deps_deg = nutation(jd_tt)
     gast_rad = math.radians(
-        apparent_sidereal_time(jd_ut, dpsi_deg, true_obliquity(jd_tt))
+        apparent_sidereal_time(jd_ut, dpsi_deg, true_obliquity(jd_tt), jd_tt)
     )
     cos_gast = math.cos(gast_rad)
     sin_gast = math.sin(gast_rad)

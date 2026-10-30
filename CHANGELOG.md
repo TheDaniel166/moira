@@ -277,6 +277,24 @@ publication, or production pin is implied by these entries.
   vertex golden/snapshot and `EXPERIMENTAL_POLAR_HOUSE_PROOF.md` were
   re-derived with unchanged tolerances. The certified muhurta sidereal
   enclosure mirrors the new convention.
+- **Sidereal time keeps UT1 and TT apart.** GMST precession polynomial, the
+  complementary terms and the mean obliquity are TT quantities, but
+  `greenwich_mean_sidereal_time`, `apparent_sidereal_time` and
+  `local_sidereal_time` evaluated them at the UT1 argument (0.1 mas in 2026,
+  24 mas at -500, 67 mas at -2000). Each now takes an optional `jd_tt`; when it
+  is omitted TT is derived with `ut_to_tt` rather than reusing UT1. Every
+  in-repo caller that holds a bound TT (houses, ARMC, astrocartography, local
+  space, rise/set, occultations, eclipses, lunar apparent place, topocentric
+  correction, server services) now passes it, so Delta-T and the reader
+  retarget are applied once. Native `greenwich_mean_sidereal_time` and
+  `apparent_sidereal_time` take `(jd_ut, jd_tt[, dpsi])`, native
+  `reduce_local_angles` and the target visibility altitude use them, and
+  `TopocentricEvaluator` takes the TT-UT1 offset it needs for Earth rotation.
+  `earth_rotation_angle` follows the SOFA `iauEra00` evaluation order and no
+  longer loses 0.3 mas at -2000. GMST now agrees with ERFA `gmst06` to
+  0.0003 mas and GAST with `gmst06 + ee00` to 2.6 uas over -2000..2500. The
+  Besselian ephemeris hour angle passes its TT explicitly. The certified
+  muhurta sidereal enclosure takes the TT jet for the TT terms.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged

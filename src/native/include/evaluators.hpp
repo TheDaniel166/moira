@@ -885,14 +885,18 @@ class TopocentricEvaluator : public IEvaluator {
 public:
     std::shared_ptr<IEvaluator> target;
     double lat, lon, alt;
+    /// TT - UT1 in seconds.  The evaluator timeline is TT (like every sibling
+    /// evaluator); Earth rotation needs the UT1 instant TT - delta_t.
+    double delta_t;
 
-    TopocentricEvaluator(std::shared_ptr<IEvaluator> t, double lat, double lon, double alt)
-        : target(std::move(t)), lat(lat), lon(lon), alt(alt) {}
+    TopocentricEvaluator(std::shared_ptr<IEvaluator> t, double lat, double lon, double alt, double delta_t)
+        : target(std::move(t)), lat(lat), lon(lon), alt(alt), delta_t(delta_t) {}
 
-    void compute(double jd_ut, double* result) const override {
+    void compute(double jd_tt, double* result) const override {
         // 1. Get geocentric position
         double r_geo[6];
-        target->evaluate(jd_ut, r_geo);
+        target->evaluate(jd_tt, r_geo);
+        const double jd_ut = jd_tt - delta_t / 86400.0;
 
         // 2. Compute Observer position in ITRF
         // WGS84 Constants
@@ -914,7 +918,7 @@ public:
         };
 
         // 3. Rotate ITRF to ICRF using ERA/GAST
-        double gmst = greenwich_mean_sidereal_time(jd_ut);
+        double gmst = greenwich_mean_sidereal_time(jd_ut, jd_tt);
         double theta = deg_to_rad(gmst);
         double cos_theta = std::cos(theta);
         double sin_theta = std::sin(theta);

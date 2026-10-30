@@ -174,12 +174,15 @@ def test_lst_reuses_one_nutation_evaluation(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(
         rise_set,
         "local_sidereal_time",
-        lambda jd_ut, longitude, dpsi, eps: jd_ut + longitude + dpsi + eps,
+        lambda jd_ut, longitude, dpsi, eps, jd_tt: (
+            calls.append(("jd_tt", jd_tt)) or jd_ut + longitude + dpsi + eps
+        ),
     )
 
     value = rise_set._lst(100.0, 5.0)
 
-    assert calls == [100.25]
+    # One nutation evaluation at TT, and the same TT reaches the sidereal-time reduction.
+    assert calls == [100.25, ("jd_tt", 100.25)]
     assert value == pytest.approx(128.43)
 
 

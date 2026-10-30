@@ -19,11 +19,14 @@ _AS=PI/648000
 _GMST=(.014506,4612.156534,1.3915817,-.00000044,-.000029956,-.0000000368)
 # IAU 2006 mean obliquity (arcseconds); the equation of the equinoxes uses it, not the true
 # obliquity (SOFA iauEe00; moira.julian.apparent_sidereal_time).
+# Time scales follow moira.julian._apparent_sidereal_time_at_tt: the Earth rotation
+# angle is a function of the UT1 jet ``u``; the GMST polynomial, complementary terms and
+# mean obliquity are functions of the TT jet ``tt`` that the owner binds to the same instant.
 _EPSA=(84381.406,-46.836769,-.0001831,.0020034,-.000000576,-.0000000434)
 
 
-def _last(u,longitude,angles):
-    t=(u-2451545.)/36525.
+def _last(u,tt,longitude,angles):
+    t=(tt-2451545.)/36525.
     om=_jet_polynomial((450160.398036,-6962890.5431,7.4722,.007702),t)*_AS
     f=(335779.526232+t*1739527262.8478)*_AS
     d=(1072260.703692+t*1602961601.2090)*_AS
@@ -46,6 +49,10 @@ def _last(u,longitude,angles):
     # Source's degree/radian staging, expanded powers, and angle additions.
     # ERA modulo-one itself subtracts an exactly represented integer. The
     # larger unwrapped magnitude bounds every wrapped multiplication stage.
+    # The serving ERA evaluates fmod(u,1)+0.779...+0.0027378...*D (SOFA iauEra00
+    # order); it equals this unwrapped 1.0027378...*D form modulo one turn, and
+    # its rounding is bounded by the same schedule because every stage there is
+    # no larger than the unwrapped product bounded here.
     staging=(gamma(64)*(era.value.magnitude+gmst.value.magnitude*_AS+epsa.value.magnitude+2*PI)).hi
     return result.with_error(staging)
 
@@ -181,7 +188,7 @@ class HorizonEnclosures:
         u=self._ut1(a,b)
         tt=self._clock_jet(u,self.astro.clock)
         angles=self.astro.frames.angles(tt,coarse=coarse)
-        last=_last(u,self.context.longitude,angles)
+        last=_last(u,tt,self.context.longitude,angles)
         raw=self.astro.solar_xyz_tt(tt.value.lo,tt.value.hi,coarse)
         shift=tt.center-(tt.value.lo+tt.value.hi)/2
         xyz=tuple(D(v.value,v.rate*tt.rate,v.center+v.rate*shift,u.radius,v.centered and tt.centered) for v in raw)
@@ -218,7 +225,7 @@ class HorizonEnclosures:
         eps=angles[3]
         if abs(self.context.latitude)+(eps.value*180/PI).hi>=90:
             raise EnclosureUnavailable('lagna_subpolar_geometry_not_admitted')
-        a=_last(u,self.context.longitude,angles)
+        a=_last(u,tt,self.context.longitude,angles)
         lat=D.point(self.context.latitude*PI/180)
         margin=eps.cos().value-(lat.sin().value/lat.cos().value).magnitude*eps.sin().value
         if margin.lo<=(gamma(128)*32*PI).hi:
@@ -236,6 +243,6 @@ class HorizonEnclosures:
         reader_tt=self._clock_jet(u,self.astro.clock)
         angles=self.astro.frames.angles(tt,coarse=coarse)
         offset=self.astro.frames.angles(reader_tt,coarse=coarse)[4]
-        a=_last(u,self.context.longitude,angles)
+        a=_last(u,tt,self.context.longitude,angles)
         vector=(a.cos()*angles[3].cos(),a.sin(),D.point(0.))
         return rotate_z(vector,offset)

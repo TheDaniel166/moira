@@ -110,6 +110,7 @@ def test_moira_chart_uses_apparent_lst_for_topocentric_chart(monkeypatch) -> Non
         -0.1,
         0.2,
         23.4567,
+        jd_from_datetime(dt) + 0.0008,
     )
     assert seen["lst_deg"] == 211.0
 

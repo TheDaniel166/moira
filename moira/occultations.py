@@ -1201,7 +1201,7 @@ def _star_topocentric_equatorial(
     xyz_apparent = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_apparent)
     xyz_apparent = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_apparent)
 
-    lst = local_sidereal_time(jd, lon, dpsi, obliquity)
+    lst = local_sidereal_time(jd, lon, dpsi, obliquity, jd_tt)
     # Match sky_position_at's observer-apparent Moon/planet ray.  This
     # nominal apparent path is separate from the physical topographic ray.
     xyz_apparent = apply_diurnal_aberration(
@@ -1229,7 +1229,7 @@ def _refracted_topocentric_equatorial(
     jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
-    lst = local_sidereal_time(jd_ut, lon_deg, dpsi, obliquity)
+    lst = local_sidereal_time(jd_ut, lon_deg, dpsi, obliquity, jd_tt)
     az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst, lat_deg)
     refracted_alt_deg = apply_refraction(alt_deg)
     refracted_ra_deg, refracted_dec_deg = horizontal_to_equatorial(
@@ -1904,7 +1904,7 @@ def _star_topocentric_target_geometry(
         jd_tt = _ut1_to_ephemeris_tt(jd, reader)
         obliquity = true_obliquity(jd_tt)
         dpsi, _ = nutation(jd_tt)
-        lst = local_sidereal_time(jd, lon, dpsi, obliquity)
+        lst = local_sidereal_time(jd, lon, dpsi, obliquity, jd_tt)
         _, star_altitude = equatorial_to_horizontal(ra_star, dec_star, lst, lat)
     separation = _angular_separation_equatorial(
         moon_ra,

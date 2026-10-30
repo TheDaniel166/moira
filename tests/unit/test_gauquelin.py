@@ -189,8 +189,8 @@ def test_gauquelin_chart_service_resolves_utc_tt_and_ut1_for_dependencies(monkey
     monkeypatch.setattr(gauquelin_service, "nutation", lambda received_jd_tt: (0.2, 0.0))
     monkeypatch.setattr(gauquelin_service, "true_obliquity", lambda received_jd_tt: 23.5)
 
-    def fake_local_sidereal_time(received_jd_ut1, longitude, dpsi, obliquity):
-        calls["sidereal"] = (received_jd_ut1, longitude, dpsi, obliquity)
+    def fake_local_sidereal_time(received_jd_ut1, longitude, dpsi, obliquity, received_jd_tt):
+        calls["sidereal"] = (received_jd_ut1, longitude, dpsi, obliquity, received_jd_tt)
         return 123.0
 
     def fake_sky_position_at(body, received_jd_ut1, **kwargs):
@@ -217,7 +217,7 @@ def test_gauquelin_chart_service_resolves_utc_tt_and_ut1_for_dependencies(monkey
 
     assert calls["utc_to_tt"] == [jd_utc]
     assert calls["utc_to_ut1"] == [jd_utc]
-    assert calls["sidereal"] == (jd_ut1, -74.0, 0.2, 23.5)
+    assert calls["sidereal"] == (jd_ut1, -74.0, 0.2, 23.5, jd_tt)
     assert calls["sky"] == [
         (
             "Sun",

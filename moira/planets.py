@@ -3463,7 +3463,7 @@ def _sky_position_at_impl(
         lst_deg = (
             _lst_deg_override
             if _lst_deg_override is not None
-            else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+            else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity, jd_tt)
         )
         xyz = topocentric_correction(
             xyz,
@@ -3532,7 +3532,7 @@ def _sky_position_at_impl(
     lst_deg = (
         _lst_deg_override
         if _lst_deg_override is not None
-        else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+        else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity, jd_tt)
     )
     xyz = topocentric_correction(
         xyz,

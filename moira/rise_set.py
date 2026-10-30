@@ -244,7 +244,7 @@ def _lst(jd_ut: float, longitude: float) -> float:
     jd_tt = _jd_tt_for_active_reader(jd_ut)
     dpsi, deps = nutation(jd_tt)
     eps = mean_obliquity(jd_tt) + deps
-    return local_sidereal_time(jd_ut, longitude, dpsi, eps)
+    return local_sidereal_time(jd_ut, longitude, dpsi, eps, jd_tt)
 
 
 def _body_ra_dec(jd_ut: float, body_name: str, *, star_product: str = DEFAULT_STAR_EVENT_PRODUCT) -> tuple[float, float]:

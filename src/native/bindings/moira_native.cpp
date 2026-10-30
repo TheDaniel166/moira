@@ -1803,8 +1803,8 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("load_naif_lsk", &load_naif_lsk_py, py::arg("path"));
     m.def("jd_utc_to_et_seconds_past_j2000", &jd_utc_to_et_seconds_past_j2000_py, py::arg("jd_utc"));
     m.def("earth_rotation_angle", &earth_rotation_angle, py::arg("jd_ut"));
-    m.def("greenwich_mean_sidereal_time", &greenwich_mean_sidereal_time, py::arg("jd_ut"));
-    m.def("apparent_sidereal_time", &apparent_sidereal_time, py::arg("jd_ut"), py::arg("nutation_longitude"), py::arg("obliquity"));
+    m.def("greenwich_mean_sidereal_time", &greenwich_mean_sidereal_time, py::arg("jd_ut"), py::arg("jd_tt"));
+    m.def("apparent_sidereal_time", &apparent_sidereal_time, py::arg("jd_ut"), py::arg("jd_tt"), py::arg("nutation_longitude"));
     m.def("set_nutation_2000a_tables", &set_nutation_2000a_tables_py,
         py::arg("ls_terms"), py::arg("pl_terms"), py::arg("ls_j0_count"), py::arg("pl_j0_count"));
     m.def("nutation_2000a", &nutation_2000a_py, py::arg("jd_tt"));
@@ -2126,7 +2126,8 @@ PYBIND11_MODULE(_moira_native, m) {
 
     // --- Topocentric ---
     py::class_<TopocentricEvaluator, IEvaluator, std::shared_ptr<TopocentricEvaluator>>(m, "TopocentricEvaluator")
-        .def(py::init<std::shared_ptr<IEvaluator>, double, double, double>());
+        .def(py::init<std::shared_ptr<IEvaluator>, double, double, double, double>(),
+             py::arg("target"), py::arg("lat"), py::arg("lon"), py::arg("alt"), py::arg("delta_t"));
 
     py::class_<FixedStarEvaluator, IEvaluator, std::shared_ptr<FixedStarEvaluator>>(m, "FixedStarEvaluator")
         .def(py::init<double, double, double, double, double, double, double>(),

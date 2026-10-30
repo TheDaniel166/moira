@@ -167,8 +167,8 @@ inline double target_topocentric_altitude(
     // Use GAST (Apparent Sidereal Time)
     const double gast_deg = apparent_sidereal_time(
         jd_ut,
-        nut.longitude * RAD2DEG,
-        (eps + nut.obliquity) * RAD2DEG
+        jd_tt,
+        nut.longitude * RAD2DEG
     );
     double lst_rad = deg_to_rad(gast_deg + lon_deg);
     

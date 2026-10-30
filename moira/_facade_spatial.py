@@ -86,7 +86,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         jd_ut1 = facade.utc_to_ut1(jd_utc)
         jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        gmst_deg = _gast(jd_ut1, dpsi, _tob(jd_tt))
+        gmst_deg = _gast(jd_ut1, dpsi, _tob(jd_tt), jd_tt)
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:
@@ -479,7 +479,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         jd_ut1 = facade.utc_to_ut1(jd_utc)
         jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt))
+        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt), jd_tt)
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:
@@ -546,7 +546,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         jd_ut1 = facade.utc_to_ut1(jd_utc)
         jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt))
+        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt), jd_tt)
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:

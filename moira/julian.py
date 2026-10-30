@@ -2791,47 +2791,71 @@ def earth_rotation_angle(jd_ut: float) -> float:
     Side effects:
         None.
     """
+    # SOFA iauEra00 evaluation order: the whole turns carried by the Julian
+    # day fraction are taken exactly, and only the 0.0027378... excess rate
+    # multiplies the long baseline.  Multiplying the full 1.0027378... rate by
+    # D instead loses ~0.3 mas at -2000 to binary64 rounding.
     D = jd_ut - J2000
-    era_turns = 0.7790572732640 + 1.00273781191135448 * D
+    era_turns = math.fmod(jd_ut, 1.0) + 0.7790572732640 + 0.00273781191135448 * D
     return (era_turns % 1.0) * 360.0
 
 
-@accelerate("greenwich_mean_sidereal_time")
-def greenwich_mean_sidereal_time(jd_ut: float) -> float:
+def _resolve_sidereal_jd_tt(jd_ut: float, jd_tt: float | None) -> float:
+    """Return the TT coordinate that accompanies one UT1 sidereal-time epoch.
+
+    Earth rotation (ERA) is a function of UT1, while the precession
+    polynomial, nutation, and equation of the equinoxes are functions of TT
+    (IERS Conventions 2010 §5.5; SOFA ``iauGmst06``/``iauGst06a``).  A caller
+    that holds a reader-bound or otherwise policy-selected TT supplies it
+    verbatim.  When it supplies none, TT is derived from ``jd_ut`` with the
+    default Delta-T policy (:func:`ut_to_tt`); the UT1 value is never reused
+    as a TT coordinate.
+    """
+    _require_representable_time_jd("jd_ut", jd_ut)
+    if jd_tt is None:
+        return ut_to_tt(jd_ut)
+    _require_representable_time_jd("jd_tt", jd_tt)
+    return float(jd_tt)
+
+
+def greenwich_mean_sidereal_time(jd_ut: float, jd_tt: float | None = None) -> float:
     """
     Compute Greenwich Mean Sidereal Time (GMST) in degrees.
 
     Governs the IAU 2006 formula (Capitaine et al. 2003, A&A 412, 567–586;
-    SOFA ``iauGmst06``). This is the Earth Rotation Angle (ERA) plus a
-    5th-order polynomial correction that accounts for the offset between the
-    mean equinox and the Celestial Intermediate Origin. Agreement with SOFA
-    ``iauGmst06`` is better than 0.0001 arcsec for 1800–2200.
-
-    This is *not* the older IAU 1982 polynomial (Aoki et al. 1982); the two
-    differ by up to ~0.55 arcsec at dates two centuries from J2000.
+    SOFA ``iauGmst06``). This is the Earth Rotation Angle (ERA, a function of
+    UT1) plus a 5th-order polynomial correction (a function of TT) that
+    accounts for the offset between the mean equinox and the Celestial
+    Intermediate Origin.  This is *not* the older IAU 1982 polynomial (Aoki
+    et al. 1982); the two differ by up to ~0.55 arcsec at dates two centuries
+    from J2000.
 
     Args:
         jd_ut: Julian Day Number in UT1.
+        jd_tt: Julian Day Number in TT for the same instant.  When ``None``
+            it is derived as ``ut_to_tt(jd_ut)`` under the default Delta-T
+            policy; pass the caller's bound TT to keep one clock per
+            computation.
 
     Returns:
         GMST in degrees, normalised to [0, 360).
 
     Raises:
-        Nothing — pure arithmetic.
+        ValueError: If either epoch is not finite and representable.
 
     Side effects:
         None.
     """
-    # Preserve the historical public one-epoch contract. Reader-bound
-    # composition uses the private two-scale entry point below.
-    return _greenwich_mean_sidereal_time_at_tt(jd_ut, jd_ut)
+    return _greenwich_mean_sidereal_time_at_tt(jd_ut, _resolve_sidereal_jd_tt(jd_ut, jd_tt))
 
 
+@accelerate("greenwich_mean_sidereal_time")
 def _greenwich_mean_sidereal_time_at_tt(jd_ut1: float, jd_tt: float) -> float:
     """IAU 2006 GMST: ERA at UT1, equinox precession polynomial at TT.
 
     Source: SOFA/ERFA gmst06 (Capitaine et al. 2003). No clock conversion is
-    performed here; a reader-bound caller owns both coordinates.
+    performed here; the caller owns both coordinates.  The native
+    counterpart is ``greenwich_mean_sidereal_time(jd_ut, jd_tt)``.
     """
     D = jd_tt - J2000           # TT days from J2000.0
     T = D / JULIAN_CENTURY       # Julian centuries
@@ -2920,8 +2944,12 @@ def _mean_obliquity_p03_degrees(jd: float) -> float:
             - 0.0000000434 * T * T * T * T * T) / 3600.0
 
 
-@accelerate("apparent_sidereal_time")
-def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: float) -> float:
+def apparent_sidereal_time(
+    jd_ut: float,
+    nutation_longitude: float,
+    obliquity: float,
+    jd_tt: float | None = None,
+) -> float:
     """
     Compute Greenwich Apparent Sidereal Time (GAST) in degrees.
 
@@ -2929,29 +2957,48 @@ def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: f
         EE = Δψ · cos(ε_A) + CT
     where ε_A is the IAU 2006 *mean* obliquity and CT are the Capitaine et
     al. (2003) complementary terms (≤ 0.04″) computed by
-    ``_gast_complementary_terms()``.  ε_A is evaluated here from ``jd_ut``;
-    the TT-UT offset moves it by ~1e-6″, which changes EE by ~1e-11″.
+    ``_gast_complementary_terms()``.  Time scales follow SOFA ``iauGst06a``:
+    the Earth rotation angle uses UT1, while the GMST precession polynomial,
+    ε_A, and CT use TT.
 
     Args:
         jd_ut:              Julian Day Number in UT1.
-        nutation_longitude: Δψ (nutation in longitude) in degrees.
+        nutation_longitude: Δψ (nutation in longitude) in degrees, evaluated
+                            at TT by the caller.
         obliquity:          Retained for API compatibility and ignored.
                             Callers pass the *true* obliquity they use for
                             horizon/ecliptic geometry; using it in EE would
                             bias GAST by up to ~0.26 mas against SOFA.
+        jd_tt:              Julian Day Number in TT for the same instant.
+                            When ``None`` it is derived as
+                            ``ut_to_tt(jd_ut)`` under the default Delta-T
+                            policy; a caller that holds a reader-bound TT
+                            passes it so Δψ and the sidereal time share one
+                            clock.
 
     Returns:
         GAST in degrees, normalised to [0, 360).
 
     Raises:
-        Nothing — pure arithmetic.
+        ValueError: If either epoch is not finite and representable.
 
     Side effects:
         None.
     """
-    gmst = greenwich_mean_sidereal_time(jd_ut)
-    ee   = (nutation_longitude * math.cos(_mean_obliquity_p03_degrees(jd_ut) * math.pi / 180.0)
-            + _gast_complementary_terms(jd_ut))
+    tt = _resolve_sidereal_jd_tt(jd_ut, jd_tt)
+    return _apparent_sidereal_time_at_tt(jd_ut, tt, nutation_longitude)
+
+
+@accelerate("apparent_sidereal_time")
+def _apparent_sidereal_time_at_tt(jd_ut1: float, jd_tt: float, nutation_longitude: float) -> float:
+    """GAST with UT1 Earth rotation and TT equinox terms (SOFA ``iauGst06a``/``iauEe00``).
+
+    The native counterpart is ``apparent_sidereal_time(jd_ut, jd_tt,
+    nutation_longitude)``.  No clock conversion is performed here.
+    """
+    gmst = _greenwich_mean_sidereal_time_at_tt(jd_ut1, jd_tt)
+    ee   = (nutation_longitude * math.cos(_mean_obliquity_p03_degrees(jd_tt) * math.pi / 180.0)
+            + _gast_complementary_terms(jd_tt))
     return (gmst + ee) % 360.0
 
 
@@ -2987,28 +3034,34 @@ def apparent_sidereal_time_at(jd_ut: float, longitude: float = 0.0) -> float:
     jd_tt = ut_to_tt(jd_ut)
     dpsi, _deps = _nutation(jd_tt)
     obl = _true_obliquity(jd_tt)
-    return (apparent_sidereal_time(jd_ut, dpsi, obl) + longitude) % 360.0
+    return (apparent_sidereal_time(jd_ut, dpsi, obl, jd_tt) + longitude) % 360.0
 
 
 def local_sidereal_time(jd_ut: float, longitude: float,
                         nutation_longitude: float = 0.0,
-                        obliquity: float = 23.4392911) -> float:
+                        obliquity: float = 23.4392911,
+                        jd_tt: float | None = None) -> float:
     """
     Compute Local Apparent Sidereal Time (LAST) in degrees.
 
     Adds the observer's geographic east longitude to GAST. When
-    ``nutation_longitude`` is left at its default of 0.0 the result is Local
-    Mean Sidereal Time (LMST); pass the true Δψ for full apparent time.
+    ``nutation_longitude`` is left at its default of 0.0 the Δψ·cos(ε_A) term
+    vanishes, but the IAU 2006 complementary terms (≤ 2.6 mas) remain, so the
+    result is LMST only to that bound; use
+    :func:`local_sidereal_time_with_truth` with ``mode="mean"`` for exact mean
+    sidereal time.  Pass the true Δψ for full apparent time.
 
     Args:
         jd_ut:              Julian Day Number in UT1.
         longitude:          Observer's geographic east longitude in degrees.
-        nutation_longitude: Δψ in degrees (default 0.0 → mean sidereal time).
-        obliquity:          Obliquity used by the equation of the equinoxes.
-                            The J2000 compatibility default is irrelevant
-                            while ``nutation_longitude`` is zero. Use
+        nutation_longitude: Δψ in degrees, evaluated at TT (default 0.0).
+        obliquity:          Retained for API compatibility and ignored; see
+                            :func:`apparent_sidereal_time`. Use
                             :func:`local_sidereal_time_with_truth` for a
                             self-contained, explicit mean/apparent reduction.
+        jd_tt:              Julian Day Number in TT for the same instant. When
+                            ``None`` it is derived as ``ut_to_tt(jd_ut)``
+                            under the default Delta-T policy.
 
     Returns:
         LAST in degrees, normalised to [0, 360).
@@ -3020,7 +3073,7 @@ def local_sidereal_time(jd_ut: float, longitude: float,
     _require_finite("longitude", longitude)
     _require_finite("nutation_longitude", nutation_longitude)
     _require_finite("obliquity", obliquity)
-    gast = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)
+    gast = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity, jd_tt)
     return (gast + longitude) % 360.0
 
 

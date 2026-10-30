@@ -138,7 +138,7 @@ def test_local_space_from_chart_uses_local_sidereal_and_chart_radec(monkeypatch:
 
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
-    monkeypatch.setattr("moira.julian.local_sidereal_time", lambda jd_ut, lon, dpsi, obliq: 211.0)
+    monkeypatch.setattr("moira.julian.local_sidereal_time", lambda jd_ut, lon, dpsi, obliq, jd_tt=None: 211.0)
 
     def fake_sky_position_at(body: str, jd_ut: float, observer_lat: float, observer_lon: float):
         calls.setdefault("sky", []).append((body, jd_ut, observer_lat, observer_lon))
@@ -199,8 +199,9 @@ def test_local_space_chart_service_resolves_utc_tt_and_ut1_for_dependencies(
         longitude: float,
         delta_psi: float,
         obliquity: float,
+        jd_tt: float,
     ) -> float:
-        calls["sidereal"] = (jd_ut1, longitude, delta_psi, obliquity)
+        calls["sidereal"] = (jd_ut1, longitude, delta_psi, obliquity, jd_tt)
         return 123.0
 
     def fake_sky_position_at(body: str, jd_ut1: float, **kwargs: object) -> SimpleNamespace:
@@ -234,7 +235,7 @@ def test_local_space_chart_service_resolves_utc_tt_and_ut1_for_dependencies(
 
     assert calls["tt"] == [100.0]
     assert calls["ut1"] == [100.0]
-    assert calls["sidereal"] == (99.0, -74.0, 0.2, 23.5)
+    assert calls["sidereal"] == (99.0, -74.0, 0.2, 23.5, 200.0)
     assert calls["sky"] == [
         (
             "Sun",

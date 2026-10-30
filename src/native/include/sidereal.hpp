@@ -9,14 +9,18 @@
 namespace moira {
 namespace native {
 
+// SOFA iauEra00 evaluation order: whole turns carried by the Julian-day
+// fraction are taken exactly and only the 0.0027378... excess rate multiplies
+// the long baseline (a full 1.0027378... * D loses ~0.3 mas at -2000).
 inline double earth_rotation_angle(double jd_ut) {
     double D = jd_ut - J2000;
-    double era_turns = 0.7790572732640 + 1.00273781191135448 * D;
+    double era_turns = std::fmod(jd_ut, 1.0) + 0.7790572732640 + 0.00273781191135448 * D;
     return mod_floor(era_turns, 1.0) * 360.0;
 }
 
-inline double greenwich_mean_sidereal_time(double jd_ut) {
-    double D = jd_ut - J2000;
+// IAU 2006 GMST (SOFA iauGmst06): ERA at UT1, equinox polynomial at TT.
+inline double greenwich_mean_sidereal_time(double jd_ut, double jd_tt) {
+    double D = jd_tt - J2000;
     double T = D / JULIAN_CENTURY;
 
     double era_deg = earth_rotation_angle(jd_ut);
@@ -32,8 +36,8 @@ inline double greenwich_mean_sidereal_time(double jd_ut) {
     return mod_floor(era_deg + poly_arcsec / 3600.0, 360.0);
 }
 
-inline double gast_complementary_terms(double jd_ut) {
-    double T = (jd_ut - J2000) / JULIAN_CENTURY;
+inline double gast_complementary_terms(double jd_tt) {
+    double T = (jd_tt - J2000) / JULIAN_CENTURY;
     double arcsec = PI / 648000.0;
 
     double Om = (450160.398036 + T * (-6962890.5431 + T * (7.4722 + T * 0.007702))) * arcsec;
@@ -57,14 +61,13 @@ inline double gast_complementary_terms(double jd_ut) {
     return ct / 3600.0;
 }
 
-// SOFA iauEe00: the equation of the equinoxes uses the IAU 2006 *mean*
-// obliquity.  `obliquity` (the caller's true obliquity) is retained for API
-// compatibility and ignored; see moira.julian.apparent_sidereal_time.
-inline double apparent_sidereal_time(double jd_ut, double nutation_longitude, double obliquity) {
-    (void)obliquity;
-    double gmst = greenwich_mean_sidereal_time(jd_ut);
-    double ee = nutation_longitude * std::cos(mean_obliquity_p03(jd_ut) * DEG2RAD)
-              + gast_complementary_terms(jd_ut);
+// SOFA iauGst06a/iauEe00: the equation of the equinoxes uses the IAU 2006
+// *mean* obliquity and the complementary terms, both at TT; Earth rotation
+// uses UT1.  Mirrors moira.julian._apparent_sidereal_time_at_tt.
+inline double apparent_sidereal_time(double jd_ut, double jd_tt, double nutation_longitude) {
+    double gmst = greenwich_mean_sidereal_time(jd_ut, jd_tt);
+    double ee = nutation_longitude * std::cos(mean_obliquity_p03(jd_tt) * DEG2RAD)
+              + gast_complementary_terms(jd_tt);
     return mod_floor(gmst + ee, 360.0);
 }
 

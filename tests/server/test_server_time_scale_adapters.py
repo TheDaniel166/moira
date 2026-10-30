@@ -122,8 +122,9 @@ def test_astrocartography_sidereal_context_routes_ut1_and_tt(monkeypatch) -> Non
         lambda jd: seen.setdefault("obliquity", jd) or 23.4,
     )
 
-    def fake_sidereal(jd_ut: float, _dpsi: float, _obliquity: float) -> float:
+    def fake_sidereal(jd_ut: float, _dpsi: float, _obliquity: float, jd_tt: float) -> float:
         seen["sidereal"] = jd_ut
+        seen["sidereal_tt"] = jd_tt
         return 123.0
 
     monkeypatch.setattr(astrocartography, "apparent_sidereal_time", fake_sidereal)
@@ -134,6 +135,7 @@ def test_astrocartography_sidereal_context_routes_ut1_and_tt(monkeypatch) -> Non
         "nutation": _JD_TT,
         "obliquity": _JD_TT,
         "sidereal": _JD_UT1,
+        "sidereal_tt": _JD_TT,
     }
     assert (gmst, jd_ut, jd_tt) == (123.0, _JD_UT1, _JD_TT)
 
@@ -157,8 +159,9 @@ def test_galactic_houses_resolves_both_scales_before_reduction(monkeypatch) -> N
         lambda jd: seen.setdefault("obliquity", jd) or 23.4,
     )
 
-    def fake_lst(jd_ut, _longitude, _dpsi, _obliquity):
+    def fake_lst(jd_ut, _longitude, _dpsi, _obliquity, jd_tt):
         seen["sidereal"] = jd_ut
+        seen["sidereal_tt"] = jd_tt
         return 42.0
 
     def fake_houses(jd_ut, _latitude, _longitude):
@@ -179,6 +182,7 @@ def test_galactic_houses_resolves_both_scales_before_reduction(monkeypatch) -> N
         "nutation": _JD_TT,
         "obliquity": _JD_TT,
         "sidereal": _JD_UT1,
+        "sidereal_tt": _JD_TT,
         "houses": _JD_UT1,
     }
 

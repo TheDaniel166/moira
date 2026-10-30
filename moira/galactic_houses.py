@@ -664,7 +664,7 @@ def calculate_galactic_houses(
     jd_tt     = ut_to_tt(jd_ut)
     dpsi, _   = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    armc      = local_sidereal_time(jd_ut, longitude, dpsi, obliquity)
+    armc      = local_sidereal_time(jd_ut, longitude, dpsi, obliquity, jd_tt)
 
     ga_l, gmc_l, gd_l, gic_l = _find_galactic_angles(armc, latitude, jd_tt)
 

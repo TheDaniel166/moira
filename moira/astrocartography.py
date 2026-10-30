@@ -426,7 +426,7 @@ def fixed_star_astrocartography(
 
     nutation_longitude, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    sidereal_time = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)
+    sidereal_time = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity, jd_tt)
     subjects = tuple(
         fixed_star_equatorial_subject(name, jd_tt, obliquity, reader=reader)
         for name in names
@@ -744,7 +744,7 @@ def acg_from_chart(
     jd_tt = chart.jd_tt
     dpsi, _ = nutation(jd_tt)
     obliq = true_obliquity(jd_tt)
-    gmst_deg = apparent_sidereal_time(chart.jd_ut, dpsi, obliq)
+    gmst_deg = apparent_sidereal_time(chart.jd_ut, dpsi, obliq, jd_tt)
 
     planet_ra_dec: dict[str, tuple[float, float]] = {}
     for body in bodies:
@@ -847,7 +847,7 @@ def subplanetary_from_chart(
         jd_tt = chart_jd_tt
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    gmst_deg = apparent_sidereal_time(jd_ut1, dpsi, obliquity)
+    gmst_deg = apparent_sidereal_time(jd_ut1, dpsi, obliquity, jd_tt)
 
     planet_ra_dec: dict[str, tuple[float, float]] = {}
     for body in bodies:

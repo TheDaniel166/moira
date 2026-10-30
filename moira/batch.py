@@ -692,6 +692,7 @@ def _chart_at_datetime(
             observer_lon,
             dpsi_deg,
             true_obliquity(jd_tt),
+            jd_tt,
         )
 
     planets = all_planets_at(

@@ -157,7 +157,7 @@ def lunar_apparent_context(
         latitude, longitude, elevation_m = observer
         dpsi_deg, _ = nutation(jd_tt)
         lst_deg = local_sidereal_time(
-            epoch, longitude, dpsi_deg, true_obliquity(jd_tt)
+            epoch, longitude, dpsi_deg, true_obliquity(jd_tt), jd_tt
         )
         observer_true_of_date = _observer_position_icrf(
             latitude,

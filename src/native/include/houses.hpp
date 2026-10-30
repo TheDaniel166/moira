@@ -113,7 +113,7 @@ inline std::tuple<double, double, double, double, double, double, double> reduce
     double deps = nut.obliquity * RAD2DEG;
     double eps0 = mean_obliquity_p03(jd_tt);
     double obliquity = eps0 + deps;
-    double gast = apparent_sidereal_time(jd_ut, dpsi, obliquity);
+    double gast = apparent_sidereal_time(jd_ut, jd_tt, dpsi);
     double armc = normalize_deg_360(gast + lon);
     double mc = mc_from_armc(armc, obliquity);
     double asc = asc_from_armc(armc, obliquity, lat);

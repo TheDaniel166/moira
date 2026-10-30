@@ -317,7 +317,7 @@ def local_space_from_chart(
     jd_tt    = chart.jd_tt
     dpsi, _  = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    lst_deg  = local_sidereal_time(chart.jd_ut, observer_lon, dpsi, obliquity)
+    lst_deg  = local_sidereal_time(chart.jd_ut, observer_lon, dpsi, obliquity, jd_tt)
 
     # Collect apparent RA/Dec for each body.
     planet_ra_dec: dict[str, tuple[float, float]] = {}

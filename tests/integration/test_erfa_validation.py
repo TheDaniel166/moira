@@ -83,7 +83,7 @@ def test_gmst_matches_erfa(label: str, jd_tt: float, jd_ut: float) -> None:
     d1u, d2u = _split(jd_ut)
     d1t, d2t = _split(jd_tt)
     erfa_gmst = math.degrees(erfa.gmst06(d1u, d2u, d1t, d2t)) % 360.0
-    moira_gmst = greenwich_mean_sidereal_time(jd_ut) % 360.0
+    moira_gmst = greenwich_mean_sidereal_time(jd_ut, jd_tt) % 360.0
 
     assert _wrapped_arcsec(erfa_gmst, moira_gmst) < PASS_THRESHOLD_ARCSEC
 
@@ -183,7 +183,7 @@ def test_gast_approximation_matches_erfa(label: str, jd_tt: float, jd_ut: float)
     erfa_eqeq_rad = erfa_dpsi * math.cos(erfa_eps + erfa_deps)
     erfa_gast_deg = math.degrees(erfa.gmst06(d1u, d2u, d1t, d2t) + erfa_eqeq_rad) % 360.0
 
-    moira_gmst = greenwich_mean_sidereal_time(jd_ut)
+    moira_gmst = greenwich_mean_sidereal_time(jd_ut, jd_tt)
     moira_dpsi_deg, moira_deps_deg = nutation(jd_tt)
     moira_eps_rad = math.radians(mean_obliquity_p03(jd_tt) + moira_deps_deg)
     moira_gast_deg = (moira_gmst + moira_dpsi_deg * math.cos(moira_eps_rad)) % 360.0

@@ -109,7 +109,7 @@ def compute_local_space_chart_positions(
     jd_ut1 = utc_to_ut1(chart.jd_ut)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    lst_deg = local_sidereal_time(jd_ut1, request.observer_lon, dpsi, obliquity)
+    lst_deg = local_sidereal_time(jd_ut1, request.observer_lon, dpsi, obliquity, jd_tt)
     reader = getattr(engine, "_reader", None)
     planet_ra_dec = {
         body: _sky_ra_dec(

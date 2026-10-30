@@ -290,7 +290,7 @@ def _epoch_context(
 ) -> tuple[float, float]:
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    armc = local_sidereal_time(jd_ut, longitude, dpsi, obliquity)
+    armc = local_sidereal_time(jd_ut, longitude, dpsi, obliquity, jd_tt)
     return obliquity, armc
 
 

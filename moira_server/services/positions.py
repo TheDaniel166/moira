@@ -124,7 +124,7 @@ def _sidereal_context(jd_utc: float, longitude: float) -> tuple[float, float]:
     jd_ut1 = utc_to_ut1(jd_utc)
     dpsi_deg, _ = nutation(jd_tt)
     obliquity_deg = true_obliquity(jd_tt)
-    lst_deg = local_sidereal_time(jd_ut1, longitude, dpsi_deg, obliquity_deg)
+    lst_deg = local_sidereal_time(jd_ut1, longitude, dpsi_deg, obliquity_deg, jd_tt)
     return lst_deg, obliquity_deg
 
 

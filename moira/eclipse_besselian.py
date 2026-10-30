@@ -178,6 +178,9 @@ def _ephemeris_apparent_sidereal_angle_tt(jd_tt: float) -> float:
     hour angle.  The IAU apparent-sidereal expression is therefore evaluated
     on that TT argument.  This named wrapper prevents callers from confusing
     the result with the physical Greenwich apparent sidereal time at UT1.
+    ``jd_tt`` is passed as both arguments on purpose: the rotation angle is
+    evaluated at the dynamical-time argument, and omitting the explicit
+    ``jd_tt`` would re-derive a second TT from it.
     """
 
     dpsi_deg, _deps_deg = nutation(jd_tt)
@@ -185,6 +188,7 @@ def _ephemeris_apparent_sidereal_angle_tt(jd_tt: float) -> float:
         jd_tt,
         dpsi_deg,
         true_obliquity(jd_tt),
+        jd_tt,
     )
 
 

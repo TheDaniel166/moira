@@ -898,7 +898,7 @@ def transiting_astrocartography(
         jd_tt = _ut1_to_ephemeris_tt(jd_ut, resolved_reader)
         nutation_longitude, _ = nutation(jd_tt)
         obliquity = true_obliquity(jd_tt)
-        sidereal_time = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)
+        sidereal_time = apparent_sidereal_time(jd_ut, nutation_longitude, obliquity, jd_tt)
         position_items: list[DynamicAstrocartographyPosition] = []
         for body in selected_bodies:
             sky = sky_position_at(

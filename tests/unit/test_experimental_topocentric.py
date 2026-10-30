@@ -69,11 +69,11 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_topocentri
     assert houses.system == HouseSystem.TOPOCENTRIC
     assert houses.effective_system == HouseSystem.TOPOCENTRIC
     assert houses.fallback is False
-    # Re-derived 2026-10-30 (GAST on the SOFA ee00 convention): ARMC = GAST(J2000) + lon = 180.4570723324535;
+    # Re-derived 2026-10-30 (GAST: SOFA ee00 convention, UT1 rotation with TT equinox terms): ARMC = GAST(J2000) + lon = 180.4570723583667;
     # asc/mc cross-checked through houses_from_armc. Tolerance unchanged.
-    assert houses.asc == pytest.approx(210.23753855591542, abs=1e-9)
-    assert houses.mc == pytest.approx(180.49817314823687, abs=1e-9)
-    assert houses.cusps[1] == pytest.approx(231.5887294821678, abs=1e-8)
+    assert houses.asc == pytest.approx(210.23753856185485, abs=1e-9)
+    assert houses.mc == pytest.approx(180.49817317648, abs=1e-9)
+    assert houses.cusps[1] == pytest.approx(231.58872948934706, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_uses_real_topocentric_at_polar_latitude() -> None:
@@ -87,7 +87,7 @@ def test_calculate_houses_default_policy_uses_real_topocentric_at_polar_latitude
     assert houses.system == HouseSystem.TOPOCENTRIC
     assert houses.effective_system == HouseSystem.TOPOCENTRIC
     assert houses.fallback is False
-    assert houses.cusps[1] == pytest.approx(231.5887294821678, abs=1e-8)
+    assert houses.cusps[1] == pytest.approx(231.58872948934706, abs=1e-8)
 
 
 def test_calculate_houses_default_policy_still_falls_back_for_topocentric_no_solution_high_lat() -> None:
