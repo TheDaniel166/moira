@@ -48,7 +48,7 @@ __all__ = [
     "LillyPerfectionSearchPolicy", "LillyPairContact", "LillyBodyStation", "LillyBodyIngress",
     "LillyBodyMotion", "LillyPerfectionTrace", "LillyPerfectionReadings", "LillyRouteConditions",
     "LillyPrincipalRelation", "LillyPerfectionRoutes", "trace_lilly_perfection",
-    "lilly_merge_perfection_traces", "lilly_perfection_routes", "lilly_perfection_at",
+    "lilly_merge_perfection_traces", "lilly_perfection_routes", "lilly_perfection_routes_at",
 ]
 
 _PROFILE = "lilly_1647_perfection_routes_v1"
@@ -1581,33 +1581,40 @@ and otherwise stay unknown.
                                  lilly_route_summary(route_tuple))
 
 
-def lilly_perfection_at(context: LillySnapshotContext, querent: str, quesited: str, *, reader,
+def lilly_perfection_routes_at(context: LillySnapshotContext, querent: str, quesited: str, *, reader,
                         readings: LillyPerfectionReadings,
                         conditions: LillyRouteConditions = LillyRouteConditions(),
                         policy: LillyPerfectionSearchPolicy = LillyPerfectionSearchPolicy()) -> LillyPerfectionRoutes:
     """Trace the explicit reader's apparent geocentric tropical longitudes and derive routes.
 
-The reader is mandatory; this surface never acquires a kernel. Reduction is
-owned by ``planet_at`` exactly as for the P3 lunar trace.
+The reader (an ``SpkReader`` or a ``KernelPool``) is mandatory; this surface
+never acquires a kernel. Reduction is owned by ``planet_at`` exactly as for the
+P3 lunar trace; provenance names the pool's primary planetary kernel.
 """
     from .planets import planet_at
-    from .spk_reader import SpkReader
+    from .spk_reader import KernelPool, SpkReader
     from .julian import ut_to_tt
 
     if not isinstance(context, LillySnapshotContext) or context.jd_ut is None:
         raise ValueError("a dated Lilly snapshot context is required")
-    if not isinstance(reader, SpkReader):
-        raise TypeError("an explicit open SpkReader is required")
+    if isinstance(reader, KernelPool):
+        # A pool's planetary truth is its first content-identified planetary reader.
+        primary, reader_kind = reader._primary_planetary_reader(), "kernel_pool"
+    elif isinstance(reader, SpkReader):
+        primary, reader_kind = reader, "spk_reader"
+    else:
+        raise TypeError("an explicit open SpkReader or KernelPool is required")
     identity = reader._ephemeris_kernel_identity_at(ut_to_tt(context.jd_ut))
-    if identity is None:
+    if identity is None or primary is None:
         raise ValueError("reader cannot identify a planetary/lunar product at the query")
     provenance = LillyMoonProvenance(
-        str(reader.path), "geocentric_true_ecliptic_and_equinox_of_date",
+        str(primary.path), "geocentric_true_ecliptic_and_equinox_of_date",
         "planet_at:apparent_light_time_aberration_deflection_precession_nutation",
         "UT1_to_TT:moira.julian_canonical;TT_to_TDB:SPK_boundary",
         (("planetary_ephemeris", str(identity.planetary_ephemeris)),
          ("lunar_ephemeris", str(identity.lunar_ephemeris)),
-         ("kernel_sha256", reader._source_identity.sha256),
+         ("kernel_sha256", primary._source_identity.sha256),
+         ("reader_kind", reader_kind),
          ("query_jd_ut1", repr(context.jd_ut)),
          ("query_jd_tt", repr(ut_to_tt(context.jd_ut))),
          ("delta_t_policy", "moira.julian_canonical_default")))

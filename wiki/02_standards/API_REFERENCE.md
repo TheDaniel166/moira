@@ -307,6 +307,7 @@ owning modules instead of being dumped into the curated tiers.
 | Owning module | Curated root/facade symbols |
 |---|---|
 | `moira.horary` | `HoraryQuestionTimeBasis`, `HorarySourceCalendar`, `HoraryEvidenceProfile`, `LILLY_1647_HORARY_V1`, `horary_evidence_at` |
+| `moira.horary_perfection_routes` | `LillyRouteState`, `LillyRouteKind`, `LillyBlockerKind`, `LillyTranslationReading`, `LillyProhibitionReading`, `LillyMalevolentReading`, `LillyBeholdingReading`, `LillyHeavinessReading`, `LillyConditionEpoch`, `LillyHouseClass`, `LillyRouteCondition`, `LillyRouteRecord`, `LillyBlockerRecord`, `LillyRouteSummary`, `LillyPerfectionSearchPolicy`, `LillyPerfectionTrace`, `LillyPerfectionReadings`, `LillyRouteConditions`, `LillyPrincipalRelation`, `LillyPerfectionRoutes`, `lilly_condition`, `trace_lilly_perfection`, `lilly_merge_perfection_traces`, `lilly_perfection_routes`, `lilly_perfection_routes_at` |
 | `moira.mundane` | `MundaneEvaluationStatus`, `MundaneEventType`, `MundaneEventChartProfile`, `MundaneProfileProvenance`, `compose_mundane_event_chart_profile`, `eclipse_receipt_from_event`, `jupiter_saturn_sequence_from_series` |
 
 These Track B names have identical object identity through `moira`,
@@ -646,6 +647,7 @@ message.
 | `nakshatras(chart, ayanamsa_system=Ayanamsa.LAHIRI)` | `dict[str, NakshatraPosition]` | Nakshatra for each planet |
 | `planetary_hours(dt, latitude, longitude)` | `PlanetaryHoursDay` | Day and night planetary hour rulers |
 | `horary_evidence_at(question, *, house_policy, perfection_jd_end=None)` | `HoraryEvidenceProfile` | Reader-bound Lilly 1647 evidence composition with explicit question, house, and optional bounded perfection-search inputs; no judgement or inferred topic |
+| `lilly_perfection_routes_at(jd_ut, querent, quesited, *, is_day_chart, readings, conditions=None, policy=None, epoch=None)` | `LillyPerfectionRoutes` | Reader-bound Lilly P4 route and blocker records for one principal pair over a bounded seven-planet trace; all five readings required, unsupplied conditions unknown, no verdict |
 
 ### Timing techniques
 

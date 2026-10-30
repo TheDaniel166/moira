@@ -29,6 +29,15 @@ publication, or production pin is implied by these entries.
     then one shared Earth stage, then the frame of date.
   - REST star provenance carries `position_product` and `motion_model`.
   - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
+- **Lilly Perfection Routes (P4)**: `moira.horary_perfection_routes` computes
+  Lilly's 1647 perfection routes and blocking events for one principal pair:
+  aspect-specific direct perfection, translation (p.111 and p.126 readings),
+  collection, mutual reception and the dwelling exception, with prohibition,
+  refranation and frustration, over a bounded seven-planet trace of contacts,
+  stations and ingresses. Every textual reading is required; no verdict is
+  produced. Exposed as `Moira.lilly_perfection_routes_at`, from `moira` and
+  `moira.facade`, and as `POST /v1/horary/perfection-routes`. The v1
+  `lilly_perfection_at` classifier is unchanged.
 - **Ayanamsa Doctrine**: every ayanamsa now says what kind of claim it makes,
   and the textual families the sources support are computable
   (`moira/ayanamsa_doctrine.py`; wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).

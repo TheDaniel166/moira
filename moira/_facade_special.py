@@ -986,6 +986,44 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             policy=resolved_policy,
         )
 
+    def lilly_perfection_routes_at(
+        self,
+        jd_ut: float,
+        querent: str,
+        quesited: str,
+        *,
+        is_day_chart: bool | None,
+        readings,
+        conditions=None,
+        policy=None,
+        epoch: str | None = None,
+    ):
+        """Return every Lilly P4 perfection route and blocker for one principal pair.
+
+        ``readings`` must name all five textual readings (translation,
+        prohibition, malevolent aspect, beholding, heaviness); there are no
+        defaults. Conditions the trace cannot decide stay unknown unless
+        supplied. The result carries no verdict.
+        """
+
+        from .horary_reception import LillySnapshotContext
+
+        facade = _facade_module()
+        context = LillySnapshotContext(
+            epoch if epoch is not None else f"moira-facade:{jd_ut!r}",
+            is_day_chart,
+            jd_ut,
+        )
+        return facade.lilly_perfection_routes_at(
+            context,
+            querent,
+            quesited,
+            reader=self._reader,
+            readings=readings,
+            conditions=facade.LillyRouteConditions() if conditions is None else conditions,
+            policy=facade.LillyPerfectionSearchPolicy() if policy is None else policy,
+        )
+
     def western_electional_judgement_at(
         self,
         jd_ut: float,

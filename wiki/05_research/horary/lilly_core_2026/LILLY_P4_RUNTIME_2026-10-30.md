@@ -65,7 +65,7 @@ the seven planets:
 - every sign ingress.
 
 Coverage is complete only when every scan completes; budget exhaustion keeps
-earlier evidence and marks it partial. `lilly_perfection_at` binds the trace to
+earlier evidence and marks it partial. `lilly_perfection_routes_at` binds the trace to
 an explicitly opened `SpkReader` through `planet_at`, exactly as the P3 lunar
 trace does, and records kernel identity, SHA-256 and the UT1/TT query epochs.
 `lilly_merge_perfection_traces` joins contiguous windows of one product and
@@ -117,6 +117,27 @@ unknown otherwise. Absence means absence within the declared study.
   changes rate sign in the independent projection; route legs refer to trace
   events. These are geometric/search invariants, not an external-engine
   comparison or certification of unsampled roots.
+
+## Public surfaces
+
+- **Package and facade:** the curated P4 names (readings, conditions, records,
+  trace and derivation functions) are importable from `moira` and
+  `moira.facade` with the same object identity as their owning module.
+- **Facade method:** `Moira.lilly_perfection_routes_at(jd_ut, querent, quesited,
+  *, is_day_chart, readings, conditions=None, policy=None, epoch=None)` binds
+  the engine's own reader (an `SpkReader` or a `KernelPool`, whose primary
+  planetary kernel is named in the provenance) and a dated snapshot context.
+  A missing kernel raises `MissingEphemerisKernelError`.
+- **REST:** `POST /v1/horary/perfection-routes` (strict request and response
+  models in `moira_server/models/horary_perfection.py`). All five readings are
+  required with no default; conditions are typed and must cite evidence when
+  known; the search window is at most 90 days each side; the response carries
+  every route, blocker and trace event and `verdict: null`. Errors: `422` for
+  invalid input, `503 kernel_not_ready` without a kernel.
+- `tests/server/test_server_horary_perfection_routes.py` (19 tests): genuine
+  route records through the transport on analytic trajectories, condition
+  mapping, thirteen rejected requests, the `503` mapping, the OpenAPI contract
+  (required readings without defaults), and one DE441 end-to-end request.
 
 Still separate admissions: which reading Lilly applies in Book II, whether
 reception overcomes refranation, house class of a split conjunction, the

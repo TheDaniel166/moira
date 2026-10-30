@@ -14,7 +14,7 @@ from moira.horary_moon import LillyCoverageState
 from moira.horary_perfection_routes import (
     LillyBeholdingReading, LillyHeavinessReading, LillyMalevolentReading, LillyPerfectionReadings,
     LillyPerfectionSearchPolicy, LillyProhibitionReading, LillyRouteState, LillyTranslationReading,
-    lilly_perfection_at,
+    lilly_perfection_routes_at,
 )
 from moira.horary_reception import LillySnapshotContext
 from moira.julian import ut_to_tt
@@ -34,7 +34,7 @@ def routes(request):
     kernel = find_planetary_kernel()
     assert kernel is not None
     with SpkReader(kernel) as reader:
-        result = lilly_perfection_at(LillySnapshotContext(f"DE441-P4-{request.param}", True, request.param),
+        result = lilly_perfection_routes_at(LillySnapshotContext(f"DE441-P4-{request.param}", True, request.param),
                                      "Mars", "Venus", reader=reader, readings=READINGS, policy=POLICY)
         yield result, reader
 

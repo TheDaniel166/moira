@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 558
-- Registered OpenAPI operations: 558 (GET 51, POST 507)
+- Registered OpenAPI paths: 559
+- Registered OpenAPI operations: 559 (GET 51, POST 508)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 554
+- Versioned `/v1` paths: 555
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -255,6 +255,7 @@ Not yet broadly exposed as REST families:
 | Route | Request model | Response model | Tags | Discovery family |
 |---|---|---|---|---|
 | `POST /v1/horary/evidence-profile` | `HoraryEvidenceProfileRequest` | `HoraryEvidenceProfileResponse` | `horary` | `classical-vedic` |
+| `POST /v1/horary/perfection-routes` | `LillyPerfectionRoutesRequest` | `LillyPerfectionRoutesResponse` | `horary` | `classical-vedic` |
 | `POST /v1/mundane/event-chart-profile` | `MundaneEventChartProfileRequest` | `MundaneEventChartProfileResponse` | `mundane` | `predictive` |
 
 ## Route Families
@@ -1767,6 +1768,38 @@ paths, finite considerations, optional perfection, provenance, and explicit
 exclusions. The request cannot supply internal evidence receipts or an
 arbitrary doctrine bag. The route does not infer a topic and returns no yes/no
 answer, outcome, timing prose, score, confidence, advice, or recommendation.
+
+## Lilly Perfection Routes Route
+
+| Method | Path | Handler | Discovery family |
+|---|---|---|---|
+| POST | `/v1/horary/perfection-routes` | `horary_perfection_routes_route` | `classical-vedic` |
+
+The request names a question epoch (`jd_ut`, UT1), the querent's and quesited's
+significators (two distinct classical planets), the chart sect (`true`,
+`false` or `null`), and **all five readings**, none of which has a default:
+`translation` (`p111_structural` or `p126_full`), `prohibition`
+(`interposition_to_either` or `successive_to_both`), `malevolent`
+(`malefic_planet` or `hard_aspect`), `beholding` (`sign_aversion` or
+`no_current_aspect`) and `heaviness` (`traditional_order`,
+`instantaneous_speed` or `superior_inferior`). Optional `conditions` supply
+what the trace cannot decide (house class; good, proper and friendly houses;
+well-dignity; dignity in the degrees; the opposition's Moon condition; the
+dwelling placement). Each is `present`, `absent` or `not_evaluable` at a named
+epoch, and a known state must cite `evidence_ids`. Omitted conditions stay
+unknown. Optional `search` bounds the window (`past_days`, `future_days`, each
+at most 90; default 30) and an optional `epoch_label` names the question.
+
+The service delegates once to `Moira.lilly_perfection_routes_at`. The response
+returns every route (direct, every translator and collector, mutual
+reception, dwelling) and every blocker record with their states, legs, stated
+effects, conditions and source references; the principals' relation at the
+query; the earliest-completing route IDs; and the full trace (contacts,
+stations, ingresses, motions, coverage, kernel provenance and search policy).
+`verdict` is always `null`. An unknown field, a missing reading, a known
+condition without evidence or equal principals is `422`; a missing planetary
+kernel is `503 kernel_not_ready`. Governing record:
+`wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md`.
 
 ## Neutral Mundane Event-Chart Profile Route
 
@@ -3777,6 +3810,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/hellenistic/transmissions` | hellenistic-systems | `transmissions_route_v1_hellenistic_transmissions_post` |
 | `POST` | `/v1/hellenistic/twelfth-parts` | hellenistic-atoms | `twelfth_parts_route_v1_hellenistic_twelfth_parts_post` |
 | `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
+| `POST` | `/v1/horary/perfection-routes` | horary | `horary_perfection_routes` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/dynamics` | chart | `house_dynamics_route_v1_houses_dynamics_post` |
 | `POST` | `/v1/houses/dynamics/analytical` | chart | `analytical_house_dynamics_route_v1_houses_dynamics_analytical_post` |
