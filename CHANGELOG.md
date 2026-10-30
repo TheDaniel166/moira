@@ -284,17 +284,27 @@ publication, or production pin is implied by these entries.
   systems instead of falling back to Placidus.
 - **Schema Consumers**: strict clients of the Enhanced ZR responses must accept
   the new `start_shift_truth` field.
+- **Sidereal Time And Native Signatures**: Python
+  `greenwich_mean_sidereal_time`, `apparent_sidereal_time` and
+  `local_sidereal_time` take an optional `jd_tt`; without it TT is derived with
+  `ut_to_tt`, so results move by 0.1 mas in 2026 and up to 67 mas at -2000.
+  Native `moira_native.greenwich_mean_sidereal_time` is now
+  `(jd_ut, jd_tt)` and `apparent_sidereal_time` is `(jd_ut, jd_tt,
+  nutation_longitude)`; `TopocentricEvaluator` requires `delta_t`; and the five
+  native visibility functions listed under Fixed require `delta_t`. Callers of
+  the compiled module directly must pass the new arguments.
 
 ### Fixed
 - **Equation of the equinoxes uses the IAU 2006 mean obliquity.**
   `apparent_sidereal_time` (Python and native) now follows SOFA `iauEe00`, so
-  GAST/LAST agree with ERFA `gst06a` to the UT1-argument residual (~0.1 mas)
-  instead of up to 0.26 mas. The `obliquity` argument is retained for
-  compatibility and ignored. Houses, angles and topocentric directions shift by
-  at most ~7e-8 deg. Pinned values in the experimental polar-house tests, the
-  vertex golden/snapshot and `EXPERIMENTAL_POLAR_HOUSE_PROOF.md` were
-  re-derived with unchanged tolerances. The certified muhurta sidereal
-  enclosure mirrors the new convention.
+  GAST/LAST lose a bias of up to 0.26 mas against ERFA `gst06a` (the UT1-
+  argument residual it left is removed by the next entry). The `obliquity`
+  argument is retained for compatibility and ignored. Houses, angles and
+  topocentric directions shift by at most ~7e-8 deg. Pinned values in the
+  experimental polar-house tests, the vertex golden/snapshot and
+  `EXPERIMENTAL_POLAR_HOUSE_PROOF.md` were re-derived with unchanged
+  tolerances. The certified muhurta sidereal enclosure mirrors the new
+  convention.
 - **Sidereal time keeps UT1 and TT apart.** GMST precession polynomial, the
   complementary terms and the mean obliquity are TT quantities, but
   `greenwich_mean_sidereal_time`, `apparent_sidereal_time` and
@@ -348,13 +358,13 @@ publication, or production pin is implied by these entries.
   the house engine's ARMC. It matches Meeus Example 12.a's apparent value to
   0.06 arcsec; the oracle test now compares that value (the mean value is 3.5
   arcsec away).
-- **Native visibility functions require `delta_t`.** `target_topocentric_altitude`,
-  `find_sun_at_alt`, `heliacal_signed_elongation`, `search_heliacal_rising` and
-  `search_heliacal_setting` defaulted `delta_t` to 64.184 s, a constant that is
-  TT-UT1 at no epoch (63.8 s at J2000, 69.2 s in 2026, 5 s of Earth rotation off
-  when a caller omitted it). The default is removed in C++ and in the bindings, so an
-  omitted value is a `TypeError` instead of a silent error. Every in-repo caller
-  already passed it.
+- **Native visibility functions require `delta_t`.**
+  `target_topocentric_altitude`, `find_sun_at_alt`, `heliacal_signed_elongation`,
+  `search_heliacal_rising` and `search_heliacal_setting` defaulted `delta_t` to
+  64.184 s, a constant that is TT-UT1 at no epoch (63.8 s at J2000, 69.2 s in
+  2026), so a caller that omitted it was about 5 s of Earth rotation off. The
+  default is removed in C++ and in the bindings, so an omitted value is a
+  `TypeError` instead of a silent error. Every in-repo caller already passed it.
 - **EOP data and sync.** Bundled EOP, polar motion and leap seconds re-synced
   to IERS Bulletin A 44. `iers_sync` gained mirror failover (USNO, IANA),
   payload validation, recorded checksums and all-or-nothing writes. The packaged
