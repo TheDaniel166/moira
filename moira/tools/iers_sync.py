@@ -53,6 +53,8 @@ def update_leap_seconds():
         f'Source: {_URL_LEAP_SECONDS}',
         '"""',
         '',
+        'from __future__ import annotations',
+        '',
         'LEAP_SECONDS: list[tuple[float, float]] = ['
     ]
     

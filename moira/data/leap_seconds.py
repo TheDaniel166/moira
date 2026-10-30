@@ -1,6 +1,6 @@
 """
 Moira — leap_seconds.py
-Last Synchronized: 2026-05-06T19:41:00.675593+00:00
+Last Synchronized: 2026-10-30T13:02:29.687296+00:00
 Source: https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat
 """
 

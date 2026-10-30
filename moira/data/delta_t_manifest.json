@@ -20,7 +20,7 @@
         "authority": "International Earth Rotation and Reference Systems Service",
         "url": "https://datacenter.iers.org/products/eop/rapid/standard/csv/finals2000A.all.csv"
       },
-      "retrieved_at_utc": "2026-05-06T19:41:10.445533+00:00",
+      "retrieved_at_utc": "2026-10-30T13:02:40.826204+00:00",
       "transformation": "moira.tools.iers_sync.update_eop_dut1; selected MJD and UT1-UTC columns",
       "units": {
         "epoch": "modified_julian_day",
@@ -28,10 +28,10 @@
       },
       "coverage": {
         "first_epoch": 41684,
-        "last_epoch": 61533
+        "last_epoch": 61714
       },
-      "row_count": 19850,
-      "sha256": "bc09b2e4b4162cfd147c7d66f6c7117af3946ef447f402496bb89195f030cdf4",
+      "row_count": 20031,
+      "sha256": "4ebf4e6c59683351e6b8552b5d2b6a30db9588fce264bd18ed166ee341898324",
       "runtime_status": "admitted_for_utc_to_ut1",
       "caveats": [
         "The packaged transform does not retain the source observed-versus-predicted status flag.",
