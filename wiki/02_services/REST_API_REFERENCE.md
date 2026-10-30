@@ -2514,6 +2514,25 @@ reduced from UTC to UT1 before astronomical computation.
 | POST | `/v1/website/chart-wheel/validate` | `chart_wheel_validate_route` |
 | POST | `/v1/website/chart-wheel/packet` | `chart_wheel_packet_route` |
 
+### Fixed-Star Position Contract
+
+`/v1/stars/position` and `/v1/stars/bulk` return the engine's default
+`astrometric` product: the catalog direction moved to the date, from the
+solar-system barycentre, in the true ecliptic and equinox of date. The routes
+do not accept a product choice; the apparent and geometric products are
+Python-only. Each star's `provenance` records:
+
+- `position_product`: `astrometric`;
+- `motion_model`: `binary_orbit` for Sirius, Rigil Kentaurus and Toliman,
+  which are placed on their published orbits about their system's centre of
+  mass, and `straight_line` for every other star;
+- `true_position`: a legacy flag, `false` for this product (it is `true` only
+  for the geometric product); and
+- `observer_mode`: `barycentric`.
+
+The governing record is
+[the fixed-stars backend standard](../02_standards/FIXED_STARS_BACKEND_STANDARD.md).
+
 ### Chart-Wheel Packet Truth
 
 `POST /v1/website/chart-wheel/packet` preserves the calculated longitude,

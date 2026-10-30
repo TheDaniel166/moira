@@ -11,6 +11,38 @@ Unreleased engine remediation work. No version bump, wheel
 publication, or production pin is implied by these entries.
 
 ### Added
+- **Fixed-Star Position Products**:
+  - `star_at`, `all_stars_at` and `Moira.fixed_star` take
+    `product="astrometric"` (default), `"apparent"` or `"geometric"`.
+    `FixedStarTruth.position_product` names the product.
+  - The apparent product adds annual parallax, light deflection by the Sun,
+    Jupiter and Saturn, and annual aberration from the DE441 Earth state. It
+    needs a planetary reader and fails closed without one.
+  - All catalog stars now go through one pipeline: a shared space-motion core
+    (`moira/_stellar_space_motion.py`) from each row's own reference epoch,
+    then one shared Earth stage, then the frame of date.
+  - REST star provenance carries `position_product` and `motion_model`; the
+    routes still return the astrometric product.
+  - Standard: `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`.
+- **Catalog Radial Velocities**: the star registry gains `ref_epoch_jd`,
+  `frame`, `radial_velocity_km_s` and `radial_velocity_status`. SIMBAD
+  velocities of grade A-D are admitted for 1,619 of 1,809 stars; the rest are
+  `unknown` and propagate as zero. Per-star sources are in
+  `star_provenance.json`.
+- **Binary Stars On Their Orbits**:
+  - Sirius A and α Centauri A and B (Rigil Kentaurus, Toliman) are placed at
+    their share of the relative orbit about the system's centre of mass, which
+    moves in a straight line in space.
+  - Results report `motion_model: "binary_orbit"`; every other star reports
+    `"straight_line"` and is unchanged.
+  - Orbits: Bond et al. 2017 (Sirius) and Akeson et al. 2021 (α Centauri).
+  - Centres of mass: the Hipparcos 1997 orbital solution for Sirius, and a
+    straight-line refit of Akeson's ALMA and Hipparcos positions for
+    α Centauri. Akeson's published motion follows constant RA/Dec rates.
+  - `moira.multiple_stars` gains `SystemBarycentre`, `component_offset_arcsec`
+    and per-component `registry_name`. Native heliacal searches receive each
+    component's path linearised over the search window. Gochara windows refuse
+    a binary component as a live sidereal anchor.
 - **Geodetic Analysis On The Facade**:
   - New `Moira` methods: `geodetic_houses`, `geodetic_overlay`,
     `geodetic_compare`, `geodetic_loci`, `geodetic_transits` and
@@ -131,6 +163,18 @@ publication, or production pin is implied by these entries.
   U2/U3 contacts, including REST serialization.
 
 ### Breaking Changes
+- **Fixed-Star Positions**:
+  - Sirius moves by up to 3.9 arcsec (1.5 arcsec at 2000) and α Centauri A
+    and B by tens of arcseconds over past centuries: 50 and 28 arcsec at
+    1800, 234 and 114 arcsec at 1000 CE.
+  - Catalog radial velocities add perspective acceleration, largest for
+    nearby fast stars.
+  - `FixedStarTruth.true_position` is now `True` only for the geometric
+    product; it was previously set on the astrometric default.
+  - `FixedStarClassification.observer_mode` is `"barycentric"` except for the
+    apparent product.
+  - Consumers that compare star longitudes with stored values will see these
+    changes.
 - **Direct Sidereal Geodetic Charts Require An Explicit Offset**:
   `geodetic_chart(..., zodiac="sidereal")` no longer silently assumes a zero
   ayanamsa when `ayanamsa_deg` is omitted. Pass the selected offset explicitly;
@@ -163,6 +207,22 @@ publication, or production pin is implied by these entries.
   the new `start_shift_truth` field.
 
 ### Fixed
+- **Fixed-Star Light-Time Split**: `star_light_time_split` moved the
+  "observed" position backward by the light-travel time, reversing the
+  correction. It now returns the astrometric position and the geometric
+  position one light time ahead.
+- **Occultation Star Rays Lost Solar Light Deflection**: the star rays passed
+  a unit vector to the deflection step, which treated the star as 1 km away
+  and removed the Sun's deflection. They now share the fixed-star Earth stage.
+  Measured on 80 rays, the repair moves them by a median of 0.003 arcsec and
+  at most 0.22 arcsec (Spica near the Sun, October 2024). The coarse search
+  also now compares the apparent star with the apparent Moon, instead of an
+  astrometric star.
+- **Mislabelled Sirius And α Centauri Orbits**: the Sirius elements in
+  `moira.multiple_stars` were labelled Bond et al. 2017 but were older values
+  (P = 50.090 yr, T = 1994.3). Both systems now carry their published
+  elements (Bond 2017, Akeson 2021), which also changes their separations and
+  position angles.
 - **Solar Eclipse Greatest-Point Search On Narrow Ridges**:
   - **The problem:** since the exact WGS84 cone classification (`fff4416`),
     `next_solar_eclipse`, `previous_solar_eclipse` and `calculate_jd` raised
@@ -347,6 +407,16 @@ publication, or production pin is implied by these entries.
   mirrored locally (`scripts/check_ci.py`).
 
 ### Validation
+- **Fixed Stars** (`VALIDATION_ASTRONOMY.md` revision 2.2, Section 8):
+  - space motion vs ERFA `pmsafe` for all 1,809 stars at 1800 and 2200,
+    worst 0.0048 arcsec;
+  - apparent place vs ERFA `apcg`/`atciq` for 72 cases, worst 0.00014 arcsec;
+  - binary components vs ORB6, Bond et al. HST measures, the Akeson
+    ephemeris, ALMA (RMS 7.1 mas) and Hipparcos;
+  - every other star and all deep-sky objects bit-identical with and without
+    the orbit model.
+  - The `all_stars_j2000` snapshot and two Sirius primary-direction fixture
+    points were updated for the three binary components, with owner approval.
 - Added `tests/unit/test_house_angle_branches.py`: the Lima public-API
   regression, independent Cartesian prime-vertical/west and horizon/east
   assertions, near-coincident planes, Python/native grids across both

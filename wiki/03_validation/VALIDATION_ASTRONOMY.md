@@ -1,8 +1,8 @@
 # Astronomy Validation: Methods, Results, and Limits
 
-**Version:** 2.1
+**Version:** 2.2
 
-**Date:** 2026-10-28
+**Date:** 2026-10-29
 
 **Engine:** Moira 6.11.1
 
@@ -10,7 +10,9 @@
 
 **Validation runtime:** Python 3.14.8
 
-**Previous revision:** 2.0, 2026-08-13, Moira 6.1.0 at `68544ae`
+**Fixed-star baseline (Section 8):** `ff97e87`
+
+**Previous revision:** 2.1, 2026-10-28, Moira 6.11.1 at `b5bc031`
 
 **Planetary kernel:** JPL DE441
 
@@ -39,6 +41,12 @@ The strongest current numerical results are:
   (`0.02 degree` for Horizons' rounded bright-limb angle), while three rounded
   NASA SVS holdouts pass `0.01 degree` after applying SVS's distinct
   J2000-north convention.
+- Fixed-star space motion agrees with ERFA `pmsafe` for all 1,809 catalog
+  stars within `0.01 arcsecond` at 1800 and 2200 (worst `0.0048 arcsecond`),
+  and the apparent place agrees with ERFA `apcg`/`atciq` within
+  `0.001 arcsecond` (worst `0.00014 arcsecond`). Sirius A and α Centauri A
+  and B follow their published orbits, checked against orbit catalogs, HST,
+  ALMA, and Hipparcos measurements.
 - NASA/GSFC, JPL Horizons, IOTA, USNO, and source-specific visibility corpora
   validate named eclipse, occultation, rise/set, and visibility slices. They do
   not establish universal event accuracy outside those slices.
@@ -137,6 +145,14 @@ Horizons records. All six now run and pass. Section 5.6 gives the details.
 The regression tests added by the four commits pass (77 passed, 6 skipped as
 out of scope by their own declarations).
 
+Revision 2.2 adds Section 8, the fixed-star account. Its evidence was run on
+2026-10-29 at `ff97e87`, which carries four fixed-star commits after
+`b5bc031`: `c1f45ca` (one shared space-motion core and per-row reference
+epochs), `38cfe6e` (catalog radial velocities), `59e5a02` (named position
+products and one shared Earth stage), and `ff97e87` (binary components on
+their orbits). The other sections were not rerun for 2.2; their numbers are
+the 2.1 results at `b5bc031`.
+
 The two major-body maxima quoted in the abstract and Section 5 are dated
 receipts from the isolated live Horizons run on 2026-10-28. The acceptance
 thresholds and comparison contracts are executable tests; the observed maxima
@@ -176,6 +192,9 @@ where a dedicated differential exists; it is not assumed for every product.
 | Lunar orientation and libration | Native/SPICE matrices, JPL Horizons quantities 14-17, NASA SVS 2026 hourly data | Matrix `<= 3e-12`; Horizons surface `<= 0.001 degree`, axis `<= 0.002 degree`, rounded bright-limb `<= 0.02 degree`; SVS `<= 0.01 degree` | Authority-validated on two calibration and six disjoint holdout cases, including one topocentric site |
 | Solar and lunar eclipses | NASA/GSFC catalogs, detailed products, and geometric invariants | Product-specific classification, time, coordinate, and topology gates | Authority-validated only for named catalog/product slices |
 | Lunar occultations | JPL Horizons, IOTA, LOLA, cached Swiss cases, and invariants | Product-specific time/path/topography gates | Mixed authority, corroboration, and invariant evidence |
+| Fixed-star space motion | ERFA `pmsafe`; all 1,809 catalog stars at 1800 and 2200, plus 4 anchor stars at 7 epochs over 1000-3000 | `<= 0.01 arcsecond`; anchors `<= 0.0004 degree` | Authority-validated straight-line motion; the second-order light-time term is declared (Section 8.2) |
+| Fixed-star apparent place | ERFA `apcg` with Moira's DE441 Earth state, then `atciq`; 12 stars × 6 epochs = 72 | `<= 0.001 arcsecond` | Authority-validated stage 2 (parallax, light deflection, aberration) |
+| Binary-star components | ORB6, Bond et al. 2017 HST, Akeson et al. 2021 ephemeris and ALMA, Hipparcos | Per-check gates, Section 8.4 | Authority-validated for Sirius A, α Cen A and α Cen B only |
 | Rise, set, and transit | Four frozen JPL Horizons cases plus USNO checks | `<= 2 seconds` on the Horizons corpus | Authority-validated on the named bodies/sites/windows |
 | Yallop lunar criterion | Yallop 1997 Table 4; 295 rows | `q`- and boundary-family gates | Criterion validation, not guaranteed human sighting |
 | Physical point-source visibility | Independent equations, libRadtran holdouts, external event goldens, invariants | 16-cell release matrix; 12 timed cells within `60 seconds` | Admitted only inside the declared clear-sky model and data-pack domain |
@@ -923,9 +942,175 @@ topographic-contact accuracy statement. Release-specific details remain in
 Ancient occultation reconstruction is a separate historical-reduction program
 and is not validated by the modern IOTA or polar-path corpus.
 
-## 8. Rise, set, transit, and visibility
+## 8. Fixed-star positions
 
-### 8.1 Rise, set, upper transit, and lower transit
+The governing record is
+[the fixed-stars backend standard](../02_standards/FIXED_STARS_BACKEND_STANDARD.md).
+Every catalog star runs through one pipeline:
+
+1. **space motion** from the star's own reference epoch;
+2. **Earth-based effects** for the apparent product only; and
+3. **rotation** to the true ecliptic and equinox of date.
+
+### 8.1 Products and catalog
+
+A star has three positions, and every result names the one it carries in
+`position_product`:
+
+- `astrometric`: the catalog direction moved to the date. This is the default
+  and needs no kernel.
+- `apparent`: as seen from Earth's centre, with annual parallax, light
+  deflection by the Sun, Jupiter and Saturn, and annual aberration from the
+  DE441 Earth state.
+- `geometric`: where the star physically is, the astrometric direction one
+  light-travel time later.
+
+The legacy flag `true_position` is now true only for `geometric`. Before
+`59e5a02` it was set on the astrometric default, a mislabel.
+
+The sovereign registry holds 1,809 stars in ICRS. Each row records its own
+reference epoch. Radial velocities come from SIMBAD (retrieved 2026-10-29
+through its CfA mirror): 1,619 rows are measured at quality grade A-D, and the
+other 190 are `unknown` and propagate as zero. Sources for each row's
+position, proper motion, parallax and radial velocity are in
+`moira/data/star_provenance.json`.
+
+### 8.2 Space motion against ERFA
+
+`tests/integration/test_stars_erfa_reference.py` compares Moira's
+straight-line space motion with ERFA `pmsafe`, using the same catalog row,
+reference epoch and radial velocity, then rotates both with the IAU 2006/2000A
+frame:
+
+- **Whole catalog:** all 1,809 rows at 1800 and 2200 must agree within
+  `0.01 arcsecond`. The worst is `0.0048 arcsecond`, Barnard's Star.
+- **Anchors:** Sirius, Algol, Spica and Aldebaran at seven epochs from 1000
+  to 3000 must agree within `0.0004 degree`.
+
+For Sirius, Rigil Kentaurus and Toliman both checks use the straight-line path
+of the catalog row, because these three stars are placed on their orbits
+instead (Section 8.4).
+
+`pmsafe` also corrects for the changing light-travel time along the line of
+sight (the Rømer effect); Moira's straight-line model does not. A catalog
+proper motion is already the observed rate, so this is a second-order effect.
+Over the whole catalog it reaches at most:
+
+| Window | Largest Rømer term | Star |
+|---|---|---|
+| 1800-2200 | `0.005 arcsecond` | Barnard's Star |
+| 1000 CE | `0.11 arcsecond` | Barnard's Star |
+| 1000 BCE | `0.82 arcsecond` | Barnard's Star |
+
+This is a declared residual, not a tested gate beyond the two dates above.
+
+### 8.3 Apparent place against ERFA
+
+`tests/integration/test_stars_apparent_erfa.py` builds ERFA's star-independent
+astrometry with `apcg`, from Moira's own DE441 barycentric Earth position and
+velocity and the heliocentric Earth position. It then applies `atciq` and
+compares the geocentric ICRS-oriented direction before frame rotation.
+
+- **Sample:** 12 stars × 6 epochs from 1800 to 2100, 72 comparisons.
+- **Result:** median `0.0000025 arcsecond`; worst `0.00014 arcsecond`
+  (Barnard's Star, 2100, the light-time term above).
+- **Gate:** `0.001 arcsecond`.
+
+Moira also deflects light by Jupiter and Saturn, which `atciq` omits; away
+from those planets that is a micro-arcsecond effect. The same test checks
+physical bounds:
+- aberration never exceeds `20.5 arcseconds`, and parallax never exceeds the
+  catalog parallax;
+- the geometric product is the astrometric direction one light-time later;
+- an unknown product is refused, and the apparent product fails closed
+  without a planetary kernel.
+
+The apparent stage is shared with the occultation star rays. Before
+`59e5a02`, those rays passed a unit vector to the deflection step, which
+treated the star as 1 km away and removed the Sun's deflection. Measured on
+80 rays, the repair moved them by a median of `0.003 arcsecond` and at most
+`0.22 arcsecond` (Spica a few degrees from the Sun in October 2024).
+
+### 8.4 Binary components
+
+A star in a resolved binary with a published orbit is placed about the
+system's centre of mass:
+
+- **Centre of mass:** it moves in a straight line in space.
+- **Relative orbit:** gives the offset of B from A.
+- **Component offset:** with q = m_B / (m_A + m_B), A sits at −q times that
+  offset and B at (1 − q) times it.
+
+Its result reports `motion_model: binary_orbit`. Three registry stars are
+covered:
+
+| Registry star | Orbit | Centre of mass |
+|---|---|---|
+| Sirius (A) | Bond et al. 2017, Table 4 | Hipparcos 1997 orbital solution for HIP 32349 |
+| Rigil Kentaurus (α Cen A) | Akeson et al. 2021, Table 8 | refit, below |
+| Toliman (α Cen B) | Akeson et al. 2021, Table 8 | refit, below |
+
+Two of the inputs need explanation:
+
+- **Sirius:** the Hipparcos catalogue solved Sirius with an orbital model
+  (multiplicity flag `O`, astrometric reference flag `+`), so its astrometry
+  already describes the centre of mass.
+- **α Centauri:** Akeson's published centre-of-mass proper motion follows
+  constant rates in right ascension and declination. Their Table 12
+  ephemeris is reproduced to `0.3 mas` that way. That path departs from
+  straight-line motion in space by 0.1-0.2 mas/yr², and with the published
+  motion the Hipparcos position of A is missed by `47 mas`. The
+  centre-of-mass position and proper motion are therefore refit to the same
+  ALMA and Hipparcos measurements with straight-line motion, holding Akeson's
+  orbit, parallax, radial velocity and mass fraction fixed. The test
+  re-derives the stored values.
+
+`tests/integration/test_stars_binary_orbits.py`, with
+`tests/fixtures/binary_star_orbit_references_2026_10_29.json`:
+
+| Check | Sample | Result | Gate |
+|---|---|---|---|
+| Relative orbits vs ORB6 ephemerides (equinox of date) | 2 systems × 5 years, 2025-2029 | `0.04 degree`, `0.0004 arcsecond` | `0.06 degree`, `0.0008 arcsecond` |
+| Sirius B vs Bond et al. HST measures | 17 epochs, 1997-2016 | median `0.006`, worst `0.016 arcsecond` | `0.025 arcsecond` |
+| α Cen B relative to A vs Akeson Table 12 | 41 years, 2010-2050 | worst `0.0014 arcsecond` | `0.003 arcsecond` |
+| α Cen A and B vs ALMA, with DE441 parallax | 18 positions, 2018-2019 | RMS `7.1 mas`, worst `14.6 mas` | `10`, `20 mas` |
+| α Cen A and B vs Hipparcos, J1991.25 | 2 positions | A `1.4 mas`; B `57 mas` (2.7σ) | 3σ per coordinate |
+| Centre-of-mass motion vs ERFA `pmsafe` | 2 systems × 1000, 1800, 2200, 3000 | below `0.01 arcsecond` | `0.01 arcsecond` |
+
+Invariants hold from 1000 BCE to 3000 CE: a component never strays from the
+centre of mass by more than its orbit allows, and the two offsets balance.
+
+Without the orbit model, straight-line propagation of the α Centauri rows,
+which carry instantaneous Hipparcos proper motions, strays from it by:
+
+| Star | 1800 | 1000 CE |
+|---|---|---|
+| α Cen A | 50 arcseconds | 234 arcseconds |
+| α Cen B | 28 arcseconds | 114 arcseconds |
+
+Every other catalog star and all 60 deep-sky objects are bit-identical with
+and without the orbit model at seven epochs from 1000 BCE to 2200 (regression
+parity).
+
+### 8.5 What this section does not claim
+
+- Only Sirius A and α Centauri A and B are placed on orbits. Every other
+  star, including Proxima Centauri and the other catalog binaries, moves in a
+  straight line from its own row.
+- The default product is `astrometric`. The apparent product is computed only
+  when a caller asks for it, and the REST star routes do not expose a product
+  choice. Astrocartography, heliacal elongation and primary directions state
+  `astrometric` explicitly.
+- Two rows that SIMBAD has re-solved since the registry was built, δ Indi and
+  σ² Ursae Majoris, keep their older astrometry.
+- An earlier Swiss Ephemeris cross-engine star comparison predates these
+  commits and used DE431-based files. It is not evidence for this section.
+- Agreement with ERFA validates the computation from a catalog row. It does
+  not make the catalog's own astrometry more accurate than its source.
+
+## 9. Rise, set, transit, and visibility
+
+### 9.1 Rise, set, upper transit, and lower transit
 
 `tests/fixtures/horizons_rise_set_reference.json` contains four frozen JPL
 Horizons cases:
@@ -945,14 +1130,14 @@ corroboration.
 The `2-second` result belongs to these bodies, sites, dates, altitude
 thresholds, and window semantics. It is not a universal rise/set bound.
 
-### 8.2 Historical Sothic evidence
+### 9.2 Historical Sothic evidence
 
 The Sirius/Sothic slice uses Censorinus's 139 CE record and declared
 latitude-order expectations. It is a bounded historical corroboration under an
 explicit visibility doctrine and calendar uncertainty, not an exact observed
 timestamp oracle.
 
-### 8.3 Yallop lunar-crescent criterion
+### 9.3 Yallop lunar-crescent criterion
 
 `tests/integration/test_visibility_validation.py` uses the 295 rows extracted
 from Yallop 1997 Table 4. The admitted audit reports:
@@ -967,7 +1152,7 @@ boundary-sensitive rows use `±0.03` without a false exact-class promise.
 Criterion agreement does not guarantee a human observation under arbitrary
 weather, terrain, optical aid, or observer conditions.
 
-### 8.4 Opt-in physical point-source visibility
+### 9.4 Opt-in physical point-source visibility
 
 The current authority for the opt-in
 `clear_sky_naked_eye_point_source_v1` model is
@@ -987,7 +1172,7 @@ not second-level human-visibility truth. Clouds, live weather, optical aids,
 extended objects, generic stellar inference, global site transfer, and
 observer-population probability remain excluded.
 
-## 9. Limits and non-claims
+## 10. Limits and non-claims
 
 This paper deliberately does not claim:
 
@@ -1006,14 +1191,16 @@ This paper deliberately does not claim:
 10. universal topographic lunar-contact accuracy from two sites;
 11. precise ancient event timing beyond the admitted Delta-T/model envelope;
 12. that regression snapshots, benchmarks, native/Python agreement, or a
-    clean artifact install are independent scientific authorities; or
+    clean artifact install are independent scientific authorities;
 13. that an engine result has been published, deployed, or adopted merely
-    because its local validation passed.
+    because its local validation passed; or
+14. orbital placement for any binary star other than Sirius A and α Centauri
+    A and B, or fixed-star accuracy beyond the catalog's own astrometry.
 
 The absence of one of these broad claims is not a hidden failure. It is the
 boundary that keeps a narrower result scientifically meaningful.
 
-## 10. Reproducing the admitted checks
+## 11. Reproducing the admitted checks
 
 Use the repository's project environment and disable downloads. On Windows:
 
@@ -1032,6 +1219,7 @@ Small offline examples:
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_eclipse_nasa_completeness.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_occultation_polar_topology_horizons_reference.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_lunar_orientation_authority.py -q
+.\.venv\Scripts\python.exe -m pytest tests\integration\test_stars_erfa_reference.py tests\integration\test_stars_apparent_erfa.py tests\integration\test_stars_binary_orbits.py -q
 ```
 
 Live Horizons validation must be isolated to explicitly selected external
@@ -1060,7 +1248,7 @@ Documentation and publication guards:
 These documentation checks verify consistency and generated mirrors. They do
 not rerun the scientific oracles.
 
-## 11. Authorities and evidence records
+## 12. Authorities and evidence records
 
 Primary or product-relevant authorities used by the named suites include:
 
@@ -1080,6 +1268,11 @@ Primary or product-relevant authorities used by the named suites include:
   observed-contact products;
 - [USGS Lunar Orbiter Laser Altimeter](https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m)
   for the admitted lunar topography assets;
+- [SIMBAD](https://simbad.cds.unistra.fr/simbad/) for catalog astrometry and
+  radial velocities, the [Sixth Orbit Catalog](http://www.astro.gsu.edu/wds/orb6/)
+  for binary-star ephemerides, Bond et al. 2017 (ApJ 840, 70) for the Sirius
+  orbit, Akeson et al. 2021 (AJ 162, 14) for the α Centauri orbit and
+  ALMA astrometry, and the Hipparcos Catalogue (ESA 1997; van Leeuwen 2007);
 - [U.S. Naval Observatory](https://aa.usno.navy.mil/) for supplemental
   rise/set tables and observational-visibility cautions; and
 - Yallop 1997 Table 4 and the source ledger named by the physical-visibility
@@ -1100,10 +1293,12 @@ Repository evidence records with more detail include:
 - `tests/fixtures/lunar_orientation_horizons_calibration.json`;
 - `tests/fixtures/lunar_orientation_horizons_holdout.json`;
 - `tests/fixtures/lunar_orientation_svs_2026_holdout.json`;
-- `tests/fixtures/horizons_rise_set_reference.json`; and
+- `tests/fixtures/horizons_rise_set_reference.json`;
+- `tests/fixtures/binary_star_orbit_references_2026_10_29.json`;
+- `wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md`; and
 - `tests/fixtures/physical_visibility_phase7_evidence_registry.json`.
 
-## 12. Current status
+## 13. Current status
 
 This revision replaces the former mixed bug ledger with a current,
 product-owned validation account. Historical defects are retained only where
@@ -1122,7 +1317,10 @@ Open items from the 2026-10-28 rerun:
   which Horizons has since replaced; a future comet release would rebuild
   Encke on the current solution (Section 5.6); and
 - the eclipse completeness windows outside 1901-2100 in Section 6.1 are
-  diagnostic audit runs, not executable tests.
+  diagnostic audit runs, not executable tests; and
+- the fixed-star items listed in Section 8.5: the default product, the two
+  unrefreshed catalog rows, and the Swiss star comparison, which has not been
+  rerun on DE441-based files.
 
 Calculation speed is reported separately in Appendix A as performance
 evidence.
@@ -1174,7 +1372,7 @@ Time per call, in milliseconds:
 | Apparent places, 10 bodies at one epoch | `all_planets_at` | 1.22 | 0.84 | 0.86 | 0.81 |
 | Topocentric RA/Dec/Az/Alt with refraction, one body | `sky_position_at` | 0.254 | 0.251 | 0.302 | 0.289 |
 | Full chart: default bodies, nodes and Lilith | `Moira.chart` | 2.34 | 2.18 | — | — |
-| Catalog star apparent place | `Moira.fixed_star` | 0.129 | 0.126 | — | — |
+| Catalog star position (astrometric, the default) | `Moira.fixed_star` | 0.129 | 0.126 | — | — |
 | IAU 2000A nutation | `nutation_2000a` | 0.060 | 0.059 | — | — |
 | IAU 2006 precession matrix | `precession_matrix` | 0.0065 | 0.0062 | — | — |
 | Apparent local sidereal time | `apparent_sidereal_time_at` | 0.171 | 0.161 | — | — |
