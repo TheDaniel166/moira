@@ -1591,7 +1591,7 @@ The reader (an ``SpkReader`` or a ``KernelPool``) is mandatory; this surface
 never acquires a kernel. Reduction is owned by ``planet_at`` exactly as for the
 P3 lunar trace; provenance names the pool's primary planetary kernel.
 """
-    from .planets import planet_at
+    from .planets import _default_apparent_longitude
     from .spk_reader import KernelPool, SpkReader
     from .julian import ut_to_tt
 
@@ -1618,6 +1618,14 @@ P3 lunar trace; provenance names the pool's primary planetary kernel.
          ("query_jd_ut1", repr(context.jd_ut)),
          ("query_jd_tt", repr(ut_to_tt(context.jd_ut))),
          ("delta_t_policy", "moira.julian_canonical_default")))
-    trace = trace_lilly_perfection(context, longitude_at=lambda body, jd: planet_at(body, jd, reader=reader).longitude,
+    # planet_at's longitude product without its unused speed differentiation;
+    # scans sample several planets at one epoch, so a request-local memo lets
+    # them share that epoch's apparent context.
+    contexts: dict = {}
+
+    def longitude_at(body, jd):
+        return _default_apparent_longitude(body, jd, reader, contexts)
+
+    trace = trace_lilly_perfection(context, longitude_at=longitude_at,
                                    provenance=provenance, policy=policy)
     return lilly_perfection_routes(trace, querent, quesited, readings=readings, conditions=conditions)

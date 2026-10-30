@@ -2325,6 +2325,72 @@ def _planet_at_default_apparent_geocentric_ecliptic(
     )
 
 
+
+_LONGITUDE_ONLY_BODIES = frozenset((
+    Body.SUN, Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS, Body.JUPITER, Body.SATURN,
+))
+
+
+def _default_apparent_longitude(
+    body: str,
+    jd_ut: float,
+    reader: KernelReader,
+    contexts: dict | None = None,
+) -> float:
+    """Return ``planet_at(body, jd_ut, reader=reader).longitude`` without its speed.
+
+    The UT1-to-TT conversion, the apparent context and the reduction (light
+    time, deflection, aberration, precession, nutation, true-ecliptic
+    projection) are those of the default public route, in the same order;
+    only the finite-difference longitude rate is omitted. Search loops that
+    evaluate thousands of epochs and never read the speed use this.
+
+    ``contexts`` is an optional caller-owned ``{jd_ut: (jd_tt, context)}``
+    memo so that several bodies at one epoch share a single context even when
+    the reader's small shared cache has moved on. Classical bodies and an
+    explicit reader only.
+    """
+    if body not in _LONGITUDE_ONLY_BODIES:
+        raise ValueError("longitude-only route admits the seven classical bodies")
+    if reader is None:
+        raise ValueError("longitude-only route needs an explicit reader")
+    state = None if contexts is None else contexts.get(jd_ut)
+    if state is None:
+        state = _cached_planet_call_context(
+            reader, jd_ut=jd_ut, apparent=True, nutation=True, delta_t_policy=None,
+        )
+    if state is None:
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader, delta_t_policy=None)
+        context = _cached_apparent_context(reader, jd_tt=jd_tt, apparent=True, nutation=True)
+        if context is None:
+            context = _build_apparent_context(jd_tt, reader, apparent=True, nutation=True)
+            _store_apparent_context(reader, jd_tt=jd_tt, apparent=True, nutation=True, context=context)
+            _store_planet_call_context(
+                reader, jd_ut=jd_ut, jd_tt=jd_tt, apparent=True, nutation=True,
+                context=context, delta_t_policy=None,
+            )
+        state = (jd_tt, context)
+    if contexts is not None:
+        contexts[jd_ut] = state
+    jd_tt, context = state
+    if context.earth_ssb is None or context.earth_vel is None or context.rot_mat is None:
+        raise RuntimeError("default apparent context is incomplete")
+    deflectors = (
+        []
+        if body in (Body.SUN, Body.MOON)
+        else _deflectors_for_body(body, jd_tt, reader, context)
+    )
+    longitude, _latitude, _distance = _apparent_geocentric_ecliptic(
+        body, jd_tt, reader,
+        barycentric_fn=lambda b, t, r: _barycentric(b, t, r, context.vector_cache),
+        deflectors=deflectors,
+        earth_ssb=context.earth_ssb,
+        earth_vel=context.earth_vel,
+        obliquity=context.obliquity,
+        rot_mat=context.rot_mat,
+    )
+    return longitude
+
 def _planet_at_core(
     body: str,
     jd_ut: float,

@@ -71,6 +71,16 @@ trace does, and records kernel identity, SHA-256 and the UT1/TT query epochs.
 `lilly_merge_perfection_traces` joins contiguous windows of one product and
 records the K07 continuation receipt.
 
+**Cost.** The trace needs about 27,000 longitude evaluations for the default
+±30-day window. `lilly_perfection_routes_at` takes them from
+`moira.planets._default_apparent_longitude`, the default apparent route of
+`planet_at` without its unused speed differentiation, with a request-local
+memo so the planets sampled at one epoch share its apparent context. Values
+are bit-identical to `planet_at(...).longitude`
+(`tests/integration/test_planets_longitude_only.py`), and the traces and
+route records are identical to the `planet_at` path at three checked epochs.
+A call went from about 50 s to about 5 s on the reference machine.
+
 `lilly_perfection_routes(trace, querent, quesited, readings=..., conditions=...)`
 requires a `LillyPerfectionReadings` naming all five readings. It derives:
 

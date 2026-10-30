@@ -38,6 +38,9 @@ publication, or production pin is implied by these entries.
   produced. Exposed as `Moira.lilly_perfection_routes_at`, from `moira` and
   `moira.facade`, and as `POST /v1/horary/perfection-routes`. The v1
   `lilly_perfection_at` classifier is unchanged.
+  A call takes about 5 s (was about 50 s): the trace reads longitudes through
+  a speed-free form of `planet_at`'s default route with shared per-epoch
+  contexts, bit-identical to `planet_at(...).longitude`.
 - **Ayanamsa Doctrine**: every ayanamsa now says what kind of claim it makes,
   and the textual families the sources support are computable
   (`moira/ayanamsa_doctrine.py`; wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).
