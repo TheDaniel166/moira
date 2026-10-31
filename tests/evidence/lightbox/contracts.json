@@ -1212,6 +1212,164 @@
       "exclusions": [
         "The replay covers received_light_at; all_received_light_at and REST light-cone routes are outside this contract."
       ]
+    },
+    {
+      "claim_id": "LB-NATAL-DISCOVERY-PACKETS-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/natal-discovery/dispositors",
+        "rest:POST:/v1/natal-discovery/lunar-context",
+        "rest:POST:/v1/natal-discovery/shape"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_natal_discovery.py::test_dispositor_cycles_and_multiple_final_sinks_are_distinct",
+        "tests/server/test_server_natal_discovery.py::test_missing_ruler_is_visible_and_unselected_bodies_are_not_added",
+        "tests/server/test_server_natal_discovery.py::test_zero_degree_and_empty_selection_are_not_unavailable",
+        "tests/server/test_server_natal_discovery.py::test_shape_requires_selected_ten_planets_and_keeps_partial_evidence",
+        "tests/server/test_server_natal_discovery.py::test_bucket_core_metrics_are_separate_from_ten_planet_gaps",
+        "tests/server/test_server_natal_discovery.py::test_splash_residual_policy_is_explained",
+        "tests/server/test_server_natal_discovery.py::test_direct_rest_rejects_unadmitted_request_geometry",
+        "tests/server/test_server_natal_discovery.py::test_nonfinite_longitudes_are_rejected_before_computation",
+        "tests/server/test_server_natal_discovery.py::test_source_echo_preserves_offset_and_microseconds",
+        "tests/server/test_server_natal_discovery.py::test_unknown_time_and_missing_luminaries_do_not_touch_ephemeris",
+        "tests/server/test_server_natal_discovery.py::test_real_kernel_packet_has_strict_prior_events_and_named_frame_contacts",
+        "tests/server/test_server_natal_discovery.py::test_source_mismatch_is_rejected_and_matching_serialized_value_is_preserved",
+        "tests/server/test_server_natal_discovery.py::test_strict_preceding_event_at_a_solved_lunation",
+        "tests/server/test_server_natal_discovery.py::test_openapi_describes_all_three_stable_packets"
+      ],
+      "minimum_tests": 27,
+      "claim_scope": "The three natal-discovery REST packets carry caller-supplied accepted-chart longitudes through bounded evidence: traditional-domicile classic-seven dispositor chains that keep self-rulers, terminal cycles, missing selected rulers and out-of-scope bodies visible; a Jones ten-planet shape packet that classifies only the complete selection and reports full-circle gaps separately from Bucket core metrics; and a lunar-context packet that witnesses known-time Sun/Moon longitudes against the geocentric chart instant and zodiac (1e-6 degree), returning the phase geometry, the two strictly preceding New/Full Moon events and Moon-to-natal major-aspect contacts, with explicit unknown_time, missing_luminaries, insufficient_selection and refusal behavior.",
+      "exclusions": [
+        "The replay proves composition, selected-scope transport and source consistency against Moira's own engine; it claims no external ephemeris or lunation-time authority.",
+        "Dispositor chains cover the classic seven under traditional domicile rulership only; modern outer-planet rulerships are outside this contract.",
+        "Jones borderline and Splash classifications are Moira's declared detector-order policy, not a universal classification.",
+        "Lunar contacts use event-Moon major aspects at tier 0 and orb factor 1 with motion not evaluated; applying/separating state and minor aspects are outside this contract."
+      ]
+    },
+    {
+      "claim_id": "LB-HELLENISTIC-CIRCUMAMBULATIONS-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/hellenistic/circumambulations"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_hellenistic_systems_routes.py::test_circumambulations_route_preserves_bound_walk",
+        "tests/server/test_server_hellenistic_systems_routes.py::test_circumambulations_route_fallbacks_scaling_and_refusals",
+        "tests/server/test_server_hellenistic_systems_routes.py::test_hellenistic_system_routes_are_registered",
+        "tests/unit/test_hellenistic_systems.py::test_circumambulation_walks_egyptian_bounds_and_prorates_first_bound",
+        "tests/unit/test_hellenistic_systems.py::test_circumambulation_fails_closed_on_unadmitted_time_keys"
+      ],
+      "minimum_tests": 5,
+      "claim_scope": "The Hellenistic circumambulations route preserves the engine's direct 360-degree bound walk from a caller-named significator longitude: normalized longitude and doctrine echo, prorated first bound, spans summing to 360 degrees, bound-lord minor-years timing scaled by the declared year_days, fail-closed not_evaluable status with stated reasons for the rising_times and equatorial keys, and typed 422 refusals.",
+      "exclusions": [
+        "The receipt does not establish the bound-lord minor-years key as a traditional or primary-source-attested timing method; the module records it as a non-traditional Moira key.",
+        "Ascensional-time, rising-time and equatorial keys, converse motion, releaser selection and primary-direction integration are outside this contract.",
+        "Bounds-table cell values are not compared against a published source here, and start_jd/end_jd carry no timescale or calendar projection."
+      ]
+    },
+    {
+      "claim_id": "LB-PRIMARY-DIRECTIONS-TIMELINE-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/primary-directions/timeline"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_polar_meridian_timeline_preserves_an_admitted_non_semiarc_event",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_polar_meridian_keeps_derived_bounds_and_aspect_targets",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_default",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_dynamic_solar_ra_key",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_dynamic_solar_lon_key",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_bound_doctrine",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_significator_filter",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_endpoint_validation_errors",
+        "tests/server/test_server_primary_directions_timeline_routes.py::test_all_six_keys_return_coherent_event_and_boundary_dates",
+        "tests/server/test_primary_directions_transport_contract.py::test_primary_direction_paths_include_the_exact_time_key_batch",
+        "tests/server/test_primary_directions_transport_contract.py::test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded"
+      ],
+      "minimum_tests": 17,
+      "claim_scope": "The primary-directions timeline REST route returns chronologically ordered perfected directions and per-significator, per-motion distributor periods for the selected time key and bound doctrine, with matching age, UT1 Julian Day and UTC clocks for all six keys (identical to the time-keys projection), natal origin at age zero, an enforced age ceiling and typed 422 refusals for out-of-range ages, unknown keys or doctrines and geometry the method cannot admit.",
+      "exclusions": [
+        "No external astronomical, bounds-table source or biographical predictive accuracy is claimed; period contents are not compared against a published table.",
+        "Only bound_doctrine selection and echo are covered across doctrines; differences between doctrine period contents are not asserted.",
+        "Arc search geometry (arcs, profile, relations, network) belongs to other receipts; the response carries no reduction, delta-T or house-context truth block."
+      ]
+    },
+    {
+      "claim_id": "LB-RISE-SET-PHENOMENA-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/rise-set/phenomena"
+      ],
+      "evidence_classes": ["invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_server_phenomena_routes.py::test_rise_set_routes_match_engine_truth",
+        "tests/server/test_server_phenomena_routes.py::test_rise_set_phenomena_route_defaults_nulls_and_refusals",
+        "tests/server/test_server_phenomena_routes.py::test_phase_six_routes_reject_invalid_windows_bodies_and_coordinates"
+      ],
+      "minimum_tests": 3,
+      "claim_scope": "The rise-set phenomena route matches find_phenomena for the Sun under the default thresholds (including anti-transit), an explicit centre-disc no-refraction policy and an altitude override, returns null rise/set at a polar midsummer without fabricating instants while keeping the transit, and refuses unknown bodies, out-of-range coordinates, invalid policy values and extra fields with 422.",
+      "exclusions": [
+        "Parity is shown for the Sun at two observers; Moon, planet and fixed-star behaviour, apparent star_product and limb/hindu policy variants are not replayed through the route.",
+        "Refraction and semidiameter are the fixed documented constants; no atmospheric or per-date accuracy claim is made, and the response itself echoes no observer, threshold or policy."
+      ]
+    },
+    {
+      "claim_id": "LB-VARGA-D60-SHODASHVARGA-VIMSHOPAKA-TRUTH",
+      "surface_ids": [
+        "rest:POST:/v1/varga/d60/sign",
+        "rest:POST:/v1/varga/shodashvarga/batch",
+        "rest:POST:/v1/varga/vimshopaka"
+      ],
+      "evidence_classes": ["doctrine_source", "invariant", "regression", "release"],
+      "pytest_targets": [
+        "tests/server/test_d60_full_position.py::test_all_full_point_shapes_apply_profile_and_source_receipt[pvr_textbook_linear-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_all_full_point_shapes_apply_profile_and_source_receipt[classical_derived_linear-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_invalid_full_profile_rejected_before_resources[unknown-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_invalid_full_profile_rejected_before_resources[bphs_santhanam_sign-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_invalid_full_profile_rejected_before_resources[True-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_invalid_full_profile_rejected_before_resources[None-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[pvr_textbook_linear-True-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[pvr_textbook_linear-12-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[pvr_textbook_linear-nan-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[pvr_textbook_linear-inf-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[classical_derived_linear-True-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[classical_derived_linear-12-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[classical_derived_linear-nan-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_longitude_preflight_is_strict_finite[classical_derived_linear-inf-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_openapi_and_sign_only_profile_projection",
+        "tests/server/test_d60_full_position.py::test_source_composition_preserves_tiny_negative_left_wrap[pvr_textbook_linear-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_source_composition_preserves_tiny_negative_left_wrap[classical_derived_linear-shodashvarga/batch-payload3-path3]",
+        "tests/server/test_d60_full_position.py::test_derived_sign_projection_has_classical_sign_locator",
+        "tests/server/test_d60_full_position.py::test_strength_composition_preserves_tiny_negative_left_wrap",
+        "tests/server/test_d60_full_position.py::test_strength_profile_receipt_is_copied_from_engine",
+        "tests/server/test_d60_cross_engine.py::test_batch_preserves_120_independent_full_positions[pvr_textbook_linear-shodashvarga/batch]",
+        "tests/server/test_d60_cross_engine.py::test_batch_preserves_120_independent_full_positions[classical_derived_linear-shodashvarga/batch]",
+        "tests/server/test_d60_cross_engine.py::test_strength_transport_selects_externally_corroborated_signs",
+        "tests/server/test_vedic_chara_d60_admission.py::test_all_eight_placement_routes_preserve_nullable_engine_deity[shodashvarga/batch-payload4-path4-Kinnara]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_only_route_has_no_continuous_degree_claim",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_route_strict_finite_preflight[True]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_route_strict_finite_preflight[12]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_route_strict_finite_preflight[nan]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_route_strict_finite_preflight[inf]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_sign_route_unknown_method_is_not_a_fallback",
+        "tests/server/test_vedic_chara_d60_admission.py::test_vimshopaka_applied_method_and_weighted_effect[dashavarga-5.0]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_vimshopaka_applied_method_and_weighted_effect[shodashavarga-4.0]",
+        "tests/server/test_vedic_chara_d60_admission.py::test_vimshopaka_non_d60_group_method_is_inapplicable",
+        "tests/server/test_vedic_chara_d60_admission.py::test_openapi_distinguishes_sign_only_and_full_point_methods",
+        "tests/server/test_server_varga_routes.py::test_varga_shodashvarga_batch_route_preserves_nested_truth",
+        "tests/server/test_server_varga_routes.py::test_varga_routes_are_registered",
+        "tests/server/test_server_varga_routes.py::test_varga_batch_openapi_contracts_are_bounded",
+        "tests/server/test_server_vedic_phase2_routes.py::test_vimshopaka_route_matches_engine",
+        "tests/server/test_server_vedic_phase2_routes.py::test_vimshopaka_route_rejects_missing_planet",
+        "tests/server/test_server_vedic_phase2_routes.py::test_vimshopaka_route_rejects_unknown_group"
+      ],
+      "minimum_tests": 107,
+      "claim_scope": "The sidereal-input Varga routes /v1/varga/d60/sign, /v1/varga/shodashvarga/batch and /v1/varga/vimshopaka expose explicit D60 method selection (harmonic default, bphs_santhanam_sign sign-only, pvr_textbook_linear and classical_derived_linear), the sign-only D60 receipt with its source reference, the sixteen-division nested Shodashvarga batch with D60 method and source receipts, and BPHS Vimshopaka Bala over the shadvarga, saptavarga, dashavarga and shodashavarga groups with vargottama planets, with strict finite-input and inapplicable-method refusals and no fallback to harmonic.",
+      "exclusions": [
+        "Only these three POST routes are covered; /v1/varga/generic, /named, /shodashvarga, /named/batch and the /v1/varga/chart/* routes (which add tropical-to-sidereal derivation) are outside this contract.",
+        "No tropical-to-sidereal conversion, ayanamsa selection or ephemeris computation is claimed; callers supply sidereal longitudes.",
+        "No direct classical D60 continuous-degree law is claimed: classical_derived_linear is Moira's derivation and pvr_textbook_linear a composed modern profile; frozen PyJHora/Maitreya comparisons cover only full-position profiles and are secondary corroboration.",
+        "Some targeted OpenAPI tests also assert other routes' schemas incidentally; predictive validity of Vimshopaka scores is outside this contract."
+      ]
     }
   ]
 }

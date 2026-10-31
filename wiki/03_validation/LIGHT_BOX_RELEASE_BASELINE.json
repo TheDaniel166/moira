@@ -1,20 +1,22 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
-  "baseline_date": "2026-10-23",
-  "source_parent_revision": "f261990c8840a2d123f40cdf731f0d26a383b0d4",
-  "engine_version": "6.10.2",
-  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
-  "canonical_entries": 1252,
-  "minimum_partial": 210,
-  "maximum_unresolved": 1042,
-  "production_user_entries": 172,
+  "baseline_date": "2026-10-31",
+  "source_parent_revision": "9a21e2f23a4b2f0fcbbf6934063d0e245a0313a0",
+  "engine_version": "6.11.1",
+  "inventory_fingerprint_sha256": "989b237ab3d6142d691b5a7aa54c29a2a2a8fde66fc2cbfb43ee74b44a2d183d",
+  "canonical_entries": 1339,
+  "minimum_partial": 219,
+  "maximum_unresolved": 1120,
+  "production_user_entries": 181,
   "maximum_production_user_unresolved": 0,
-  "reviewed_families": 150,
-  "minimum_replayed_contracts": 64,
+  "reviewed_families": 159,
+  "minimum_replayed_contracts": 69,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
-  "fingerprint_migration": {
-    "from_schema_version": "moira.lightbox-release-baseline/v1",
-    "legacy_inventory_fingerprint_sha256": "5f8fe83eb2f45e2378c418660fa49658b4b4628859bef6c330e2e18b705e5969",
-    "boundary": "Reviewed API-binding migration only; original thresholds and audit provenance are unchanged."
+  "review": {
+    "from_baseline_date": "2026-10-23",
+    "surface_change": "The regenerated inventory adds 160 Python exports and 29 REST operations and removes or reclassifies none; 87 new canonical entries enter unresolved, so the unresolved ceiling rises from 1042 to 1120 and nine families are added (150 to 159), all reviewed.",
+    "product_use": "The product-usage snapshot was fully re-audited on 2026-10-31 at the published website and workspace revisions; it keeps all 172 earlier product-used surfaces and adds 9 REST routes.",
+    "admissions": "The 9 newly product-used routes are admitted as structural partials (210 to 219) with 5 replayed receipt contracts (64 to 69), so no product-used surface is unresolved; partial is not conformant.",
+    "unchanged": "maximum_production_user_unresolved stays 0; no existing admission, contract or threshold is weakened."
   }
 }

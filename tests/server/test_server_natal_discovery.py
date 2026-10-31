@@ -27,7 +27,9 @@ from moira_server.services.natal_discovery import compute_natal_lunar_context
 
 
 pytestmark = pytest.mark.loopback
-_PREFIX = "/v1/natal-discovery"
+_DISPOSITORS = "/v1/natal-discovery/dispositors"
+_SHAPE = "/v1/natal-discovery/shape"
+_LUNAR_CONTEXT = "/v1/natal-discovery/lunar-context"
 
 
 @pytest.fixture
@@ -62,18 +64,18 @@ def _real_request(engine, *, zodiac="Tropical", selected=None, dt=None):
 
 
 def test_dispositor_cycles_and_multiple_final_sinks_are_distinct(client):
-    cycle = client.post(f"{_PREFIX}/dispositors", json=_request({"Sun": 100, "Moon": 130})).json()
+    cycle = client.post(_DISPOSITORS, json=_request({"Sun": 100, "Moon": 130})).json()
     assert cycle["terminal_cycles"] == [["Sun", "Moon"]]
     assert cycle["final_dispositors"] == []
     assert all(chain["termination"] == "terminal_cycle" for chain in cycle["chains"])
-    finals = client.post(f"{_PREFIX}/dispositors", json=_request({"Sun": 130, "Moon": 100, "Mercury": 70})).json()
+    finals = client.post(_DISPOSITORS, json=_request({"Sun": 130, "Moon": 100, "Mercury": 70})).json()
     assert finals["terminal_cycles"] == []
     assert finals["final_dispositors"] == ["Sun", "Moon", "Mercury"]
     assert all(chain["terminal_subjects"] == [chain["body"]] for chain in finals["chains"])
 
 
 def test_missing_ruler_is_visible_and_unselected_bodies_are_not_added(client):
-    response = client.post(f"{_PREFIX}/dispositors", json=_request({"Mars": 150, "Uranus": 0}))
+    response = client.post(_DISPOSITORS, json=_request({"Mars": 150, "Uranus": 0}))
     assert response.status_code == 200
     packet = response.json()
     assert [chain["body"] for chain in packet["chains"]] == ["Mars", "Uranus"]
@@ -87,16 +89,16 @@ def test_missing_ruler_is_visible_and_unselected_bodies_are_not_added(client):
 
 
 def test_zero_degree_and_empty_selection_are_not_unavailable(client):
-    selected = client.post(f"{_PREFIX}/dispositors", json=_request({"Mars": 0})).json()
+    selected = client.post(_DISPOSITORS, json=_request({"Mars": 0})).json()
     assert selected["chains"][0]["longitude_deg"] == 0
     assert selected["chains"][0]["termination"] == "final_dispositor"
-    empty = client.post(f"{_PREFIX}/dispositors", json=_request({})).json()
+    empty = client.post(_DISPOSITORS, json=_request({})).json()
     assert empty["chains"] == []
     assert empty["final_dispositors"] == []
 
 
 def test_shape_requires_selected_ten_planets_and_keeps_partial_evidence(client):
-    response = client.post(f"{_PREFIX}/shape", json=_request({"Sun": 0, "Moon": 100}))
+    response = client.post(_SHAPE, json=_request({"Sun": 0, "Moon": 100}))
     assert response.status_code == 200
     packet = response.json()
     assert packet["status"] == "insufficient_selection"
@@ -109,7 +111,7 @@ def test_shape_requires_selected_ten_planets_and_keeps_partial_evidence(client):
 def test_bucket_core_metrics_are_separate_from_ten_planet_gaps(client):
     # Existing Jones fixture geometry: nine in 120 degrees, Pluto opposite.
     positions = dict(zip(Body.ALL_PLANETS, [0, 15, 30, 45, 60, 75, 90, 105, 120, 240]))
-    response = client.post(f"{_PREFIX}/shape", json=_request(positions))
+    response = client.post(_SHAPE, json=_request(positions))
     assert response.status_code == 200
     packet = response.json()
     shape = packet["classification"]
@@ -125,7 +127,7 @@ def test_bucket_core_metrics_are_separate_from_ten_planet_gaps(client):
 
 
 def test_splash_residual_policy_is_explained(client):
-    response = client.post(f"{_PREFIX}/shape", json=_request(dict(zip(Body.ALL_PLANETS, range(0, 360, 36)))))
+    response = client.post(_SHAPE, json=_request(dict(zip(Body.ALL_PLANETS, range(0, 360, 36)))))
     assert response.json()["classification"]["shape"] == "Splash"
     assert "borderline" in response.json()["classification_note"]
 
@@ -144,7 +146,7 @@ def test_splash_residual_policy_is_explained(client):
     {"time_unknown": "false"},
 ])
 def test_direct_rest_rejects_unadmitted_request_geometry(client, fields):
-    response = client.post(f"{_PREFIX}/dispositors", json={**_request({"Sun": 0}), **fields})
+    response = client.post(_DISPOSITORS, json={**_request({"Sun": 0}), **fields})
     assert response.status_code == 422
     assert response.json()["category"] == "input_validation"
 
@@ -157,7 +159,7 @@ def test_nonfinite_longitudes_are_rejected_before_computation(degree):
 
 def test_source_echo_preserves_offset_and_microseconds(client):
     timestamp = "2000-01-01T07:00:00.123456000-05:00"
-    response = client.post(f"{_PREFIX}/dispositors", json=_request({"Sun": 0}, dt=timestamp))
+    response = client.post(_DISPOSITORS, json=_request({"Sun": 0}, dt=timestamp))
     assert response.status_code == 200
     source = response.json()["source"]
     assert source["requested_datetime"] == timestamp
@@ -166,12 +168,12 @@ def test_source_echo_preserves_offset_and_microseconds(client):
 
 
 def test_unknown_time_and_missing_luminaries_do_not_touch_ephemeris(client):
-    unknown = client.post(f"{_PREFIX}/lunar-context", json=_request({"Sun": 0, "Moon": 100}, time_unknown=True)).json()
+    unknown = client.post(_LUNAR_CONTEXT, json=_request({"Sun": 0, "Moon": 100}, time_unknown=True)).json()
     assert unknown["status"] == "unknown_time"
     assert unknown["source"]["reference_kind"] == "noon_reference"
     assert unknown["phase"] is None and unknown["events"] == [] and unknown["contacts"] == []
     assert unknown["source_consistency"] is None
-    missing = client.post(f"{_PREFIX}/lunar-context", json=_request({"Sun": 0})).json()
+    missing = client.post(_LUNAR_CONTEXT, json=_request({"Sun": 0})).json()
     assert missing["status"] == "missing_luminaries"
     assert missing["missing_bodies"] == ["Moon"]
 
@@ -179,7 +181,7 @@ def test_unknown_time_and_missing_luminaries_do_not_touch_ephemeris(client):
 @pytest.mark.parametrize("zodiac", ["Tropical", "Sidereal"])
 def test_real_kernel_packet_has_strict_prior_events_and_named_frame_contacts(kernel_client, moira_engine, zodiac):
     request = _real_request(moira_engine, zodiac=zodiac)
-    response = kernel_client.post(f"{_PREFIX}/lunar-context", json=request)
+    response = kernel_client.post(_LUNAR_CONTEXT, json=request)
     assert response.status_code == 200, response.text
     packet = response.json()
     assert packet["status"] == "calculated"
@@ -214,12 +216,12 @@ def test_real_kernel_packet_has_strict_prior_events_and_named_frame_contacts(ker
 def test_source_mismatch_is_rejected_and_matching_serialized_value_is_preserved(kernel_client, moira_engine):
     request = _real_request(moira_engine, selected=["Sun", "Moon"])
     request["longitudes"]["Moon"] += 1e-7
-    response = kernel_client.post(f"{_PREFIX}/lunar-context", json=request)
+    response = kernel_client.post(_LUNAR_CONTEXT, json=request)
     assert response.status_code == 200
     assert response.json()["phase"]["moon_longitude_deg"] == request["longitudes"]["Moon"]
     assert {contact["body"] for contact in response.json()["contacts"]} <= {"Sun", "Moon"}
     request["longitudes"]["Moon"] += 1
-    rejected = kernel_client.post(f"{_PREFIX}/lunar-context", json=request)
+    rejected = kernel_client.post(_LUNAR_CONTEXT, json=request)
     assert rejected.status_code == 422
     assert "do not match" in rejected.json()["message"]
 
@@ -234,5 +236,5 @@ def test_strict_preceding_event_at_a_solved_lunation(moira_engine):
 
 def test_openapi_describes_all_three_stable_packets():
     schema = create_app(ServerConfig(docs_enabled=False)).openapi()
-    for route, response in (("dispositors", "NatalDispositorsResponse"), ("shape", "NatalShapeResponse"), ("lunar-context", "NatalLunarContextResponse")):
-        assert schema["paths"][f"{_PREFIX}/{route}"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].endswith(response)
+    for route, response in ((_DISPOSITORS, "NatalDispositorsResponse"), (_SHAPE, "NatalShapeResponse"), (_LUNAR_CONTEXT, "NatalLunarContextResponse")):
+        assert schema["paths"][route]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].endswith(response)

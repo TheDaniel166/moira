@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from moira.circumambulations import circumambulate
+from moira.egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy
 from moira.hellenistic_offices import OFFICE_NOT_ADMITTED_REASON
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -42,6 +43,34 @@ def test_circumambulations_route_preserves_bound_walk(client: TestClient) -> Non
     assert body["periods"][0]["lord"] == direct.periods[0].lord
     assert body["periods"][0]["years"] == pytest.approx(direct.periods[0].years or 0.0)
     assert body["provenance"]["engine_entrypoint"] == "circumambulate"
+
+
+def test_circumambulations_route_fallbacks_scaling_and_refusals(client: TestClient) -> None:
+    request = {"significator_name": "Ascendant", "significator_longitude": 370.5, "start_jd": 2451545.0}
+
+    def post(**fields):
+        return client.post("/v1/hellenistic/circumambulations", json={**request, **fields})
+
+    solar = post(year_days=365.25, bounds_doctrine="ptolemaic").json()
+    direct = circumambulate(10.5, 2451545.0, significator_name="Ascendant", year_days=365.25,
+                            bounds_policy=EgyptianBoundsPolicy(doctrine=EgyptianBoundsDoctrine.PTOLEMAIC))
+    assert solar["significator_longitude"] == 10.5 and solar["bounds_doctrine"] == "ptolemaic"
+    assert sum(p["span_deg"] for p in solar["periods"]) == pytest.approx(360.0)
+    assert [p["lord"] for p in solar["periods"]] == [p.lord for p in direct.periods]
+    first = solar["periods"][0]
+    assert first["end_jd"] - first["start_jd"] == pytest.approx(first["years"] * 365.25)
+
+    for key, reason in (("rising_times", "rising_time_table_not_admitted"),
+                        ("equatorial", "equatorial_key_is_primary_direction")):
+        withheld = post(time_key=key)
+        assert withheld.status_code == 200
+        assert withheld.json()["status"] == "not_evaluable"
+        assert withheld.json()["reason"] == reason and withheld.json()["periods"] == []
+
+    for refused in (post(year_days=0.0), post(time_key="ascensional"), post(bounds_doctrine="babylonian"),
+                    post(significator_name=" "), post(extra=1)):
+        assert refused.status_code == 422
+        assert refused.json()["error_code"] == "validation_error"
 
 
 def test_transmissions_route_has_no_effect_fields(client: TestClient) -> None:

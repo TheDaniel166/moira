@@ -2178,6 +2178,247 @@ ADMISSION_CONTRACTS: Mapping[str, Mapping[str, Any]] = {
         },
         "public_modes": ["embedded_result", "generated_documentation"],
     },
+    "natal_discovery_packet_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Natal discovery packets: classic-seven dispositor chains, Jones ten-planet shape, and witnessed geocentric lunar context",
+        "operation": (
+            "Accept caller-supplied accepted-chart longitudes (Sun through Pluto) "
+            "with a civil instant and zodiac frame, then compose traditional-"
+            "domicile dispositor chains, the Jones ten-planet shape with full-"
+            "circle gaps, or the Sun-Moon phase with the two strictly preceding "
+            "geocentric New/Full Moon events and Moon-to-natal major-aspect "
+            "contacts, each returned as a source-echoing packet."
+        ),
+        "summary": (
+            "The natal-discovery routes return bounded packets: dispositor chains "
+            "that keep self-rulers, terminal cycles and missing selected rulers "
+            "visible; a Jones shape packet that classifies only the complete ten-"
+            "planet selection and reports circular gaps separately; and a lunar-"
+            "context packet whose phase and lunations are gated by a numerical "
+            "witness of the supplied longitudes against the named instant and "
+            "zodiac frame."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "A timezone-aware ISO-8601 dt (at most microsecond precision), a map of at most ten Sun-through-Pluto longitudes, zodiac Tropical or Sidereal with ayanamsa_system required for Sidereal and forbidden for Tropical, and a strict boolean time_unknown."
+            ],
+            "units": [
+                "Longitudes, arcs, gaps, orbs, phase angles, ayanamsa and tolerances use degrees in [0, 360) where circular; event times are Julian Days UT1 with ISO-8601 UTC strings; days_before_reference is days; illuminated_fraction is dimensionless in [0, 1]."
+            ],
+            "reference_frame": [
+                "Longitudes are caller-supplied accepted-chart values (longitude_basis caller_supplied_accepted_chart) in the named Tropical or Sidereal zodiac; lunar-context checks them against geocentric true-ecliptic chart positions, subtracting the true ayanamsa for Sidereal; dispositor and shape packets recompute no positions."
+            ],
+            "origin": [
+                "Lunar-context phase, lunations and contacts are geocentric (coordinate_frame geocentric); dispositor and shape packets inherit the origin of the caller's longitudes with no observer translation."
+            ],
+            "timescale": [
+                "The civil dt is normalized to UTC and converted to UT1 for jd_ut1; lunation instants are UT1 with datetime_utc the admitted UT1-to-UTC inverse; dispositor and shape packets only echo the source instant."
+            ],
+            "corrections": [
+                "No positional correction is applied to supplied longitudes; Sidereal lunation longitudes subtract the true ayanamsa at each event instant; source consistency is a circular-residual check at 1e-6 degree against the engine chart, not an ephemeris accuracy claim."
+            ],
+            "policies_defaults": [
+                "Dispositors use traditional domicile rulership over the classic seven (method traditional_domicile_classic_7); shape uses Jones's ten-planet method (jones_ten_planets) in Moira's declared detector order; zodiac defaults to Tropical and time_unknown to false; lunar contacts use engine major aspects at tier 0 and orb_factor 1 with motion not_evaluated; phase state uses quadrant labels with 45-degree boundaries."
+            ],
+            "fallbacks": [
+                "A selected body whose ruler is not selected ends as missing_selected_ruler naming that ruler, and Uranus/Neptune/Pluto are listed as excluded_subjects; an incomplete shape selection returns insufficient_selection with partial positions and no classification; unknown time or missing Sun/Moon returns unknown_time or missing_luminaries without phase, events, contacts or consistency; a Bucket reports nine-planet core metrics beside ten-planet gaps, and Splash is the declared residual."
+            ],
+            "refusal_behavior": [
+                "Naive or over-precise timestamps, boolean/text/non-finite/out-of-range longitudes, non-planet keys, extra fields and inconsistent zodiac/ayanamsa pairings are refused with 422; lunar-context refuses longitudes that miss the chart instant and zodiac beyond tolerance, and refuses when no strictly preceding lunation is established."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "hellenistic_circumambulation_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Hellenistic circumambulation through the selected bounds sequence",
+        "operation": (
+            "Release a caller-named significator longitude through one direct "
+            "360-degree circuit of the selected bounds table, prorating the "
+            "occupied bound and timing each period as the bound lord's minor "
+            "years times span/bound_width times year_days."
+        ),
+        "summary": (
+            "The circumambulations route returns the full bound-by-bound period "
+            "sequence with lords, signs, longitudes, spans, years and Julian "
+            "Days, or an explicit not_evaluable status with a stated reason for "
+            "time keys that are not admitted."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Typed request with caller-supplied significator_name, significator_longitude and start_jd, plus time_key, bounds_doctrine and year_days; the engine does not select or compute the significator."
+            ],
+            "units": [
+                "Longitudes and spans are degrees; period years are minor-year counts; start_jd and end_jd are Julian Days advanced by years * year_days days."
+            ],
+            "reference_frame": [
+                "Caller-supplied ecliptic longitude normalized modulo 360 degrees and located in the selected tropical bounds table; the normalized longitude and bounds doctrine are echoed."
+            ],
+            "origin": [
+                "The caller-supplied significator longitude at start_jd; the first period is the unexpired remainder of the occupied bound."
+            ],
+            "timescale": [
+                "start_jd is echoed without timescale conversion and end_jd advances it arithmetically by years * year_days days; the response carries no timescale label or civil-calendar projection."
+            ],
+            "corrections": [
+                "No astronomical correction is applied; the first bound is prorated by remaining span over bound width; bounds are half-open [start, end) and a cursor on a boundary takes the full next bound."
+            ],
+            "policies_defaults": [
+                "Defaults are time_key bound_lord_minor_years, bounds_doctrine egyptian and year_days 360.0; the source discloses the minor-years key as a non-traditional Moira key with no located primary passage; the walk is one direct circuit without converse motion."
+            ],
+            "fallbacks": [
+                "time_key rising_times returns not_evaluable with reason rising_time_table_not_admitted and no periods, and equatorial returns reason equatorial_key_is_primary_direction; no substitute key is synthesized."
+            ],
+            "refusal_behavior": [
+                "Extra keys, unknown time_key or bounds_doctrine, blank or over-length names, non-finite numerics and non-positive year_days are refused with 422 validation_error."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "primary_directions_timeline_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Primary-directions chronological timeline and distributor periods",
+        "operation": (
+            "Search directional arcs up to the requested arc ceiling, add the "
+            "complete canonical bound table of the selected doctrine as term-"
+            "bound promissors, partition each significator's arc axis into "
+            "distributor periods per admitted motion, project every arc and "
+            "period boundary to age, UT1 Julian Day and UTC timestamp through "
+            "the selected time key, and return events in chronological order."
+        ),
+        "summary": (
+            "The primary-directions timeline route returns perfected directions "
+            "with the key, bound doctrine, natal UT1 clock and age ceiling that "
+            "produced them, plus the distributor periods governing each "
+            "significator."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Aware natal datetime, geographic latitude/longitude, observer latitude strictly inside (-90, 90), optional house system, bodies, significators, promissors, policy or preset, key, bound_doctrine, max_arc in (0, 360] (default 90) and max_age_years in (0, 150] (default 100)."
+            ],
+            "units": [
+                "Arcs and bound degrees use degrees; ages use tropical years; natal and perfection clocks are Julian Days UT1; perfection and period dates are ISO-8601 UTC strings."
+            ],
+            "reference_frame": [
+                "Geocentric equatorial, mundane or zodiacal primary-direction geometry for the observer latitude under the resolved method and space; bound periods lie on the zodiacal longitude axis of the selected bounds table."
+            ],
+            "origin": [
+                "The natal instant is arc zero and age zero; a period entering at arc 0 reports age 0 at the natal clock."
+            ],
+            "timescale": [
+                "natal_jd_ut is UT1 (civil UTC through utc_to_ut1); static keys give perfection_jd_ut = natal_jd_ut + age_years * tropical year, dynamic solar keys invert the solar arc on the ephemeris, and perfection_iso is the UTC rendering of that UT1 instant."
+            ],
+            "corrections": [
+                "Dynamic solar keys keep the ephemeris inversion of the time-keys surface; the static Solar key uses the natal Sun speed; latitude, converse and house doctrine come from the resolved policy."
+            ],
+            "policies_defaults": [
+                "The key defaults to the resolved policy key (Naibod for the default preset), bound_doctrine defaults to egyptian, and the term-bound relation is added to the admitted relation kinds; key, bound_doctrine and max_age_years are echoed."
+            ],
+            "fallbacks": [
+                "No key or bound doctrine is substituted: unknown keys or doctrines, partial custom bound tables and the signed-primary-motion preset are refused rather than replaced."
+            ],
+            "refusal_behavior": [
+                "Out-of-range ages, unknown keys or doctrines, malformed or naive request fields, non-canonical bound tables, the signed-primary-motion preset and geometry the method cannot admit (for example Placidus semi-arc at a polar latitude) are refused with 422."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
+    "rise_set_phenomena_vessel": {
+        "inspectability_mode": "generated_documentation",
+        "stage_label": "Topocentric horizon-crossing and meridian-transit event resolution",
+        "operation": (
+            "Resolve the effective horizon altitude (explicit altitude, else "
+            "RiseSetPolicy, else -0.8333 degrees for Sun/Moon and -0.5667 "
+            "degrees otherwise), bracket and bisect geometric-altitude "
+            "crossings in [jd_start, jd_start + 1) for rise and set, and solve "
+            "the upper and lower meridian transits separately."
+        ),
+        "summary": (
+            "The rise-set phenomena route returns rise, set, transit and anti-"
+            "transit instants (JD UT with UTC strings) of one body within the "
+            "day after jd_start; the response echoes no body, observer, horizon "
+            "altitude or policy, which are inspectable from the request and the "
+            "generated REST reference."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "body (planet or fixed-star name), jd_start, lat in [-90, 90], lon in [-180, 180] east-positive, optional altitude and optional policy (disc_reference, fixed_disc_size, hindu_rising, refraction, horizon_altitude, star_product); extra fields are refused."
+            ],
+            "units": [
+                "Latitude, longitude and horizon thresholds use degrees; jd_start and event instants are Julian Days UT."
+            ],
+            "reference_frame": [
+                "Planets use topocentric geometric altitude without refraction, so refraction is carried by the threshold; fixed stars use true-of-date RA/Dec of the selected star_product reduced to altitude at the observer; transits are hour-angle 0 (upper) and 180 degree (lower) crossings."
+            ],
+            "origin": [
+                "Topocentric observer at the caller-supplied latitude and longitude."
+            ],
+            "timescale": [
+                "Input and output are JD UT; UT is converted to TT (or the active reader's clock) for positions and sidereal time, and datetime_utc is the calendar rendering of jd_ut."
+            ],
+            "corrections": [
+                "Refraction (0.5667 degree) and mean semidiameters (Sun 0.2667, Moon 0.2725 degree) are folded into a fixed threshold; no pressure, temperature, per-date semidiameter or lunar parallax term enters the threshold."
+            ],
+            "policies_defaults": [
+                "Without altitude or policy the threshold is -0.8333 degree for Sun/Moon and -0.5667 otherwise; a policy object applies its limb/refraction doctrine; altitude overrides policy and policy.horizon_altitude overrides disc and refraction."
+            ],
+            "fallbacks": [
+                "A rise or set that does not occur in the window (circumpolar or never-rising cases) is returned as null, as is a transit without a bracket; no instant is fabricated."
+            ],
+            "refusal_behavior": [
+                "Unknown bodies, out-of-range or non-finite coordinates, non-finite jd_start or altitude, invalid policy values and extra fields are refused with 422; star_product apparent without a server kernel is refused with 503."
+            ],
+        },
+        "public_modes": ["generated_documentation"],
+    },
+    "varga_division_and_vimshopaka_vessel": {
+        "inspectability_mode": "embedded_result",
+        "stage_label": "Sidereal D60 sign, Shodashvarga division and Vimshopaka Bala reduction",
+        "operation": (
+            "Normalize caller-supplied sidereal longitudes, resolve the D60 sign "
+            "under an explicit D60 method, map each longitude through the "
+            "sixteen named Shodashvarga divisions, and weight the Panchadha "
+            "Maitri dignity of each varga-sign lord across the chosen "
+            "Vimshopaka group, with a D1/D9 vargottama list."
+        ),
+        "summary": (
+            "The D60-sign, Shodashvarga-batch and Vimshopaka routes return the "
+            "sign-only D60 receipt with its applied method and source reference, "
+            "per-key nested results for sixteen named divisions with D60 method "
+            "receipts, and per-planet Vimshopaka entries and totals with the "
+            "applied D60 method, source references and vargottama planets."
+        ),
+        "semantic_values": {
+            "inputs": [
+                "Caller-supplied sidereal longitudes: one strict finite sidereal_longitude with method for the D60 sign; a non-empty labelled longitude map with optional d60_method for the batch; all seven classical planets with group and d60_method for Vimshopaka."
+            ],
+            "units": [
+                "Longitudes use degrees; sign_index is 0-11; Vimshopaka vishva values use the 20-point scale, group weights sum to 20 and points = weight * vishva / 20."
+            ],
+            "reference_frame": [
+                "Sidereal ecliptic longitudes supplied by the caller; these routes perform no tropical-to-sidereal conversion and carry no ayanamsa field."
+            ],
+            "origin": [
+                "Abstract zodiacal longitude only, with no observer, ephemeris or house cusps; Vimshopaka temporary friendships derive from the D1 chart of the supplied planets."
+            ],
+            "timescale": [
+                "Not applicable: positions are instantaneous and no epoch or Julian Day is consumed."
+            ],
+            "corrections": [
+                "Longitudes are normalized to [0, 360); a non-harmonic D60 method replaces only the D60 entry while the other divisions, D1 friendships and group weights are unchanged."
+            ],
+            "policies_defaults": [
+                "D60 method defaults to harmonic (source_reference moira_generic_harmonic); bphs_santhanam_sign is sign-only and refused by the full-position batch; pvr_textbook_linear and classical_derived_linear carry their source chains; the Vimshopaka group defaults to shodashavarga with BPHS weights."
+            ],
+            "fallbacks": [
+                "No fallback: unknown or inapplicable D60 methods are refused rather than reset to harmonic, and source-labelled results never borrow harmonic degrees."
+            ],
+            "refusal_behavior": [
+                "Non-finite, boolean or string longitudes where strict, empty maps or keys, unknown or inapplicable D60 methods, a non-default D60 method with shadvarga or saptavarga, missing or unknown planets, unknown groups and extra fields are refused with 422."
+            ],
+        },
+        "public_modes": ["embedded_result", "generated_documentation"],
+    },
 }
 
 

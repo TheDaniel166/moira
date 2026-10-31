@@ -522,6 +522,30 @@ def test_r6b_specialist_and_compositional_contracts_are_bounded() -> None:
         assert contract["exclusions"]
 
 
+def test_2026_10_31_product_use_contracts_are_bounded() -> None:
+    replay = _module()
+    contracts, _ = replay.load_contracts()
+    by_id = {contract["claim_id"]: contract for contract in contracts["contracts"]}
+
+    expected_claims = {
+        "LB-NATAL-DISCOVERY-PACKETS-TRUTH": (3, 27),
+        "LB-HELLENISTIC-CIRCUMAMBULATIONS-TRUTH": (1, 5),
+        "LB-PRIMARY-DIRECTIONS-TIMELINE-TRUTH": (1, 17),
+        "LB-RISE-SET-PHENOMENA-TRUTH": (1, 3),
+        "LB-VARGA-D60-SHODASHVARGA-VIMSHOPAKA-TRUTH": (3, 107),
+    }
+    for claim_id, (surface_count, min_tests) in expected_claims.items():
+        contract = by_id[claim_id]
+        assert len(contract["surface_ids"]) == surface_count
+        assert {"invariant", "regression", "release"} <= set(
+            contract["evidence_classes"]
+        )
+        assert "authority" not in contract["evidence_classes"]
+        assert contract["minimum_tests"] == min_tests
+        assert contract["claim_scope"]
+        assert contract["exclusions"]
+
+
 
 
 

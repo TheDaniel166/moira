@@ -2646,6 +2646,30 @@ The allowed values and the default are the engine's
 holds them equal. The governing record is
 [the fixed-stars backend standard](../02_standards/FIXED_STARS_BACKEND_STANDARD.md).
 
+### Rise/Set Phenomena Horizon Contract
+
+`POST /v1/rise-set/phenomena` returns `rise`, `set`, `transit` and
+`anti_transit` for one body in the day `[jd_start, jd_start + 1)` at the
+observer `lat`/`lon` (east-positive). Each is `{jd_ut, datetime_utc}`, both in
+UT, or `null` when the event does not occur in that window (a circumpolar or
+never-rising body has `null` rise and set); no instant is substituted. The
+response does not echo the body, observer, threshold or policy, so they are
+documented here:
+
+- The horizon threshold is the explicit `altitude` when given; otherwise
+  `policy.horizon_altitude`; otherwise the policy's disc and refraction
+  doctrine; with no policy at all it is -0.8333 degrees for the Sun and Moon
+  and -0.5667 degrees for every other body.
+- Refraction (0.5667 degrees) and mean semidiameters (Sun 0.2667, Moon
+  0.2725 degrees) are folded into that fixed threshold. Altitudes are
+  geometric: no pressure, temperature, per-date semidiameter or lunar parallax
+  term enters. `fixed_disc_size` is accepted and currently changes nothing.
+- Planets use topocentric altitude; fixed stars use the `star_product` below.
+  Transits are the upper and lower meridian crossings.
+
+An unknown body, coordinates out of range, a non-finite `jd_start` or
+`altitude`, an invalid policy value or an extra field is `422`.
+
 ### Fixed-Star Event Product Contract
 
 The rise/set policy (`policy.star_product` on `/v1/rise-set/phenomena`),

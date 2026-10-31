@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.10.2",
+  "engine_version": "6.11.1",
   "families": [
     {
       "assessment_status": "partial",
@@ -71,6 +71,7 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/server/test_server_alternate_dashas_routes.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_vedic_second_pass_repairs.py",
         "tests/server/test_vedic_rest_admission.py"
       ]
@@ -212,6 +213,7 @@
         "tests/integration/test_gochara_dated_ephemeris.py",
         "tests/server/test_server_ashtakavarga_routes.py",
         "tests/server/test_server_gochara.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_vedic_direct_input_hardening.py",
         "tests/test_api_reference_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
@@ -267,6 +269,46 @@
       ]
     },
     {
+      "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/ASPECT_BACKEND_STANDARD.md",
+        "wiki/02_standards/ASPECT_CATALOG.md",
+        "wiki/07_audit/ASPECT_CONSUMER_AUDIT_2026-10-25.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "aspect-registry",
+      "family_label": "Aspect Registry",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/aspect_registry.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/unit/test_aspect_catalog.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
+        "tests/unit/test_aspects.py",
+        "tests/unit/test_optional_aspects.py"
+      ]
+    },
+    {
       "assessment_status": "mixed",
       "canonical_surface_count": 15,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
@@ -290,6 +332,7 @@
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/ASPECT_BACKEND_STANDARD.md",
+        "wiki/02_standards/ASPECT_CATALOG.md",
         "wiki/02_standards/ASTEROID_FAMILIES_BACKEND_STANDARD.md",
         "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/PATTERNS_BACKEND_STANDARD.md",
@@ -312,6 +355,7 @@
         "wiki/06_roadmap/hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md",
         "wiki/06_roadmap/hellenistic_completion/archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md",
         "wiki/06_roadmap/hellenistic_completion/archive/hellenistic_completion_roadmap_pre_engine_gates.md",
+        "wiki/07_audit/ASPECT_CONSUMER_AUDIT_2026-10-25.md",
         "wiki/07_audit/FEATURE_AUDIT_2026.md",
         "wiki/07_audit/WESTERN_SYSTEMS_AUDIT.md"
       ],
@@ -346,6 +390,8 @@
         "tests/server/test_server_relationship_routes.py",
         "tests/test_api_reference_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_aspect_catalog.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
         "tests/unit/test_aspect_motion_witness.py",
         "tests/unit/test_aspects.py",
         "tests/unit/test_asteroid_families.py",
@@ -353,13 +399,17 @@
         "tests/unit/test_categorical_boundary.py",
         "tests/unit/test_declination_aspects.py",
         "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_extended_aspect_admission.py",
         "tests/unit/test_geodetic_analysis.py",
         "tests/unit/test_hellenistic_contract_parity.py",
         "tests/unit/test_hellenistic_relations.py",
+        "tests/unit/test_mathematical_patterns.py",
         "tests/unit/test_moiety_orbs.py",
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_native_gil_release_audit.py",
+        "tests/unit/test_optional_aspects.py",
         "tests/unit/test_pattern_facade.py",
+        "tests/unit/test_pattern_templates.py",
         "tests/unit/test_patterns.py",
         "tests/unit/test_varshaphal.py"
       ]
@@ -508,10 +558,12 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/server/test_server_astrocartography_routes.py",
         "tests/server/test_server_forecasting_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrocartography.py",
+        "tests/unit/test_astrocartography_physical_horizon.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_fixed_star_astrocartography.py",
         "tests/unit/test_locational_forecasting.py",
@@ -624,6 +676,7 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/integration/test_sayanadi_ephemeris.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_sayanadi.py",
         "tests/server/test_vedic_direct_input_hardening.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
@@ -631,6 +684,45 @@
         "tests/unit/test_sayanadi.py",
         "tests/unit/test_sayanadi_admission.py",
         "tests/unit/test_vedic_surface_completeness.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "CHANGELOG.md",
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md",
+        "wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "ayanamsa-doctrine",
+      "family_label": "Ayanamsa Doctrine",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/ayanamsa_doctrine.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/integration/test_ayanamsa_polar_erfa.py",
+        "tests/server/test_server_ayanamsa_doctrine.py",
+        "tests/unit/test_ayanamsa_doctrine.py"
       ]
     },
     {
@@ -688,6 +780,7 @@
         "tests/server/test_server_batch_routes.py",
         "tests/server/test_server_natal_aspect_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
         "tests/unit/test_batch.py"
       ]
     },
@@ -1036,6 +1129,7 @@
         "tests/unit/test_adversarial_quad_singularities.py",
         "tests/unit/test_adversarial_singularities.py",
         "tests/unit/test_adversarial_triple_singularities.py",
+        "tests/unit/test_angular_distance.py",
         "tests/unit/test_draconic.py",
         "tests/unit/test_eclipse_footprint.py",
         "tests/unit/test_ephemeris_breadth_gauntlet.py",
@@ -1180,6 +1274,7 @@
         "tests/server/test_server_panchanga_shuddhi.py",
         "tests/special_muhurta_support.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_ayanamsa_doctrine.py",
         "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_named_muhurta.py"
       ]
@@ -1237,6 +1332,7 @@
         "tests/server/test_server_alternate_dashas_routes.py",
         "tests/server/test_server_phase8_dasha_routes.py",
         "tests/server/test_server_profile_bundle_routes.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/server/test_server_vedic_repair_acceptance.py",
         "tests/server/test_vedic_rest_admission.py",
@@ -1421,6 +1517,45 @@
     },
     {
       "assessment_status": "partial",
+      "canonical_surface_count": 11,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 11
+      },
+      "documentation_leads": [
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/DERIVED_POINTS.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "derived-points",
+      "family_label": "Derived Points",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/derived_points.py",
+        "moira_server/routers/derived_points.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 6,
+      "rest_surface_count": 5,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/integration/test_derived_points_kernels.py",
+        "tests/server/test_server_derived_points.py",
+        "tests/unit/test_derived_points.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
       "canonical_surface_count": 33,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
@@ -1458,6 +1593,8 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
         "wiki/03_validation/HELLENISTIC_API_INVENTORY.generated.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md",
         "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
         "wiki/05_research/primary_directions/primary_directions_derived_points.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
@@ -1506,13 +1643,14 @@
         "tests/server/test_server_dignities_routes.py",
         "tests/server/test_server_egyptian_bounds_routes.py",
         "tests/server/test_server_hellenistic_systems_routes.py",
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/server/test_server_horary_perfection_routes.py",
         "tests/server/test_server_horary_routes.py",
         "tests/server/test_server_phase8_decennial_routes.py",
         "tests/server/test_server_phase8_timelord_routes.py",
         "tests/server/test_server_phase9_umbrella_exclusions.py",
         "tests/server/test_server_profile_bundle_routes.py",
         "tests/server/test_server_shadbala_service.py",
-        "tests/server/test_server_time_scale_adapters.py",
         "tests/server/test_server_triplicity_routes.py",
         "tests/test_api_reference_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
@@ -1532,9 +1670,11 @@
         "tests/unit/test_hellenistic_supporting_lots.py",
         "tests/unit/test_hellenistic_systems.py",
         "tests/unit/test_horary.py",
+        "tests/unit/test_horary_moon.py",
         "tests/unit/test_horary_public_api.py",
         "tests/unit/test_horary_reception.py",
         "tests/unit/test_lilly_1647_doctrine.py",
+        "tests/unit/test_longevity_facade.py",
         "tests/unit/test_lord_of_the_turn.py",
         "tests/unit/test_moira_almutens.py",
         "tests/unit/test_moira_dignities_and_lots.py",
@@ -1949,17 +2089,19 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 10,
+      "canonical_surface_count": 22,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 2,
-        "unresolved": 8
+        "unresolved": 20
       },
       "documentation_leads": [
         "CHANGELOG.md",
         "docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md",
+        "docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md",
+        "docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md",
         "docs/architecture/P10-03_GEODETIC_TRANSPORT_DESIGN.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/GEODETIC_BACKEND_STANDARD.md",
@@ -1981,7 +2123,7 @@
         "rest:POST:/v1/geodetic/chart/location-chart"
       ],
       "python_surface_count": 6,
-      "rest_surface_count": 4,
+      "rest_surface_count": 16,
       "review_stages": [
         "stage_3_product_use",
         "stage_5_remaining_tail"
@@ -1989,12 +2131,15 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/integration/test_geodetic_small_bodies.py",
+        "tests/server/test_server_geodetic_analysis_routes.py",
         "tests/server/test_server_geodetic_routes.py",
+        "tests/server/test_server_geodetic_timing_route.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/unit/test_angles_branch_doctrine.py",
         "tests/unit/test_geodetic.py",
         "tests/unit/test_geodetic_analysis.py",
         "tests/unit/test_geodetic_curves.py",
+        "tests/unit/test_geodetic_facade.py",
         "tests/unit/test_geodetic_geometry.py",
         "tests/unit/test_geodetic_timing.py",
         "tests/unit/test_geodetic_uncertainty.py"
@@ -2303,6 +2448,8 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/server/test_server_harmonics_routes.py",
+        "tests/server/test_server_optional_aspects.py",
+        "tests/unit/test_aspect_catalog.py",
         "tests/unit/test_harmonics.py",
         "tests/unit/test_rule_engine_validation.py"
       ]
@@ -2427,6 +2574,7 @@
         "tests/server/test_server_hellenistic_profile.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_hellenistic_profile.py",
+        "tests/unit/test_hellenistic_ray_opposition_policy.py",
         "tests/unit/test_hellenistic_sect_covenant.py"
       ]
     },
@@ -2621,6 +2769,7 @@
         "tests/server/test_server_hellenistic_atoms_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_hellenistic_contract_parity.py",
+        "tests/unit/test_hellenistic_ray_opposition_policy.py",
         "tests/unit/test_hellenistic_relations.py"
       ]
     },
@@ -2631,8 +2780,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 3
+        "partial": 1,
+        "unresolved": 2
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -2652,11 +2801,14 @@
       "ownership_sources": [
         "moira_server/routers/hellenistic_systems.py"
       ],
-      "production_user_surface_count": 0,
-      "production_user_surface_ids": [],
+      "production_user_surface_count": 1,
+      "production_user_surface_ids": [
+        "rest:POST:/v1/hellenistic/circumambulations"
+      ],
       "python_surface_count": 0,
       "rest_surface_count": 3,
       "review_stages": [
+        "stage_3_product_use",
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
@@ -2666,18 +2818,21 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 2,
+      "canonical_surface_count": 5,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 2
+        "unresolved": 5
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/05_research/horary/TRACK_B_HORARY_SOURCE_AND_AMBIGUITY_DOSSIER_2026-08.md"
+        "wiki/05_research/horary/TRACK_B_HORARY_SOURCE_AND_AMBIGUITY_DOSSIER_2026-08.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md"
       ],
       "domain_group": "traditional-western",
       "family_id": "horary",
@@ -2692,18 +2847,174 @@
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
       "python_surface_count": 1,
-      "rest_surface_count": 1,
+      "rest_surface_count": 4,
       "review_stages": [
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
         "tests/integration/test_classical_perfection_de441.py",
+        "tests/integration/test_horary_perfection_routes_de441.py",
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/server/test_server_horary_perfection_routes.py",
         "tests/server/test_server_horary_routes.py",
         "tests/server/test_track_b_horary_openapi.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_horary.py",
+        "tests/unit/test_horary_lilly_public_surface.py",
+        "tests/unit/test_horary_perfection_routes.py",
         "tests/unit/test_horary_public_api.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 14,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 14
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md",
+        "wiki/05_research/horary/lilly_core_2026/RULES_AND_AMBIGUITIES.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "horary-considerations",
+      "family_label": "Horary Considerations",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/horary_considerations.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 14,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/unit/test_horary_considerations.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 4,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 4
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "horary-moon",
+      "family_label": "Horary Moon",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/horary_moon.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 4,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/integration/test_horary_moon_de441.py",
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/unit/test_horary_considerations.py",
+        "tests/unit/test_horary_moon.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 5,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 5
+      },
+      "documentation_leads": [
+        "CHANGELOG.md",
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "horary-perfection-routes",
+      "family_label": "Horary Perfection Routes",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/horary_perfection_routes.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 5,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/integration/test_horary_perfection_routes_de441.py",
+        "tests/server/test_server_horary_perfection_routes.py",
+        "tests/unit/test_horary_lilly_public_surface.py",
+        "tests/unit/test_horary_perfection_routes.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 7,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 7
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P2_IMPLEMENTATION_2026-10-23.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "horary-reception",
+      "family_label": "Horary Reception",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/horary_reception.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 7,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/unit/test_horary_considerations.py",
+        "tests/unit/test_horary_reception.py"
       ]
     },
     {
@@ -2776,6 +3087,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_dorotheus_electional_de441.py",
         "tests/integration/test_houses_external_reference.py",
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_muhurta_dosha_ephemeris.py",
@@ -2821,6 +3133,7 @@
         "tests/unit/test_experimental_validation.py",
         "tests/unit/test_gauquelin.py",
         "tests/unit/test_geodetic_analysis.py",
+        "tests/unit/test_hellenistic_sect_covenant.py",
         "tests/unit/test_hermetic_decans.py",
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_public_api.py",
@@ -2951,6 +3264,49 @@
       ]
     },
     {
+      "assessment_status": "partial",
+      "canonical_surface_count": 17,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 17
+      },
+      "documentation_leads": [
+        "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/02_standards/HYPOTHETICAL_MODELS.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "hypothetical",
+      "family_label": "Hypothetical",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [
+        "python:moira.facade:abramov_proserpina_at",
+        "python:moira.facade:adams_1846_orbit",
+        "python:moira.facade:koch_waldemath_orbit",
+        "python:moira.facade:leverrier_1846_orbit",
+        "python:moira.facade:weston_stahl_vulcan_orbit"
+      ],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/hypothetical.py",
+        "moira_server/routers/hypothetical.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 11,
+      "rest_surface_count": 6,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_server_hypothetical.py",
+        "tests/unit/test_hypothetical.py"
+      ]
+    },
+    {
       "assessment_status": "major_gap",
       "canonical_surface_count": 25,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
@@ -2971,6 +3327,7 @@
         "wiki/02_standards/CHARA_DASHA_CYCLE_STANDARD.md",
         "wiki/02_standards/JAIMINI_BACKEND_STANDARD.md",
         "wiki/02_standards/JAIMINI_PROFILE_ASSESSMENT_STANDARD.md",
+        "wiki/05_research/fixed_stars/STAR_ANCHORED_AYANAMSA_DOCTRINE.md",
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/VEDIC_CHARA_ARGALA_IMPLEMENTATION_PLAN_2026-10-12.md",
         "wiki/06_roadmap/VEDIC_CHARA_ARGALA_SOURCE_RESEARCH_2026-10-12.md",
@@ -3007,6 +3364,7 @@
         "tests/server/test_server_jaimini_profiles.py",
         "tests/server/test_server_jaimini_routes.py",
         "tests/server/test_server_jaimini_service.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_vedic_chara_d60_admission.py",
         "tests/server/test_vedic_direct_input_hardening.py",
         "tests/tools/benchmark_jaimini_profiles.py",
@@ -3031,11 +3389,13 @@
         "unresolved": 9
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "PROVENANCE.md",
         "docs/architecture/MOIRA_NATIVE_BACKEND_ARCHITECTURE.md",
         "docs/architecture/MOIRA_NATIVE_MIGRATION_TRACKER.md",
         "docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md",
         "docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md",
+        "docs/architecture/P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md",
         "docs/architecture/P10-06_GAUQUELIN_SECTORS_TRANSPORT_DESIGN.md",
         "docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md",
         "docs/superpowers/plans/2026-05-04-lunar-cartography.md",
@@ -3054,6 +3414,7 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/DAILY_PANCHANGA_STANDARD.md",
         "wiki/02_standards/DELTA_T_HYBRID_MODEL.md",
+        "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
         "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
@@ -3072,6 +3433,7 @@
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/03_validation/VALIDATION_ASTRONOMY.md",
         "wiki/05_research/native_heliacal_parity_validation_2026-07-12.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
@@ -3103,22 +3465,29 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/harness_meta/test_reference_epoch_policy.py",
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/integration/test_astrometric_corrections_external.py",
+        "tests/integration/test_bulletin_a_044_c2t_erfa.py",
         "tests/integration/test_classical_perfection_de441.py",
         "tests/integration/test_custom_type13_toutatis_kernel.py",
         "tests/integration/test_delta_t_ancient_month_continuity.py",
         "tests/integration/test_delta_t_hybrid.py",
         "tests/integration/test_delta_t_model_comparison.py",
+        "tests/integration/test_derived_points_kernels.py",
         "tests/integration/test_diurnal_aberration_integration.py",
         "tests/integration/test_eclipse_footprint_2027_junction_regression.py",
         "tests/integration/test_eclipse_footprint_fold_regression.py",
         "tests/integration/test_eclipse_footprint_hybrid_junction_regression.py",
         "tests/integration/test_eclipse_limiting_regressions.py",
         "tests/integration/test_eclipse_lunar_contacts_nasa_reference.py",
+        "tests/integration/test_eclipse_nasa_completeness.py",
         "tests/integration/test_eclipse_nasa_reference.py",
         "tests/integration/test_eclipse_occultation_where_reference.py",
         "tests/integration/test_erfa_validation.py",
+        "tests/integration/test_gast_matches_erfa.py",
         "tests/integration/test_gauquelin_external_reference.py",
+        "tests/integration/test_horary_moon_de441.py",
+        "tests/integration/test_horary_perfection_routes_de441.py",
         "tests/integration/test_horizons_planet_apparent.py",
         "tests/integration/test_horizons_planet_vectors_wide.py",
         "tests/integration/test_horizons_vectors.py",
@@ -3143,7 +3512,6 @@
         "tests/integration/test_solar_eclipse_global_reference.py",
         "tests/integration/test_solar_eclipse_noncentral.py",
         "tests/integration/test_sovereign_small_body_manifest_routing.py",
-        "tests/integration/test_spiceypy_phase2_time_admission.py",
         "tests/integration/test_twilight_external_reference.py",
         "tests/integration/test_vedic_repair_resources.py",
         "tests/integration/test_vimshottari_external_reference.py",
@@ -3152,13 +3520,13 @@
         "tests/named_muhurta_support.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/sayanadi_support.py",
-        "tests/server/test_eclipse_serialization_clock.py",
         "tests/server/test_server_chart_routes.py",
         "tests/server/test_server_daily_panchanga.py",
         "tests/server/test_server_deep_sky_routes.py",
         "tests/server/test_server_eclipse_footprint.py",
         "tests/server/test_server_frame_positions_routes.py",
         "tests/server/test_server_gauquelin_routes.py",
+        "tests/server/test_server_geodetic_timing_route.py",
         "tests/server/test_server_gochara_windows.py",
         "tests/server/test_server_horary_routes.py",
         "tests/server/test_server_jaimini_service.py",
@@ -3192,6 +3560,7 @@
         "tests/test_api_reference_validation.py",
         "tests/test_native_parity.py",
         "tests/test_native_sidereal_phase1.py",
+        "tests/tools/generate_iota_spica_candidate.py",
         "tests/tools/horizons.py",
         "tests/tools/ritual.py",
         "tests/unit/test_adversarial_dual_singularities.py",
@@ -3208,18 +3577,21 @@
         "tests/unit/test_babylonian.py",
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
+        "tests/unit/test_continuous_utc_audit.py",
         "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_dasha_full_intervals.py",
         "tests/unit/test_deep_time_astrometry.py",
         "tests/unit/test_delta_t_call_path_contract.py",
         "tests/unit/test_delta_t_physical.py",
         "tests/unit/test_delta_t_policy.py",
+        "tests/unit/test_derived_points.py",
         "tests/unit/test_doctrine_alignment.py",
         "tests/unit/test_eclipse_cartography.py",
         "tests/unit/test_eclipse_clock_boundaries.py",
         "tests/unit/test_eclipse_footprint.py",
         "tests/unit/test_eclipse_global.py",
         "tests/unit/test_eclipse_helpers.py",
+        "tests/unit/test_eop_dut1_range.py",
         "tests/unit/test_ephemeris_breadth_gauntlet.py",
         "tests/unit/test_ephemeris_stress_proofs.py",
         "tests/unit/test_ephemeris_time.py",
@@ -3233,10 +3605,12 @@
         "tests/unit/test_galactic.py",
         "tests/unit/test_galactic_houses_public_api.py",
         "tests/unit/test_gauquelin.py",
+        "tests/unit/test_geodetic_facade.py",
         "tests/unit/test_gochara_dated.py",
         "tests/unit/test_gochara_windows.py",
         "tests/unit/test_harmogram_bridges.py",
         "tests/unit/test_heliacal_visibility_policy.py",
+        "tests/unit/test_hellenistic_profile.py",
         "tests/unit/test_hermetic_decans.py",
         "tests/unit/test_house_angle_branches.py",
         "tests/unit/test_house_dynamics.py",
@@ -3247,7 +3621,9 @@
         "tests/unit/test_house_polar_branch_selection.py",
         "tests/unit/test_house_pole_height_geometry.py",
         "tests/unit/test_house_projection_geometry.py",
+        "tests/unit/test_hypothetical.py",
         "tests/unit/test_julian_delta_t.py",
+        "tests/unit/test_leap_second_gap.py",
         "tests/unit/test_local_solar_day.py",
         "tests/unit/test_local_space.py",
         "tests/unit/test_lunar_limb_event_profile.py",
@@ -3261,6 +3637,7 @@
         "tests/unit/test_nasa_compat_eclipse.py",
         "tests/unit/test_native_houses_parity.py",
         "tests/unit/test_native_runtime_verification.py",
+        "tests/unit/test_occultation_observer_motion.py",
         "tests/unit/test_orbital_time_scales.py",
         "tests/unit/test_pancha_pakshi_astronomical_paksha.py",
         "tests/unit/test_pancha_pakshi_fixed_clock_current_cell.py",
@@ -3328,11 +3705,14 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/server/test_server_kalachakra.py",
+        "tests/server/test_server_kalachakra_rao.py",
         "tests/unit/test_kalachakra.py",
         "tests/unit/test_kalachakra_admission.py",
         "tests/unit/test_kalachakra_astronomy.py",
+        "tests/unit/test_kalachakra_compatibility.py",
         "tests/unit/test_kalachakra_projection.py",
-        "tests/unit/test_kalachakra_public_api.py"
+        "tests/unit/test_kalachakra_public_api.py",
+        "tests/unit/test_kalachakra_rao.py"
       ]
     },
     {
@@ -3669,6 +4049,7 @@
         "tests/unit/test_hellenistic_profile.py",
         "tests/unit/test_hellenistic_source_goldens.py",
         "tests/unit/test_hellenistic_supporting_lots.py",
+        "tests/unit/test_lots_house_frame.py",
         "tests/unit/test_lots_public_api.py",
         "tests/unit/test_moira_dignities_and_lots.py",
         "tests/unit/test_paulus_lots.py",
@@ -4418,8 +4799,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 3
+        "partial": 3,
+        "unresolved": 0
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -4432,23 +4813,25 @@
       "family_label": "Natal Discovery",
       "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
       "missing_documentation_surface_ids": [],
-      "missing_test_surface_ids": [
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira_server/routers/natal_discovery.py"
+      ],
+      "production_user_surface_count": 3,
+      "production_user_surface_ids": [
         "rest:POST:/v1/natal-discovery/dispositors",
         "rest:POST:/v1/natal-discovery/lunar-context",
         "rest:POST:/v1/natal-discovery/shape"
       ],
-      "ownership_sources": [
-        "moira_server/routers/natal_discovery.py"
-      ],
-      "production_user_surface_count": 0,
-      "production_user_surface_ids": [],
       "python_surface_count": 0,
       "rest_surface_count": 3,
       "review_stages": [
-        "stage_5_remaining_tail"
+        "stage_3_product_use"
       ],
       "review_state": "reviewed",
-      "test_leads": []
+      "test_leads": [
+        "tests/server/test_server_natal_discovery.py"
+      ]
     },
     {
       "assessment_status": "partial",
@@ -4508,6 +4891,7 @@
         "docs/superpowers/specs/2026-09-15-orbital-core-design.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/DERIVED_POINTS.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -4541,6 +4925,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_derived_points_kernels.py",
         "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_true_lilith_speed.py",
         "tests/oracle/test_oracle_validation.py",
@@ -4595,12 +4980,15 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md",
         "wiki/02_standards/BOUNDED_COMPUTATION_REUSE_STANDARD.md",
+        "wiki/02_standards/DERIVED_POINTS.md",
         "wiki/02_standards/FRAME_SPECIFIC_POSITIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/GALACTIC_BACKEND_STANDARD.md",
         "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/GOCHARA_DATE_DERIVED_STANDARD.md",
         "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
+        "wiki/02_standards/HYPOTHETICAL_MODELS.md",
         "wiki/02_standards/LOCAL_SPACE_BACKEND_STANDARD.md",
         "wiki/02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md",
         "wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md",
@@ -4623,6 +5011,7 @@
         "wiki/03_validation/MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md",
         "wiki/03_validation/MARRIAGE_ELECTION_REUSE_2026-10-10.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
+        "wiki/03_validation/PRECESSION_SPK_PRECISION_REPAIR_2026-10-27.md",
         "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md",
         "wiki/03_validation/SIDEREAL_GENERAL_PRECESSION_RECONCILIATION.md",
         "wiki/03_validation/SWISS_EPHEMERIS_EXTENSIBILITY_ROADMAP.md",
@@ -4632,10 +5021,13 @@
         "wiki/03_validation/SWISS_HTML_FAMILY_COVERAGE_AUDIT_2026-04-09.md",
         "wiki/03_validation/VALIDATION_ASTRONOMY.md",
         "wiki/03_validation/VEDIC_ADVERSARIAL_REPAIR_VALIDATION_2026-10-09.md",
+        "wiki/03_validation/observer_motion_precision_2026_10_27.md",
         "wiki/05_research/MOON_FRAME_CONVENTIONS_2026-05-09.md",
         "wiki/05_research/MOON_LONGITUDE_RESIDUAL_INVESTIGATION_2026-05-09.md",
+        "wiki/05_research/fixed_stars/STAR_ANCHORED_AYANAMSA_DOCTRINE.md",
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE6_BENCHMARK_CHECKPOINT_2026-08-04.md",
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE6_PROFILE_CENSUS_CHECKPOINT_2026-08-04.md",
+        "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md",
         "wiki/05_research/native_heliacal_parity_validation_2026-07-12.md",
         "wiki/05_research/paran_performance_validation_2026-07-12.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md",
@@ -4667,9 +5059,13 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_astrocartography_physical_horizon.py",
         "tests/integration/test_erfa_validation.py",
+        "tests/integration/test_gast_matches_erfa.py",
         "tests/integration/test_gauquelin_external_reference.py",
         "tests/integration/test_geodetic_small_bodies.py",
+        "tests/integration/test_horary_moon_de441.py",
+        "tests/integration/test_horary_perfection_routes_de441.py",
         "tests/integration/test_houses_external_reference.py",
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_mean_node_frame_consistency.py",
@@ -4678,15 +5074,18 @@
         "tests/integration/test_true_lilith_speed.py",
         "tests/integration/test_true_node_frame_consistency.py",
         "tests/server/test_server_chart_routes.py",
+        "tests/server/test_server_derived_points.py",
         "tests/server/test_server_pancha_pakshi_astronomical_paksha.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/server/test_server_website_routes.py",
         "tests/tools/horizons.py",
         "tests/unit/test_astrocartography.py",
+        "tests/unit/test_ayanamsa_doctrine.py",
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
         "tests/unit/test_dasha_full_intervals.py",
         "tests/unit/test_dasha_systems.py",
+        "tests/unit/test_derived_points.py",
         "tests/unit/test_doctrine_alignment.py",
         "tests/unit/test_ephemeris_breadth_gauntlet.py",
         "tests/unit/test_experimental_alcabitius.py",
@@ -4700,6 +5099,7 @@
         "tests/unit/test_galactic.py",
         "tests/unit/test_gauquelin.py",
         "tests/unit/test_geodetic.py",
+        "tests/unit/test_geodetic_facade.py",
         "tests/unit/test_gochara_dated.py",
         "tests/unit/test_hermetic_decans.py",
         "tests/unit/test_horary_public_api.py",
@@ -4729,11 +5129,13 @@
         "tests/unit/test_planetary_frame_contracts.py",
         "tests/unit/test_planets_architecture_invariants.py",
         "tests/unit/test_polar_house_breadth_gauntlet.py",
+        "tests/unit/test_precession_fw06_precision.py",
         "tests/unit/test_r2b_additive_truth.py",
         "tests/unit/test_reader_bound_sidereal_time.py",
         "tests/unit/test_rise_set.py",
         "tests/unit/test_sidereal.py",
         "tests/unit/test_sidereal_nakshatra_boundaries.py",
+        "tests/unit/test_stars_sovereign_catalog.py",
         "tests/unit/test_swiss_ephemeris_migration_guide.py",
         "tests/unit/test_topocentric_multi_path_consistency.py",
         "tests/unit/test_vertex_oracle.py"
@@ -4809,6 +5211,7 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/DERIVED_POINTS.md",
         "wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md",
         "wiki/02_standards/PLANETARY_NODES_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.7.0.md",
@@ -4853,7 +5256,9 @@
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_apsidal_passages.py",
         "tests/unit/test_daf_writer_ui.py",
+        "tests/unit/test_derived_points.py",
         "tests/unit/test_distance_extremes.py",
+        "tests/unit/test_hypothetical.py",
         "tests/unit/test_orbit_classes.py",
         "tests/unit/test_orbital_elements.py",
         "tests/unit/test_orbital_errors.py",
@@ -5134,18 +5539,55 @@
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_parans.py",
         "tests/unit/test_parans_public_api.py",
-        "tests/unit/test_session_fixes.py"
+        "tests/unit/test_session_fixes.py",
+        "tests/unit/test_star_event_product_policy.py"
       ]
     },
     {
-      "assessment_status": "mixed",
-      "canonical_surface_count": 27,
+      "assessment_status": "partial",
+      "canonical_surface_count": 2,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 27
+        "unresolved": 2
+      },
+      "documentation_leads": [
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/PATTERNS_BACKEND_STANDARD.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "pattern-templates",
+      "family_label": "Pattern Templates",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/pattern_templates.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 2,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/unit/test_pattern_templates.py",
+        "tests/unit/test_patterns_public_api.py"
+      ]
+    },
+    {
+      "assessment_status": "mixed",
+      "canonical_surface_count": 36,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 36
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5169,7 +5611,7 @@
       ],
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
-      "python_surface_count": 27,
+      "python_surface_count": 36,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_5_remaining_tail"
@@ -5179,8 +5621,11 @@
         "tests/server/test_server_pattern_coherence_routes.py",
         "tests/server/test_server_patterns_policy.py",
         "tests/server/test_server_relationship_routes.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
+        "tests/unit/test_mathematical_patterns.py",
         "tests/unit/test_pattern_coherence_qualitative.py",
         "tests/unit/test_pattern_facade.py",
+        "tests/unit/test_pattern_templates.py",
         "tests/unit/test_patterns.py",
         "tests/unit/test_patterns_public_api.py",
         "tests/unit/test_stelliums.py"
@@ -5214,6 +5659,7 @@
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/phase.py",
+        "moira_server/dependencies.py",
         "moira_server/routers/phase.py"
       ],
       "production_user_surface_count": 0,
@@ -5225,6 +5671,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_engine_reader_context.py",
         "tests/server/test_server_phase_routes.py",
         "tests/unit/test_facade_clock_boundaries.py"
       ]
@@ -5236,8 +5683,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 22,
-        "unresolved": 47
+        "partial": 23,
+        "unresolved": 46
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5261,10 +5708,13 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/ASPECT_BACKEND_STANDARD.md",
+        "wiki/02_standards/ASPECT_CATALOG.md",
         "wiki/02_standards/ASTEROID_FAMILIES_BACKEND_STANDARD.md",
         "wiki/02_standards/ECLIPSE_MODEL_STANDARD.md",
         "wiki/02_standards/GENERIC_PHENOMENA_SOLAR_CONDITIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/HARMONIC_TRANSIT_FORECAST_STANDARD.md",
+        "wiki/02_standards/HYPOTHETICAL_MODELS.md",
         "wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md",
         "wiki/02_standards/PLANETARY_NODES_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_5.0.0.md",
@@ -5290,6 +5740,7 @@
         "wiki/06_roadmap/ENGINE_FRONTIERS_AND_POLISH_REGISTER.md",
         "wiki/06_roadmap/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md",
         "wiki/06_roadmap/vedic_jyotish_completion.md",
+        "wiki/07_audit/ASPECT_CONSUMER_AUDIT_2026-10-25.md",
         "wiki/07_audit/FEATURE_AUDIT_2026.md",
         "wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md"
       ],
@@ -5306,7 +5757,7 @@
         "moira_server/routers/generic_phenomena.py",
         "moira_server/routers/phenomena.py"
       ],
-      "production_user_surface_count": 18,
+      "production_user_surface_count": 19,
       "production_user_surface_ids": [
         "python:moira.facade:conjunctions_in_range",
         "python:moira.facade:heliocentric_conjunctions_in_range",
@@ -5317,6 +5768,7 @@
         "rest:POST:/v1/eclipses/solar/next",
         "rest:POST:/v1/heliacal/planet",
         "rest:POST:/v1/parans/natal",
+        "rest:POST:/v1/rise-set/phenomena",
         "rest:POST:/v1/rise-set/twilight",
         "rest:POST:/v1/solar-condition/events",
         "rest:POST:/v1/solar-condition/instant",
@@ -5352,6 +5804,7 @@
         "tests/server/test_server_occultation_path_topology.py",
         "tests/server/test_server_paran_packet.py",
         "tests/server/test_server_phenomena_routes.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
@@ -5364,7 +5817,8 @@
         "tests/unit/test_phenomena_regressions.py",
         "tests/unit/test_planetary_nodes_orbital_core.py",
         "tests/unit/test_primary_directions_dynamic_keys.py",
-        "tests/unit/test_solar_condition_at.py"
+        "tests/unit/test_solar_condition_at.py",
+        "tests/unit/test_star_event_product_policy.py"
       ]
     },
     {
@@ -5731,8 +6185,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 4,
-        "unresolved": 8
+        "partial": 5,
+        "unresolved": 7
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5749,11 +6203,12 @@
         "wiki/02_services/REST_REDUCTION_VISIBILITY_AUDIT.md",
         "wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md",
         "wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md",
         "wiki/02_standards/primary_directions/primary_directions_validation_codex.md",
-        "wiki/03_release/COMPATIBILITY_NOTES_6.10.2.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.11.0.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
-        "wiki/03_release/RELEASE_NOTES_6.10.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.11.0.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
         "wiki/05_research/primary_directions/primary_directions_catalogue_lots.md",
         "wiki/05_research/primary_directions/primary_directions_derived_points.md",
@@ -5774,12 +6229,13 @@
         "moira/primary_directions/__init__.py",
         "moira_server/routers/primary_directions.py"
       ],
-      "production_user_surface_count": 4,
+      "production_user_surface_count": 5,
       "production_user_surface_ids": [
         "rest:POST:/v1/primary-directions/network/reduction",
         "rest:POST:/v1/primary-directions/profile/reduction",
         "rest:POST:/v1/primary-directions/speculum",
-        "rest:POST:/v1/primary-directions/time-keys"
+        "rest:POST:/v1/primary-directions/time-keys",
+        "rest:POST:/v1/primary-directions/timeline"
       ],
       "python_surface_count": 2,
       "rest_surface_count": 10,
@@ -5999,7 +6455,7 @@
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/progressions.py",
-        "moira_server/routers/progressions.py"
+        "moira_server/dependencies.py"
       ],
       "production_user_surface_count": 3,
       "production_user_surface_ids": [
@@ -6017,6 +6473,7 @@
         "tests/integration/test_progressions_external_reference.py",
         "tests/server/test_server_adversarial_routes.py",
         "tests/server/test_server_batch_routes.py",
+        "tests/server/test_server_engine_reader_context.py",
         "tests/server/test_server_phase8_arc_progression_routes.py",
         "tests/server/test_server_phase8_house_frame_routes.py",
         "tests/server/test_server_phase8_progression_routes.py",
@@ -6051,6 +6508,7 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/ASPECT_CATALOG.md",
         "wiki/02_standards/SYNASTRY_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
         "wiki/03_release/RELEASE_NOTES_4.2.0.md",
@@ -6098,18 +6556,26 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_aspect_consumer_contracts.py",
         "tests/server/test_server_aspect_motion_witness.py",
         "tests/server/test_server_aspects_from_longitudes.py",
         "tests/server/test_server_declination_aspect_motion.py",
         "tests/server/test_server_declination_aspects.py",
         "tests/server/test_server_forecasting_routes.py",
+        "tests/server/test_server_mathematical_patterns.py",
         "tests/server/test_server_moon_connection_flow.py",
+        "tests/server/test_server_optional_aspects.py",
         "tests/server/test_server_pattern_coherence_routes.py",
+        "tests/server/test_server_pattern_templates.py",
         "tests/server/test_server_patterns_policy.py",
         "tests/server/test_server_relationship_routes.py",
         "tests/test_api_reference_validation.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_aspect_catalog.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
+        "tests/unit/test_extended_aspect_admission.py",
         "tests/unit/test_moira_synastry.py",
+        "tests/unit/test_optional_aspects.py",
         "tests/unit/test_progressed_synastry.py",
         "tests/unit/test_relationship_forecasting.py",
         "tests/unit/test_synastry_public_api.py",
@@ -6127,6 +6593,7 @@
         "unresolved": 2
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
@@ -6136,9 +6603,7 @@
       "family_id": "rise-set",
       "family_label": "Rise Set",
       "finding": "Prioritize paired receipt or generated-documentation coverage; do not infer evidence from implementation depth alone.",
-      "missing_documentation_surface_ids": [
-        "python:moira.facade:horizon_crossing_availability"
-      ],
+      "missing_documentation_surface_ids": [],
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/rise_set.py"
@@ -6155,7 +6620,8 @@
         "tests/integration/test_twilight_external_reference.py",
         "tests/server/test_server_phenomena_routes.py",
         "tests/unit/test_facade_clock_boundaries.py",
-        "tests/unit/test_rise_set.py"
+        "tests/unit/test_rise_set.py",
+        "tests/unit/test_star_event_product_policy.py"
       ]
     },
     {
@@ -6416,6 +6882,7 @@
         "docs/architecture/P-GAP-02_MUHURTA_TRANSPORT_DESIGN.md",
         "docs/architecture/P-GAP-05_SIDEREAL_NAKSHATRA_UTILITY_TRANSPORT_DESIGN.md",
         "docs/architecture/P-GAP-F1_FACADE_PARITY_REVIEW.md",
+        "docs/architecture/P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md",
         "docs/architecture/P10-03_GEODETIC_TRANSPORT_DESIGN.md",
         "docs/architecture/P11-07_MANAZIL_TRANSPORT_DESIGN.md",
         "docs/architecture/P13-01_ELECTIONAL_WINDOWS_TRANSPORT_DESIGN.md",
@@ -6439,11 +6906,13 @@
         "wiki/02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/ASHTAKAVARGA_BACKEND_STANDARD.md",
+        "wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md",
         "wiki/02_standards/D60_SOURCE_ADMISSION_STANDARD.md",
         "wiki/02_standards/DAILY_PANCHANGA_STANDARD.md",
         "wiki/02_standards/DASHA_BACKEND_STANDARD.md",
         "wiki/02_standards/DECANS_BACKEND_STANDARD.md",
         "wiki/02_standards/ELECTIONAL_SEARCH_BACKEND_STANDARD.md",
+        "wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md",
         "wiki/02_standards/GEODETIC_ANALYSIS_STANDARD.md",
         "wiki/02_standards/GEODETIC_BACKEND_STANDARD.md",
         "wiki/02_standards/GOCHARA_BACKEND_STANDARD.md",
@@ -6489,9 +6958,12 @@
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+        "wiki/03_validation/VALIDATION_ASTRONOMY.md",
         "wiki/03_validation/VEDIC_KALACHAKRA_VALIDATION_2026-10-12.md",
         "wiki/03_validation/VEDIC_REST_ADMISSION_VALIDATION_2026-10-08.md",
         "wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md",
+        "wiki/05_research/fixed_stars/AYANAMSA_ANCHORS_IN_ORIGINAL_TEXTS.md",
+        "wiki/05_research/fixed_stars/STAR_ANCHORED_AYANAMSA_DOCTRINE.md",
         "wiki/06_roadmap/D60_CLASSICAL_DERIVED_ADMISSION_2026-10-07.md",
         "wiki/06_roadmap/D60_EVIDENCE_ADJUDICATION_2026-10-07.md",
         "wiki/06_roadmap/D60_FULL_POSITION_SOURCE_RESEARCH_2026-10-07.md",
@@ -6538,6 +7010,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_ayanamsa_polar_erfa.py",
         "tests/integration/test_gochara_windows_reference.py",
         "tests/integration/test_lunar_month.py",
         "tests/integration/test_muhurta_dosha_ephemeris.py",
@@ -6548,9 +7021,11 @@
         "tests/integration/test_vimshottari_external_reference.py",
         "tests/muhurta_dosha_support.py",
         "tests/panchanga_shuddhi_support.py",
+        "tests/server/test_server_ayanamsa_doctrine.py",
         "tests/server/test_server_geodetic_routes.py",
         "tests/server/test_server_jaimini_service.py",
         "tests/server/test_server_kalachakra.py",
+        "tests/server/test_server_kalachakra_rao.py",
         "tests/server/test_server_muhurta_routes.py",
         "tests/server/test_server_muhurta_search.py",
         "tests/server/test_server_natal_discovery.py",
@@ -6569,6 +7044,8 @@
         "tests/tools/ritual.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrology_adversarial_gauntlet.py",
+        "tests/unit/test_ayanamsa_anchor_product.py",
+        "tests/unit/test_ayanamsa_doctrine.py",
         "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_dasha.py",
         "tests/unit/test_dasha_full_intervals.py",
@@ -6577,6 +7054,7 @@
         "tests/unit/test_electional.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_geodetic.py",
+        "tests/unit/test_geodetic_facade.py",
         "tests/unit/test_gochara_dated.py",
         "tests/unit/test_kalachakra_astronomy.py",
         "tests/unit/test_lunar_month.py",
@@ -6709,6 +7187,7 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md",
         "wiki/02_standards/PARANS_BACKEND_STANDARD.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/02_standards/STARS_BACKEND_STANDARD.md",
@@ -6759,6 +7238,8 @@
         "tests/integration/test_occultation_target_classes.py",
         "tests/integration/test_occultations_external_reference.py",
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
+        "tests/integration/test_stars_apparent_erfa.py",
+        "tests/integration/test_stars_binary_orbits.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_stars_external_reference.py",
         "tests/integration/test_stars_sovereign_identity.py",
@@ -6768,12 +7249,14 @@
         "tests/server/test_server_astrocartography_routes.py",
         "tests/server/test_server_forecasting_routes.py",
         "tests/server/test_server_heliacal_eclipse_phase_routes.py",
+        "tests/server/test_server_kalachakra.py",
         "tests/server/test_server_occultation_path_topology.py",
         "tests/server/test_server_paran_packet.py",
         "tests/server/test_server_phenomena_routes.py",
         "tests/server/test_server_sothic_routes.py",
         "tests/server/test_server_stars_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_ayanamsa_anchor_product.py",
         "tests/unit/test_constellations_sovereign_catalog.py",
         "tests/unit/test_deep_sky.py",
         "tests/unit/test_facade_clock_boundaries.py",
@@ -6909,15 +7392,16 @@
     },
     {
       "assessment_status": "major_gap",
-      "canonical_surface_count": 41,
+      "canonical_surface_count": 42,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 5,
-        "unresolved": 36
+        "unresolved": 37
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
         "docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md",
         "docs/architecture/P12-10_LORD_OF_THE_ORB_TRANSPORT_DESIGN.md",
@@ -6948,7 +7432,8 @@
       "family_label": "Timelords",
       "finding": "Prioritize paired receipt or generated-documentation coverage; do not infer evidence from implementation depth alone.",
       "missing_documentation_surface_ids": [
-        "python:moira.facade:zr_peak_grade"
+        "python:moira.facade:zr_peak_grade",
+        "python:moira.facade:zr_start_shift_truth"
       ],
       "missing_test_surface_ids": [],
       "ownership_sources": [
@@ -6963,7 +7448,7 @@
         "rest:POST:/v1/timelords/firdaria/sequence",
         "rest:POST:/v1/timelords/zodiacal-releasing/sequence"
       ],
-      "python_surface_count": 22,
+      "python_surface_count": 23,
       "rest_surface_count": 19,
       "review_stages": [
         "stage_3_product_use",
@@ -6986,7 +7471,8 @@
         "tests/unit/test_hellenistic_source_goldens.py",
         "tests/unit/test_timelords.py",
         "tests/unit/test_timelords_public_api.py",
-        "tests/unit/test_zr_revival_defaults.py"
+        "tests/unit/test_zr_revival_defaults.py",
+        "tests/unit/test_zr_start_shift_truth.py"
       ]
     },
     {
@@ -7061,6 +7547,7 @@
         "tests/integration/test_progressed_astrodynes_chart_adapter.py",
         "tests/server/test_server_astrodynes_routes.py",
         "tests/server/test_server_batch_routes.py",
+        "tests/server/test_server_engine_reader_context.py",
         "tests/server/test_server_forecasting_routes.py",
         "tests/server/test_server_heliacal_eclipse_phase_routes.py",
         "tests/server/test_server_natal_aspect_routes.py",
@@ -7070,6 +7557,7 @@
         "tests/test_api_reference_validation.py",
         "tests/unit/test_adversarial_public_visibility_transits.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
+        "tests/unit/test_aspect_consumer_contracts.py",
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
         "tests/unit/test_doctrine_alignment.py",
@@ -7225,9 +7713,7 @@
         "python:moira.facade:kalavela_upagrahas",
         "python:moira.facade:sun_based_upagrahas"
       ],
-      "missing_test_surface_ids": [
-        "rest:POST:/v1/upagrahas/sun-based"
-      ],
+      "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/upagrahas.py",
         "moira_server/routers/vedic_extended.py"
@@ -7242,6 +7728,7 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/integration/test_vedic_repair_resources.py",
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/server/test_vedic_direct_input_hardening.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
@@ -7339,8 +7826,8 @@
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
-        "partial": 0,
-        "unresolved": 22
+        "partial": 3,
+        "unresolved": 19
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7377,11 +7864,16 @@
         "moira/varga.py",
         "moira_server/routers/varga.py"
       ],
-      "production_user_surface_count": 0,
-      "production_user_surface_ids": [],
+      "production_user_surface_count": 3,
+      "production_user_surface_ids": [
+        "rest:POST:/v1/varga/d60/sign",
+        "rest:POST:/v1/varga/shodashvarga/batch",
+        "rest:POST:/v1/varga/vimshopaka"
+      ],
       "python_surface_count": 12,
       "rest_surface_count": 10,
       "review_stages": [
+        "stage_3_product_use",
         "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
@@ -7431,7 +7923,7 @@
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira/varshaphal.py",
-        "moira_server/routers/varshaphal.py"
+        "moira_server/dependencies.py"
       ],
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
@@ -7442,6 +7934,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_engine_reader_context.py",
         "tests/server/test_server_phase8_varshaphal_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_chart_metadata_truth.py",
@@ -7658,7 +8151,8 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
-        "tests/server/test_server_chart_wheel_routes.py"
+        "tests/server/test_server_chart_wheel_routes.py",
+        "tests/server/test_server_optional_aspects.py"
       ]
     },
     {
@@ -8145,6 +8639,7 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_route_smoke.py",
         "tests/server/test_server_yoga_extensions.py",
         "tests/server/test_vedic_direct_input_hardening.py",
         "tests/tools/benchmark_yoga_extensions.py",
@@ -8155,7 +8650,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "5ed5f137d6c3e51316e58fb5e81f124c069bf2b8d5a07453ccf9bb13928abf79",
+  "inventory_fingerprint_sha256": "989b237ab3d6142d691b5a7aa54c29a2a2a8fde66fc2cbfb43ee74b44a2d183d",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8167,30 +8662,30 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
-    "canonical_surface_count": 1252,
+    "canonical_surface_count": 1339,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
-      "stage_3_product_use": 43,
+      "stage_3_product_use": 46,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 128
+      "stage_5_remaining_tail": 136
     },
     "families_by_status": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 132,
+      "partial": 141,
       "strong_exemplar": 4,
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
-    "families_with_missing_tests": 8,
-    "family_count": 150,
-    "production_user_surface_count": 172,
-    "reviewed_families": 150,
+    "families_with_missing_tests": 6,
+    "family_count": 159,
+    "production_user_surface_count": 181,
+    "reviewed_families": 159,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
-      "partial": 210,
-      "unresolved": 1042
+      "partial": 219,
+      "unresolved": 1120
     }
   }
 }

@@ -290,6 +290,50 @@ def test_rise_set_routes_match_engine_truth(
     )
 
 
+@pytest.mark.requires_ephemeris
+def test_rise_set_phenomena_route_defaults_nulls_and_refusals(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    reader = getattr(moira_engine, "_reader", None)
+    jd_day = 2451544.5
+    polar_day = 2451716.5
+    with use_reader_override(reader):
+        direct_default = find_phenomena("Sun", jd_day, 0.0, 0.0)
+        direct_civil = find_phenomena("Sun", jd_day, 0.0, 0.0, altitude=-6.0)
+        direct_polar = find_phenomena("Sun", polar_day, 80.0, 0.0)
+
+    def post(**fields):
+        return client_with_engine.post(
+            "/v1/rise-set/phenomena",
+            json={"body": "Sun", "jd_start": jd_day, "lat": 0.0, "lon": 0.0, **fields},
+        )
+
+    default = post()
+    assert default.status_code == 200
+    default_body = default.json()
+    for field, key in (("rise", "Rise"), ("set", "Set"), ("transit", "Transit"), ("anti_transit", "AntiTransit")):
+        assert default_body[field]["jd_ut"] == pytest.approx(direct_default[key])
+
+    civil = post(altitude=-6.0)
+    assert civil.status_code == 200
+    assert civil.json()["rise"]["jd_ut"] == pytest.approx(direct_civil["Rise"])
+    assert civil.json()["set"]["jd_ut"] == pytest.approx(direct_civil["Set"])
+    assert civil.json()["rise"]["jd_ut"] < default_body["rise"]["jd_ut"]
+
+    # Midsummer at 80 N: no horizon crossing in the window, so no instant is fabricated.
+    assert "Rise" not in direct_polar and "Set" not in direct_polar
+    polar = post(jd_start=polar_day, lat=80.0)
+    assert polar.status_code == 200
+    polar_body = polar.json()
+    assert polar_body["rise"] is None and polar_body["set"] is None
+    assert polar_body["transit"]["jd_ut"] == pytest.approx(direct_polar["Transit"])
+
+    for refused in (post(body="NotABody"), post(lon=200.0), post(policy={"disc_reference": "rim"}), post(extra=True)):
+        assert refused.status_code == 422
+        assert refused.json()["error_code"] == "validation_error"
+
+
 def test_phase_six_routes_reject_invalid_windows_bodies_and_coordinates(
     client_with_engine: TestClient,
 ) -> None:

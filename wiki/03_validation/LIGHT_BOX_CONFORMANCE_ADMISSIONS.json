@@ -1054,6 +1054,51 @@
       "surface_id": "python:moira.facade:received_light_at",
       "contract_kind": "received_light_cone_vessel",
       "evidence_classes": ["authority", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/hellenistic/circumambulations",
+      "contract_kind": "hellenistic_circumambulation_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/natal-discovery/dispositors",
+      "contract_kind": "natal_discovery_packet_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/natal-discovery/lunar-context",
+      "contract_kind": "natal_discovery_packet_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/natal-discovery/shape",
+      "contract_kind": "natal_discovery_packet_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/primary-directions/timeline",
+      "contract_kind": "primary_directions_timeline_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/rise-set/phenomena",
+      "contract_kind": "rise_set_phenomena_vessel",
+      "evidence_classes": ["invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/varga/d60/sign",
+      "contract_kind": "varga_division_and_vimshopaka_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/varga/shodashvarga/batch",
+      "contract_kind": "varga_division_and_vimshopaka_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
+    },
+    {
+      "surface_id": "rest:POST:/v1/varga/vimshopaka",
+      "contract_kind": "varga_division_and_vimshopaka_vessel",
+      "evidence_classes": ["doctrine_source", "invariant", "regression"]
     }
   ]
 }
