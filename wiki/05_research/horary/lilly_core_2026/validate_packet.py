@@ -49,6 +49,24 @@ def validate(packet_dir: Path, cache: Path | None) -> dict[str, int]:
     for ambiguity in data["ambiguities"]:
         for identifier in ambiguity["rule_ids"]:
             _require(ambiguity["id"] in records["rule_families"][identifier]["ambiguity_ids"], 'ambiguity["id"] in records["rule_families"][identifier]["ambiguity_ids"]')
+    states = {"resolved", "resolved_by_named_readings", "source_handling_resolved",
+              "partly_resolved", "open"}
+    register = (packet_dir / "RULES_AND_AMBIGUITIES.md").read_text(encoding="utf-8")
+    current = register.partition("## Current state after P2-P4")[2].partition("\n## ")[0]
+    for ambiguity in data["ambiguities"]:
+        _require(ambiguity["current_state"] in states, (ambiguity["id"], ambiguity["current_state"]))
+        _require(ambiguity["current_disposition"], (ambiguity["id"], "current_disposition"))
+        residue = ambiguity["current_residue"]
+        if ambiguity["current_state"] in {"open", "partly_resolved"}:
+            _require(residue, (ambiguity["id"], "an open entry names its residue"))
+        elif ambiguity["current_state"] in {"resolved", "source_handling_resolved"}:
+            _require(residue is None, (ambiguity["id"], "a resolved entry has no residue"))
+        _require(ambiguity["current_documents"], (ambiguity["id"], "current_documents"))
+        for document in ambiguity["current_documents"]:
+            _require((packet_dir / document).is_file(), (ambiguity["id"], document))
+        _require(f"| {ambiguity['id']} | `{ambiguity['current_state']}` |" in current,
+                 (ambiguity["id"], "register table matches packet.json"))
+    _require(current.count("\n| A") == len(data["ambiguities"]), "register table row count")
     for case in data["cases"]:
         _require(case["normalized_epoch"] is None, 'case["normalized_epoch"] is None')
         _require(case["numeric_transcription_complete"] is False, 'case["numeric_transcription_complete"] is False')

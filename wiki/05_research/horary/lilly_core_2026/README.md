@@ -94,6 +94,20 @@ Lilly applies each P4 mechanism. Book II uses structural translation,
 interposition from either side, frustration of aspects, a fixed sense of
 heaviness and a collector that receives the principals; it also treats
 dwelling as a route. Proposed runtime changes are listed there; none is made.
+They were applied the same day as further named readings (nine in all), with
+`LILLY_BOOK_II_PRACTICE` as an explicit selection; see the Book II section of
+the [P4 runtime contract](LILLY_P4_RUNTIME_2026-10-30.md).
+
+## Ambiguity register review: 2026-10-31
+
+The [register](RULES_AND_AMBIGUITIES.md#current-state-after-p2-p4-2026-10-31)
+now records each ambiguity's state after P2-P4 (9 `resolved`, 5 `resolved_by_named_readings`, 1 `source_handling_resolved`, 6 `partly_resolved`, 4 `open`) beside the unchanged
+2026-10-22 record. Still open: historical clock and calendar conversion, a
+house-method contract, symbolic timing and historical reconstruction (A01,
+A02, A23, A24); partly open: shared planetary lords, printing state, reception
+against refranation, the next-applied co-quesited, split-conjunction house
+class and good-house topics, and the full fortitude table (A03, A04, A09, A15,
+A16, A25).
 
 ## Decision at this checkpoint
 

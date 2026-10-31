@@ -2034,7 +2034,14 @@
       "issue": "Noon-origin hours, AM/PM wording, Julian/Gregorian calendar and year-start style are separate axes.",
       "disposition_and_closure": "Preserve raw strings. Per-case conversion must explain date rollover, year and locality before a JD/UT value is allowed; use E03 as an independent clock fixture.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "open",
+      "current_disposition": "Runtime surfaces take a caller-supplied UT1 Julian date and an epoch label; no source clock or calendar is converted.",
+      "current_residue": "Per-case conversion of noon-origin hours, AM/PM wording, Julian/Gregorian calendar and year-start style.",
+      "current_documents": [
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A02",
@@ -2047,7 +2054,14 @@
       "issue": "Source houses, current house API policy and boundary/placement rules need a named contract. P.491 does not settle all ordinary-question defaults.",
       "disposition_and_closure": "Preserve supplied house policy; no silent method substitution. Document planet/cusp boundary and turning behavior separately.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "open",
+      "current_disposition": "P4 takes house facts as caller conditions (house_class, planet_house_classes) bound to evidence; no house method is chosen or substituted.",
+      "current_residue": "A named house-method and planet/cusp boundary contract for ordinary questions.",
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A03",
@@ -2059,7 +2073,15 @@
       "issue": "Two entities can have one planetary lord; Moon and other source roles can overlap.",
       "disposition_and_closure": "Preserve collisions and candidate roles. Require a source-specific alternative rule rather than inventing a replacement significator.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "Role identities stay distinct when two roles share a planet (P3); the Moon's last/next planets receive no automatic roles (M07). P4 rejects equal querent and quesited significators.",
+      "current_residue": "A source-specific rule for questions whose two entities share one planetary lord.",
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A04",
@@ -2070,7 +2092,14 @@
       "issue": "Labels such as Ptolemaic, Egyptian or traditional can conceal different cells, sect handling or endpoint conventions.",
       "disposition_and_closure": "Bind the actual p.104 table and double-enter every cell needed by fixtures. Current policy already names Lilly; old validation prose is stale.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "The p.104 table and every Classic7 cell needed are bound and collated (DG decisions), implemented in the P2 profile.",
+      "current_residue": "Full bibliographic printing-state determination.",
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md"
+      ]
     },
     {
       "id": "A05",
@@ -2081,7 +2110,14 @@
       "issue": "P.107 prints two orb sets; p.110's Saturn/Jupiter example uses the second. The current fixed table mixes values from these alternatives.",
       "disposition_and_closure": "Preserve all three tables below as separately identified data. Selecting a future table needs an explicit profile decision and paired boundary fixtures.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "The p.107 second full-orb set is the explicit candidate of the P2 profile; the other printed set and the v1 table stay separately identified.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md"
+      ]
     },
     {
       "id": "A06",
@@ -2093,7 +2129,16 @@
       "issue": "Six-arcminute separation, partile equality, orbital contact and a solver's root tolerance answer different questions.",
       "disposition_and_closure": "Specify separate fields and endpoint tests; never use a historical arc threshold as a root-finding error tolerance.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "The exact mathematical orb boundary is a separate field from numerical root tolerance (P2 orb evidence); the p.110 six-minute passage is not a root tolerance (M02); P4 orders events by uncertainty envelopes.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md"
+      ]
     },
     {
       "id": "A07",
@@ -2109,7 +2154,14 @@
       "issue": "Lighter/heavier can mean traditional planetary order; the implementation uses absolute instantaneous speed. Stations can change their relation.",
       "disposition_and_closure": "Collate mechanism examples and practice; specify which notion each mechanism requires, including direct/retrograde motion.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved_by_named_readings",
+      "current_disposition": "Heaviness has three named readings selected per call (H01: traditional_order, instantaneous_speed, superior_inferior), with no default.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A08",
@@ -2123,7 +2175,14 @@
       "issue": "Mutual reception, directed reception and mechanism-specific bases differ; current generic and perfection APIs use incompatible receiver vocabulary.",
       "disposition_and_closure": "Define host as dignity ruler and guest as occupant in plain terms. Explicit adapters and same-/mixed-basis tests precede reuse.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Host/guest direction, the five bases, mutuality and mechanism-specific receiving roles are specified and implemented with explicit adapters.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md"
+      ]
     },
     {
       "id": "A09",
@@ -2134,7 +2193,16 @@
       "issue": "P.112 permits reception to assist even without an aspect; the broad statement does not fully operationalize every outcome.",
       "disposition_and_closure": "Keep a reception-without-aspect candidate route, unadmitted until context and counterexamples are collated. Do not infer universal success.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "Mutual reception without or despite aspects is its own route (P08) and never cancels a blocker; reception on a direct square or opposition is reported as a qualifier only (Book II).",
+      "current_residue": "Whether reception overcomes refranation or frustration; no passage was found.",
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md",
+        "LILLY_P4_BOOK_II_COLLATION_2026-10-30.md"
+      ]
     },
     {
       "id": "A10",
@@ -2145,7 +2213,14 @@
       "issue": "P.112's application during a sign can be read through orb/application or exact-completion criteria; these differ near an ingress.",
       "disposition_and_closure": "Preserve alternatives; specify event universe, bounds and what counts as application. The generic VOC helper is not automatically Lilly's definition.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved_by_named_readings",
+      "current_disposition": "Two named VOC definitions (exact_before_ingress_candidate, application_in_remaining_sign_candidate) must be selected explicitly; there is no default.",
+      "current_residue": "Lilly's unique historical interpretation is not asserted.",
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A11",
@@ -2157,7 +2232,14 @@
       "issue": "P.122's strong principals and sign exceptions do not supply a universal numeric strength threshold.",
       "disposition_and_closure": "Encode named qualitative evidence and unknown context. A threshold needs source/practice support, not an arbitrary score.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Very strong principals and the named-sign exceptions enter as source-qualified qualitative evidence (M06); no numeric strength threshold is admitted.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A12",
@@ -2168,7 +2250,14 @@
       "issue": "Same-sign combustion differs from a distance-only band, especially across a sign boundary; threshold inclusivity is not fully formalized.",
       "disposition_and_closure": "Test equal distance in same/different signs; maintain source and geometric evidence separately. Cazimi/beams need their own endpoint decisions.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Same-sign combustion, the 8:30 limit, beams and cazimi are separate thresholds with reported boundary classes (C06, lilly_solar_proximity); no inclusive/exclusive default is chosen.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A13",
@@ -2179,7 +2268,14 @@
       "issue": "P.113 defines 8 degrees 30 minutes but appears to call Jupiter 28 Aries with Sun 18 Aries combust.",
       "disposition_and_closure": "Retain literal readings; collate alternate photograph before proposing an erratum. Do not silently change 28 to 26 or widen the threshold.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "source_handling_resolved",
+      "current_disposition": "The ten-degree inconsistency is confirmed in both photographs and quarantined, not repaired.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A14",
@@ -2193,7 +2289,14 @@
       "issue": "Early/late exceptions, artist/seventh warnings and Via Combusta's qualified attribution resist universal boolean denial.",
       "disposition_and_closure": "Require context inputs and distinguish caution, exception, unknown and not applicable. Preserve the source hedge.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Early/late Ascendant, late Moon, Via Combusta (with its attribution), Saturn and seventh-house warnings are separate considerations with context inputs and unknown states (C01-C05).",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A15",
@@ -2204,7 +2307,14 @@
       "issue": "P.124 rejects the Moon's last-separated planet as co-querent; the ensuing next-applying/co-quesited passage needs contextual reading.",
       "disposition_and_closure": "Record those as different propositions. Check worked practice before admitting an automatic new role.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "The rejected last-separated co-querent and the reported next-applied usage are kept as separate propositions; no automatic role is assigned (M07).",
+      "current_residue": "Admission of a next-applied co-quesited needs practice or case evidence.",
+      "current_documents": [
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md",
+        "LILLY_P3_RUNTIME_2026-10-24.md"
+      ]
     },
     {
       "id": "A16",
@@ -2218,7 +2328,15 @@
       "issue": "Good/friendly houses, strong planets, malefic intervention and opposition regret need definitions and scope.",
       "disposition_and_closure": "Separate R18-R21; give every qualifier a predicate or typed unresolved state. An exact contact cannot stand in for all of them.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "Route conditions are predicates or typed qualitative evidence at named epochs (Q01, E01); malevolent aspect has named readings including the Book II malefic or evil-house-lord reading.",
+      "current_residue": "House class of a conjunction split across houses; attributed topic lists of good houses.",
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md",
+        "LILLY_P4_BOOK_II_COLLATION_2026-10-30.md"
+      ]
     },
     {
       "id": "A17",
@@ -2229,7 +2347,15 @@
       "issue": "P.111 gives a structural definition; p.126 adds principal-history and reception conditions. When must reception/strength hold?",
       "disposition_and_closure": "Keep both source contexts. Test history, allowed bases, direction, intervening contacts and initial versus event-time changes.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved_by_named_readings",
+      "current_disposition": "Translation has named readings (p111_structural, p126_full, book_ii_practice) with no default; condition epochs are explicit (E01).",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md",
+        "LILLY_P4_BOOK_II_COLLATION_2026-10-30.md"
+      ]
     },
     {
       "id": "A18",
@@ -2240,7 +2366,15 @@
       "issue": "Not beholding may concern sign relation rather than present orb; reception of the collector and heavier status need explicit epochs.",
       "disposition_and_closure": "Preserve the source's reception direction. Compare sign/aspect alternatives and changing dignity before the last contact.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved_by_named_readings",
+      "current_disposition": "Non-beholding has named readings (sign_aversion, no_current_aspect, not_required) and collection has named readings (p126_principals_receive_collector, book_ii_practice); epochs are explicit (E01).",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md",
+        "LILLY_P4_BOOK_II_COLLATION_2026-10-30.md"
+      ]
     },
     {
       "id": "A19",
@@ -2253,7 +2387,14 @@
       "issue": "Current blockers require an eligible actual future pair contact. A reversal can prevent the contact altogether.",
       "disposition_and_closure": "Specify intended application independently from completed event search. Add blocked/no-exact fixtures before expanding admission. No repair is made here.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Refranation and blocked applications use the application episode, not a future exact contact (B03); implemented in the P4 runtime. v1 is unchanged.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A20",
@@ -2269,7 +2410,14 @@
       "issue": "Current prior-event filters exclude events within the advertised one-second tie band before the tie predicate examines them.",
       "disposition_and_closure": "Add independent exact/near-simultaneous station, ingress and third-contact fixtures. Treat this as a code gap, not a historical ambiguity.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Envelope ordering (K01) replaces the one-second filter in the P4 runtime. v1 is unchanged.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A21",
@@ -2285,7 +2433,14 @@
       "issue": "Current witnesses retain the first translation/collection candidate; a 31-day boundary is a safety limit, not doctrine.",
       "disposition_and_closure": "Future output must preserve all candidates, dependencies and unresolved frontier. Do not chain windows while discarding cross-boundary state.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved",
+      "current_disposition": "Every candidate route and blocker is kept (K03) and windows continue without discarding cross-boundary state (K07). v1 is unchanged.",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A22",
@@ -2296,7 +2451,15 @@
       "issue": "A catalogue that lists the dwelling shortcut without Lilly's rejection would misattribute earlier doctrine to him.",
       "disposition_and_closure": "Source handling resolved: record as rejected/qualified in Lilly. Any positive mechanism still requires Moon evidence under the admitted rule.",
       "state": "source_handling_resolved_runtime_unadmitted",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "resolved_by_named_readings",
+      "current_disposition": "Dwelling is recorded as rejected by Lilly except as a lunar translation (p126_rejected_except_lunar); the Book II testimony is a separate named reading (book_ii_route).",
+      "current_residue": null,
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md",
+        "LILLY_P4_BOOK_II_COLLATION_2026-10-30.md"
+      ]
     },
     {
       "id": "A23",
@@ -2307,7 +2470,14 @@
       "issue": "Event time, qualitative speed, symbolic units and a reported historical duration have different evidence.",
       "disposition_and_closure": "No universal degree-to-unit conversion in the core. Later timing admission must state context, alternatives and uncertainty.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "open",
+      "current_disposition": "Timing stays qualitative (T01): house class, sign quality and degree statements are reported as qualifiers only.",
+      "current_residue": "Symbolic timing: any conversion of degrees into weeks, months or years.",
+      "current_documents": [
+        "LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A24",
@@ -2320,7 +2490,14 @@
       "issue": "Printed coordinates, modern reconstructions, author-reported outcomes and independent outcomes are different records. Fish years differ; some epochs are absent.",
       "disposition_and_closure": "Null normalized fields, record variants and source qualification; separate reused/hypothetical/event cases and exclude leakage from predictive sets.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "open",
+      "current_disposition": "No historical case has been reconstructed, collated in full or admitted; the case records are unchanged.",
+      "current_residue": "Historical chart reconstruction and outcome records.",
+      "current_documents": [
+        "LILLY_P3_RUNTIME_2026-10-24.md",
+        "LILLY_P4_RUNTIME_2026-10-30.md"
+      ]
     },
     {
       "id": "A25",
@@ -2333,7 +2510,15 @@
       "issue": "P.48 orders house strength; p.115 gives grouped point values and extra conditions. Their granularity and purpose differ.",
       "disposition_and_closure": "Keep ordered comparison and tabulated fortitude separate. Double-enter the table before any computation; never turn its sum into a universal verdict.",
       "state": "open",
-      "document": "RULES_AND_AMBIGUITIES.md"
+      "document": "RULES_AND_AMBIGUITIES.md",
+      "current_state": "partly_resolved",
+      "current_disposition": "P.115 individual dignity magnitudes are used in the P2 profile (DG08); balanced testimony admits no arbitrary counts (C08).",
+      "current_residue": "The complete fortitude table and any aggregation of condition evidence.",
+      "current_documents": [
+        "LILLY_CORE_DECISIONS_2026-10-23.md",
+        "LILLY_P2_IMPLEMENTATION_2026-10-23.md",
+        "LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md"
+      ]
     }
   ],
   "cases": [
@@ -3746,5 +3931,10 @@
     "No complete judgement or independent outcome audit",
     "No engine tests rerun for this documentation-only task",
     "No new executable or predictive goldens"
-  ]
+  ],
+  "register_review": {
+    "date": "2026-10-31",
+    "scope": "ambiguities",
+    "note": "Each ambiguity's state and disposition remain the 2026-10-22 packet record; current_* fields give the state after the P2-P4 decisions and runtimes. Rule-family and case records are unchanged."
+  }
 }

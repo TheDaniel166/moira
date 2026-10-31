@@ -63,6 +63,8 @@ epoch unspecified does not license quietly choosing the initial chart.
 
 All records remain open for the new executable tranche unless a disposition
 below is expressly limited to catalogue/source handling. None changes v1.
+This is the 2026-10-22 record; the
+[current state](#current-state-after-p2-p4-2026-10-31) follows it.
 
 | ID / type | Issue and alternatives | Packet disposition / closure evidence |
 |---|---|---|
@@ -91,6 +93,45 @@ below is expressly limited to catalogue/source handling. None changes v1.
 | A23 / timing | Event time, qualitative speed, symbolic units and a reported historical duration have different evidence. | No universal degree-to-unit conversion in the core. Later timing admission must state context, alternatives and uncertainty. |
 | A24 / historical corpus | Printed coordinates, modern reconstructions, author-reported outcomes and independent outcomes are different records. Fish years differ; some epochs are absent. | Null normalized fields, record variants and source qualification; separate reused/hypothetical/event cases and exclude leakage from predictive sets. |
 | A25 / condition aggregation | P.48 orders house strength; p.115 gives grouped point values and extra conditions. Their granularity and purpose differ. | Keep ordered comparison and tabulated fortitude separate. Double-enter the table before any computation; never turn its sum into a universal verdict. |
+
+## Current state after P2-P4: 2026-10-31
+
+The table above is the 2026-10-22 packet record and is not rewritten. This
+table gives each entry's state after the P2-P4 decisions and runtimes; the same
+values are the `current_*` fields of each record in [packet.json](packet.json).
+States: `resolved` (settled and implemented), `resolved_by_named_readings`
+(alternatives kept as explicit readings with no default, all implemented),
+`source_handling_resolved` (a source record, no runtime meaning),
+`partly_resolved` and `open`. Tally: 9 `resolved`, 5 `resolved_by_named_readings`, 1 `source_handling_resolved`, 6 `partly_resolved`, 4 `open`. Rule-family and case records
+are unchanged; no historical case is reconstructed or admitted.
+
+| ID | Current state | Current disposition | Still open | Records |
+|---|---|---|---|---|
+| A01 | `open` | Runtime surfaces take a caller-supplied UT1 Julian date and an epoch label; no source clock or calendar is converted. | Per-case conversion of noon-origin hours, AM/PM wording, Julian/Gregorian calendar and year-start style. | [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A02 | `open` | P4 takes house facts as caller conditions (house_class, planet_house_classes) bound to evidence; no house method is chosen or substituted. | A named house-method and planet/cusp boundary contract for ordinary questions. | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A03 | `partly_resolved` | Role identities stay distinct when two roles share a planet (P3); the Moon's last/next planets receive no automatic roles (M07). P4 rejects equal querent and quesited significators. | A source-specific rule for questions whose two entities share one planetary lord. | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A04 | `partly_resolved` | The p.104 table and every Classic7 cell needed are bound and collated (DG decisions), implemented in the P2 profile. | Full bibliographic printing-state determination. | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md) |
+| A05 | `resolved` | The p.107 second full-orb set is the explicit candidate of the P2 profile; the other printed set and the v1 table stay separately identified. | - | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md) |
+| A06 | `resolved` | The exact mathematical orb boundary is a separate field from numerical root tolerance (P2 orb evidence); the p.110 six-minute passage is not a root tolerance (M02); P4 orders events by uncertainty envelopes. | - | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md), [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md) |
+| A07 | `resolved_by_named_readings` | Heaviness has three named readings selected per call (H01: traditional_order, instantaneous_speed, superior_inferior), with no default. | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A08 | `resolved` | Host/guest direction, the five bases, mutuality and mechanism-specific receiving roles are specified and implemented with explicit adapters. | - | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md) |
+| A09 | `partly_resolved` | Mutual reception without or despite aspects is its own route (P08) and never cancels a blocker; reception on a direct square or opposition is reported as a qualifier only (Book II). | Whether reception overcomes refranation or frustration; no passage was found. | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md), [Book II](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) |
+| A10 | `resolved_by_named_readings` | Two named VOC definitions (exact_before_ingress_candidate, application_in_remaining_sign_candidate) must be selected explicitly; there is no default. | Lilly's unique historical interpretation is not asserted. | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A11 | `resolved` | Very strong principals and the named-sign exceptions enter as source-qualified qualitative evidence (M06); no numeric strength threshold is admitted. | - | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A12 | `resolved` | Same-sign combustion, the 8:30 limit, beams and cazimi are separate thresholds with reported boundary classes (C06, lilly_solar_proximity); no inclusive/exclusive default is chosen. | - | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A13 | `source_handling_resolved` | The ten-degree inconsistency is confirmed in both photographs and quarantined, not repaired. | - | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A14 | `resolved` | Early/late Ascendant, late Moon, Via Combusta (with its attribution), Saturn and seventh-house warnings are separate considerations with context inputs and unknown states (C01-C05). | - | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A15 | `partly_resolved` | The rejected last-separated co-querent and the reported next-applied usage are kept as separate propositions; no automatic role is assigned (M07). | Admission of a next-applied co-quesited needs practice or case evidence. | [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md), [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md) |
+| A16 | `partly_resolved` | Route conditions are predicates or typed qualitative evidence at named epochs (Q01, E01); malevolent aspect has named readings including the Book II malefic or evil-house-lord reading. | House class of a conjunction split across houses; attributed topic lists of good houses. | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md), [Book II](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) |
+| A17 | `resolved_by_named_readings` | Translation has named readings (p111_structural, p126_full, book_ii_practice) with no default; condition epochs are explicit (E01). | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md), [Book II](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) |
+| A18 | `resolved_by_named_readings` | Non-beholding has named readings (sign_aversion, no_current_aspect, not_required) and collection has named readings (p126_principals_receive_collector, book_ii_practice); epochs are explicit (E01). | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md), [Book II](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) |
+| A19 | `resolved` | Refranation and blocked applications use the application episode, not a future exact contact (B03); implemented in the P4 runtime. v1 is unchanged. | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A20 | `resolved` | Envelope ordering (K01) replaces the one-second filter in the P4 runtime. v1 is unchanged. | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A21 | `resolved` | Every candidate route and blocker is kept (K03) and windows continue without discarding cross-boundary state (K07). v1 is unchanged. | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A22 | `resolved_by_named_readings` | Dwelling is recorded as rejected by Lilly except as a lunar translation (p126_rejected_except_lunar); the Book II testimony is a separate named reading (book_ii_route). | - | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md), [Book II](LILLY_P4_BOOK_II_COLLATION_2026-10-30.md) |
+| A23 | `open` | Timing stays qualitative (T01): house class, sign quality and degree statements are reported as qualifiers only. | Symbolic timing: any conversion of degrees into weeks, months or years. | [P4 decisions](LILLY_P4_PERFECTION_DECISIONS_2026-10-30.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A24 | `open` | No historical case has been reconstructed, collated in full or admitted; the case records are unchanged. | Historical chart reconstruction and outcome records. | [P3 runtime](LILLY_P3_RUNTIME_2026-10-24.md), [P4 runtime](LILLY_P4_RUNTIME_2026-10-30.md) |
+| A25 | `partly_resolved` | P.115 individual dignity magnitudes are used in the P2 profile (DG08); balanced testimony admits no arbitrary counts (C08). | The complete fortitude table and any aggregation of condition evidence. | [core decisions](LILLY_CORE_DECISIONS_2026-10-23.md), [P2](LILLY_P2_IMPLEMENTATION_2026-10-23.md), [P3 decisions](LILLY_P3_MOON_CONSIDERATIONS_DECISIONS_2026-10-23.md) |
 
 ## Orb-table receipt (A05)
 
