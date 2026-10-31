@@ -151,6 +151,10 @@ def test_passed_count_uses_terminal_pytest_summary() -> None:
     assert replay._passed_count("1 passed\nthen 7 passed in 2.00s") == 7
     assert replay._passed_count("............... [100%]\npolicy receipt") == 15
     assert replay._passed_count("2 failed") == 0
+    wrapped = "." * 72 + " [ 67%]\n" + "." * 35 + " [100%]\npolicy receipt"
+    assert replay._passed_count(wrapped) == 107
+    assert replay._passed_count("." * 72 + " [ 67%]\n..F [100%]") == 0
+    assert replay._passed_count("." * 72 + " [ 67%]\ninterrupted") == 0
 
 
 def test_r2b_foundation_truth_contracts_are_bounded() -> None:

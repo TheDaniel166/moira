@@ -28,6 +28,7 @@ DEFAULT_RECEIPT_PATH = (
 )
 SCHEMA_VERSION = "moira.lightbox-evidence-receipts/v2"
 PYTEST_SUMMARY_RE = re.compile(r"(?:^|\s)(\d+) passed(?:,|\s|$)")
+PYTEST_PROGRESS_RE = re.compile(r"^([.sxXFE]+)\s+\[\s*\d+%\]\s*$", re.M)
 
 
 class ReceiptReplayError(RuntimeError):
@@ -116,13 +117,15 @@ def _passed_count(output: str) -> int:
     matches = PYTEST_SUMMARY_RE.findall(output)
     if matches:
         return int(matches[-1])
-    progress_counts = [
-        line.count(".")
-        for line in output.splitlines()
-        if "[100%]" in line
-        and set(line.split("[100%]", 1)[0].strip()) <= {".", "s", "x", "X"}
-    ]
-    return progress_counts[-1] if progress_counts else 0
+    # Without a summary line, sum the passes across every progress line of the
+    # run: pytest wraps long runs, so the [100%] line holds only the last row.
+    matches = list(PYTEST_PROGRESS_RE.finditer(output))
+    if not matches or "[100%]" not in matches[-1].group(0):
+        return 0
+    rows = [match.group(1) for match in matches]
+    if any(not set(row) <= {".", "s", "x", "X"} for row in rows):
+        return 0
+    return sum(row.count(".") for row in rows)
 
 
 def validate_receipt_binding(receipt_set: Mapping[str, Any], fingerprint: str) -> None:
