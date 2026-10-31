@@ -1,8 +1,24 @@
 import json
 from pathlib import Path
 
+import pytest
+
+from moira.tools.horizons_provenance import (
+    MANUAL_URL,
+    HorizonsSystemRelease,
+    manifest_release_block,
+)
 from scripts import build_comet_catalog
 from scripts import build_unified_asteroid_catalog
+
+RELEASE = HorizonsSystemRelease("4.98e", "2026-08-25", MANUAL_URL, "2026-10-31", "test")
+
+
+@pytest.fixture(autouse=True)
+def _offline_horizons_release(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The builders read the Horizons system release from the manual; tests stay offline."""
+    monkeypatch.setattr(build_comet_catalog, "fetch_system_release", lambda: RELEASE)
+    monkeypatch.setattr(build_unified_asteroid_catalog, "fetch_system_release", lambda: RELEASE)
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -38,6 +54,7 @@ def test_asteroid_builder_declares_moira_artifact_provenance(tmp_path: Path) -> 
         "trajectory_source": "JPL Horizons VECTORS",
         "horizons_api": build_unified_asteroid_catalog.HORIZONS_URL,
         "horizons_file_api": build_unified_asteroid_catalog.HORIZONS_FILE_URL,
+        "horizons_system_release_at_manifest": manifest_release_block(RELEASE),
         "center": "Sun (500@10)",
         "reference_plane": "FRAME",
         "units": "km and km/s",
@@ -94,6 +111,7 @@ def test_comet_builder_declares_moira_artifact_provenance(tmp_path: Path) -> Non
     assert manifest["manifest_schema"] == "moira.small-body-catalog/v1"
     assert manifest["catalog_id"] == "moira-comets"
     assert manifest["provenance"] == build_comet_catalog._catalog_provenance()
+    assert manifest["provenance"]["horizons_system_release_at_manifest"] == manifest_release_block(RELEASE)
     shard = manifest["shards"][0]
     assert shard["bytes"] == len(b"kernel")
     assert len(shard["sha256"]) == 64

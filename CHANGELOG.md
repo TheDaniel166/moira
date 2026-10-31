@@ -585,6 +585,18 @@ publication, or production pin is implied by these entries.
   mirrored locally (`scripts/check_ci.py`).
 
 ### Validation
+- **Horizons System Release Provenance**: a Horizons response names its API
+  (`API VERSION: 1.2`) but not the system release that produced it, which is
+  published only in the manual (`Version 4.98e (August 25, 2026)`).
+  `moira.tools.horizons_provenance` reads it and refuses to guess. The orbital
+  elements and apsidal fixture builders now record it as a
+  `horizons_system_release` block, and the comet and asteroid catalog builders
+  record `horizons_system_release_at_manifest`, scoped to when the manifest was
+  written because a refresh keeps older shards. Hash-bound artifacts are not
+  edited: `tests/fixtures/horizons_system_provenance.json` classifies all 19
+  existing Horizons-derived fixtures and manifests as `inferred` 4.98e (14,
+  retrieved on or after its 2026-08-25 release) or `unrecorded` (5), and a test
+  fails when a new Horizons fixture is not classified.
 - **δ Indi And σ² UMa Astrometry**: both rows now carry long-term proper
   motions from the Hipparcos and Gaia DR3 positions, 24.75 years apart: δ Indi
   (47.68, −4.71) mas/yr, replacing Hipparcos (41.94, −3.93); σ² UMa (13.29,

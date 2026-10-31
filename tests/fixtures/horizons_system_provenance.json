@@ -1,0 +1,186 @@
+{
+  "schema_version": "moira.horizons-system-provenance.v1",
+  "purpose": "Classifies the Horizons system release behind each Horizons-derived artifact without editing hash-bound artifacts. New artifacts carry their own horizons_system_release block.",
+  "classes": {
+    "recorded": "the artifact carries a horizons_system_release block read when it was generated",
+    "inferred": "every retrieval is on or after the release date of a release still current at observation, so no later release can have served it",
+    "unrecorded": "retrieved before that release, or no retrieval date; the release then in service is not known",
+    "partial": "retrievals straddle the release date"
+  },
+  "observed_release": {
+    "version": "4.98e",
+    "release_date": "2026-08-25",
+    "source_url": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+    "observed_utc": "2026-10-31",
+    "evidence": "Read from the manual's Introduction ('Version 4.98e (August 25, 2026)') on 2026-10-31 through a web-fetch tool during this review, not by fetch_system_release. A Horizons query response carries only 'API VERSION: 1.2' and a per-object 'Revised' date, never the system release."
+  },
+  "artifacts": [
+    {
+      "path": "moira/kernels/asteroids/manifest.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-10-10"
+      ],
+      "basis": "all retrievals (2026-10-10..2026-10-10) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "moira/kernels/comets/manifest.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-10-11"
+      ],
+      "basis": "all retrievals (2026-10-11..2026-10-11) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_apsidal_passages_reference.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-15"
+      ],
+      "basis": "all retrievals (2026-09-15..2026-09-15) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_apsidal_passages_reference_2026_09_28.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-15",
+        "2026-09-28"
+      ],
+      "basis": "all retrievals (2026-09-15..2026-09-28) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_asteroid_reference.json",
+      "evidence_class": "unrecorded",
+      "system_release": null,
+      "retrieval_dates": [],
+      "basis": "the artifact records no retrieval date"
+    },
+    {
+      "path": "tests/fixtures/horizons_orbital_elements_calibration.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-15"
+      ],
+      "basis": "all retrievals (2026-09-15..2026-09-15) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-15",
+        "2026-09-17"
+      ],
+      "basis": "all retrievals (2026-09-15..2026-09-17) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-28"
+      ],
+      "basis": "all retrievals (2026-09-28..2026-09-28) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_10_29.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-10-29"
+      ],
+      "basis": "all retrievals (2026-10-29..2026-10-29) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_orbital_elements_holdout.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-15"
+      ],
+      "basis": "all retrievals (2026-09-15..2026-09-15) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/horizons_rise_set_reference.json",
+      "evidence_class": "unrecorded",
+      "system_release": null,
+      "retrieval_dates": [],
+      "basis": "the artifact records no retrieval date"
+    },
+    {
+      "path": "tests/fixtures/jpl_horizons_polar_occultation_reference.json",
+      "evidence_class": "unrecorded",
+      "system_release": null,
+      "retrieval_dates": [
+        "2026-07-18"
+      ],
+      "basis": "retrieved 2026-07-18..2026-07-18, before 4.98e (2026-08-25); the release then in service is not recorded"
+    },
+    {
+      "path": "tests/fixtures/lunar_orientation_horizons_calibration.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-26"
+      ],
+      "basis": "all retrievals (2026-09-26..2026-09-26) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/lunar_orientation_horizons_holdout.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-26"
+      ],
+      "basis": "all retrievals (2026-09-26..2026-09-26) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/parans_horizons_reference.json",
+      "evidence_class": "unrecorded",
+      "system_release": null,
+      "retrieval_dates": [],
+      "basis": "the artifact records no retrieval date"
+    },
+    {
+      "path": "tests/fixtures/small_body_release_manifests/asteroids-2026.09.18.1.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-09-18"
+      ],
+      "basis": "all retrievals (2026-09-18..2026-09-18) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/small_body_release_manifests/asteroids-2026.10.10.1.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-10-10"
+      ],
+      "basis": "all retrievals (2026-10-10..2026-10-10) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    },
+    {
+      "path": "tests/fixtures/small_body_release_manifests/comets-2026.07.28.1.json",
+      "evidence_class": "unrecorded",
+      "system_release": null,
+      "retrieval_dates": [
+        "2026-07-28"
+      ],
+      "basis": "retrieved 2026-07-28..2026-07-28, before 4.98e (2026-08-25); the release then in service is not recorded"
+    },
+    {
+      "path": "tests/fixtures/small_body_release_manifests/comets-2026.10.10.1.json",
+      "evidence_class": "inferred",
+      "system_release": "4.98e",
+      "retrieval_dates": [
+        "2026-10-11"
+      ],
+      "basis": "all retrievals (2026-10-11..2026-10-11) are on or after the 2026-08-25 release of 4.98e, which was still current on 2026-10-31"
+    }
+  ]
+}

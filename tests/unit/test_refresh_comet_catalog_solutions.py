@@ -4,11 +4,21 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from moira._spk_body_kernel import SmallBodyKernel
 from moira.daf_writer import write_spk_type13
+from moira.tools.horizons_provenance import MANUAL_URL, HorizonsSystemRelease
 from scripts import build_comet_catalog
 from scripts import refresh_comet_catalog_solutions as refresh
 from scripts.audit_comet_solution_freshness import SCHEMA as AUDIT_SCHEMA
+
+
+@pytest.fixture(autouse=True)
+def _offline_horizons_release(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Manifest writing reads the Horizons release from the manual; tests stay offline."""
+    release = HorizonsSystemRelease("4.98e", "2026-08-25", MANUAL_URL, "2026-10-31", "test")
+    monkeypatch.setattr(build_comet_catalog, "fetch_system_release", lambda: release)
 
 
 def _sha256(path: Path) -> str:

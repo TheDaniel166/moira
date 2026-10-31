@@ -50,6 +50,10 @@ if str(ROOT) not in sys.path:
 
 from moira._spk_body_kernel import SmallBodyKernel  # noqa: E402
 from moira.daf_writer import write_spk_type13  # noqa: E402
+from moira.tools.horizons_provenance import (  # noqa: E402
+    fetch_system_release,
+    manifest_release_block,
+)
 from scripts.horizons_response_cache import cached_text_response  # noqa: E402
 from scripts import type13_adaptive_sampling as adaptive  # noqa: E402
 
@@ -107,6 +111,7 @@ def _catalog_provenance() -> dict[str, object]:
         "trajectory_source": "JPL Horizons VECTORS",
         "horizons_api": HORIZONS_URL,
         "horizons_file_api": HORIZONS_FILE_URL,
+        "horizons_system_release_at_manifest": manifest_release_block(fetch_system_release()),
         "query_policy": {
             "command_template": "DES={number}P;NOFRAG;CAP",
             "object_data": False,

@@ -20,7 +20,13 @@ from typing import Any
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPOSITORY_ROOT))
 sys.path.insert(0, str(REPOSITORY_ROOT / "tests"))
+
+from moira.tools.horizons_provenance import (  # noqa: E402
+    fetch_system_release,
+    release_block,
+)
 
 from tools.horizons import (  # noqa: E402
     _orbital_elements_tdb_parameters,
@@ -164,8 +170,14 @@ def _record(case: Case, retrieved_utc: str) -> dict[str, Any]:
     }
 
 
-def _payload(role: str, cases: tuple[Case, ...], retrieved_utc: str) -> dict[str, Any]:
+def _payload(
+    role: str,
+    cases: tuple[Case, ...],
+    retrieved_utc: str,
+    release: Any,
+) -> dict[str, Any]:
     return {
+        "horizons_system_release": release_block(release),
         "schema_version": "moira.horizons-orbital-elements.v1",
         "generator_version": GENERATOR_VERSION,
         "fixture_role": role,
@@ -191,6 +203,9 @@ def main() -> int:
     if output_dir == tracked_fixture_dir or tracked_fixture_dir in output_dir.parents:
         raise SystemExit("candidate output must not be inside tests/fixtures")
     output_dir.mkdir(parents=True, exist_ok=True)
+    # The Horizons system release is not in a query response; read it from the manual and
+    # record it with the artifact (fails closed if it cannot be established).
+    release = fetch_system_release()
     retrieved_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
     files = (
@@ -211,7 +226,7 @@ def main() -> int:
         ),
     )
     for filename, role, cases in files:
-        _write(output_dir / filename, _payload(role, cases, retrieved_utc))
+        _write(output_dir / filename, _payload(role, cases, retrieved_utc, release))
     print(f"wrote Horizons candidates to {output_dir}")
     return 0
 

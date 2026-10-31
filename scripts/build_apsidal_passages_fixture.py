@@ -23,7 +23,13 @@ from typing import Any
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPOSITORY_ROOT))
 sys.path.insert(0, str(REPOSITORY_ROOT / "tests"))
+
+from moira.tools.horizons_provenance import (  # noqa: E402
+    fetch_system_release,
+    release_block,
+)
 
 from tools.horizons import (  # noqa: E402
     _parse_vector_state,
@@ -390,6 +396,26 @@ def _record(case: Case, retrieved_utc: str) -> dict[str, Any]:
     }
 
 
+def _merged_release_block(candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    """Release block for merged candidates: kept only when every candidate agrees.
+
+    A merge happens after retrieval, so the merge time is never recorded as the
+    release.  Candidates without one, or with differing releases, produce a block
+    with ``version`` ``None`` that classifies by retrieval date instead.
+    """
+    blocks = [c.get("horizons_system_release") for c in candidates]
+    keys = {
+        (b.get("version"), b.get("release_date")) if isinstance(b, dict) else None
+        for b in blocks
+    }
+    if len(keys) == 1 and None not in keys and next(iter(keys))[0]:
+        return dict(blocks[0])
+    return {
+        "version": None,
+        "note": "merged candidates carry no single recorded Horizons system release",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -425,10 +451,12 @@ def main() -> int:
             raise SystemExit(f"unknown case name(s): {sorted(missing)}")
     if args.merge_input:
         by_key: dict[str, dict[str, Any]] = {}
+        candidates: list[dict[str, Any]] = []
         for raw_path in args.merge_input:
             candidate = json.loads(raw_path.resolve().read_text(encoding="utf-8"))
             if candidate.get("schema_version") != SCHEMA_VERSION:
                 raise SystemExit(f"wrong candidate schema: {raw_path}")
+            candidates.append(candidate)
             for record in candidate["records"]:
                 key = record["case_key"]
                 if key in by_key:
@@ -442,7 +470,10 @@ def main() -> int:
                 f"extra={sorted(set(by_key) - expected)}"
             )
         records = [by_key[case.key] for case in CASES]
+        release_info = _merged_release_block(candidates)
     else:
+        release = fetch_system_release()
+        release_info = release_block(release)
         retrieved_utc = datetime.now(timezone.utc).isoformat().replace(
             "+00:00", "Z"
         )
@@ -454,6 +485,7 @@ def main() -> int:
         "schema_version": SCHEMA_VERSION,
         "generator_version": GENERATOR_VERSION,
         "fixture_role": "disjoint_calibration_and_holdout",
+        "horizons_system_release": release_info,
         "source_url": HORIZONS_URL,
         "refinement_policy": {
             "algorithm": "coarse_sign_scan_then_fine_scan_then_safeguarded_secant",
