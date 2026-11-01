@@ -69,6 +69,40 @@ jobs:
             tests/unit/test_hellenistic_inventory_generation.py \
             -q
 
+  python-315-compatibility:
+    # Newest supported Python.  The authoritative runtime stays 3.14; this gate proves the
+    # compiled extension builds and the kernel-free native, time and frame checks hold on 3.15.
+    name: Python 3.15 Compatibility Gate
+    needs: docstring-preflight
+    runs-on: ubuntu-latest
+
+    env:
+      MOIRA_NO_DOWNLOAD: "1"
+      MOIRA_TEST_MODE: "1"
+      MOIRA_STRICT_KNOWN_ISSUES: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up newest supported Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.15"
+
+      - name: Install package and test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Kernel-free native parity baseline on Python 3.15
+        run: |
+          python -m pytest             tests/test_native_parity.py             tests/test_native_sidereal_phase1.py             tests/unit/test_native_import_resolution.py             tests/unit/test_native_nutation_2000a.py             -q
+
+      - name: Kernel-free time and frame regression on Python 3.15
+        run: |
+          python -m pytest             tests/unit/test_reader_bound_sidereal_time.py             tests/unit/test_leap_second_gap.py             tests/integration/test_gast_matches_erfa.py             tests/integration/test_bulletin_a_044_c2t_erfa.py             -q
+
   python-310-server-compatibility:
     name: Python 3.10 Server Compatibility Gate
     needs: docstring-preflight

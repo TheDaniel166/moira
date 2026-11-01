@@ -1611,11 +1611,13 @@ def test_profile_preparer_derives_wrapped_pa_envelope_and_proves_coverage(
         1.0 / 86_400.0
     )
     assert kwargs["expected_lola_assets"] == (expected_asset,)
-    assert radius_calls == pytest.approx(
+    # pytest >= 9.2 rejects nested sequences in approx(); compare the flattened (epoch, angle) pairs.
+    assert len(radius_calls) == 3
+    assert [value for call in radius_calls for value in call] == pytest.approx(
         [
-            (J2000, 359.8),
-            (J2000 + 1.0 / 86_400.0, 0.0),
-            (J2000 + 2.0 / 86_400.0, 0.2),
+            J2000, 359.8,
+            J2000 + 1.0 / 86_400.0, 0.0,
+            J2000 + 2.0 / 86_400.0, 0.2,
         ]
     )
 

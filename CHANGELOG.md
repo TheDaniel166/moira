@@ -11,6 +11,19 @@ Unreleased engine remediation work. No version bump, wheel
 publication, or production pin is implied by these entries.
 
 ### Added
+- **Python 3.15 Wheels**: `cp315` wheels are built for every platform. A 3.15
+  wheel builds with pybind11 3.1.0 and with 2.13.6 (the oldest the `>=2.12`
+  floor allows in practice), loads, and passes the native parity tests. The
+  release workflow moves to cibuildwheel 4.3.5 (4.1.0 predates default 3.15
+  support) and now imports every built wheel with its compiled extension before
+  upload; before this, no built wheel was ever imported. A `Python 3.15
+  Compatibility Gate` in `release-hardening.yml` runs the kernel-free native,
+  time and frame checks, and `scripts/check_ci.py` accepts jobs that depend on
+  jobs for another Python. On 3.15, 709 of 734 unit, server and native test
+  files pass; 20 of the other 25 fail the same way on 3.14, and none of the
+  remaining five is a Python 3.15 defect. `pyyaml` and `lazrs` have no 3.15
+  wheel yet (the first installs from source as pure Python; `lazrs` means the
+  `lunar-graze` extra cannot be fully installed on 3.15).
 - **Fixed-Star Position Products**:
   - `star_at`, `all_stars_at`, `stars_near`, `stars_by_magnitude`,
     `Moira.fixed_star` and the constellation, Behenian, royal-star and

@@ -2,7 +2,7 @@
 
 **Astronomy-First Ephemeris and Astrology Computation Engine**
 
-[![Python](https://img.shields.io/badge/python-3.10--3.14-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10--3.15-blue.svg)](https://www.python.org/downloads/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://img.shields.io/pypi/v/moira-astro.svg?label=PyPI&color=orange)](https://pypi.org/project/moira-astro/)
 [![Native Core](https://img.shields.io/badge/Core-C%2B%2B17%20%2F%20pybind11-00599C.svg)](#native-c-performance)
@@ -66,7 +66,7 @@ Astronomy is the foundation. Astrology is the purpose. Validation is the proof. 
 
 ## Requirements and Installation
 
-- **Python:** `>=3.10` (`3.10`–`3.14` supported; Python `3.14` is the canonical CI baseline).
+- **Python:** `>=3.10` (`3.10`–`3.15` supported; Python `3.14` is the canonical CI baseline and `3.15` has its own compatibility gate).
 - **Native extension:** Installed automatically from published platform wheels, or compiled from source via a C++17 compiler, `cmake >= 3.24`, and `pybind11 >= 2.12`.
 - **Planetary kernel:** A JPL DE-series `.bsp` kernel (`de440.bsp`, `de441.bsp`, or `de430.bsp` — downloaded separately; see [Kernel Setup](#kernel-setup-and-small-body-archives)).
 

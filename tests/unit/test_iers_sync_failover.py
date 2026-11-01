@@ -49,7 +49,11 @@ def test_csv_and_fixed_width_parse_identically() -> None:
 
 
 def test_leap_formats_agree() -> None:
-    assert sync.parse_leap_seconds(_LEAP_IERS) == pytest.approx(sync.parse_leap_seconds(_LEAP_NTP))
+    # pytest >= 9.2 rejects nested sequences in approx(), so compare the flattened (jd, offset) pairs.
+    iers = sync.parse_leap_seconds(_LEAP_IERS)
+    ntp = sync.parse_leap_seconds(_LEAP_NTP)
+    assert len(iers) == len(ntp)
+    assert [v for pair in iers for v in pair] == pytest.approx([v for pair in ntp for v in pair])
 
 
 def test_primary_failure_uses_labelled_fallback() -> None:

@@ -16,11 +16,16 @@ from scripts import check_ci
 def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
     environment = {**os.environ, "RUNNER_TEMP": str(tmp_path)}
     checks, ci_only = check_ci.load_plan(check_ci.ROOT, environment)
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
     expected = []
+    other_runtime = []
     for filename in check_ci.WORKFLOWS:
         workflow = yaml.safe_load((check_ci.ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
         for job_id, job in workflow["jobs"].items():
-            if job_id == "python-310-server-compatibility":
+            pinned = [str(step["with"]["python-version"]) for step in job["steps"]
+                      if step.get("uses") == "actions/setup-python@v5"]
+            if pinned != [version]:
+                other_runtime.append(f"{filename}/{job_id}")
                 continue
             expected.extend(
                 f"{filename}/{job_id}: {step['name']}"
@@ -28,8 +33,13 @@ def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
                 if "run" in step and "pip install" not in step["run"]
             )
     assert [check.label for check in checks] == expected
-    assert len(ci_only) == 1
-    assert "python-310-server-compatibility (Python 3.10;" in ci_only[0]
+    assert len(ci_only) == len(other_runtime)
+    if version != "3.14":
+        # Only the authoritative 3.14 runtime carries the full verification plan.
+        assert checks and all(check.environment["MOIRA_NO_DOWNLOAD"] == "1" for check in checks)
+        return
+    assert any("python-310-server-compatibility (Python 3.10;" in job for job in ci_only)
+    assert any("python-315-compatibility (Python 3.15;" in job for job in ci_only)
     lightbox = next(check for check in checks if "conformance governance regression" in check.label)
     targets = lightbox.commands[0]
     assert "tests/unit/test_lightbox_assurance_matrix.py" in targets

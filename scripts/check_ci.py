@@ -76,6 +76,7 @@ def load_plan(root: Path, environment: dict[str, str]) -> tuple[list[Check], lis
     for filename in WORKFLOWS:
         workflow = yaml.safe_load((root / ".github" / "workflows" / filename).read_text(encoding="utf-8"))
         completed = set()
+        other_runtime = set()  # jobs pinned to another Python: reported as CI-only, never run here
         for job_id, job in workflow["jobs"].items():
             steps = job["steps"]
             versions = [str(step["with"]["python-version"]) for step in steps
@@ -84,11 +85,13 @@ def load_plan(root: Path, environment: dict[str, str]) -> tuple[list[Check], lis
                 raise ValueError(f"Expected one explicit Python version: {filename}/{job_id}")
             if versions[0] != version:
                 ci_only.append(f"{filename}/{job_id} (Python {versions[0]}; active Python {version})")
+                other_runtime.add(job_id)
                 continue
             dependencies = job.get("needs", [])
             if isinstance(dependencies, str):
                 dependencies = [dependencies]
-            if not set(dependencies) <= completed:
+            # A dependency on a job for another Python is satisfied by CI and reported, not run.
+            if not set(dependencies) <= completed | other_runtime:
                 raise ValueError(f"Unverified or out-of-order dependencies: {filename}/{job_id}")
             if "if" in job or job.get("continue-on-error") or "strategy" in job:
                 raise ValueError(f"Unsupported conditional/matrix job: {filename}/{job_id}")

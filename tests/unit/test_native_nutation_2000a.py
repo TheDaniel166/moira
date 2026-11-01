@@ -53,7 +53,11 @@ def test_native_nutation_series_is_safe_for_concurrent_readers() -> None:
     with ThreadPoolExecutor(max_workers=8) as pool:
         actual = list(pool.map(moira_native.nutation_2000a, epochs * 8))
 
-    assert actual == pytest.approx(expected * 8, abs=1e-13)
+    # pytest >= 9.2 rejects nested sequences in approx(); compare the flattened (dpsi, deps) values.
+    assert len(actual) == len(expected) * 8
+    assert [v for pair in actual for v in pair] == pytest.approx(
+        [v for pair in expected * 8 for v in pair], abs=1e-13
+    )
 
 
 def test_python_shim_initializes_cold_native_process_before_evaluation() -> None:

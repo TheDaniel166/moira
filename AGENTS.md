@@ -98,7 +98,7 @@ She must not:
 All repository execution and validation use the project `.venv`. Do not rely
 on activation state persisting between tool calls, and do not use system Python
 or another environment unless the user explicitly changes the runtime. The
-package supports Python 3.10–3.14; the current CI baseline is Python 3.14.
+package supports Python 3.10–3.15; the current CI baseline is Python 3.14, and Python 3.15 has a kernel-free compatibility gate.
 
 Windows/PowerShell is the canonical local invocation form:
 

@@ -43,13 +43,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v4.1.0
+        uses: pypa/cibuildwheel@v4.3.5
         env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
+          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
           CIBW_SKIP: "*-musllinux_*"
           CIBW_ARCHS_LINUX: x86_64
           CIBW_ARCHS_WINDOWS: AMD64
           CIBW_BEFORE_BUILD: pip install cmake pybind11
+          # Every built wheel is installed and imported with its compiled extension before upload.
+          CIBW_TEST_COMMAND: >-
+            python -c "import moira; from moira import moira_native as mn; print(moira.__version__, mn.__backend_file__)"
           CIBW_BUILD_VERBOSITY: 1
           CIBW_DEPENDENCY_VERSIONS: latest
 
