@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.11.1",
+  "engine_version": "6.12.0",
   "families": [
     {
       "assessment_status": "partial",
@@ -2830,6 +2830,7 @@
         "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/05_research/horary/TRACK_B_HORARY_SOURCE_AND_AMBIGUITY_DOSSIER_2026-08.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md"
@@ -2954,6 +2955,7 @@
         "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md"
       ],
       "domain_group": "specialist-and-compositional",
@@ -3420,6 +3422,7 @@
         "wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md",
         "wiki/03_release/COMPATIBILITY_NOTES_2.0.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.4.0.md",
         "wiki/03_release/PROTECTED_ZONE_REGRESSION_DISCIPLINE.md",
         "wiki/03_release/RELEASE_NOTES_2.0.0.md",
@@ -5001,6 +5004,7 @@
         "wiki/03_release/PROTECTED_ZONE_REGRESSION_DISCIPLINE.md",
         "wiki/03_release/RELEASE_NOTES_4.1.0.md",
         "wiki/03_release/RELEASE_NOTES_5.2.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.8.2.md",
         "wiki/03_release/RELEASE_NOTES_6.9.0.md",
@@ -6941,7 +6945,9 @@
         "wiki/03_release/ASTROLOGY_KILLER_TEST_RESULTS.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
         "wiki/03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md",
@@ -8650,7 +8656,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "989b237ab3d6142d691b5a7aa54c29a2a2a8fde66fc2cbfb43ee74b44a2d183d",
+  "inventory_fingerprint_sha256": "29384d60c2c116c6fbac47c7192a64f4a65554f873fa67409ce55347ef924644",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

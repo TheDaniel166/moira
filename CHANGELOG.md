@@ -7,8 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Unreleased engine remediation work. No version bump, wheel
-publication, or production pin is implied by these entries.
+## [6.12.0] - 2026-11-02
 
 ### Added
 - **Python 3.15 Wheels**: `cp315` wheels are built for every platform. A 3.15

@@ -6,7 +6,7 @@
     "tests": "identifier/path mentions in repository tests; a mention is not proof of coverage"
   },
   "classification_version": "moira.lightbox-surface-classification/v1",
-  "engine_version": "6.11.1",
+  "engine_version": "6.12.0",
   "generated_by": "scripts/generate_lightbox_calculation_inventory.py",
   "limitations": [
     "Inventory membership is not a correctness or validation claim.",
@@ -11482,7 +11482,8 @@
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
         "CHANGELOG.md",
-        "wiki/02_standards/API_REFERENCE.md"
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "export_kind": "dataclass",
@@ -11562,7 +11563,8 @@
       "documentation_paths": [
         "CHANGELOG.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md"
+        "wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "export_kind": "dataclass",
@@ -23106,6 +23108,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.11.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.11.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -23146,6 +23149,7 @@
         "wiki/03_release/RELEASE_NOTES_6.10.1.md",
         "wiki/03_release/RELEASE_NOTES_6.11.0.md",
         "wiki/03_release/RELEASE_NOTES_6.11.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -23497,6 +23501,7 @@
         "tests/unit/test_horary.py",
         "tests/unit/test_horary_lilly_public_surface.py",
         "tests/unit/test_horary_public_api.py",
+        "tests/unit/test_horizons_provenance.py",
         "tests/unit/test_house_dynamics_oracle.py",
         "tests/unit/test_house_polar_branch_selection.py",
         "tests/unit/test_house_projection_geometry.py",
@@ -44331,7 +44336,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "726e51751ca12c95b05cb2f9c28be6041aaf3bff30f4f07ac4f4681e1446695d",
+      "api_contract_sha256": "656a98e6f74371d42cb7609a25cf24c8589a5d6e72c68f2c2ea634dc42705003",
       "canonical_id": "python:moira.facade:__version__",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public constant or immutable value; not an executable calculation",
@@ -47155,7 +47160,9 @@
         "wiki/03_release/ASTROLOGY_KILLER_TEST_RESULTS.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
         "wiki/03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md",
@@ -47231,6 +47238,7 @@
         "tests/tools/ritual.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_ayanamsa_doctrine.py",
+        "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_dasha.py",
         "tests/unit/test_dasha_full_intervals.py",
         "tests/unit/test_dasha_systems.py",
@@ -51117,6 +51125,7 @@
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/DELTA_T_HYBRID_MODEL.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.4.0.md",
         "wiki/03_release/PROTECTED_ZONE_REGRESSION_DISCIPLINE.md",
         "wiki/03_release/RELEASE_NOTES_6.4.0.md",
@@ -55588,6 +55597,7 @@
         "wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md",
         "wiki/02_services/SERVICE_LAYER_GUIDE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
         "wiki/03_validation/SWISS_EPHEMERIS_SYMBOL_TABLE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_TO_MOIRA_DRAFT.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
@@ -58551,6 +58561,7 @@
         "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P4_RUNTIME_2026-10-30.md"
       ],
       "exclusion_reason": null,
@@ -60845,6 +60856,7 @@
         "tests/server/test_server_sidereal_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrology_adversarial_gauntlet.py",
+        "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_sidereal.py",
         "tests/unit/test_sidereal_nakshatra_boundaries.py",
@@ -61682,6 +61694,7 @@
         "wiki/03_release/PROTECTED_ZONE_REGRESSION_DISCIPLINE.md",
         "wiki/03_release/RELEASE_NOTES_4.1.0.md",
         "wiki/03_release/RELEASE_NOTES_5.2.2.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.8.2.md",
         "wiki/03_release/RELEASE_NOTES_6.9.0.md",
@@ -67887,6 +67900,7 @@
       "surface_id": "python:moira.facade:tropical_to_sidereal_with_truth",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/unit/test_daily_panchanga.py",
         "tests/unit/test_sidereal.py"
       ]
     },
@@ -72982,6 +72996,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.5.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.8.md",
         "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
         "wiki/03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md",
         "wiki/03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md",
@@ -77374,7 +77389,8 @@
         "horary"
       ],
       "test_paths": [
-        "tests/server/test_server_horary_lilly_routes.py"
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/server/test_server_horary_routes.py"
       ]
     },
     {
@@ -77386,6 +77402,7 @@
       "documentation_paths": [
         "CHANGELOG.md",
         "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/03_release/RELEASE_NOTES_6.12.0.md",
         "wiki/05_research/horary/lilly_core_2026/LILLY_P3_RUNTIME_2026-10-24.md"
       ],
       "exclusion_reason": null,
@@ -77405,7 +77422,8 @@
         "horary"
       ],
       "test_paths": [
-        "tests/server/test_server_horary_lilly_routes.py"
+        "tests/server/test_server_horary_lilly_routes.py",
+        "tests/server/test_server_horary_routes.py"
       ]
     },
     {
@@ -77439,6 +77457,7 @@
       "test_paths": [
         "tests/integration/test_horary_perfection_routes_de441.py",
         "tests/server/test_server_horary_perfection_routes.py",
+        "tests/server/test_server_horary_routes.py",
         "tests/unit/test_horary_lilly_public_surface.py",
         "tests/unit/test_horary_perfection_routes.py"
       ]
@@ -87946,7 +87965,7 @@
     "python_surface_ids_sha256": "847a40a93f95c05cdab3786d76f8f6dbb128aa453a1ddf1023a180eebce9ae5b",
     "rest_surface_ids_sha256": "ae46f899698da749d100b6b19b67edbc9d19ccda104b09da600ac8073e604ca8"
   },
-  "structural_fingerprint_sha256": "989b237ab3d6142d691b5a7aa54c29a2a2a8fde66fc2cbfb43ee74b44a2d183d",
+  "structural_fingerprint_sha256": "29384d60c2c116c6fbac47c7192a64f4a65554f873fa67409ce55347ef924644",
   "structural_fingerprint_version": "moira.lightbox-structural-fingerprint/v1",
   "summary": {
     "python_aliases": 2,
@@ -87983,5 +88002,5 @@
     "rest_in_scope_without_test_mentions": 5,
     "rest_operations": 561
   },
-  "surface_fingerprint_sha256": "25df535be9e9ef364ac14be4eaef3d079b50af8beb692edde0a7a8e905bba887"
+  "surface_fingerprint_sha256": "28e4b156e46d4c40552dde86bf39c02dc2213783738c6617fd10b4503ebbfcbd"
 }
