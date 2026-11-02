@@ -42,6 +42,16 @@ else()
         COMPILE_OPTIONS "-ffp-contract=off;-fno-fast-math;-fno-lto")
 endif()
 
+# Python is the governing implementation and native code must reproduce its
+# rounding. GCC and Clang contract a*b+c into a fused multiply-add whenever the
+# target has FMA (any -march at or above x86-64-v3, or aarch64 by default),
+# which changes the last bit of sums such as the Earth rotation angle and fails
+# the 1e-12 parity tests. Forbid contraction for the whole module so parity does
+# not depend on the build environment's default flags.
+if(NOT MSVC)
+    target_compile_options(_moira_native PRIVATE -ffp-contract=off)
+endif()
+
 # Keep the extension baseline portable and compile the AVX2 kernel as one
 # separately dispatched translation unit.  This avoids making AVX2 a wheel-wide
 # CPU requirement while still admitting it on capable x86 hosts.
