@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from concurrent.futures import ThreadPoolExecutor
 import inspect
 from itertools import permutations
@@ -566,7 +567,13 @@ def test_topocentric_asteroid_spherical_adapter_preserves_vector(
     longitude_delta = (result.longitude - direct_lon + 180.0) % 360.0 - 180.0
     assert longitude_delta == pytest.approx(0.0, abs=1e-12)
     assert result.latitude == pytest.approx(direct_lat, abs=1e-12)
-    assert result.distance == direct_distance
+    # Rotating to the ecliptic preserves the vector's norm mathematically but re-rounds it, so
+    # the adapter's distance and the rotated reference agree to a couple of ulps, not bitwise
+    # (measured: 1 ulp = 6e-8 km at 3.4e8 km, ~2e-16 relative; the adapter's value equals the
+    # unrotated vector's norm exactly).
+    ulp = math.ulp(direct_distance)
+    assert abs(result.distance - direct_distance) <= 2 * ulp
+    assert abs(result.distance - math.hypot(*captured_vectors[0])) <= 2 * ulp
     assert result.is_topocentric is True
     assert refraction_calls == []
 

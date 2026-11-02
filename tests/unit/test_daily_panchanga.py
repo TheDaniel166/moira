@@ -30,6 +30,14 @@ def analytic_day(monkeypatch):
     monkeypatch.setattr(daily, "get_reader", lambda: reader)
     monkeypatch.setattr(daily, "tropical_to_sidereal", lambda lon, jd, system: lon % 360)
     monkeypatch.setattr(sidereal, "tropical_to_sidereal", lambda lon, jd, system: lon % 360)
+    # The canonical snapshot reduces the Moon through nakshatra_of -> tropical_to_sidereal_with_truth
+    # (the real ayanamsa), not tropical_to_sidereal.  Patch it to the same identity reduction so the
+    # snapshot and the solver's phases describe one synthetic sidereal Moon.
+    monkeypatch.setattr(
+        sidereal,
+        "nakshatra_of",
+        lambda lon, jd, ayanamsa_system=None: sidereal._nakshatra_position_from_sidereal(lon % 360),
+    )
 
     def positions(*, elongation=348.0, lunar_rate=14.0, solar_rate=1.0):
         def lookup(body, jd, *, reader):

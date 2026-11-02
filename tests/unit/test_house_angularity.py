@@ -34,6 +34,10 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 _LAT = 51.5
 _LON = 0.0
+# Geocentric tropical Sun longitude at J2000.0 (degrees), supplied explicitly: SUNSHINE and
+# SOLAR_SIGN anchor on the Sun, and these tests check family invariants, not Sun accuracy, so
+# they need no ephemeris (``planet_at`` raises without a reader and no ambient kernel exists).
+_SUN_LONGITUDE = 280.37
 
 # Expected doctrine mapping
 _ANGULAR_HOUSES   = {1, 4, 7, 10}
@@ -424,7 +428,7 @@ class TestSystemFamiliesAngularity:
     def test_asc_placement_valid_category_non_asc_anchored(self, system):
         # SUNSHINE and SOLAR_SIGN anchor on the Sun (not ASC); APC can produce a rotated figure.
         # The ASC may not fall in H1, but the result must still be a valid category.
-        hc = calculate_houses(self._jd, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system, sun_longitude=_SUN_LONGITUDE)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.category in (

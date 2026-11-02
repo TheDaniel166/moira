@@ -173,6 +173,10 @@ PUBLIC_TT_READER_FILES = frozenset(
 )
 INTERNAL_READER_FILES = frozenset(
     {
+        "moira/_event_search/astronomy.py",
+        "moira/_event_search/intervals.py",
+        "moira/_event_search/resources.py",
+        "moira/geodetic_timing.py",
         "moira/_lunar_orientation_resources.py",
         "src/native/include/pck.hpp",
         "moira/_orbital_state.py",

@@ -349,6 +349,9 @@ def test_route_is_discoverable_in_classical_vedic_family(
     routes = response.json()["routes"]
     assert [(item["path"], item["methods"]) for item in routes] == [
         ("/v1/horary/evidence-profile", ["POST"]),
+        ("/v1/horary/lilly-moon", ["POST"]),
+        ("/v1/horary/lilly-reception", ["POST"]),
+        ("/v1/horary/perfection-routes", ["POST"]),
     ]
 
 

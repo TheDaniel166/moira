@@ -32,13 +32,16 @@ import pytest
 
 class TestACGGeodeticLatitude:
     """
-    _WGS84_E2 constant is present and wired into ASC/DSC computation.
+    Astrocartography's horizon equation uses the geodetic surface normal (6.11.1).
 
-    For a body near zero declination the cos HA formula is:
-        cos HA = -tan(phi_gc) * tan(dec)
-    With dec ≈ 0 the geodetic correction has no effect, but for dec = 23.5°
-    and lat ≈ 45° the geocentric latitude is ~0.19° less than geodetic,
-    producing a measurable shift in the computed HA.
+    For a body at declination dec seen from geodetic latitude phi the horizon
+    crossing satisfies
+        cos HA = -tan(phi) * tan(dec)
+    because the local horizon is perpendicular to the geodetic vertical, not to the
+    geocentric radius.  Before 6.11.1 the engine used the geocentric latitude
+    (~0.19 degrees less than geodetic at 45 degrees), which leaves the body about
+    0.1 degrees above the horizon.  ``_WGS84_E2`` remains the ellipsoid constant
+    used to convert a geocentric declination to the matching geodetic latitude.
     """
 
     def test_wgs84_constant_exists_and_is_correct(self) -> None:
@@ -46,15 +49,16 @@ class TestACGGeodeticLatitude:
         assert hasattr(acg, "_WGS84_E2"), "_WGS84_E2 constant not found in astrocartography"
         assert acg._WGS84_E2 == pytest.approx(0.00669437999014, rel=1e-9)
 
-    def test_geodetic_correction_shifts_asc_from_spherical(self) -> None:
+    def test_asc_uses_the_geodetic_normal_horizon_and_matches_erfa(self) -> None:
         """
-        At lat=45° with dec=23.44° the geocentric latitude is slightly less
-        than geodetic, so the WGS-84 cos HA differs from the naive formula.
-
-        We derive the expected ASC longitude directly from the WGS-84 formula
-        at a known sampled latitude and compare against the engine output.
-        With lat_step=1.0 the sample at lat=45° exists exactly.
+        At lat=45 degrees with dec=23.44 degrees the engine's ASC longitude is the
+        geodetic-normal horizon crossing.  Authority validation: ERFA ``hd2ae`` puts
+        the body on the horizon (altitude 0) at exactly the engine's hour angle for the
+        geodetic latitude, and the superseded geocentric-latitude formula does not.
+        Measured: engine minus analytic 0.0 degrees; ERFA altitude 6e-15 degrees; the
+        old formula leaves 0.108 degrees of altitude and differs by 0.184 degrees.
         """
+        erfa = pytest.importorskip("erfa")
         import moira.astrocartography as acg
         dec  = 23.44   # near summer solstice sun declination
         ra   = 90.0
@@ -64,33 +68,28 @@ class TestACGGeodeticLatitude:
         lines = acg.acg_lines({"Sun": (ra, dec)}, gmst_deg=gmst, lat_step=1.0)
         asc_points = next(l.points for l in lines
                           if l.planet == "Sun" and l.line_type == "ASC")
-
-        # Find the engine's output at exactly lat=45°
         lat45_entry = next((p for p in asc_points if p[0] == pytest.approx(lat, abs=0.01)), None)
-        assert lat45_entry is not None, "lat=45° not found in ASC points"
+        assert lat45_entry is not None, "lat=45 degrees not found in ASC points"
         computed_lon = lat45_entry[1]
 
-        _e2      = acg._WGS84_E2
-        phi_r    = math.radians(lat)
-        tan_dec  = math.tan(math.radians(dec))
+        # The engine's hour angle at this longitude: rising body, so east of the meridian.
+        hour_angle = (ra - gmst - computed_lon + 180.0) % 360.0 - 180.0
+        _az, altitude = erfa.hd2ae(
+            math.radians(-abs(hour_angle)), math.radians(dec), math.radians(lat),
+        )
+        # On the horizon for the geodetic latitude, to numerical precision.
+        assert math.degrees(altitude) == pytest.approx(0.0, abs=1e-9)
 
-        # Naive spherical (what an uncorrected engine would use):
-        cos_ha_naive = -math.tan(phi_r) * tan_dec
-        ha_naive     = math.degrees(math.acos(cos_ha_naive))
-        lon_naive    = (ra - gmst - ha_naive) % 360.0
+        # Analytic geodetic-normal horizon, derived independently of the engine.
+        tan_dec = math.tan(math.radians(dec))
+        ha_geodetic = math.degrees(math.acos(-math.tan(math.radians(lat)) * tan_dec))
+        assert computed_lon == pytest.approx((ra - gmst - ha_geodetic) % 360.0, abs=1e-9)
 
-        # WGS-84 corrected (what the engine should use):
-        phi_gc_r     = math.atan((1.0 - _e2) * math.tan(phi_r))
-        cos_ha_gc    = -math.tan(phi_gc_r) * tan_dec
-        ha_gc        = math.degrees(math.acos(cos_ha_gc))
-        lon_gc       = (ra - gmst - ha_gc) % 360.0
-
-        # The engine result must match the WGS-84 corrected value.
-        assert computed_lon == pytest.approx(lon_gc, abs=1e-9)
-        # And the two formulas must differ meaningfully (> 0.001°) at lat=45°.
-        assert abs(lon_gc - lon_naive) > 0.001, (
-            "WGS-84 geodetic correction produced no shift at lat=45° — "
-            "probably not being applied"
+        # The superseded geocentric-latitude formula must differ meaningfully.
+        phi_gc_r = math.atan((1.0 - acg._WGS84_E2) * math.tan(math.radians(lat)))
+        ha_gc = math.degrees(math.acos(-math.tan(phi_gc_r) * tan_dec))
+        assert abs(computed_lon - (ra - gmst - ha_gc) % 360.0) > 0.1, (
+            "the horizon equation still uses the geocentric latitude"
         )
 
     def test_zero_declination_geodetic_has_no_effect(self) -> None:

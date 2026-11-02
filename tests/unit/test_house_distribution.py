@@ -41,6 +41,10 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 _LAT = 51.5
 _LON = 0.0
+# Geocentric tropical Sun longitude at J2000.0 (degrees), supplied explicitly: SUNSHINE and
+# SOLAR_SIGN anchor on the Sun, and these tests check family invariants, not Sun accuracy, so
+# they need no ephemeris (``planet_at`` raises without a reader and no ambient kernel exists).
+_SUN_LONGITUDE = 280.37
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +52,7 @@ _LON = 0.0
 # ---------------------------------------------------------------------------
 
 def _hc(jd: float, system: str = HouseSystem.EQUAL, lat: float = _LAT) -> HouseCusps:
-    return calculate_houses(jd, lat, _LON, system)
+    return calculate_houses(jd, lat, _LON, system, sun_longitude=_SUN_LONGITUDE)
 
 
 def _make_cusps(cusps_list: list[float], system: str = HouseSystem.EQUAL) -> HouseCusps:

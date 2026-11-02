@@ -34,6 +34,10 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 _LAT = 51.5
 _LON = 0.0
+# Geocentric tropical Sun longitude at J2000.0 (degrees), supplied explicitly: SUNSHINE and
+# SOLAR_SIGN anchor on the Sun, and these tests check family invariants, not Sun accuracy, so
+# they need no ephemeris (``planet_at`` raises without a reader and no ambient kernel exists).
+_SUN_LONGITUDE = 280.37
 
 
 # ---------------------------------------------------------------------------
@@ -556,7 +560,7 @@ class TestSystemFamiliesBoundary:
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
         HouseSystem.APC, HouseSystem.CARTER, ])
     def test_span_identity_for_system(self, system):
-        hc = calculate_houses(self._jd, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system, sun_longitude=_SUN_LONGITUDE)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
