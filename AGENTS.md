@@ -153,6 +153,8 @@ product-use snapshots, or release baselines to absorb a failure.
 
 The acceptance and hardening workflows are manual/reusable release checks.
 Tag-triggered PyPI publication requires both before building distributions.
+Website documentation exports run in their separate manual workflow and must
+not gate engine hardening, distribution builds, or PyPI publication.
 Kernel-dependent scientific validation still runs locally with its actual
 resources before release; kernel-free hosted checks do not replace it. A push
 to `main` is source publication, not a package release or a wiki/website publish.

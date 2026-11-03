@@ -5,13 +5,18 @@ approved astronomical baseline. Its source allowlist, catalog identity receipts,
 export declarations, release summaries and document hashes still fail closed.
 Generating it must never refresh scientific fixtures or relax their thresholds.
 
-## Branch and pull-request CI
+## Separate manual documentation workflow
 
-Release Hardening generates a fresh candidate into the runner's temporary
-directory and checks that artifact against the same current source. It does
-not compare a historical committed manifest with a newer branch or skip
-validation merely because a new version has no tag yet. The candidate is
-retained as an Actions artifact named with the checked-out revision.
+`.github/workflows/website-publication.yml` runs only on manual dispatch.
+It owns documentation publication tests, generation, validation and artifact
+retention. Engine hardening, distribution builds and PyPI publication do not
+invoke or depend on this workflow. A missing website release summary can block
+the documentation export without blocking the engine package.
+
+With `release_tag` empty, the workflow checks out `source_ref` (default `main`)
+and generates a fresh candidate into the runner's temporary directory. It
+checks that artifact against the same source and retains it by workflow run ID.
+It does not compare a historical committed manifest with a newer branch.
 
 The additive `publication` field identifies `kind: candidate`, the source
 commit/tree, and whether tracked source is dirty. `engine_release.commit`
@@ -22,13 +27,14 @@ evidence that its new features have been published to PyPI or deployed.
     .\.venv\Scripts\python.exe scripts\build_website_docs_bundle.py --candidate --output build\website-publication\publication.json
     .\.venv\Scripts\python.exe scripts\build_website_docs_bundle.py --candidate --output build\website-publication\publication.json --check
 
-## Release-tag CI
+## Optional exact-tag documentation evidence
 
-PyPI Publish generates a separate release artifact automatically. Publication
-requires the requested tag to match the package version, HEAD to equal that
-tag's commit, and tracked source to be clean. PyPI publication depends on this
-job succeeding as well as the existing wheel and source-distribution builds.
-No tag is created, moved or substituted by the generator.
+Set `release_tag` when dispatching the documentation workflow to generate an
+exact-tag artifact instead of a candidate. The workflow checks out that tag.
+Documentation generation requires it to match the package version, HEAD to
+equal the tag's commit, and tracked source to be clean. No tag is created,
+moved or substituted by the generator. This documentation check is independent
+of PyPI publication.
 
 The release artifact's `publication.kind` is `release`; its source commit is
 the same as `engine_release.commit`. Artifact retention follows the repository's

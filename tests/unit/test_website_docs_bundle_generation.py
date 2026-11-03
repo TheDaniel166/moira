@@ -276,19 +276,24 @@ def test_candidate_still_rejects_catalog_receipt_hash_mismatch(publication_repo,
     assert not output.exists()
 
 
-def test_ci_generates_candidates_and_requires_exact_tag_evidence_before_pypi():
+def test_website_publication_is_manual_and_independent_of_pypi():
     root = Path(__file__).resolve().parents[2]
-    hardening = yaml.safe_load((root / ".github/workflows/release-hardening.yml").read_text(encoding="utf-8"))
-    steps = hardening["jobs"]["release-hardening"]["steps"]
+    workflow = yaml.safe_load((root / ".github/workflows/website-publication.yml").read_text(encoding="utf-8"))
+    events = workflow.get("on", workflow.get(True))
+    assert set(events) == {"workflow_dispatch"}
+    assert events["workflow_dispatch"]["inputs"]["source_ref"]["default"] == "main"
+    assert workflow["permissions"] == {"contents": "read"}
+    publication = workflow["jobs"]["website-publication"]
+    assert "needs" not in publication
+    steps = publication["steps"]
     commands = "\n".join(step.get("run", "") for step in steps)
-    assert "build_website_docs_bundle.py --candidate --output" in commands
+    assert "test_website_docs_bundle_generation.py" in commands
+    assert "publication_args=(--candidate)" in commands
+    assert 'publication_args=(--release-tag "$PUBLICATION_RELEASE_TAG")' in commands
+    assert 'build_website_docs_bundle.py "${publication_args[@]}" --output' in commands
     assert "build_website_docs_bundle.py --check\n" not in commands
     assert "if git rev-parse" not in commands
     assert any(step.get("uses") == "actions/upload-artifact@v4" and
                step["with"]["if-no-files-found"] == "error" for step in steps)
     release = yaml.safe_load((root / ".github/workflows/pypi-publish.yml").read_text(encoding="utf-8"))
-    assert "website-publication" in release["jobs"]["publish"]["needs"]
-    publication = release["jobs"]["website-publication"]
-    assert publication["needs"] == "validate-release"
-    commands = "\n".join(step.get("run", "") for step in publication["steps"])
-    assert 'build_website_docs_bundle.py --release-tag "$GITHUB_REF_NAME" --output' in commands
+    assert "website-publication" not in release["jobs"]

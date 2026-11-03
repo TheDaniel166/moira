@@ -13,6 +13,41 @@ import yaml
 from scripts import check_ci
 
 
+def test_pypi_keeps_engine_gates_and_excludes_website_publication():
+    root = check_ci.ROOT / '.github/workflows'
+    release = yaml.safe_load((root / 'pypi-publish.yml').read_text(encoding='utf-8'))
+    jobs = release['jobs']
+    assert set(jobs['publish']['needs']) == {
+        'release-hardening', 'release-acceptance', 'build-wheels', 'build-sdist',
+    }
+    assert set(jobs['build-wheels']['needs']) >= {
+        'validate-release', 'release-hardening', 'release-acceptance',
+    }
+    assert set(jobs['build-wheels']['strategy']['matrix']['os']) >= {
+        'ubuntu-latest', 'windows-latest', 'macos-26-intel', 'macos-26',
+    }
+    wheel_step = next(step for step in jobs['build-wheels']['steps']
+                      if step.get('uses', '').startswith('pypa/cibuildwheel@'))
+    assert 'check_transit_native_wheel.py' in wheel_step['env']['CIBW_TEST_COMMAND']
+
+    pending = [('pypi-publish.yml', release)]
+    visited = set()
+    while pending:
+        filename, workflow = pending.pop()
+        if filename in visited:
+            continue
+        visited.add(filename)
+        for job_id, job in workflow['jobs'].items():
+            commands = '\n'.join(step.get('run', '') for step in job.get('steps', []))
+            for website_command in ('build_website_docs_bundle.py', 'test_website_docs_bundle_generation.py'):
+                assert website_command not in commands, f'{filename}/{job_id} gates PyPI on website publication'
+            reusable = job.get('uses', '')
+            if reusable.startswith('./.github/workflows/'):
+                name = reusable.rsplit('/', 1)[1]
+                pending.append((name, yaml.safe_load((root / name).read_text(encoding='utf-8'))))
+    assert {'release-hardening.yml', 'release-acceptance.yml'} <= visited
+
+
 def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
     environment = {**os.environ, "RUNNER_TEMP": str(tmp_path)}
     checks, ci_only = check_ci.load_plan(check_ci.ROOT, environment)

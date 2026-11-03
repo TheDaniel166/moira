@@ -1,0 +1,58 @@
+name: Website Documentation Publication
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Branch or commit for a documentation candidate
+        required: true
+        default: main
+        type: string
+      release_tag:
+        description: Optional vX.Y.Z tag for exact release documentation instead
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  website-publication:
+    name: Generate website documentation evidence
+    runs-on: ubuntu-latest
+    env:
+      MOIRA_NO_DOWNLOAD: "1"
+      MOIRA_TEST_MODE: "1"
+      PUBLICATION_RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || inputs.source_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install documentation test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Check documentation publication contracts
+        run: python -m pytest tests/unit/test_website_docs_bundle_generation.py -q
+
+      - name: Generate and validate website publication
+        shell: bash
+        run: |
+          publication_args=(--candidate)
+          if [[ -n "$PUBLICATION_RELEASE_TAG" ]]; then
+            publication_args=(--release-tag "$PUBLICATION_RELEASE_TAG")
+          fi
+          python scripts/build_website_docs_bundle.py "${publication_args[@]}" --output "$RUNNER_TEMP/website-publication/publication.json"
+          python scripts/build_website_docs_bundle.py "${publication_args[@]}" --output "$RUNNER_TEMP/website-publication/publication.json" --check
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-publication-${{ github.run_id }}
+          path: ${{ runner.temp }}/website-publication/publication.json
+          if-no-files-found: error

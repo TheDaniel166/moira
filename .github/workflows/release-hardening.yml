@@ -242,18 +242,6 @@ jobs:
       - name: Run Light Box conformance governance regression tests
         run: python -m pytest tests/unit/test_lightbox_*.py -q
 
-      - name: Generate and validate current-source website publication candidate
-        run: |
-          python scripts/build_website_docs_bundle.py --candidate --output "$RUNNER_TEMP/website-publication/publication.json"
-          python scripts/build_website_docs_bundle.py --candidate --output "$RUNNER_TEMP/website-publication/publication.json" --check
-
-      - name: Retain website publication candidate
-        uses: actions/upload-artifact@v4
-        with:
-          name: website-publication-candidate-${{ github.sha }}
-          path: ${{ runner.temp }}/website-publication/publication.json
-          if-no-files-found: error
-
       - name: Run source-defined Kalachakra engine and REST gates
         run: |
           python -m pytest \
@@ -314,7 +302,6 @@ jobs:
 
       - name: Run public surface and release hardening suites
         run: |
-          python -m pytest tests/unit/test_website_docs_bundle_generation.py -q
           python -m pytest tests/unit/test_public_api_drift.py tests/unit/test_public_api_contract.py -q
           python -m pytest tests/unit/test_public_doctrine_surfaces.py -q
           python -m pytest tests/unit/test_dasha.py -q
