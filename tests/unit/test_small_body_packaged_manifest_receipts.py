@@ -8,9 +8,6 @@ from pathlib import Path
 
 import pytest
 
-from scripts.build_website_docs_bundle import _catalog_metrics
-
-
 _ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -118,6 +115,8 @@ def test_packaged_manifest_matches_immutable_identity_receipt(
 
 
 def test_website_catalog_metrics_publish_release_identity() -> None:
+    from scripts.build_website_docs_bundle import _catalog_metrics
+
     metrics = _catalog_metrics()
 
     asteroid = metrics["position_capable_asteroid_ephemeris"]
