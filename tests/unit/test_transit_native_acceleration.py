@@ -18,6 +18,12 @@ from moira.nodes import true_node
 JD = 2451545.0
 
 
+def test_compiled_transit_path_without_external_ephemeris():
+    from scripts.check_transit_native_wheel import check_native_transit_path
+
+    check_native_transit_path()
+
+
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize('body', Body.ALL_PLANETS)
 @pytest.mark.parametrize('offset', [-40000., -12.25, 0., 40000.])

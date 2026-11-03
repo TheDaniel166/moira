@@ -50,9 +50,10 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_ARCHS_WINDOWS: AMD64
           CIBW_BEFORE_BUILD: pip install cmake pybind11
-          # Every built wheel is installed and imported with its compiled extension before upload.
+          # Exercise the installed compiled transit evaluator on every platform/Python.
+          # A tiny synthetic SPK avoids optional test packages and kernel downloads.
           CIBW_TEST_COMMAND: >-
-            python -c "import moira; from moira import moira_native as mn; print(moira.__version__, mn.__backend_file__)"
+            python "{project}/scripts/check_transit_native_wheel.py"
           CIBW_BUILD_VERBOSITY: 1
           CIBW_DEPENDENCY_VERSIONS: latest
 
