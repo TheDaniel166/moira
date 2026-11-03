@@ -4,7 +4,7 @@
 
 - Engine version: `6.12.1`
 - Inventory structural fingerprint: `f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5`
-- Evidence source revision: `3b3a7c11492b651c5bef02be3c6b1b17ce82a9ea`
+- Evidence source revision: `3ebb8777aaf38ccc4d28b14cac2c5b65a8694c6f`
 - Artifact status: `exact_source_revision`
 - Publication disposition: `exact_release_status`
 
