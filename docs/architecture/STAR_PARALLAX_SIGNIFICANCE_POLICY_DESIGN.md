@@ -29,7 +29,7 @@ distance (`distance_ly = 3261.56/ϖ`) and applies one light-travel time of prope
 | Garnet Star (μ Cep) | 0.119 | 0.264 | 27,000 ly | −10.5 |
 | ο Cas | 0.512 | 0.734 | 6,400 ly | −7.0 |
 
-β Phe's `geometric` product moves 2,393 arcsec (0.66°); its true displacement is about 17 arcsec.
+β Phe's `geometric` product moves 2,393 arcsec (0.66°). The true displacement is not known from this repo's data: the only parallax in it is 0.12 ± 14.62 mas, which is consistent with zero and with any distance beyond about 70 ly (3σ). (An earlier draft said about 17 arcsec, from recollection of a literature distance of roughly 200 ly. That figure is not sourced here and is withdrawn.)
 
 - **Age.** Not a 6.12.0 regression. `distance_ly`, `_distance_ly_from_parallax` and
   `star_light_time_split` are in v6.11.1 with the same rule and trace to the March 2026 catalog
