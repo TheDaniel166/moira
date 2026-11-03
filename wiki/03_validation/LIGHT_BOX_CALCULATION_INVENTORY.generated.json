@@ -3184,7 +3184,6 @@
         "tests/integration/test_r3d_void_of_course_truth_evidence.py",
         "tests/integration/test_sahl_electional_de441.py",
         "tests/integration/test_stars_apparent_erfa.py",
-        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_topocentric_multi_path_horizons_anchor.py",
         "tests/integration/test_vimshottari_external_reference.py",
         "tests/integration/test_visibility_validation.py",
@@ -23383,7 +23382,6 @@
         "tests/integration/test_sidereal_external_reference.py",
         "tests/integration/test_sothic_extended.py",
         "tests/integration/test_stars_apparent_erfa.py",
-        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_visibility_validation.py",
         "tests/integration/test_vondrak_ancient_validation.py",
@@ -66480,7 +66478,6 @@
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
         "tests/integration/test_stars_apparent_erfa.py",
         "tests/integration/test_stars_binary_orbits.py",
-        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_stars_external_reference.py",
         "tests/integration/test_stars_sovereign_identity.py",
@@ -88011,5 +88008,5 @@
     "rest_in_scope_without_test_mentions": 5,
     "rest_operations": 561
   },
-  "surface_fingerprint_sha256": "5c64cc2d308efce4e156a6fc21226b87bae96d0dde0277e680d5e0f8ae9e0d12"
+  "surface_fingerprint_sha256": "1fa1b07dc639c17d71ec9e9392753ad931a278134fe158fb70fa58fe387e2c77"
 }

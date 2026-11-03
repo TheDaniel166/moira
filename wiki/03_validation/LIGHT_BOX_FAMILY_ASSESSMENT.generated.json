@@ -7246,7 +7246,6 @@
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
         "tests/integration/test_stars_apparent_erfa.py",
         "tests/integration/test_stars_binary_orbits.py",
-        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_stars_external_reference.py",
         "tests/integration/test_stars_sovereign_identity.py",

@@ -5,7 +5,7 @@
 - Schema: `moira.lightbox-calculation-inventory/v2`
 - Classification: `moira.lightbox-surface-classification/v1`
 - Engine version: `6.12.1`
-- Surface fingerprint: `5c64cc2d308efce4e156a6fc21226b87bae96d0dde0277e680d5e0f8ae9e0d12`
+- Surface fingerprint: `1fa1b07dc639c17d71ec9e9392753ad931a278134fe158fb70fa58fe387e2c77`
 - API structural fingerprint: `f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5`
 - Structural fingerprint schema: `moira.lightbox-structural-fingerprint/v1`
 - REST schema renderer: FastAPI `0.136.3`, Pydantic `2.14.2`
@@ -830,7 +830,7 @@ All public facade functions appear exactly once. Non-callable exports are fully 
 | `python:moira.facade:special_muhurta_from_solar_times` | `special_muhurta_from_solar_times` | `calculation` | yes | `canonical` | `moira/special_muhurta.py:403` | `wiki/02_standards/NAMED_MUHURTA_STANDARD.md` | `tests/server/test_server_special_muhurta.py` +2 |
 | `python:moira.facade:speculum` | `speculum` | `calculation` | yes | `canonical` | `moira/primary_directions/__init__.py:2685` | `CHANGELOG.md` +24 | `tests/server/test_primary_directions_transport_contract.py` +6 |
 | `python:moira.facade:ssb_position_at` | `ssb_position_at` | `calculation` | yes | `canonical` | `moira/ssb.py:164` | `wiki/02_standards/API_REFERENCE.md` +1 | `tests/unit/test_planetary_frame_contracts.py` +1 |
-| `python:moira.facade:star_at` | `star_at` | `calculation` | yes | `canonical` | `moira/stars.py:924` | `CHANGELOG.md` +11 | `tests/integration/test_eclipse_occultation_where_reference.py` +33 |
+| `python:moira.facade:star_at` | `star_at` | `calculation` | yes | `canonical` | `moira/stars.py:924` | `CHANGELOG.md` +11 | `tests/integration/test_eclipse_occultation_where_reference.py` +32 |
 | `python:moira.facade:star_chart_condition_profile` | `star_chart_condition_profile` | `composition_profile` | yes | `canonical` | `moira/stars.py:2311` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_stars_condition_profiles.py` +1 |
 | `python:moira.facade:star_condition_network_profile` | `star_condition_network_profile` | `composition_profile` | yes | `canonical` | `moira/stars.py:2367` | `wiki/02_standards/API_REFERENCE.md` | `tests/unit/test_stars_condition_profiles.py` +1 |
 | `python:moira.facade:star_condition_profile` | `star_condition_profile` | `composition_profile` | yes | `canonical` | `moira/variable_stars.py:1284` | `docs/architecture/P11-02_VARIABLE_STARS_TRANSPORT_DESIGN.md` +2 | `tests/server/test_server_stars_routes.py` +1 |
