@@ -6,6 +6,8 @@ usage:
   augment_star_registry_astrometry.py apply-rv --candidate CANDIDATE.json
   augment_star_registry_astrometry.py fetch-hg --hip NAME=HIP[:GAIA_ID] ... --out CANDIDATE.json  (network)
   augment_star_registry_astrometry.py apply-hg --candidate CANDIDATE.json
+  augment_star_registry_astrometry.py fetch-plx --out CANDIDATE.json   (network; needs gaiadr3-zeropoint==0.1.0)
+  augment_star_registry_astrometry.py derive-plx --candidate CANDIDATE.json   (offline re-derivation)
 
 ``epoch`` adds ``ref_epoch_jd`` and ``frame`` to every row that lacks them.
 Every current row was resolved through astroquery's SIMBAD interface, whose
@@ -42,6 +44,17 @@ the candidate records that the match was stated, not catalogued):
 ``apply-hg`` writes a reviewed candidate's astrometry into the registry rows
 and records the inputs and derivation in ``star_provenance.json``.
 
+``fetch-plx`` fetches, for every registry row, the primary-catalog parallax
+candidates and writes them with the derived adoption for review. The Gaia DR3
+source and the Hipparcos number come from the row's SIMBAD identifier list;
+Gaia DR3 astrometry and the Hipparcos new reduction (van Leeuwen 2007) come
+from the ESA Gaia archive; the Gaia parallax zero-point (Lindegren et al. 2021)
+is computed here with the ``gaiadr3-zeropoint`` package and stored, so nothing
+downstream needs the package or the network. ``adopt_parallax`` is the pure
+derivation of the adopted parallax and its uncertainty from those inputs; its
+rules are Section 4.2 of docs/architecture/STAR_PARALLAX_SIGNIFICANCE_POLICY_DESIGN.md.
+Nothing in ``moira/data`` changes.
+
 Governing record: wiki/02_standards/FIXED_STARS_BACKEND_STANDARD.md, Section 3.
 """
 
@@ -52,6 +65,7 @@ import csv
 import json
 import math
 import re
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -71,6 +85,14 @@ HIPPARCOS_EPOCH_YEAR = 1991.25
 GAIA_DR3_EPOCH_YEAR = 2016.0
 # Gaia DR3's usual threshold for a well-behaved single-star astrometric fit.
 GAIA_RUWE_LIMIT = 1.4
+# A Gaia and a Hipparcos parallax more than this many combined standard
+# errors apart are discordant: the adopted error is widened to span both.
+PARALLAX_DISCORDANCE_Z = 3.0
+ZEROPOINT_PACKAGE = ("gaiadr3-zeropoint", "0.1.0")
+PLX_CATALOGS = {
+    "gaia_dr3": "2023A&A...674A...1G",
+    "hipparcos_2007": "2007A&A...474..653V",
+}
 _HG_QUERY = (
     "SELECT n.original_ext_source_id AS hip, g.source_id, g.ra, g.dec, g.parallax, "
     "g.parallax_error, g.pmra, g.pmdec, g.ruwe, g.ref_epoch, "
@@ -355,9 +377,280 @@ def apply_hg(candidate_path: Path) -> None:
     print(f"rows refreshed from Hipparcos and Gaia: {applied}")
 
 
+# --- parallax candidates and adoption -----------------------------------
+
+_PLX_IDENT_QUERY = (
+    "SELECT i.id AS q, i2.id AS other FROM ident AS i JOIN ident AS i2 ON i.oidref = i2.oidref "
+    "WHERE i.id IN ({ids}) AND (i2.id LIKE 'Gaia DR3 %' OR i2.id LIKE 'HIP %')"
+)
+_PLX_SIMBAD_QUERY = (
+    "SELECT i.id AS q, b.main_id, b.plx_value, b.plx_err, b.plx_qual, b.plx_bibcode "
+    "FROM ident AS i JOIN basic AS b ON i.oidref = b.oid WHERE i.id IN ({ids})"
+)
+_PLX_GAIA_COLUMNS = (
+    "source_id, ra, dec, pmra, pmdec, parallax, parallax_error, ruwe, astrometric_params_solved, "
+    "phot_g_mean_mag, nu_eff_used_in_astrometry, pseudocolour, ecl_lat"
+)
+_PLX_GAIA_QUERY = "SELECT " + _PLX_GAIA_COLUMNS + " FROM gaiadr3.gaia_source WHERE source_id IN ({ids})"
+_PLX_HIP_NEIGHBOUR_QUERY = (
+    "SELECT n.source_id, h.hip, h.plx, h.e_plx FROM gaiadr3.hipparcos2_best_neighbour AS n "
+    "JOIN public.hipparcos_newreduction AS h ON h.hip = n.original_ext_source_id "
+    "WHERE n.source_id IN ({ids})"
+)
+_PLX_HIP_QUERY = "SELECT hip, plx, e_plx FROM public.hipparcos_newreduction WHERE hip IN ({ids})"
+_PLX_DISTANCE_QUERY = (
+    "SELECT source_id, r_med_geo, r_lo_geo, r_hi_geo FROM external.gaiaedr3_distance "
+    "WHERE source_id IN ({ids})"
+)
+
+
+def _tap_query(service: str, adql: str, tries: int = 6) -> list[dict]:
+    body = urllib.parse.urlencode({"REQUEST": "doQuery", "LANG": "ADQL", "FORMAT": "json", "QUERY": adql}).encode()
+    for attempt in range(tries):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(service, data=body), timeout=180) as response:
+                payload = json.load(response)
+            names = [column["name"] for column in payload["metadata"]]
+            return [dict(zip(names, row)) for row in payload["data"]]
+        except OSError:
+            if attempt == tries - 1:
+                raise
+            time.sleep(10.0 * (attempt + 1))  # busy archives answer 503 for a while
+    raise AssertionError("unreachable")
+
+
+def _batches(items, size: int):
+    items = list(items)
+    for start in range(0, len(items), size):
+        yield items[start:start + size]
+
+
+def gaia_zero_point(gaia: dict) -> float | None:
+    """Lindegren et al. (2021) parallax zero-point in mas, or None outside its validity.
+
+    The published fit covers 5- and 6-parameter solutions with 6 <= G <= 21, and
+    for a 5-parameter solution 1.1 <= nu_eff <= 1.9, for a 6-parameter solution
+    1.24 <= pseudocolour <= 1.72.
+    """
+    magnitude, beta, params = gaia["phot_g_mean_mag"], gaia["ecl_lat"], gaia["astrometric_params_solved"]
+    nu_eff, pseudocolour = gaia["nu_eff_used_in_astrometry"], gaia["pseudocolour"]
+    if magnitude is None or beta is None or params not in (31, 95) or not 6.0 <= magnitude <= 21.0:
+        return None
+    if params == 31 and (nu_eff is None or not 1.1 <= nu_eff <= 1.9):
+        return None
+    if params == 95 and (pseudocolour is None or not 1.24 <= pseudocolour <= 1.72):
+        return None
+    import numpy as np
+    from importlib.metadata import version
+    from zero_point import zpt
+
+    if version(ZEROPOINT_PACKAGE[0]) != ZEROPOINT_PACKAGE[1]:
+        raise SystemExit(f"{ZEROPOINT_PACKAGE[0]}=={ZEROPOINT_PACKAGE[1]} is required")
+    if not getattr(gaia_zero_point, "_loaded", False):
+        zpt.load_tables()
+        gaia_zero_point._loaded = True
+
+    # The package rejects Python scalars under NumPy 2; it accepts arrays.
+    def column(value):
+        return np.array([np.nan if value is None else value], dtype=float)
+
+    value = zpt.get_zpt(column(magnitude), column(nu_eff), column(pseudocolour), column(beta),
+                        np.array([params]), _warnings=False)[0]
+    return float(value) if math.isfinite(value) else None
+
+
+def _positive(value) -> bool:
+    return value is not None and math.isfinite(value) and value > 0.0
+
+
+def adopt_parallax(inputs: dict) -> dict:
+    """Adopt one parallax and its uncertainty from a row's Gaia, Hipparcos and SIMBAD inputs.
+
+    Rules: docs/architecture/STAR_PARALLAX_SIGNIFICANCE_POLICY_DESIGN.md, Section 4.2.
+    ``inputs`` holds ``gaia`` (with ``zero_point``), ``hipparcos`` and ``simbad``,
+    each a dict or None. The result names the source, lists any flags and records
+    every candidate used.
+    """
+    candidates, flags = {}, []
+    gaia = inputs.get("gaia")
+    if (gaia and gaia["astrometric_params_solved"] in (31, 95) and gaia["ruwe"] is not None
+            and gaia["parallax"] is not None and _positive(gaia["parallax_error"])):
+        zero_point = gaia["zero_point"]
+        candidates["gaia"] = {
+            "parallax_mas": gaia["parallax"] - (zero_point or 0.0),
+            "error_mas": gaia["parallax_error"] * max(1.0, gaia["ruwe"]),
+            "zero_point_mas": zero_point,
+            "uncalibrated": zero_point is None,
+        }
+    hipparcos = inputs.get("hipparcos")
+    if hipparcos and hipparcos["plx"] is not None and _positive(hipparcos["e_plx"]):
+        candidates["hipparcos"] = {"parallax_mas": hipparcos["plx"], "error_mas": hipparcos["e_plx"]}
+    result = {"candidates": candidates, "flags": flags}
+    if "gaia" in candidates and "hipparcos" in candidates:
+        g, h = candidates["gaia"], candidates["hipparcos"]
+        w_g, w_h = g["error_mas"] ** -2, h["error_mas"] ** -2
+        parallax = (g["parallax_mas"] * w_g + h["parallax_mas"] * w_h) / (w_g + w_h)
+        error = (w_g + w_h) ** -0.5
+        gap = abs(g["parallax_mas"] - h["parallax_mas"])
+        z = gap / math.hypot(g["error_mas"], h["error_mas"])
+        result["discordance_z"] = z
+        if z > PARALLAX_DISCORDANCE_Z:
+            # When the catalogs conflict beyond their stated errors those errors cannot
+            # weight them. The midpoint with a half-gap error spans both measurements
+            # and is correct whichever of the two is the wrong one.
+            parallax = (g["parallax_mas"] + h["parallax_mas"]) / 2.0
+            error = max(error, gap / 2.0)
+            flags.append("discordant")
+            source = "gaia_hipparcos_combined_discordant"
+        else:
+            source = "gaia_hipparcos_combined"
+        if g["uncalibrated"]:
+            flags.append("gaia_uncalibrated")
+        result.update(parallax_mas=parallax, parallax_error_mas=error, parallax_source=source,
+                      parallax_bibcodes=[PLX_CATALOGS["gaia_dr3"], PLX_CATALOGS["hipparcos_2007"]])
+    elif "gaia" in candidates:
+        g = candidates["gaia"]
+        if g["uncalibrated"]:
+            flags.append("gaia_uncalibrated")
+        result.update(parallax_mas=g["parallax_mas"], parallax_error_mas=g["error_mas"],
+                      parallax_source="gaia_dr3_uncalibrated" if g["uncalibrated"] else "gaia_dr3",
+                      parallax_bibcodes=[PLX_CATALOGS["gaia_dr3"]])
+    elif "hipparcos" in candidates:
+        h = candidates["hipparcos"]
+        result.update(parallax_mas=h["parallax_mas"], parallax_error_mas=h["error_mas"],
+                      parallax_source="hipparcos_2007", parallax_bibcodes=[PLX_CATALOGS["hipparcos_2007"]])
+    else:
+        simbad = inputs.get("simbad")
+        if simbad and simbad["plx_value"] is not None and _positive(simbad["plx_err"]):
+            result.update(parallax_mas=simbad["plx_value"], parallax_error_mas=simbad["plx_err"],
+                          parallax_source="simbad_fallback", parallax_bibcodes=[simbad["plx_bibcode"]])
+        else:
+            result.update(parallax_mas=None, parallax_error_mas=None, parallax_source="none",
+                          parallax_bibcodes=[])
+    return result
+
+
+def _gaia_rows(adql: str) -> list[dict]:
+    return _tap_query(GAIA_TAP, adql)
+
+
+def _catalog_offset_arcsec(row: dict, gaia: dict) -> float:
+    """Separation of the registry J2000.0 position from the Gaia DR3 position carried back to J2000.0."""
+    years = GAIA_DR3_EPOCH_YEAR - 2000.0
+    cos_dec = max(math.cos(math.radians(gaia["dec"])), 1e-9)
+    ra = gaia["ra"] - (gaia["pmra"] or 0.0) / 3.6e6 / cos_dec * years
+    dec = gaia["dec"] - (gaia["pmdec"] or 0.0) / 3.6e6 * years
+    return math.hypot((float(row["ra_deg"]) - ra) * cos_dec, float(row["dec_deg"]) - dec) * 3600.0
+
+
+def derive_plx(candidate_path: Path) -> None:
+    """Recompute every row's adoption from its frozen inputs, after a rule change; no network."""
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    changed = 0
+    for entry in candidate["stars"].values():
+        derived = adopt_parallax(entry["inputs"])
+        changed += derived != entry["derived"]
+        entry["derived"] = derived
+    candidate_path.write_text(json.dumps(candidate, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(f"rows re-derived: {len(candidate['stars'])}; changed: {changed}")
+
+
+def fetch_plx(out: Path, service: str) -> None:
+    """Fetch every row's parallax candidates and write them, with the derived adoption, to ``out``."""
+    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    _, rows = _read(REGISTRY)
+    wanted = {row["name"]: _simbad_identifier(provenance[row["name"]]) for row in rows}
+    registry = {row["name"]: row for row in rows}
+    normalized = {" ".join(i.split()): i for i in set(wanted.values())}
+    spelled = sorted({_simbad_spelling(i) for i in set(wanted.values())})
+
+    def quoted(items):
+        return ",".join("'" + str(i).replace("'", "''") + "'" for i in items)
+
+    gaia_ids: dict[str, set[int]] = {}
+    hip_ids: dict[str, set[int]] = {}
+    simbad: dict[str, dict] = {}
+    for done, batch in enumerate(_batches(spelled, 150), start=1):
+        for record in _tap_query(service, _PLX_IDENT_QUERY.format(ids=quoted(batch))):
+            key = normalized.get(" ".join(record["q"].split()))
+            tail = record["other"].split()[-1]
+            # Component suffixes ("HIP 9640B") name another star.
+            if key is not None and tail.isdigit():
+                (gaia_ids if record["other"].startswith("Gaia") else hip_ids).setdefault(key, set()).add(int(tail))
+        for record in _tap_query(service, _PLX_SIMBAD_QUERY.format(ids=quoted(batch))):
+            key = normalized.get(" ".join(record["q"].split()))
+            if key is not None:
+                simbad[key] = {k: record[k] for k in ("main_id", "plx_value", "plx_err", "plx_qual", "plx_bibcode")}
+        print(f"  SIMBAD batch {done}", flush=True)
+
+    source_ids = sorted({g for ids in gaia_ids.values() for g in ids})
+    gaia: dict[int, dict] = {}
+    neighbour: dict[int, dict] = {}
+    distance: dict[int, dict] = {}
+    for done, batch in enumerate(_batches(source_ids, 200), start=1):
+        listed = ",".join(map(str, batch))
+        for record in _gaia_rows(_PLX_GAIA_QUERY.format(ids=listed)):
+            gaia[record["source_id"]] = record
+        for record in _gaia_rows(_PLX_HIP_NEIGHBOUR_QUERY.format(ids=listed)):
+            neighbour[record["source_id"]] = record
+        for record in _gaia_rows(_PLX_DISTANCE_QUERY.format(ids=listed)):
+            distance[record["source_id"]] = record
+        print(f"  Gaia batch {done}", flush=True)
+    hip: dict[int, dict] = {r["hip"]: r for r in neighbour.values()}
+    extra = sorted({h for ids in hip_ids.values() for h in ids} - set(hip))
+    for batch in _batches(extra, 200):
+        for record in _gaia_rows(_PLX_HIP_QUERY.format(ids=",".join(map(str, batch)))):
+            hip[record["hip"]] = record
+
+    stars = {}
+    for name, ident in wanted.items():
+        sources = sorted(gaia_ids.get(ident, ()))
+        row_gaia = gaia.get(sources[0]) if sources else None
+        entry_gaia, offset = None, None
+        if row_gaia is not None and row_gaia["parallax"] is not None:
+            entry_gaia = dict(row_gaia, zero_point=gaia_zero_point(row_gaia))
+            offset = _catalog_offset_arcsec(registry[name], row_gaia)
+        chosen_hip, match = None, None
+        for number in sorted(hip_ids.get(ident, ())):
+            if number in hip:
+                chosen_hip, match = hip[number], "simbad_identifier"
+                break
+        if row_gaia is not None and row_gaia["source_id"] in neighbour:
+            chosen_hip, match = neighbour[row_gaia["source_id"]], "gaia_dr3_hipparcos2_best_neighbour"
+        inputs = {
+            "simbad_identifier": ident,
+            "simbad": simbad.get(ident),
+            "gaia_source_ids": sources,
+            "gaia": entry_gaia,
+            "hipparcos": None if chosen_hip is None else {
+                "hip": chosen_hip["hip"], "plx": chosen_hip["plx"], "e_plx": chosen_hip["e_plx"], "match": match},
+            "gaia_position_offset_arcsec": offset,
+            "bailer_jones_2021": distance.get(sources[0]) if sources else None,
+        }
+        stars[name] = {"inputs": inputs, "derived": adopt_parallax(inputs)}
+    from importlib.metadata import version
+    out.write_text(json.dumps({
+        "source": {
+            "simbad_service": service, "gaia_service": GAIA_TAP,
+            "queries": {"ident": _PLX_IDENT_QUERY, "simbad": _PLX_SIMBAD_QUERY, "gaia": _PLX_GAIA_QUERY,
+                        "hipparcos_neighbour": _PLX_HIP_NEIGHBOUR_QUERY, "hipparcos": _PLX_HIP_QUERY,
+                        "distance": _PLX_DISTANCE_QUERY},
+            "zero_point_package": f"{ZEROPOINT_PACKAGE[0]}=={version(ZEROPOINT_PACKAGE[0])}",
+            "discordance_z": PARALLAX_DISCORDANCE_Z,
+            "retrieved_utc": datetime.now(timezone.utc).isoformat(),
+        },
+        "stars": stars,
+    }, indent=1, ensure_ascii=False), encoding="utf-8")
+    counts: dict[str, int] = {}
+    for entry in stars.values():
+        key = entry["derived"]["parallax_source"]
+        counts[key] = counts.get(key, 0) + 1
+    print(f"candidates for {len(stars)} rows -> {out}\n  {counts}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("step", choices=["epoch", "fetch-rv", "apply-rv", "fetch-hg", "apply-hg"])
+    parser.add_argument("step", choices=["epoch", "fetch-rv", "apply-rv", "fetch-hg", "apply-hg", "fetch-plx", "derive-plx"])
     parser.add_argument("--registry", type=Path, default=REGISTRY)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--candidate", type=Path)
@@ -379,6 +672,10 @@ def main() -> None:
             hip, _, gaia = ids.partition(":")
             targets[name] = (int(hip), int(gaia) if gaia else None)
         fetch_hg(targets, args.out)
+    elif args.step == "fetch-plx":
+        fetch_plx(args.out, args.service)
+    elif args.step == "derive-plx":
+        derive_plx(args.candidate)
     else:
         apply_hg(args.candidate)
 
