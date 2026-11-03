@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.12.0",
+  "engine_version": "6.12.1",
   "families": [
     {
       "assessment_status": "partial",
@@ -7246,6 +7246,7 @@
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
         "tests/integration/test_stars_apparent_erfa.py",
         "tests/integration/test_stars_binary_orbits.py",
+        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_stars_external_reference.py",
         "tests/integration/test_stars_sovereign_identity.py",
@@ -7572,6 +7573,7 @@
         "tests/unit/test_mundane.py",
         "tests/unit/test_native_gil_release_audit.py",
         "tests/unit/test_relationship_forecasting.py",
+        "tests/unit/test_transit_native_acceleration.py",
         "tests/unit/test_transits.py",
         "tests/unit/test_transits_aspects_native_numeric.py",
         "tests/unit/test_transits_extensions.py",
@@ -8656,7 +8658,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "29384d60c2c116c6fbac47c7192a64f4a65554f873fa67409ce55347ef924644",
+  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

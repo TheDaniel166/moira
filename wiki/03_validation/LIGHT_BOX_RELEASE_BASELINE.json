@@ -1,9 +1,9 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
-  "baseline_date": "2026-11-02",
-  "source_parent_revision": "162850000ba782ab9a9dd99bdd9a5204f5addf1f",
-  "engine_version": "6.12.0",
-  "inventory_fingerprint_sha256": "29384d60c2c116c6fbac47c7192a64f4a65554f873fa67409ce55347ef924644",
+  "baseline_date": "2026-11-03",
+  "source_parent_revision": "9ca376e4368d958f034fa91d756bafed33b81a18",
+  "engine_version": "6.12.1",
+  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
   "canonical_entries": 1339,
   "minimum_partial": 219,
   "maximum_unresolved": 1120,
@@ -13,10 +13,10 @@
   "minimum_replayed_contracts": 69,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
   "review": {
-    "from_baseline_date": "2026-10-31",
-    "surface_change": "The regenerated inventory adds, removes and reclassifies no Python export or REST operation; the inventory fingerprint moves only because the published __version__ constant changed from 6.11.1 to 6.12.0.",
-    "product_use": "The product-usage snapshot keeps its 2026-10-31 audit unchanged and is rebound to the new inventory fingerprint.",
-    "admissions": "No admission, replayed contract or reviewed family changes; counts stay at 219 partial, 69 replayed contracts and 159 reviewed families.",
-    "unchanged": "maximum_production_user_unresolved stays 0; no existing admission, contract or threshold is weakened."
+    "from_baseline_date": "2026-11-02",
+    "surface_change": "No export or REST operation is added, removed or reclassified. Per-surface API contracts are identical except for the published __version__ constant changing from 6.12.0 to 6.12.1. Transit acceleration changes implementation, not signatures or scientific thresholds.",
+    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated.",
+    "admissions": "No admission, contract or reviewed family is changed. Coverage thresholds are retained byte-for-value; fresh replay evidence is recorded separately.",
+    "unchanged": "All seven coverage thresholds remain unchanged, including maximum_production_user_unresolved=0."
   }
 }

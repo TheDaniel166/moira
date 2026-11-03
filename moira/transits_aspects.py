@@ -300,19 +300,24 @@ def _longitude_series(
     jd_end: float,
     step_days: float,
     reader: SpkReader,
+    *,
+    canonical: bool = False,
 ) -> LongitudeSeries | None:
     """Return the mover's longitude series for candidate-window detection.
 
-    Tries native providers first, then the resolver. Whatever produced the
+    The shared fixed-target scanner requests canonical apparent samples so
+    it can reuse them in its longitude memo. The resolver uses the admitted
+    native apparent evaluator for planets. Legacy geometric candidate-only
+    callers retain their native providers. Whatever produced the
     series, the quarter-turn guard halves the step and resamples while any
     consecutive pair differs by more than 90 degrees, up to
     ``_MAX_STEP_HALVINGS`` times. Returns ``None`` when no provider can
-    satisfy the guard; the caller then falls back to per-target searches.
+    satisfy the guard; the caller retains its bounded canonical scan.
     """
     step = float(step_days)
     for _ in range(_MAX_STEP_HALVINGS + 1):
         series: LongitudeSeries | None = None
-        native = _native_ecliptic_longitude_series(body, jd_start, jd_end, step, reader)
+        native = None if canonical else _native_ecliptic_longitude_series(body, jd_start, jd_end, step, reader)
         if native is not None:
             series = LongitudeSeries(
                 jd_start=jd_start,
@@ -320,7 +325,7 @@ def _longitude_series(
                 values=tuple(float(v) % 360.0 for v in native),
                 tier="native_planet",
             )
-        if series is None:
+        if series is None and not canonical:
             native_sb = _native_small_body_series(body, jd_start, jd_end, step, reader)
             if native_sb is not None:
                 series = LongitudeSeries(
@@ -671,7 +676,7 @@ def _find_aspect_transits_to_longitudes_core(
     if evaluator is None:
         scan_step = step_days if step_days is not None else policy.transit.step_days_override or _auto_step(body)
         _require_positive(scan_step, "step_days")
-        series = _longitude_series(body, jd_start, jd_end, scan_step, reader)
+        series = _longitude_series(body, jd_start, jd_end, scan_step, reader, canonical=True)
         memo = {}
         if series is not None:
             scan_step = series.step_days
@@ -701,4 +706,6 @@ def _find_aspect_transits_to_longitudes_core(
                                         window.start if window is not None and window.entry_status == "found" and orb > 0 else None,
                                         window.end if window is not None and window.exit_status == "found" and orb > 0 else None,
                                         hit.motion == "retrograde", search_motion))
+    if search_motion == "backward":
+        events.reverse()
     return events

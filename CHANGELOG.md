@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.12.1] - 2026-11-03
+
+### Fixed
+- Restore native apparent longitude evaluation in transit searches. The shared
+  fixed-target scanner introduced for Geodetic timing retains its connected
+  orb windows, stationary/contact checks, bounded coverage and incomplete-search
+  failures, while reusing canonical samples and omitting unused planetary and
+  True Node speed evaluation. Existing native default-mode admission and scalar
+  fallback remain explicit; no numerical solver tolerance changes.
+- Return frozen-longitude aspect grids in reverse chronological order when
+  `search_motion="backward"`.
+
 ## [6.12.0] - 2026-11-02
 
 ### Added

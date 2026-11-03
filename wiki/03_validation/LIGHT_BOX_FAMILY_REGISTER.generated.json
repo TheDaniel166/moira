@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.12.0",
+  "engine_version": "6.12.1",
   "entries": [
     {
       "assessment_status": "partial",
@@ -567,7 +567,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3868,
+        "source_line": 3906,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -7361,7 +7361,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 532,
+        "source_line": 537,
         "source_path": "moira/transits_aspects.py"
       },
       "priority": "P2",
@@ -7386,7 +7386,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 620,
+        "source_line": 625,
         "source_path": "moira/transits_aspects.py"
       },
       "priority": "P2",
@@ -7886,7 +7886,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1873,
+        "source_line": 1877,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -8011,7 +8011,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2775,
+        "source_line": 2779,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -8611,7 +8611,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1699,
+        "source_line": 1703,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -10069,7 +10069,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3800,
+        "source_line": 3838,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -10494,7 +10494,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2825,
+        "source_line": 2829,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -10519,7 +10519,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2813,
+        "source_line": 2817,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -11371,7 +11371,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2735,
+        "source_line": 2739,
         "source_path": "moira/transits.py"
       },
       "priority": "P0",
@@ -11398,7 +11398,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2716,
+        "source_line": 2720,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -11473,7 +11473,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2701,
+        "source_line": 2705,
         "source_path": "moira/transits.py"
       },
       "priority": "P0",
@@ -11500,7 +11500,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2682,
+        "source_line": 2686,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -12502,7 +12502,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2414,
+        "source_line": 2418,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -13877,7 +13877,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4123,
+        "source_line": 4161,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -13902,7 +13902,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1965,
+        "source_line": 1969,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -13927,7 +13927,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2011,
+        "source_line": 2015,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -14152,7 +14152,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 1577,
+        "source_line": 1581,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -15602,7 +15602,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 2597,
+        "source_line": 2635,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15627,7 +15627,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3987,
+        "source_line": 4025,
         "source_path": "moira/planets.py"
       },
       "priority": "P0",
@@ -15654,7 +15654,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4079,
+        "source_line": 4117,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15679,7 +15679,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2204,
+        "source_line": 2208,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -16181,7 +16181,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2750,
+        "source_line": 2754,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17935,7 +17935,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2233,
+        "source_line": 2237,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -17960,7 +17960,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2272,
+        "source_line": 2276,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -19139,7 +19139,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2831,
+        "source_line": 2835,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -19164,7 +19164,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2872,
+        "source_line": 2876,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -19189,7 +19189,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2819,
+        "source_line": 2823,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -19214,7 +19214,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2807,
+        "source_line": 2811,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -20024,7 +20024,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2307,
+        "source_line": 2311,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -20049,7 +20049,7 @@
       "family_id": "transits",
       "family_label": "Transits",
       "ownership": {
-        "source_line": 2377,
+        "source_line": 2381,
         "source_path": "moira/transits.py"
       },
       "priority": "P2",
@@ -33958,7 +33958,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "29384d60c2c116c6fbac47c7192a64f4a65554f873fa67409ce55347ef924644",
+  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

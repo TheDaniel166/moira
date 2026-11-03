@@ -350,6 +350,8 @@ jobs:
             tests/unit/test_small_body_identity_resolution.py \
             tests/unit/test_small_body_packaged_manifest_receipts.py \
             tests/unit/test_planet_position_switches.py \
+            tests/unit/test_transit_native_acceleration.py \
+            tests/unit/test_geodetic_timing.py \
             tests/unit/test_moira_progressions.py \
             tests/unit/test_void_of_course.py \
             tests/server/test_server_small_body_list_routes.py \

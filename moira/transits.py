@@ -39,14 +39,14 @@ from .julian import (
     julian_day,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt
-from .planets import planet_at
+from .planets import _native_default_apparent_longitude, planet_at
 from .spk_reader import get_reader, SpkReader
 from .chart import ChartContext, create_chart
 from .houses import HousePolicy
 from .small_body_identity import resolve_small_body_identity
 from .sidereal import Ayanamsa, UserDefinedAyanamsa, tropical_to_sidereal
 from .stars import star_at
-from .nodes import mean_lilith, mean_node, true_lilith, true_node
+from .nodes import _true_node_longitude, mean_lilith, mean_node, true_lilith
 
 
 __all__ = [
@@ -1292,16 +1292,20 @@ def _resolve_longitude_truth(
         None,
     )
     if canonical_planet is not None:
+        longitude = _native_default_apparent_longitude(canonical_planet, jd, reader)
+        if longitude is None:
+            longitude = planet_at(canonical_planet, jd, reader=reader).longitude
         return LongitudeResolutionTruth(
             requested_spec=spec,
             resolved_kind="planet",
             resolved_name=canonical_planet,
             jd_ut=jd,
-            longitude=planet_at(canonical_planet, jd, reader=reader).longitude,
+            longitude=longitude,
         )
 
     if name == Body.TRUE_NODE:
-        return LongitudeResolutionTruth(spec, "node", name, jd, true_node(jd, reader=reader).longitude)
+        longitude = _true_node_longitude(reader, _ut1_to_ephemeris_tt(jd, reader))
+        return LongitudeResolutionTruth(spec, "node", name, jd, longitude)
     if name == Body.MEAN_NODE:
         return LongitudeResolutionTruth(spec, "node", name, jd, mean_node(jd).longitude)
     if name == Body.LILITH:

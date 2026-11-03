@@ -1207,6 +1207,44 @@ def _native_all_planets_plan(
     )
 
 
+def _native_default_apparent_longitude(
+    body: str,
+    jd_ut: float,
+    reader: KernelReader,
+) -> float | None:
+    """Use the admitted default native apparent product without unused speed.
+
+    Search callers need the same UT1-to-TT/TDB preparation, correction policy
+    and true-ecliptic projection as the public bulk route. Its existing plan
+    also checks the neighbouring rate epochs, preserving admission at segment
+    boundaries. Only speed evaluation and PlanetData assembly are omitted.
+    None means that this reader/body cannot use the existing native evaluator;
+    the caller retains its canonical scalar provider.
+    """
+    if body not in _NPE_ADMITTED_BODIES or reader is None:
+        return None
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    plan = _native_all_planets_plan(
+        [body], reader=reader, jd_tt=jd_tt, apparent=True, aberration=True,
+        grav_deflection=True, nutation=True, center='geocentric',
+        observer_lat=None, observer_lon=None, observer_elev_m=0.0,
+        lst_deg=None, delta_t_policy=None,
+    )
+    if plan.backend is not _NativeAllPlanetsBackend.NATIVE_EVALUATOR:
+        return None
+    mean_eps = mean_obliquity(jd_tt)
+    dpsi_deg, deps_deg = _nutation(jd_tt)
+    rot_mat = _compose_rotation_matrix(
+        jd_tt, with_nutation=True, mean_obliquity_deg=mean_eps,
+        dpsi_deg=dpsi_deg, deps_deg=deps_deg,
+    )
+    payloads = plan.evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
+        [body], plan.public_specs, plan.body_specs, plan.epoch_tdb,
+        mean_eps + deps_deg, rot_mat,
+    )
+    return float(payloads[0][1])
+
+
 def _native_all_planets_admitted(
     jd_ut: float,
     bodies: list[str],
