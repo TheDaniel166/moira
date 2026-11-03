@@ -211,7 +211,9 @@ def test_tag_builds_and_publication_require_both_same_commit_release_suites():
         job = jobs[name]
         assert gates <= set(job["needs"])
         assert "if" not in job and "continue-on-error" not in job
-    assert {"build-wheels", "build-sdist", "website-publication"} <= set(jobs["publish"]["needs"])
+    assert {"build-wheels", "build-sdist"} <= set(jobs["publish"]["needs"])
+    assert "website-publication" not in jobs
+    assert "website-publication" not in jobs["publish"]["needs"]
     assert workflow["permissions"] == {"contents": "read"}
 
 
