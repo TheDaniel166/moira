@@ -273,6 +273,23 @@ def test_house_dynamics_from_armc_route(client_with_engine: TestClient) -> None:
     ) < 0.001
 
 
+def test_chart_houses_resolves_alova_topocentric(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/houses", json={
+        "dt": "2000-01-01T12:00:00Z",
+        "latitude": 70,
+        "longitude": 120,
+        "system": "Alova-Topocentric",
+        "include_boundary_geometry": True,
+    })
+    assert response.status_code == 200, response.text
+    figure = response.json()
+    assert figure["effective_system"] == "AT"
+    assert figure["astronomical_asc_defined"] is True
+    assert figure["effective_latitude"] == pytest.approx(62.29, abs=0.02)
+    assert figure["cusps"][0] != pytest.approx(figure["asc"])
+    assert figure["boundary_geometry"] is not None
+
+
 def test_analytical_house_dynamics_route(client_with_engine: TestClient) -> None:
     payload = {
         "armc": 135.0,

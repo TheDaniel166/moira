@@ -344,7 +344,7 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
-                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC", "PULLEN_SD", "PULLEN_SR"
+                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC", "PULLEN_SD", "PULLEN_SR", "ALOVA_TOPOCENTRIC"
         ],
         "internal": []
       },
@@ -368,6 +368,7 @@ class HouseSystem:
     ALCABITIUS     = "B"
     MORINUS        = "M"
     TOPOCENTRIC    = "T"
+    ALOVA_TOPOCENTRIC = "AT"
     VEHLOW         = "V"    # Equal from ASC-15° (Vehlow)
     SUNSHINE       = "N"    # Makransky's Sunshine houses
     SOLAR_SIGN     = "S"    # Traditional solar-sign frame
@@ -392,6 +393,7 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.ALCABITIUS:    "Alcabitius",
     HouseSystem.MORINUS:       "Morinus",
     HouseSystem.TOPOCENTRIC:    "Topocentric",
+    HouseSystem.ALOVA_TOPOCENTRIC: "Alova-Topocentric",
     HouseSystem.VEHLOW:         "Vehlow Equal",
     HouseSystem.SUNSHINE:       "Sunshine",
     HouseSystem.SOLAR_SIGN:     "Solar Sign",

@@ -33,7 +33,7 @@ A **house cusp** in Moira is:
 | *ecliptic longitude* | Degrees along the ecliptic, normalised to `[0, 360)` by `normalize_degrees` |
 | *observer location* | Geographic latitude `[-90, 90]` and longitude `[-180, 180]` in decimal degrees |
 | *Julian date* | UT1-based Julian day number |
-| *house system* | One of the 22 recognised `HouseSystem` codes |
+| *house system* | One of the 23 recognised `HouseSystem` codes |
 
 Twelve cusps are always produced. No system produces fewer or more than 12.
 
@@ -159,7 +159,7 @@ A function in phase N:
 
 ### 3. Supported Systems
 
-22 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
+23 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
 
 | Code | Name | Family | Cusp basis | Lat-sensitive | Polar-capable |
 |---|---|---|---|---|---|
@@ -181,6 +181,7 @@ A function in phase N:
 | `H` | Azimuthal | `QUADRANT` | `HORIZON` | Yes | Yes |
 | `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
 | `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
+| `AT` | [Alova-Topocentric](../01_doctrines/houses/alova_topocentric.md) | `QUADRANT` | `POLAR_PROJECTION` | Yes | Conditional on a nonsingular, ordered figure |
 | `CT` | Carter | `QUADRANT` | `EQUATORIAL` | Yes | Yes |
 | `U` | Krusinski | `QUADRANT` | `GREAT_CIRCLE` | Yes | Yes |
 | `Y` | APC | `QUADRANT` | `APC_FORMULA` | Yes | Yes |
@@ -279,7 +280,7 @@ All public names are declared in the module `moira/houses.py`.
 | `_MEMBERSHIP_CUSP_TOLERANCE` | `1e-9` | Degrees; threshold for `exact_on_cusp` detection |
 | `_NEAR_CUSP_DEFAULT_THRESHOLD` | `3.0` | Degrees; default for `describe_boundary` |
 | `_POLAR_SYSTEMS` | `frozenset{'K'}` | Systems still outer-guarded above the critical latitude |
-| `_KNOWN_SYSTEMS` | `frozenset` of 22 codes | All recognised `HouseSystem` values |
+| `_KNOWN_SYSTEMS` | `frozenset` of 23 codes | All recognised `HouseSystem` values |
 | `_ANGULARITY_MAP` | `dict[int, HouseAngularity]` | Static 12-entry lookup; never recomputed |
 
 ---

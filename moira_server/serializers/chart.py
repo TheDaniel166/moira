@@ -232,6 +232,8 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
         vertex=houses.vertex,
         anti_vertex=houses.anti_vertex,
         cusps=list(houses.cusps),
+        effective_latitude=houses.effective_latitude,
+        astronomical_asc_defined=houses.astronomical_asc_defined,
         boundary_geometry=boundary_geometry,
     )
 

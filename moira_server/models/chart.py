@@ -217,6 +217,8 @@ class HousesResponse(_StrictModel):
     vertex: float | None = None
     anti_vertex: float | None = None
     cusps: list[float]
+    effective_latitude: float | None = Field(default=None, description="Alova-Topocentric construction latitude.")
+    astronomical_asc_defined: bool | None = Field(default=None, description="Whether Alova's physical Ascendant is defined.")
     boundary_geometry: HouseBoundaryGeometrySetResponse | None = None
 
 

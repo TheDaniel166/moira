@@ -519,6 +519,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
     HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),   # polar_capable now True: safe pole projection & ordered cycle search integrated
     HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),   # polar_capable now True: graduated pole projection & ordered cycle search integrated
+    HouseSystem.ALOVA_TOPOCENTRIC: HouseSystemClassification(_F.QUADRANT, _CB.POLAR_PROJECTION, True, True),
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
@@ -580,7 +581,7 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
     HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
     HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
-    HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
+    HouseSystem.TOPOCENTRIC, HouseSystem.ALOVA_TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
     HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
@@ -1098,7 +1099,7 @@ class HouseCusps:
       "scope": "class",
       "id": "moira.houses.HouseCusps",
       "risk": "medium",
-      "api": {"frozen":["system","cusps","asc","mc","armc","east_point","vertex","anti_vertex","effective_system","fallback","fallback_reason","classification","policy","boundary_geometry","dsc","ic","is_quadrant_system","is_latitude_sensitive","sign_of_cusp"],"internal":["__post_init__"]},
+      "api": {"frozen":["system","cusps","asc","mc","armc","east_point","vertex","anti_vertex","effective_system","fallback","fallback_reason","classification","policy","boundary_geometry","effective_latitude","astronomical_asc_defined","dsc","ic","is_quadrant_system","is_latitude_sensitive","sign_of_cusp"],"internal":["__post_init__"]},
       "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"result_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
       "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
       "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
@@ -1122,6 +1123,8 @@ class HouseCusps:
     classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
     policy:           HousePolicy = field(default_factory=HousePolicy.default)  # Policy that governed fallback resolution
     boundary_geometry: HouseBoundaryGeometrySet | None = None  # Frame-explicit spatial boundaries when admitted
+    effective_latitude: float | None = None  # Alova cusp-construction latitude
+    astronomical_asc_defined: bool | None = None  # Alova physical-horizon status
 
     @property
     def dsc(self) -> float:
@@ -1182,6 +1185,7 @@ class HouseCusps:
             and self.classification is not None
             and self.classification.family == HouseSystemFamily.QUADRANT
             and self.classification.cusp_basis != HouseSystemCuspBasis.HORIZON
+            and self.effective_system != HouseSystem.ALOVA_TOPOCENTRIC
         ):
             diff = abs(self.cusps[0] - self.asc) % 360.0
             _require(
@@ -3195,6 +3199,47 @@ def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
     )
 
 
+def _alova_topocentric(
+    armc: float, obliquity: float, latitude: float, mc: float,
+) -> tuple[list[float], float]:
+    """Apply Alova's signed effective latitude and sidereal-time offsets."""
+    absolute_latitude = abs(latitude)
+    if absolute_latitude <= 90.0 - 2.0 * obliquity:
+        return _topocentric(armc, obliquity, latitude), latitude
+
+    # Algebraically equivalent to Alova's quadratic. Keep the gap separate
+    # so the virtual rising intersection stays resolved next to the pole.
+    gap = (90.0 - absolute_latitude) ** 2 / (4.0 * obliquity)
+    effective_latitude = math.copysign(90.0 - obliquity - gap, latitude)
+    north = latitude >= 0.0
+    phase = math.remainder(armc - (270.0 if north else 90.0), 360.0)
+    if gap == 0.0 and phase == 0.0:
+        raise ValueError("Alova-Topocentric is singular at this geographic pole and ARMC")
+    phase = math.radians(phase)
+    # Recenter the rising-root atan2 on the singular sidereal phase.
+    # The half-angle term avoids subtracting nearly equal trigonometric values.
+    x = (
+        math.sin(math.radians(gap)) / math.cos(math.radians(effective_latitude))
+        - 2.0 * math.cos(math.radians(obliquity)) * math.sin(phase / 2.0) ** 2
+    )
+    sign = 1.0 if north else -1.0
+    cusp1 = normalize_degrees(math.degrees(math.atan2(sign * math.sin(phase), sign * x)))
+    specs = _pole_height_geometry_specs(
+        system=HouseSystem.TOPOCENTRIC, armc_deg=armc, asc_deg=cusp1, mc_deg=mc,
+        obliquity_deg=obliquity, latitude_deg=effective_latitude,
+    )
+    intermediates = {
+        house: _asc_from_armc(normalize_degrees(ra - 90.0), obliquity, pole)
+        for house, (ra, pole) in specs.items()
+    }
+    cusps = _assemble_antipodal_quadrant_cusps(
+        asc=cusp1, mc=mc, h2=intermediates[2], h3=intermediates[3],
+        h11=intermediates[11], h12=intermediates[12], context="_alova_topocentric",
+    )
+    if not strictly_ordered_cusp_cycle(cusps):
+        raise ValueError("Alova-Topocentric did not produce an ordered cusp cycle")
+    return cusps, effective_latitude
+
 # ---------------------------------------------------------------------------
 # Coordinate rotation helper
 # ---------------------------------------------------------------------------
@@ -3748,6 +3793,7 @@ def _build_house_boundary_geometry(
     obliquity_deg: float,
     latitude_deg: float,
     zodiac_offset_deg: float,
+    effective_latitude: float | None = None,
 ) -> HouseBoundaryGeometrySet:
     """Preserve the effective house system's governing spatial objects."""
 
@@ -3846,16 +3892,23 @@ def _build_house_boundary_geometry(
     elif effective_system in {
         HouseSystem.REGIOMONTANUS,
         HouseSystem.TOPOCENTRIC,
+        HouseSystem.ALOVA_TOPOCENTRIC,
         HouseSystem.KOCH,
         HouseSystem.ALCABITIUS,
     }:
+        pole_system = effective_system
+        pole_latitude = latitude_deg
+        if effective_latitude is not None:
+            pole_system = HouseSystem.TOPOCENTRIC
+            pole_latitude = effective_latitude
+            _, _, zenith = _local_horizon_basis(armc_deg, pole_latitude)
         specs = _pole_height_geometry_specs(
-            system=effective_system,
+            system=pole_system,
             armc_deg=armc_deg,
             asc_deg=tropical_cusps[0],
             mc_deg=tropical_cusps[9],
             obliquity_deg=obliquity_deg,
-            latitude_deg=latitude_deg,
+            latitude_deg=pole_latitude,
         )
         for house, (ra_deg, pole_height_deg) in specs.items():
             boundaries[house] = _boundary_plane(
@@ -5326,6 +5379,8 @@ def houses_from_armc(
         except Exception:
             native_cusps = None
 
+    effective_latitude = None
+    astronomical_asc_defined = None
     if experimental_cusps is not None:
         cusps = experimental_cusps
     elif native_cusps is not None:
@@ -5350,6 +5405,12 @@ def houses_from_armc(
         cusps = _morinus(armc, obliquity)
     elif effective_system == HouseSystem.TOPOCENTRIC:
         cusps = _topocentric(armc, obliquity, lat)
+    elif effective_system == HouseSystem.ALOVA_TOPOCENTRIC:
+        cusps, effective_latitude = _alova_topocentric(armc, obliquity, lat, mc)
+        _, _, zenith = _local_horizon_basis(armc, lat)
+        astronomical_asc_defined = abs(lat) < 90.0 and math.hypot(
+            *_cross3(zenith, _ecliptic_north_vector(obliquity)),
+        ) > 1e-14
     elif effective_system == HouseSystem.MERIDIAN:
         cusps = _meridian(armc, obliquity)
     elif effective_system == HouseSystem.VEHLOW:
@@ -5443,6 +5504,7 @@ def houses_from_armc(
             obliquity_deg=obliquity,
             latitude_deg=lat,
             zodiac_offset_deg=_shift,
+            effective_latitude=effective_latitude,
         )
         if include_boundary_geometry
         else None
@@ -5462,6 +5524,8 @@ def houses_from_armc(
         classification=classify_house_system(effective_system),
         policy=active_policy,
         boundary_geometry=boundary_geometry,
+        effective_latitude=effective_latitude,
+        astronomical_asc_defined=astronomical_asc_defined,
     )
 
 
