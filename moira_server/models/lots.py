@@ -91,6 +91,8 @@ class LotsChartRequest(_StrictModel):
             return " ".join(text.replace("_", " ").replace("-", " ").casefold().split())
 
         key = normalize(value)
+        if key == "sunshine":
+            return HouseSystem.SUNSHINE
         for code, name in HOUSE_SYSTEM_NAMES.items():
             if key in (normalize(code), normalize(name)):
                 return code

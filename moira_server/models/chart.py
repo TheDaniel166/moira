@@ -217,8 +217,10 @@ class HousesResponse(_StrictModel):
     vertex: float | None = None
     anti_vertex: float | None = None
     cusps: list[float]
+    house_centers: list[float] | None = Field(default=None, description="Śrīpati centres in house order.")
     effective_latitude: float | None = Field(default=None, description="Alova-Topocentric construction latitude.")
     astronomical_asc_defined: bool | None = Field(default=None, description="Whether Alova's physical Ascendant is defined.")
+    sandhis: list[float] | None = Field(default=None, description="Śrīpati closing junctions in house order.")
     boundary_geometry: HouseBoundaryGeometrySetResponse | None = None
 
 
@@ -268,6 +270,10 @@ class HouseDynamicsFromArmcRequest(_StrictModel):
         lt=360.0,
         allow_inf_nan=False,
     )
+    sun_declination: float | None = Field(
+        default=None, gt=-90.0, lt=90.0, allow_inf_nan=False,
+        description="Apparent geocentric solar declination of date in degrees.",
+    )
     darmc_deg: float = Field(
         default=HOUSE_DYNAMICS_DEFAULT_DARMC_DEG,
         ge=HOUSE_DYNAMICS_MIN_DARMC_DEG,
@@ -281,6 +287,7 @@ class HouseDynamicsFromArmcRequest(_StrictModel):
         "obliquity",
         "latitude",
         "sun_longitude",
+        "sun_declination",
         "darmc_deg",
         mode="before",
     )
@@ -289,7 +296,7 @@ class HouseDynamicsFromArmcRequest(_StrictModel):
         return _require_real_number(
             value,
             field_name=info.field_name,
-            optional=info.field_name == "sun_longitude",
+            optional=info.field_name in ("sun_longitude", "sun_declination"),
         )
 
 

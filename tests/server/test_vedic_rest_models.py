@@ -22,7 +22,10 @@ def test_aware_civil_timestamp_normalization(text):
 def test_engine_ayanamsa_registry_and_house_aliases_remain_admitted():
     for name in list_ayanamsa_systems():
         assert DashaNatalRequest(dt="2000-01-01T12:00:00Z", ayanamsa=name).ayanamsa == name
-    for alias, code in (("P", "P"), ("placidus", "P"), ("whole_sign", "W"), ("whole-sign", "W"), (" Whole Sign ", "W")):
+    for alias, code in (
+        ("P", "P"), ("placidus", "P"), ("whole_sign", "W"), ("whole-sign", "W"), (" Whole Sign ", "W"),
+        ("sunshine", "N"), ("Makransky Sunshine", "MS"), ("Savard-A", "SA"),
+    ):
         request = ShadbalaChartRequest(dt="2000-01-01T12:00:00Z", observer_lat=40, observer_lon=-74, house_system=alias)
         assert request.house_system == alias
         assert resolve_vedic_house_system(alias) == code

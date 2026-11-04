@@ -344,7 +344,9 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
-                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC", "PULLEN_SD", "PULLEN_SR", "ALOVA_TOPOCENTRIC"
+                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC", "PULLEN_SD", "PULLEN_SR",
+                    "MAKRANSKY_SUNSHINE", "SRIPATI", "SAVARD_A", "PORPHYRY_PRESPAN",
+                    "ALOVA_TOPOCENTRIC"
         ],
         "internal": []
       },
@@ -364,13 +366,17 @@ class HouseSystem:
     CAMPANUS       = "C"
     REGIOMONTANUS  = "R"
     PORPHYRY       = "O"
+    PORPHYRY_PRESPAN = "P5"
     MERIDIAN       = "X"    # also called Axial Rotation
     ALCABITIUS     = "B"
     MORINUS        = "M"
     TOPOCENTRIC    = "T"
     ALOVA_TOPOCENTRIC = "AT"
     VEHLOW         = "V"    # Equal from ASC-15° (Vehlow)
-    SUNSHINE       = "N"    # Makransky's Sunshine houses
+    SUNSHINE       = "N"    # Legacy Sun-Anchored Equal, Sun on cusp 12
+    MAKRANSKY_SUNSHINE = "MS"
+    SRIPATI        = "SP"
+    SAVARD_A       = "SA"
     SOLAR_SIGN     = "S"    # Traditional solar-sign frame
     AZIMUTHAL      = "H"    # Horizontal / Azimuthal houses
     CARTER         = "CT"   # Carter Poli-Equatorial
@@ -389,13 +395,17 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.CAMPANUS:      "Campanus",
     HouseSystem.REGIOMONTANUS: "Regiomontanus",
     HouseSystem.PORPHYRY:      "Porphyry",
+    HouseSystem.PORPHYRY_PRESPAN: "Porphyry (5° Prespan)",
     HouseSystem.MERIDIAN:      "Meridian",
     HouseSystem.ALCABITIUS:    "Alcabitius",
     HouseSystem.MORINUS:       "Morinus",
     HouseSystem.TOPOCENTRIC:    "Topocentric",
     HouseSystem.ALOVA_TOPOCENTRIC: "Alova-Topocentric",
     HouseSystem.VEHLOW:         "Vehlow Equal",
-    HouseSystem.SUNSHINE:       "Sunshine",
+    HouseSystem.SUNSHINE:       "Sun-Anchored Equal",
+    HouseSystem.MAKRANSKY_SUNSHINE: "Makransky Sunshine",
+    HouseSystem.SRIPATI:        "Śrīpati",
+    HouseSystem.SAVARD_A:       "Savard-A",
     HouseSystem.SOLAR_SIGN:     "Solar Sign",
     HouseSystem.AZIMUTHAL:      "Azimuthal",
     HouseSystem.CARTER:         "Carter",

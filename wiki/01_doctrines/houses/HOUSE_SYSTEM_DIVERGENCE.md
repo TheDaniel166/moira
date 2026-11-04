@@ -127,7 +127,9 @@ For each system: **Basis** = Moira's derivation; **Divergence** = where Moira de
 
 ### Solar
 
-**Sunshine** — *Basis:* a solar-position construction parameterized by the Sun's longitude, latitude, and obliquity. *Divergence:* a SOLAR-family system computed from solar geometry rather than the Asc/MC frame.
+**Sun-Anchored Equal (`N`)** places the Sun’s ecliptic longitude on cusp 12 and uses equal 30° sectors. The legacy identifier preserves existing chart calculations.
+
+**Makransky Sunshine (`MS`)** projects subdivisions of the Sun’s day and night arcs onto the ecliptic using the north–south horizon axis. See the [source and domain policy](makransky_sunshine.md).
 
 **Solar Sign** — *Basis:* sign-based houses anchored to the Sun's sign (ecliptic). *Divergence:* a doctrinal SOLAR variant, provided explicitly.
 

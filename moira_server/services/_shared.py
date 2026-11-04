@@ -22,6 +22,8 @@ _HOUSE_SYSTEM_ALIASES: dict[str, str] = {}
 for _code, _name in HOUSE_SYSTEM_NAMES.items():
     _HOUSE_SYSTEM_ALIASES[_house_system_lookup_key(_code)] = _code
     _HOUSE_SYSTEM_ALIASES[_house_system_lookup_key(_name)] = _code
+_HOUSE_SYSTEM_ALIASES["sunshine"] = HouseSystem.SUNSHINE
+_HOUSE_SYSTEM_ALIASES["sripati"] = HouseSystem.SRIPATI
 
 
 def _resolve_house_system(value: str | None) -> str:

@@ -401,7 +401,7 @@ class HouseSystemCuspBasis(str, Enum):
       "scope": "class",
       "id": "moira.houses.HouseSystemCuspBasis",
       "risk": "low",
-      "api": {"frozen":["ECLIPTIC","EQUATORIAL","SEMI_ARC","OBLIQUE_ASCENSION","QUADRANT_TRISECTION","PRIME_VERTICAL","HORIZON","POLAR_PROJECTION","SINUSOIDAL","GREAT_CIRCLE","APC_FORMULA","SOLAR_POSITION"],"internal":[]},
+      "api": {"frozen":["ECLIPTIC","EQUATORIAL","SEMI_ARC","OBLIQUE_ASCENSION","QUADRANT_TRISECTION","BHAVA_SANDHI","PRIME_VERTICAL","HORIZON","POLAR_PROJECTION","SINUSOIDAL","GREAT_CIRCLE","APC_FORMULA","SOLAR_POSITION"],"internal":[]},
       "state": {"mutable":false,"owners":["class-defined enumeration members"],"kind":"enum"},
       "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
       "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only"},
@@ -416,6 +416,7 @@ class HouseSystemCuspBasis(str, Enum):
     SEMI_ARC             = "semi_arc"
     OBLIQUE_ASCENSION    = "oblique_ascension"
     QUADRANT_TRISECTION  = "quadrant_trisection"
+    BHAVA_SANDHI         = "bhava_sandhi"
     PRIME_VERTICAL       = "prime_vertical"
     HORIZON              = "horizon"
     POLAR_PROJECTION     = "polar_projection"
@@ -512,6 +513,9 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.MERIDIAN:      HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),
     HouseSystem.CARTER:        HouseSystemClassification(_F.QUADRANT,   _CB.EQUATORIAL,          True,  True),
     HouseSystem.PORPHYRY:      HouseSystemClassification(_F.QUADRANT,   _CB.QUADRANT_TRISECTION, True,  True),
+    HouseSystem.PORPHYRY_PRESPAN: HouseSystemClassification(_F.QUADRANT, _CB.QUADRANT_TRISECTION, True, True),
+    HouseSystem.SRIPATI:       HouseSystemClassification(_F.QUADRANT,   _CB.BHAVA_SANDHI,         True,  True),
+    HouseSystem.SAVARD_A:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  True),
     HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),  # polar_capable now True: branch search integrated into its event/root doctrine (unique ordered cycles at high lat when they exist)
     HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),   # polar_capable now True: direct zero-pole ordered-figure doctrine integrated at high latitude
     HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),  # still in _POLAR guard (circumpolar diurnal semi-arc degeneracy)
@@ -523,6 +527,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
+    HouseSystem.MAKRANSKY_SUNSHINE: HouseSystemClassification(_F.SOLAR, _CB.SOLAR_POSITION, True, True),
     HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
     HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # equal RA from Asc RA, equatorial project
     HouseSystem.EQUAL_MC:      HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),  # equal from MC
@@ -578,11 +583,11 @@ _POLAR_SYSTEMS: frozenset[str] = frozenset({
 
 # The full set of recognised HouseSystem codes.
 _KNOWN_SYSTEMS: frozenset[str] = frozenset({
-    HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
+    HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY, HouseSystem.PORPHYRY_PRESPAN,
     HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
     HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
     HouseSystem.TOPOCENTRIC, HouseSystem.ALOVA_TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-    HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+    HouseSystem.SUNSHINE, HouseSystem.MAKRANSKY_SUNSHINE, HouseSystem.SRIPATI, HouseSystem.SAVARD_A, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
     HouseSystem.ZARIEL,
@@ -1051,6 +1056,9 @@ class HouseBoundaryGeometrySet:
             _require(bool(self.reason), "cusp-intersections-only geometry requires an explicit reason")
 
 
+_PORPHYRY_PRESPAN_DEG = 5.0
+
+
 @dataclass(slots=True, frozen=True)
 class HouseCusps:
     """
@@ -1081,7 +1089,10 @@ class HouseCusps:
             - HouseSystemClassification and HousePolicy inputs.
         Structural invariants:
             - Exactly 12 cusps are present.
-            - Quadrant-family systems except HORIZON open house 1 at ASC.
+            - The first angular anchor is ASC for quadrant-family systems
+              except HORIZON. Śrīpati uses the house 1 centre as this anchor.
+              Porphyry Prespan opens house 1 five degrees before this anchor.
+              Alova-Topocentric anchors house 1 to a separate effective horizon.
             - Fallback truth matches requested versus effective system truth.
             - Classification is present when effective_system is declared.
         Behavioral invariants:
@@ -1099,7 +1110,7 @@ class HouseCusps:
       "scope": "class",
       "id": "moira.houses.HouseCusps",
       "risk": "medium",
-      "api": {"frozen":["system","cusps","asc","mc","armc","east_point","vertex","anti_vertex","effective_system","fallback","fallback_reason","classification","policy","boundary_geometry","effective_latitude","astronomical_asc_defined","dsc","ic","is_quadrant_system","is_latitude_sensitive","sign_of_cusp"],"internal":["__post_init__"]},
+      "api": {"frozen":["system","cusps","asc","mc","armc","east_point","vertex","anti_vertex","effective_system","fallback","fallback_reason","classification","policy","boundary_geometry","house_centers","effective_latitude","astronomical_asc_defined","sandhis","dsc","ic","is_quadrant_system","is_latitude_sensitive","sign_of_cusp"],"internal":["__post_init__"]},
       "state": {"mutable":false,"owners":["the constructed result or policy instance"],"kind":"result_vessel","notes":"Frozen field bindings; callers must honor declared field types. This does not promise recursive immutability of arbitrary caller-supplied values."},
       "effects": {"signals_emitted":[],"io":[],"mutates_external_state":false},
       "concurrency": {"thread":"pure_computation","cross_thread_calls":"safe_read_only","notes":"Read-only use only, with no concurrent mutation of caller-supplied collections or referenced objects. No thread-safety guarantee for external mutation."},
@@ -1123,8 +1134,16 @@ class HouseCusps:
     classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
     policy:           HousePolicy = field(default_factory=HousePolicy.default)  # Policy that governed fallback resolution
     boundary_geometry: HouseBoundaryGeometrySet | None = None  # Frame-explicit spatial boundaries when admitted
-    effective_latitude: float | None = None  # Alova cusp-construction latitude
+    house_centers: tuple[float, ...] | None = None  # Śrīpati bhāva centres in house order
+    effective_latitude: float | None = None  # Alova's signed cusp-construction latitude
     astronomical_asc_defined: bool | None = None  # Alova physical-horizon status
+
+    @property
+    def sandhis(self) -> tuple[float, ...] | None:
+        """Śrīpati's closing junctions, with the 12/1 sandhi last."""
+        if self.house_centers is None:
+            return None
+        return self.cusps[1:] + self.cusps[:1]
 
     @property
     def dsc(self) -> float:
@@ -1165,8 +1184,11 @@ class HouseCusps:
 
         Invariants checked:
             1. len(cusps) == 12
-            2. For quadrant-family systems (excluding HORIZON cusp_basis):
-               cusps[0] == asc within 1e-9°.
+            2. For quadrant-family systems (excluding HORIZON cusp_basis),
+               the first angular anchor equals asc within 1e-9°.
+               For Śrīpati the anchor is the centre, and cusps are sandhis.
+               For Porphyry Prespan the opening cusp is 5° before the anchor.
+               Alova-Topocentric uses an effective horizon for its first cusp.
                HORIZON systems (Azimuthal) compute a horizon-based H1 cusp
                that legitimately differs from the geographic Ascendant.
                Non-quadrant systems (Whole Sign, Vehlow, Morinus, Meridian,
@@ -1180,6 +1202,14 @@ class HouseCusps:
             len(self.cusps) == 12,
             f"HouseCusps invariant violated: len(cusps)={len(self.cusps)}, expected 12",
         )
+        if self.house_centers is not None:
+            object.__setattr__(self, "house_centers", tuple(self.house_centers))
+            _require(
+                self.effective_system == HouseSystem.SRIPATI and len(self.house_centers) == 12,
+                "HouseCusps requires twelve Śrīpati centres",
+            )
+        elif self.effective_system == HouseSystem.SRIPATI:
+            raise ValueError("Śrīpati requires house centres")
         if (
             self.cusps
             and self.classification is not None
@@ -1187,11 +1217,14 @@ class HouseCusps:
             and self.classification.cusp_basis != HouseSystemCuspBasis.HORIZON
             and self.effective_system != HouseSystem.ALOVA_TOPOCENTRIC
         ):
-            diff = abs(self.cusps[0] - self.asc) % 360.0
+            first_anchor = self.cusps[0] if self.house_centers is None else self.house_centers[0]
+            if self.effective_system == HouseSystem.PORPHYRY_PRESPAN:
+                first_anchor += _PORPHYRY_PRESPAN_DEG
+            diff = abs(first_anchor - self.asc) % 360.0
             _require(
                 diff < 1e-9 or abs(diff - 360.0) < 1e-9,
                 f"HouseCusps invariant violated: quadrant system "
-                f"cusps[0]={self.cusps[0]:.9f} != asc={self.asc:.9f}",
+                f"first anchor={first_anchor:.9f} != asc={self.asc:.9f}",
             )
         if self.effective_system:
             _require(
@@ -2320,7 +2353,7 @@ def _equal_mc(mc: float) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Pullen Sinusoidal Houses
+# Shared ecliptic quadrant arcs
 # ---------------------------------------------------------------------------
 
 def _ecliptic_quadrant_arcs(asc: float, mc: float) -> tuple[float, float, float, float]:
@@ -2340,6 +2373,37 @@ def _ecliptic_quadrant_arcs(asc: float, mc: float) -> tuple[float, float, float,
         (asc - mc) % 360.0,
     )
 
+
+# ---------------------------------------------------------------------------
+# Śrīpati
+# ---------------------------------------------------------------------------
+
+def _sripati(asc: float, mc: float) -> tuple[tuple[float, ...], list[float]]:
+    """Return centres and opening sandhis from Śrīpatipaddhati I.6–8."""
+    arcs = _ecliptic_quadrant_arcs(asc, mc)
+    if not all(0.0 < arc < 180.0 for arc in arcs) or not math.isclose(
+        sum(arcs), 360.0, rel_tol=0.0, abs_tol=1e-9,
+    ):
+        raise ValueError("Śrīpati requires distinct angular centres ordered ASC, IC, DSC, MC")
+    anchors = (asc, asc + arcs[0], asc + 180.0, asc + 180.0 + arcs[2])
+    lifted_centers = tuple(
+        anchor + part * arc / 3.0
+        for anchor, arc in zip(anchors, arcs, strict=True)
+        for part in range(3)
+    )
+    closing = [
+        normalize_degrees((center + next_center) / 2.0)
+        for center, next_center in zip(lifted_centers, lifted_centers[1:] + (asc + 360.0,), strict=True)
+    ]
+    opening = closing[-1:] + closing[:-1]
+    if not strictly_ordered_cusp_cycle(opening):
+        raise ValueError("Śrīpati sandhis do not form an ordered ecliptic cycle")
+    return tuple(normalize_degrees(center) for center in lifted_centers), opening
+
+
+# ---------------------------------------------------------------------------
+# Pullen Sinusoidal Houses
+# ---------------------------------------------------------------------------
 
 def _compressed_expanded_quadrants(asc: float, mc: float) -> tuple[float, float, bool]:
     """
@@ -2524,6 +2588,16 @@ def _porphyry(asc: float, mc: float) -> list[float]:
     cusps[10], cusps[11] = _trisect(mc,  asc)  # H11, H12
 
     return _finalize_cusps(cusps, context="_porphyry")
+
+
+def _porphyry_prespan(asc: float, mc: float) -> list[float]:
+    """Trisect the ecliptic quadrants and precede each opening by a fixed 5°."""
+    arcs = _ecliptic_quadrant_arcs(asc, mc)
+    if not all(0.0 < arc < 180.0 for arc in arcs):
+        raise ValueError("Porphyry Prespan requires distinct angular anchors ordered ASC, IC, DSC, MC")
+    if min(arcs) <= 3.0 * _PORPHYRY_PRESPAN_DEG:
+        raise ValueError("Porphyry Prespan requires every ecliptic quadrant to exceed 15°")
+    return [normalize_degrees(cusp - _PORPHYRY_PRESPAN_DEG) for cusp in _porphyry(asc, mc)]
 
 
 # ---------------------------------------------------------------------------
@@ -2849,6 +2923,50 @@ def _zariel(asc: float, obliquity: float) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
+# Savard-A
+# ---------------------------------------------------------------------------
+
+def _savard_a(armc: float, obliquity: float, latitude: float) -> list[float]:
+    """Project declination thirds of the prime vertical through the horizon axis."""
+    if abs(latitude) == 90.0:
+        raise ValueError("Savard-A requires a rising horizon intersection at a non-polar site")
+    east, north, zenith = _local_horizon_basis(armc, latitude)
+    ecliptic_pole = _ecliptic_north_vector(obliquity)
+    orientation = _dot3(north, ecliptic_pole)
+    if abs(orientation) <= 1e-14:
+        raise ValueError("Savard-A projection is degenerate: the north–south axis lies in the ecliptic")
+    if orientation < 0.0:
+        raise ValueError("Savard-A projection reverses the zodiacal cusp order")
+
+    phi = math.radians(latitude)
+    # At the equator use the continuous extension. The correction is below
+    # floating-point precision throughout this small-angle interval.
+    fractions = (1.0 / 3.0, 2.0 / 3.0)
+    ratios = fractions if abs(phi) < 1e-8 else tuple(
+        math.sin(fraction * phi) / math.sin(phi) for fraction in fractions
+    )
+    inner, outer = map(math.asin, ratios)
+    # East through nadir toward west. The other semicircle is antipodal.
+    phases = (0.0, inner, outer, math.pi / 2.0, math.pi - outer, math.pi - inner)
+    first_half = []
+    for phase in phases:
+        direction = tuple(
+            math.cos(phase) * e - math.sin(phase) * z
+            for e, z in zip(east, zenith, strict=True)
+        )
+        height = _dot3(ecliptic_pole, direction)
+        intersection = tuple(
+            orientation * point - height * axis
+            for point, axis in zip(direction, north, strict=True)
+        )
+        first_half.append(_ecliptic_longitude_from_equatorial_vector(intersection, obliquity))
+    cusps = first_half + [(cusp + 180.0) % 360.0 for cusp in first_half]
+    if not strictly_ordered_cusp_cycle(cusps):
+        raise ValueError("Savard-A projection does not resolve a strictly ordered cusp cycle")
+    return cusps
+
+
+# ---------------------------------------------------------------------------
 # Campanus
 # ---------------------------------------------------------------------------
 
@@ -2987,12 +3105,12 @@ def _vehlow(asc: float) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Sunshine Houses (Makransky)
+# Solar houses
 # ---------------------------------------------------------------------------
 
 def _sunshine(sun_lon: float, lat: float, obliquity: float) -> list[float]:
     """
-    Sunshine houses anchored directly to the Sun's exact longitude.
+    Legacy Sun-Anchored Equal houses with the Sun on cusp 12.
 
     The frame proceeds in equal 30-degree steps from the solar anchor rather
     than from the Ascendant.
@@ -3008,6 +3126,55 @@ def _sunshine(sun_lon: float, lat: float, obliquity: float) -> list[float]:
     for i in range(11):
         cusps[i] = (sun_lon + (i + 1) * 30.0) % 360.0
     return _finalize_cusps(cusps, context="_sunshine")
+
+
+def _makransky_sunshine(
+    armc: float, obliquity: float, latitude: float, sun_declination: float,
+    asc: float, mc: float,
+) -> list[float]:
+    """Project the two solar arcs defined in the Makransky Sunshine doctrine."""
+    if not -90.0 < sun_declination < 90.0:
+        raise ValueError("Makransky Sunshine requires solar declination strictly between -90 and 90 degrees")
+    phi, delta = math.radians(latitude), math.radians(sun_declination)
+    horizon_cosine = -math.tan(phi) * math.tan(delta)
+    if abs(latitude) >= 90.0 or abs(horizon_cosine) >= 1.0 - 1e-14:
+        raise ValueError("Makransky Sunshine requires distinct solar rise and set crossings")
+    half_day = math.acos(horizon_cosine)
+    half_night = math.pi - half_day
+    east, north, zenith = _local_horizon_basis(armc, latitude)
+    # Each arc owns its opening boundary. House order runs opposite hour angle.
+    arcs = ((-half_day, half_night, False), (half_day, half_day, True))
+    cusps = []
+    for opening, half_arc, daylight in arcs:
+        for division in range(6):
+            hour_angle = opening - division * half_arc / 3.0
+            right_ascension = math.radians(armc) - hour_angle
+            direction = (
+                math.cos(delta) * math.cos(right_ascension),
+                math.cos(delta) * math.sin(right_ascension),
+                math.sin(delta),
+            )
+            normal = _cross3(north, direction)
+            intersection = _cross3(normal, _ecliptic_north_vector(obliquity))
+            if _dot3(intersection, intersection) <= 1e-28:
+                raise ValueError("Makransky Sunshine has a degenerate house-plane intersection")
+            primary, opposite = _ecliptic_intersection_candidates(normal, obliquity)
+            # At horizon boundaries use east for sunrise and west for sunset.
+            alignment = _dot3(primary, zenith if division else east)
+            if not division:
+                alignment = -alignment if daylight else alignment
+            elif not daylight:
+                alignment = -alignment
+            if abs(alignment) <= 1e-14:
+                raise ValueError("Makransky Sunshine has an ambiguous ecliptic intersection")
+            selected = primary if alignment > 0.0 else opposite
+            cusps.append(_ecliptic_longitude_from_equatorial_vector(selected, obliquity))
+    if not strictly_ordered_cusp_cycle(cusps) or any(
+        abs((cusps[index * 3] - angle + 180.0) % 360.0 - 180.0) > 1e-8
+        for index, angle in enumerate((asc, mc + 180.0, asc + 180.0, mc))
+    ):
+        raise ValueError("Makransky Sunshine does not produce an ordered cycle with the chart angles")
+    return cusps
 
 
 def _solar_sign(sun_lon: float) -> list[float]:
@@ -3811,7 +3978,25 @@ def _build_house_boundary_geometry(
     boundaries: dict[int, HouseBoundaryGeometry] = {}
     east, north, zenith = _local_horizon_basis(armc_deg, latitude_deg)
 
-    if effective_system == HouseSystem.CAMPANUS:
+    if effective_system in (HouseSystem.MAKRANSKY_SUNSHINE, HouseSystem.SAVARD_A):
+        # Both constructions define each boundary plane through the horizon axis.
+        for house, cusp in enumerate(tropical_cusps, start=1):
+            longitude = math.radians(cusp)
+            tilt = math.radians(obliquity_deg)
+            direction = (
+                math.cos(longitude),
+                math.sin(longitude) * math.cos(tilt),
+                math.sin(longitude) * math.sin(tilt),
+            )
+            boundaries[house] = _boundary_plane(
+                house=house,
+                cusp_longitude=cusp_longitudes[house - 1],
+                tropical_cusp_longitude=cusp,
+                obliquity_deg=obliquity_deg,
+                plane_normal=_cross3(north, direction),
+            )
+
+    elif effective_system == HouseSystem.CAMPANUS:
         for house in range(1, 13):
             alpha = math.radians((120.0 - 30.0 * house) % 360.0)
             normal = (
@@ -4035,6 +4220,7 @@ def calculate_houses(
     *,
     policy:          HousePolicy | None = None,
     sun_longitude:   float | None = None,
+    sun_declination: float | None = None,
     ayanamsa_offset: float | None = None,
     include_boundary_geometry: bool = False,
 ) -> HouseCusps:
@@ -4109,6 +4295,8 @@ def calculate_houses(
         sun_longitude: Optional geocentric tropical solar longitude (degrees).
             If supplied, SUNSHINE and SOLAR_SIGN houses use this value directly
             instead of resolving it from the planetary oracle.
+        sun_declination: Optional apparent geocentric solar declination of date
+            in degrees for MAKRANSKY_SUNSHINE. Otherwise read from the ephemeris.
         ayanamsa_offset: Optional zodiac offset subtracted from ecliptic labels.
             Whole Sign and Solar Sign sectors are constructed in that selected
             zodiac. Physical/quadrant boundaries retain their geometry; ARMC
@@ -4141,6 +4329,11 @@ def calculate_houses(
     sun_lon = sun_longitude
     if sun_lon is None and system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
         sun_lon = _solar_house_anchor_longitude(jd_ut)
+    if sun_declination is None and system == HouseSystem.MAKRANSKY_SUNSHINE:
+        from .planets import planet_at
+
+        sun = planet_at("Sun", jd_ut, frame="cartesian")
+        sun_declination = math.degrees(math.atan2(sun.z, math.hypot(sun.x, sun.y)))
 
     return houses_from_armc(
         local_angles.armc,
@@ -4149,6 +4342,7 @@ def calculate_houses(
         system,
         policy=active_policy,
         sun_longitude=sun_lon,
+        sun_declination=sun_declination,
         ayanamsa_offset=ayanamsa_offset,
         include_boundary_geometry=include_boundary_geometry,
     )
@@ -5183,6 +5377,7 @@ def houses_from_armc(
     *,
     policy: HousePolicy | None = None,
     sun_longitude: float | None = None,
+    sun_declination: float | None = None,
     ayanamsa_offset: float | None = None,
     include_boundary_geometry: bool = False,
 ) -> HouseCusps:
@@ -5204,6 +5399,8 @@ def houses_from_armc(
             Defaults to ``HousePolicy.default()`` (silent fallback).
         sun_longitude: Geocentric ecliptic longitude of the Sun (degrees).
             Tropical, required for SUNSHINE and SOLAR_SIGN; ignored otherwise.
+        sun_declination: Apparent geocentric solar declination of date (degrees).
+            Required for MAKRANSKY_SUNSHINE.
         ayanamsa_offset: Optional zodiac offset in degrees. Whole Sign and
             Solar Sign are anchored in the selected zodiac after fallback
             resolution. Other systems preserve physical boundaries while
@@ -5379,6 +5576,7 @@ def houses_from_armc(
         except Exception:
             native_cusps = None
 
+    house_centers = None
     effective_latitude = None
     astronomical_asc_defined = None
     if experimental_cusps is not None:
@@ -5391,6 +5589,16 @@ def houses_from_armc(
         cusps = _equal_house(asc)
     elif effective_system == HouseSystem.PORPHYRY:
         cusps = _porphyry(asc, mc)
+    elif effective_system == HouseSystem.PORPHYRY_PRESPAN:
+        _, _, zenith = _local_horizon_basis(armc, lat)
+        horizon_intersection = _cross3(zenith, _ecliptic_north_vector(obliquity))
+        if abs(lat) == 90.0 or math.hypot(*horizon_intersection) <= 1e-14:
+            raise ValueError("Porphyry Prespan requires a uniquely defined rising ecliptic intersection")
+        cusps = _porphyry_prespan(asc, mc)
+    elif effective_system == HouseSystem.SRIPATI:
+        house_centers, cusps = _sripati(asc, mc)
+    elif effective_system == HouseSystem.SAVARD_A:
+        cusps = _savard_a(armc, obliquity, lat)
     elif effective_system == HouseSystem.PLACIDUS:
         cusps = _placidus(armc, obliquity, lat)
     elif effective_system == HouseSystem.KOCH:
@@ -5415,6 +5623,11 @@ def houses_from_armc(
         cusps = _meridian(armc, obliquity)
     elif effective_system == HouseSystem.VEHLOW:
         cusps = _vehlow(asc)
+    elif effective_system == HouseSystem.MAKRANSKY_SUNSHINE:
+        if sun_declination is None:
+            raise ValueError("sun_declination is required for Makransky Sunshine")
+        _require_finite("sun_declination", sun_declination)
+        cusps = _makransky_sunshine(armc, obliquity, lat, sun_declination, asc, mc)
     elif effective_system == HouseSystem.SUNSHINE:
         if sun_longitude is None:
             raise ValueError(
@@ -5526,6 +5739,10 @@ def houses_from_armc(
         boundary_geometry=boundary_geometry,
         effective_latitude=effective_latitude,
         astronomical_asc_defined=astronomical_asc_defined,
+        house_centers=(
+            tuple(normalize_degrees(center - _shift) for center in house_centers)
+            if house_centers is not None else None
+        ),
     )
 
 
@@ -5978,6 +6195,7 @@ def house_dynamics_from_armc(
     *,
     policy: HousePolicy | None = None,
     sun_longitude: float | None = None,
+    sun_declination: float | None = None,
     darmc_deg: float = _SIDEREAL_ROTATION_DEG_PER_DAY / 1440.0,
 ) -> HouseDynamics:
     """
@@ -6006,6 +6224,7 @@ def house_dynamics_from_armc(
         system: House system identifier.
         policy: House fallback doctrine.
         sun_longitude: Required when ``system == HouseSystem.SUNSHINE``.
+        sun_declination: Required when ``system == HouseSystem.MAKRANSKY_SUNSHINE``.
         darmc_deg: Half-step in ARMC degrees for the finite difference.
             The default corresponds to one sidereal minute of Earth rotation.
 
@@ -6030,6 +6249,7 @@ def house_dynamics_from_armc(
         system,
         policy=policy,
         sun_longitude=sun_longitude,
+        sun_declination=sun_declination,
     )
     h0 = houses_from_armc(
         armc,
@@ -6038,6 +6258,7 @@ def house_dynamics_from_armc(
         system,
         policy=policy,
         sun_longitude=sun_longitude,
+        sun_declination=sun_declination,
     )
     h_p = houses_from_armc(
         armc + darmc_deg,
@@ -6046,6 +6267,7 @@ def house_dynamics_from_armc(
         system,
         policy=policy,
         sun_longitude=sun_longitude,
+        sun_declination=sun_declination,
     )
 
     def _speed_from_armc(lon_m: float, lon_p: float) -> float:

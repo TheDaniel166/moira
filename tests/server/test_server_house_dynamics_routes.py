@@ -273,6 +273,82 @@ def test_house_dynamics_from_armc_route(client_with_engine: TestClient) -> None:
     ) < 0.001
 
 
+def test_sunshine_dynamics_uses_the_input_for_each_construction(client_with_engine: TestClient) -> None:
+    path = "/v1/houses/dynamics/armc"
+    frame = {"armc": 0, "obliquity": 23.44, "latitude": 45}
+    legacy = client_with_engine.post(path, json={
+        **frame, "system": "Sunshine", "sun_longitude": 60,
+    })
+    assert legacy.status_code == 200, legacy.text
+    assert legacy.json()["house_cusps"]["effective_system"] == "N"
+    modern = client_with_engine.post(path, json={
+        **frame, "system": "Makransky Sunshine", "sun_declination": 20,
+    })
+    assert modern.status_code == 200, modern.text
+    assert modern.json()["house_cusps"]["effective_system"] == "MS"
+    missing = client_with_engine.post(path, json={**frame, "system": "MS"})
+    assert missing.status_code == 422, missing.text
+
+
+def test_chart_houses_resolves_makransky_solar_declination(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/houses", json={
+        "dt": "2000-01-01T12:00:00Z",
+        "latitude": 45,
+        "longitude": 0,
+        "system": "MS",
+        "include_boundary_geometry": True,
+    })
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["effective_system"] == "MS"
+    assert len(result["cusps"]) == 12
+
+
+def test_chart_houses_exposes_sripati_centers_and_sandhis(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/houses", json={
+        "dt": "2000-01-01T12:00:00Z",
+        "latitude": 45,
+        "longitude": 0,
+        "system": "sripati",
+    })
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["effective_system"] == "SP"
+    assert len(result["house_centers"]) == 12
+    assert result["house_centers"][0] == result["asc"]
+    assert result["sandhis"] == result["cusps"][1:] + result["cusps"][:1]
+    assert result["cusps"][0] != result["asc"]
+
+
+def test_chart_houses_resolves_savard_a(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/houses", json={
+        "dt": "2000-01-01T12:00:00Z",
+        "latitude": 45,
+        "longitude": 0,
+        "system": "Savard-A",
+        "include_boundary_geometry": True,
+    })
+    assert response.status_code == 200, response.text
+    figure = response.json()
+    assert figure["effective_system"] == "SA"
+    assert len(figure["cusps"]) == 12
+    assert figure["boundary_geometry"] is not None
+
+
+def test_chart_houses_resolves_porphyry_prespan(client_with_engine: TestClient) -> None:
+    response = client_with_engine.post("/v1/houses", json={
+        "dt": "2000-01-01T12:00:00Z",
+        "latitude": 45,
+        "longitude": 0,
+        "system": "Porphyry (5° Prespan)",
+    })
+    assert response.status_code == 200, response.text
+    figure = response.json()
+    assert figure["effective_system"] == "P5"
+    assert len(figure["cusps"]) == 12
+    assert (figure["asc"] - figure["cusps"][0]) % 360 == pytest.approx(5)
+
+
 def test_chart_houses_resolves_alova_topocentric(client_with_engine: TestClient) -> None:
     response = client_with_engine.post("/v1/houses", json={
         "dt": "2000-01-01T12:00:00Z",

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Annotated, Literal
 from pydantic import AfterValidator, BeforeValidator, Field
 
-from moira.constants import HOUSE_SYSTEM_NAMES
+from moira.constants import HOUSE_SYSTEM_NAMES, HouseSystem
 from moira.dasha import VIMSHOTTARI_YEAR_BASIS
 from moira.sidereal import list_ayanamsa_systems
 
@@ -54,8 +54,10 @@ def require_vimshottari_year_basis(value: str) -> str:
 def resolve_vedic_house_system(value: str) -> str:
     """Resolve admitted engine codes/names without an unknown-system fallback."""
     key = " ".join(value.replace("_", " ").replace("-", " ").casefold().split())
+    if key == "sunshine":
+        return HouseSystem.SUNSHINE
     for code, name in HOUSE_SYSTEM_NAMES.items():
-        if key in (code.casefold(), name.casefold()):
+        if key in (code.casefold(), name.replace("-", " ").casefold()):
             return code
     raise ValueError(f"unsupported house system: {value!r}")
 

@@ -1,5 +1,7 @@
 # Savard-A Admission Failure Note
 
+This note records the original admission review. The later [Savard-A geometry and domain conventions](savard_a_geometry.md) describe the reconstruction admitted as `SA`.
+
 Status: not admitted
 
 Purpose:

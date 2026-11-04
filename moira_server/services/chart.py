@@ -410,6 +410,7 @@ def compute_house_dynamics_from_armc(
         system,
         policy=_engine_house_policy(request.policy),
         sun_longitude=request.sun_longitude,
+        sun_declination=request.sun_declination,
         darmc_deg=request.darmc_deg,
     )
     _require_continuous_cusp_motion(
