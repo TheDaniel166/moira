@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or kernel pool has closed.
 - Route planetary longitude-rate samples through the canonical reader when
   native planning detects an SPK segment change across the stencil.
+- Apply the reader's SPK coverage and overlap priority at planetary emission
+  epochs, including when every observation sample selects the same segment.
 
 ## [6.12.1] - 2026-11-03
 

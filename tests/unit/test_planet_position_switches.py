@@ -339,9 +339,11 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
             epoch_tdb,
             obliquity_deg,
             rotation_matrix,
+            *,
+            epoch_tt,
         ):
             self.calls.append(
-                (tuple(bodies), epoch_tdb, obliquity_deg, rotation_matrix)
+                (tuple(bodies), epoch_tdb, obliquity_deg, rotation_matrix, epoch_tt)
             )
             offset = epoch_tdb - planets_module.tt_to_tdb(_JD_J2000 + 0.1)
             return [
@@ -400,7 +402,9 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
     assert result[Body.MARS].speed == pytest.approx(-8.0, abs=1e-6)
     assert result[Body.MARS].retrograde is True
     assert hasattr(reader._kernel, "_planetary_evaluator")
-    assert len(reader._kernel._planetary_evaluator.calls) == 3
+    calls = reader._kernel._planetary_evaluator.calls
+    step = planets_module.PLANET_LONGITUDE_RATE_SAMPLE_HALF_SPAN_DAYS
+    assert [call[-1] for call in calls] == [_JD_J2000 + 0.1 + offset for offset in (0.0, -step, step)]
 
 
 def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(monkeypatch: pytest.MonkeyPatch):

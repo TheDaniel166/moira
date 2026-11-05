@@ -1004,6 +1004,7 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
 } // namespace
 
 PYBIND11_MODULE(_moira_native, m) {
+    py::register_exception<PlanetaryEmissionRouteChanged>(m, "PlanetaryEmissionRouteChanged");
     m.def("_marriage_chebyshev_enclosure", &marriage_chebyshev_enclosure,
           py::arg("coefficients"), py::arg("argument"), py::arg("centered"),
           "Private exact-schedule interval Chebyshev value/derivative recurrence.");
@@ -1429,7 +1430,8 @@ PYBIND11_MODULE(_moira_native, m) {
                py::dict body_specs_src,
                double epoch_tdb,
                double obliquity_deg,
-               const py::sequence& rotation_matrix_src) {
+               const py::sequence& rotation_matrix_src,
+               std::optional<double> epoch_tt) {
                 std::vector<NativePlanetaryEvaluator::SegmentSpec> public_specs;
                 for (py::handle spec_handle : public_specs_src) {
                     py::tuple spec = py::cast<py::tuple>(spec_handle);
@@ -1480,7 +1482,8 @@ PYBIND11_MODULE(_moira_native, m) {
                         body_specs,
                         epoch_tdb,
                         obliquity_deg,
-                        rotation_matrix
+                        rotation_matrix,
+                        epoch_tt
                     );
                 }
 
@@ -1502,7 +1505,8 @@ PYBIND11_MODULE(_moira_native, m) {
             py::arg("body_specs"),
             py::arg("epoch_tdb"),
             py::arg("obliquity_deg"),
-            py::arg("rotation_matrix")
+            py::arg("rotation_matrix"),
+            py::arg("epoch_tt") = py::none()
         )
         .def(
             "evaluate_all_planets_apparent_with_speed",
@@ -1519,7 +1523,8 @@ PYBIND11_MODULE(_moira_native, m) {
                const py::sequence& rate_minus_rotation_matrix_src,
                double rate_plus_epoch_tdb,
                double rate_plus_obliquity_deg,
-               const py::sequence& rate_plus_rotation_matrix_src) {
+               const py::sequence& rate_plus_rotation_matrix_src,
+               std::optional<double> epoch_tt) {
                 std::vector<NativePlanetaryEvaluator::SegmentSpec> public_specs;
                 for (py::handle spec_handle : public_specs_src) {
                     py::tuple spec = py::cast<py::tuple>(spec_handle);
@@ -1584,7 +1589,8 @@ PYBIND11_MODULE(_moira_native, m) {
                         rate_minus_rot_mat,
                         rate_plus_epoch_tdb,
                         rate_plus_obliquity_deg,
-                        rate_plus_rot_mat
+                        rate_plus_rot_mat,
+                        epoch_tt
                     );
                 }
 
@@ -1613,7 +1619,8 @@ PYBIND11_MODULE(_moira_native, m) {
             py::arg("rate_minus_rotation_matrix"),
             py::arg("rate_plus_epoch_tdb"),
             py::arg("rate_plus_obliquity_deg"),
-            py::arg("rate_plus_rotation_matrix")
+            py::arg("rate_plus_rotation_matrix"),
+            py::arg("epoch_tt") = py::none()
         );
 
     py::class_<Type13Evaluator, IEvaluator, std::shared_ptr<Type13Evaluator>>(m, "Type13Evaluator")

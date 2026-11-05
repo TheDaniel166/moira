@@ -71,9 +71,9 @@ def _check_reader(path: Path) -> None:
         evaluations: list[float] = []
 
         class RecordedEvaluator:
-            def evaluate_all_planets_apparent_geocentric_ecliptic(self, *args):
+            def evaluate_all_planets_apparent_geocentric_ecliptic(self, *args, **kwargs):
                 evaluations.append(args[3])
-                return evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(*args)
+                return evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(*args, **kwargs)
 
         def reject_extra_work(*args, **kwargs):
             raise AssertionError("transit search performed unused scalar/rate/geometric work")

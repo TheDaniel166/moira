@@ -53,6 +53,7 @@ import threading
 import warnings
 from dataclasses import dataclass, field
 from collections import OrderedDict
+from collections.abc import Iterable
 from enum import Enum
 
 try:
@@ -646,6 +647,10 @@ _HAS_NATIVE_ROTATION = (
     and hasattr(_moira_native, "rotation_matrix_multiply")
     and hasattr(_moira_native, "rotation_matrix_apply")
 )
+_NATIVE_EMISSION_ROUTE_ERRORS = (
+    (_moira_native.PlanetaryEmissionRouteChanged,)
+    if hasattr(_moira_native, "PlanetaryEmissionRouteChanged") else ()
+)
 # Keep enough one-JD contexts to cover ordinary chart/batch slices without
 # evicting them before adjacent same-reader lookups can reuse the work.
 _APPARENT_CONTEXT_CACHE_LIMIT = 32
@@ -992,7 +997,9 @@ def _npe_public_route_segment_specs(reader: SpkReader, epoch_tdb: float):
     return specs
 
 
-def _npe_body_route_segment_specs(reader: SpkReader, epoch_tdb: float):
+def _npe_body_route_segment_specs(
+    reader: SpkReader, epoch_tdb: float, bodies: Iterable[str] = _NPE_BODY_ROUTE_PAIRS,
+):
     """Return admitted per-body route segment specs keyed by body, or None."""
     kernel = getattr(reader, "_kernel", None)
     handle = getattr(kernel, "_handle", None)
@@ -1000,9 +1007,9 @@ def _npe_body_route_segment_specs(reader: SpkReader, epoch_tdb: float):
         return None
 
     body_specs: dict[str, tuple[tuple[int, int, int], ...]] = {}
-    for body, route in _NPE_BODY_ROUTE_PAIRS.items():
+    for body in bodies:
         specs: list[tuple[int, int, int]] = []
-        for center, target in route:
+        for center, target in _NPE_BODY_ROUTE_PAIRS[body]:
             try:
                 segment = reader._segment_for_tdb(center, target, epoch_tdb)
             except (ValueError, KeyError, AttributeError):
@@ -1163,7 +1170,9 @@ def _native_all_planets_plan(
     if spk_reader is None:
         return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_READER_TYPE)
     epoch_tdb = tt_to_tdb(jd_tt)
-    evaluator = _get_native_planetary_evaluator(spk_reader)
+    evaluator = (
+        _get_native_planetary_evaluator(spk_reader) if _NATIVE_EMISSION_ROUTE_ERRORS else None
+    )
 
     public_specs = _npe_public_route_segment_specs(spk_reader, epoch_tdb)
     if public_specs is None:
@@ -1213,6 +1222,14 @@ def _native_all_planets_plan(
     )
 
 
+def _evaluate_native_planetary(evaluate, *args, epoch_tt: float):
+    """Decline native reduction only when the reader must reselect an emission route."""
+    try:
+        return evaluate(*args, epoch_tt=epoch_tt)
+    except _NATIVE_EMISSION_ROUTE_ERRORS:
+        return None
+
+
 def _native_default_apparent_longitude(
     body: str,
     jd_ut: float,
@@ -1244,11 +1261,12 @@ def _native_default_apparent_longitude(
         jd_tt, with_nutation=True, mean_obliquity_deg=mean_eps,
         dpsi_deg=dpsi_deg, deps_deg=deps_deg,
     )
-    payloads = plan.evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
+    payloads = _evaluate_native_planetary(
+        plan.evaluator.evaluate_all_planets_apparent_geocentric_ecliptic,
         [body], plan.public_specs, plan.body_specs, plan.epoch_tdb,
-        mean_eps + deps_deg, rot_mat,
+        mean_eps + deps_deg, rot_mat, epoch_tt=jd_tt,
     )
-    return float(payloads[0][1])
+    return None if payloads is None else float(payloads[0][1])
 
 
 def _native_all_planets_admitted(
@@ -1342,7 +1360,8 @@ def _native_all_planets_admitted(
                 deps_deg=rate_p_deps,
             )
 
-            payloads = eval_with_speed(
+            payloads = _evaluate_native_planetary(
+                eval_with_speed,
                 list(bodies),
                 specs,
                 body_segment_specs,
@@ -1356,7 +1375,10 @@ def _native_all_planets_admitted(
                 rate_p_tdb,
                 rate_p_mean_eps + rate_p_deps,
                 rate_p_rot_mat,
+                epoch_tt=jd_tt,
             )
+            if payloads is None:
+                return None
             return {
                 row[0]: PlanetData(
                     name=row[0],
@@ -1370,14 +1392,18 @@ def _native_all_planets_admitted(
                 for row in payloads
             }
 
-        payloads = evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
+        payloads = _evaluate_native_planetary(
+            evaluator.evaluate_all_planets_apparent_geocentric_ecliptic,
             list(bodies),
             specs,
             body_segment_specs,
             epoch_tdb,
             obliquity,
             rot_mat,
+            epoch_tt=jd_tt,
         )
+        if payloads is None:
+            return None
         rate_payloads: list[list[tuple]] = []
         for rate_jd, rate_epoch_tdb, rate_specs, rate_body_specs in plan.rate_specs:
             rate_mean_eps = mean_obliquity(rate_jd)
@@ -1389,16 +1415,14 @@ def _native_all_planets_admitted(
                 dpsi_deg=rate_dpsi,
                 deps_deg=rate_deps,
             )
-            rate_payloads.append(
-                evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
-                    list(bodies),
-                    rate_specs,
-                    rate_body_specs,
-                    rate_epoch_tdb,
-                    rate_mean_eps + rate_deps,
-                    rate_rot_mat,
-                )
+            sample_payloads = _evaluate_native_planetary(
+                evaluator.evaluate_all_planets_apparent_geocentric_ecliptic,
+                list(bodies), rate_specs, rate_body_specs, rate_epoch_tdb,
+                rate_mean_eps + rate_deps, rate_rot_mat, epoch_tt=rate_jd,
             )
+            if sample_payloads is None:
+                return None
+            rate_payloads.append(sample_payloads)
         minus_longitudes = {str(row[0]): float(row[1]) for row in rate_payloads[0]}
         plus_longitudes = {str(row[0]): float(row[1]) for row in rate_payloads[1]}
         results: dict[str, PlanetData] = {}
@@ -1470,10 +1494,14 @@ def _native_all_planets_admitted(
         for body in bodies
     }
 
-    for _ in range(3):
+    for _ in range(10):
         retarded_epochs_tdb = {
-            body: epoch_tdb - light_times[body] for body in bodies
+            body: tt_to_tdb(jd_tt - light_times[body]) for body in bodies
         }
+        for body, retarded_epoch in retarded_epochs_tdb.items():
+            emission_specs = _npe_body_route_segment_specs(target_reader, retarded_epoch, (body,))
+            if emission_specs is None or emission_specs[body] != body_segment_specs[body]:
+                return None
         body_bary_lt = _npe_batch_barycentric_positions(
             handle, body_segment_specs, retarded_epochs_tdb
         )
