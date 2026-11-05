@@ -1677,6 +1677,12 @@ class KernelPool:
             with self._route_cache_lock:
                 self._route_cache.clear()
 
+    def _ensure_open(self) -> None:
+        """Check liveness for callers that can satisfy a read from cached data."""
+        with self._condition:
+            if self._closing or self._closed:
+                raise RuntimeError("KernelPool is closing or closed")
+
     @contextmanager
     def _read_lease(self):
         """Yield one immutable reader-order generation for a computation."""

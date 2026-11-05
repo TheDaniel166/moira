@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Reject planetary queries that would reuse a warmed cache after their reader
+  or kernel pool has closed.
+- Route planetary longitude-rate samples through the canonical reader when
+  native planning detects an SPK segment change across the stencil.
+
 ## [6.12.1] - 2026-11-03
 
 ### Fixed

@@ -6,6 +6,7 @@ import math
 from concurrent.futures import ThreadPoolExecutor
 import inspect
 from itertools import permutations
+import struct
 import threading
 
 import pytest
@@ -18,10 +19,97 @@ from moira.coordinates import icrf_to_ecliptic
 from moira.julian import DeltaTPolicy
 from moira.obliquity import true_obliquity
 from moira.planets import all_planets_at, planet_at
-from moira.spk_reader import SpkReader
+from moira.spk_reader import KernelPool, SpkReader
 
 
 _JD_J2000 = 2_451_545.0
+
+
+@pytest.mark.parametrize("pooled", [False, True], ids=["reader", "pool"])
+def test_warm_planet_cache_cannot_serve_a_closed_reader(planetary_kernel_path, pooled):
+    spk = SpkReader(planetary_kernel_path)
+    reader = KernelPool([spk]) if pooled else spk
+    contexts = {}
+    with reader:
+        assert math.isfinite(planet_at(Body.MARS, _JD_J2000, reader=reader).longitude)
+        assert planets_module._reader_planet_call_cache(reader)
+        planets_module._default_apparent_longitude(Body.MARS, _JD_J2000, reader, contexts)
+    message = "KernelPool is closing or closed" if pooled else "SpkReader is closed"
+    for jd in (_JD_J2000, _JD_J2000 + 1.0):
+        with pytest.raises(RuntimeError, match=message):
+            planet_at(Body.MARS, jd, reader=reader)
+    with pytest.raises(RuntimeError, match=message):
+        planets_module._default_apparent_longitude(Body.MARS, _JD_J2000, reader, contexts)
+
+
+@pytest.mark.parametrize("light_time_crosses_seam", [False, True])
+def test_native_longitude_rate_uses_each_samples_selected_segment(tmp_path, light_time_crosses_seam):
+    kernel = tmp_path / "planetary-rate-seam.bsp"
+    # The first Mars segment wins at the centre and minus sample. It ends
+    # before the plus sample, which selects a broader, overlapping segment.
+    # Vary Mars distance so the plus sample's retarded epoch lands on
+    # either side of the seam, despite a fixed observation epoch.
+    pairs = (
+        (0, 10), (0, 3), (3, 399), (3, 301), (0, 1), (1, 199), (0, 2),
+        (2, 299), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9),
+    )
+    header = bytearray(5 * 1024)
+    header[:8] = b"DAF/SPK "
+    struct.pack_into("<ii", header, 8, 2, 6)
+    header[16:76] = b"MOIRA PLANETARY RATE SEAM TEST".ljust(60)
+    header[88:96] = b"LTL-IEEE"
+    summary = 3 * 1024
+    struct.pack_into("<ddd", header, summary, 0.0, 0.0, len(pairs) + 1)
+    words = []
+    for i, (centre, target) in enumerate((*pairs, (0, 4)), start=1):
+        start_et = -86_400.0
+        first_mars = (centre, target) == (0, 4) and i <= len(pairs)
+        end_et = 86.4 if first_mars else 86_400.0
+        interval = end_et - start_et
+        x, y = i * 1e7, i * 2e7
+        if (centre, target) == (0, 4):
+            x, y = (90e6, 180e6) if light_time_crosses_seam else (55e6, 110e6)
+            if not first_mars:
+                y += 2e6
+        # One Type 2 record with constant position coefficients, plus its directory.
+        start_word = 641 + len(words)
+        words.extend(((start_et + end_et) / 2, interval / 2, x, 0.0, y, 0.0, 0.0, 0.0))
+        words.extend((start_et, interval, 8.0, 1.0))
+        struct.pack_into(
+            "<ddiiiiii", header, summary + 24 + (i - 1) * 40,
+            start_et, end_et, target, centre, 1, 2, start_word, 640 + len(words),
+        )
+    struct.pack_into("<iii", header, 76, 4, 4, 641 + len(words))
+    payload = header + struct.pack(f"<{len(words)}d", *words)
+    kernel.write_bytes(payload + bytes(-len(payload) % 1024))
+
+    with SpkReader(kernel) as reader:
+        evaluator = planets_module._get_native_planetary_evaluator(reader)
+        assert callable(getattr(evaluator, "evaluate_all_planets_apparent_with_speed", None))
+        jd_tt = _ut1_to_ephemeris_tt(_JD_J2000, reader)
+        step = planets_module.PLANET_LONGITUDE_RATE_SAMPLE_HALF_SPAN_DAYS
+        centre = reader._segment_for(0, 4, jd_tt)
+        assert reader._segment_for(0, 4, jd_tt - step) is centre
+        assert reader._segment_for(0, 4, jd_tt + step) is not centre
+        minus, plus = (
+            planet_at(Body.MARS, _JD_J2000, reader=reader, jd_tt=jd_tt + offset).longitude
+            for offset in (-step, step)
+        )
+        expected = ((plus - minus + 180.0) % 360.0 - 180.0) / (2.0 * step)
+
+        plan = planets_module._native_all_planets_plan(
+            [Body.MARS], reader=reader, jd_tt=jd_tt, apparent=True, aberration=True,
+            grav_deflection=True, nutation=True, center="geocentric", observer_lat=None,
+            observer_lon=None, observer_elev_m=0.0, lst_deg=None, delta_t_policy=None,
+        )
+        assert plan.reason is planets_module._NativeAdmissionReason.RATE_ROUTE_CHANGED
+        result = all_planets_at(_JD_J2000, bodies=[Body.MARS], reader=reader)[Body.MARS]
+        if light_time_crosses_seam:
+            assert abs(expected) < 0.01
+        else:
+            assert abs(expected) > 1.0
+        assert result.speed == pytest.approx(expected, abs=1e-7, rel=0)
+        assert result.retrograde == (expected < 0.0)
 
 
 def _native_capable_reader() -> SpkReader:

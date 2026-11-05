@@ -73,7 +73,7 @@ from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import local_sidereal_time, DeltaTPolicy, tt_to_tdb
 from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .spk_reader import (
-    get_active_reader, get_reader, KernelReader, SpkReader,
+    get_active_reader, get_reader, KernelPool, KernelReader, SpkReader,
     MissingKernelError, OutOfRangeError,
 )
 from .small_body_identity import SmallBodyFamily, resolve_small_body_identity
@@ -604,6 +604,7 @@ class _NativeAdmissionReason(str, Enum):
     PUBLIC_ROUTE_UNAVAILABLE = "public_route_unavailable"
     BODY_ROUTE_UNAVAILABLE = "body_route_unavailable"
     RATE_ROUTE_UNAVAILABLE = "rate_route_unavailable"
+    RATE_ROUTE_CHANGED = "rate_route_changed"
     ADMITTED_NATIVE_EVALUATOR = "admitted_native_evaluator"
     ADMITTED_NATIVE_BATCH = "admitted_native_batch"
 
@@ -1191,6 +1192,11 @@ def _native_all_planets_plan(
         rate_body_specs = _npe_body_route_segment_specs(spk_reader, rate_epoch_tdb)
         if rate_public_specs is None or rate_body_specs is None:
             return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
+        # Native evaluation also uses the selected body descriptors for
+        # retarded positions. At a known seam, resolve observation and
+        # emission epochs independently through the canonical reader path.
+        if rate_public_specs != public_specs or rate_body_specs != body_specs:
+            return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_CHANGED)
         rate_specs.append(
             (rate_jd, rate_epoch_tdb, tuple(rate_public_specs), rate_body_specs)
         )
@@ -2392,6 +2398,8 @@ def _default_apparent_longitude(
         raise ValueError("longitude-only route admits the seven classical bodies")
     if reader is None:
         raise ValueError("longitude-only route needs an explicit reader")
+    if isinstance(reader, (SpkReader, KernelPool)):
+        reader._ensure_open()
     state = None if contexts is None else contexts.get(jd_ut)
     if state is None:
         state = _cached_planet_call_context(
@@ -3048,6 +3056,10 @@ def _planet_at_impl(
                 "No planetary kernel is provided and no active reader context was found. "
                 "Pass a reader explicitly or use the Moira facade."
             )
+
+    # A warmed reduction may never reach the reader's ordinary state reads.
+    if isinstance(reader, (SpkReader, KernelPool)):
+        reader._ensure_open()
 
     if small_body is not None:
         family, canonical_name = small_body
