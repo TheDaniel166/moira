@@ -169,7 +169,7 @@ A function in phase N:
 | `V` | Vehlow | `EQUAL` | `ECLIPTIC` | No | Yes |
 | `M` | Morinus | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `X` | Meridian | `EQUAL` | `EQUATORIAL` | No | Yes |
-| `Z` | Zariel | `EQUAL` | `EQUATORIAL` | No | Yes |
+| `Z` | Zariel (axial rotation) | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `PSD` | Pullen SD | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
 | `PSR` | Pullen SR | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
 | `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |

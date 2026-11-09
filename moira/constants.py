@@ -382,7 +382,7 @@ class HouseSystem:
     CARTER         = "CT"   # Carter Poli-Equatorial
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
     APC            = "Y"    # APC houses
-    ZARIEL         = "Z"    # Zariel (equal RA divisions from Ascendant RA, projected)
+    ZARIEL         = "Z"    # Zariel axial rotation, house 1 at ARMC + 90° in RA
     EQUAL_MC       = "EM"   # Equal Houses from the Midheaven (MC-Equal)
     PULLEN_SD      = "PSD"  # Pullen Sinusoidal Delta
     PULLEN_SR      = "PSR"  # Pullen Sinusoidal Ratio

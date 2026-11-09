@@ -529,7 +529,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
     HouseSystem.MAKRANSKY_SUNSHINE: HouseSystemClassification(_F.SOLAR, _CB.SOLAR_POSITION, True, True),
     HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
-    HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # equal RA from Asc RA, equatorial project
+    HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # Meridian / axial rotation
     HouseSystem.EQUAL_MC:      HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),  # equal from MC
     HouseSystem.PULLEN_SD:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
     HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
@@ -2896,33 +2896,6 @@ def _morinus(armc: float, obliquity: float) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Zariel
-# ---------------------------------------------------------------------------
-
-def _zariel(asc: float, obliquity: float) -> list[float]:
-    """
-    Zariel houses from equal right-ascension divisions anchored at the Ascendant.
-
-    The Ascendant is converted to equatorial (RA), then equal 30° steps in RA
-    are taken. Each RA is projected to ecliptic longitude using the
-    pole-height-zero spherical trigonometry identity
-    ``lambda = atan2(sin(RA), cos(RA) * cos(eps))``.
-
-    This is the equatorial member of the RA-equal family (distinct anchor
-    from Morinus at ARMC+90°).
-
-    Raises:
-        None under normal operation.
-
-    Side effects:
-        None
-    """
-    ra_asc, _ = _ecl_to_eq(asc, 0.0, obliquity)
-    cusps = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
-    return _finalize_cusps(cusps, context="_zariel")
-
-
-# ---------------------------------------------------------------------------
 # Savard-A
 # ---------------------------------------------------------------------------
 
@@ -3080,6 +3053,18 @@ def _meridian(armc: float, obliquity: float) -> list[float]:
     """
     cusps = _equatorial_division_cycle((armc + 90.0) % 360.0, obliquity, _project_ra_equatorial)
     return _finalize_cusps(cusps, context="_meridian")
+
+
+def _zariel(armc: float, obliquity: float) -> list[float]:
+    """Project Zariel's twelve equatorial house circles onto the ecliptic.
+
+    The 1935 description in Astrology, vol. 9 no. 3, p. 135 places
+    the first circle at RAMC + 90° in right ascension. The remaining
+    circles pass through the celestial poles at successive 30° intervals.
+    """
+    first_cusp_ra = (armc + 90.0) % 360.0
+    cusps = _equatorial_division_cycle(first_cusp_ra, obliquity, _project_ra_equatorial)
+    return _finalize_cusps(cusps, context="_zariel")
 
 
 # ---------------------------------------------------------------------------
@@ -3286,6 +3271,8 @@ def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
 
     The construction steps right ascension uniformly from the Ascendant's
     equatorial longitude and projects each step back to the ecliptic.
+    See Carter, Essays on the Foundations of Astrology, pp. 158–159
+    (1978 edition), for the Ascendant anchor and celestial-pole circles.
 
     Raises:
         ValueError: Propagated if cusp projection or normalization fails.
@@ -5621,6 +5608,8 @@ def houses_from_armc(
         ) > 1e-14
     elif effective_system == HouseSystem.MERIDIAN:
         cusps = _meridian(armc, obliquity)
+    elif effective_system == HouseSystem.ZARIEL:
+        cusps = _zariel(armc, obliquity)
     elif effective_system == HouseSystem.VEHLOW:
         cusps = _vehlow(asc)
     elif effective_system == HouseSystem.MAKRANSKY_SUNSHINE:
@@ -5648,8 +5637,6 @@ def houses_from_armc(
         cusps = _krusinski(armc, obliquity, lat)
     elif effective_system == HouseSystem.APC:
         cusps = _apc(armc, obliquity, lat)
-    elif effective_system == HouseSystem.ZARIEL:
-        cusps = _zariel(asc, obliquity)
     elif effective_system == HouseSystem.EQUAL_MC:
         cusps = _equal_mc(mc)
     elif effective_system == HouseSystem.PULLEN_SD:

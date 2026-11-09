@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   native planning detects an SPK segment change across the stencil.
 - Apply the reader's SPK coverage and overlap priority at planetary emission
   epochs, including when every observation sample selects the same segment.
+- Start Zariel houses at RAMC + 90° in right ascension, as its 1935 source
+  describes, instead of at the Ascendant's right ascension. Zariel cusps change.
 
 ## [6.12.1] - 2026-11-03
 

@@ -82,7 +82,7 @@ For each system: **Basis** = Moira's derivation; **Divergence** = where Moira de
 
 **Meridian (Axial Rotation)** — *Basis:* same equatorial 30° division cycle as Morinus, but projected with the straight equatorial-plane projector (`_project_ra_equatorial`). *Divergence:* Moira separates Meridian and Morinus by *projector*, making explicit a distinction that is often blurred.
 
-**Zariel** — *Basis:* equal 30° RA steps anchored at the Ascendant's RA, equatorial projection. *Divergence:* the equatorial RA-equal member anchored at RA(ASC) rather than ARMC+90° — provided as a separate, clearly-anchored system.
+**Zariel** starts house 1 at ARMC + 90° in right ascension. Successive house circles pass through the celestial poles and are spaced 30° apart in right ascension. The historical evidence for the first-house anchor is a [1935 description of Zariel's method, p. 135](https://iapsop.com/archive/materials/astrology_astrologers_quarterly/astrologers_quarterly_1935_v9_sep-oct-nov.pdf). Zariel computes its own anchor and uses the shared equatorial projection. Its cusps coincide with Meridian's because both use the same anchor, spacing, and projection. Recalculating a chart saved under `Z` uses the corrected anchor. Carter (`CT`) uses the right ascension of the Ascendant.
 
 ### Quadrant trisection — ecliptic
 
