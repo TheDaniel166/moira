@@ -48,6 +48,26 @@ def test_pypi_keeps_engine_gates_and_excludes_website_publication():
     assert {'release-hardening.yml', 'release-acceptance.yml'} <= visited
 
 
+def test_release_candidate_runs_the_tag_gates_before_a_tag_exists():
+    root = check_ci.ROOT / '.github/workflows'
+    release = yaml.safe_load((root / 'pypi-publish.yml').read_text(encoding='utf-8'))
+    candidate = yaml.safe_load((root / 'release-candidate.yml').read_text(encoding='utf-8'))
+    # PyYAML reads the bare key "on" as boolean True.
+    triggers = candidate[True]
+    assert triggers['push'] == {'branches': ['release-candidate']}
+    assert 'tags' not in triggers['push'] and 'workflow_dispatch' in triggers
+    assert candidate['permissions'] == {'contents': 'read'}
+    gates = {job_id: job['uses'] for job_id, job in release['jobs'].items() if 'uses' in job}
+    assert gates and gates == {
+        job_id: job['uses'] for job_id, job in candidate['jobs'].items() if 'uses' in job
+    }
+    assert all(candidate['jobs'][job_id]['needs'] == 'validate-release' for job_id in gates)
+    identity = [step['run'] for step in candidate['jobs']['validate-release']['steps'] if 'run' in step]
+    assert identity == ['python scripts/check_release_identity.py --candidate']
+    commands = str(candidate)
+    assert 'pypi' not in commands.lower() and 'upload' not in commands.lower()
+
+
 def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
     environment = {**os.environ, "RUNNER_TEMP": str(tmp_path)}
     checks, ci_only = check_ci.load_plan(check_ci.ROOT, environment)
@@ -65,7 +85,7 @@ def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
             expected.extend(
                 f"{filename}/{job_id}: {step['name']}"
                 for step in job["steps"]
-                if "run" in step and "pip install" not in step["run"]
+                if "run" in step and step["run"].strip() not in check_ci.PROVISIONING
             )
     assert [check.label for check in checks] == expected
     assert len(ci_only) == len(other_runtime)
@@ -84,6 +104,40 @@ def test_local_plan_includes_every_current_runtime_verification_step(tmp_path):
     assert all(check.environment["MOIRA_NO_DOWNLOAD"] == "1" for check in checks)
     assert all(command[0] == sys.executable for check in checks for command in check.commands)
     assert not any("pip" in command for check in checks for command in check.commands)
+
+
+def test_generated_artifact_jobs_pin_the_recorded_schema_renderer():
+    workflow = yaml.safe_load(
+        (check_ci.ROOT / ".github/workflows/release-hardening.yml").read_text(encoding="utf-8")
+    )
+    pin = "python scripts/pin_schema_renderer.py --install"
+    assert pin in check_ci.PROVISIONING
+    for job_id in ("generated-artifacts", "release-hardening"):
+        runs = [step["run"].strip() for step in workflow["jobs"][job_id]["steps"] if "run" in step]
+        assert runs.index(pin) == runs.index('python -m pip install -e ".[dev,server]"') + 1
+        assert all("pip install" not in run for run in runs[runs.index(pin) + 1:])
+
+
+def test_schema_renderer_pin_reads_the_inventory_and_reports_drift(tmp_path):
+    from scripts import pin_schema_renderer as pin
+
+    recorded = pin.recorded_renderer()
+    assert set(recorded) == {"fastapi", "pydantic"}
+    assert pin.differences(recorded, recorded) == []
+    assert pin.differences(recorded, {"fastapi": recorded["fastapi"], "pydantic": None}) == [
+        f"pydantic: recorded {recorded['pydantic']}, active not installed",
+    ]
+    assert pin.install_command({"fastapi": "1.2.3", "pydantic": "4.5.6"})[-2:] == [
+        "fastapi==1.2.3", "pydantic==4.5.6",
+    ]
+    unstamped = tmp_path / "inventory.json"
+    unstamped.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError):
+        pin.recorded_renderer(unstamped)
+    hostile = tmp_path / "hostile.json"
+    hostile.write_text('{"schema_renderer": {"fastapi": "1.0 --index-url x", "pydantic": "2.0"}}', encoding="utf-8")
+    with pytest.raises(ValueError):
+        pin.recorded_renderer(hostile)
 
 
 def test_glob_discovers_new_tests_without_changing_a_target_list(tmp_path):

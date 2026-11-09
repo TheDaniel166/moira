@@ -159,6 +159,43 @@ Kernel-dependent scientific validation still runs locally with its actual
 resources before release; kernel-free hosted checks do not replace it. A push
 to `main` is source publication, not a package release or a wiki/website publish.
 
+#### Making a release
+
+Write the release by hand first: the dated `CHANGELOG.md` entry with an empty
+Unreleased section, `wiki/03_release/RELEASE_NOTES_X.Y.Z.md`,
+`COMPATIBILITY_NOTES_X.Y.Z.md`, and the `release_summaries` entry in
+`website_docs/publication_sources.json`. Then run one resumable command:
+
+    .\.venv\Scripts\python.exe scripts\release.py X.Y.Z
+    .\.venv\Scripts\python.exe scripts\release.py X.Y.Z --publish
+
+It bumps every version statement, regenerates release metadata, makes the
+`Prepare <kind> release X.Y.Z` commit, replays the Light Box contracts on that
+exact commit, publishes the wiki mirror, makes the
+`Attest exact-source X.Y.Z release verification` commit, runs
+`scripts/check_ci.py`, pushes `main`, and runs the tag's hardening and
+acceptance gates against the untagged commit through
+`.github/workflows/release-candidate.yml` (a push to the temporary
+`release-candidate` branch). Nothing is tagged or published until `--publish`
+is given after a green candidate, so a failing gate never leaves a dead tag.
+Use `--dry-run` to see the next phase and `--reattest` after a fix committed
+on top of an attestation.
+
+The command stops once when the inventory fingerprint moved, which every
+version bump causes. It binds only the identity fields of
+`LIGHT_BOX_RELEASE_BASELINE.json` and `LIGHT_BOX_PRODUCT_USAGE_SNAPSHOT.json`
+(date, parent revision, engine version, fingerprint) and prints the public
+surface difference. The reviewer then rewrites the baseline `review` block,
+appends the dated snapshot limitation note, and edits thresholds by hand if a
+denominator moved. The command never writes those, release prose, admissions,
+or receipts outside the exact-source replay.
+
+The generated-artifact gate renders with the FastAPI and Pydantic versions
+stamped in the committed Light Box inventory
+(`scripts/pin_schema_renderer.py`), so a renderer published after release
+preparation cannot fail a tag. Upgrading the renderer is a deliberate act:
+upgrade the project environment, refresh, review the diff, commit the stamp.
+
 Use this import/native smoke when installation state is relevant:
 
     .\.venv\Scripts\python.exe -c "import moira; from moira import moira_native as mn; print(moira.__version__, mn.__backend_file__)"

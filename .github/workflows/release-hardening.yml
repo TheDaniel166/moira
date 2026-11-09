@@ -54,6 +54,9 @@ jobs:
       - name: Install package and maintenance test dependencies
         run: python -m pip install -e ".[dev,server]"
 
+      - name: Pin the schema renderer to the committed inventory stamp
+        run: python scripts/pin_schema_renderer.py --install
+
       - name: Check existing docstring preflight wiring
         run: python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q
 
@@ -227,11 +230,14 @@ jobs:
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev,server]"
 
+      - name: Pin the schema renderer to the committed inventory stamp
+        run: python scripts/pin_schema_renderer.py --install
+
       - name: Run docstring checker self-tests without repeating the corpus scan
         run: python -m pytest tests/unit/test_docstring_governance.py -k "test_checker or test_preflight" -q
 
       - name: Check local CI verification parity and failure propagation
-        run: python -m pytest tests/unit/test_ci_verification.py -q
+        run: python -m pytest tests/unit/test_ci_verification.py tests/unit/test_release_command.py -q
 
       - name: Check release identity
         run: python scripts/check_release_identity.py

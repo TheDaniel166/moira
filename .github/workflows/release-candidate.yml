@@ -1,0 +1,37 @@
+name: Release Candidate
+
+# Runs the tag's gates on a release commit before the tag exists, so a tag can
+# never be the first place a gate fails. Started by scripts/release.py, which
+# pushes the candidate commit to the release-candidate branch, or by hand.
+# Routine pushes to main do not invoke this workflow, and it publishes nothing.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release-candidate
+
+permissions:
+  contents: read
+
+jobs:
+  validate-release:
+    name: Validate candidate release identity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Apply the tag-time identity rules to the candidate
+        run: python scripts/check_release_identity.py --candidate
+
+  release-hardening:
+    needs: validate-release
+    uses: ./.github/workflows/release-hardening.yml
+
+  release-acceptance:
+    needs: validate-release
+    uses: ./.github/workflows/release-acceptance.yml

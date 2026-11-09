@@ -81,6 +81,11 @@ def main(argv: list[str] | None = None) -> int:
         "--tag",
         help="Release tag to compare with project.version, for example v5.0.0",
     )
+    parser.add_argument(
+        "--candidate",
+        action="store_true",
+        help="Apply the tag-time rules to an untagged release candidate",
+    )
     args = parser.parse_args(argv)
 
     failures: list[str] = []
@@ -104,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     failures.extend(
         _check_release_documents(
             project_version,
-            require_empty_unreleased=args.tag is not None,
+            require_empty_unreleased=args.tag is not None or args.candidate,
         )
     )
 
@@ -115,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     tag_note = f", tag {args.tag}" if args.tag is not None else ""
+    if args.candidate and args.tag is None:
+        tag_note = ", release candidate"
     print(f"Release identity check passed for {project_version}{tag_note}.")
     return 0
 

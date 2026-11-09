@@ -26,6 +26,13 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = ("release-hardening.yml", "release-acceptance.yml")
 METADATA_ACTIONS = {"actions/checkout@v4", "actions/setup-python@v5", "actions/upload-artifact@v4"}
+# Environment provisioning belongs to setup, not verification. The renderer pin
+# installs in CI; locally the generated-artifact check reports any mismatch.
+PROVISIONING = frozenset({
+    'python -m pip install -e ".[dev,server]"',
+    'python -m pip install -e ".[dev]"',
+    "python scripts/pin_schema_renderer.py --install",
+})
 
 
 @dataclass(frozen=True)
@@ -104,11 +111,7 @@ def load_plan(root: Path, environment: dict[str, str]) -> tuple[list[Check], lis
                         raise ValueError(f"Unsupported CI action: {step['uses']}")
                     continue
                 source = step["run"]
-                # Environment provisioning belongs to setup, not verification.
-                if source.strip() in {
-                    'python -m pip install -e ".[dev,server]"',
-                    'python -m pip install -e ".[dev]"',
-                }:
+                if source.strip() in PROVISIONING:
                     continue
                 step_env = {**job_env, **step.get("env", {})}
                 checks.append(Check(
