@@ -45,13 +45,19 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import permutations
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
 from ._strenum import StrEnum
 from .aspects import AspectData, AspectDomain, MotionState, aspect_motion_witness
-from .pattern_templates import MATHEMATICAL_PATTERN_TEMPLATES
+from .pattern_templates import (
+    HARMONIC_PATTERN_PRESETS,
+    MATHEMATICAL_PATTERN_TEMPLATES,
+    GeometricPatternTemplate,
+    harmonic_pattern_templates,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +103,43 @@ FROZEN_REFERENCE_ORBS: MappingProxyType[str, float] = MappingProxyType({
     "H13 4/13": 12.0 / 13.0,
     "H13 5/13": 12.0 / 13.0,
     "H13 6/13": 12.0 / 13.0,
+    "Novile": 1.5,
+    "Binovile": 1.5,
+    "Quadnovile": 1.5,
+    "Tao": 1.0,
+    "Seminovile": 1.0,
+    "Untion": 1.0,
+    "Biquindecile": 1.0,
+    "Septaquindecile": 1.0,
+    "Quinseminovile": 1.0,
+    "Septseminovile": 1.0,
+    "Squile": 1.0,
+    "Squine": 1.0,
+    "Semiseptile": 1.0,
+    "Trisemiseptile": 1.0,
+    "Quinsemiseptile": 1.0,
+    "H32 1/32": 12.0 / 32.0,
+    "H32 3/32": 12.0 / 32.0,
+    "H32 5/32": 12.0 / 32.0,
+    "H32 7/32": 12.0 / 32.0,
+    "H32 9/32": 12.0 / 32.0,
+    "H32 11/32": 12.0 / 32.0,
+    "H32 13/32": 12.0 / 32.0,
+    "H32 15/32": 12.0 / 32.0,
+    "H36 1/36": 12.0 / 36.0,
+    "H36 5/36": 12.0 / 36.0,
+    "H36 7/36": 12.0 / 36.0,
+    "H36 11/36": 12.0 / 36.0,
+    "H36 13/36": 12.0 / 36.0,
+    "H36 17/36": 12.0 / 36.0,
+    "H40 1/40": 12.0 / 40.0,
+    "H40 3/40": 12.0 / 40.0,
+    "H40 7/40": 12.0 / 40.0,
+    "H40 9/40": 12.0 / 40.0,
+    "H40 11/40": 12.0 / 40.0,
+    "H40 13/40": 12.0 / 40.0,
+    "H40 17/40": 12.0 / 40.0,
+    "H40 19/40": 12.0 / 40.0,
 })
 
 _ADMITTED_PATTERNS: frozenset[str] = frozenset({
@@ -356,6 +399,16 @@ def _format_summary(
 # Template Matching & Required Edge Ledger Extraction
 # ---------------------------------------------------------------------------
 
+@lru_cache(maxsize=1)
+def _generated_harmonic_layouts() -> dict[str, GeometricPatternTemplate]:
+    """Every layout the engine generates, by name. Custom templates are never included."""
+    return {
+        template.name: template
+        for harmonic in HARMONIC_PATTERN_PRESETS.values()
+        for template in harmonic_pattern_templates(harmonic, ("triangle", "opposition_rectangle", "polygon"))
+    }
+
+
 def _extract_template_edges(
     pattern: object,
 ) -> tuple[tuple[AspectData, ...] | None, tuple[AspectData, ...], str | None]:
@@ -366,9 +419,13 @@ def _extract_template_edges(
     If the template is unsupported or required aspects are invalid, required_aspects is None.
     """
     name = getattr(pattern, "name", None)
-    admitted = _ADMITTED_PATTERNS | set(_EDGE_TEMPLATES) | set(MATHEMATICAL_PATTERN_TEMPLATES)
-    if not isinstance(name, str) or name not in admitted:
-        return None, (), f"Unsupported pattern template {name!r}; admitted patterns are {sorted(admitted)}"
+    named = _ADMITTED_PATTERNS | set(_EDGE_TEMPLATES) | set(MATHEMATICAL_PATTERN_TEMPLATES)
+    layouts = {**_generated_harmonic_layouts(), **MATHEMATICAL_PATTERN_TEMPLATES}
+    if not isinstance(name, str) or (name not in named and name not in layouts):
+        return None, (), (
+            f"Unsupported pattern template {name!r}; admitted patterns are {sorted(named)} "
+            "and generated harmonic layouts"
+        )
 
     raw_aspects: tuple[AspectData, ...] = tuple(getattr(pattern, "aspects", ()))
     bodies: tuple[str, ...] = tuple(getattr(pattern, "bodies", ()))
@@ -411,12 +468,12 @@ def _extract_template_edges(
     def get_link(b1: str, b2: str, asp_name: str) -> AspectData | None:
         return edge_map.get((frozenset({b1, b2}), asp_name))
 
-    # Mathematical layouts preserve their vertex assignment; every pair is required.
-    if name in MATHEMATICAL_PATTERN_TEMPLATES:
+    # Mathematical and generated layouts preserve their vertex assignment; every pair is required.
+    if name in layouts and name not in _ADMITTED_PATTERNS and name not in _EDGE_TEMPLATES:
         geometry = getattr(pattern, "geometry", None)
         template = getattr(geometry, "template", None)
         vertices = tuple(getattr(geometry, "vertex_bodies", ()))
-        if template != MATHEMATICAL_PATTERN_TEMPLATES[name] or len(vertices) != len(template.phases):
+        if template != layouts[name] or len(vertices) != len(template.phases):
             return None, (), f"{name} requires its preserved geometric vertex assignment"
         required_links: list[AspectData] = []
         for i, j, turn in template.edges:

@@ -308,5 +308,12 @@ patterns; a detector stricter than its reference, such as the 5-degree square
 in Thor's Hammer, therefore cannot reach Marginal on that link. This is the
 v1 behaviour, already true of a Yod's sextile.
 
-Stelliums remain not assessed because they are position-based. Generated
-harmonic templates remain not assessed until they are mapped.
+Generated harmonic layouts are also admitted, by the same rule as the
+mathematical constructions: every vertex pair is a required link, taken from the
+preserved geometry. The reference table therefore holds the catalog default orb
+of every aspect except Conjunction, including `12/H` degrees for the optional
+sets. On the finest grids these references are very small, 0.3 degrees on H40,
+and large polygons cannot occur in an ordinary chart.
+
+Stelliums remain not assessed because they are position-based. Custom templates
+remain not assessed because the engine does not vouch for their geometry.
