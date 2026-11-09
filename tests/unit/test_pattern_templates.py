@@ -192,7 +192,7 @@ def test_policy_precedence_deduplication_and_exports():
     policy = PatternComputationPolicy(selection=PatternSelectionPolicy(()), harmonic_presets=("H3", "H6"))
     matches = find_all_patterns(positions, policy=policy, optional_sets=("invalid",))
     assert len(matches) == 1
-    assert matches[0].name == "H3 Triangle 1-1-1"
+    assert matches[0].name == "Grand Trine"
     for module in (moira, facade):
         for name in ("GeometricPatternTemplate", "find_geometric_patterns", "triangle_template",
                      "harmonic_pattern_templates", "resolve_pattern", "find_search_triangles"):

@@ -67,12 +67,17 @@ class GeometricPatternTemplate:
     phases: tuple[Fraction, ...]
     apex_index: int | None = None
     source: str = "exact rational-turn geometry"
+    aliases: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name or self.name != self.name.strip():
             raise ValueError("Template name must be a non-empty trimmed string")
         if not isinstance(self.source, str) or not self.source.strip():
             raise ValueError("Template source must be a non-empty string")
+        if not isinstance(self.aliases, tuple) or any(
+            not isinstance(alias, str) or not alias.strip() for alias in self.aliases
+        ):
+            raise ValueError("Template aliases must be a tuple of non-empty strings")
         if not isinstance(self.phases, tuple) or not 3 <= len(self.phases) <= 40:
             raise ValueError("Templates require a tuple of 3 to 40 distinct phases")
         phases = tuple(_exact_turn(value) for value in self.phases)
@@ -191,6 +196,73 @@ HARMONIC_PATTERN_PRESETS: Mapping[str, int] = MappingProxyType({
 })
 _CATALOG_TURNS = frozenset(_aspect_turn(definition.name) for definition in ASPECT_DEFINITIONS)
 
+# A generated layout is named after the catalog aspect that is 1/H of the circle.
+# Optional-set harmonics have no such name and keep their number.
+_BASE_ASPECT_BY_HARMONIC: Mapping[int, str] = MappingProxyType({
+    _aspect_turn(definition.name).denominator: definition.name
+    for definition in ASPECT_DEFINITIONS
+    if definition.name not in OPTIONAL_ASPECT_FRACTIONS
+    and _aspect_turn(definition.name).numerator == 1
+    and _aspect_turn(definition.name).denominator >= 3
+})
+
+
+def _turns(*degrees: int) -> tuple[Fraction, ...]:
+    return tuple(Fraction(degree, 360) for degree in degrees)
+
+
+# Layouts that are already registered patterns: phases, and for apex-bearing
+# patterns the turn of the base edge, whose opposite vertex is the apex.
+_REGISTERED_LAYOUTS: Mapping[str, tuple[tuple[Fraction, ...], Fraction | None]] = MappingProxyType({
+    "Grand Trine": (_turns(0, 120, 240), None),
+    "T-Square": (_turns(0, 90, 180), Fraction(1, 2)),
+    "Grand Cross": (_turns(0, 90, 180, 270), None),
+    "Yod": (_turns(0, 60, 210), Fraction(1, 6)),
+    "Mystic Rectangle": (_turns(0, 60, 180, 240), None),
+    "Minor Grand Trine": (_turns(0, 60, 120), None),
+    "Grand Sextile": (_turns(0, 60, 120, 180, 240, 300), None),
+    "Thor's Hammer": (_turns(0, 90, 225), Fraction(1, 4)),
+    "Wedge": (_turns(0, 60, 180), Fraction(1, 2)),
+    "Hard Wedge": (_turns(0, 45, 180), Fraction(1, 2)),
+    "Eye": (_turns(0, 30, 60), Fraction(1, 6)),
+    "Irritation Triangle": (_turns(0, 30, 180), Fraction(1, 2)),
+    "Dominant Triangle": (_turns(0, 90, 210), None),
+    "Small Learning Triangle": (_turns(0, 30, 90), None),
+    "Medium Learning Triangle": (_turns(0, 30, 120), None),
+    "Large Learning Triangle": (_turns(0, 60, 150), None),
+    "Search Triangle": (_turns(0, 30, 150), None),
+    "Irritation Rectangle": (_turns(0, 30, 180, 210), None),
+    "Grand Quintile": (_turns(0, 72, 144, 216, 288), None),
+    "Quintile Triangle": (_turns(0, 72, 216), Fraction(1, 5)),
+    "Septile Triangle": ((Fraction(0), Fraction(1, 7), Fraction(3, 7)), None),
+})
+_REGISTERED_GEOMETRY: Mapping[tuple[Fraction, ...], tuple[str, Fraction | None]] = MappingProxyType({
+    GeometricPatternTemplate(name, phases).geometry_key: (name, base)
+    for name, (phases, base) in _REGISTERED_LAYOUTS.items()
+})
+
+
+def _generated_template(
+    phases: tuple[Fraction, ...], shape: str, steps: str, former_name: str,
+) -> GeometricPatternTemplate:
+    """Name one generated layout, preferring a registered pattern of the same geometry."""
+    layout = GeometricPatternTemplate(shape, phases)
+    harmonic = layout.harmonic
+    suffix = f" {steps}" if steps else ""
+    name = f"{_BASE_ASPECT_BY_HARMONIC.get(harmonic, f'H{harmonic}')} {shape}{suffix}"
+    aliases = [f"H{harmonic} {shape}{suffix}", former_name]
+    apex_index = None
+    registered = _REGISTERED_GEOMETRY.get(layout.geometry_key)
+    if registered is not None:
+        name, base = registered
+        if base is not None:
+            i, j = next((i, j) for i, j, turn in layout.edges if turn == base)
+            apex_index = next(vertex for vertex in range(len(phases)) if vertex not in {i, j})
+    return GeometricPatternTemplate(
+        name, phases, apex_index,
+        aliases=tuple(dict.fromkeys(alias for alias in aliases if alias != name)),
+    )
+
 
 def triangle_template(name: str, aspects: tuple[str, str, str]) -> GeometricPatternTemplate:
     """Construct a triangle from three catalog names or aliases; reject non-closing triples.
@@ -219,7 +291,9 @@ def harmonic_pattern_templates(
     """Generate distinct exact triangles, opposition rectangles, or a regular polygon.
 
     Only supported harmonic grids are admitted. Reducible layouts receive their
-    primitive grid name, and duplicate geometry is collapsed. Rectangles whose
+    primitive grid name, and duplicate geometry is collapsed. Layouts are named
+    after the catalog aspect that is 1/H of the circle, or a registered pattern
+    of identical geometry; ``aliases`` retains the numbered forms. Rectangles whose
     complementary angles are absent from the complete catalog are excluded.
     H13/H32/H36/H40 templates still require explicit optional sets at detection.
     No additional named tradition or interpretation is inferred.
@@ -239,11 +313,11 @@ def harmonic_pattern_templates(
                 phases = (Fraction(0), Fraction(a, harmonic), Fraction(a + b, harmonic))
             else:
                 continue
-            template = GeometricPatternTemplate("triangle", phases)
-            h = template.harmonic
-            separations = sorted(turn for _, _, turn in template.edges)
+            layout = GeometricPatternTemplate("triangle", phases)
+            h = layout.harmonic
+            separations = sorted(turn for _, _, turn in layout.edges)
             label = "-".join(str(int(turn * h)) for turn in separations)
-            template = GeometricPatternTemplate(f"H{h} Triangle {label}", phases)
+            template = _generated_template(phases, "Triangle", label, f"H{h} Triangle {label}")
             templates.setdefault(template.geometry_key, template)
     if "opposition_rectangle" in shapes:
         for k in range(1, harmonic // 2 + 1):
@@ -252,12 +326,15 @@ def harmonic_pattern_templates(
             if a == 0:
                 continue
             phases = (Fraction(0), a, Fraction(1, 2), Fraction(1, 2) + a)
-            template = GeometricPatternTemplate(f"Rectangle {a}", phases)
-            if all(turn in _CATALOG_TURNS for _, _, turn in template.edges):
+            layout = GeometricPatternTemplate(f"Rectangle {a}", phases)
+            if all(turn in _CATALOG_TURNS for _, _, turn in layout.edges):
+                h = layout.harmonic
+                sides = f"{int(a * h)}-{int((Fraction(1, 2) - a) * h)}"
+                template = _generated_template(phases, "Rectangle", sides, f"Rectangle {a}")
                 templates.setdefault(template.geometry_key, template)
     if "polygon" in shapes:
-        template = GeometricPatternTemplate(
-            f"H{harmonic} Polygon", tuple(Fraction(k, harmonic) for k in range(harmonic)),
+        template = _generated_template(
+            tuple(Fraction(k, harmonic) for k in range(harmonic)), "Polygon", "", f"H{harmonic} Polygon",
         )
         templates.setdefault(template.geometry_key, template)
     return tuple(sorted(templates.values(), key=lambda item: item.name))

@@ -94,6 +94,7 @@ from .pattern_templates import (
     GeometricPatternTemplate, PatternGeometryTruth, HARMONIC_PATTERN_PRESETS,
     harmonic_pattern_templates, triangle_template, _aspect_turn,
     MATHEMATICAL_PATTERN_TEMPLATES, _MATHEMATICAL_PATTERN_ALIASES,
+    _REGISTERED_GEOMETRY,
 )
 from .pattern_coherence import (
     FROZEN_REFERENCE_ORBS,
@@ -2780,7 +2781,9 @@ def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputat
     _check_templates(policy.templates, _template_catalog(optional))
     for template in policy.templates:
         if (_pattern_name_key(template.name) in _PATTERN_NAMES
-                and template != MATHEMATICAL_PATTERN_TEMPLATES.get(template.name)):
+                and template != MATHEMATICAL_PATTERN_TEMPLATES.get(template.name)
+                and not (template.aliases
+                         and _REGISTERED_GEOMETRY.get(template.geometry_key, (None, None))[0] == template.name)):
             raise ValueError("Custom template names must not replace a registered pattern or alias")
     policy = replace(policy, optional_sets=optional, harmonic_presets=keys)
     return policy

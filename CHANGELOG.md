@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pattern coherence policy `v2-draft` grades thirty more aspect patterns,
   including the ten mathematical layouts, with catalog reference orbs for the
   aspects they add. Existing grades do not change.
+- Generated harmonic layouts are named by family, such as `Novile Triangle
+  1-2-3`. Layouts matching a registered pattern take its name and apex. The
+  numbered forms remain in `GeometricPatternTemplate.aliases`, but
+  `pattern.name` changes for callers that compare it.
 
 ### Fixed
 - Reject planetary queries that would reuse a warmed cache after their reader

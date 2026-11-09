@@ -442,6 +442,14 @@ and the complementary `alpha` / `180-alpha` pairs; unavailable complementary
 targets are excluded. The regular polygon requires every diagonal as well as
 the perimeter. Reducible layouts use their primitive grid name.
 
+A generated layout is named `<Family> <Shape> <steps>`, for example
+`Novile Triangle 1-2-3`, `Seminovile Rectangle 1-8` or `Septile Polygon`. The
+family is the catalog aspect that is `1/H` of the circle, and steps count the
+sides on that harmonic's grid. H13, H32, H36 and H40 have no such aspect and
+keep their number. A layout with the exact geometry of a registered pattern
+takes that pattern's name and apex. `GeometricPatternTemplate.aliases` retains
+the numbered forms, such as `H9 Triangle 1-2-3` and `Rectangle 1/18`.
+
 `HARMONIC_PATTERN_PRESETS` contains H3, H4, H5, H6, H7, H8, H9, H10, H11,
 H12, H13, H14, H15, H16, H18, H20, H24, H32, H36 and H40. Passing a key in
 `harmonic_presets` requests all three shape categories. Overlapping preset
@@ -449,8 +457,9 @@ geometry is collapsed by exact cyclic-gap identity modulo rotation/reflection.
 Custom names must not override a registered name or alias. Explicit templates
 and preset geometry are independent of `include`, which selects named detectors.
 Use `include=[]` to request geometry alone. A deliberately requested geometric
-template can describe the same shape as a named detector; the two remain
-separately identified by name and source.
+template can describe the same shape as a named detector; a custom template
+remains separately identified by its own name and source, while a preset layout
+of that shape reports under the registered name and deduplicates with it.
 
 H13, H32, H36 and H40 require the matching `optional_sets` entry. Selecting a
 set makes its registered named constructions available; generic harmonic
