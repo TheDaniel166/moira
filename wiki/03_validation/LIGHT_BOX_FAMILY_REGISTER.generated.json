@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.13.0",
+  "engine_version": "6.13.1",
   "entries": [
     {
       "assessment_status": "partial",
@@ -34008,7 +34008,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
+  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

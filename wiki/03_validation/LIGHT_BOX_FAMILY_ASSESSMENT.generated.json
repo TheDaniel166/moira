@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.13.0",
+  "engine_version": "6.13.1",
   "families": [
     {
       "assessment_status": "partial",
@@ -8715,7 +8715,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
+  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

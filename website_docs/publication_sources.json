@@ -318,6 +318,23 @@
   ],
   "release_summaries": [
     {
+      "version": "6.13.1",
+      "date": "2026-11-09",
+      "title": "First Published Release Of The 6.13 Line",
+      "added": [],
+      "changed": [
+        "Carries every 6.13.0 change, because 6.13.0 was tagged but never published."
+      ],
+      "fixed": [
+        "The Light Box inventory records the Pydantic 2.14.3 REST schema renderer."
+      ],
+      "validation": [
+        "The generated-artifact gate passes against the renderer versions CI installs."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.13.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.13.1.md"
+    },
+    {
       "version": "6.13.0",
       "date": "2026-11-09",
       "title": "House Systems, Pattern Grading And Adjustable Pattern Orbs",

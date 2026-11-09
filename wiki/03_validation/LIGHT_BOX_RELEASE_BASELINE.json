@@ -1,9 +1,9 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
   "baseline_date": "2026-11-09",
-  "source_parent_revision": "8e31898b2431f15275bb1fb995ec01f52b4da143",
-  "engine_version": "6.13.0",
-  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
+  "source_parent_revision": "11aa7a412649647fefdb36da551114121688cb6a",
+  "engine_version": "6.13.1",
+  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
   "canonical_entries": 1341,
   "minimum_partial": 219,
   "maximum_unresolved": 1122,
@@ -14,7 +14,7 @@
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
   "review": {
     "from_baseline_date": "2026-11-03",
-    "surface_change": "Eight Python exports and one REST route are added for pattern grading and default orbs; none is removed or reclassified. 38 Python and 23 REST contracts change: additive orbs and pattern_orbs parameters and applied_orbs truth on the pattern surfaces, five added house-system codes, and the published __version__ constant moving from 6.12.1 to 6.13.0.",
+    "surface_change": "Eight Python exports and one REST route are added for pattern grading and default orbs; none is removed or reclassified. 38 Python and 23 REST contracts change: additive orbs and pattern_orbs parameters and applied_orbs truth on the pattern surfaces, five added house-system codes, and the published __version__ constant moving from 6.12.1 to 6.13.1. 6.13.0 was tagged but not published, and 6.13.1 differs from it only in that constant and the recorded schema renderer.",
     "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated.",
     "admissions": "No admission or contract is changed. The two new calculation surfaces, evaluate_pattern_coherence and pattern_default_orbs, enter unresolved and form the new pattern-coherence family, so the canonical denominator moves from 1339 to 1341, the unresolved ceiling from 1120 to 1122 and reviewed families from 159 to 160.",
     "unchanged": "minimum_partial=219, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are retained; no earlier admission or product-used surface regresses."

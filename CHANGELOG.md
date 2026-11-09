@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.1] - 2026-11-09
+
+First published release of the 6.13 line. It carries every 6.13.0 change below.
+
+### Fixed
+- Record the Pydantic 2.14.3 REST schema renderer in the Light Box inventory,
+  which stopped the 6.13.0 release workflow.
+
 ## [6.13.0] - 2026-11-09
+
+Tagged but never published. Its changes ship in 6.13.1.
 
 ### Added
 - Five house systems: Alova-Topocentric, Makransky Sunshine, Sripati, Savard-A
