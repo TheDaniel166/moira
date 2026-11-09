@@ -88267,7 +88267,7 @@
   ],
   "schema_renderer": {
     "fastapi": "0.136.3",
-    "pydantic": "2.14.2"
+    "pydantic": "2.14.3"
   },
   "schema_version": "moira.lightbox-calculation-inventory/v2",
   "scope_rule": "All admitted facade functions and versioned non-GET REST operations are conservatively in calculation scope unless an explicit classification rule records a reference, validation-helper, or operational exclusion.",
@@ -88312,5 +88312,5 @@
     "rest_in_scope_without_test_mentions": 5,
     "rest_operations": 562
   },
-  "surface_fingerprint_sha256": "e3594aad0b22ff0b310595787ffb779f75abe0b79dc6a78d02512977fd5d0f64"
+  "surface_fingerprint_sha256": "d41fd640bce1a8acfd92c7a5fd19f663f1ec00a178e2f9ee3df7b4f1573e5060"
 }
