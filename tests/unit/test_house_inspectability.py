@@ -73,8 +73,8 @@ class TestModuleScopeSets:
         assert len(_POLAR_SYSTEMS) == 1
         assert _POLAR_SYSTEMS == frozenset({HouseSystem.KOCH})
 
-    def test_known_systems_has_exactly_22_members(self):
-        assert len(_KNOWN_SYSTEMS) == 22
+    def test_known_systems_has_exactly_27_members(self):
+        assert len(_KNOWN_SYSTEMS) == 27
 
     def test_polar_systems_members_are_polar_incapable(self):
         for code in _POLAR_SYSTEMS:
