@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.12.1",
+  "engine_version": "6.13.0",
   "families": [
     {
       "assessment_status": "partial",
@@ -409,6 +409,7 @@
         "tests/unit/test_native_gil_release_audit.py",
         "tests/unit/test_optional_aspects.py",
         "tests/unit/test_pattern_facade.py",
+        "tests/unit/test_pattern_orbs.py",
         "tests/unit/test_pattern_templates.py",
         "tests/unit/test_patterns.py",
         "tests/unit/test_varshaphal.py"
@@ -3114,6 +3115,7 @@
         "tests/unit/test_adversarial_house_singularities.py",
         "tests/unit/test_adversarial_quad_singularities.py",
         "tests/unit/test_adversarial_triple_singularities.py",
+        "tests/unit/test_alova_topocentric.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_astrology_adversarial_gauntlet.py",
         "tests/unit/test_categorical_boundary.py",
@@ -3165,16 +3167,20 @@
         "tests/unit/test_house_truth_preservation.py",
         "tests/unit/test_huber.py",
         "tests/unit/test_locational_forecasting.py",
+        "tests/unit/test_makransky_sunshine.py",
         "tests/unit/test_moira_progressions.py",
         "tests/unit/test_moira_synastry.py",
         "tests/unit/test_mundane.py",
         "tests/unit/test_phase2_helpers.py",
         "tests/unit/test_polar_chart_public_gauntlet.py",
         "tests/unit/test_polar_house_breadth_gauntlet.py",
+        "tests/unit/test_porphyry_prespan.py",
         "tests/unit/test_pullen_houses.py",
         "tests/unit/test_sahl_electional.py",
         "tests/unit/test_sahl_matter_profiles.py",
+        "tests/unit/test_savard_a_houses.py",
         "tests/unit/test_session_fixes.py",
+        "tests/unit/test_sripati_houses.py",
         "tests/unit/test_stelliums.py",
         "tests/unit/test_validate_g5_gauquelin_sectors.py",
         "tests/unit/test_varshaphal.py",
@@ -3631,6 +3637,7 @@
         "tests/unit/test_local_space.py",
         "tests/unit/test_lunar_limb_event_profile.py",
         "tests/unit/test_lunar_occultation_contacts.py",
+        "tests/unit/test_makransky_sunshine.py",
         "tests/unit/test_moira_bce_time_support.py",
         "tests/unit/test_moira_progressions.py",
         "tests/unit/test_moira_synastry.py",
@@ -5549,6 +5556,45 @@
     },
     {
       "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/03_release/COMPATIBILITY_NOTES_6.13.0.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "pattern-coherence",
+      "family_label": "Pattern Coherence",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/pattern_coherence.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/unit/test_harmonic_pattern_names.py",
+        "tests/unit/test_pattern_coherence_all_templates.py",
+        "tests/unit/test_pattern_coherence_harmonic_layouts.py",
+        "tests/unit/test_pattern_coherence_qualitative.py",
+        "tests/unit/test_pattern_orbs.py",
+        "tests/unit/test_patterns_public_api.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
       "canonical_surface_count": 2,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
@@ -5579,19 +5625,23 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/server/test_server_pattern_templates.py",
+        "tests/unit/test_harmonic_pattern_names.py",
+        "tests/unit/test_pattern_coherence_harmonic_layouts.py",
+        "tests/unit/test_pattern_orbs.py",
         "tests/unit/test_pattern_templates.py",
         "tests/unit/test_patterns_public_api.py"
       ]
     },
     {
       "assessment_status": "mixed",
-      "canonical_surface_count": 36,
+      "canonical_surface_count": 37,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 36
+        "unresolved": 37
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5601,8 +5651,10 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/PATTERNS_BACKEND_STANDARD.md",
         "wiki/02_standards/STELLIUM_ANALYSIS_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.13.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.6.0.md",
-        "wiki/03_release/RELEASE_NOTES_5.0.0.md"
+        "wiki/03_release/RELEASE_NOTES_5.0.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.13.0.md"
       ],
       "domain_group": "specialist-and-compositional",
       "family_id": "patterns",
@@ -5615,7 +5667,7 @@
       ],
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
-      "python_surface_count": 36,
+      "python_surface_count": 37,
       "rest_surface_count": 0,
       "review_stages": [
         "stage_5_remaining_tail"
@@ -5623,12 +5675,17 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/server/test_server_pattern_coherence_routes.py",
+        "tests/server/test_server_pattern_templates.py",
         "tests/server/test_server_patterns_policy.py",
         "tests/server/test_server_relationship_routes.py",
         "tests/unit/test_aspect_consumer_contracts.py",
+        "tests/unit/test_harmonic_pattern_names.py",
         "tests/unit/test_mathematical_patterns.py",
+        "tests/unit/test_pattern_coherence_all_templates.py",
+        "tests/unit/test_pattern_coherence_harmonic_layouts.py",
         "tests/unit/test_pattern_coherence_qualitative.py",
         "tests/unit/test_pattern_facade.py",
+        "tests/unit/test_pattern_orbs.py",
         "tests/unit/test_pattern_templates.py",
         "tests/unit/test_patterns.py",
         "tests/unit/test_patterns_public_api.py",
@@ -7246,6 +7303,7 @@
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
         "tests/integration/test_stars_apparent_erfa.py",
         "tests/integration/test_stars_binary_orbits.py",
+        "tests/integration/test_stars_catalog_wide_attack.py",
         "tests/integration/test_stars_erfa_reference.py",
         "tests/integration/test_stars_external_reference.py",
         "tests/integration/test_stars_sovereign_identity.py",
@@ -8657,7 +8715,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
+  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8669,30 +8727,30 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
-    "canonical_surface_count": 1339,
+    "canonical_surface_count": 1341,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 46,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 136
+      "stage_5_remaining_tail": 137
     },
     "families_by_status": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 141,
+      "partial": 142,
       "strong_exemplar": 4,
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
     "families_with_missing_tests": 6,
-    "family_count": 159,
+    "family_count": 160,
     "production_user_surface_count": 181,
-    "reviewed_families": 159,
+    "reviewed_families": 160,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
       "partial": 219,
-      "unresolved": 1120
+      "unresolved": 1122
     }
   }
 }

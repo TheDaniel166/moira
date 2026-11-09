@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.12.1",
+  "engine_version": "6.13.0",
   "entries": [
     {
       "assessment_status": "partial",
@@ -567,7 +567,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3906,
+        "source_line": 3946,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -717,7 +717,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2573,
+        "source_line": 2787,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -1019,7 +1019,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5741,
+        "source_line": 6009,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1044,7 +1044,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5712,
+        "source_line": 5980,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1069,7 +1069,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5782,
+        "source_line": 6050,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1996,7 +1996,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4187,
+        "source_line": 4421,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -2756,7 +2756,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5472,
+        "source_line": 5740,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -3191,7 +3191,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 3977,
+        "source_line": 4202,
         "source_path": "moira/houses.py"
       },
       "priority": "P0",
@@ -3849,7 +3849,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 532,
+        "source_line": 538,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4051,7 +4051,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4840,
+        "source_line": 5074,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4076,7 +4076,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4801,
+        "source_line": 5035,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4853,7 +4853,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5824,
+        "source_line": 6092,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5782,7 +5782,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 1305,
+        "source_line": 1342,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5807,7 +5807,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4612,
+        "source_line": 4846,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5832,7 +5832,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4377,
+        "source_line": 4611,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6107,7 +6107,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5051,
+        "source_line": 5285,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6132,7 +6132,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6657,
+        "source_line": 6930,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6157,7 +6157,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6457,
+        "source_line": 6730,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -7027,6 +7027,31 @@
       "transport": "python"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.pattern_coherence",
+      "canonical_surface_id": "python:moira.facade:evaluate_pattern_coherence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "pattern-coherence",
+      "family_label": "Pattern Coherence",
+      "ownership": {
+        "source_line": 690,
+        "source_path": "moira/pattern_coherence.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:evaluate_pattern_coherence",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
       "assessment_status": "strong_exemplar",
       "assignment_basis": "python owner module moira.western_electional",
       "canonical_surface_id": "python:moira.facade:evaluate_ramesey_moon_condition",
@@ -7311,7 +7336,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2456,
+        "source_line": 2652,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7436,7 +7461,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1988,
+        "source_line": 2143,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7486,7 +7511,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2070,
+        "source_line": 2234,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7611,7 +7636,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2228,
+        "source_line": 2410,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7686,7 +7711,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2176,
+        "source_line": 2350,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7711,7 +7736,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1412,
+        "source_line": 1525,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7736,7 +7761,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1592,
+        "source_line": 1719,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7761,7 +7786,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2239,
+        "source_line": 2423,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7786,7 +7811,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1869,
+        "source_line": 2016,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7811,7 +7836,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1561,
+        "source_line": 1684,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7836,7 +7861,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2190,
+        "source_line": 2368,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7911,7 +7936,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1516,
+        "source_line": 1635,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7936,7 +7961,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2183,
+        "source_line": 2359,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7961,7 +7986,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1732,
+        "source_line": 1871,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -7986,7 +8011,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1505,
+        "source_line": 1624,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8036,7 +8061,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1463,
+        "source_line": 1582,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8061,7 +8086,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1499,
+        "source_line": 1618,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8086,7 +8111,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1835,
+        "source_line": 1978,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8136,7 +8161,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1675,
+        "source_line": 1810,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8311,7 +8336,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2246,
+        "source_line": 2432,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8386,7 +8411,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1511,
+        "source_line": 1630,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8411,7 +8436,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2282,
+        "source_line": 2472,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8436,7 +8461,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2120,
+        "source_line": 2288,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8461,7 +8486,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1493,
+        "source_line": 1612,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8536,7 +8561,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1777,
+        "source_line": 1920,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8561,7 +8586,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1526,
+        "source_line": 1645,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8586,7 +8611,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1952,
+        "source_line": 2103,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8636,7 +8661,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2165,
+        "source_line": 2337,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8661,7 +8686,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2030,
+        "source_line": 2189,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -8711,7 +8736,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 1640,
+        "source_line": 1771,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -9792,7 +9817,7 @@
       "family_id": "pattern-templates",
       "family_label": "Pattern Templates",
       "ownership": {
-        "source_line": 215,
+        "source_line": 287,
         "source_path": "moira/pattern_templates.py"
       },
       "priority": "P2",
@@ -10069,7 +10094,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3838,
+        "source_line": 3878,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -10244,7 +10269,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5909,
+        "source_line": 6177,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -10369,7 +10394,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5125,
+        "source_line": 5359,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -13877,7 +13902,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4161,
+        "source_line": 4201,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15152,7 +15177,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2603,
+        "source_line": 2817,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -15177,7 +15202,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2650,
+        "source_line": 2864,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -15202,7 +15227,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2591,
+        "source_line": 2805,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -15227,7 +15252,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2555,
+        "source_line": 2769,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -15239,6 +15264,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:pattern_contributions",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "mixed",
+      "assignment_basis": "python owner module moira.patterns",
+      "canonical_surface_id": "python:moira.facade:pattern_default_orbs",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "patterns",
+      "family_label": "Patterns",
+      "ownership": {
+        "source_line": 2970,
+        "source_path": "moira/patterns.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:pattern_default_orbs",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -15602,7 +15652,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 2635,
+        "source_line": 2671,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15627,7 +15677,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4025,
+        "source_line": 4065,
         "source_path": "moira/planets.py"
       },
       "priority": "P0",
@@ -15654,7 +15704,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4117,
+        "source_line": 4157,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -16556,7 +16606,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6197,
+        "source_line": 6470,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -16581,7 +16631,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6085,
+        "source_line": 6358,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -16958,7 +17008,7 @@
       "family_id": "patterns",
       "family_label": "Patterns",
       "ownership": {
-        "source_line": 2389,
+        "source_line": 2585,
         "source_path": "moira/patterns.py"
       },
       "priority": "P2",
@@ -19364,7 +19414,7 @@
       "family_id": "pattern-templates",
       "family_label": "Pattern Templates",
       "ownership": {
-        "source_line": 195,
+        "source_line": 267,
         "source_path": "moira/pattern_templates.py"
       },
       "priority": "P2",
@@ -21303,7 +21353,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 170,
+        "source_line": 172,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -21328,7 +21378,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 155,
+        "source_line": 157,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -21353,7 +21403,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 140,
+        "source_line": 142,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -21431,7 +21481,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 110,
+        "source_line": 112,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -21456,7 +21506,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 125,
+        "source_line": 127,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -22439,7 +22489,7 @@
       "family_id": "chart",
       "family_label": "Chart",
       "ownership": {
-        "source_line": 233,
+        "source_line": 235,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -22545,7 +22595,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 221,
+        "source_line": 223,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -23056,7 +23106,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 227,
+        "source_line": 229,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -27372,7 +27422,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 275,
+        "source_line": 283,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -27399,7 +27449,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 320,
+        "source_line": 328,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -27424,7 +27474,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 293,
+        "source_line": 301,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -27451,7 +27501,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 288,
+        "source_line": 296,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -27476,7 +27526,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 307,
+        "source_line": 315,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -29720,7 +29770,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 265,
+        "source_line": 273,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -29745,7 +29795,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 253,
+        "source_line": 261,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -29770,7 +29820,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 238,
+        "source_line": 246,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -29797,7 +29847,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 270,
+        "source_line": 278,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P1",
@@ -32070,7 +32120,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 185,
+        "source_line": 187,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -32097,7 +32147,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 198,
+        "source_line": 200,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -32124,7 +32174,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 211,
+        "source_line": 213,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -32151,7 +32201,7 @@
       "family_id": "relationship",
       "family_label": "Relationship",
       "ownership": {
-        "source_line": 216,
+        "source_line": 218,
         "source_path": "moira_server/routers/relationship.py"
       },
       "priority": "P0",
@@ -33958,7 +34008,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
+  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -34004,28 +34054,28 @@
       "phenomena-and-visibility": 126,
       "predictive-and-time": 167,
       "relationship": 42,
-      "specialist-and-compositional": 389,
+      "specialist-and-compositional": 391,
       "traditional-western": 132,
       "vedic-and-electional": 281
     },
     "canonical_by_exposure": {
       "production_user": 181,
       "public_api": 371,
-      "source_only": 787
+      "source_only": 789
     },
     "canonical_by_priority": {
       "P0": 181,
       "P1": 371,
-      "P2": 787
+      "P2": 789
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1339,
+      "reviewed": 1341,
       "seeded": 0
     },
-    "canonical_entries": 1339,
+    "canonical_entries": 1341,
     "cross_transport_families": 55,
-    "entries_total": 1343,
-    "family_count": 159
+    "entries_total": 1345,
+    "family_count": 160
   }
 }

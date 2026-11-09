@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 561
-- Registered OpenAPI operations: 561 (GET 51, POST 510)
+- Registered OpenAPI paths: 562
+- Registered OpenAPI operations: 562 (GET 52, POST 510)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 557
+- Versioned `/v1` paths: 558
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -4048,6 +4048,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/v1/parans/star-canon` | phenomena | `paran_star_canon_route_v1_parans_star_canon_get` |
 | `POST` | `/v1/patterns/chart-profile` | relationship | `pattern_chart_profile_route_v1_patterns_chart_profile_post` |
 | `POST` | `/v1/patterns/coherence` | relationship | `pattern_coherence_route_v1_patterns_coherence_post` |
+| `GET` | `/v1/patterns/default-orbs` | relationship | `pattern_default_orbs_route_v1_patterns_default_orbs_get` |
 | `POST` | `/v1/patterns/find` | relationship | `patterns_route_v1_patterns_find_post` |
 | `POST` | `/v1/patterns/network` | relationship | `pattern_network_route_v1_patterns_network_post` |
 | `POST` | `/v1/phase/angle` | phase | `phase_angle_route_v1_phase_angle_post` |

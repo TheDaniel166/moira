@@ -318,6 +318,25 @@
   ],
   "release_summaries": [
     {
+      "version": "6.13.0",
+      "date": "2026-11-09",
+      "title": "House Systems, Pattern Grading And Adjustable Pattern Orbs",
+      "added": [
+        "Five house systems, per-pattern and per-aspect detection orbs for patterns, and family names for generated harmonic layouts."
+      ],
+      "changed": [
+        "Coherence policy v2-draft grades 36 of 37 named patterns and every generated harmonic layout; generated layouts report new names."
+      ],
+      "fixed": [
+        "Zariel houses start at RAMC + 90 degrees in right ascension; native planetary routing respects closed readers, segment changes and emission-epoch coverage."
+      ],
+      "validation": [
+        "Every pattern template is checked against its detector, and every generated layout is graded on all of its links."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.13.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.13.0.md"
+    },
+    {
       "version": "6.12.0",
       "date": "2026-11-02",
       "title": "Time Scales, Python 3.15 And Lilly Horary",

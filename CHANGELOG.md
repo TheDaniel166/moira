@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.13.0] - 2026-11-09
+
 ### Added
+- Five house systems: Alova-Topocentric, Makransky Sunshine, Sripati, Savard-A
+  and Porphyry with a 5-degree prespan.
 - Pattern detection accepts `pattern_orbs`, one exact limit per pattern, and
   `orbs`, exact limits by aspect name or angle, beside `orb_factor`. The most
   specific setting wins. Defaults are unchanged, and each result records the
   limits it used.
+- `pattern_default_orbs()` and `GET /v1/patterns/default-orbs` publish every
+  pattern's default limits, and pattern geometry reports its `aliases` on REST.
+- The pattern coherence surface is exported through `moira` and `moira.facade`.
 
 ### Changed
 - Pattern coherence policy `v2-draft` grades thirty more aspect patterns,
