@@ -1411,6 +1411,8 @@ from .patterns import (
     harmonic_pattern_templates, triangle_template, find_geometric_patterns,
     PATTERN_ALIASES, resolve_pattern,
     MATHEMATICAL_PATTERN_TEMPLATES, find_mathematical_patterns,
+    pattern_default_orbs, evaluate_pattern_coherence, FROZEN_REFERENCE_ORBS, PATTERN_COHERENCE_POLICY_ID,
+    PatternCoherenceBand, PatternCoherenceResult, PatternMotionQualifier, PatternRequiredAspectLedger,
 )
 from .chart_shape import (
     ChartShape,
@@ -3176,6 +3178,8 @@ __all__ = [
     "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
     "PATTERN_ALIASES", "resolve_pattern",
     "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
+    "pattern_default_orbs", "evaluate_pattern_coherence", "FROZEN_REFERENCE_ORBS", "PATTERN_COHERENCE_POLICY_ID",
+    "PatternCoherenceBand", "PatternCoherenceResult", "PatternMotionQualifier", "PatternRequiredAspectLedger",
     "find_t_squares", "find_grand_trines", "find_grand_crosses", "find_yods",
     "find_mystic_rectangles", "find_kites", "find_stelliums", "find_minor_grand_trines",
     "find_grand_sextiles", "find_thors_hammers", "find_boomerang_yods", "find_wedges",

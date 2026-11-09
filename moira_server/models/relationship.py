@@ -1212,6 +1212,13 @@ class PatternGeometryResponse(_StrictModel):
     harmonic: int
     source: str
     required_optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
+    aliases: list[str] = Field(default_factory=list)
+
+
+class PatternDefaultOrbsResponse(_StrictModel):
+    """Default detection limits by pattern name, then aspect name."""
+
+    patterns: dict[str, dict[str, float]]
 
 
 class AspectPatternResponse(_StrictModel):

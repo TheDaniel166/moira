@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from moira import Moira
+from moira.patterns import pattern_default_orbs
 
 from ..dependencies import get_engine
 from ..models.relationship import (
@@ -35,6 +36,7 @@ from ..models.relationship import (
     PatternChartConditionProfileResponse,
     PatternCoherenceSearchResponse,
     PatternConditionNetworkProfileResponse,
+    PatternDefaultOrbsResponse,
     PatternRequest,
     PatternSearchResponse,
     PlanetaryPictureRequest,
@@ -233,6 +235,12 @@ def davison_chart_route(request: DavisonChartRequest, engine: Moira = Depends(ge
 @router.post("/chart-shape/classify", response_model=ChartShapeResponse)
 def chart_shape_route(request: SingleChartAnalysisRequest, engine: Moira = Depends(get_engine)) -> ChartShapeResponse:
     return serialize_chart_shape(compute_chart_shape(engine, request))
+
+
+@router.get("/patterns/default-orbs", response_model=PatternDefaultOrbsResponse)
+def pattern_default_orbs_route() -> PatternDefaultOrbsResponse:
+    """Return the default detection limits before any orb adjustment."""
+    return PatternDefaultOrbsResponse(patterns=pattern_default_orbs())
 
 
 @router.post("/patterns/find", response_model=PatternSearchResponse)

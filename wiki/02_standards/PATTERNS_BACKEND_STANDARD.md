@@ -448,6 +448,7 @@ other layout defaults to the aspect catalog. The most specific setting wins:
 
 The aspect search widens to match, while supplied `aspects` are used as given.
 Each result records the limits it used in `detection_truth.applied_orbs`.
+`pattern_default_orbs()` and `GET /v1/patterns/default-orbs` publish the defaults.
 Coherence grades are unaffected: a link admitted past its fixed reference orb
 grades Marginal.
 

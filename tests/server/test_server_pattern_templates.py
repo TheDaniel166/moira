@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from moira.patterns import find_geometric_patterns, harmonic_pattern_templates
 import pytest
 
 from moira_server.models.relationship import PatternRequest, RelationshipPartyRequest
@@ -119,3 +120,21 @@ def test_a_pattern_orb_is_applied_and_reported(client):
     body = response.json()
     assert body["computation_truth"]["pattern_orbs"] == {name: 0.5}
     assert set(body["events"][0]["detection_truth"]["applied_orbs"].values()) == {0.5}
+
+
+def test_default_orbs_are_published(client):
+    response = client.get("/v1/patterns/default-orbs")
+    assert response.status_code == 200, response.text
+    patterns = response.json()["patterns"]
+    assert patterns["Yod"] == {"Quincunx": 3.0, "Sextile": 3.0}
+    assert patterns["Stellium"] == {"spread": 8.0}
+    assert patterns["Novile Triangle 1-2-3"] == {"Novile": 1.5, "Binovile": 1.5, "Trine": 7.0}
+
+
+def test_layout_aliases_are_reported():
+    from moira_server.serializers.relationship import serialize_aspect_pattern
+
+    template = next(t for t in harmonic_pattern_templates(9) if t.name == "Novile Triangle 1-2-3")
+    positions = {"Sun": 0.0, "Moon": 40.0, "Mars": 120.0}
+    pattern = find_geometric_patterns(positions, (template,))[0]
+    assert serialize_aspect_pattern(pattern).geometry.aliases == ["H9 Triangle 1-2-3"]

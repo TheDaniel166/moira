@@ -899,6 +899,7 @@ def serialize_aspect_pattern(
                 harmonic=pattern.geometry.template.harmonic,
                 source=pattern.geometry.template.source,
                 required_optional_sets=list(pattern.geometry.template.required_optional_sets),
+                aliases=list(pattern.geometry.template.aliases),
             ) if pattern.geometry is not None else None
         ),
         detection_truth=(

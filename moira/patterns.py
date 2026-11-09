@@ -163,6 +163,7 @@ __all__ = [
     "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
     "PATTERN_ALIASES", "resolve_pattern",
     "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
+    "pattern_default_orbs",
     "FROZEN_REFERENCE_ORBS",
     "PATTERN_COHERENCE_POLICY_ID",
     "PatternCoherenceBand",
@@ -2947,6 +2948,33 @@ def _generated_pattern_names() -> dict[str, str]:
             names[template.name] = template.name
             names.update({alias: template.name for alias in template.aliases})
     return names
+
+
+@lru_cache(maxsize=1)
+def _default_orb_table() -> dict[str, dict[str, float]]:
+    """Build the default limits once from the detector table and the aspect catalog."""
+    by_turn = {_aspect_turn(definition.name): definition for definition in ASPECT_DEFINITIONS}
+    table = {name: dict(limits) for name, limits in _DETECTOR_ORBS.items()}
+    table["Stellium"] = {"spread": StelliumPolicy().orb}
+    layouts = [*_NAMED_TEMPLATES.values()]
+    for harmonic in HARMONIC_PATTERN_PRESETS.values():
+        layouts.extend(harmonic_pattern_templates(harmonic, ("triangle", "opposition_rectangle", "polygon")))
+    for layout in layouts:
+        if layout.name not in table:
+            table[layout.name] = {
+                by_turn[turn].name: by_turn[turn].default_orb for _, _, turn in layout.edges
+            }
+    return table
+
+
+def pattern_default_orbs() -> dict[str, dict[str, float]]:
+    """Return the default detection limit of every aspect in every pattern.
+
+    Covers registered patterns and generated harmonic layouts, by the name each
+    reports under. A Stellium has one ``spread`` value instead of aspect limits.
+    These are the limits before ``orb_factor``, ``orbs`` or ``pattern_orbs``.
+    """
+    return {name: dict(limits) for name, limits in _default_orb_table().items()}
 
 
 def _pattern_orb_name(name: object, custom_names: set[str]) -> str:

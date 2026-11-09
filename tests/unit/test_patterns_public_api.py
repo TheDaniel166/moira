@@ -69,6 +69,8 @@ _CURATED_PUBLIC_NAMES = [
     "harmonic_pattern_templates", "triangle_template", "find_geometric_patterns",
     "PATTERN_ALIASES", "resolve_pattern",
     "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
+    "pattern_default_orbs", "evaluate_pattern_coherence", "FROZEN_REFERENCE_ORBS", "PATTERN_COHERENCE_POLICY_ID",
+    "PatternCoherenceBand", "PatternCoherenceResult", "PatternMotionQualifier", "PatternRequiredAspectLedger",
 ]
 
 _INTERNAL_NAMES = [
@@ -101,5 +103,5 @@ class TestModuleAgreement:
                 f"moira.patterns.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_62(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 62
+    def test_curated_count_is_70(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 70

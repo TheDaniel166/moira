@@ -1061,7 +1061,8 @@ Pattern requests accept `pattern_orbs`, one exact detection limit per pattern
 name, and `orbs`, exact limits keyed by aspect name, alongside `orb_factor`. The
 most specific wins, and passing `orbs` ignores `orb_factor`. These widen or narrow
 detection only. Grades keep their fixed reference orbs, and each event reports
-`detection_truth.applied_orbs`.
+`detection_truth.applied_orbs`. `GET /v1/patterns/default-orbs` returns the
+default limits for every pattern, and pattern geometry reports `aliases`.
 
 The policy is exposed via two complementary REST access patterns:
 1. **Dedicated Coherence Endpoint** (`POST /v1/patterns/coherence`): Returns a

@@ -200,3 +200,38 @@ def test_a_pattern_named_twice_through_an_alias_is_refused() -> None:
             LOOSE_YOD, include=[], harmonic_presets=("H9",),
             pattern_orbs={"Novile Triangle 1-2-3": 3.0, "H9 Triangle 1-2-3": 4.0},
         )
+
+
+def test_the_published_defaults_are_the_limits_detection_uses() -> None:
+    from moira.patterns import pattern_default_orbs
+
+    defaults = pattern_default_orbs()
+    assert len(defaults) == 37 + 434
+    assert defaults["Yod"] == {"Sextile": 3.0, "Quincunx": 3.0}
+    assert defaults["Eye"] == {"Semisextile": 2.0, "Sextile": 5.0}
+    assert defaults["Stellium"] == {"spread": 8.0}
+    exact = {"A": 0.0, "B": 60.0, "C": 210.0}
+    used = find_all_patterns(exact, include=["Yod"])[0].detection_truth.applied_orbs
+    assert dict(used) == defaults["Yod"]
+
+
+def test_the_published_defaults_cannot_be_altered_through_the_copy() -> None:
+    from moira.patterns import pattern_default_orbs
+
+    pattern_default_orbs()["Yod"]["Sextile"] = 99.0
+    assert pattern_default_orbs()["Yod"]["Sextile"] == 3.0
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "pattern_default_orbs", "evaluate_pattern_coherence", "FROZEN_REFERENCE_ORBS", "PATTERN_COHERENCE_POLICY_ID",
+        "PatternCoherenceBand", "PatternCoherenceResult", "PatternMotionQualifier", "PatternRequiredAspectLedger",
+    ],
+)
+def test_grading_and_defaults_are_public(name: str) -> None:
+    import moira
+    from moira import facade
+
+    assert getattr(moira, name) is getattr(facade, name)
+    assert name in moira.__all__ and name in facade.__all__

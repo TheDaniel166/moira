@@ -15,6 +15,8 @@ from .patterns import (
     find_large_learning_triangles, find_search_triangles,
     find_irritation_rectangles, find_sextile_chains,
     MATHEMATICAL_PATTERN_TEMPLATES, find_mathematical_patterns,
+    pattern_default_orbs, evaluate_pattern_coherence, FROZEN_REFERENCE_ORBS, PATTERN_COHERENCE_POLICY_ID,
+    PatternCoherenceBand, PatternCoherenceResult, PatternMotionQualifier, PatternRequiredAspectLedger,
 )
 
 from .hypothetical import (
@@ -1631,6 +1633,8 @@ __all__ = [
     "find_large_learning_triangles", "find_search_triangles",
     "find_irritation_rectangles", "find_sextile_chains",
     "MATHEMATICAL_PATTERN_TEMPLATES", "find_mathematical_patterns",
+    "pattern_default_orbs", "evaluate_pattern_coherence", "FROZEN_REFERENCE_ORBS", "PATTERN_COHERENCE_POLICY_ID",
+    "PatternCoherenceBand", "PatternCoherenceResult", "PatternMotionQualifier", "PatternRequiredAspectLedger",
     "ConventionClock", "ProserpinaRule", "LongitudeConvention", "ArtaFourPoints",
     "ArtaOsculatingSet", "HistoricalRealization", "PrescribedHypotheticalOrbit",
     "HypotheticalGeometry", "hypothetical_catalog", "arta_four_points",
