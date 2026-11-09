@@ -2,7 +2,7 @@
 Moira — Aspect Pattern Qualitative Scoring Test Suite
 =====================================================
 
-Policy identifier: moira.pattern_coherence.qualitative.v1-draft
+Policy identifier: moira.pattern_coherence.qualitative.v2-draft
 
 Tests all 8 acceptance requirements and Section 7 synthetic configurations
 stipulated in `docs/architecture/ASPECT_PATTERN_QUALITATIVE_SCORING_V1_DRAFT.md`.
@@ -336,7 +336,7 @@ class TestAllAdmittedTemplates:
         assert res.band is PatternCoherenceBand.VERY_STRONG
 
     def test_unsupported_template_reported_not_assessed(self) -> None:
-        # Stellium or Thor's Hammer should be Not assessed
+        # A Stellium has no aspect links to grade
         s1 = _make_aspect("A", "B", "Square", 90.0)
         p = AspectPattern(name="Stellium", bodies=("A", "B", "C"), aspects=(s1,))
         res = evaluate_pattern_coherence(p)

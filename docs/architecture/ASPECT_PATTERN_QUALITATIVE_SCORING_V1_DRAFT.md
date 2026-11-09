@@ -271,3 +271,42 @@ The probe used existing `find_aspects`, `find_all_patterns`, and
 used no downloads, and changed no runtime source. This is source-contract and
 policy-arithmetic evidence, not the future scorer's full acceptance suite,
 ephemeris accuracy evidence, a production check, or outcome validation.
+
+## 10. v2-draft extension (2026-11-09)
+
+Policy identifier: `moira.pattern_coherence.qualitative.v2-draft`. Sections 1
+to 9 record the v1 draft; this section is the only change of policy.
+
+The ten mathematical constructions are also admitted. Each preserves its
+vertex assignment, and every vertex pair is a required link, taken from that
+preserved geometry. A result without it is not assessed. The two H13 layouts
+are found only when the H13 set is selected. Their grade describes geometry
+only, since those constructions carry no assigned meaning.
+
+Admission now also covers twenty detector-backed templates, each with its
+required links explicitly mapped in `moira/pattern_coherence.py` and tested
+against its own detector: Minor Grand Trine, Grand Sextile, Thor's Hammer,
+Boomerang Yod, Wedge, Hard Wedge, Cradle, Sextile Chain, Trapeze, Eye,
+Irritation Triangle, Dominant Triangle, Small, Medium and Large Learning
+Triangle, Search Triangle, Irritation Rectangle, Grand Quintile, Quintile
+Triangle and Septile Triangle. A Grand Sextile requires its six-sextile ring;
+its trines and oppositions remain supplemental.
+
+The reference table gains the canonical default orbs of the aspects those
+templates use, by the same rule as section 3:
+
+| Aspect | Reference orb B |
+| --- | --- |
+| Semisextile, Semisquare, Sesquiquadrate, Quintile, Biquintile | 2 degrees |
+| Septile, Biseptile, Triseptile, Decile, Tredecile | 1.5 degrees |
+| Vigintile family, Quindecile, Quadraquindecile, Undecile family, Hexadecile, Sesquioctile, Quinsemioctile, Septsemioctile | 1 degree |
+| H13 1/13 through 6/13 | 12/13 degree |
+
+Bands, aggregation, motion qualifiers and the six v1 templates are unchanged,
+so a v1 result keeps its band. Each aspect keeps one reference across all
+patterns; a detector stricter than its reference, such as the 5-degree square
+in Thor's Hammer, therefore cannot reach Marginal on that link. This is the
+v1 behaviour, already true of a Yod's sextile.
+
+Stelliums remain not assessed because they are position-based. Generated
+harmonic templates remain not assessed until they are mapped.

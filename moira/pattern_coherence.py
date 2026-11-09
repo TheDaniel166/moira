@@ -3,7 +3,7 @@ Moira — Aspect Pattern Coherence & Qualitative Scoring
 ======================================================
 
 Archetype: Engine
-Policy identifier: moira.pattern_coherence.qualitative.v1-draft
+Policy identifier: moira.pattern_coherence.qualitative.v2-draft
 
 Purpose
 -------
@@ -45,18 +45,20 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from itertools import permutations
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
 from ._strenum import StrEnum
 from .aspects import AspectData, AspectDomain, MotionState, aspect_motion_witness
+from .pattern_templates import MATHEMATICAL_PATTERN_TEMPLATES
 
 
 # ---------------------------------------------------------------------------
 # Policy Identifiers and Frozen Reference Constants
 # ---------------------------------------------------------------------------
 
-POLICY_ID: str = "moira.pattern_coherence.qualitative.v1-draft"
+POLICY_ID: str = "moira.pattern_coherence.qualitative.v2-draft"
 
 FROZEN_REFERENCE_ORBS: MappingProxyType[str, float] = MappingProxyType({
     "Opposition": 8.0,
@@ -64,6 +66,37 @@ FROZEN_REFERENCE_ORBS: MappingProxyType[str, float] = MappingProxyType({
     "Trine": 7.0,
     "Sextile": 5.0,
     "Quincunx": 3.0,
+    "Semisextile": 2.0,
+    "Semisquare": 2.0,
+    "Sesquiquadrate": 2.0,
+    "Quintile": 2.0,
+    "Biquintile": 2.0,
+    "Septile": 1.5,
+    "Biseptile": 1.5,
+    "Triseptile": 1.5,
+    "Decile": 1.5,
+    "Tredecile": 1.5,
+    "Vigintile": 1.0,
+    "Trivigintile": 1.0,
+    "Septvigintile": 1.0,
+    "Nonavigintile": 1.0,
+    "Quindecile": 1.0,
+    "Quadraquindecile": 1.0,
+    "Undecile": 1.0,
+    "Biundecile": 1.0,
+    "Triundecile": 1.0,
+    "Quadriundecile": 1.0,
+    "Quinqueundecile": 1.0,
+    "Hexadecile": 1.0,
+    "Sesquioctile": 1.0,
+    "Quinsemioctile": 1.0,
+    "Septsemioctile": 1.0,
+    "H13 1/13": 12.0 / 13.0,
+    "H13 2/13": 12.0 / 13.0,
+    "H13 3/13": 12.0 / 13.0,
+    "H13 4/13": 12.0 / 13.0,
+    "H13 5/13": 12.0 / 13.0,
+    "H13 6/13": 12.0 / 13.0,
 })
 
 _ADMITTED_PATTERNS: frozenset[str] = frozenset({
@@ -73,6 +106,60 @@ _ADMITTED_PATTERNS: frozenset[str] = frozenset({
     "Yod",
     "Mystic Rectangle",
     "Kite",
+})
+
+_RING_OF_SIX = tuple((i, (i + 1) % 6, "Sextile") for i in range(6))
+_PENTAGON = (
+    tuple((i, (i + 1) % 5, "Quintile") for i in range(5))
+    + tuple((i, (i + 2) % 5, "Biquintile") for i in range(5))
+)
+
+# Required links for the patterns added in v2, as (vertex, vertex, aspect).
+# Each entry mirrors its detector in moira.patterns; the second field is the
+# apex vertex, or None. Links a detector reports beyond these are supplemental.
+_EDGE_TEMPLATES: MappingProxyType[str, tuple[tuple[tuple[int, int, str], ...], int | None]] = MappingProxyType({
+    "Minor Grand Trine": (((0, 1, "Trine"), (0, 2, "Sextile"), (1, 2, "Sextile")), None),
+    "Grand Sextile": (_RING_OF_SIX, None),
+    "Thor's Hammer": (((0, 1, "Square"), (0, 2, "Sesquiquadrate"), (1, 2, "Sesquiquadrate")), 2),
+    "Boomerang Yod": (
+        ((0, 1, "Sextile"), (0, 2, "Quincunx"), (1, 2, "Quincunx"), (3, 2, "Opposition")), 2,
+    ),
+    "Wedge": (((0, 1, "Opposition"), (2, 0, "Trine"), (2, 1, "Sextile")), 2),
+    "Hard Wedge": (((0, 1, "Opposition"), (2, 0, "Semisquare"), (2, 1, "Sesquiquadrate")), 2),
+    "Cradle": (
+        (
+            (0, 3, "Opposition"), (0, 1, "Trine"), (2, 3, "Trine"),
+            (1, 2, "Sextile"), (0, 2, "Sextile"), (1, 3, "Sextile"),
+        ),
+        None,
+    ),
+    "Sextile Chain": (
+        ((0, 1, "Sextile"), (1, 2, "Sextile"), (2, 3, "Sextile"), (0, 3, "Opposition")), None,
+    ),
+    "Trapeze": (
+        (
+            (0, 1, "Square"), (0, 2, "Quincunx"), (0, 3, "Trine"),
+            (1, 2, "Sextile"), (1, 3, "Quincunx"), (2, 3, "Square"),
+        ),
+        None,
+    ),
+    "Eye": (((0, 1, "Semisextile"), (1, 2, "Semisextile"), (0, 2, "Sextile")), 1),
+    "Irritation Triangle": (((0, 1, "Semisextile"), (1, 2, "Quincunx"), (0, 2, "Opposition")), 1),
+    "Dominant Triangle": (((0, 1, "Square"), (1, 2, "Trine"), (0, 2, "Quincunx")), None),
+    "Small Learning Triangle": (((0, 1, "Semisextile"), (1, 2, "Sextile"), (0, 2, "Square")), None),
+    "Medium Learning Triangle": (((0, 1, "Semisextile"), (1, 2, "Square"), (0, 2, "Trine")), None),
+    "Large Learning Triangle": (((0, 1, "Sextile"), (1, 2, "Square"), (0, 2, "Quincunx")), None),
+    "Search Triangle": (((0, 1, "Semisextile"), (1, 2, "Trine"), (0, 2, "Quincunx")), None),
+    "Irritation Rectangle": (
+        (
+            (0, 1, "Semisextile"), (0, 2, "Opposition"), (0, 3, "Quincunx"),
+            (1, 2, "Quincunx"), (1, 3, "Opposition"), (2, 3, "Semisextile"),
+        ),
+        None,
+    ),
+    "Grand Quintile": (_PENTAGON, None),
+    "Quintile Triangle": (((0, 1, "Quintile"), (0, 2, "Biquintile"), (1, 2, "Biquintile")), 2),
+    "Septile Triangle": (((0, 1, "Septile"), (1, 2, "Biseptile"), (0, 2, "Triseptile")), None),
 })
 
 _RELATION_PHRASES: MappingProxyType[str, str] = MappingProxyType({
@@ -273,14 +360,15 @@ def _extract_template_edges(
     pattern: object,
 ) -> tuple[tuple[AspectData, ...] | None, tuple[AspectData, ...], str | None]:
     """
-    Extract required and supplemental edges for the six admitted pattern templates.
+    Extract required and supplemental edges for the admitted pattern templates.
 
     Returns (required_aspects, supplemental_aspects, failure_reason).
     If the template is unsupported or required aspects are invalid, required_aspects is None.
     """
     name = getattr(pattern, "name", None)
-    if not isinstance(name, str) or name not in _ADMITTED_PATTERNS:
-        return None, (), f"Unsupported pattern template {name!r}; admitted patterns are {sorted(_ADMITTED_PATTERNS)}"
+    admitted = _ADMITTED_PATTERNS | set(_EDGE_TEMPLATES) | set(MATHEMATICAL_PATTERN_TEMPLATES)
+    if not isinstance(name, str) or name not in admitted:
+        return None, (), f"Unsupported pattern template {name!r}; admitted patterns are {sorted(admitted)}"
 
     raw_aspects: tuple[AspectData, ...] = tuple(getattr(pattern, "aspects", ()))
     bodies: tuple[str, ...] = tuple(getattr(pattern, "bodies", ()))
@@ -322,6 +410,43 @@ def _extract_template_edges(
 
     def get_link(b1: str, b2: str, asp_name: str) -> AspectData | None:
         return edge_map.get((frozenset({b1, b2}), asp_name))
+
+    # Mathematical layouts preserve their vertex assignment; every pair is required.
+    if name in MATHEMATICAL_PATTERN_TEMPLATES:
+        geometry = getattr(pattern, "geometry", None)
+        template = getattr(geometry, "template", None)
+        vertices = tuple(getattr(geometry, "vertex_bodies", ()))
+        if template != MATHEMATICAL_PATTERN_TEMPLATES[name] or len(vertices) != len(template.phases):
+            return None, (), f"{name} requires its preserved geometric vertex assignment"
+        required_links: list[AspectData] = []
+        for i, j, turn in template.edges:
+            matches = [
+                asp for asp in deduped_aspects
+                if {asp.body1, asp.body2} == {vertices[i], vertices[j]}
+                and abs(asp.angle - float(turn * 360)) <= 1e-6
+            ]
+            if len(matches) != 1:
+                return None, (), f"Missing required aspect link for {name}"
+            required_links.append(matches[0])
+        required = tuple(required_links)
+        supplemental = tuple(a for a in deduped_aspects if a not in required)
+        return required, supplemental, None
+
+    # Patterns added in v2: find the body assignment that carries every link.
+    if name in _EDGE_TEMPLATES:
+        edges, apex_vertex = _EDGE_TEMPLATES[name]
+        vertex_count = 1 + max(max(i, j) for i, j, _ in edges)
+        if len(bodies) != vertex_count:
+            return None, (), f"{name} requires exactly {vertex_count} bodies, found {len(bodies)}"
+        for assignment in permutations(bodies):
+            if apex is not None and apex_vertex is not None and assignment[apex_vertex] != apex:
+                continue
+            links = [get_link(assignment[i], assignment[j], aspect) for i, j, aspect in edges]
+            if all(links):
+                required = tuple(link for link in links if link is not None)
+                supplemental = tuple(a for a in deduped_aspects if a not in required)
+                return required, supplemental, None
+        return None, (), f"Aspect links do not form a valid closed {name} topology"
 
     # Pattern-specific template matching
     if name == "T-Square":

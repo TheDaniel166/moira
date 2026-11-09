@@ -109,7 +109,7 @@ def test_pattern_coherence_route_contract_with_engine(client_with_engine: TestCl
 
     # If any patterns are found in the natal chart, verify adherence to qualitative scoring doctrine
     for ev in events:
-        assert ev["policy_id"] == "moira.pattern_coherence.qualitative.v1-draft"
+        assert ev["policy_id"] == "moira.pattern_coherence.qualitative.v2-draft"
         assert ev["band"] in {b.value for b in PatternCoherenceBand}
         assert ev["motion_qualifier"] is None or ev["motion_qualifier"] in {m.value for m in PatternMotionQualifier}
         assert isinstance(ev["plain_language_summary"], str)
@@ -192,7 +192,7 @@ def test_pattern_coherence_route_kernel_free_mock(monkeypatch: pytest.MonkeyPatc
     assert len(result.events) == 1
 
     ev = result.events[0]
-    assert ev.policy_id == "moira.pattern_coherence.qualitative.v1-draft"
+    assert ev.policy_id == "moira.pattern_coherence.qualitative.v2-draft"
     assert ev.pattern_name == "Grand Trine"
     assert ev.band == PatternCoherenceBand.STRONG.value  # 1.2 / 7.0 = 0.1714 <= 0.25 -> Strong
     assert ev.motion_qualifier == PatternMotionQualifier.MOTION_UNAVAILABLE.value
@@ -240,7 +240,7 @@ def test_pattern_coherence_service_direct(monkeypatch: pytest.MonkeyPatch) -> No
     assert len(paired) >= 1
     pattern, coherence = paired[0]
     assert pattern.name == "Grand Trine"
-    assert coherence.policy_id == "moira.pattern_coherence.qualitative.v1-draft"
+    assert coherence.policy_id == "moira.pattern_coherence.qualitative.v2-draft"
     assert coherence.is_assessed is True
     assert coherence.band in (PatternCoherenceBand.VERY_STRONG, PatternCoherenceBand.STRONG)
 

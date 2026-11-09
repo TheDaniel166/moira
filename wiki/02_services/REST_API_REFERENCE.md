@@ -1053,7 +1053,7 @@ named figures; no new interpretive scoring is attached to them.
 ### Aspect Pattern Qualitative Scoring And Coherence Policy
 
 Aspect pattern qualitative evaluation implements policy
-`moira.pattern_coherence.qualitative.v1-draft`. It provides deterministic,
+`moira.pattern_coherence.qualitative.v2-draft`. It provides deterministic,
 astronomically disciplined assessment of closed multi-body aspect patterns
 without ad-hoc scoring or ungrounded scalar percentages.
 

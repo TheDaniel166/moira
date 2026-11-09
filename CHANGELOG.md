@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Pattern coherence policy `v2-draft` grades thirty more aspect patterns,
+  including the ten mathematical layouts, with catalog reference orbs for the
+  aspects they add. Existing grades do not change.
+
 ### Fixed
 - Reject planetary queries that would reuse a warmed cache after their reader
   or kernel pool has closed.
