@@ -27,14 +27,14 @@
     }
   ],
   "doctrine_text_changed": false,
-  "engine_version": "6.12.1",
-  "evidence_source_revision": "3ebb8777aaf38ccc4d28b14cac2c5b65a8694c6f",
+  "engine_version": "6.13.0",
+  "evidence_source_revision": "ddfe6b88c819534b10f34cc3ee6e0162fba9a8ba",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "f6d586f0d0f2688d132a10ebb31e0e7339310347cb381b70a21c19f76a5aa4f5",
+  "inventory_fingerprint_sha256": "23d2624007cb3eed2a45771b4ff948804658de1a28e55aa7293981d44b316663",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Bounded replay contracts cover 219 calculations and do not generalize to their entire families.",
-    "All 1339 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
+    "All 1341 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
   ],
   "links": {
     "assurance_matrix": "wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.json",
@@ -46,12 +46,12 @@
   "publication_disposition": "exact_release_status",
   "schema_version": "moira.lightbox-current-status/v2",
   "summary": {
-    "canonical_calculations": 1339,
+    "canonical_calculations": 1341,
     "conformant": 0,
     "family_dispositions": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 141,
+      "partial": 142,
       "strong_exemplar": 4,
       "unresolved": 0
     },
@@ -67,10 +67,10 @@
     "replayed_contracts": 69,
     "replayed_contracts_passed_exact_source": 69,
     "replayed_contracts_passed_local": 0,
-    "reviewed_families": 159,
+    "reviewed_families": 160,
     "surfaces_with_replay_contracts": 219,
-    "surfaces_without_replay_contracts": 1120,
-    "unresolved": 1120
+    "surfaces_without_replay_contracts": 1122,
+    "unresolved": 1122
   },
   "universal_current_conformance_supported": false
 }
