@@ -1057,6 +1057,12 @@ Aspect pattern qualitative evaluation implements policy
 astronomically disciplined assessment of closed multi-body aspect patterns
 without ad-hoc scoring or ungrounded scalar percentages.
 
+Pattern requests accept `pattern_orbs`, one exact detection limit per pattern
+name, and `orbs`, exact limits keyed by aspect name, alongside `orb_factor`. The
+most specific wins, and passing `orbs` ignores `orb_factor`. These widen or narrow
+detection only. Grades keep their fixed reference orbs, and each event reports
+`detection_truth.applied_orbs`.
+
 The policy is exposed via two complementary REST access patterns:
 1. **Dedicated Coherence Endpoint** (`POST /v1/patterns/coherence`): Returns a
    `PatternCoherenceSearchResponse` containing a list of `PatternCoherenceResponse`

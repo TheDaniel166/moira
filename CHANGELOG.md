@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Pattern detection accepts `pattern_orbs`, one exact limit per pattern, and
+  `orbs`, exact limits by aspect name or angle, beside `orb_factor`. The most
+  specific setting wins. Defaults are unchanged, and each result records the
+  limits it used.
+
 ### Changed
 - Pattern coherence policy `v2-draft` grades thirty more aspect patterns,
-  including the ten mathematical layouts, with catalog reference orbs for the
-  aspects they add. Existing grades do not change.
+  including the ten mathematical layouts, and every generated harmonic layout,
+  with catalog reference orbs for the aspects they add. Existing grades do not
+  change.
 - Generated harmonic layouts are named by family, such as `Novile Triangle
   1-2-3`. Layouts matching a registered pattern take its name and apex. The
   numbered forms remain in `GeometricPatternTemplate.aliases`, but

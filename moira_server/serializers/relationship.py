@@ -786,6 +786,7 @@ def serialize_pattern_detection_truth(
         centroid_longitude=truth.centroid_longitude,
         max_body_distance=truth.max_body_distance,
         orb_limit=truth.orb_limit,
+        applied_orbs=dict(truth.applied_orbs),
     )
 
 
@@ -946,6 +947,8 @@ def serialize_pattern_search_truth(
                         else "standard_longitude"),
         include_nodes=request.include_nodes,
         orb_factor=request.orb_factor,
+        orbs=dict(request.orbs),
+        pattern_orbs=dict(request.pattern_orbs),
         selection_mode=(
             "all_registered_patterns"
             if request.include is None

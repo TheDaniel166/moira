@@ -79,6 +79,10 @@ def test_custom_exact_template_is_round_tripped(client):
     {"templates": [{"name": "bad", "phases": [[0, 1], [1.0, 7], [2, 7]]}]},
     {"templates": [{"name": "bad", "phases": [[False, 1], [1, 7], [2, 7]]}]},
     {"templates": [{"name": "Eye", "phases": [[0, 1], [1, 12], [1, 6]]}]},
+    {"orbs": {"Not an aspect": 3.0}},
+    {"orbs": {"Sextile": 0.0}},
+    {"pattern_orbs": {"Not a pattern": 3.0}},
+    {"pattern_orbs": {"Yod": 0.0}},
 ])
 def test_invalid_selections_fail_before_chart_computation(client, extra):
     response = client.post("/v1/patterns/find", json=_payload(**extra))
@@ -92,3 +96,26 @@ def test_pattern_alias_receipt_preserves_requested_and_resolved_names():
     assert truth.resolved_patterns == ["Eye"]
     assert truth.aspect_catalog == "standard_longitude"
     assert truth.optional_sets == truth.harmonic_presets == []
+
+
+def test_explicit_orbs_are_applied_and_reported(client):
+    response = client.post(
+        "/v1/patterns/find",
+        json=_payload(optional_sets=["H13"], harmonic_presets=["H13"], orbs={"H13 1/13": 0.5}),
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["computation_truth"]["orbs"] == {"H13 1/13": 0.5}
+    assert body["events"][0]["detection_truth"]["applied_orbs"]["H13 1/13"] == 0.5
+
+
+def test_a_pattern_orb_is_applied_and_reported(client):
+    name = "H13 Triangle 1-1-2"
+    response = client.post(
+        "/v1/patterns/find",
+        json=_payload(optional_sets=["H13"], harmonic_presets=["H13"], pattern_orbs={name: 0.5}),
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["computation_truth"]["pattern_orbs"] == {name: 0.5}
+    assert set(body["events"][0]["detection_truth"]["applied_orbs"].values()) == {0.5}

@@ -502,6 +502,8 @@ def test_lightbox_pattern_route_exposes_selection_truth(
         "motion_source": "chart_longitude_rates_for_coherence",
         "include_nodes": False,
         "orb_factor": 0.8,
+        "orbs": {},
+        "pattern_orbs": {},
         "selection_mode": "explicit_pattern_names",
         "requested_patterns": ["T-Square", "Grand Trine"],
         "resolved_patterns": ["T-Square", "Grand Trine"],

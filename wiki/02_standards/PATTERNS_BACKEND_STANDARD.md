@@ -435,6 +435,22 @@ quintile/biquintile 2. Generic templates use the complete
 [aspect catalog's defaults](ASPECT_CATALOG.md), including `12/H` degrees for
 the optional primitive harmonic targets. These are Moira orb policies.
 
+Detection limits have a default and two adjustments, as regular aspects do.
+Named detectors default to the per-pattern limits in `_DETECTOR_ORBS`; every
+other layout defaults to the aspect catalog. The most specific setting wins:
+
+1. `pattern_orbs`, keyed by pattern name, sets one exact limit for every aspect
+   in that pattern, and a Stellium's spread.
+2. `orbs`, keyed by aspect name or catalog angle, sets an exact limit for that
+   aspect in every pattern. As with regular aspects, passing it ignores
+   `orb_factor`, and aspects not named keep their plain defaults.
+3. `orb_factor` scales every default.
+
+The aspect search widens to match, while supplied `aspects` are used as given.
+Each result records the limits it used in `detection_truth.applied_orbs`.
+Coherence grades are unaffected: a link admitted past its fixed reference orb
+grades Marginal.
+
 `harmonic_pattern_templates(H, shapes=("triangle",))` generates all distinct
 triangle layouts on that grid. `shapes` may additionally select
 `"opposition_rectangle"` and `"polygon"`. Rectangles require two oppositions

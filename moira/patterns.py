@@ -81,11 +81,13 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field, replace
 from fractions import Fraction
+from functools import lru_cache
 from itertools import combinations, permutations
 from types import MappingProxyType
 from typing import Mapping
 from ._strenum import StrEnum
 
+from .aspect_registry import ASPECT_DEFINITIONS, resolve_aspect
 from .aspects import AspectData, find_aspects
 from .coordinates import angular_distance
 from .constants import Aspect
@@ -256,6 +258,8 @@ class PatternComputationPolicy:
     optional_sets: tuple[str, ...] = ()
     templates: tuple[GeometricPatternTemplate, ...] = ()
     harmonic_presets: tuple[str, ...] = ()
+    orbs: PatternOrbs | tuple[tuple[float, float], ...] = ()
+    pattern_orbs: Mapping[str, float] | tuple[tuple[str, float], ...] = ()
 
     @property
     def is_default(self) -> bool:
@@ -293,6 +297,7 @@ class PatternDetectionTruth:
     centroid_longitude: float | None = None
     max_body_distance: float | None = None
     orb_limit: float | None = None
+    applied_orbs: tuple[tuple[str, float], ...] = ()
 
     def __post_init__(self) -> None:
         if self.source_kind not in {"aspect", "position"}:
@@ -1120,6 +1125,108 @@ def _build_body_roles(
     return tuple(roles)
 
 
+PatternOrbs = Mapping[str | float, float] | tuple[tuple[float, float], ...] | None
+
+# Default detection limits for the patterns with their own doctrine. Every other
+# layout uses the aspect catalog's default orb. All of these scale by orb_factor.
+_DETECTOR_ORBS: Mapping[str, Mapping[str, float]] = MappingProxyType({
+    "T-Square": {"Opposition": 8.0, "Square": 7.0},
+    "Grand Trine": {"Trine": 7.0},
+    "Grand Cross": {"Opposition": 8.0, "Square": 7.0},
+    "Yod": {"Sextile": 3.0, "Quincunx": 3.0},
+    "Mystic Rectangle": {"Trine": 7.0, "Sextile": 5.0, "Opposition": 8.0},
+    "Kite": {"Trine": 7.0, "Sextile": 5.0, "Opposition": 8.0},
+    "Minor Grand Trine": {"Trine": 7.0, "Sextile": 3.0},
+    "Grand Sextile": {"Sextile": 3.0, "Trine": 7.0, "Opposition": 8.0},
+    "Thor's Hammer": {"Square": 5.0, "Sesquiquadrate": 2.0},
+    "Boomerang Yod": {"Sextile": 3.0, "Quincunx": 3.0, "Opposition": 5.0},
+    "Wedge": {"Opposition": 8.0, "Trine": 5.0, "Sextile": 5.0},
+    "Cradle": {"Opposition": 8.0, "Trine": 7.0, "Sextile": 5.0},
+    "Sextile Chain": {"Opposition": 8.0, "Sextile": 5.0},
+    "Hard Wedge": {"Opposition": 8.0, "Semisquare": 2.0, "Sesquiquadrate": 2.0},
+    "Quintile Triangle": {"Quintile": 2.0, "Biquintile": 2.0},
+    "Septile Triangle": {"Septile": 1.5, "Biseptile": 1.5, "Triseptile": 1.5},
+})
+
+
+def _checked_orb(label: object, value: object) -> float:
+    """Return one explicit orb, refusing anything but a positive finite number."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+        raise ValueError(f"Pattern orb for {label!r} must be a positive finite number")
+    return float(value)
+
+
+def _normalized_pattern_orbs(orbs: PatternOrbs) -> dict[float, float]:
+    """Return exact limits keyed by catalog angle, from aspect names or catalog angles."""
+    if not orbs:
+        return {}
+    items = orbs.items() if isinstance(orbs, Mapping) else orbs
+    normalized: dict[float, float] = {}
+    for key, value in items:
+        if isinstance(key, str):
+            angle = resolve_aspect(key).angle
+        elif isinstance(key, (int, float)) and not isinstance(key, bool):
+            angle = next((d.angle for d in ASPECT_DEFINITIONS if abs(d.angle - key) <= 1e-9), None)
+            if angle is None:
+                raise ValueError(f"Pattern orbs angle {key!r} is not a catalog aspect")
+        else:
+            raise ValueError("Pattern orbs must be keyed by aspect name or catalog angle")
+        normalized[angle] = _checked_orb(key, value)
+    return normalized
+
+
+def _resolved_limit(
+    default: float, angle: float, orb_factor: float, orbs: dict[float, float], pattern_orb: float | None,
+) -> float:
+    """Apply the one precedence rule: pattern orb, then aspect orbs, then the factor."""
+    if pattern_orb is not None:
+        return _checked_orb("pattern_orb", pattern_orb)
+    if orbs:
+        return orbs.get(angle, default)
+    return default * orb_factor
+
+
+def _detector_orb(
+    pattern: str, aspect: str, orb_factor: float, orbs: PatternOrbs, pattern_orb: float | None = None,
+) -> float:
+    """Return one named detector's limit under the precedence rule."""
+    angle = resolve_aspect(aspect).angle
+    return _resolved_limit(_DETECTOR_ORBS[pattern][aspect], angle, orb_factor, _normalized_pattern_orbs(orbs), pattern_orb)
+
+
+def _catalog_orb(definition, orb_factor: float, orbs: dict[float, float] | None, pattern_orb: float | None = None) -> float:
+    """Return one catalog limit under the precedence rule."""
+    return _resolved_limit(definition.default_orb, definition.angle, orb_factor, orbs or {}, pattern_orb)
+
+
+def _aspect_scan_orbs(
+    orb_factor: float, orbs: PatternOrbs, pattern_orbs: Mapping[str, float] | tuple | None = None,
+) -> dict[float, float] | None:
+    """Widen the aspect search to every explicit limit, leaving the default search untouched."""
+    normalized = _normalized_pattern_orbs(orbs)
+    widest_pattern_orb = max(dict(pattern_orbs or ()).values(), default=None)
+    if not normalized and widest_pattern_orb is None:
+        return None
+    return {
+        d.angle: max(_catalog_orb(d, orb_factor, normalized), widest_pattern_orb or 0.0)
+        for d in ASPECT_DEFINITIONS
+    }
+
+
+def _applied_orbs(
+    name: str, aspects: tuple[AspectData, ...], orb_factor: float, orbs: PatternOrbs, pattern_orb: float | None = None,
+) -> tuple[tuple[str, float], ...]:
+    """Record the limit each aspect in this pattern was admitted under."""
+    normalized = _normalized_pattern_orbs(orbs)
+    applied: dict[str, float] = {}
+    for aspect in aspects:
+        if name in _DETECTOR_ORBS and aspect.aspect in _DETECTOR_ORBS[name]:
+            applied[aspect.aspect] = _detector_orb(name, aspect.aspect, orb_factor, normalized, pattern_orb)
+        else:
+            applied[aspect.aspect] = _catalog_orb(resolve_aspect(aspect.aspect), orb_factor, normalized, pattern_orb)
+    return tuple(sorted(applied.items()))
+
+
 def _make_pattern(
     *,
     name: str,
@@ -1135,6 +1242,8 @@ def _make_pattern(
     max_body_distance: float | None = None,
     orb_limit: float | None = None,
     geometry: PatternGeometryTruth | None = None,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> AspectPattern:
     """Construct an AspectPattern with preserved detector-path truth."""
 
@@ -1147,6 +1256,7 @@ def _make_pattern(
         centroid_longitude=centroid_longitude,
         max_body_distance=max_body_distance,
         orb_limit=orb_limit,
+        applied_orbs=_applied_orbs(name, aspects, orb_factor, orbs, pattern_orb),
     )
     classification = _classify_pattern_truth(name=name, bodies=bodies, apex=apex, detection_truth=detection_truth)
     contributions = _build_pattern_contributions(
@@ -1309,7 +1419,7 @@ def _check_templates(templates, catalog) -> None:
             )
 
 
-def _geometry_orientation(template, assigned, positions, catalog, orb_factor):
+def _geometry_orientation(template, assigned, positions, catalog, orb_factor, orbs=None, pattern_orb=None):
     """Describe orientation against increasing longitude, retaining broad-orb ambiguity."""
     if positions is None:
         return None
@@ -1320,7 +1430,7 @@ def _geometry_orientation(template, assigned, positions, catalog, orb_factor):
     for index, body in enumerate(assigned[1:], 1):
         phase = template.phases[index]
         delta = (positions[body] - origin) % 360
-        limit = catalog[min(phase, 1 - phase)].default_orb * orb_factor
+        limit = _catalog_orb(catalog[min(phase, 1 - phase)], orb_factor, orbs, pattern_orb)
         forward &= angular_distance(delta, float(phase * 360)) <= limit + 1e-9
         reflected &= angular_distance(delta, float((1 - phase) * 360)) <= limit + 1e-9
     if forward != reflected:
@@ -1329,9 +1439,10 @@ def _geometry_orientation(template, assigned, positions, catalog, orb_factor):
 
 
 def _match_geometric_template(
-    template, aspect_map, bodies, catalog, orb_factor, positions, detector, edge_cache,
+    template, aspect_map, bodies, catalog, orb_factor, positions, detector, edge_cache, orbs=None, pattern_orb=None,
 ) -> list[AspectPattern]:
     """Backtrack over compatible edges, requiring the complete geometric pair ledger."""
+    orbs = _normalized_pattern_orbs(orbs)
     count = len(template.phases)
     if len(bodies) < count:
         return []
@@ -1344,11 +1455,11 @@ def _match_geometric_template(
             for second in bodies:
                 if first == second:
                     continue
-                key = (turn, *sorted((first, second)))
+                key = (turn, pattern_orb, *sorted((first, second)))
                 if key not in edge_cache:
                     aspect = _get_aspect(
                         aspect_map, first, second, definition.angle,
-                        definition.default_orb * orb_factor,
+                        _catalog_orb(definition, orb_factor, orbs, pattern_orb),
                     )
                     if aspect is not None and aspect.orb > aspect.allowed_orb + 1e-9:
                         aspect = None
@@ -1372,7 +1483,7 @@ def _match_geometric_template(
             if body_set in seen:
                 return
             seen.add(body_set)
-            aspects = tuple(edge_cache[(turn, *sorted((assigned[i], assigned[j])))]
+            aspects = tuple(edge_cache[(turn, pattern_orb, *sorted((assigned[i], assigned[j])))]
                             for i, j, turn in template.edges)
             apex = None if template.apex_index is None else assigned[template.apex_index]
             ordered = tuple(sorted(body_set - {apex})) + ((apex,) if apex is not None else ())
@@ -1392,11 +1503,11 @@ def _match_geometric_template(
                 }
             results.append(_make_pattern(
                 name=template.name, bodies=ordered, aspects=aspects, apex=apex,
-                detector=detector, orb_factor=orb_factor, role_overrides=roles,
+                detector=detector, orb_factor=orb_factor, orbs=orbs, pattern_orb=pattern_orb, role_overrides=roles,
                 aspect_role_overrides=aspect_roles,
                 geometry=PatternGeometryTruth(
                     template, tuple(assigned),
-                    _geometry_orientation(template, assigned, positions, catalog, orb_factor),
+                    _geometry_orientation(template, assigned, positions, catalog, orb_factor, orbs, pattern_orb),
                 ),
             ))
             return
@@ -1417,6 +1528,8 @@ def find_geometric_patterns(
     aspects: list[AspectData] | None = None,
     optional_sets: tuple[str, ...] = (),
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orbs: Mapping[str, float] | None = None,
 ) -> list[AspectPattern]:
     """Match exact closed layouts using selected catalog aspects and their default orbs.
 
@@ -1428,13 +1541,15 @@ def find_geometric_patterns(
     """
     positions = _validate_positions(positions)
     policy = _validate_policy(PatternComputationPolicy(
-        orb_factor=orb_factor, optional_sets=optional_sets, templates=templates,
+        orb_factor=orb_factor, optional_sets=optional_sets, templates=templates, orbs=orbs or (),
+        pattern_orbs=pattern_orbs or (),
     ))
     catalog = _template_catalog(policy.optional_sets)
     _check_templates(templates, catalog)
     if aspects is None:
         aspects = find_aspects(positions, tier=2, optional_sets=policy.optional_sets,
-                               orb_factor=orb_factor)
+                               orb_factor=orb_factor,
+                               orbs=_aspect_scan_orbs(orb_factor, policy.orbs, policy.pattern_orbs))
     else:
         aspects = _validate_aspects(aspects)
     aspect_map = _build_aspect_map(aspects)
@@ -1443,12 +1558,14 @@ def find_geometric_patterns(
     for template in templates:
         found.extend(_match_geometric_template(
             template, aspect_map, sorted(positions), catalog, orb_factor, positions,
-            "find_geometric_patterns", cache,
+            "find_geometric_patterns", cache, policy.orbs, dict(policy.pattern_orbs).get(template.name),
         ))
     return sorted(found, key=lambda pattern: (pattern.name, pattern.bodies))
 
 
-def _find_named_template(aspects, name, orb_factor, detector, positions=None, optional_sets=()):
+def _find_named_template(
+    aspects, name, orb_factor, detector, positions=None, optional_sets=(), orbs=None, pattern_orb=None,
+):
     """Use shared geometry for a source-qualified built-in detector."""
     _validate_policy(PatternComputationPolicy(orb_factor=orb_factor))
     aspects = _validate_aspects(aspects)
@@ -1457,7 +1574,7 @@ def _find_named_template(aspects, name, orb_factor, detector, positions=None, op
     _check_templates((_NAMED_TEMPLATES[name],), catalog)
     return _match_geometric_template(
         _NAMED_TEMPLATES[name], _build_aspect_map(aspects), bodies,
-        catalog, orb_factor, positions, detector, {},
+        catalog, orb_factor, positions, detector, {}, orbs, pattern_orb,
     )
 
 
@@ -1491,33 +1608,33 @@ def find_mathematical_patterns(
     )
 
 
-def find_small_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+def find_small_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0, orbs: PatternOrbs = None, pattern_orb: float | None = None) -> list[AspectPattern]:
     """Huber Small Learning Triangle: 30, 60, 90 degrees; catalog orbs times orb_factor."""
     return _find_named_template(aspects, "Small Learning Triangle", orb_factor,
-                                "find_small_learning_triangles")
+                                "find_small_learning_triangles", orbs=orbs, pattern_orb=pattern_orb)
 
 
-def find_medium_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+def find_medium_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0, orbs: PatternOrbs = None, pattern_orb: float | None = None) -> list[AspectPattern]:
     """Huber Medium Learning Triangle: 30, 90, 120 degrees; catalog orbs times orb_factor."""
     return _find_named_template(aspects, "Medium Learning Triangle", orb_factor,
-                                "find_medium_learning_triangles")
+                                "find_medium_learning_triangles", orbs=orbs, pattern_orb=pattern_orb)
 
 
-def find_large_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+def find_large_learning_triangles(aspects: list[AspectData], orb_factor: float = 1.0, orbs: PatternOrbs = None, pattern_orb: float | None = None) -> list[AspectPattern]:
     """Huber Large Learning Triangle: 60, 90, 150 degrees; catalog orbs times orb_factor."""
     return _find_named_template(aspects, "Large Learning Triangle", orb_factor,
-                                "find_large_learning_triangles")
+                                "find_large_learning_triangles", orbs=orbs, pattern_orb=pattern_orb)
 
 
-def find_search_triangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+def find_search_triangles(aspects: list[AspectData], orb_factor: float = 1.0, orbs: PatternOrbs = None, pattern_orb: float | None = None) -> list[AspectPattern]:
     """Huber Search Triangle: 30, 120, 150 degrees; catalog orbs times orb_factor."""
-    return _find_named_template(aspects, "Search Triangle", orb_factor, "find_search_triangles")
+    return _find_named_template(aspects, "Search Triangle", orb_factor, "find_search_triangles", orbs=orbs, pattern_orb=pattern_orb)
 
 
-def find_irritation_rectangles(aspects: list[AspectData], orb_factor: float = 1.0) -> list[AspectPattern]:
+def find_irritation_rectangles(aspects: list[AspectData], orb_factor: float = 1.0, orbs: PatternOrbs = None, pattern_orb: float | None = None) -> list[AspectPattern]:
     """Huber Irritation Rectangle: two each of 30, 150, 180 degrees; catalog orbs."""
     return _find_named_template(aspects, "Irritation Rectangle", orb_factor,
-                                "find_irritation_rectangles")
+                                "find_irritation_rectangles", orbs=orbs, pattern_orb=pattern_orb)
 
 
 # ---------------------------------------------------------------------------
@@ -1527,14 +1644,16 @@ def find_irritation_rectangles(aspects: list[AspectData], orb_factor: float = 1.
 def find_t_squares(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     T-Square: body_A opposition body_B, both square body_C (apex).
 
     Orbs: opposition 8° * orb_factor, square 7° * orb_factor.
     """
-    opp_orb = 8.0 * orb_factor
-    sq_orb  = 7.0 * orb_factor
+    opp_orb = _detector_orb("T-Square", "Opposition", orb_factor, orbs, pattern_orb)
+    sq_orb  = _detector_orb("T-Square", "Square", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1552,6 +1671,8 @@ def find_t_squares(
                     apex=apex,
                     detector="find_t_squares",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base"},
                 ))
                 break
@@ -1562,13 +1683,15 @@ def find_t_squares(
 def find_grand_trines(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Grand Trine: three bodies all trine (120°) each other.
 
     Orb: 7° * orb_factor.
     """
-    trine_orb = 7.0 * orb_factor
+    trine_orb = _detector_orb("Grand Trine", "Trine", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1584,6 +1707,8 @@ def find_grand_trines(
                 aspects=(t_ab, t_bc, t_ac),
                 detector="find_grand_trines",
                 orb_factor=orb_factor,
+                orbs=orbs,
+                pattern_orb=pattern_orb,
                 role_overrides={body: "cycle_member" for body in (a, b, c)},
             ))
 
@@ -1593,14 +1718,16 @@ def find_grand_trines(
 def find_grand_crosses(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Grand Cross: two oppositions and four squares forming a closed cross.
 
     Orbs: opposition 8° * orb_factor, square 7° * orb_factor.
     """
-    opp_orb = 8.0 * orb_factor
-    sq_orb  = 7.0 * orb_factor
+    opp_orb = _detector_orb("Grand Cross", "Opposition", orb_factor, orbs, pattern_orb)
+    sq_orb  = _detector_orb("Grand Cross", "Square", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1623,6 +1750,8 @@ def find_grand_crosses(
                     aspects=(opp1, opp2, sq_pr, sq_rq, sq_qs, sq_sp),
                     detector="find_grand_crosses",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={body: "cycle_member" for body in (a, b, c, d)},
                     aspect_role_overrides={
                         _aspect_endpoint_signature(opp1): PatternAspectRoleKind.AXIS_LINK,
@@ -1641,14 +1770,16 @@ def find_grand_crosses(
 def find_yods(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Yod (Finger of God): A sextile B, both quincunx (150°) C (apex).
 
     Orbs: sextile 3° * orb_factor, quincunx 3° * orb_factor.
     """
-    sext_orb = 3.0 * orb_factor
-    qncx_orb = 3.0 * orb_factor
+    sext_orb = _detector_orb("Yod", "Sextile", orb_factor, orbs, pattern_orb)
+    qncx_orb = _detector_orb("Yod", "Quincunx", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1666,6 +1797,8 @@ def find_yods(
                     apex=apex,
                     detector="find_yods",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base"},
                 ))
                 break
@@ -1676,6 +1809,8 @@ def find_yods(
 def find_mystic_rectangles(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Mystic Rectangle: two trines + two sextiles + two oppositions.
@@ -1683,9 +1818,9 @@ def find_mystic_rectangles(
 
     Orbs: trine 7°, sextile 5°, opposition 8° — all * orb_factor.
     """
-    trine_orb = 7.0 * orb_factor
-    sext_orb  = 5.0 * orb_factor
-    opp_orb   = 8.0 * orb_factor
+    trine_orb = _detector_orb("Mystic Rectangle", "Trine", orb_factor, orbs, pattern_orb)
+    sext_orb  = _detector_orb("Mystic Rectangle", "Sextile", orb_factor, orbs, pattern_orb)
+    opp_orb   = _detector_orb("Mystic Rectangle", "Opposition", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1712,6 +1847,8 @@ def find_mystic_rectangles(
                         aspects=(t_pq, t_rs, s_qr, s_sp, o_pr, o_qs),
                         detector="find_mystic_rectangles",
                         orb_factor=orb_factor,
+                        orbs=orbs,
+                        pattern_orb=pattern_orb,
                         role_overrides={body: "cycle_member" for body in group},
                         aspect_role_overrides={
                             _aspect_endpoint_signature(t_pq): PatternAspectRoleKind.CYCLE_LINK,
@@ -1733,6 +1870,8 @@ def find_mystic_rectangles(
 def find_kites(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Kite: Grand Trine (A, B, C) with a fourth planet D opposing one vertex
@@ -1740,9 +1879,9 @@ def find_kites(
 
     Orbs: trine 7°, sextile 5°, opposition 8° — all * orb_factor.
     """
-    trine_orb = 7.0 * orb_factor
-    sext_orb  = 5.0 * orb_factor
-    opp_orb   = 8.0 * orb_factor
+    trine_orb = _detector_orb("Kite", "Trine", orb_factor, orbs, pattern_orb)
+    sext_orb  = _detector_orb("Kite", "Sextile", orb_factor, orbs, pattern_orb)
+    opp_orb   = _detector_orb("Kite", "Opposition", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1768,6 +1907,8 @@ def find_kites(
                     apex=apex,
                     detector="find_kites",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={tail: "tail", x: "support", y: "support"},
                 ))
                 break
@@ -1836,14 +1977,16 @@ def find_stelliums(
 def find_minor_grand_trines(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Minor Grand Trine: A trine B, both sextile C.
 
     Orbs: trine 7° * orb_factor, sextile 3° * orb_factor.
     """
-    trine_orb = 7.0 * orb_factor
-    sext_orb  = 3.0 * orb_factor
+    trine_orb = _detector_orb("Minor Grand Trine", "Trine", orb_factor, orbs, pattern_orb)
+    sext_orb  = _detector_orb("Minor Grand Trine", "Sextile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1860,6 +2003,8 @@ def find_minor_grand_trines(
                     aspects=(trine, sext1, sext2),
                     detector="find_minor_grand_trines",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base", apex: "support"},
                 ))
                 break
@@ -1870,6 +2015,8 @@ def find_minor_grand_trines(
 def find_grand_sextiles(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Grand Sextile (Star of David): six planets forming a closed ring of six
@@ -1878,7 +2025,7 @@ def find_grand_sextiles(
 
     Orb: 3° * orb_factor.
     """
-    sext_orb = 3.0 * orb_factor
+    sext_orb = _detector_orb("Grand Sextile", "Sextile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1918,8 +2065,8 @@ def find_grand_sextiles(
             for aspect in contributing
         }
         for step, target_angle, allowed_orb, count in (
-            (2, 120.0, 7.0 * orb_factor, 6),
-            (3, 180.0, 8.0 * orb_factor, 3),
+            (2, 120.0, _detector_orb("Grand Sextile", "Trine", orb_factor, orbs, pattern_orb), 6),
+            (3, 180.0, _detector_orb("Grand Sextile", "Opposition", orb_factor, orbs, pattern_orb), 3),
         ):
             for index in range(count):
                 body = cycle[index]
@@ -1944,6 +2091,8 @@ def find_grand_sextiles(
             aspects=tuple(sorted(contributing, key=_aspect_signature)),
             detector="find_grand_sextiles",
             orb_factor=orb_factor,
+            orbs=orbs,
+            pattern_orb=pattern_orb,
             role_overrides={body: "cycle_member" for body in group},
         ))
 
@@ -1953,6 +2102,8 @@ def find_grand_sextiles(
 def find_thors_hammers(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Thor's Hammer (God's Fist): two planets in square (90°), both
@@ -1960,8 +2111,8 @@ def find_thors_hammers(
 
     Orbs: square 5° * orb_factor, sesquiquadrate 2° * orb_factor.
     """
-    sq_orb   = 5.0 * orb_factor
-    sesq_orb = 2.0 * orb_factor
+    sq_orb   = _detector_orb("Thor's Hammer", "Square", orb_factor, orbs, pattern_orb)
+    sesq_orb = _detector_orb("Thor's Hammer", "Sesquiquadrate", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -1979,6 +2130,8 @@ def find_thors_hammers(
                     apex=apex,
                     detector="find_thors_hammers",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base"},
                 ))
                 break
@@ -1989,6 +2142,8 @@ def find_thors_hammers(
 def find_boomerang_yods(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Boomerang Yod: standard Yod (A sextile B, both quincunx C apex) plus a
@@ -1996,9 +2151,9 @@ def find_boomerang_yods(
 
     Orbs: sextile 3°, quincunx 3°, opposition 5° — all * orb_factor.
     """
-    sext_orb = 3.0 * orb_factor
-    qncx_orb = 3.0 * orb_factor
-    opp_orb  = 5.0 * orb_factor
+    sext_orb = _detector_orb("Boomerang Yod", "Sextile", orb_factor, orbs, pattern_orb)
+    qncx_orb = _detector_orb("Boomerang Yod", "Quincunx", orb_factor, orbs, pattern_orb)
+    opp_orb  = _detector_orb("Boomerang Yod", "Opposition", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2021,6 +2176,8 @@ def find_boomerang_yods(
                     apex=apex,
                     detector="find_boomerang_yods",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base", boom: "boomerang"},
                 ))
                 break
@@ -2031,6 +2188,8 @@ def find_boomerang_yods(
 def find_wedges(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Wedge (Arrowhead): planet A opposing planet B; a third planet C trine
@@ -2038,8 +2197,9 @@ def find_wedges(
 
     Orbs: opposition 8°, trine/sextile 5° — all * orb_factor.
     """
-    opp_orb  = 8.0 * orb_factor
-    trsx_orb = 5.0 * orb_factor
+    opp_orb  = _detector_orb("Wedge", "Opposition", orb_factor, orbs, pattern_orb)
+    tr_orb   = _detector_orb("Wedge", "Trine", orb_factor, orbs, pattern_orb)
+    sx_orb   = _detector_orb("Wedge", "Sextile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2047,8 +2207,8 @@ def find_wedges(
     for a, b, c in combinations(bodies, 3):
         for p1, p2, apex in [(a, b, c), (a, c, b), (b, c, a)]:
             opp = _get_aspect(aspect_map, p1,   p2,   180.0, opp_orb)
-            tr  = _get_aspect(aspect_map, apex, p1,   120.0, trsx_orb)
-            sx  = _get_aspect(aspect_map, apex, p2,    60.0, trsx_orb)
+            tr  = _get_aspect(aspect_map, apex, p1,   120.0, tr_orb)
+            sx  = _get_aspect(aspect_map, apex, p2,    60.0, sx_orb)
             if opp and tr and sx:
                 results.append(_make_pattern(
                     name="Wedge",
@@ -2057,6 +2217,8 @@ def find_wedges(
                     apex=apex,
                     detector="find_wedges",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "axis", p2: "axis"},
                 ))
                 break
@@ -2071,6 +2233,8 @@ def find_wedges(
 def find_cradles(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Cradle: two Minor Grand Trines sharing a common opposition as their base.
@@ -2081,9 +2245,9 @@ def find_cradles(
 
     Orbs: opposition 8°, trine 7°, sextile 5° — all * orb_factor.
     """
-    opp_orb   = 8.0 * orb_factor
-    trine_orb = 7.0 * orb_factor
-    sext_orb  = 5.0 * orb_factor
+    opp_orb   = _detector_orb("Cradle", "Opposition", orb_factor, orbs, pattern_orb)
+    trine_orb = _detector_orb("Cradle", "Trine", orb_factor, orbs, pattern_orb)
+    sext_orb  = _detector_orb("Cradle", "Sextile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2108,6 +2272,8 @@ def find_cradles(
                         aspects=(opp, tr_pq, tr_rs, sx_qr, sx_pr, sx_qs),
                         detector="find_cradles",
                         orb_factor=orb_factor,
+                        orbs=orbs,
+                        pattern_orb=pattern_orb,
                         role_overrides={p: "axis", s: "axis", q: "support", r: "support"},
                     ))
                     matched = True
@@ -2121,6 +2287,8 @@ def find_cradles(
 def find_sextile_chains(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Sextile Chain (legacy Trapeze): four planets form a three-sextile chain whose end
@@ -2129,8 +2297,8 @@ def find_sextile_chains(
 
     Orbs: opposition 8°, sextile 5° — all * orb_factor.
     """
-    opp_orb  = 8.0 * orb_factor
-    sext_orb = 5.0 * orb_factor
+    opp_orb  = _detector_orb("Sextile Chain", "Opposition", orb_factor, orbs, pattern_orb)
+    sext_orb = _detector_orb("Sextile Chain", "Sextile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2153,6 +2321,8 @@ def find_sextile_chains(
                         aspects=(sx_pq, sx_qr, sx_rs, opp),
                         detector="find_sextile_chains",
                         orb_factor=orb_factor,
+                        orbs=orbs,
+                        pattern_orb=pattern_orb,
                         role_overrides={p: "axis", s: "axis", q: "support", r: "support"},
                     ))
                     matched = True
@@ -2165,32 +2335,40 @@ def find_sextile_chains(
 
 def find_trapezes(
     aspects: list[AspectData], orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """Huber Trapeze: 60, 90, 90, 120, 150, 150 degrees; catalog orbs.
 
     The historical three-sextile-chain implementation remains available as
     find_sextile_chains, selected by Sextile Chain or Legacy Trapeze.
     """
-    return _find_named_template(aspects, "Trapeze", orb_factor, "find_trapezes")
+    return _find_named_template(aspects, "Trapeze", orb_factor, "find_trapezes", orbs=orbs, pattern_orb=pattern_orb)
 
 
 def find_eyes(
     aspects: list[AspectData], orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """Huber Eye / Ear / Information Triangle: 30, 30, 60 degrees; catalog orbs."""
-    return _find_named_template(aspects, 'Eye', orb_factor, 'find_eyes')
+    return _find_named_template(aspects, 'Eye', orb_factor, 'find_eyes', orbs=orbs, pattern_orb=pattern_orb)
 
 
 def find_irritation_triangles(
     aspects: list[AspectData], orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """Huber Irritation Triangle: 30, 150, 180 degrees; catalog orbs."""
-    return _find_named_template(aspects, 'Irritation Triangle', orb_factor, 'find_irritation_triangles')
+    return _find_named_template(aspects, 'Irritation Triangle', orb_factor, 'find_irritation_triangles', orbs=orbs, pattern_orb=pattern_orb)
 
 
 def find_hard_wedges(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Hard Wedge: planet A opposing planet B; a third planet C is semisquare
@@ -2199,9 +2377,9 @@ def find_hard_wedges(
 
     Orbs: opposition 8°, semisquare 2°, sesquiquadrate 2° — all * orb_factor.
     """
-    opp_orb  = 8.0 * orb_factor
-    semi_orb = 2.0 * orb_factor
-    sesq_orb = 2.0 * orb_factor
+    opp_orb  = _detector_orb("Hard Wedge", "Opposition", orb_factor, orbs, pattern_orb)
+    semi_orb = _detector_orb("Hard Wedge", "Semisquare", orb_factor, orbs, pattern_orb)
+    sesq_orb = _detector_orb("Hard Wedge", "Sesquiquadrate", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2219,6 +2397,8 @@ def find_hard_wedges(
                     apex=apex,
                     detector="find_hard_wedges",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "axis", p2: "axis"},
                 ))
                 break
@@ -2228,9 +2408,11 @@ def find_hard_wedges(
 
 def find_dominant_triangles(
     aspects: list[AspectData], orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """Huber Dominant Triangle: 90, 120, 150 degrees; catalog orbs."""
-    return _find_named_template(aspects, 'Dominant Triangle', orb_factor, 'find_dominant_triangles')
+    return _find_named_template(aspects, 'Dominant Triangle', orb_factor, 'find_dominant_triangles', orbs=orbs, pattern_orb=pattern_orb)
 
 
 # ---------------------------------------------------------------------------
@@ -2239,14 +2421,18 @@ def find_dominant_triangles(
 
 def find_grand_quintiles(
     aspects: list[AspectData], orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """Regular pentagon: five quintiles and five biquintiles, each within 2 * orb_factor degrees."""
-    return _find_named_template(aspects, 'Grand Quintile', orb_factor, 'find_grand_quintiles')
+    return _find_named_template(aspects, 'Grand Quintile', orb_factor, 'find_grand_quintiles', orbs=orbs, pattern_orb=pattern_orb)
 
 
 def find_quintile_triangles(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Quintile Triangle: A quintile (72°) B, both biquintile (144°) C (apex).
@@ -2254,8 +2440,8 @@ def find_quintile_triangles(
 
     Orbs: quintile 2°, biquintile 2° — all * orb_factor.
     """
-    q_orb  = 2.0 * orb_factor
-    bq_orb = 2.0 * orb_factor
+    q_orb  = _detector_orb("Quintile Triangle", "Quintile", orb_factor, orbs, pattern_orb)
+    bq_orb = _detector_orb("Quintile Triangle", "Biquintile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2273,6 +2459,8 @@ def find_quintile_triangles(
                     apex=apex,
                     detector="find_quintile_triangles",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={p1: "base", p2: "base"},
                 ))
                 break
@@ -2283,6 +2471,8 @@ def find_quintile_triangles(
 def find_septile_triangles(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
+    orbs: PatternOrbs = None,
+    pattern_orb: float | None = None,
 ) -> list[AspectPattern]:
     """
     Septile Triangle: three planets connected by one each of septile (51.43°),
@@ -2291,7 +2481,9 @@ def find_septile_triangles(
 
     Orb: 1.5° * orb_factor for all three aspects.
     """
-    s_orb = 1.5 * orb_factor
+    sept_orb = _detector_orb("Septile Triangle", "Septile", orb_factor, orbs, pattern_orb)
+    bisept_orb = _detector_orb("Septile Triangle", "Biseptile", orb_factor, orbs, pattern_orb)
+    trisept_orb = _detector_orb("Septile Triangle", "Triseptile", orb_factor, orbs, pattern_orb)
     aspect_map = _build_aspect_map(aspects)
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
@@ -2302,9 +2494,9 @@ def find_septile_triangles(
 
     for group in combinations(bodies, 3):
         for p1, p2, p3 in permutations(group):
-            s1 = _get_aspect(aspect_map, p1, p2, sept,   s_orb)
-            s2 = _get_aspect(aspect_map, p2, p3, bisept, s_orb)
-            s3 = _get_aspect(aspect_map, p1, p3, trisept, s_orb)
+            s1 = _get_aspect(aspect_map, p1, p2, sept,   sept_orb)
+            s2 = _get_aspect(aspect_map, p2, p3, bisept, bisept_orb)
+            s3 = _get_aspect(aspect_map, p1, p3, trisept, trisept_orb)
             if s1 and s2 and s3:
                 results.append(_make_pattern(
                     name="Septile Triangle",
@@ -2312,6 +2504,8 @@ def find_septile_triangles(
                     aspects=(s1, s2, s3),
                     detector="find_septile_triangles",
                     orb_factor=orb_factor,
+                    orbs=orbs,
+                    pattern_orb=pattern_orb,
                     role_overrides={body: "cycle_member" for body in group},
                 ))
                 break
@@ -2465,6 +2659,8 @@ def find_all_patterns(
     optional_sets: tuple[str, ...] = (),
     templates: tuple[GeometricPatternTemplate, ...] = (),
     harmonic_presets: tuple[str, ...] = (),
+    orbs: PatternOrbs = None,
+    pattern_orbs: Mapping[str, float] | None = None,
 ) -> list[AspectPattern]:
     """
     Detect all aspect patterns in a chart.
@@ -2474,7 +2670,15 @@ def find_all_patterns(
     positions   : dict of body name -> longitude
     aspects     : pre-computed aspects; if None, scan the 46 standard longitude
                   aspects plus explicitly selected optional sets
-    orb_factor  : multiplier applied to all orbs
+    orb_factor  : multiplier applied to all default orbs; ignored when orbs is
+                  provided, as it is for regular aspects
+    orbs        : exact limits by aspect name or catalog angle, in every pattern.
+                  Aspects not named keep their plain defaults.
+    pattern_orbs : exact limit by pattern name, for every aspect in that pattern.
+                  Accepts registered, generated and custom template names, and
+                  sets a Stellium's spread. The most specific setting wins:
+                  pattern_orbs, then orbs, then orb_factor. The aspect search is
+                  widened to match, but supplied ``aspects`` are used as given.
     include     : list of pattern names to detect (all available patterns if None).
                   Accepts registered names and PATTERN_ALIASES. This selector
                   filters named detectors, independently of requested geometry.
@@ -2503,18 +2707,22 @@ def find_all_patterns(
             ),
             dominant_only=dominant_only,
             optional_sets=optional_sets, templates=templates, harmonic_presets=harmonic_presets,
+            orbs=orbs or (), pattern_orbs=pattern_orbs or (),
         ))
     else:
         policy = _validate_policy(policy)
 
     orb_factor = policy.orb_factor
+    orbs = policy.orbs
+    pattern_orbs = dict(policy.pattern_orbs)
     include = list(policy.selection.include) if policy.selection.include is not None else None
     dominant_only = policy.dominant_only
 
     geometric_templates = _selected_geometric_templates(policy)
     if aspects is None:
         aspects = find_aspects(positions, tier=2, orb_factor=orb_factor,
-                               optional_sets=policy.optional_sets)
+                               optional_sets=policy.optional_sets,
+                               orbs=_aspect_scan_orbs(orb_factor, orbs, pattern_orbs))
     else:
         aspects = _validate_aspects(aspects)
 
@@ -2531,18 +2739,22 @@ def find_all_patterns(
         if name == "Stellium":
             all_found.extend(find_stelliums(
                 positions, min_bodies=policy.stellium.min_bodies,
-                orb=policy.stellium.orb, orb_factor=orb_factor,
+                orb=pattern_orbs.get(name, policy.stellium.orb),
+                orb_factor=1.0 if name in pattern_orbs else orb_factor,
             ))
         elif name in _NAMED_TEMPLATES:
             all_found.extend(_find_named_template(
-                aspects, name, orb_factor, detector, positions, policy.optional_sets,
+                aspects, name, orb_factor, detector, positions, policy.optional_sets, orbs,
+                pattern_orbs.get(name),
             ))
         else:
-            all_found.extend(globals()[detector](aspects, orb_factor=orb_factor))
+            all_found.extend(globals()[detector](
+                aspects, orb_factor=orb_factor, orbs=orbs, pattern_orb=pattern_orbs.get(name),
+            ))
     if geometric_templates:
         all_found.extend(find_geometric_patterns(
             positions, geometric_templates, aspects=aspects,
-            optional_sets=policy.optional_sets, orb_factor=orb_factor,
+            optional_sets=policy.optional_sets, orb_factor=orb_factor, orbs=orbs, pattern_orbs=pattern_orbs,
         ))
 
     all_found = _dedup_patterns(all_found)
@@ -2726,6 +2938,29 @@ def pattern_condition_network_profile(patterns: list[AspectPattern]) -> PatternC
     )
 
 
+@lru_cache(maxsize=1)
+def _generated_pattern_names() -> dict[str, str]:
+    """Map every generated layout's name and retained numbered forms to its name."""
+    names: dict[str, str] = {}
+    for harmonic in HARMONIC_PATTERN_PRESETS.values():
+        for template in harmonic_pattern_templates(harmonic, ("triangle", "opposition_rectangle", "polygon")):
+            names[template.name] = template.name
+            names.update({alias: template.name for alias in template.aliases})
+    return names
+
+
+def _pattern_orb_name(name: object, custom_names: set[str]) -> str:
+    """Resolve a pattern_orbs key to the one name its layout reports under."""
+    if isinstance(name, str):
+        if name in custom_names:
+            return name
+        generated = _generated_pattern_names().get(name)
+        if generated is not None:
+            return generated
+        return resolve_pattern(name)
+    raise ValueError("pattern_orbs must be keyed by pattern name")
+
+
 def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputationPolicy:
     """Return a valid pattern policy or raise clearly on unsupported values."""
 
@@ -2785,5 +3020,16 @@ def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputat
                 and not (template.aliases
                          and _REGISTERED_GEOMETRY.get(template.geometry_key, (None, None))[0] == template.name)):
             raise ValueError("Custom template names must not replace a registered pattern or alias")
-    policy = replace(policy, optional_sets=optional, harmonic_presets=keys)
+    normalized_orbs = tuple(sorted(_normalized_pattern_orbs(policy.orbs).items()))
+    custom_names = {template.name for template in policy.templates}
+    normalized_pattern_orbs = tuple(sorted(
+        (_pattern_orb_name(name, custom_names), _checked_orb(name, orb))
+        for name, orb in dict(policy.pattern_orbs).items()
+    ))
+    if len({name for name, _ in normalized_pattern_orbs}) != len(normalized_pattern_orbs):
+        raise ValueError("pattern_orbs must name each pattern once")
+    policy = replace(
+        policy, optional_sets=optional, harmonic_presets=keys,
+        orbs=normalized_orbs, pattern_orbs=normalized_pattern_orbs,
+    )
     return policy

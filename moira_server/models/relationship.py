@@ -1075,6 +1075,8 @@ class PatternRequest(_StrictModel):
     chart: RelationshipPartyRequest
     include_nodes: bool = False
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
+    orbs: dict[str, float] = Field(default_factory=dict, max_length=74)
+    pattern_orbs: dict[str, float] = Field(default_factory=dict, max_length=128)
     include: list[str] | None = None
     dominant_only: bool = False
     optional_sets: list[OptionalAspectSetValue] = Field(default_factory=list)
@@ -1095,6 +1097,8 @@ class PatternRequest(_StrictModel):
             optional_sets=tuple(self.optional_sets),
             harmonic_presets=tuple(self.harmonic_presets),
             templates=tuple(template.to_template() for template in self.templates),
+            orbs=dict(self.orbs),
+            pattern_orbs=dict(self.pattern_orbs),
         ))
 
     @model_validator(mode="after")
@@ -1131,6 +1135,7 @@ class PatternDetectionTruthResponse(_StrictModel):
     centroid_longitude: float | None = None
     max_body_distance: float | None = None
     orb_limit: float | None = None
+    applied_orbs: dict[str, float] = Field(default_factory=dict)
 
 
 class PatternBodyRoleClassificationResponse(_StrictModel):
@@ -1234,6 +1239,8 @@ class PatternSearchComputationTruthResponse(_StrictModel):
     )
     include_nodes: bool
     orb_factor: float
+    orbs: dict[str, float] = Field(default_factory=dict)
+    pattern_orbs: dict[str, float] = Field(default_factory=dict)
     selection_mode: Literal["all_registered_patterns", "explicit_pattern_names"]
     requested_patterns: list[str]
     resolved_patterns: list[str] = Field(default_factory=list)
