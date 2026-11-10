@@ -4,9 +4,29 @@
 #include "geometry.hpp"
 #include "constants.hpp"
 #include <functional>
+#include <utility>
 
 namespace moira {
 namespace native {
+
+// Converged reception light time for ICRF positions in km. The callback takes
+// the emission offset in days relative to reception, preserving the split epoch.
+template <typename PositionAtOffset>
+inline std::pair<Vec3, double> solve_reception_light_time(
+    const Vec3& observer, const Vec3& target_at_reception, PositionAtOffset target_position
+) {
+    Vec3 xyz = Vec3::sub(target_at_reception, observer);
+    double delay = xyz.norm() / C_KM_PER_DAY;
+    for (int iter = 0; iter < 10; ++iter) {
+        xyz = Vec3::sub(target_position(-delay), observer);
+        const double next_delay = xyz.norm() / C_KM_PER_DAY;
+        if (std::abs(next_delay - delay) < 1e-14) {
+            return {xyz, next_delay};
+        }
+        delay = next_delay;
+    }
+    return {xyz, delay};
+}
 
 /**
  * @brief THEOREM: Light-time correction (Geometric to Apparent).

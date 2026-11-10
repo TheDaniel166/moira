@@ -18,6 +18,7 @@
 #include "coordinates.hpp"
 #include "daf.hpp"
 #include "geometry.hpp"
+#include "light_time.hpp"
 #include "math_utils.hpp"
 #include "apparent_place.hpp"
 
@@ -383,28 +384,16 @@ public:
     }
 
 private:
-    // Keep the route guard active for the same iteration budget as apply_light_time.
-    static constexpr int kMaxLightTimeIterations = 10;
-
     static SegmentSpec segment_spec(const DafSummaryEntry& summary) {
         return {summary.start_i, summary.end_i, summary.data_type};
     }
 
     SegmentSpec covering_spec(const SegmentSpec& seed, double epoch_tdb, double offset_days) const {
-        constexpr double j2000 = 2451545.0;
-        constexpr double seconds_per_day = 86400.0;
         const auto& candidates = route_catalog_.at(route_pairs_.at(seed));
-        const double anchor_seconds = (epoch_tdb - j2000) * seconds_per_day;
-        const double offset_seconds = offset_days * seconds_per_day;
         // Match SpkReader's reverse file priority and split epoch coverage.
         for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
             const auto& candidate = **it;
-            const bool covers = offset_days == 0.0
-                ? j2000 + candidate.start_second / seconds_per_day <= epoch_tdb
-                    && epoch_tdb <= j2000 + candidate.end_second / seconds_per_day
-                : candidate.start_second - anchor_seconds <= offset_seconds
-                    && offset_seconds <= candidate.end_second - anchor_seconds;
-            if (covers) {
+            if (spk_descriptor_covers_tdb(candidate, epoch_tdb, offset_days)) {
                 return segment_spec(candidate);
             }
         }
@@ -449,17 +438,9 @@ private:
         const Vec3& observer,
         const Vec3& geometric_body
     ) const {
-        Vec3 xyz = Vec3::sub(geometric_body, observer);
-        double delay = xyz.norm() / C_KM_PER_DAY;
-        for (int iter = 0; iter < kMaxLightTimeIterations; ++iter) {
-            xyz = Vec3::sub(route_position(specs, epoch_tdb, -delay), observer);
-            const double next_delay = xyz.norm() / C_KM_PER_DAY;
-            if (std::abs(next_delay - delay) < 1e-14) {
-                break;
-            }
-            delay = next_delay;
-        }
-        return xyz;
+        return solve_reception_light_time(observer, geometric_body, [&](double offset_days) {
+            return route_position(specs, epoch_tdb, offset_days);
+        }).first;
     }
 
     static Vec3 apply_aberration_velocity(const Vec3& xyz, const Vec3& velocity_xyz_per_day) {

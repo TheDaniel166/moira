@@ -31,7 +31,9 @@ import math
 import hashlib
 import re
 import threading
+from array import array
 from collections import deque, OrderedDict
+from collections.abc import Iterable, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
@@ -964,6 +966,8 @@ class SpkReader:
             - Serve barycentric rectangular position vectors (km, ICRF) to
               planets.py and nodes.py.
             - Serve position-and-velocity pairs (km, km/day) when requested.
+            - Evaluate explicit routes over arrays of TDB epochs, including
+              observer-relative positions corrected for reception light time.
             - Support context-manager usage for deterministic resource cleanup.
         Non-responsibilities:
             - Does not perform coordinate transforms (ecliptic, equatorial,
@@ -1241,6 +1245,54 @@ class SpkReader:
             (float(pos[0]), float(pos[1]), float(pos[2])),
             (float(vel[0]), float(vel[1]), float(vel[2])),
         )
+
+    def states_tdb_batch(
+        self,
+        routes: Sequence[Sequence[tuple[int, int]]],
+        epochs_tdb: Iterable[float],
+    ) -> memoryview:
+        """Evaluate ICRF states for explicit routes at multiple TDB Julian days.
+
+        Each route contains one or more contiguous, directed (center, target)
+        NAIF pairs in this kernel. The result is a read-only float64 view
+        shaped (routes, epochs, 6), with positions in km followed by velocities
+        in km/day, including for Type 3 records with stored velocities. Input
+        order and duplicate epochs are preserved.
+
+        All sampled legs must have coverage in J2000 Type 2 or 3 segments.
+        Empty inputs, discontinuous routes, nonfinite epochs, and coverage gaps
+        raise ValueError.
+        """
+        self._ensure_open()
+        batch = getattr(getattr(self._kernel, "_handle", None), "states_tdb_batch", None)
+        if batch is None:
+            raise RuntimeError("SPK state batches require the native batch extension")
+        return batch(routes, array("d", epochs_tdb))
+
+    def received_light_tdb_batch(
+        self,
+        observer_route: Sequence[tuple[int, int]],
+        target_routes: Sequence[Sequence[tuple[int, int]]],
+        epochs_tdb: Iterable[float],
+    ) -> memoryview:
+        """Evaluate reception light time and corrected ICRF positions in one batch.
+
+        Observer and target routes are nonempty, contiguous sequences of
+        (center, target) NAIF pairs from the solar system barycenter (0).
+        The read-only float64 view is shaped (targets, epochs, 4). Each row
+        contains the observer-relative position in km and the light time in
+        days. The observer is evaluated at reception and each target at its
+        iterated emission epoch.
+
+        Both reception and sampled emission epochs require coverage in J2000
+        Type 2 or 3 segments. Empty inputs, non-barycentric or discontinuous
+        routes, nonfinite epochs, and coverage gaps raise ValueError.
+        """
+        self._ensure_open()
+        batch = getattr(getattr(self._kernel, "_handle", None), "received_light_tdb_batch", None)
+        if batch is None:
+            raise RuntimeError("SPK light-time batches require the native batch extension")
+        return batch(observer_route, target_routes, array("d", epochs_tdb))
 
     def position_and_velocity_tdb_with_receipt(
         self,

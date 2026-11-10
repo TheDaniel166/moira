@@ -14,7 +14,7 @@ import pytest
 import moira.asteroids as asteroids_module
 import moira.planets as planets_module
 from moira._ephemeris_time import _ut1_to_ephemeris_tt
-from moira.constants import Body
+from moira.constants import Body, C_KM_PER_DAY
 from moira.coordinates import icrf_to_ecliptic
 from moira.julian import DeltaTPolicy
 from moira.obliquity import true_obliquity
@@ -42,8 +42,11 @@ def test_warm_planet_cache_cannot_serve_a_closed_reader(planetary_kernel_path, p
         planets_module._default_apparent_longitude(Body.MARS, _JD_J2000, reader, contexts)
 
 
-def _write_planetary_seam_kernel(kernel, *, mars_override_interval, distant_mars):
-    """Write constant Type 2 states with a later Mars override."""
+def _write_planetary_seam_kernel(
+    kernel, *, mars_override_interval, distant_mars,
+    mars_base_interval=(-86_400.0, 86_400.0), moving_earth=False,
+):
+    """Write Type 2 states with a later Mars override and an optional Type 3 leg."""
     pairs = (
         (0, 10), (0, 3), (3, 399), (3, 301), (0, 1), (1, 199), (0, 2),
         (2, 299), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9),
@@ -60,21 +63,30 @@ def _write_planetary_seam_kernel(kernel, *, mars_override_interval, distant_mars
         start_et = -86_400.0
         is_mars_override = i == len(pairs) + 1
         end_et = 86_400.0
-        if is_mars_override:
-            start_et, end_et = mars_override_interval
-        interval = end_et - start_et
         x, y = i * 1e7, i * 2e7
         if (centre, target) == (0, 4):
+            start_et, end_et = mars_override_interval if is_mars_override else mars_base_interval
             x, y = (90e6, 180e6) if distant_mars else (55e6, 110e6)
             if not is_mars_override:
                 y += 2e6
-        # One Type 2 record with constant position coefficients, plus its directory.
         start_word = 641 + len(words)
-        words.extend(((start_et + end_et) / 2, interval / 2, x, 0.0, y, 0.0, 0.0, 0.0))
-        words.extend((start_et, interval, 8.0, 1.0))
+        if moving_earth and (centre, target) == (3, 399):
+            # Two Type 3 records for a constant 0.25 km/s x velocity.
+            data_type, record_count, record_size = 3, 2, 14
+            interval = (end_et - start_et) / record_count
+            for midpoint in (-43_200.0, 43_200.0):
+                words.extend((
+                    midpoint, interval / 2, x + 0.25 * midpoint, 0.25 * interval / 2,
+                    y, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0,
+                ))
+        else:
+            data_type, record_count, record_size = 2, 1, 8
+            interval = end_et - start_et
+            words.extend(((start_et + end_et) / 2, interval / 2, x, 0.0, y, 0.0, 0.0, 0.0))
+        words.extend((start_et, interval, float(record_size), float(record_count)))
         struct.pack_into(
             "<ddiiiiii", header, summary + 24 + (i - 1) * 40,
-            start_et, end_et, target, centre, 1, 2, start_word, 640 + len(words),
+            start_et, end_et, target, centre, 1, data_type, start_word, 640 + len(words),
         )
     struct.pack_into("<iii", header, 76, 4, 4, 641 + len(words))
     payload = header + struct.pack(f"<{len(words)}d", *words)
@@ -170,6 +182,76 @@ def test_split_emission_epoch_selects_the_correct_side_below_a_jd_tick(tmp_path)
     with SpkReader(kernel) as reader:
         assert reader._position_tdb_offset(0, 4, _JD_J2000, -offset) == (90e6, 182e6, 0.0)
         assert reader.position_tdb(0, 4, _JD_J2000) == (90e6, 180e6, 0.0)
+
+
+@pytest.mark.parametrize("base_end", [0.0, 86_400.0], ids=["adjacent", "overlapping"])
+def test_native_multi_epoch_states_preserve_segment_priority_and_units(tmp_path, base_end):
+    kernel = tmp_path / "batch-states.bsp"
+    _write_planetary_seam_kernel(
+        kernel, mars_override_interval=(0.0, 86_400.0), distant_mars=True,
+        mars_base_interval=(-86_400.0, base_end), moving_earth=True,
+    )
+    epochs = [_JD_J2000 + offset for offset in (1.0, 0.0, -0.5, 0.0, -1.0)]
+    routes = (((0, 4),), ((0, 3), (3, 399)), ((0, 3),))
+    with SpkReader(kernel) as reader:
+        result = reader.states_tdb_batch(routes, iter(epochs))
+
+    assert result.readonly and result.format == "d"
+    assert result.shape == (3, len(epochs), 6)
+    mars, earth, emb = result.tolist()
+    for index, jd in enumerate(epochs):
+        assert mars[index] == [90e6, 180e6 if jd >= _JD_J2000 else 182e6, 0, 0, 0, 0]
+        assert earth[index] == [50e6 + 21_600 * (jd - _JD_J2000), 100e6, 0, 21_600, 0, 0]
+        assert emb[index] == [20e6, 40e6, 0, 0, 0, 0]
+
+
+def test_native_multi_epoch_light_time_resolves_emission_below_a_jd_tick(tmp_path):
+    kernel = tmp_path / "batch-split-emission.bsp"
+    short_delay = math.hypot(40e6, 80e6) / C_KM_PER_DAY
+    seam_et = -short_delay * 86_400 - 5e-6
+    assert ((_JD_J2000 - short_delay) - _JD_J2000) * 86_400 < seam_et
+    _write_planetary_seam_kernel(
+        kernel, mars_override_interval=(seam_et, 86_400.0), distant_mars=True,
+    )
+    before = math.nextafter(_JD_J2000, -math.inf)
+    epochs = (_JD_J2000, before, _JD_J2000 + 0.125, _JD_J2000)
+    with SpkReader(kernel) as reader:
+        result = reader.received_light_tdb_batch(
+            ((0, 3), (3, 399)), (((0, 4),), ((0, 10),)), epochs,
+        )
+
+    assert result.readonly and result.shape == (2, len(epochs), 4)
+    mars, sun = result.tolist()
+    for row, y in zip(mars, (80e6, 82e6, 80e6, 80e6), strict=True):
+        assert row[:3] == [40e6, y, 0.0]
+        assert row[3] == pytest.approx(math.hypot(40e6, y) / C_KM_PER_DAY, abs=1e-17, rel=0)
+    assert sun == [[-40e6, -80e6, 0.0, mars[0][3]]] * len(epochs)
+
+
+def test_native_multi_epoch_batches_reject_uncovered_samples(tmp_path):
+    kernel = tmp_path / "batch-gap.bsp"
+    _write_planetary_seam_kernel(
+        kernel, mars_override_interval=(-100.0, 86_400.0), distant_mars=True,
+        mars_base_interval=(-86_400.0, -400.0),
+    )
+    observer = ((0, 3), (3, 399))
+    targets = (((0, 4),),)
+    valid = _JD_J2000 + 0.5
+    with SpkReader(kernel) as reader:
+        assert reader.states_tdb_batch(targets, [valid, _JD_J2000]).shape == (1, 2, 6)
+        with pytest.raises(ValueError, match="No SPK segment covers center=0, target=4"):
+            reader.states_tdb_batch(targets, [valid, _JD_J2000 - 256.0 / 86_400])
+        with pytest.raises(ValueError, match="target=4.*offset -"):
+            reader.received_light_tdb_batch(observer, targets, [valid, _JD_J2000])
+        assert reader.received_light_tdb_batch(observer, targets, [valid]).shape == (1, 1, 4)
+        with pytest.raises(ValueError, match="finite"):
+            reader.states_tdb_batch(targets, [valid, math.nan])
+        with pytest.raises(ValueError, match="contiguous"):
+            reader.states_tdb_batch((((0, 3), (0, 4)),), [valid])
+        with pytest.raises(ValueError, match="nonempty"):
+            reader.states_tdb_batch(targets, [])
+        with pytest.raises(ValueError, match="barycenter"):
+            reader.received_light_tdb_batch(((3, 399),), targets, [valid])
 
 
 def _native_capable_reader() -> SpkReader:

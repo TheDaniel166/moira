@@ -303,10 +303,22 @@ class ChebyshevRecordSource {
 public:
     virtual ~ChebyshevRecordSource() = default;
     virtual void read_record(size_t index, double* out) const = 0;
+    virtual void read_records(size_t first, size_t count, double* out) const = 0;
 };
 
 class SpkSegmentEvaluator : public IEvaluator {
 public:
+    // A batch owns its read-ahead window. The scalar LRU remains shared.
+    struct BatchRecords {
+        explicit BatchRecords(size_t sample_count) : max_records(sample_count) {}
+
+        size_t max_records;
+        size_t first = 0;
+        size_t previous = 0;
+        std::vector<double> coefficients;
+        std::vector<unsigned char> validated;
+    };
+
     int32_t data_type;
     bool coefficients_in_file_order;
     double coverage_start_jd;
@@ -476,7 +488,7 @@ public:
         position(jd, 0.0, result);
     }
 
-    void position(double jd, double jd2, double* result) const {
+    void position(double jd, double jd2, double* result, BatchRecords* batch = nullptr) const {
         validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
@@ -496,8 +508,9 @@ public:
 
         if (data_type == 2) {
             std::vector<double> scratch;
-            const double* ptr = record_ptr(jd, jd2, scratch);
-            const double s = normalized_time(jd, jd2);
+            const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+            const double* ptr = record_ptr(index, scratch, batch);
+            const double s = normalized_time(offset);
             if (coefficients_in_file_order) {
                 spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
             } else {
@@ -507,7 +520,7 @@ public:
         }
 
         double full_state[6];
-        evaluate_type3(jd, jd2, full_state);
+        evaluate_type3(jd, jd2, full_state, batch);
         result[0] = full_state[0];
         result[1] = full_state[1];
         result[2] = full_state[2];
@@ -517,7 +530,10 @@ public:
         position_and_velocity(jd, 0.0, position_out, velocity_out);
     }
 
-    void position_and_velocity(double jd, double jd2, double* position_out, double* velocity_out) const {
+    void position_and_velocity(
+        double jd, double jd2, double* position_out, double* velocity_out,
+        BatchRecords* batch = nullptr
+    ) const {
         validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
@@ -540,8 +556,9 @@ public:
 
         if (data_type == 2) {
             std::vector<double> scratch;
-            const double* ptr = record_ptr(jd, jd2, scratch);
-            const double s = normalized_time(jd, jd2);
+            const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+            const double* ptr = record_ptr(index, scratch, batch);
+            const double s = normalized_time(offset);
             const double derivative_scale = 2.0 * 86400.0 / intlen;
             if (coefficients_in_file_order) {
                 spk_chebyshev_record_with_derivative_inplace_reverse(
@@ -573,7 +590,7 @@ public:
         }
 
         double full_state[6];
-        evaluate_type3(jd, jd2, full_state);
+        evaluate_type3(jd, jd2, full_state, batch);
         position_out[0] = full_state[0];
         position_out[1] = full_state[1];
         position_out[2] = full_state[2];
@@ -610,23 +627,59 @@ private:
         return {static_cast<size_t>(index), offset};
     }
 
-    double normalized_time(double jd, double jd2) const {
-        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
-        (void)index;
+    double normalized_time(double offset) const {
         const double radius = 0.5 * intlen;
         return (offset - radius) / radius;
     }
 
-    const double* record_ptr(double jd, double jd2, std::vector<double>& scratch) const {
-        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
-        (void)offset;
+    const double* record_ptr(size_t index, std::vector<double>& scratch, BatchRecords* batch) const {
         const size_t words = component_count * coefficient_count;
         if (!record_source_) {
             return coefficients.data() + index * words;
         }
+        if (batch && batch->max_records > 1) {
+            return batch_record(index, words, *batch);
+        }
         scratch.resize(words);
         load_record(index, scratch.data());
         return scratch.data();
+    }
+
+    const double* batch_record(size_t index, size_t words, BatchRecords& batch) const {
+        if (index < batch.first || index - batch.first >= batch.validated.size()) {
+            constexpr size_t read_ahead_words = 64 * 1024 / sizeof(double);
+            const size_t window = std::min(
+                batch.max_records, std::max<size_t>(1, read_ahead_words / (words + 2))
+            );
+            const size_t distance = index >= batch.previous
+                ? index - batch.previous : batch.previous - index;
+            // For sparse epochs, read only the selected record. Nearby samples
+            // also benefit from a small look-behind when emission precedes reception.
+            const size_t capacity = !batch.validated.empty() && distance <= std::max<size_t>(1, window / 8)
+                ? window : 1;
+            const size_t first = index - std::min(index, capacity / 4);
+            const size_t count = std::min(capacity, record_count - first);
+            batch.coefficients.resize(count * words);
+            record_source_->read_records(first, count, batch.coefficients.data());
+            batch.validated.assign(count, 0);
+            batch.first = first;
+        }
+        batch.previous = index;
+        const size_t slot = index - batch.first;
+        const double* record = batch.coefficients.data() + slot * words;
+        if (!batch.validated[slot]) {
+            validate_record(record, words);
+            batch.validated[slot] = 1;
+        }
+        return record;
+    }
+
+    static void validate_record(const double* record, size_t words) {
+        for (size_t i = 0; i < words; ++i) {
+            if (!std::isfinite(record[i])) {
+                throw std::invalid_argument("SpkSegmentEvaluator: coefficients must be finite");
+            }
+        }
     }
 
     void load_record(size_t index, double* out) const {
@@ -642,11 +695,7 @@ private:
         }
         std::vector<double> record(words);
         record_source_->read_record(index, record.data());
-        for (double value : record) {
-            if (!std::isfinite(value)) {
-                throw std::invalid_argument("SpkSegmentEvaluator: coefficients must be finite");
-            }
-        }
+        validate_record(record.data(), words);
         std::copy_n(record.data(), words, out);
         std::lock_guard<std::mutex> lock(record_cache_mutex_);
         if (record_cache_.find(index) != record_cache_.end()) {
@@ -666,10 +715,11 @@ private:
     mutable std::list<size_t> record_lru_;
     mutable std::unordered_map<size_t, std::pair<std::vector<double>, std::list<size_t>::iterator>> record_cache_;
 
-    void evaluate_type3(double jd, double jd2, double* result) const {
+    void evaluate_type3(double jd, double jd2, double* result, BatchRecords* batch) const {
         std::vector<double> scratch;
-        const double* ptr = record_ptr(jd, jd2, scratch);
-        const double s = normalized_time(jd, jd2);
+        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+        const double* ptr = record_ptr(index, scratch, batch);
+        const double s = normalized_time(offset);
         if (coefficients_in_file_order) {
             spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
         } else {

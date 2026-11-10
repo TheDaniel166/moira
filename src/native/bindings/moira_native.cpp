@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 #include <array>
+#include <cstring>
 #include <fstream>
 #include <limits>
 #include <mutex>
@@ -15,6 +16,7 @@
 #include "coordinates.hpp"
 #include "sidereal.hpp"
 #include "daf.hpp"
+#include "spk_batch.hpp"
 #include "pck.hpp"
 #include "light_time.hpp"
 #include "evaluators.hpp"
@@ -937,6 +939,40 @@ std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& pat
     return std::make_shared<NativeSpkKernelHandle>(path);
 }
 
+template <typename Evaluate>
+py::object spk_epochs_batch(
+    NativeSpkKernelHandle& handle, const py::buffer& buffer, size_t routes, size_t width,
+    Evaluate evaluate
+) {
+    const auto info = buffer.request();
+    if (
+        info.ndim != 1 || info.itemsize != sizeof(double)
+        || info.format != py::format_descriptor<double>::format()
+        || info.strides[0] != sizeof(double) || info.size <= 0 || routes == 0
+    ) {
+        throw std::invalid_argument("SPK batches require routes and a nonempty contiguous float64 epoch array");
+    }
+    const size_t epoch_count = static_cast<size_t>(info.size);
+    const size_t max_values = std::numeric_limits<py::ssize_t>::max() / sizeof(double);
+    if (routes > max_values / width / epoch_count) {
+        throw std::overflow_error("SPK batch output exceeds the maximum buffer size");
+    }
+    std::vector<double> epochs(epoch_count);
+    std::memcpy(epochs.data(), info.ptr, epoch_count * sizeof(double));
+    std::vector<double> result;
+    {
+        py::gil_scoped_release release;
+        if (!std::all_of(epochs.begin(), epochs.end(), [](double jd) { return std::isfinite(jd); })) {
+            throw std::invalid_argument("SPK batch epochs must be finite");
+        }
+        result.resize(routes * epoch_count * width);
+        SpkBatchEvaluator batch(handle, epoch_count);
+        evaluate(batch, epochs, result.data());
+    }
+    const py::bytes bytes(reinterpret_cast<const char*>(result.data()), result.size() * sizeof(double));
+    return py::memoryview(bytes).attr("cast")("d", py::make_tuple(routes, epoch_count, width));
+}
+
 py::dict pck_catalog_to_py_dict(const NativePckKernelHandle& handle) {
     py::list summaries;
     for (const PckSummaryEntry& entry : handle.summaries()) {
@@ -1245,6 +1281,21 @@ PYBIND11_MODULE(_moira_native, m) {
         })
         .def("record_level", &NativeSpkKernelHandle::record_level)
         .def("record_cache_limit", &NativeSpkKernelHandle::record_cache_limit)
+        .def("states_tdb_batch", [](
+            NativeSpkKernelHandle& self, const std::vector<SpkRoute>& routes, const py::buffer& epochs
+        ) {
+            return spk_epochs_batch(self, epochs, routes.size(), 6,
+                [&](auto& batch, const auto& jd, double* out) { batch.states(routes, jd, out); });
+        }, py::arg("routes"), py::arg("epochs_tdb"))
+        .def("received_light_tdb_batch", [](
+            NativeSpkKernelHandle& self, const SpkRoute& observer_route,
+            const std::vector<SpkRoute>& target_routes, const py::buffer& epochs
+        ) {
+            return spk_epochs_batch(self, epochs, target_routes.size(), 4,
+                [&](auto& batch, const auto& jd, double* out) {
+                    batch.received_light(observer_route, target_routes, jd, out);
+                });
+        }, py::arg("observer_route"), py::arg("target_routes"), py::arg("epochs_tdb"))
         .def("load_segment_evaluator", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type) {
             std::shared_ptr<SpkSegmentEvaluator> evaluator;
             {

@@ -9,7 +9,9 @@
 namespace moira {
 namespace native {
 
-bool runtime_avx2_available() noexcept {
+namespace {
+
+bool detect_avx2() noexcept {
 #if !defined(MOIRA_NATIVE_AVX2_COMPILED)
     return false;
 #elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
@@ -29,6 +31,15 @@ bool runtime_avx2_available() noexcept {
 #else
     return false;
 #endif
+}
+
+} // namespace
+
+bool runtime_avx2_available() noexcept {
+    // CPUID is serializing and can trap on virtualized hosts. Detect once
+    // before dispatching the hot interpolation loops.
+    static const bool available = detect_avx2();
+    return available;
 }
 
 }  // namespace native

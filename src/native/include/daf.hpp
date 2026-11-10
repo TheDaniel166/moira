@@ -40,6 +40,22 @@ struct DafSummaryEntry {
     int32_t end_i = 0;
 };
 
+inline bool spk_descriptor_covers_tdb(
+    const DafSummaryEntry& entry, double epoch_tdb, double offset_days
+) {
+    constexpr double j2000 = 2451545.0;
+    constexpr double seconds_per_day = 86400.0;
+    if (offset_days == 0.0) {
+        return j2000 + entry.start_second / seconds_per_day <= epoch_tdb
+            && epoch_tdb <= j2000 + entry.end_second / seconds_per_day;
+    }
+    // Compare relative seconds to keep the offset below a Julian-day tick.
+    const double anchor_seconds = (epoch_tdb - j2000) * seconds_per_day;
+    const double offset_seconds = offset_days * seconds_per_day;
+    return entry.start_second - anchor_seconds <= offset_seconds
+        && offset_seconds <= entry.end_second - anchor_seconds;
+}
+
 struct DafCatalog {
     std::string locidw;
     std::string locfmt;
@@ -640,14 +656,27 @@ public:
           swap_bytes_(swap_bytes) {}
 
     void read_record(size_t index, double* out) const override {
-        const std::streamoff word_offset =
-            static_cast<std::streamoff>(start_i_ - 1)
-            + static_cast<std::streamoff>(index) * record_size_
-            + 2;
-        file_->read_words(word_offset, word_count_, swap_bytes_, out);
+        file_->read_words(record_offset(index) + 2, word_count_, swap_bytes_, out);
+    }
+
+    void read_records(size_t first, size_t count, double* out) const override {
+        if (count == 1) {
+            read_record(first, out);
+            return;
+        }
+        std::vector<double> records(count * record_size_);
+        file_->read_words(record_offset(first), records.size(), swap_bytes_, records.data());
+        for (size_t i = 0; i < count; ++i) {
+            std::copy_n(records.data() + i * record_size_ + 2, word_count_, out + i * word_count_);
+        }
     }
 
 private:
+    std::streamoff record_offset(size_t index) const {
+        return static_cast<std::streamoff>(start_i_ - 1)
+            + static_cast<std::streamoff>(index) * record_size_;
+    }
+
     std::shared_ptr<SharedSpkRecordFile> file_;
     int32_t start_i_;
     int32_t record_size_;
@@ -751,6 +780,10 @@ public:
             const SpkChebyshevSegmentMetadata metadata = read_spk_chebyshev_segment_metadata(
                 file, end_i, catalog.little_endian, data_type
             );
+            const int64_t record_words = static_cast<int64_t>(metadata.record_count) * metadata.record_size;
+            if (record_words > static_cast<int64_t>(end_i) - start_i - 3) {
+                throw std::invalid_argument("SPK records extend beyond the descriptor payload");
+            }
             if (!record_file_) {
                 record_file_ = std::make_shared<SharedSpkRecordFile>(path);
             }
