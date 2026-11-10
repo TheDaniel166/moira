@@ -571,7 +571,7 @@ def test_native_plan_explains_route_and_backend_selection(
     monkeypatch.setattr(
         planets_module,
         "_npe_body_route_segment_specs",
-        lambda reader, jd_tt: None,
+        lambda reader, jd_tt, *, public_specs: None,
     )
     plan = planets_module._native_all_planets_plan([Body.SUN], **common)
     assert plan.reason is planets_module._NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE
@@ -579,7 +579,7 @@ def test_native_plan_explains_route_and_backend_selection(
     monkeypatch.setattr(
         planets_module,
         "_npe_body_route_segment_specs",
-        lambda reader, jd_tt: body_specs,
+        lambda reader, jd_tt, *, public_specs: body_specs,
     )
     monkeypatch.setattr(
         planets_module,

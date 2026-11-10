@@ -357,7 +357,7 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
     monkeypatch.setattr(
         planets_module,
         "_npe_body_route_segment_specs",
-        lambda reader, jd_tt: {
+        lambda reader, jd_tt, *, public_specs: {
             Body.SUN: ((1, 2, 3),),
             Body.MARS: ((4, 5, 6),),
         },

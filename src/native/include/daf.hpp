@@ -595,7 +595,7 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
 
 /**
  * Kernel file shared by the record sources of one handle. Buffered reads are
- * serialized, and isolated batch records can use a shared read-only mapping.
+ * serialized, and isolated records can use a shared read-only mapping.
  * Its lifetime is the lifetime of the evaluators that read from it: closing the
  * handle drops only the handle's reference, so an evaluator obtained before
  * close keeps working, as a whole-segment evaluator that owns its coefficients
@@ -690,14 +690,15 @@ public:
           swap_bytes_(swap_bytes) {}
 
     void read_record(size_t index, double* out) const override {
-        file_->read_words(record_offset(index) + 2, word_count_, swap_bytes_, out);
+        const auto offset = record_offset(index) + 2;
+        if (!file_->read_mapped_words(offset, word_count_, swap_bytes_, out)) {
+            file_->read_words(offset, word_count_, swap_bytes_, out);
+        }
     }
 
     void read_records(size_t first, size_t count, double* out) const override {
         if (count == 1) {
-            if (!file_->read_mapped_words(record_offset(first) + 2, word_count_, swap_bytes_, out)) {
-                read_record(first, out);
-            }
+            read_record(first, out);
             return;
         }
         std::vector<double> records(count * record_size_);

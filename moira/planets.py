@@ -551,6 +551,10 @@ _NPE_BODY_ROUTE_PAIRS = {
     Body.NEPTUNE: ((0, 8),),
     Body.PLUTO: ((0, 9),),
 }
+_NPE_BODY_ROUTE_PUBLIC_INDICES = {
+    body: tuple(_NPE_PUBLIC_ROUTE_PAIRS.index(pair) for pair in pairs)
+    for body, pairs in _NPE_BODY_ROUTE_PAIRS.items()
+}
 
 
 @dataclass(slots=True)
@@ -1004,12 +1008,19 @@ def _npe_public_route_segment_specs(reader: SpkReader, epoch_tdb: float):
 def _npe_body_route_segment_specs(
     reader: SpkReader, epoch_tdb: float, bodies: Iterable[str] = _NPE_BODY_ROUTE_PAIRS,
     *, offset_days: float = 0.0,
+    public_specs: list[tuple[int, int, int]] | None = None,
 ):
     """Return admitted per-body route segment specs keyed by body, or None."""
     kernel = getattr(reader, "_kernel", None)
     handle = getattr(kernel, "_handle", None)
     if handle is None or not hasattr(handle, "batch_segment_position_requests"):
         return None
+
+    if public_specs is not None and offset_days == 0.0:
+        return {
+            body: tuple(public_specs[index] for index in _NPE_BODY_ROUTE_PUBLIC_INDICES[body])
+            for body in bodies
+        }
 
     body_specs: dict[str, tuple[tuple[int, int, int], ...]] = {}
     for body in bodies:
@@ -1184,7 +1195,7 @@ def _native_all_planets_plan(
     public_specs = _npe_public_route_segment_specs(spk_reader, epoch_tdb)
     if public_specs is None:
         return _native_python_plan(_NativeAdmissionReason.PUBLIC_ROUTE_UNAVAILABLE)
-    body_specs = _npe_body_route_segment_specs(spk_reader, epoch_tdb)
+    body_specs = _npe_body_route_segment_specs(spk_reader, epoch_tdb, public_specs=public_specs)
     if body_specs is None:
         return _native_python_plan(_NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE)
 
@@ -1205,8 +1216,12 @@ def _native_all_planets_plan(
     ):
         rate_epoch_tdb = tt_to_tdb(rate_jd)
         rate_public_specs = _npe_public_route_segment_specs(spk_reader, rate_epoch_tdb)
-        rate_body_specs = _npe_body_route_segment_specs(spk_reader, rate_epoch_tdb)
-        if rate_public_specs is None or rate_body_specs is None:
+        if rate_public_specs is None:
+            return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
+        rate_body_specs = _npe_body_route_segment_specs(
+            spk_reader, rate_epoch_tdb, public_specs=rate_public_specs,
+        )
+        if rate_body_specs is None:
             return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
         rate_specs.append(
             (rate_jd, rate_epoch_tdb, tuple(rate_public_specs), rate_body_specs)

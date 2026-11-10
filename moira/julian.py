@@ -48,6 +48,8 @@ import bisect
 from numbers import Real
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from functools import lru_cache
+from operator import itemgetter
 from pathlib import Path
 from .dispatch import accelerate
 from .constants import J2000, JULIAN_CENTURY, TAI_TT_OFFSET
@@ -197,10 +199,18 @@ def _delta_t_observation_boundary() -> _DeltaTObservationBoundary:
     an observed instantaneous derivative.
     """
 
-    if len(_DELTA_T_ANNUAL) < 2:
+    return _validated_delta_t_observation_boundary(_DELTA_T_ANNUAL)
+
+
+@lru_cache(maxsize=1)
+def _validated_delta_t_observation_boundary(
+    table: tuple[tuple[float, float], ...],
+) -> _DeltaTObservationBoundary:
+    """Validate each immutable annual table before reusing its boundary."""
+    if len(table) < 2:
         raise RuntimeError("Delta-T annual boundary requires at least two rows")
     previous_year: float | None = None
-    for year, total in _DELTA_T_ANNUAL:
+    for year, total in table:
         if not math.isfinite(year) or not math.isfinite(total):
             raise RuntimeError("Delta-T annual boundary contains a non-finite row")
         if previous_year is not None and year <= previous_year:
@@ -209,8 +219,8 @@ def _delta_t_observation_boundary() -> _DeltaTObservationBoundary:
             )
         previous_year = year
 
-    year0, total0 = _DELTA_T_ANNUAL[-2]
-    year1, total1 = _DELTA_T_ANNUAL[-1]
+    year0, total0 = table[-2]
+    year1, total1 = table[-1]
     return _DeltaTObservationBoundary(
         year=year1,
         total=total1,
@@ -335,7 +345,10 @@ def _interpolate_delta_t_table(
         )
     if year == table[-1][0]:
         return table[-1][1]
-    for (year0, total0), (year1, total1) in zip(table, table[1:]):
+    # Use the preceding interval at an exact interior knot, as the linear scan did.
+    right = bisect.bisect_left(table, year, lo=1, key=itemgetter(0))
+    if right < len(table):
+        (year0, total0), (year1, total1) = table[right - 1], table[right]
         if year0 <= year <= year1:
             fraction = (year - year0) / (year1 - year0)
             return total0 + fraction * (total1 - total0)
@@ -353,14 +366,12 @@ def _delta_t_hpiers_annual_bridge() -> tuple[tuple[float, float], ...]:
     """
 
     annual_start = _DELTA_T_ANNUAL[0]
-    preceding = tuple(
-        row for row in _DELTA_T_HPIERS_2016 if row[0] < annual_start[0]
-    )
+    preceding = bisect.bisect_left(_DELTA_T_HPIERS_2016, annual_start[0], key=itemgetter(0))
     if not preceding:
         raise RuntimeError(
             "HPIERS Delta-T data does not precede the first annual boundary"
         )
-    return (preceding[-1], annual_start)
+    return (_DELTA_T_HPIERS_2016[preceding - 1], annual_start)
 
 
 @dataclass(frozen=True, slots=True)

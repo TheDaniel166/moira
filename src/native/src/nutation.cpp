@@ -2,6 +2,8 @@
 
 #include <atomic>
 #include <cmath>
+#include <cstdint>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -13,11 +15,21 @@ namespace moira {
 namespace native {
 namespace {
 
+using NutationPhase = std::pair<std::array<int, 14>, std::size_t>;
+
+struct IndexedNutationTerm {
+    double c1;
+    double c2;
+    std::size_t phase_index;
+};
+
 struct NutationSeries {
-    std::vector<NutationSeriesTerm> longitude_terms;
-    std::vector<NutationSeriesTerm> obliquity_terms;
+    std::vector<NutationPhase> phases;
+    std::vector<IndexedNutationTerm> longitude_terms;
+    std::vector<IndexedNutationTerm> obliquity_terms;
     std::size_t longitude_j0_count = 0;
     std::size_t obliquity_j0_count = 0;
+    uint64_t generation = 0;
 };
 
 std::shared_ptr<const NutationSeries> g_series;
@@ -76,12 +88,13 @@ std::array<double, 14> fundamental_arguments(double t) noexcept {
 }
 
 double argument(
-    const NutationSeriesTerm& term,
+    const NutationPhase& phase,
     const std::array<double, 14>& arguments
 ) noexcept {
+    const auto& [multipliers, count] = phase;
     double value = 0.0;
-    for (std::size_t index = 0; index < term.argument_count; ++index) {
-        value += static_cast<double>(term.arguments[index]) * arguments[index];
+    for (std::size_t index = 0; index < count; ++index) {
+        value += static_cast<double>(multipliers[index]) * arguments[index];
     }
     return value;
 }
@@ -104,6 +117,29 @@ void validate_terms(
     }
 }
 
+std::vector<IndexedNutationTerm> index_terms(
+    const std::vector<NutationSeriesTerm>& terms,
+    std::map<NutationPhase, std::size_t>& indices,
+    std::vector<NutationPhase>& phases
+) {
+    std::vector<IndexedNutationTerm> indexed;
+    indexed.reserve(terms.size());
+    for (const auto& term : terms) {
+        const NutationPhase phase{term.arguments, term.argument_count};
+        const auto [entry, inserted] = indices.try_emplace(phase, phases.size());
+        if (inserted) {
+            phases.push_back(phase);
+        }
+        indexed.push_back({term.c1, term.c2, entry->second});
+    }
+    return indexed;
+}
+
+struct PhaseValues {
+    double sine;
+    double cosine;
+};
+
 struct CachedNutationEntry {
     double jd_tt = -1.0;
     uint64_t gen = 0;
@@ -113,6 +149,7 @@ struct CachedNutationEntry {
 constexpr std::size_t NUTATION_CACHE_SIZE = 8;
 thread_local std::array<CachedNutationEntry, NUTATION_CACHE_SIZE> tl_nutation_cache{};
 thread_local std::size_t tl_cache_hand = 0;
+thread_local std::vector<PhaseValues> tl_phase_values;
 
 static std::atomic<uint64_t> g_series_generation{0};
 
@@ -128,16 +165,17 @@ void register_nutation_2000r06_series(
     validate_terms(obliquity_terms, obliquity_j0_count, "obliquity");
 
     auto series = std::make_shared<NutationSeries>();
-    series->longitude_terms = std::move(longitude_terms);
-    series->obliquity_terms = std::move(obliquity_terms);
+    std::map<NutationPhase, std::size_t> phase_indices;
+    series->longitude_terms = index_terms(longitude_terms, phase_indices, series->phases);
+    series->obliquity_terms = index_terms(obliquity_terms, phase_indices, series->phases);
     series->longitude_j0_count = longitude_j0_count;
     series->obliquity_j0_count = obliquity_j0_count;
+    series->generation = g_series_generation.fetch_add(1, std::memory_order_relaxed) + 1;
     std::atomic_store_explicit(
         &g_series,
         std::shared_ptr<const NutationSeries>(std::move(series)),
         std::memory_order_release
     );
-    g_series_generation.fetch_add(1, std::memory_order_release);
 }
 
 bool nutation_2000r06_series_ready() noexcept {
@@ -152,7 +190,7 @@ NutationResult nutation_2000r06(double jd_tt) {
         );
     }
 
-    const uint64_t current_gen = g_series_generation.load(std::memory_order_relaxed);
+    const uint64_t current_gen = series->generation;
     for (std::size_t i = 0; i < NUTATION_CACHE_SIZE; ++i) {
         if (tl_nutation_cache[i].jd_tt == jd_tt && tl_nutation_cache[i].gen == current_gen) {
             return tl_nutation_cache[i].result;
@@ -162,19 +200,27 @@ NutationResult nutation_2000r06(double jd_tt) {
     const double t = (jd_tt - J2000) / 36525.0;
     const std::array<double, 14> fa = fundamental_arguments(t);
 
+    // Share the trigonometry for identical arguments across both IERS tables
+    // and both time orders. Accumulate each table in its original order.
+    tl_phase_values.resize(series->phases.size());
+    for (std::size_t index = 0; index < series->phases.size(); ++index) {
+        const double phase = argument(series->phases[index], fa);
+        tl_phase_values[index] = {std::sin(phase), std::cos(phase)};
+    }
+
     double longitude_uas = 0.0;
     for (std::size_t index = 0; index < series->longitude_terms.size(); ++index) {
-        const NutationSeriesTerm& term = series->longitude_terms[index];
-        const double phase = argument(term, fa);
-        const double value = term.c1 * std::sin(phase) + term.c2 * std::cos(phase);
+        const IndexedNutationTerm& term = series->longitude_terms[index];
+        const auto [sine, cosine] = tl_phase_values[term.phase_index];
+        const double value = term.c1 * sine + term.c2 * cosine;
         longitude_uas += index < series->longitude_j0_count ? value : t * value;
     }
 
     double obliquity_uas = 0.0;
     for (std::size_t index = 0; index < series->obliquity_terms.size(); ++index) {
-        const NutationSeriesTerm& term = series->obliquity_terms[index];
-        const double phase = argument(term, fa);
-        const double value = term.c2 * std::cos(phase) + term.c1 * std::sin(phase);
+        const IndexedNutationTerm& term = series->obliquity_terms[index];
+        const auto [sine, cosine] = tl_phase_values[term.phase_index];
+        const double value = term.c2 * cosine + term.c1 * sine;
         obliquity_uas += index < series->obliquity_j0_count ? value : t * value;
     }
 

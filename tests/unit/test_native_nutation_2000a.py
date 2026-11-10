@@ -46,6 +46,27 @@ def test_native_nutation_series_rejects_invalid_replacement() -> None:
     assert all(map(lambda value: value == value, moira_native.nutation_2000a(2451545.0)))
 
 
+def test_shared_nutation_phase_preserves_time_orders_and_series_replacement() -> None:
+    longitude, obliquity = nut._ensure_tables_loaded()
+    epoch = 2451545.0 + 36525.0 / 2.0
+    scale = 1e-6 / 3600.0
+    try:
+        moira_native.set_nutation_2000a_tables(
+            [(0.0, 8.0, 0), (0.0, 4.0, 0)],
+            [(0.0, 6.0, 0), (0.0, 2.0, 0)],
+            1, 1,
+        )
+        assert moira_native.nutation_2000a(epoch) == pytest.approx(
+            (10.0 * scale, 7.0 * scale), abs=1e-21,
+        )
+        moira_native.set_nutation_2000a_tables([(0.0, 3.0, 0)], [(0.0, 5.0, 0)], 1, 1)
+        assert moira_native.nutation_2000a(epoch) == pytest.approx(
+            (3.0 * scale, 5.0 * scale), abs=1e-21,
+        )
+    finally:
+        moira_native.set_nutation_2000a_tables(longitude, obliquity, nut._LS_J0_COUNT, nut._PL_J0_COUNT)
+
+
 def test_native_nutation_series_is_safe_for_concurrent_readers() -> None:
     epochs = [2415020.5 + index * 3652.5 for index in range(20)]
     expected = [moira_native.nutation_2000a(jd) for jd in epochs]
