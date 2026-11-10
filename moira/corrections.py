@@ -156,7 +156,7 @@ def apply_light_time(
     Correct a geocentric position vector for light travel time.
 
     Calculates: Barycentric Body(t - lt) - Barycentric Earth(t).
-    One iteration is sufficient for all planets.
+    The callback supplies positions at single-part TT Julian days.
 
     Parameters
     ----------
@@ -170,25 +170,26 @@ def apply_light_time(
     -------
     (corrected_xyz, light_time_days)
     """
-    # Initial estimate: light-time from body position at t
-    pos_body = barycentric_fn(body, jd_tt, reader)
-    lt = vec_norm(vec_sub(pos_body, earth_ssb)) / C_KM_PER_DAY
+    return _iterate_light_time(
+        earth_ssb,
+        barycentric_fn(body, jd_tt, reader),
+        lambda delay: barycentric_fn(body, jd_tt - delay, reader),
+    )
 
-    # Iterate to convergence: planet position at t − lt feeds back into lt.
-    # Converges in ≤3 steps for all solar-system bodies; cap at 10 for safety.
-    # Tolerance is 1 ns in light-time (1e-14 days ≈ 0.3 mm positional error).
-    _LT_TOL = 1e-14  # days
-    xyz_geocentric_lt = vec_sub(pos_body, earth_ssb)
+
+def _iterate_light_time(
+    observer: Vec3, geometric_body: Vec3, emission_position,
+) -> tuple[Vec3, float]:
+    """Solve for reception light time using the caller's emission clock."""
+    xyz = vec_sub(geometric_body, observer)
+    delay = vec_norm(xyz) / C_KM_PER_DAY
     for _ in range(10):
-        pos_body_lt       = barycentric_fn(body, jd_tt - lt, reader)
-        xyz_geocentric_lt = vec_sub(pos_body_lt, earth_ssb)
-        lt_new            = vec_norm(xyz_geocentric_lt) / C_KM_PER_DAY
-        if abs(lt_new - lt) < _LT_TOL:
-            lt = lt_new
-            break
-        lt = lt_new
-
-    return xyz_geocentric_lt, lt
+        xyz = vec_sub(emission_position(delay), observer)
+        next_delay = vec_norm(xyz) / C_KM_PER_DAY
+        if abs(next_delay - delay) < 1e-14:  # Days, about one nanosecond.
+            return xyz, next_delay
+        delay = next_delay
+    return xyz, delay
 
 
 # ---------------------------------------------------------------------------

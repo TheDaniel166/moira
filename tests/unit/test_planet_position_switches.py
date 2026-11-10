@@ -451,7 +451,7 @@ def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(m
 def test_npe_batch_barycentric_positions_preserves_requested_subset_order():
     class _RecordingHandle:
         def __init__(self) -> None:
-            self.requests: list[tuple[int, int, int, float]] = []
+            self.requests: list[tuple[int, int, int, float, float]] = []
 
         def batch_segment_position_requests(self, requests):
             self.requests = list(requests)
@@ -467,18 +467,19 @@ def test_npe_batch_barycentric_positions_preserves_requested_subset_order():
         Body.MERCURY: ((0, 1, 2),),
         Body.MARS: ((0, 4, 2),),
     }
-    body_jds = {Body.MARS: 2451544.9, Body.SUN: 2451544.8}
+    light_times = {Body.MARS: 0.1, Body.SUN: 0.2}
 
     result = planets_module._npe_batch_barycentric_positions(
         handle,
         segment_specs,
-        body_jds,
+        2451545.0,
+        light_times,
     )
 
     assert handle.requests == [
-        (0, 4, 2, 2451544.9),
-        (0, 10, 2, 2451544.8),
-        (10, 399, 2, 2451544.8),
+        (0, 4, 2, 2451545.0, -0.1),
+        (0, 10, 2, 2451545.0, -0.2),
+        (10, 399, 2, 2451545.0, -0.2),
     ]
     assert list(result) == [Body.MARS, Body.SUN]
     assert result[Body.MARS] == (1.0, 2.0, 3.0)

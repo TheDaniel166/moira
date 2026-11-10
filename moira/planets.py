@@ -79,7 +79,7 @@ from .spk_reader import (
 )
 from .small_body_identity import SmallBodyFamily, resolve_small_body_identity
 from .corrections import (
-    apply_light_time, apply_aberration, apply_deflection,
+    _iterate_light_time, apply_light_time, apply_aberration, apply_deflection,
     apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
@@ -605,7 +605,6 @@ class _NativeAdmissionReason(str, Enum):
     PUBLIC_ROUTE_UNAVAILABLE = "public_route_unavailable"
     BODY_ROUTE_UNAVAILABLE = "body_route_unavailable"
     RATE_ROUTE_UNAVAILABLE = "rate_route_unavailable"
-    RATE_ROUTE_CHANGED = "rate_route_changed"
     ADMITTED_NATIVE_EVALUATOR = "admitted_native_evaluator"
     ADMITTED_NATIVE_BATCH = "admitted_native_batch"
 
@@ -885,14 +884,19 @@ def _native_python_plan(
     )
 
 
-def _resolve_primary_spk_reader(reader: KernelReader) -> SpkReader | None:
-    """Return the underlying SpkReader governing planetary ephemerides."""
+def _resolve_primary_spk_reader(reader: KernelReader, snapshot=None) -> SpkReader | None:
+    """Admit one SPK when it owns every direct planetary route in the pool."""
     if isinstance(reader, SpkReader):
         return reader
-    getter = getattr(reader, "_primary_planetary_reader", None)
-    if callable(getter):
-        primary = getter()
-        if isinstance(primary, SpkReader):
+    if isinstance(reader, KernelPool):
+        if snapshot is None:
+            with reader._read_lease() as snapshot:
+                return _resolve_primary_spk_reader(reader, snapshot)
+        primary = reader._primary_planetary_reader(snapshot)
+        if isinstance(primary, SpkReader) and all(
+            len(sources) == 1 and sources[0][1] is primary
+            for sources in (snapshot.pair_readers.get(pair, ()) for pair in _NPE_PUBLIC_ROUTE_PAIRS)
+        ):
             return primary
     return None
 
@@ -999,6 +1003,7 @@ def _npe_public_route_segment_specs(reader: SpkReader, epoch_tdb: float):
 
 def _npe_body_route_segment_specs(
     reader: SpkReader, epoch_tdb: float, bodies: Iterable[str] = _NPE_BODY_ROUTE_PAIRS,
+    *, offset_days: float = 0.0,
 ):
     """Return admitted per-body route segment specs keyed by body, or None."""
     kernel = getattr(reader, "_kernel", None)
@@ -1011,7 +1016,9 @@ def _npe_body_route_segment_specs(
         specs: list[tuple[int, int, int]] = []
         for center, target in _NPE_BODY_ROUTE_PAIRS[body]:
             try:
-                segment = reader._segment_for_tdb(center, target, epoch_tdb)
+                segment = reader._segment_for_tdb(
+                    center, target, epoch_tdb, offset_days=offset_days,
+                )
             except (ValueError, KeyError, AttributeError):
                 return None
             if getattr(segment, "_handle", None) is not handle:
@@ -1081,18 +1088,18 @@ def _prefill_npe_public_vector_cache(
 def _npe_batch_barycentric_positions(
     handle,
     body_segment_specs: dict[str, tuple[tuple[int, int, int], ...]],
-    body_epochs_tdb: dict[str, float],
+    epoch_tdb: float,
+    light_times: dict[str, float],
 ) -> dict[str, Vec3]:
-    """Evaluate admitted per-body barycentric positions at varying TDB epochs."""
-    requested_bodies = tuple(body_epochs_tdb)
-    requests: list[tuple[int, int, int, float]] = []
+    """Evaluate each body's emission position at its split TDB epoch."""
+    requested_bodies = tuple(light_times)
+    requests: list[tuple[int, int, int, float, float]] = []
     counts: dict[str, int] = {}
     for body in requested_bodies:
         specs = body_segment_specs[body]
-        epoch_tdb = body_epochs_tdb[body]
         counts[body] = len(specs)
         for start_i, end_i, data_type in specs:
-            requests.append((start_i, end_i, data_type, epoch_tdb))
+            requests.append((start_i, end_i, data_type, epoch_tdb, -light_times[body]))
 
     raw = handle.batch_segment_position_requests(requests)
     cursor = 0
@@ -1201,11 +1208,6 @@ def _native_all_planets_plan(
         rate_body_specs = _npe_body_route_segment_specs(spk_reader, rate_epoch_tdb)
         if rate_public_specs is None or rate_body_specs is None:
             return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
-        # Native evaluation also uses the selected body descriptors for
-        # retarded positions. At a known seam, resolve observation and
-        # emission epochs independently through the canonical reader path.
-        if rate_public_specs != public_specs or rate_body_specs != body_specs:
-            return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_CHANGED)
         rate_specs.append(
             (rate_jd, rate_epoch_tdb, tuple(rate_public_specs), rate_body_specs)
         )
@@ -1223,7 +1225,7 @@ def _native_all_planets_plan(
 
 
 def _evaluate_native_planetary(evaluate, *args, epoch_tt: float):
-    """Decline native reduction only when the reader must reselect an emission route."""
+    """Fall back to reader diagnostics when an emission route has no coverage."""
     try:
         return evaluate(*args, epoch_tt=epoch_tt)
     except _NATIVE_EMISSION_ROUTE_ERRORS:
@@ -1495,26 +1497,27 @@ def _native_all_planets_admitted(
     }
 
     for _ in range(10):
-        retarded_epochs_tdb = {
-            body: tt_to_tdb(jd_tt - light_times[body]) for body in bodies
-        }
-        for body, retarded_epoch in retarded_epochs_tdb.items():
-            emission_specs = _npe_body_route_segment_specs(target_reader, retarded_epoch, (body,))
-            if emission_specs is None or emission_specs[body] != body_segment_specs[body]:
+        emission_specs = {}
+        for body, delay in light_times.items():
+            selected = _npe_body_route_segment_specs(
+                target_reader, epoch_tdb, (body,), offset_days=-delay,
+            )
+            if selected is None:
                 return None
+            emission_specs.update(selected)
         body_bary_lt = _npe_batch_barycentric_positions(
-            handle, body_segment_specs, retarded_epochs_tdb
+            handle, emission_specs, epoch_tdb, light_times,
         )
-        converged = True
-        for body in bodies:
+        pending = {}
+        for body, delay in light_times.items():
             xyz_lt = vec_sub(body_bary_lt[body], earth_ssb)
-            lt_new = vec_norm(xyz_lt) / C_KM_PER_DAY
-            if abs(lt_new - light_times[body]) >= 1e-14:
-                converged = False
-            light_times[body] = lt_new
+            next_delay = vec_norm(xyz_lt) / C_KM_PER_DAY
+            if abs(next_delay - delay) >= 1e-14:
+                pending[body] = next_delay
             geocentric_lt[body] = xyz_lt
-        if converged:
+        if not pending:
             break
+        light_times = pending
 
     results: dict[str, PlanetData] = {}
     for body in bodies:
@@ -2105,6 +2108,37 @@ def _apparent_geocentric_ecliptic(
     return icrf_to_ecliptic(xyz, obliquity)
 
 
+def _apply_planetary_light_time(
+    body: str, jd_tt: float, reader: KernelReader, earth_ssb: Vec3, barycentric_fn,
+) -> tuple[Vec3, float]:
+    """Solve planetary reception light time on the TDB axis (NAIF spkltc)."""
+    pairs = _NPE_BODY_ROUTE_PAIRS.get(body)
+    if pairs is None:
+        return apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)
+
+    def solve(spk: SpkReader) -> tuple[Vec3, float]:
+        epoch_tdb = tt_to_tdb(jd_tt)
+
+        def emission_position(delay: float) -> Vec3:
+            result = (0.0, 0.0, 0.0)
+            for center, target in pairs:
+                result = vec_add(result, spk._position_tdb_offset(center, target, epoch_tdb, -delay))
+            return result
+
+        return _iterate_light_time(
+            earth_ssb, barycentric_fn(body, jd_tt, spk), emission_position,
+        )
+
+    if isinstance(reader, SpkReader):
+        return solve(reader)
+    if isinstance(reader, KernelPool):
+        with reader._read_lease() as snapshot:
+            spk = _resolve_primary_spk_reader(reader, snapshot)
+            if spk is not None:
+                return solve(spk)
+    return apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)
+
+
 def _apparent_geocentric_equatorial_vector(
     body_id,
     jd_tt: float,
@@ -2118,7 +2152,7 @@ def _apparent_geocentric_equatorial_vector(
     aberration: bool,
 ) -> Vec3:
     """Return apparent geocentric equatorial-of-date ICRF vector before ecliptic projection."""
-    xyz, _lt = apply_light_time(body_id, jd_tt, reader, earth_ssb, barycentric_fn)
+    xyz, _lt = _apply_planetary_light_time(body_id, jd_tt, reader, earth_ssb, barycentric_fn)
     if deflectors:
         xyz = apply_deflection(xyz, deflectors)
     if aberration:
@@ -2515,7 +2549,7 @@ def _planet_at_core(
         else:
             earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader, _vector_cache)
 
-        xyz_geo, _lt = apply_light_time(
+        xyz_geo, _lt = _apply_planetary_light_time(
             body,
             jd_tt,
             reader,
@@ -2768,7 +2802,7 @@ def planet_reduction_breakdown_at(
     }
 
     if apparent:
-        xyz1, light_time_days = apply_light_time(
+        xyz1, light_time_days = _apply_planetary_light_time(
             target_id,
             jd_tt,
             reader,
@@ -3580,7 +3614,7 @@ def _sky_position_at_impl(
         )
 
     # Step 1: Light-time correction
-    xyz, _lt = apply_light_time(
+    xyz, _lt = _apply_planetary_light_time(
         body,
         jd_tt,
         reader,

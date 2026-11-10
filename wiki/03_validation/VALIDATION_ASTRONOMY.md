@@ -733,6 +733,10 @@ tests.
 The numbers in this paper belong to DE441. Kernel compatibility is an API
 capability; numerical transfer to another kernel requires a new corpus run.
 
+The [2026-11-09 SPK handoff receipt](SPK_HANDOFF_VALIDATION_2026-11-09.md)
+records a separate DE441 and DE433 comparison against CSPICE at genuine
+descriptor boundaries, including reception light time and native routing.
+
 ### 5.10 Asteroid positions use a separate acceptance policy
 
 `tests/integration/test_horizons_asteroid_apparent.py` uses a frozen,

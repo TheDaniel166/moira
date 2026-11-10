@@ -82,7 +82,7 @@ def _reader_with_segments(*segments: _FakeSegment) -> SpkReader:
         key = (segment.center, segment.target)
         reader._segments_by_pair.setdefault(key, []).append(segment)
     reader._segments_by_pair = {
-        key: tuple(value) for key, value in reader._segments_by_pair.items()
+        key: tuple(reversed(value)) for key, value in reader._segments_by_pair.items()
     }
     return reader
 
@@ -148,6 +148,23 @@ def test_evaluator_interval_requires_one_segment_to_cover_both_endpoints() -> No
         reader.evaluator_tdb(10, 0, epoch_tdb=1500.0, epoch_end_tdb=2500.0)
         is None
     )
+
+
+def test_evaluator_interval_respects_later_segment_priority() -> None:
+    base = object()
+    override = object()
+    reader = _reader_with_segments(
+        _FakeEvaluatorSegment(0, 10, 1000.0, 3000.0, base),
+        _FakeEvaluatorSegment(0, 10, 1500.0, 2500.0, override),
+    )
+
+    assert reader.evaluator_tdb(10, epoch_tdb=1400.0) is base
+    assert reader.evaluator_tdb(10, epoch_tdb=1500.0) is override
+    assert reader.evaluator_tdb(10, epoch_tdb=2500.0) is override
+    assert reader.evaluator_tdb(10, epoch_tdb=2600.0) is base
+    assert reader.evaluator_tdb(10, epoch_tdb=1500.0, epoch_end_tdb=2500.0) is override
+    assert reader.evaluator_tdb(10, epoch_tdb=1400.0, epoch_end_tdb=1500.0) is None
+    assert reader.evaluator_tdb(10, epoch_tdb=1400.0, epoch_end_tdb=2600.0) is None
 
 
 def test_evaluator_interval_rejects_reversed_bounds() -> None:

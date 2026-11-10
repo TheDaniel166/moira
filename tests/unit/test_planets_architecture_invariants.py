@@ -42,8 +42,8 @@ def test_warm_planet_cache_cannot_serve_a_closed_reader(planetary_kernel_path, p
         planets_module._default_apparent_longitude(Body.MARS, _JD_J2000, reader, contexts)
 
 
-def _write_planetary_seam_kernel(kernel, *, first_mars_interval, distant_mars):
-    """Write constant Type 2 states with two distinguishable Mars segments."""
+def _write_planetary_seam_kernel(kernel, *, mars_override_interval, distant_mars):
+    """Write constant Type 2 states with a later Mars override."""
     pairs = (
         (0, 10), (0, 3), (3, 399), (3, 301), (0, 1), (1, 199), (0, 2),
         (2, 299), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9),
@@ -58,15 +58,15 @@ def _write_planetary_seam_kernel(kernel, *, first_mars_interval, distant_mars):
     words = []
     for i, (centre, target) in enumerate((*pairs, (0, 4)), start=1):
         start_et = -86_400.0
-        first_mars = (centre, target) == (0, 4) and i <= len(pairs)
+        is_mars_override = i == len(pairs) + 1
         end_et = 86_400.0
-        if first_mars:
-            start_et, end_et = first_mars_interval
+        if is_mars_override:
+            start_et, end_et = mars_override_interval
         interval = end_et - start_et
         x, y = i * 1e7, i * 2e7
         if (centre, target) == (0, 4):
             x, y = (90e6, 180e6) if distant_mars else (55e6, 110e6)
-            if not first_mars:
+            if not is_mars_override:
                 y += 2e6
         # One Type 2 record with constant position coefficients, plus its directory.
         start_word = 641 + len(words)
@@ -85,7 +85,7 @@ def _write_planetary_seam_kernel(kernel, *, first_mars_interval, distant_mars):
 def test_native_longitude_rate_uses_each_samples_selected_segment(tmp_path, light_time_crosses_seam):
     kernel = tmp_path / "planetary-rate-seam.bsp"
     _write_planetary_seam_kernel(
-        kernel, first_mars_interval=(-86_400.0, 86.4), distant_mars=light_time_crosses_seam,
+        kernel, mars_override_interval=(-86_400.0, 86.4), distant_mars=light_time_crosses_seam,
     )
     with SpkReader(kernel) as reader:
         evaluator = planets_module._get_native_planetary_evaluator(reader)
@@ -106,7 +106,7 @@ def test_native_longitude_rate_uses_each_samples_selected_segment(tmp_path, ligh
             grav_deflection=True, nutation=True, center="geocentric", observer_lat=None,
             observer_lon=None, observer_elev_m=0.0, lst_deg=None, delta_t_policy=None,
         )
-        assert plan.reason is planets_module._NativeAdmissionReason.RATE_ROUTE_CHANGED
+        assert plan.reason is planets_module._NativeAdmissionReason.ADMITTED_NATIVE_EVALUATOR
         result = all_planets_at(_JD_J2000, bodies=[Body.MARS], reader=reader)[Body.MARS]
         if light_time_crosses_seam:
             assert abs(expected) < 0.01
@@ -117,16 +117,16 @@ def test_native_longitude_rate_uses_each_samples_selected_segment(tmp_path, ligh
 
 
 @pytest.mark.parametrize(
-    ("first_mars_interval", "central_emission_changes"),
+    ("mars_override_interval", "central_emission_changes"),
     [((-180.0, 86_400.0), True), ((-86_400.0, -180.0), True), ((-86_400.0, -300.0), False)],
     ids=["selected-segment-out-of-coverage", "overlap-priority-changes", "minus-sample-only"],
 )
 @pytest.mark.parametrize("force_batch", [False, True], ids=["fused", "batch"])
 def test_native_planetary_reduction_at_emission_only_seam(
-    tmp_path, monkeypatch, first_mars_interval, central_emission_changes, force_batch,
+    tmp_path, monkeypatch, mars_override_interval, central_emission_changes, force_batch,
 ):
     kernel = tmp_path / "planetary-emission-seam.bsp"
-    _write_planetary_seam_kernel(kernel, first_mars_interval=first_mars_interval, distant_mars=True)
+    _write_planetary_seam_kernel(kernel, mars_override_interval=mars_override_interval, distant_mars=True)
 
     with SpkReader(kernel) as reader:
         evaluator = planets_module._get_native_planetary_evaluator(reader)
@@ -149,14 +149,28 @@ def test_native_planetary_reduction_at_emission_only_seam(
             monkeypatch.setattr(planets_module, "_get_native_planetary_evaluator", lambda reader: None)
         else:
             longitude = planets_module._native_default_apparent_longitude(Body.MARS, _JD_J2000, reader)
-            if central_emission_changes:
-                assert longitude is None
-            else:
-                assert longitude == pytest.approx(expected.longitude, abs=1e-9, rel=0)
+            assert longitude == pytest.approx(expected.longitude, abs=1e-9, rel=0)
+
+        def unexpected_scalar_fallback(*args, **kwargs):
+            pytest.fail("valid segment crossing must remain in the native planetary path")
+
+        monkeypatch.setattr(planets_module, "_planet_at_impl", unexpected_scalar_fallback)
         bulk = all_planets_at(_JD_J2000, bodies=[Body.MARS], reader=reader)[Body.MARS]
         assert (bulk.longitude, bulk.speed) == pytest.approx(
             (expected.longitude, expected.speed), abs=1e-7, rel=0,
         )
+
+def test_split_emission_epoch_selects_the_correct_side_below_a_jd_tick(tmp_path):
+    kernel = tmp_path / "sub-tick-seam.bsp"
+    _write_planetary_seam_kernel(
+        kernel, mars_override_interval=(0.0, 86_400.0), distant_mars=True,
+    )
+    offset = 10e-6 / 86_400
+    assert _JD_J2000 - offset == _JD_J2000
+    with SpkReader(kernel) as reader:
+        assert reader._position_tdb_offset(0, 4, _JD_J2000, -offset) == (90e6, 182e6, 0.0)
+        assert reader.position_tdb(0, 4, _JD_J2000) == (90e6, 180e6, 0.0)
+
 
 def _native_capable_reader() -> SpkReader:
     class _Handle:

@@ -959,8 +959,8 @@ class SpkReader:
         Responsibilities:
             - Open and hold the SPK kernel file handle for the lifetime
               of the instance.
-            - Select the correct kernel segment for a given (center, target, jd)
-              triple, correctly handling split multi-epoch kernel layouts.
+            - Select the last covering segment in file order for each
+              (center, target, jd) triple, following NAIF SPK precedence.
             - Serve barycentric rectangular position vectors (km, ICRF) to
               planets.py and nodes.py.
             - Serve position-and-velocity pairs (km, km/day) when requested.
@@ -1082,7 +1082,8 @@ class SpkReader:
             key = (segment.center, segment.target)
             self._segments_by_pair.setdefault(key, []).append(segment)
         self._segments_by_pair = {
-            key: tuple(segments) for key, segments in self._segments_by_pair.items()
+            key: tuple(reversed(segments))
+            for key, segments in self._segments_by_pair.items()
         }
 
     # ------------------------------------------------------------------
@@ -1119,22 +1120,32 @@ class SpkReader:
     # ------------------------------------------------------------------
 
     def _segments_for_pair(self, center: int, target: int) -> tuple[object, ...]:
-        """Return all kernel segments for ``(center, target)``."""
+        """Return the pair's segments in descending priority (reverse file order)."""
         self._ensure_open()
         matches = self._segments_by_pair.get((center, target), ())
         if not matches:
             raise KeyError(f"No segment found for center={center}, target={target}")
         return matches
 
-    def _segment_for_tdb(self, center: int, target: int, epoch_tdb: float):
-        """Return the segment covering one explicit TDB Julian day."""
-
-        for segment in self._segments_for_pair(center, target):
-            if segment.start_jd <= epoch_tdb <= segment.end_jd:
-                return segment
+    def _segment_for_tdb(
+        self, center: int, target: int, epoch_tdb: float, *, offset_days: float = 0.0,
+    ):
+        """Select the last covering descriptor at a TDB day and optional offset."""
+        segments = self._segments_for_pair(center, target)
+        if offset_days:
+            # Compare relative seconds so the offset survives at a descriptor edge.
+            anchor_seconds = (epoch_tdb - T0) * S_PER_DAY
+            offset_seconds = offset_days * S_PER_DAY
+            for segment in segments:
+                if segment.start_second - anchor_seconds <= offset_seconds <= segment.end_second - anchor_seconds:
+                    return segment
+        else:
+            for segment in segments:
+                if segment.start_jd <= epoch_tdb <= segment.end_jd:
+                    return segment
         raise ValueError(
             f"Segments exist for center={center}, target={target} but none "
-            f"covers JD(TDB) {epoch_tdb:.9f}. Kernel coverage may not extend "
+            f"covers JD(TDB) {epoch_tdb + offset_days:.9f}. Kernel coverage may not extend "
             "to this epoch."
         )
 
@@ -1142,10 +1153,8 @@ class SpkReader:
         """
         Return the kernel segment covering *jd* for the given (center, target) pair.
 
-        SPK kernels may store each body across multiple non-overlapping epochs.
-        jplephem's kernel[c, t] returns the last matching segment, which may be
-        incorrect for historical dates. This method iterates all segments and
-        returns the one whose date range covers *jd*.
+        Coverage is tested in TDB. Among segments covering that epoch,
+        the last one in file order has priority.
 
         Args:
             center: NAIF body ID of the reference body.
@@ -1153,7 +1162,7 @@ class SpkReader:
             jd: Julian Day in Terrestrial Time (TT).
 
         Returns:
-            The jplephem segment object whose start_jd ≤ jd ≤ end_jd.
+            The highest-priority segment covering the requested epoch.
 
         Raises:
             KeyError: If no segment is registered for the (center, target)
@@ -1201,6 +1210,14 @@ class SpkReader:
             return native
         pos = segment.compute(epoch_tdb)
         return (float(pos[0]), float(pos[1]), float(pos[2]))
+
+    def _position_tdb_offset(
+        self, center: int, target: int, epoch_tdb: float, offset_days: float,
+    ) -> Vec3:
+        """Select and interpolate without adding the offset to the Julian day."""
+        segment = self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+        x, y, z = segment.compute(epoch_tdb, offset_days)
+        return float(x), float(y), float(z)
 
     def position_and_velocity_tdb(
         self,
@@ -1459,11 +1476,11 @@ class SpkReader:
         Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
 
         This method allows other modules to obtain a high-performance C++ evaluator
-        for a specific body pair. If ``jd_end_tt`` is supplied, one segment must
-        cover the complete inclusive interval; evaluators cannot silently cross
-        from one SPK descriptor into another. Otherwise only ``jd_tt`` is tested.
+        for a specific body pair. If ``jd_end_tt`` is supplied, the same segment
+        must have priority throughout the inclusive interval. Otherwise only
+        ``jd_tt`` is tested.
 
-        Returns ``None`` when no single native segment covers the request.
+        Returns ``None`` when the request cannot use a single native segment.
         """
         from .julian import tt_to_tdb
 
@@ -1494,7 +1511,7 @@ class SpkReader:
         epoch_tdb: float,
         epoch_end_tdb: float | None = None,
     ) -> object:
-        """Return one raw native evaluator selected on explicit TDB coverage."""
+        """Return a native evaluator when one descriptor serves the TDB range."""
 
         self._ensure_open()
         if epoch_end_tdb is not None and epoch_end_tdb < epoch_tdb:
@@ -1505,16 +1522,20 @@ class SpkReader:
             if epoch_end_tdb is None:
                 segment = self._segment_for_tdb(center, target, epoch_tdb)
             else:
+                # The highest-priority intersecting segment must serve the
+                # entire interval, including both endpoints.
                 segment = next(
                     (
                         candidate
                         for candidate in self._segments_for_pair(center, target)
-                        if candidate.start_jd <= epoch_tdb
-                        and epoch_end_tdb <= candidate.end_jd
+                        if candidate.start_jd <= epoch_end_tdb
+                        and epoch_tdb <= candidate.end_jd
                     ),
                     None,
                 )
-                if segment is None:
+                if segment is None or not (
+                    segment.start_jd <= epoch_tdb and epoch_end_tdb <= segment.end_jd
+                ):
                     return None
         except (KeyError, ValueError):
             return None
