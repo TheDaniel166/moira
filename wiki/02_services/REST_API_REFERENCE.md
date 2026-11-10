@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 562
-- Registered OpenAPI operations: 562 (GET 52, POST 510)
+- Registered OpenAPI paths: 564
+- Registered OpenAPI operations: 564 (GET 52, POST 512)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 558
+- Versioned `/v1` paths: 560
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -532,6 +532,8 @@ Admitted products:
 | POST | `/v1/batch/events` | `batch_events_route` |
 | POST | `/v1/batch/progressions` | `batch_progressions_route` |
 | POST | `/v1/batch/progressions/reduction` | `batch_progressions_reduction_route` |
+| POST | `/v1/batch/spk/states` | `batch_spk_states_route` |
+| POST | `/v1/batch/spk/received-light` | `batch_spk_received_light_route` |
 | POST | `/v1/visibility/atmospheric-extinction` | `atmospheric_extinction_route` |
 | POST | `/v1/visibility/assessment` | `visibility_assessment_route` |
 | POST | `/v1/visibility/physical-assessment` | `physical_visibility_assessment_route` |
@@ -540,11 +542,10 @@ Admitted products:
 | POST | `/v1/visibility/tonight` | `visibility_tonight_route` |
 | POST | `/v1/visibility/twilight-sky-brightness` | `twilight_sky_brightness_route` |
 
-All seven `/v1/batch/*` request bodies are schema-bounded to 128 submitted
-items. The Varga named/Shodashvarga batches and orbit-class batch use the same
-ceiling. Oversized inputs fail request validation with HTTP 422; the server
-does not partially execute or silently truncate them. Domain-specific bulk
-routes may publish smaller limits.
+The chart, transit, return, event, and progression batch endpoints accept
+up to 128 items per request. The Varga named/Shodashvarga batches and
+orbit-class batch use the same ceiling. Oversized inputs fail request
+validation with HTTP 422.
 
 The three standalone physical-model routes are engine-owned computation
 surfaces transported without hidden defaults. Their responses retain the
@@ -585,6 +586,47 @@ event shape as `/v1/batch/events`. The batch route accepts the same search as
 `aspect_orbs` on the item; when `aspect_orbs` is omitted there, the item's
 `orb` applies to every angle. Neither surface adds an interpretation layer or
 a second solver.
+
+### Raw SPK batches
+
+The raw SPK endpoints evaluate one batch against the server engine's
+primary SPK. A route is a contiguous list of directed NAIF
+`[center, target]` pairs. Every leg must have coverage in J2000 Type 2 or 3
+segments of that file. Supply Julian dates in TDB. The response includes
+the kernel summary label, its SHA-256, and the ICRF and TDB identifiers.
+
+**`POST /v1/batch/spk/states`**
+
+```json
+{
+  "routes": [[[0, 4]], [[0, 3], [3, 399]]],
+  "epochs_tdb": [2451545.0, 2451546.0]
+}
+```
+
+`states[route][epoch]` contains `[x, y, z, vx, vy, vz]` in km and
+km/day.
+
+**`POST /v1/batch/spk/received-light`**
+
+```json
+{
+  "observer_route": [[0, 3], [3, 399]],
+  "target_routes": [[[0, 4]], [[0, 10]]],
+  "epochs_tdb": [2451545.0, 2451546.0]
+}
+```
+
+Observer and target routes start at the solar system barycenter (NAIF 0).
+`received_light[target][epoch]` contains `[x, y, z, light_time_days]`.
+The position is in km relative to the observer at reception, with the
+target evaluated at its iterated emission time.
+
+Both endpoints preserve route order, epoch order, and duplicate epochs.
+Each request accepts up to 16,384 epochs, 128 target or state routes,
+eight legs per route, and 163,840 route-epoch samples in total. Invalid
+requests and gaps at reception or emission fail the whole batch with
+HTTP 422. An unavailable primary SPK returns HTTP 503.
 
 ## Phenomena Routes
 
@@ -3729,6 +3771,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/batch/progressions` | batch | `batch_progressions_route_v1_batch_progressions_post` |
 | `POST` | `/v1/batch/progressions/reduction` | batch | `batch_progressions_reduction_route_v1_batch_progressions_reduction_post` |
 | `POST` | `/v1/batch/returns` | batch | `batch_returns_route_v1_batch_returns_post` |
+| `POST` | `/v1/batch/spk/received-light` | batch | `batch_spk_received_light_route_v1_batch_spk_received_light_post` |
+| `POST` | `/v1/batch/spk/states` | batch | `batch_spk_states_route_v1_batch_spk_states_post` |
 | `POST` | `/v1/batch/transits` | batch | `batch_transits_route_v1_batch_transits_post` |
 | `POST` | `/v1/chart` | chart | `chart_route_v1_chart_post` |
 | `POST` | `/v1/chart-shape/classify` | relationship | `chart_shape_route_v1_chart_shape_classify_post` |

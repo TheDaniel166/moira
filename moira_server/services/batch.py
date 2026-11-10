@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 
-from moira import Moira
+from moira import MissingEphemerisKernelError, Moira
 from moira.batch import BatchFailure
 from moira.batch import (
     BATCH_PROGRESSION_TECHNIQUES,
@@ -16,6 +18,7 @@ from moira.batch import (
 )
 from moira.progressions import ProgressedChart, ProgressedDeclinationChart, ProgressedHouseFrame
 from moira.julian import datetime_from_jd
+from moira.spk_reader import KernelPool, SpkReader
 
 from ..models.batch import (
     ChartsBatchRequest,
@@ -23,8 +26,13 @@ from ..models.batch import (
     EventsBatchRequest,
     ProgressionBatchItemRequest,
     ProgressionsBatchRequest,
+    REST_SPK_BATCH_MAX_SAMPLES,
     ReturnBatchItemRequest,
     ReturnsBatchRequest,
+    SpkReceivedLightBatchRequest,
+    SpkReceivedLightBatchResponse,
+    SpkStatesBatchRequest,
+    SpkStatesBatchResponse,
     TransitBatchItemRequest,
     TransitsBatchRequest,
 )
@@ -199,6 +207,58 @@ class BatchProgressionReductionItem:
 
 def compute_batch_charts(engine: Moira, request: ChartsBatchRequest):
     return engine.batch_charts(tuple(_to_chart_request(item) for item in request.requests))
+
+
+@contextmanager
+def _spk_batch_reader(engine: Moira) -> Iterator[SpkReader]:
+    """Bind the facade's primary SPK for the duration of a native batch."""
+    reader = engine._reader
+    if isinstance(reader, SpkReader):
+        yield reader
+        return
+    if isinstance(reader, KernelPool):
+        with reader._read_lease() as snapshot:
+            # The facade registers its configured SPK before supplemental readers.
+            if snapshot.readers and isinstance(snapshot.readers[0], SpkReader):
+                yield snapshot.readers[0]
+                return
+    raise MissingEphemerisKernelError("SPK batches require a primary planetary SPK reader.")
+
+
+def _check_spk_batch_size(route_count: int, epoch_count: int) -> None:
+    if route_count * epoch_count > REST_SPK_BATCH_MAX_SAMPLES:
+        raise ValueError(f"An SPK batch may contain at most {REST_SPK_BATCH_MAX_SAMPLES} route-epoch samples.")
+
+
+def compute_batch_spk_states(engine: Moira, request: SpkStatesBatchRequest) -> SpkStatesBatchResponse:
+    """Evaluate the state grid in one native call and preserve its order."""
+    _check_spk_batch_size(len(request.routes), len(request.epochs_tdb))
+    with _spk_batch_reader(engine) as reader:
+        states = reader.states_tdb_batch(request.routes, request.epochs_tdb)
+        source = reader._source_identity
+    return SpkStatesBatchResponse(
+        kernel_label=source.label,
+        kernel_sha256=source.sha256,
+        states=states.tolist(),
+    )
+
+
+def compute_batch_spk_received_light(
+    engine: Moira,
+    request: SpkReceivedLightBatchRequest,
+) -> SpkReceivedLightBatchResponse:
+    """Evaluate the reception light-time grid in one native call."""
+    _check_spk_batch_size(len(request.target_routes), len(request.epochs_tdb))
+    with _spk_batch_reader(engine) as reader:
+        received_light = reader.received_light_tdb_batch(
+            request.observer_route, request.target_routes, request.epochs_tdb,
+        )
+        source = reader._source_identity
+    return SpkReceivedLightBatchResponse(
+        kernel_label=source.label,
+        kernel_sha256=source.sha256,
+        received_light=received_light.tolist(),
+    )
 
 
 def compute_batch_transits(engine: Moira, request: TransitsBatchRequest):

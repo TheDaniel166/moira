@@ -501,7 +501,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "batch",
         "x-displayName": "Batch",
-        "description": "Batch chart, transit, return, event, and progression surfaces.",
+        "description": "Batch chart, transit, return, event, progression, and raw SPK surfaces.",
         "x-family": "website",
     },
     {

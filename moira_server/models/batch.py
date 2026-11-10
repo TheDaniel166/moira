@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,6 +19,70 @@ from .transits import AspectTransitEventResponse, IngressEventResponse, TransitE
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+REST_SPK_BATCH_MAX_SAMPLES = 163_840
+_SpkEpoch = Annotated[float, Field(strict=True, allow_inf_nan=False)]
+_NaifId = Annotated[int, Field(strict=True, ge=-(2**31), le=2**31 - 1)]
+_SpkRoute = Annotated[
+    list[tuple[_NaifId, _NaifId]],
+    Field(min_length=1, max_length=8, description="Contiguous, directed [center, target] NAIF pairs."),
+]
+
+
+class _SpkBatchRequest(_StrictModel):
+    """Ordered TDB input axis shared by the raw SPK batch requests."""
+
+    epochs_tdb: list[_SpkEpoch] = Field(
+        min_length=1,
+        max_length=16_384,
+        description=(
+            "Julian dates in TDB. Order and duplicates are preserved. "
+            f"The number of routes times the number of epochs may not exceed {REST_SPK_BATCH_MAX_SAMPLES}."
+        ),
+    )
+
+
+class SpkStatesBatchRequest(_SpkBatchRequest):
+    """Routes and epochs for geometric ICRF state vectors."""
+
+    routes: list[_SpkRoute] = Field(min_length=1, max_length=REST_BATCH_MAX_ITEMS)
+
+
+class SpkReceivedLightBatchRequest(_SpkBatchRequest):
+    """Observer, targets, and reception epochs for ICRF light-time positions."""
+
+    observer_route: _SpkRoute = Field(description="Observer route starting at the solar system barycenter (0).")
+    target_routes: list[_SpkRoute] = Field(
+        min_length=1,
+        max_length=REST_BATCH_MAX_ITEMS,
+        description="Target routes, each starting at the solar system barycenter (0).",
+    )
+
+
+class _SpkBatchResponse(_StrictModel):
+    """Source and frame metadata shared by raw SPK batch results."""
+
+    kernel_label: str = Field(description="Label derived from the SPK segment summaries.")
+    kernel_sha256: str = Field(description="SHA-256 of the server's primary SPK file.")
+    frame: Literal["ICRF"] = "ICRF"
+    time_scale: Literal["TDB"] = "TDB"
+
+
+class SpkStatesBatchResponse(_SpkBatchResponse):
+    """Geometric ICRF position and velocity rows."""
+
+    states: list[list[tuple[float, float, float, float, float, float]]] = Field(
+        description="Indexed by route then epoch. Rows contain x, y, z in km and vx, vy, vz in km/day.",
+    )
+
+
+class SpkReceivedLightBatchResponse(_SpkBatchResponse):
+    """Observer-relative ICRF positions and reception light times."""
+
+    received_light: list[list[tuple[float, float, float, float]]] = Field(
+        description="Indexed by target route then reception epoch. Rows contain x, y, z in km and light time in days.",
+    )
 
 
 class BatchFailureResponse(_StrictModel):

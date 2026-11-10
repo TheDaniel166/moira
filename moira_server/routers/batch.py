@@ -22,10 +22,15 @@ from ..models.batch import (
     ReturnBatchItemResponse,
     ReturnsBatchRequest,
     ReturnsBatchResponse,
+    SpkReceivedLightBatchRequest,
+    SpkReceivedLightBatchResponse,
+    SpkStatesBatchRequest,
+    SpkStatesBatchResponse,
     TransitBatchItemResponse,
     TransitsBatchRequest,
     TransitsBatchResponse,
 )
+from ..models.common import ErrorEnvelope
 from ..serializers.batch import (
     serialize_batch_failure,
     serialize_chart_batch_with_reduction_item,
@@ -43,11 +48,18 @@ from ..services.batch import (
     compute_batch_progressions,
     compute_batch_progressions_with_reduction,
     compute_batch_returns,
+    compute_batch_spk_received_light,
+    compute_batch_spk_states,
     compute_batch_transits,
 )
 
 
 router = APIRouter(prefix="/v1/batch", tags=["batch"])
+
+_SPK_BATCH_ERRORS = {
+    422: {"model": ErrorEnvelope, "description": "Invalid batch or incomplete SPK coverage."},
+    503: {"model": ErrorEnvelope, "description": "The primary SPK kernel is unavailable."},
+}
 
 
 @router.post("/charts", response_model=ChartsBatchResponse)
@@ -78,6 +90,32 @@ def batch_charts_reduction_route(
     return ChartsBatchReductionResponse(
         results=[serialize_chart_batch_with_reduction_item(result) for result in results]
     )
+
+
+@router.post(
+    "/spk/states",
+    response_model=SpkStatesBatchResponse,
+    responses=_SPK_BATCH_ERRORS,
+)
+def batch_spk_states_route(
+    request: SpkStatesBatchRequest,
+    engine: Moira = Depends(get_engine),
+) -> SpkStatesBatchResponse:
+    """Return geometric ICRF states for explicit SPK routes at TDB epochs."""
+    return compute_batch_spk_states(engine, request)
+
+
+@router.post(
+    "/spk/received-light",
+    response_model=SpkReceivedLightBatchResponse,
+    responses=_SPK_BATCH_ERRORS,
+)
+def batch_spk_received_light_route(
+    request: SpkReceivedLightBatchRequest,
+    engine: Moira = Depends(get_engine),
+) -> SpkReceivedLightBatchResponse:
+    """Return observer-relative ICRF positions and light times at TDB reception epochs."""
+    return compute_batch_spk_received_light(engine, request)
 
 
 @router.post("/transits", response_model=TransitsBatchResponse)

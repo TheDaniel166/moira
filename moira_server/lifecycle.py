@@ -77,7 +77,7 @@ def create_engine(config: ServerConfig) -> Moira:
     if config.kernel_path is not None:
         set_kernel_path(config.kernel_path)
 
-    engine = Moira()
+    engine = Moira(kernel_path=config.kernel_path)
     if config.require_kernel_ready and not engine.is_kernel_available():
         raise MissingEphemerisKernelError(engine.get_kernel_status())
 
