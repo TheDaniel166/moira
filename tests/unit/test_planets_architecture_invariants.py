@@ -44,7 +44,7 @@ def test_warm_planet_cache_cannot_serve_a_closed_reader(planetary_kernel_path, p
 
 def _write_planetary_seam_kernel(
     kernel, *, mars_override_interval, distant_mars,
-    mars_base_interval=(-86_400.0, 86_400.0), moving_earth=False,
+    mars_base_interval=(-86_400.0, 86_400.0), moving_earth=False, byte_order="<",
 ):
     """Write Type 2 states with a later Mars override and an optional Type 3 leg."""
     pairs = (
@@ -53,11 +53,11 @@ def _write_planetary_seam_kernel(
     )
     header = bytearray(5 * 1024)
     header[:8] = b"DAF/SPK "
-    struct.pack_into("<ii", header, 8, 2, 6)
+    struct.pack_into(f"{byte_order}ii", header, 8, 2, 6)
     header[16:76] = b"MOIRA PLANETARY RATE SEAM TEST".ljust(60)
-    header[88:96] = b"LTL-IEEE"
+    header[88:96] = b"LTL-IEEE" if byte_order == "<" else b"BIG-IEEE"
     summary = 3 * 1024
-    struct.pack_into("<ddd", header, summary, 0.0, 0.0, len(pairs) + 1)
+    struct.pack_into(f"{byte_order}ddd", header, summary, 0.0, 0.0, len(pairs) + 1)
     words = []
     for i, (centre, target) in enumerate((*pairs, (0, 4)), start=1):
         start_et = -86_400.0
@@ -85,11 +85,11 @@ def _write_planetary_seam_kernel(
             words.extend(((start_et + end_et) / 2, interval / 2, x, 0.0, y, 0.0, 0.0, 0.0))
         words.extend((start_et, interval, float(record_size), float(record_count)))
         struct.pack_into(
-            "<ddiiiiii", header, summary + 24 + (i - 1) * 40,
+            f"{byte_order}ddiiiiii", header, summary + 24 + (i - 1) * 40,
             start_et, end_et, target, centre, 1, data_type, start_word, 640 + len(words),
         )
-    struct.pack_into("<iii", header, 76, 4, 4, 641 + len(words))
-    payload = header + struct.pack(f"<{len(words)}d", *words)
+    struct.pack_into(f"{byte_order}iii", header, 76, 4, 4, 641 + len(words))
+    payload = header + struct.pack(f"{byte_order}{len(words)}d", *words)
     kernel.write_bytes(payload + bytes(-len(payload) % 1024))
 
 
@@ -185,11 +185,12 @@ def test_split_emission_epoch_selects_the_correct_side_below_a_jd_tick(tmp_path)
 
 
 @pytest.mark.parametrize("base_end", [0.0, 86_400.0], ids=["adjacent", "overlapping"])
-def test_native_multi_epoch_states_preserve_segment_priority_and_units(tmp_path, base_end):
+@pytest.mark.parametrize("byte_order", ["<", ">"], ids=["little-endian", "big-endian"])
+def test_native_multi_epoch_states_preserve_segment_priority_and_units(tmp_path, base_end, byte_order):
     kernel = tmp_path / "batch-states.bsp"
     _write_planetary_seam_kernel(
         kernel, mars_override_interval=(0.0, 86_400.0), distant_mars=True,
-        mars_base_interval=(-86_400.0, base_end), moving_earth=True,
+        mars_base_interval=(-86_400.0, base_end), moving_earth=True, byte_order=byte_order,
     )
     epochs = [_JD_J2000 + offset for offset in (1.0, 0.0, -0.5, 0.0, -1.0)]
     routes = (((0, 4),), ((0, 3), (3, 399)), ((0, 3),))
@@ -205,13 +206,14 @@ def test_native_multi_epoch_states_preserve_segment_priority_and_units(tmp_path,
         assert emb[index] == [20e6, 40e6, 0, 0, 0, 0]
 
 
-def test_native_multi_epoch_light_time_resolves_emission_below_a_jd_tick(tmp_path):
+@pytest.mark.parametrize("byte_order", ["<", ">"], ids=["little-endian", "big-endian"])
+def test_native_multi_epoch_light_time_resolves_emission_below_a_jd_tick(tmp_path, byte_order):
     kernel = tmp_path / "batch-split-emission.bsp"
     short_delay = math.hypot(40e6, 80e6) / C_KM_PER_DAY
     seam_et = -short_delay * 86_400 - 5e-6
     assert ((_JD_J2000 - short_delay) - _JD_J2000) * 86_400 < seam_et
     _write_planetary_seam_kernel(
-        kernel, mars_override_interval=(seam_et, 86_400.0), distant_mars=True,
+        kernel, mars_override_interval=(seam_et, 86_400.0), distant_mars=True, byte_order=byte_order,
     )
     before = math.nextafter(_JD_J2000, -math.inf)
     epochs = (_JD_J2000, before, _JD_J2000 + 0.125, _JD_J2000)

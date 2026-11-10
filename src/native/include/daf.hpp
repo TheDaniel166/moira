@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -12,6 +13,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -19,6 +21,7 @@
 #include <utility>
 #include <vector>
 #include "evaluators.hpp"
+#include "spk_file_mapping.hpp"
 
 namespace moira {
 namespace native {
@@ -591,47 +594,78 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
 }
 
 /**
- * Kernel file shared by the record sources of one handle. Reads are serialized.
+ * Kernel file shared by the record sources of one handle. Buffered reads are
+ * serialized, and isolated batch records can use a shared read-only mapping.
  * Its lifetime is the lifetime of the evaluators that read from it: closing the
  * handle drops only the handle's reference, so an evaluator obtained before
  * close keeps working, as a whole-segment evaluator that owns its coefficients
- * does. The file closes when the last such evaluator is released.
+ * does. The file and any mapping are released with the last reference.
  */
-struct SharedSpkRecordFile {
+class SharedSpkRecordFile {
+public:
     explicit SharedSpkRecordFile(const std::string& path)
-        : file(path, std::ios::binary) {
-        if (!file.is_open()) {
+        : file_(std::fopen(path.c_str(), "rb"), &std::fclose) {
+        if (!file_) {
             throw std::runtime_error("unable to open DAF file");
         }
     }
 
     void read_words(std::streamoff word_offset, size_t count, bool swap_bytes, double* out) {
-        std::lock_guard<std::mutex> lock(mutex);
-        file.clear();
-        file.seekg(word_offset * 8, std::ios::beg);
-        if (!file.good()) {
+        std::lock_guard<std::mutex> lock(stream_mutex_);
+        auto* stream = file_.get();
+        std::clearerr(stream);
+        if (!seek(stream, word_offset * 8)) {
             throw std::runtime_error("failed to seek SPK record");
         }
-        const std::streamsize bytes = static_cast<std::streamsize>(count * 8);
-        if (!swap_bytes) {
-            file.read(reinterpret_cast<char*>(out), bytes);
-            if (file.gcount() != bytes) {
-                throw std::runtime_error("failed to read SPK record");
-            }
-            return;
-        }
-        std::vector<char> raw(static_cast<size_t>(bytes));
-        file.read(raw.data(), bytes);
-        if (file.gcount() != bytes) {
+        if (std::fread(out, sizeof(double), count, stream) != count) {
             throw std::runtime_error("failed to read SPK record");
         }
-        for (size_t i = 0; i < count; ++i) {
-            out[i] = detail::read_f64_swapped(raw.data() + i * 8, true);
+        if (swap_bytes) {
+            swap_words(out, count);
         }
     }
 
-    std::mutex mutex;
-    std::ifstream file;
+    bool read_mapped_words(std::streamoff word_offset, size_t count, bool swap_bytes, double* out) {
+        constexpr size_t max_words = std::numeric_limits<size_t>::max() / sizeof(double);
+        if (word_offset < 0 || static_cast<std::uintmax_t>(word_offset) > max_words || count > max_words) {
+            return false;
+        }
+        std::call_once(mapping_once_, [&] { mapping_.emplace(file_.get()); });
+        const size_t byte_count = count * sizeof(double);
+        const char* bytes = mapping_->bytes(static_cast<size_t>(word_offset) * sizeof(double), byte_count);
+        if (bytes == nullptr) {
+            return false;
+        }
+        std::memcpy(out, bytes, byte_count);
+        if (swap_bytes) {
+            swap_words(out, count);
+        }
+        return true;
+    }
+
+private:
+    static bool seek(std::FILE* file, std::streamoff byte_offset) {
+#ifdef _WIN32
+        return ::_fseeki64(file, byte_offset, SEEK_SET) == 0;
+#elif defined(__unix__) || defined(__APPLE__)
+        return byte_offset <= std::numeric_limits<off_t>::max()
+            && ::fseeko(file, static_cast<off_t>(byte_offset), SEEK_SET) == 0;
+#else
+        return byte_offset <= std::numeric_limits<long>::max()
+            && std::fseek(file, static_cast<long>(byte_offset), SEEK_SET) == 0;
+#endif
+    }
+
+    static void swap_words(double* out, size_t count) {
+        for (size_t i = 0; i < count; ++i) {
+            out[i] = detail::read_f64_swapped(reinterpret_cast<const char*>(out + i), true);
+        }
+    }
+
+    std::unique_ptr<std::FILE, decltype(&std::fclose)> file_;
+    std::mutex stream_mutex_;
+    std::once_flag mapping_once_;
+    std::optional<SpkFileMapping> mapping_;
 };
 
 /**
@@ -661,7 +695,9 @@ public:
 
     void read_records(size_t first, size_t count, double* out) const override {
         if (count == 1) {
-            read_record(first, out);
+            if (!file_->read_mapped_words(record_offset(first) + 2, word_count_, swap_bytes_, out)) {
+                read_record(first, out);
+            }
             return;
         }
         std::vector<double> records(count * record_size_);

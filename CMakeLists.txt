@@ -28,6 +28,7 @@ pybind11_add_module(_moira_native
     src/native/src/cpu_features.cpp
     src/native/src/lola.cpp
     src/native/src/nutation.cpp
+    src/native/src/spk_file_mapping.cpp
     src/native/src/marriage_enclosure.cpp
 )
 

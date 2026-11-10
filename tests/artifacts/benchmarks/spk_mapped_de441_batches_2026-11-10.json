@@ -1,0 +1,1406 @@
+{
+  "schema_version": 1,
+  "code_and_test_diff_sha256": "263f50c17397a0f0bc0dc71b18f30a0abe8b9facba9ae6bf4e3a625c17509f87",
+  "comparison_host": {
+    "os": "Windows 11 x64",
+    "cpu": "AMD Ryzen 7 8700F"
+  },
+  "accuracy_reference": {
+    "cspice": "N0067",
+    "spiceypy": "8.0.2",
+    "de441_handoff_excerpt_sha256": "c3a7d212c1ef5c1e006ab8d714d68465db5f4a6885c507e404bcae3f68264591"
+  },
+  "source_artifact_sha256": {
+    "buffered": "ef2ef23575c4da691c9d91dfddc9c11994fd2105c5e6a84d0193f1ef951cf9ab",
+    "mapped": "a97cfff88119fbe7c04d1fbc3618ba542fcd54a700f33da10a84e50633384def",
+    "mapped_original_time_split": "7396249d43fbf2875d20fef883d78b5ccf36a3cd5f9a2c0b8ad85dc61ba19b91",
+    "crossing_replay": "e21dcb6edb6598543b43eb9e5a297250d4b4073923d33c9859f131bc9ba33b00"
+  },
+  "buffered": {
+    "revision": "c97d32e4214e6480b0b016d61ca6a8e14298f026",
+    "python": "3.14.8",
+    "moira": "6.13.1",
+    "skyfield": "1.55",
+    "numpy": "2.4.3",
+    "skyfield_time_input": "julian_day_array",
+    "native_sha256": "053e33507ccfd0b6af79b6464180bede2ff446faa9cc31fc95e2fe040c13e9f0",
+    "kernel": "de441.bsp",
+    "runs": [
+      {
+        "grid": "handoff_control",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.000244140625,
+        "epoch_sha256_float64_le": "fbb1cf4adc4ed09de8738d8a3ee36b92d51b8f985666083a7e26cafc2d982362",
+        "moira_output_sha256_float64_le": "b36df20c863b3b77d4ec415540ffb90ab30f6dac99d239c8c6a2e810f3d81b3d",
+        "closest_reception_to_handoff_days": 0.0001220703125,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0005331201499700045,
+        "max_velocity_difference_mm_s": 2.1316282072803006e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.0173686,
+            0.0165203,
+            0.0147945,
+            0.0165369,
+            0.0151623
+          ],
+          "Skyfield": [
+            0.0948541,
+            0.0812487,
+            0.0832273,
+            0.0792245,
+            0.0827788
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0165203,
+          "Skyfield": 0.0827788
+        }
+      },
+      {
+        "grid": "handoff_control",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.001953125,
+        "epoch_sha256_float64_le": "5bf5f21e66ce9c5004be85d3520905b883b9665c03babc0eb8c76eed36c80b58",
+        "moira_output_sha256_float64_le": "5f7b1b8d8f33e578d9d3f02e1010a549e81319b51fc138c95db9b7fd5b247103",
+        "closest_reception_to_handoff_days": 0.0009765625,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0010925711858167267,
+        "max_light_time_difference_ns": 0.009094947017729282,
+        "closest_emission_to_handoff_days": {
+          "Moira": 0.00015437005056093134,
+          "Skyfield": 0.00015437005056087583
+        },
+        "emission_crossings": {
+          "Moira": 298,
+          "Skyfield": 298
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.0050788,
+            0.0051086,
+            0.0051522,
+            0.0051096,
+            0.005264
+          ],
+          "Skyfield": [
+            0.034067,
+            0.0352342,
+            0.035395,
+            0.0328672,
+            0.0371723
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0051096,
+          "Skyfield": 0.0352342
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": -3100015.5,
+        "last_jd_tdb": 8000016.5,
+        "median_epoch_spacing_days": 677.5335693359375,
+        "epoch_sha256_float64_le": "301bf4e46698730f40854b509c6c7be455a4a96f442c7003562bbe1bd4909b39",
+        "moira_output_sha256_float64_le": "cc1c3718e371f336cbaefe67df923304d53d1b938e4969be82d92b5926d06374",
+        "closest_reception_to_handoff_days": 256.236328125,
+        "distinct_reception_records": 196612,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.001348699152348609,
+        "max_velocity_difference_mm_s": 2.140053876161471e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.6706215,
+            0.6960872,
+            0.6674627,
+            0.681559,
+            0.6818886
+          ],
+          "Skyfield": [
+            0.1233563,
+            0.11934,
+            0.1105562,
+            0.1249806,
+            0.1395219
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.681559,
+          "Skyfield": 0.1233563
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": -3100014.5,
+        "last_jd_tdb": 8000015.5,
+        "median_epoch_spacing_days": 5422.584228515625,
+        "epoch_sha256_float64_le": "c02204246502f9788b3cdadd2e78916f15fa4632153b22caecf595f245353bfc",
+        "moira_output_sha256_float64_le": "355209e39afd01dea57066c54e953f1d6650f44fdb07a4e4f67e55a97543c9ca",
+        "closest_reception_to_handoff_days": 1434.12353515625,
+        "distinct_reception_records": 24580,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0019082797281243947,
+        "max_light_time_difference_ns": 0.010913936421275139,
+        "closest_emission_to_handoff_days": {
+          "Moira": 1433.9433587023243,
+          "Skyfield": 1433.9433587023243
+        },
+        "emission_crossings": {
+          "Moira": 0,
+          "Skyfield": 0
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.1035471,
+            0.1018997,
+            0.1056457,
+            0.101423,
+            0.1081439
+          ],
+          "Skyfield": [
+            0.0425443,
+            0.0433881,
+            0.038758,
+            0.0354181,
+            0.0397405
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.1035471,
+          "Skyfield": 0.0397405
+        }
+      }
+    ],
+    "kernel_sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5",
+    "coverage_jd_tdb": [
+      -3100015.5,
+      8000016.5
+    ],
+    "handoff_jd_tdb": 2440432.5
+  },
+  "mapped": {
+    "revision": "c97d32e4214e6480b0b016d61ca6a8e14298f026",
+    "python": "3.14.8",
+    "moira": "6.13.1",
+    "skyfield": "1.55",
+    "numpy": "2.4.3",
+    "skyfield_time_input": "julian_day_array",
+    "native_sha256": "0280b4965aa90044487dca9c455507f3ddf291a8d93e35e553fa634b31e70abc",
+    "kernel": "de441.bsp",
+    "runs": [
+      {
+        "grid": "handoff_control",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.000244140625,
+        "epoch_sha256_float64_le": "fbb1cf4adc4ed09de8738d8a3ee36b92d51b8f985666083a7e26cafc2d982362",
+        "moira_output_sha256_float64_le": "b36df20c863b3b77d4ec415540ffb90ab30f6dac99d239c8c6a2e810f3d81b3d",
+        "closest_reception_to_handoff_days": 0.0001220703125,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0005331201499700045,
+        "max_velocity_difference_mm_s": 2.1316282072803006e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.0177006,
+            0.0151156,
+            0.0146072,
+            0.02204,
+            0.019832
+          ],
+          "Skyfield": [
+            0.0943525,
+            0.0862319,
+            0.092839,
+            0.0984842,
+            0.1082098
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0177006,
+          "Skyfield": 0.0943525
+        }
+      },
+      {
+        "grid": "handoff_control",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.001953125,
+        "epoch_sha256_float64_le": "5bf5f21e66ce9c5004be85d3520905b883b9665c03babc0eb8c76eed36c80b58",
+        "moira_output_sha256_float64_le": "5f7b1b8d8f33e578d9d3f02e1010a549e81319b51fc138c95db9b7fd5b247103",
+        "closest_reception_to_handoff_days": 0.0009765625,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0010925711858167267,
+        "max_light_time_difference_ns": 0.009094947017729282,
+        "closest_emission_to_handoff_days": {
+          "Moira": 0.00015437005056093134,
+          "Skyfield": 0.00015437005056087583
+        },
+        "emission_crossings": {
+          "Moira": 298,
+          "Skyfield": 298
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.0051372,
+            0.0066411,
+            0.0056835,
+            0.0048386,
+            0.0048775
+          ],
+          "Skyfield": [
+            0.0439704,
+            0.0438538,
+            0.0352362,
+            0.0329162,
+            0.0326313
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0051372,
+          "Skyfield": 0.0352362
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": -3100015.5,
+        "last_jd_tdb": 8000016.5,
+        "median_epoch_spacing_days": 677.5335693359375,
+        "epoch_sha256_float64_le": "301bf4e46698730f40854b509c6c7be455a4a96f442c7003562bbe1bd4909b39",
+        "moira_output_sha256_float64_le": "cc1c3718e371f336cbaefe67df923304d53d1b938e4969be82d92b5926d06374",
+        "closest_reception_to_handoff_days": 256.236328125,
+        "distinct_reception_records": 196612,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.001348699152348609,
+        "max_velocity_difference_mm_s": 2.140053876161471e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.1153149,
+            0.1203586,
+            0.1205138,
+            0.1214192,
+            0.1187642
+          ],
+          "Skyfield": [
+            0.125015,
+            0.1145125,
+            0.1186629,
+            0.1171299,
+            0.1070102
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.1203586,
+          "Skyfield": 0.1171299
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": -3100014.5,
+        "last_jd_tdb": 8000015.5,
+        "median_epoch_spacing_days": 5422.584228515625,
+        "epoch_sha256_float64_le": "c02204246502f9788b3cdadd2e78916f15fa4632153b22caecf595f245353bfc",
+        "moira_output_sha256_float64_le": "355209e39afd01dea57066c54e953f1d6650f44fdb07a4e4f67e55a97543c9ca",
+        "closest_reception_to_handoff_days": 1434.12353515625,
+        "distinct_reception_records": 24580,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0019082797281243947,
+        "max_light_time_difference_ns": 0.010913936421275139,
+        "closest_emission_to_handoff_days": {
+          "Moira": 1433.9433587023243,
+          "Skyfield": 1433.9433587023243
+        },
+        "emission_crossings": {
+          "Moira": 0,
+          "Skyfield": 0
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.010778,
+            0.0105491,
+            0.0104468,
+            0.0106841,
+            0.0110839
+          ],
+          "Skyfield": [
+            0.0387919,
+            0.0370944,
+            0.0406215,
+            0.0373954,
+            0.0391677
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0106841,
+          "Skyfield": 0.0387919
+        }
+      }
+    ],
+    "kernel_sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5",
+    "coverage_jd_tdb": [
+      -3100015.5,
+      8000016.5
+    ],
+    "handoff_jd_tdb": 2440432.5
+  },
+  "mapped_original_time_split": {
+    "revision": "c97d32e4214e6480b0b016d61ca6a8e14298f026",
+    "python": "3.14.8",
+    "moira": "6.13.1",
+    "skyfield": "1.55",
+    "numpy": "2.4.3",
+    "skyfield_time_input": "j2000_plus_offset",
+    "native_sha256": "0280b4965aa90044487dca9c455507f3ddf291a8d93e35e553fa634b31e70abc",
+    "kernel": "de441.bsp",
+    "runs": [
+      {
+        "grid": "handoff_control",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.000244140625,
+        "epoch_sha256_float64_le": "fbb1cf4adc4ed09de8738d8a3ee36b92d51b8f985666083a7e26cafc2d982362",
+        "moira_output_sha256_float64_le": "b36df20c863b3b77d4ec415540ffb90ab30f6dac99d239c8c6a2e810f3d81b3d",
+        "closest_reception_to_handoff_days": 0.0001220703125,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.0005331201499700045,
+        "max_velocity_difference_mm_s": 2.1316282072803006e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.0151806,
+            0.0156663,
+            0.0146815,
+            0.0142524,
+            0.0141501
+          ],
+          "Skyfield": [
+            0.0929214,
+            0.0875914,
+            0.0850688,
+            0.0779866,
+            0.0821298
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0146815,
+          "Skyfield": 0.0850688
+        }
+      },
+      {
+        "grid": "handoff_control",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": 2440430.5,
+        "last_jd_tdb": 2440434.5,
+        "median_epoch_spacing_days": 0.001953125,
+        "epoch_sha256_float64_le": "5bf5f21e66ce9c5004be85d3520905b883b9665c03babc0eb8c76eed36c80b58",
+        "moira_output_sha256_float64_le": "5f7b1b8d8f33e578d9d3f02e1010a549e81319b51fc138c95db9b7fd5b247103",
+        "closest_reception_to_handoff_days": 0.0009765625,
+        "distinct_reception_records": 28,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.007097087690901482,
+        "max_light_time_difference_ns": 0.014779288903810084,
+        "closest_emission_to_handoff_days": {
+          "Moira": 0.00015437005056093134,
+          "Skyfield": 0.00015437005056090358
+        },
+        "emission_crossings": {
+          "Moira": 298,
+          "Skyfield": 298
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.0046173,
+            0.0048857,
+            0.0046862,
+            0.0047776,
+            0.0045767
+          ],
+          "Skyfield": [
+            0.0302766,
+            0.0299298,
+            0.0307554,
+            0.0292831,
+            0.0293985
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0046862,
+          "Skyfield": 0.0299298
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "geometric",
+        "epochs": 16384,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          3,
+          399
+        ],
+        "first_jd_tdb": -3100015.5,
+        "last_jd_tdb": 8000016.5,
+        "median_epoch_spacing_days": 677.5335693359375,
+        "epoch_sha256_float64_le": "301bf4e46698730f40854b509c6c7be455a4a96f442c7003562bbe1bd4909b39",
+        "moira_output_sha256_float64_le": "cc1c3718e371f336cbaefe67df923304d53d1b938e4969be82d92b5926d06374",
+        "closest_reception_to_handoff_days": 256.236328125,
+        "distinct_reception_records": 196612,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 0.001348699152348609,
+        "max_velocity_difference_mm_s": 2.140053876161471e-08,
+        "calls": 196608,
+        "seconds_by_round": {
+          "Moira": [
+            0.1153236,
+            0.1126502,
+            0.1110774,
+            0.1126864,
+            0.1119176
+          ],
+          "Skyfield": [
+            0.1230653,
+            0.1145243,
+            0.1040017,
+            0.1034952,
+            0.1136555
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.1126502,
+          "Skyfield": 0.1136555
+        }
+      },
+      {
+        "grid": "full_span",
+        "workload": "light_time",
+        "epochs": 2048,
+        "targets": [
+          10,
+          301,
+          199,
+          299,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "first_jd_tdb": -3100014.5,
+        "last_jd_tdb": 8000015.5,
+        "median_epoch_spacing_days": 5422.584228515625,
+        "epoch_sha256_float64_le": "c02204246502f9788b3cdadd2e78916f15fa4632153b22caecf595f245353bfc",
+        "moira_output_sha256_float64_le": "355209e39afd01dea57066c54e953f1d6650f44fdb07a4e4f67e55a97543c9ca",
+        "closest_reception_to_handoff_days": 1434.12353515625,
+        "distinct_reception_records": 24580,
+        "record_intervals_days": [
+          4.0,
+          8.0,
+          16.0,
+          32.0,
+          5540448.0,
+          5559616.0
+        ],
+        "max_position_difference_m": 3.688544164183246,
+        "max_light_time_difference_ns": 10.077485512738349,
+        "closest_emission_to_handoff_days": {
+          "Moira": 1433.9433587023243,
+          "Skyfield": 1433.9433587023243
+        },
+        "emission_crossings": {
+          "Moira": 0,
+          "Skyfield": 0
+        },
+        "calls": 20480,
+        "seconds_by_round": {
+          "Moira": [
+            0.0101848,
+            0.0101561,
+            0.0101324,
+            0.0111889,
+            0.0112905
+          ],
+          "Skyfield": [
+            0.0364439,
+            0.0357832,
+            0.0370376,
+            0.0358908,
+            0.0439691
+          ]
+        },
+        "median_seconds": {
+          "Moira": 0.0101848,
+          "Skyfield": 0.0364439
+        }
+      }
+    ],
+    "kernel_sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5",
+    "coverage_jd_tdb": [
+      -3100015.5,
+      8000016.5
+    ],
+    "handoff_jd_tdb": 2440432.5
+  },
+  "crossing_replay": {
+    "revision": "c97d32e4214e6480b0b016d61ca6a8e14298f026",
+    "moira": "6.13.1",
+    "skyfield": "1.55",
+    "native_sha256": "0280b4965aa90044487dca9c455507f3ddf291a8d93e35e553fa634b31e70abc",
+    "moira_mode": "native_multi_epoch",
+    "kernel_sha256": {
+      "de432s.bsp": "363f32e14f5255359ac32c4d38080cf28ab55564a5e16696a75f63394b666e9b",
+      "de440s.bsp": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+      "de442s.bsp": "54d97562a5b094d298b1b8eafa5a2e17e3e010ce85e1a366d07f003ad159323c",
+      "de440s-controlled-split.bsp": "ba371171472feee152235bafa62d687fa123c116a049c72abb661234ca989aa0",
+      "de442s-controlled-split.bsp": "c8a8044f155345e31c11e024a7b77aa156796c5e83e9e73f25a3abecd4d9bad3",
+      "controlled-descriptor-gap.bsp": "5b2a093ce14390de14cf0b1851d75b4dcfe83213547c143bd4b79a0c5f183b2a",
+      "controlled-overlap.bsp": "976fd95a0ea6ad4a2a53825e3f44a21309f0bb39e9164d02b81f14e41f92baa6",
+      "de441.bsp": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5",
+      "de433.bsp": "8dd1a8e17a44b3f4aca62def83867c7a7e2c7692c15cb9e34f19056037a888b3"
+    },
+    "reference_kernel": {
+      "de432s.bsp": "de432s.bsp",
+      "de440s.bsp": "de440s.bsp",
+      "de442s.bsp": "de442s.bsp",
+      "de440s-controlled-split.bsp": "de440s-controlled-split.bsp",
+      "de442s-controlled-split.bsp": "de442s-controlled-split.bsp",
+      "controlled-descriptor-gap.bsp": "controlled-descriptor-gap.bsp",
+      "controlled-overlap.bsp": "controlled-overlap.bsp",
+      "de441.bsp": "de441-genuine-1969-handoff-excerpt.bsp",
+      "de433.bsp": "de433.bsp"
+    },
+    "exact_epoch_replay": {
+      "de432s.bsp": {
+        "geometric_count": 1260,
+        "light_count": 164,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.00095367431640625
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 1.467511591522657e-08,
+          "Skyfield": 7.944109290391275e-09
+        },
+        "light_m": {
+          "Moira": 0.006927870195359853,
+          "Skyfield": 0.01400934236784712
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.01028865881380625,
+          "Skyfield": 0.023532731319164668
+        },
+        "crossing_light_count": 0,
+        "crossing_light_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        }
+      },
+      "de440s.bsp": {
+        "geometric_count": 1260,
+        "light_count": 164,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.00095367431640625
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 1.464821375527116e-08,
+          "Skyfield": 1.0048591735576161e-08
+        },
+        "light_m": {
+          "Moira": 0.017862782130891305,
+          "Skyfield": 0.03332834499681433
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.034424019190737454,
+          "Skyfield": 0.07400080548336518
+        },
+        "crossing_light_count": 0,
+        "crossing_light_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        }
+      },
+      "de442s.bsp": {
+        "geometric_count": 1224,
+        "light_count": 164,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.00095367431640625
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 1.0841599276764048e-08,
+          "Skyfield": 8.702335715267317e-09
+        },
+        "light_m": {
+          "Moira": 0.019266071990853333,
+          "Skyfield": 0.03331935962660741
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.03435585149702547,
+          "Skyfield": 0.07396794288183628
+        },
+        "crossing_light_count": 0,
+        "crossing_light_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        }
+      },
+      "de440s-controlled-split.bsp": {
+        "geometric_count": 0,
+        "light_count": 54,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "light_m": {
+          "Moira": 3.0719530773294425e-05,
+          "Skyfield": 0.0011980385328675376
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.003637978807091713,
+          "Skyfield": 0.003637978807091713
+        },
+        "crossing_light_count": 29,
+        "crossing_light_m": {
+          "Moira": 3.0719530773294425e-05,
+          "Skyfield": 0.0010115243642614567
+        }
+      },
+      "de442s-controlled-split.bsp": {
+        "geometric_count": 0,
+        "light_count": 54,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "light_m": {
+          "Moira": 1.666000468656264e-05,
+          "Skyfield": 0.0010728836059570312
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.003637978807091713,
+          "Skyfield": 0.005456968210637569
+        },
+        "crossing_light_count": 29,
+        "crossing_light_m": {
+          "Moira": 1.666000468656264e-05,
+          "Skyfield": 0.0010728836059570312
+        }
+      },
+      "controlled-descriptor-gap.bsp": {
+        "geometric_count": 0,
+        "light_count": 4,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "light_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0005331201499700045
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.0018189894035458565,
+          "Skyfield": 0.00011368683772161603
+        },
+        "crossing_light_count": 2,
+        "crossing_light_m": {
+          "Moira": 0.0,
+          "Skyfield": 1.666000468656264e-05
+        }
+      },
+      "controlled-overlap.bsp": {
+        "geometric_count": 0,
+        "light_count": 36,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 0.0,
+          "Skyfield": 0.0
+        },
+        "light_m": {
+          "Moira": 1.4901161193847656e-05,
+          "Skyfield": 0.0005331201499700045
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.003637978807091713,
+          "Skyfield": 0.003637978807091713
+        },
+        "crossing_light_count": 18,
+        "crossing_light_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0005331201499700045
+        }
+      },
+      "de441.bsp": {
+        "geometric_count": 70,
+        "light_count": 90,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 0.0002384185791015625
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 7.944109290391275e-09,
+          "Skyfield": 1.0048591735576161e-08
+        },
+        "light_m": {
+          "Moira": 0.002835491685709986,
+          "Skyfield": 0.006135479610540668
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.00602540239924565,
+          "Skyfield": 0.012846612662542611
+        },
+        "crossing_light_count": 49,
+        "crossing_light_m": {
+          "Moira": 0.002835491685709986,
+          "Skyfield": 0.006110679875674559
+        }
+      },
+      "de433.bsp": {
+        "geometric_count": 15,
+        "light_count": 27,
+        "geometric_m": {
+          "Moira": 0.0,
+          "Skyfield": 7.450580596923828e-06
+        },
+        "geometric_velocity_mm_s": {
+          "Moira": 7.105427357601002e-09,
+          "Skyfield": 7.944109290391275e-09
+        },
+        "light_m": {
+          "Moira": 0.09778919491330844,
+          "Skyfield": 0.20200546272928188
+        },
+        "vs_previous_geometric_m": 0.0,
+        "vs_previous_geometric_velocity_mm_s": 0.0,
+        "vs_previous_light_m": 0.0,
+        "vs_previous_light_delay_ns": 0.0,
+        "max_light_residual_increase_m": 0.0,
+        "light_delay_ns": {
+          "Moira": 0.1575095609496202,
+          "Skyfield": 0.3226336975359345
+        },
+        "crossing_light_count": 13,
+        "crossing_light_m": {
+          "Moira": 0.09778919491330844,
+          "Skyfield": 0.20200546272928188
+        }
+      }
+    },
+    "coverage": {
+      "de432s.bsp": [
+        {
+          "target": 199,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1949-12-14 through 2050-01-02"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=1 at JD(TDB) 2433264.5019346019 with offset -0.0077381158910259729 days"
+          }
+        },
+        {
+          "target": 301,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1949-12-14 through 2050-01-02"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=3 at JD(TDB) 2433264.5000035721 with offset -1.4289521841204597e-05 days"
+          }
+        },
+        {
+          "target": 4,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1949-12-14 through 2050-01-02"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=4 at JD(TDB) 2433264.5020067296 with offset -0.0080276165216101539 days"
+          }
+        },
+        {
+          "target": 8,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1949-12-14 through 2050-01-02"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=8 at JD(TDB) 2433264.5443272926 with offset -0.17732137148112642 days"
+          }
+        }
+      ],
+      "de440s.bsp": [
+        {
+          "target": 199,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=1 at JD(TDB) 2396752.5020564268 with offset -0.008225590649055271 days"
+          }
+        },
+        {
+          "target": 301,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=3 at JD(TDB) 2396752.5000035563 with offset -1.4224348835981395e-05 days"
+          }
+        },
+        {
+          "target": 4,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=4 at JD(TDB) 2396752.5008673365 with offset -0.003469293988606429 days"
+          }
+        },
+        {
+          "target": 8,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=8 at JD(TDB) 2396752.5440129517 with offset -0.17604045401792309 days"
+          }
+        }
+      ],
+      "de442s.bsp": [
+        {
+          "target": 199,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=1 at JD(TDB) 2396752.5020564268 with offset -0.0082255906487330808 days"
+          }
+        },
+        {
+          "target": 301,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=3 at JD(TDB) 2396752.5000035563 with offset -1.4224348831416748e-05 days"
+          }
+        },
+        {
+          "target": 4,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=4 at JD(TDB) 2396752.5008673365 with offset -0.0034692939840466792 days"
+          }
+        },
+        {
+          "target": 8,
+          "expected_finite": [
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "EphemerisRangeError",
+            "message": "ephemeris segment only covers dates 1849-12-26 through 2150-01-22"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=8 at JD(TDB) 2396752.5440129526 with offset -0.1760404577105513 days"
+          }
+        }
+      ],
+      "controlled-descriptor-gap.bsp": [
+        {
+          "target": 4,
+          "expected_finite": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "ValueError",
+            "message": "light-travel time failed to converge"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=4 at JD(TDB) 2451545.0107063665 with offset -0.010682756708662018 days"
+          }
+        },
+        {
+          "target": 8,
+          "expected_finite": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "moira_finite": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "skyfield": {
+            "error": "ValueError",
+            "message": "light-travel time failed to converge"
+          },
+          "moira_batch": {
+            "error": "ValueError",
+            "message": "No SPK segment covers center=0, target=8 at JD(TDB) 2451545.1792125888 with offset -0.17918937300423768 days"
+          }
+        }
+      ]
+    }
+  }
+}
