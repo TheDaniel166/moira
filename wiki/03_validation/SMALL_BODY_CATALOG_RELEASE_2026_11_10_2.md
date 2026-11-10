@@ -39,37 +39,53 @@ including the mission product `ORX_merged_DE424` for Bennu.
 
 ## Apophis on April 13, 2029
 
-The nominal reference was Horizons solution JPL#220 at JD 2462240.407091969 TDB. The sweep used 259 points from six hours before to six hours after the JPL closest-approach epoch, at five-minute spacing and 15-second spacing within 15 minutes. Six additional samples extend out to 30 days on either side.
+The reference was Horizons solution JPL#220 at JD 2462240.407091969 TDB.
+The sweep evaluated Moira and both Swiss files at the same 265 epochs.
+It used 259 points within six hours of closest approach, spaced five minutes
+apart and 15 seconds apart within 15 minutes. Six additional samples extend
+to 30 days on either side. The replay used Moira's published `2026.11.10.2`
+catalog and verified the Swiss `SWIEPH` backend and DE441 file identities.
 
-| Engine | Geometric geocentric range at JPL closest approach (km) | Light-time angular separation from JPL |
-| --- | ---: | ---: |
-| JPL Horizons | 38,011.344 | Reference |
-| Moira | 38,011.344 | 0.397 mas |
-| Swiss Ephemeris | 29,053.669 | 14.0810° |
+Astrodienst fits both files to Horizons trajectories. The standard file
+`se99942s.se1` (ID `99942`) uses one-day Chebyshev segments. The daily fit
+misses the rapid change in Apophis's trajectory during the Earth encounter.
+The dedicated `s99999942s.se1` file (ID `99999942`) uses 90-minute segments
+for 2029. [Astrodienst's Apophis documentation](https://www.astro.com/astrowiki/en/Apophis_%28asteroid_99942%29#Computation_in_the_Swiss_Ephemeris)
 
-At that instant the Swiss heliocentric asteroid vector differs by 12,108.9 km, while the heliocentric Earth vectors differ by 0.448 km. The heliocentric asteroid vector accounts for the dominant discrepancy in this comparison. The Swiss calculation's local minimum is 27,823.5 km about 22.94 minutes before the JPL epoch.
+| Engine and file | Geometric geocentric range at JPL closest approach (km) | Light-time angular error at that epoch | Maximum light-time angular error within ±6 hours |
+| --- | ---: | ---: | ---: |
+| JPL Horizons | 38,011.344 | Reference | Reference |
+| Moira | 38,011.344 | 0.397 mas | 1.966 mas |
+| Swiss standard file | 29,053.669 | 14.0810° | 14.1751° |
+| Swiss 2029 file | 38,011.758 | 0.235″ | 2.032″ |
 
-Astrodienst's hosted calculation agrees with the local Swiss apparent angles. [Hosted Swiss result](https://www.astro.com/cgi/swetest.cgi?b=j2462240.407091950066&p=s&n=1&s=1&e=-eswe&f=PLBRS&arg=-xs99942+-head)
+The standard file's heliocentric Apophis vector differs from Horizons by
+12,108.9 km at that epoch. The heliocentric Earth vectors differ by 0.448 km.
+The standard file places its local minimum at 27,823.5 km, about 22.94 minutes
+before the JPL epoch. The 2029 file's range differs from Horizons by
+0.415 km at the JPL epoch.
 
-The tested Swiss Apophis file was `se99942s.se1`, created 2026-11-01. The public mirror returned 404 for the separate long file and the alternate downloads timed out.
+Astrodienst's hosted calculator reproduced the local apparent directions at
+closest approach for both IDs. [Standard file result](https://www.astro.com/cgi/swetest.cgi?b=j2462240.407091950066&p=s&n=1&s=1&e=-eswe&f=PLBRS&arg=-xs99942+-head) ·
+[2029 file result](https://www.astro.com/cgi/swetest.cgi?b=j2462240.407091950066&p=s&n=1&s=1&e=-eswe&f=Plbr&arg=-xs99999942+-head+-g%2C)
 
-| Hours from JPL closest approach | Moira light-time error (arcseconds) | Swiss light-time error (arcseconds) |
-| ---: | ---: | ---: |
-| -720 | 1.5261e-06 | 0.00237961 |
-| -168 | 5.4353e-06 | 1.21753 |
-| -24 | 0.00011855 | 409.919 |
-| -6 | 1.1671e-05 | 2240.88 |
-| -1 | 0.0011416 | 23375.8 |
-| +0 | 0.00039683 | 50691.4 |
-| +1 | 0.0019664 | 34514.7 |
-| +6 | 0.00044301 | 12625.2 |
-| +24 | 6.3683e-05 | 1008.32 |
-| +168 | 1.5134e-05 | 0.0213171 |
-| +720 | 6.9231e-06 | 0.00728027 |
+| Hours from JPL closest approach | Moira light-time error (″) | Swiss standard file (″) | Swiss 2029 file (″) |
+| ---: | ---: | ---: | ---: |
+| -720 | 1.52606e-06 | 0.00237961 | 0.00703482 |
+| -168 | 5.43528e-06 | 1.21753 | 0.0227683 |
+| -24 | 0.000118553 | 409.919 | 0.156654 |
+| -6 | 1.16706e-05 | 2240.88 | 0.527672 |
+| -1 | 0.00114159 | 23375.8 | 1.57067 |
+| +0 | 0.000396831 | 50691.4 | 0.234845 |
+| +1 | 0.00196643 | 34514.7 | 1.4346 |
+| +6 | 0.000443011 | 12625.2 | 0.534255 |
+| +24 | 6.3683e-05 | 1008.32 | 0.15421 |
+| +168 | 1.51336e-05 | 0.0213171 | 0.0260605 |
+| +720 | 6.92312e-06 | 0.00728027 | 0.00746735 |
 
 ## Asteroid sample
 
-200 matched samples across 19 targets, including all ten rebuilt asteroids. Moira has the smaller median light-time error on 17 targets in this sample. Phaethon and Ryugu favor Swiss on both median and maximum error. Swiss also leads on Bennu at the sampled September 1999 encounter.
+200 matched samples across 19 targets, including all ten rebuilt asteroids. The Apophis row uses the standard Swiss file. Moira has the smaller median light-time error on 17 targets in this sample. Phaethon and Ryugu favor Swiss on both median and maximum error. Swiss also leads on Bennu at the sampled September 1999 encounter.
 
 | Body | Samples | Moira median (″) | Swiss median (″) | Moira max (″) | Swiss max (″) |
 | --- | ---: | ---: | ---: | ---: | ---: |
