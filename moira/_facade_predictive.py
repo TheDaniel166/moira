@@ -623,6 +623,38 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             body, target, jd_start, jd_end, is_contra_parallel=is_contra_parallel, reader=self._reader, search_motion=search_motion
         )
 
+    def out_of_bounds(
+        self,
+        body: str,
+        jd_start: float,
+        jd_end: float,
+        *,
+        policy=None,
+    ):
+        """Find every out-of-bounds declination excursion of a body in a range.
+
+        A body is out of bounds when the magnitude of its geocentric apparent
+        declination exceeds the true obliquity of date. Both terms move, so
+        entries and returns are solved as roots of ``|delta(t)| - epsilon(t)``,
+        and the extremal declination inside each excursion is solved as a root
+        of the declination rate rather than read off a grid.
+
+        Every crossing carries its declination rate, the rate of the bound
+        function, and the tolerance the solver achieved, because a grazing
+        crossing is genuinely ill-conditioned and an instant cannot be judged
+        without them. Planets, asteroids and comets are all admitted, and the
+        scan cadence is derived from the body's own measured motion rather
+        than from a per-body table.
+
+        Raises:
+            OutOfBoundsUnavailableError: If the body cannot be resolved, or if
+                its ephemeris does not cover the requested range. An uncovered
+                range never degrades to an empty excursion list.
+        """
+        return _facade_module().find_out_of_bounds(
+            body, jd_start, jd_end, reader=self._reader, policy=policy
+        )
+
     def ingresses(self, body: str, jd_start: float, jd_end: float):
         """Find all sign ingresses for a body in a date range."""
         return _facade_module().find_ingresses(

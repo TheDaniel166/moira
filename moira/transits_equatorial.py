@@ -1,7 +1,12 @@
 """
 Moira — transits_equatorial.py
-The Predictive Equatorial Engine: governs declination parallels, contra-parallels,
-and out-of-bounds (OOB) crossings.
+The Predictive Equatorial Engine: governs declination parallels and
+contra-parallels, and owns the shared apparent-declination primitive that
+equatorial predictive work reads.
+
+Out-of-bounds excursions are solved by ``moira.out_of_bounds``, which reads
+the ``_declination`` primitive defined here so that parallels and bounds
+never disagree about a body's declination.
 """
 
 from __future__ import annotations
@@ -11,7 +16,7 @@ from dataclasses import dataclass
 from .spk_reader import SpkReader, get_reader
 from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy
 from .planets import planet_at
-from .asteroids import asteroid_at, ASTEROID_NAIF
+from .small_body_identity import resolve_small_body_identity
 from .stars import star_at
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .julian import tt_to_tdb
@@ -24,6 +29,14 @@ except ImportError:
 
 __all__ = ["EquatorialTransitEvent", "find_declination_transits"]
 
+#: Points Moira models as longitude-only. ``nodes.NodeData`` carries no
+#: ecliptic latitude, so no declination can be formed for them, and they are
+#: refused by name rather than routed into a position API that would either
+#: raise an opaque KeyError or silently answer from a different object.
+_LONGITUDE_ONLY_POINTS: frozenset[str] = frozenset(
+    {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH}
+)
+
 @dataclass(slots=True)
 class EquatorialTransitEvent:
     """An exact declination parallel or contra-parallel hit."""
@@ -35,19 +48,42 @@ class EquatorialTransitEvent:
     search_motion: str = "forward"
 
 def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
-    """Resolves the equatorial declination of a body or a static float."""
+    """Resolves the equatorial declination of a body or a static float.
+
+    Resolution order is planets and points, then small bodies, then stars.
+    Small bodies route through ``planets.planet_at``, which is the engine's
+    unified front door: it admits asteroids and comets alike, including the
+    family-qualified ``asteroid:Name`` and ``comet:Name`` forms, and delegates
+    to the same asteroid and comet pipelines those surfaces own. Routing here
+    rather than calling ``asteroid_at`` directly is what lets comets form
+    declination aspects and go out of bounds at all; the asteroid results are
+    bit-identical either way.
+
+    An ambiguous unqualified small-body name raises
+    ``AmbiguousSmallBodyNameError`` from the identity registry rather than
+    silently preferring one family.
+    """
     if isinstance(spec, (int, float)):
         return float(spec)
-        
+
     name = str(spec).strip()
     lon = lat = 0.0
     jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     if name in Body.ALL_PLANETS:
         p = planet_at(name, jd, reader=reader)
         lon, lat = p.longitude, p.latitude
-    elif name in ASTEROID_NAIF or any(key.lower() == name.lower() for key in ASTEROID_NAIF):
-        a = asteroid_at(name, jd, reader=reader)
-        lon, lat = a.longitude, a.latitude
+    elif name in _LONGITUDE_ONLY_POINTS:
+        raise ValueError(
+            f"Equatorial declination is undefined for {name}: Moira models the "
+            "lunar nodes and apogees as longitude-only points (NodeData carries "
+            "no ecliptic latitude), so they have no declination product. Note "
+            "that a node lies on the ecliptic by construction, so its "
+            "declination magnitude could never exceed the obliquity in any "
+            "case."
+        )
+    elif resolve_small_body_identity(name) is not None:
+        b = planet_at(name, jd, reader=reader)
+        lon, lat = b.longitude, b.latitude
     else:
         try:
             s = star_at(name, jd_tt, product="apparent", reader=reader)

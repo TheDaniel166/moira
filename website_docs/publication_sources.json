@@ -318,6 +318,29 @@
   ],
   "release_summaries": [
     {
+      "version": "6.14.0",
+      "date": "2026-11-14",
+      "title": "Out-Of-Bounds Declination Solver",
+      "added": [
+        "An out-of-bounds declination solver: Moira.out_of_bounds() and POST /v1/out-of-bounds/search, solving entries and returns as roots of |declination| minus the true obliquity of date, with both terms moving.",
+        "A conditioning receipt on every crossing: the declination rate, the obliquity rate, the rate of the bound function, the solver's achieved tolerance, and the time cost of one arcsecond of declination error.",
+        "Explicit window-edge semantics, so an excursion clipped by the requested range reports a clipped edge and a duration marked as a lower bound.",
+        "A scan cadence derived from the body's own measured motion rather than a per-body name table, admitting planets, points, asteroids and comets alike.",
+        "A declared evaluation budget: search cost is linear in the requested span, so the REST route caps one search at 100,000 declination evaluations and raises rather than returning a truncated excursion list."
+      ],
+      "changed": [],
+      "fixed": [
+        "Comet names reached the star resolver and raised on the shared declination primitive; small bodies now route through the unified planet_at front door, which also makes comet declination parallels work. Asteroid results are bit-identical."
+      ],
+      "validation": [
+        "A measured lunar counterexample is an acceptance test: on 2020-03-05 the Moon is out of bounds for 4.32 hours, clearing the obliquity by 20.6 arcseconds, and a 1-day scan step misses it in 8 of 10 grid phasings.",
+        "Thirteen brute-force comparisons against a fine grid built from an independent declination path agree on every excursion count and edge.",
+        "No external-engine or published-table agreement is claimed; the evidence is invariant testing and independent-scan corroboration."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.14.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md"
+    },
+    {
       "version": "6.13.1",
       "date": "2026-11-09",
       "title": "First Published Release Of The 6.13 Line",

@@ -520,6 +520,7 @@ Admitted products:
 | POST | `/v1/transits/natal-aspects` | `natal_aspect_search_route` |
 | POST | `/v1/transits/ingresses` | `ingress_search_route` |
 | POST | `/v1/transits/next-ingress` | `next_ingress_route` |
+| POST | `/v1/out-of-bounds/search` | `out_of_bounds_search_route` |
 | POST | `/v1/returns/solar` | `solar_return_route` |
 | POST | `/v1/returns/lunar` | `lunar_return_route` |
 | POST | `/v1/returns/planet` | `planet_return_route` |
@@ -588,6 +589,69 @@ event shape as `/v1/batch/events`. The batch route accepts the same search as
 a second solver.
 
 ### Raw SPK batches
+
+`POST /v1/out-of-bounds/search` returns every out-of-bounds declination
+excursion of one body in a window. A body is out of bounds when the magnitude
+of its geocentric apparent declination exceeds the true obliquity of the
+ecliptic of date. Both terms move, so each `entry` and `departure` is solved
+as a root of `|declination| - obliquity`, and the `culmination` inside each
+excursion is solved as a root of the declination rate rather than read off a
+scan grid. It transports `Moira.out_of_bounds()`.
+
+`body` admits Sun through Pluto and any globally unique or family-qualified
+asteroid/comet name (`asteroid:Name`, `comet:Name`). The lunar nodes and
+apogees are refused with their own message: Moira models them as
+longitude-only points, so they have no declination, and a node lies on the
+ecliptic by construction in any case. Optional `angular_resolution_deg`,
+`max_step_days` and `solver_tolerance_days` become an explicit engine policy,
+each validated as strictly positive.
+
+This route always imposes an evaluation ceiling of 100,000 declination
+evaluations, even when the caller sends no controls, because search cost is
+linear in the requested span: a lunar scan runs roughly 3,800 evaluations and
+2.4 seconds per year, so an unbounded window would be an unbounded request.
+`max_declination_evaluations` may request a smaller ceiling; a larger one is
+rejected. Exhausting it returns HTTP 422 with `error_code`
+`out_of_bounds_search_budget`, category `search_budget`, and details naming the
+budget, the count reached and the stage. The search never returns a truncated
+excursion list, because that would be indistinguishable from a quiet window.
+
+Every crossing carries its own conditioning receipt, which is the part a
+caller cannot cheaply derive for itself:
+`declination_rate_deg_per_day`, `obliquity_rate_deg_per_day`,
+`bound_rate_deg_per_day` (the rate of the quantity actually driven to zero),
+`time_sensitivity_seconds_per_arcsec`, `achieved_tolerance_days` (the solver's
+final bracket width, not the requested tolerance), the bracket bounds, and
+`conditioning`. The sensitivity matters because the time error at a crossing
+is the declination error divided by the crossing rate: measured against this
+engine a steep lunar crossing costs about 6 seconds per arcsecond while a
+Plutonian one costs over an hour, so the same printed minute means very
+different things. `conditioning` is `well_posed`, `sensitive`,
+`ill_conditioned`, or `degenerate`; a degenerate crossing reports
+`time_sensitivity_seconds_per_arcsec` as `-1.0`, since the true value is
+unbounded and JSON cannot carry it.
+
+Window edges are explicit. `out_of_bounds_at_start` and
+`out_of_bounds_at_end` give the state at the requested bounds. An excursion
+already under way at `jd_start` has `entry: null` with `entry_clipped: true`;
+one still under way at `jd_end` has `departure: null` with
+`departure_clipped: true`. Either case sets `duration_is_lower_bound: true`,
+so `duration_hours` is "at least this long" and not the excursion's length. A
+clipped excursion is also the usual case where `culmination.at_boundary` is
+true, with `boundary_edge` naming the edge.
+
+`scan_truth` reports how the search was run: the `coarse_step_days` derived
+from the body's own measured motion rather than from a per-body table, the
+measured rates behind it, `resolved_amplitude_floor_deg`,
+`refined_interval_count`, `declination_evaluations`, the applied `policy`, and
+`unresolved_intervals`. A nonzero `unresolved_intervals` is a disclosed gap in
+capture, not a failure.
+
+A body whose ephemeris does not cover the window fails with HTTP 422 and
+`error_code` `out_of_bounds_date_outside_ephemeris_coverage` (category
+`ephemeris_coverage`); an unresolvable body gives
+`out_of_bounds_unknown_body` (category `input_validation`). An uncovered range
+never returns an empty excursion list.
 
 The raw SPK endpoints evaluate one batch against the server engine's
 primary SPK. A route is a contiguous list of directed NAIF

@@ -361,6 +361,17 @@ from .huber import (
 )
 from .transits_aspects import AspectTransitEvent, find_aspect_transits, find_aspect_transits_to_longitudes
 from .transits_equatorial import EquatorialTransitEvent, find_declination_transits
+from .out_of_bounds import (
+    OutOfBoundsBudgetError,
+    OutOfBoundsCrossing,
+    OutOfBoundsCulmination,
+    OutOfBoundsExcursion,
+    OutOfBoundsPolicy,
+    OutOfBoundsReport,
+    OutOfBoundsScanTruth,
+    OutOfBoundsUnavailableError,
+    find_out_of_bounds,
+)
 from .aspects import (
     ASPECT_ALIASES,
     ASPECT_DEFINITIONS, OPTIONAL_ASPECT_SETS, OPTIONAL_ASPECT_FRACTIONS,
@@ -2844,6 +2855,10 @@ __all__ = [
     "TransitEvent", "IngressEvent", "LunarPhaseEvent", "AspectTransitEvent", "EquatorialTransitEvent",
     "next_transit", "find_transits", "find_ingresses",
     "find_aspect_transits", "find_aspect_transits_to_longitudes", "find_declination_transits",
+    "OutOfBoundsBudgetError",
+    "OutOfBoundsCrossing", "OutOfBoundsCulmination", "OutOfBoundsExcursion",
+    "OutOfBoundsPolicy", "OutOfBoundsReport", "OutOfBoundsScanTruth",
+    "OutOfBoundsUnavailableError", "find_out_of_bounds",
     "next_ingress", "next_ingress_into",
     "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return",
     "last_new_moon", "last_new_moon_with_truth",

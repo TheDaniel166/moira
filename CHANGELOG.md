@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.14.0] - 2026-11-14
+
+### Added
+- Out-of-bounds declination solver (`moira.out_of_bounds`), with
+  `Moira.out_of_bounds()` and `POST /v1/out-of-bounds/search`. A body is out of
+  bounds when the magnitude of its geocentric apparent declination exceeds the
+  true obliquity of date. Both terms move, so entries and returns are solved as
+  roots of `|declination(t)| - obliquity(t)`, and the extremal declination
+  inside each excursion is solved as a root of the declination rate rather than
+  read off a scan grid.
+- Every returned crossing carries a conditioning receipt: the declination rate,
+  the obliquity rate, the rate of the bound function itself, the solver's
+  achieved tolerance, and the time cost of one arcsecond of declination error.
+  Measured on this engine that cost runs from about 6 seconds per arcsecond at
+  a steep lunar crossing to over an hour at a Plutonian one, so an instant
+  cannot be judged without it.
+- Window-edge semantics are explicit. A body already out of bounds at the range
+  start reports a clipped entry, one still out at the range end a clipped
+  departure, and either marks the duration as a lower bound.
+- The scan cadence is derived from the body's own measured bound-function rate,
+  never from a per-body name table, and intervals that are not provably clear of
+  a root are refined recursively. Planets, points, asteroids and comets are all
+  admitted, including family-qualified `asteroid:Name` and `comet:Name` forms.
+
+- A declared evaluation budget, `OutOfBoundsPolicy.max_declination_evaluations`.
+  Search cost is linear in the requested span, so the REST route always imposes
+  a ceiling of 100,000 declination evaluations. An exhausted budget raises
+  `OutOfBoundsBudgetError` rather than returning a truncated excursion list,
+  which could not be told apart from a genuinely quiet interval.
+
+### Fixed
+- `transits_equatorial._declination` routed small bodies through `asteroid_at`
+  only, so comet names fell through to the star resolver and raised. Small
+  bodies now route through `planets.planet_at`, the engine's unified front door,
+  which admits asteroids and comets alike. Declination parallels and
+  contra-parallels for comets work as a result. Asteroid results are unchanged
+  and bit-identical.
+
+### Validation
+- A measured lunar counterexample is now an acceptance test: on 2020-03-05 the
+  Moon is out of bounds for 4.32 hours, clearing the obliquity by only 20.6
+  arcseconds. A 1-day scan step misses it in 8 of 10 grid phasings, and the
+  0.25-day step `transits._auto_step` assigns the Moon misses it in 2 of 10.
+- Thirteen independent brute-force comparisons against a fine grid built from a
+  separate declination path agree on every excursion count and edge.
+
 ## [6.13.1] - 2026-11-09
 
 First published release of the 6.13 line. It carries every 6.13.0 change below.

@@ -11,6 +11,10 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from moira.out_of_bounds import (
+    OutOfBoundsBudgetError,
+    OutOfBoundsUnavailableError,
+)
 from moira.spk_reader import MissingKernelError
 from moira import (
     LunarApparentGeometryError,
@@ -431,6 +435,53 @@ def register_exception_handlers(app: FastAPI) -> None:
             error_code='sade_sati_budget_exceeded', message=str(exc), category='search_budget',
             request_id=getattr(request.state,'request_id',None),
             details={'max_evaluations':exc.budget,'evaluations':exc.evaluations,'stage':exc.stage}))
+
+    @app.exception_handler(OutOfBoundsBudgetError)
+    async def handle_out_of_bounds_budget(
+        request: Request,
+        exc: OutOfBoundsBudgetError,
+    ) -> JSONResponse:
+        # A truncated search is not an answer; the window has to shrink.
+        return JSONResponse(
+            status_code=422,
+            content=_error_body(
+                error_code="out_of_bounds_search_budget",
+                message=str(exc),
+                category="search_budget",
+                request_id=getattr(request.state, "request_id", None),
+                details={
+                    "body": exc.body,
+                    "budget": exc.budget,
+                    "evaluations": exc.evaluations,
+                    "stage": exc.stage,
+                },
+            ),
+        )
+
+    @app.exception_handler(OutOfBoundsUnavailableError)
+    async def handle_out_of_bounds_unavailable(
+        request: Request,
+        exc: OutOfBoundsUnavailableError,
+    ) -> JSONResponse:
+        # An uncovered ephemeris range is not a malformed request and must not
+        # be reported as one, nor degraded to an empty excursion list.
+        coverage = exc.reason == "ephemeris_coverage"
+        return JSONResponse(
+            status_code=422,
+            content=_error_body(
+                error_code=(
+                    "out_of_bounds_date_outside_ephemeris_coverage"
+                    if coverage
+                    else "out_of_bounds_unknown_body"
+                ),
+                message=str(exc),
+                category=(
+                    "ephemeris_coverage" if coverage else "input_validation"
+                ),
+                request_id=getattr(request.state, "request_id", None),
+                details={"body": exc.body, "reason": exc.reason},
+            ),
+        )
 
     @app.exception_handler(ShadbalaContextError)
     async def handle_strength_context(request: Request, exc: ShadbalaContextError) -> JSONResponse:

@@ -679,6 +679,90 @@ message.
 | `moon_void_of_course(dt, ...)` / `is_moon_void_of_course(dt, ...)` | — | See [Void of Course Moon](#void-of-course-moon) subsection below |
 | `electional_windows(dt_start, dt_end, ...)` | — | See [Electional search](#electional-search) subsection below |
 | `ramesey_moon_condition_at(jd_ut, latitude, longitude, *, house_system, ...)` | `RameseyMoonConditionEvaluation` | One bounded Ramesey v1 Moon-condition evaluation; no search, score, or recommendation |
+| `out_of_bounds(body, jd_start, jd_end, *, policy=None)` | `OutOfBoundsReport` | Every out-of-bounds declination excursion of one body; see [Out-of-bounds declination](#out-of-bounds-declination) below |
+
+### Out-of-bounds declination
+
+A body is **out of bounds** when the magnitude of its geocentric apparent
+declination exceeds the true obliquity of the ecliptic of date. Both terms
+move: the declination with the body's own motion, the obliquity with
+precession and nutation in obliquity. Entries and returns are therefore roots
+of `|declination(t)| - obliquity(t)`, not of `|declination(t)| - 23.4`, and the
+extremal declination inside an excursion is solved as a root of the
+declination rate rather than read off a scan grid.
+
+`Moira.out_of_bounds(body, jd_start, jd_end, *, policy=None)` returns an
+`OutOfBoundsReport`. Planets, asteroids and comets are all admitted, including
+the family-qualified `asteroid:Name` and `comet:Name` forms. The lunar nodes
+and apogees are not: Moira models them as longitude-only points, so `NodeData`
+carries no latitude from which a declination could be formed. A node lies on
+the ecliptic by construction, so its declination magnitude could never exceed
+the obliquity in any case.
+
+| Vessel | Carries |
+|---|---|
+| `OutOfBoundsReport` | `excursions`, `out_of_bounds_at_start` / `_at_end`, `resolved_kind`, `obliquity_at_start` / `_at_end`, `scan_truth` |
+| `OutOfBoundsExcursion` | `hemisphere`, `entry`, `departure`, `entry_clipped`, `departure_clipped`, `culmination`, `duration_hours`, `duration_is_lower_bound`, `is_complete` |
+| `OutOfBoundsCrossing` | `jd_ut`, `declination`, `obliquity`, `declination_rate_deg_per_day`, `obliquity_rate_deg_per_day`, `bound_rate_deg_per_day`, `time_sensitivity_days_per_arcsec`, `achieved_tolerance_days`, bracket bounds, `conditioning` |
+| `OutOfBoundsCulmination` | `jd_ut`, `declination`, `excess_deg`, `at_boundary`, `boundary_edge`, `interior_critical_points` |
+| `OutOfBoundsScanTruth` | derived `coarse_step_days`, measured rates, `resolved_amplitude_floor_deg`, `refined_interval_count`, `unresolved_intervals`, `declination_evaluations`, applied `policy` |
+| `OutOfBoundsPolicy` | explicit scan and solver doctrine; see below |
+
+**Conditioning is not optional metadata.** The time error at a crossing is the
+declination error divided by the crossing rate, and that rate spans orders of
+magnitude between bodies. Measured against this engine: a steep lunar crossing
+runs about 4.1 deg/day, so one arcsecond of declination error costs about
+6 seconds of time; a Plutonian crossing runs about 0.006 deg/day, where the
+same arcsecond costs over an hour. Every crossing therefore carries its rate,
+the solver's achieved tolerance, and `conditioning`, which is `well_posed`
+(an arcsecond costs under a minute), `sensitive` (under an hour),
+`ill_conditioned` (more), or `degenerate`.
+
+**Window edges are explicit, never silently truncated.** A body already out of
+bounds at `jd_start` reports `entry is None` with `entry_clipped=True`; one
+still out at `jd_end` reports `departure is None` with
+`departure_clipped=True`. In either case `duration_is_lower_bound` is `True`
+and `duration_hours` means "at least this long". A clipped excursion is also
+the normal case in which the culmination sits on a window edge rather than at
+an interior critical point, which `at_boundary` and `boundary_edge` record. An
+unclipped excursion always culminates strictly inside itself: the bound
+function vanishes at both solved edges and is positive between them.
+
+**The scan step is derived from measured motion, never from a body name.**
+`moira.transits._auto_step` returns 1.0 day for any body outside its table,
+which is every asteroid and comet, and a fast near-Earth object can enter and
+leave bounds well inside a day. This solver instead measures the bound
+function's own secant rates across the requested window and sets the coarse
+step from them, then refines recursively any interval that is not provably
+clear of a root, with extra bounded refinement across a close approach. The
+capture guarantee is relative to that measured, declared rate bound; it is not
+a proven Lipschitz constant, and `scan_truth.unresolved_intervals` discloses
+any interval that reached the subdivision limit without clearing.
+
+A tangential contact, where the bound function touches zero without changing
+sign, is deliberately not reported as an entry or return.
+
+`OutOfBoundsPolicy` fields: `angular_resolution_deg` (degrees of bound travel
+per coarse step), `rate_safety_factor`, `min_step_days`, `max_step_days`,
+`rate_probe_count`, `solver_tolerance_days`, `differentiation_step_days`,
+`max_subdivision_depth`, `close_approach_distance_au`,
+`distance_change_trigger`, `close_approach_refinement_depth`,
+`culmination_probe_count`, `max_declination_evaluations`.
+
+Search cost is linear in the requested span — measured at roughly 3,800
+declination evaluations and 2.4 seconds per year of lunar scan, less for slower
+bodies. `max_declination_evaluations` bounds it and defaults to `None`, since a
+library caller may legitimately scan centuries. When a declared budget is
+exhausted the search raises `OutOfBoundsBudgetError`, carrying the budget, the
+count reached and the stage, rather than returning the excursions it happened
+to reach: a truncated list is indistinguishable from a genuinely quiet
+interval.
+
+A body whose ephemeris does not cover the requested range raises
+`OutOfBoundsUnavailableError` with `reason` either `"ephemeris_coverage"` or
+`"body_unresolved"`. An uncovered range never degrades to an empty excursion
+list, because "this body went nowhere out of bounds" and "this body cannot be
+computed here" are different statements.
 
 ### Progressions & directions
 

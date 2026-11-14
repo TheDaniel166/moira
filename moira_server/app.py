@@ -97,6 +97,7 @@ from .routers import (
     timelords_router,
     triplicity_router,
     transits_router,
+    out_of_bounds_router,
     uranian_router,
     varshaphal_router,
     varga_router,
@@ -181,6 +182,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(frame_positions_router)  # Frame-specific position products
     app.include_router(forecasting_router)  # Bounded relationship and locational composition
     app.include_router(transits_router)
+    app.include_router(out_of_bounds_router)  # Out-of-bounds declination excursions
     app.include_router(returns_router)
     app.include_router(batch_router)
     app.include_router(visibility_router)

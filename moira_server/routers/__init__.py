@@ -74,6 +74,7 @@ from .sidereal import router as sidereal_router
 from .timelords import router as timelords_router
 from .triplicity import router as triplicity_router
 from .transits import router as transits_router
+from .out_of_bounds import router as out_of_bounds_router
 from .uranian import router as uranian_router
 from .vedic_dignities import router as vedic_dignities_router
 from .vedic_profile import router as vedic_profile_router
@@ -166,6 +167,7 @@ __all__ = [
     "timelords_router",
     "triplicity_router",
     "transits_router",
+    "out_of_bounds_router",
     "uranian_router",
     "vedic_dignities_router",
     "vedic_profile_router",
