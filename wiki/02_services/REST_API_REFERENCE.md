@@ -145,16 +145,12 @@ Implemented:
 - Phase 11 admitted surfaces: fixed stars, variable stars, multiple stars,
   asteroids, comets, asteroid subsets/families, Manazil, and planetary/
   small-body nodes
-- phase 10 opened with bounded Astrocartography line and subplanetary point
-  routes, followed by bounded Local Space direct and chart-backed horizon
-  position routes, and bounded Geodetic direct/chart-backed location-chart and
-  equivalent-longitude routes, followed by bounded Galactic coordinate-frame
-  transform, reference-point, and chart-position routes, followed by bounded
-  Galactic Houses cusp, direct-placement, and chart-backed placement routes,
-  and canonical Gauquelin direct/chart-backed sector routes; dense maps,
-  tiles, contours, grids, projection products, geographic search, relocation
-  synthesis, rendered galactic house charts, rendered Gauquelin wheels,
-  statistical workflows, and catalog sweeps remain deferred
+- Phase 10 admits bounded Astrocartography lines and subplanetary points,
+  Local Space positions, Galactic transforms and reference directions,
+  Galactic Houses cusps and placements, and Gauquelin sectors. Geodetic
+  products include location figures, equivalents, geometry, sensitivity,
+  uncertainty, overlay, comparison, analytic loci, and bounded chart-backed
+  transit timing. [Geodetic routes](#geodetic-routes)
 - Track A adds exact composite/Davison transit-target searches,
   source-resolved fixed-star Astrocartography, explicit-epoch transiting
   Astrocartography displacement receipts, and relocated solar/lunar/planetary
@@ -216,29 +212,48 @@ Implemented:
   `/v1/vedic/chart-profile`; these bundle existing route-equivalent strata
   for frontend/workspace callers without adding interpretive synthesis
 
-Not yet broadly exposed as REST families:
+### Remaining REST exposure
 
-- broad phase 9 umbrella aggregation modules: wider `/v1/vedic/*` and
-  `/v1/classical/*` families remain deferred beyond admitted
-  `/v1/vedic/chart-profile`
-- expanded phase 10 spatial and Earth-facing products beyond the admitted
-  selected-subject and Track A contracts: dense Astrocartography, Local Space,
-  Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/
-  statistical products remain deferred; progressed/directed
-  cyclocartography and chart-backed comet MC/IC/ASC/DSC lines are also absent
-- remaining phase 12 specialist analytical families: `/v1/sothic/*` now has
-  three bounded direct routes, while epoch-search, drift, condition, and
-  network routes remain deferred; `/v1/longevity/*` is deliberately deferred
-  for doctrine, validation, and public-language safeguards; `/v1/special/*`
-  also remains unexposed
-- remaining phase 13 electional/search workflow surfaces: arbitrary predicate
-  routes, arbitrary scorer routes, generic Western profile search/scoring,
-  additional lineage profiles, and advice/recommendation language. The bounded
-  Ramesey v1 single-moment evaluation is admitted separately.
-- generic Phase 11 catalog umbrella routes: `/v1/catalogs/*` remain
-  intentionally absent; P11-U1 permits only a future discovery-only registry
-  design, not cross-family search, member lookup, computation, or catalog
-  sweeps
+1. **Sothic epoch search.** Annual rising and bounded drift fitting already
+   share the same annual evidence. For epoch search, reuse the `sothic_epochs`
+   match rule with an explicit tolerance and retain the annual outcomes.
+   Condition and network profiles need a separate input contract identifying
+   which dates, risings, and epochs they aggregate. [Sothic routes](#sothic-rest-admission-boundary)
+2. **Progressed and directed cyclocartography.** The transiting route already
+   returns line snapshots and displacement at explicit epochs. Admit each
+   additional mode separately. Specify its progression method or direction
+   time key, the chart and forecast epochs, and the RA/Dec frame before
+   validating individual snapshots and their line displacement.
+3. **Dense spatial outputs and Gauquelin statistics.** Existing selected-body
+   positions, lines, analytic loci, and sectors provide the numerical inputs.
+   A dense grid needs a defined sampling model, output format, and work
+   budget. Rendered maps and wheels can consume the existing geometry.
+   Gauquelin cohort statistics need a declared population, selection rules,
+   and statistical validation.
+
+#### Deliberate boundaries
+
+- **Vedic and classical umbrellas.** The import namespaces organize named
+  families such as Panchanga, Shadbala, Dignities, and Lots. Those families
+  have their own HTTP contracts. `POST /v1/vedic/chart-profile` is a bounded
+  composition route. Catch-all doctrine routes are excluded by the
+  [Phase 9 admission policy](../../docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md).
+- **Historical longevity.** The Lilly Hyleg and Alcocoden routes expose
+  source-specific evidence from supplied chart data. A broader
+  `/v1/longevity/*` product is deferred pending a defined historical
+  calculation contract and dedicated validation. [Lilly routes](#lilly-hyleg-and-alcocoden)
+- **Electional workflows.** Current routes cover bounded scans over
+  server-defined profiles, named Western judgements and windows, and
+  caller-weighted ranking of explicit candidates. Each additional lineage
+  profile needs its own source rules and validation before transport.
+  Arbitrary executable predicates and scorers, unbounded searches, and
+  advice are outside the public API contract. [Electional routes](#electional-rest-admission-boundary)
+- **Catalog and specialist umbrellas.** `/v1/catalogs/*` and `/v1/special/*`
+  are deferred and eligible only for discovery metadata. Existing families
+  own their catalog and computation routes. `GET /v1/meta/routes` already
+  provides route discovery.
+  [Catalog decision](../../docs/architecture/P11-U1_CATALOG_UMBRELLA_DOCTRINE_DECISION.md) ·
+  [Specialist decision](../../docs/architecture/P12-U1_SPECIALIST_UMBRELLA_DOCTRINE_DECISION.md)
 
 ### Track A transport models
 
@@ -262,89 +277,10 @@ Not yet broadly exposed as REST families:
 
 ## Route Families
 
-| Family | Routes |
-|---|---:|
-| meta | 5 |
-| ashtakavarga | 8 |
-| alternate-dashas | 9 |
-| antiscia | 3 |
-| astrocartography | 8 |
-| astrodynes | 15 |
-| asteroids | 9 |
-| batch | 7 |
-| chart | 2 |
-| chart-shape | 1 |
-| comets | 3 |
-| aspects | 2 |
-| composite | 2 |
-| dasha | 5 |
-| davison | 2 |
-| decanates | 6 |
-| dignities | 6 |
-| draconic | 3 |
-| egyptian-bounds | 7 |
-| electional | 12 |
-| eclipses | 7 |
-| galactic | 6 |
-| galactic-houses | 3 |
-| gauquelin | 3 |
-| geodetic | 4 |
-| heliacal | 2 |
-| hellenistic-aspects | 2 |
-| horary | 1 |
-| harmograms | 5 |
-| harmonics | 10 |
-| houses | 2 |
-| huber | 6 |
-| jaimini | 8 |
-| locations | 2 |
-| local-space | 2 |
-| lord-of-the-orb | 2 |
-| lord-of-the-turn | 1 |
-| lots | 7 |
-| lunar-phases | 1 |
-| manazil | 4 |
-| midpoints | 5 |
-| muhurta | 4 |
-| mundane | 1 |
-| nakshatra | 2 |
-| nodes | 4 |
-| nine-parts | 1 |
-| occultations | 12 |
-| orbits | 4 |
-| pancha-pakshi | 19 |
-| panchanga | 6 |
-| parans | 8 |
-| patterns | 3 |
-| phase | 6 |
-| phenomena | 3 |
-| planetary-hours | 2 |
-| pipeline | 3 |
-| positions | 4 |
-| positions-frame | 4 |
-| primary-directions | 8 |
-| profections | 3 |
-| progressions | 17 |
-| returns | 4 |
-| shadbala | 4 |
-| rise-set | 3 |
-| sidereal | 3 |
-| solar-condition | 2 |
-| stars | 12 |
-| stations | 4 |
-| synastry | 9 |
-| timelords | 16 |
-| transits | 3 |
-| triplicity | 3 |
-| uranian | 3 |
-| varshaphal | 9 |
-| varga | 8 |
-| vedic-dignities | 7 |
-| vedic-profile | 1 |
-| visibility | 2 |
-| void-of-course | 4 |
-| website | 3 |
-| western-profile | 1 |
+`GET /v1/meta/routes` returns registered routes and their discovery family
+counts. Filter by `family`, `tag`, `method`, or `path_contains`. For
+exact paths, methods, and tags in this checkout, see the
+[generated inventory](#generated-registered-route-inventory).
 
 ## Operational Routes
 
@@ -2255,23 +2191,47 @@ Body-class truth:
   labels may name selected planets, minor bodies, fixed stars, or other
   apparent RA/Dec subjects when the caller supplies valid RA/Dec and sidereal
   time.
-- Chart-backed Astrocartography line routes admit selected chart planets and
-  selected asteroids when the public apparent topocentric RA/Dec path supports
-  the subject. Chart-backed comet lines remain deferred.
+- `/v1/astrocartography/chart/lines` uses apparent topocentric RA/Dec for
+  selected planets, asteroids, and comets. Qualify ambiguous labels, for
+  example `comet:Halley`. The selected comet needs a loaded small-body SPK
+  covering reception and the sampled emission epochs.
 - Chart-backed Astrocartography subplanetary routes admit selected chart
   planets plus selected asteroids and comets through the geocentric
   ecliptic-to-equatorial path.
-- Mixed-subject chart routes accept typed `subjects` entries for admitted
-  planets, admitted asteroids/comets, fixed stars from the sovereign star
-  registry, lots computed through the Lots engine, caller-supplied ecliptic
-  points, and caller-supplied RA/Dec points. Every subject is resolved into
-  RA/Dec before ACG geometry is computed.
+- The mixed-subject `/v1/astrocartography/chart/subjects/lines` route
+  admits selected comets using apparent geocentric ecliptic positions
+  converted to RA/Dec. Its per-subject provenance identifies that path.
+  Mixed-subject chart routes also accept planets, asteroids, fixed stars
+  from the sovereign star registry, lots computed through the Lots engine,
+  caller-supplied ecliptic points, and caller-supplied RA/Dec points.
 - Lot subjects require explicit observer latitude/longitude because the Lots
   engine derives ASC, houses, and day/night truth from the chart site.
 - Catalog-wide fixed-star, asteroid, comet, and small-body sweeps remain
   deferred; mixed-subject routes are explicit-selection surfaces.
 - Astrocartography provenance includes a `subjects` list carrying subject
   class, canonical name, NAIF ID when applicable, and position source.
+
+For topocentric comet lines, pass the reference site in `observer_lat` and
+`observer_lon` with optional `observer_elev_m`. The `acg_observer_*` fields
+override that site. Longitude is east-positive and elevation is in meters
+above the WGS-84 ellipsoid. For example, send this body to
+`POST /v1/astrocartography/chart/lines`.
+
+```json
+{
+  "dt": "2000-01-01T12:00:00Z",
+  "bodies": ["comet:Halley"],
+  "observer_lat": 51.477,
+  "observer_lon": 0.0,
+  "observer_elev_m": 46.0
+}
+```
+
+Moira solves reception light time from the station and projects MC, IC,
+ASC, and DSC lines from its apparent RA/Dec in the true equator and
+equinox of date. The response records the reference site and the comet's
+canonical name, NAIF ID, and `moira.planets.sky_position_at:comet` source.
+[Engine and validation details](../../docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md#selected-topocentric-comet-lines)
 
 Track A adds two bounded routes:
 
@@ -2304,6 +2264,23 @@ interpretation remain excluded.
 | POST | `/v1/geodetic/chart/location-chart` | `geodetic_chart_location_chart_route` |
 | POST | `/v1/geodetic/equivalents` | `geodetic_equivalents_route` |
 | POST | `/v1/geodetic/chart/equivalents` | `geodetic_chart_equivalents_route` |
+| POST | `/v1/geodetic/geometry` | `geodetic_geometry_route` |
+| POST | `/v1/geodetic/sensitivity` | `geodetic_sensitivity_route` |
+| POST | `/v1/geodetic/uncertainty` | `geodetic_uncertainty_route` |
+| POST | `/v1/geodetic/houses` | `geodetic_houses_route` |
+| POST | `/v1/geodetic/chart/houses` | `geodetic_chart_houses_route` |
+| POST | `/v1/geodetic/overlay` | `geodetic_overlay_route` |
+| POST | `/v1/geodetic/chart/overlay` | `geodetic_chart_overlay_route` |
+| POST | `/v1/geodetic/compare` | `geodetic_compare_route` |
+| POST | `/v1/geodetic/chart/compare` | `geodetic_chart_compare_route` |
+| POST | `/v1/geodetic/loci` | `geodetic_loci_route` |
+| POST | `/v1/geodetic/chart/loci` | `geodetic_chart_loci_route` |
+| POST | `/v1/geodetic/chart/transits` | `geodetic_chart_transits_route` |
+
+Comparison isolates per-place failures. Loci return analytic geographic
+curves with forward-angle residuals and exclusion reasons. Transit timing
+uses bounded chart-backed searches with authoritative UT1 epochs and UTC
+renderings.
 
 ## Galactic Coordinates Routes
 
@@ -2989,7 +2966,7 @@ asserted when the returned NAIF ID is present in `reader.covered_bodies()`;
 reader presence alone is not treated as comet coverage.
 
 This admission does not expose non-periodic comet expansion, comet family or
-dynamical-class routes, catalog-wide comet sweeps, topocentric positions,
+dynamical-class routes, catalog-wide comet sweeps, topocentric ecliptic positions,
 equatorial positions, comet photometry, rendered maps, kernel manifest
 management, or full small-body migration proof. Explicit selected-comet
 Astrocartography is admitted under `/v1/astrocartography/chart/subjects/*`;
@@ -3477,6 +3454,7 @@ The admitted Sothic surface is:
 - `POST /v1/sothic/egyptian-date`
 - `POST /v1/sothic/predict-epoch`
 - `POST /v1/sothic/rising`
+- `POST /v1/sothic/drift-rate`
 
 `egyptian-date` exposes the fixed 365-day Egyptian civil calendar with an
 explicit anchor. The default Censorinus anchor is JD `1772027.5`, Julian
@@ -3496,9 +3474,53 @@ ordered outcome per requested year: `found` or
 `moira.stars.heliacal_rising_event` truth. Catalog, kernel, coverage, and
 internal failures remain failures and are never serialized as empty success.
 
-This admission does not expose unbounded scans, Sothic epoch searches, drift
-routes, condition or network projections, alternate Egyptian calendars,
-historical interpretation, or a second heliacal visibility model.
+`drift-rate` accepts the same request as `rising`.
+
+```json
+{
+  "latitude_deg": 29.8,
+  "longitude_deg": 31.3,
+  "year_start": 139,
+  "year_end": 144,
+  "arcus_visionis_deg": 10
+}
+```
+
+The response contains `rising`, with every annual outcome and its search
+provenance, and `fit`, with an ordinary least-squares slope in civil days
+per astronomical year. A positive slope means that the modeled rising
+moves later in the Egyptian civil calendar.
+
+The fit uses the actual year numbers of found risings. Years marked
+`not_found_within_window` stay in `rising.outcomes` and contribute no
+sample. The first found civil-day offset is the reference for unwrapping.
+Each subsequent found offset uses the shortest signed step from the
+previous found year on the 365-day calendar, even across a year gap. An
+exact half-cycle step of 182.5 days keeps its original sign. Each fit
+sample exposes both `drift_days` and `unwrapped_drift_days`.
+
+At least five found years are required for an estimate. With fewer
+found years the route returns HTTP 200 with all outcomes,
+`fit.status = "insufficient_found_years"`, a null rate, and an empty
+sample list. Invalid requests return HTTP 422. Missing ephemeris resources
+return HTTP 503, and coverage and other calculation failures propagate.
+
+Epoch searches based on modeled risings and condition or network profiles
+have separate admission requirements.
+
+### Lilly Hyleg and Alcocoden
+
+- `POST /v1/hyleg/lilly-1647` selects the Hyleg using supplied luminary
+  longitudes, house cusps, sect, and any additional inputs the selection
+  step requires.
+- `POST /v1/hyleg/lilly-1647/alcocoden` takes the seven traditional
+  planetary longitudes, house cusps, and sect. It returns Hyleg and
+  Alcocoden selection evidence and, when available, the traditional least,
+  mean, and greater year-table values. The `provenance.granted_years`
+  field explains why the engine leaves granted years uncomputed.
+
+Both routes are kernel-free and source-specific to Lilly's 1647 procedure.
+[Broader admission boundary](#deliberate-boundaries)
 
 ### Lord Of The Orb REST Admission Boundary
 
@@ -3569,9 +3591,10 @@ computation.
 
 ### Electional REST Admission Boundary
 
-The admitted Phase 13 electional REST surface has two deliberately separate
-products: the bounded generic search subset and one source-owned Western
-single-moment profile.
+The electional REST surface covers bounded generic searches over
+server-defined profiles and named Western doctrine products. The Western
+routes cover individual moments, window scans, and explicit-candidate
+ranking.
 
 The bounded generic search subset is:
 
@@ -3635,6 +3658,14 @@ The separately admitted Western doctrine routes are:
 - `POST /v1/electional/western/dorotheus-construction`
 - `POST /v1/electional/western/dorotheus-matter-profile`
 - `POST /v1/electional/western/profile-windows`
+- `POST /v1/electional/western/judgement`
+- `POST /v1/electional/western/judgement-windows`
+- `POST /v1/electional/western/ranking`
+
+`judgement` composes an admitted matter profile with the Lilly perfection
+trace. `judgement-windows` returns sampled or partially refined windows for
+that judgement. `ranking` scores explicit candidate instants under one
+judgement selection using caller-supplied weights.
 
 The classical-perfection route is a bounded, kernel-backed event analysis
 under the fixed `lilly_1647_perfection_v1` profile. Requests select two
@@ -3743,10 +3774,10 @@ points, and reports `scoring: not_provided`,
 `remedy_fulfillment_assessment: tri_state_non_erasing` for Ramesey. None of these
 routes is a generic predicate adapter, and none ranks or recommends a time.
 
-These admissions do not expose arbitrary executable predicates or scorers,
-generic numeric Western scoring, additional lineage profiles,
-auspicious/inauspicious labels, recommendation text, unbounded scans, async
-search jobs, or electional advice language.
+The numeric fit routes use the published scorer catalogue. Western ranking
+uses explicit candidates and caller weights. Arbitrary executable
+predicates and scorers, unbounded scans, async search jobs, and advice
+or auspiciousness labels are outside the admitted contracts.
 
 ### Catalog Umbrella Boundary
 

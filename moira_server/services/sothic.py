@@ -8,8 +8,9 @@ from moira.sothic import (
     EgyptianDate,
     SothicCalendarPolicy,
     SothicComputationPolicy,
-    SothicHeliacalPolicy,
     SothicEntry,
+    SothicHeliacalPolicy,
+    SothicRisingSeries,
     egyptian_civil_date,
     predict_sothic_epoch,
     sothic_rising_series,
@@ -22,6 +23,9 @@ from ..models.sothic import (
     EgyptianDateResponse,
     EgyptianDateValueResponse,
     SothicAnchorResponse,
+    SothicDriftFitResponse,
+    SothicDriftRateResponse,
+    SothicDriftSampleResponse,
     SothicEntryResponse,
     SothicHeliacalEventResponse,
     SothicPredictionRequest,
@@ -153,10 +157,7 @@ def compute_sothic_prediction(
     )
 
 
-def compute_sothic_rising(
-    engine: Moira,
-    request: SothicRisingRequest,
-) -> SothicRisingResponse:
+def _search_rising_series(engine: Moira, request: SothicRisingRequest) -> SothicRisingSeries:
     epoch_jd = (
         CENSORINUS_139_ANCHOR.jd
         if request.epoch_jd is None
@@ -170,7 +171,7 @@ def compute_sothic_rising(
         ),
     )
     with use_reader_override(getattr(engine, "_reader", None)):
-        result = sothic_rising_series(
+        return sothic_rising_series(
             request.latitude_deg,
             request.longitude_deg,
             request.year_start,
@@ -178,6 +179,8 @@ def compute_sothic_rising(
             policy=policy,
         )
 
+
+def _rising_response(result: SothicRisingSeries) -> SothicRisingResponse:
     outcomes = [
         SothicYearOutcomeResponse(
             year=outcome.year,
@@ -222,8 +225,38 @@ def compute_sothic_rising(
     )
 
 
+def compute_sothic_rising(engine: Moira, request: SothicRisingRequest) -> SothicRisingResponse:
+    """Return the annual search outcomes and their provenance."""
+    return _rising_response(_search_rising_series(engine, request))
+
+
+def compute_sothic_drift_rate(engine: Moira, request: SothicRisingRequest) -> SothicDriftRateResponse:
+    """Fit the engine's annual series and transport the evidence used."""
+    series = _search_rising_series(engine, request)
+    fit = series.fit_drift()
+    rate = fit.rate_days_per_year
+    return SothicDriftRateResponse(
+        rising=_rising_response(series),
+        fit=SothicDriftFitResponse(
+            status="estimated" if rate is not None else "insufficient_found_years",
+            rate_days_per_year=rate,
+            minimum_found_years=fit.minimum_found_years,
+            calendar_year_days=fit.calendar_year_days,
+            samples=[
+                SothicDriftSampleResponse(
+                    year=sample.year,
+                    drift_days=sample.drift_days,
+                    unwrapped_drift_days=sample.unwrapped_drift_days,
+                )
+                for sample in fit.samples
+            ],
+        ),
+    )
+
+
 __all__ = [
     "compute_egyptian_date",
+    "compute_sothic_drift_rate",
     "compute_sothic_prediction",
     "compute_sothic_rising",
 ]

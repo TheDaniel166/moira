@@ -578,12 +578,16 @@ This operation established:
   provenance
 - selected asteroid/comet chart-backed subplanetary support is admitted with
   subject provenance
-- selected comet chart-backed line support remains deferred until the public
-  comet topocentric RA/Dec path is admitted
-- selected fixed-star server-derived support remains deferred
+- selected comet chart-backed line support awaited a topocentric RA/Dec
+  path in the engine
+- selected fixed-star server-derived support awaited its own admission
 - catalog-wide sweeps remain deferred
 - subject provenance is serialized for direct labels, planets, selected
   asteroids, and selected comets
+
+The 2026-11-10 follow-up admits selected comets to chart-backed lines
+through the engine's observer-dependent RA/Dec path.
+[Admission and parity evidence](POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md#selected-topocentric-comet-lines)
 
 Second post-Phase-10 Astrocartography operation:
 

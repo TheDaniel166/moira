@@ -222,7 +222,7 @@ def compute_astrocartography_chart_lines(
     engine: Moira,
     request: AstrocartographyChartLinesRequest,
 ) -> AstrocartographyLinesResult:
-    chart = _build_chart(engine, request)
+    chart = _build_chart(engine, request, line_context=True)
     bodies = _selected_bodies(request.bodies, chart.planets)
     observer = _resolve_line_observer(request, chart)
     dpsi, obliquity, gmst_deg, jd_ut, jd_tt = _sidereal_context(chart.jd_ut)
@@ -401,13 +401,23 @@ def compute_astrocartography_subject_chart_subplanetary(
     )
 
 
-def _build_chart(engine: Moira, request):
-    require_supported_chart_bodies(request.bodies)
+def _build_chart(engine: Moira, request, *, line_context: bool = False):
+    bodies = request.bodies
+    require_supported_chart_bodies(bodies)
+    if line_context and bodies is not None:
+        # The line calculation resolves each comet through sky_position_at.
+        # Chart assembly supplies context for it, without an ecliptic position.
+        context_bodies = []
+        for body in bodies:
+            identity = resolve_small_body_identity(body)
+            if identity is None or identity.family != "comet":
+                context_bodies.append(body)
+        bodies = context_bodies
     return build_chart_context(
         engine,
         ChartRequest(
             dt=request.dt,
-            bodies=request.bodies,
+            bodies=bodies,
             include_nodes=False,
             observer_lat=request.observer_lat,
             observer_lon=request.observer_lon,

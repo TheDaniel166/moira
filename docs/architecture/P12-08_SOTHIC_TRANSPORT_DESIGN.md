@@ -1,17 +1,18 @@
 # P12-08 Sothic Transport Design
 
-Version: 1.1
-Date: 2026-09-27
+Version: 1.2
+Date: 2026-11-10
 Status: bounded_direct_surface_admitted
-Scope: admitted Sothic calendar, prediction, and exhaustive annual-rising REST boundary
+Scope: Sothic calendar, prediction, exhaustive annual rising, and annual drift REST contracts
 
 ## 1. Admission Boundary
 
-P12-08 now admits three bounded direct routes:
+P12-08 admits four bounded routes.
 
 - `POST /v1/sothic/egyptian-date`
 - `POST /v1/sothic/predict-epoch`
 - `POST /v1/sothic/rising`
+- `POST /v1/sothic/drift-rate`
 
 The previous semantic hold is closed by the engine-owned
 `SothicRisingSeries`: every requested year has exactly one `found` or
@@ -22,7 +23,6 @@ empty success.
 Still deferred:
 
 - `POST /v1/sothic/epochs`
-- `POST /v1/sothic/drift-rate`
 - `POST /v1/sothic/condition-profile`
 - `POST /v1/sothic/network-profile`
 - unbounded epoch searches
@@ -42,6 +42,7 @@ The governing object is the existing `moira.sothic` result family:
 - `SothicEpochPrediction`
 - `SothicYearOutcome`
 - `SothicRisingSeries`
+- `SothicDriftFit` and its `SothicDriftSample` rows
 - `EgyptianDate`
 - `SothicEntry`
 - `SothicEpoch`
@@ -74,7 +75,7 @@ engine.
 - `n_cycles`: integer in [-1000, 1000]
 - `cycle_length_years`: optional positive finite number
 
-`POST /v1/sothic/rising`
+`POST /v1/sothic/rising` and `POST /v1/sothic/drift-rate`
 
 - `latitude_deg`: finite degrees in [-90, 90]
 - `longitude_deg`: finite degrees in [-180, 180]
@@ -83,9 +84,9 @@ engine.
 - `epoch_jd`: optional finite Julian Day
 - `arcus_visionis_deg`: optional finite number in [6, 12], default 10
 
-No public request accepts an engine policy object. The rising service builds a
-bounded internal policy with a 400-day search window. The deferred endpoint
-families do not yet have public request contracts.
+Both annual routes use the same bounded engine policy with a 400-day
+search window per requested year. Callers choose the site, year interval,
+calendar anchor, and arcus visionis through the request fields above.
 
 ## 4. Bounds And Runtime Policy
 
@@ -120,6 +121,20 @@ Rising responses preserve:
 - found and bounded-exhaustion counts
 - requested year range
 - provenance
+
+Drift responses embed the complete rising response under `rising` and
+the engine's least-squares fit under `fit`. The engine uses only found
+years, preserving their actual astronomical year numbers and skipping
+missing years without imputation. It unwraps the 365-day offset with the
+shortest signed step between successive found years. An exact half-cycle
+step retains its sign. Across a gap, the wrap uses only the two found
+endpoints, so the result makes no inference about additional full cycles
+in the gap. The response carries raw and unwrapped offsets and the slope
+in civil days per year.
+
+A valid series with fewer than five found years returns
+`insufficient_found_years`, a null slope, and no fit samples. Its full
+annual evidence remains available under `rising`.
 
 Prediction responses preserve:
 
@@ -183,12 +198,15 @@ Route admission includes focused server tests for:
 - missing-kernel propagation as HTTP 503
 - rejection of reversed and oversized year ranges
 - rejection of arcus values outside the admitted 6-12 degree model domain
-- typed OpenAPI registration for all three routes
+- forward and backward calendar wrap across missing years
+- signed half-cycle ties and a valid zero slope
+- explicit insufficient-sample results and DE441 annual-series parity
+- typed OpenAPI registration for all four routes
 
 Minimum verification after route implementation:
 
 ```powershell
-.\.venv\Scripts\python.exe -m py_compile moira_server\models\sothic.py moira_server\services\sothic.py moira_server\routers\sothic.py tests\server\test_server_sothic_routes.py
+.\.venv\Scripts\python.exe -m py_compile moira\sothic.py moira_server\models\sothic.py moira_server\services\sothic.py moira_server\routers\sothic.py tests\server\test_server_sothic_routes.py
 .\.venv\Scripts\python.exe -m pytest tests\server\test_server_sothic_routes.py tests\unit\test_sothic.py tests\unit\test_sothic_public_api.py tests\oracle\test_sothic_oracle.py -q -m "not external_network"
 ```
 
@@ -197,7 +215,6 @@ heliacal search behavior or range-search policy.
 
 ## 9. Completion Boundary
 
-The three named direct routes are admitted and registered. Epoch-search,
-drift-rate, condition-profile, and network-profile routes remain outside this
-completion boundary. The transport maximum is 200 annual searches per request;
-unbounded research remains an engine/offline workflow.
+The four bounded routes are admitted and registered. Epoch search,
+condition profiles, and network profiles have separate admission
+requirements. Each annual request runs at most 200 searches.

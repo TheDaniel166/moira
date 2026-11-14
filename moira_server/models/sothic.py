@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, FiniteFloat, field_validator, model_validator
 
 
 MAX_SOTHIC_RANGE_YEARS = 200
@@ -177,6 +177,38 @@ class SothicRisingResponse(_StrictModel):
     provenance: SothicProvenanceResponse
 
 
+class SothicDriftSampleResponse(_StrictModel):
+    """One found year used by the fit."""
+
+    year: int
+    drift_days: float = Field(ge=0.0, lt=365.0)
+    unwrapped_drift_days: FiniteFloat
+
+
+class SothicDriftFitResponse(_StrictModel):
+    """Slope and calendar-unwrapping evidence for the annual series."""
+
+    status: Literal["estimated", "insufficient_found_years"]
+    rate_days_per_year: FiniteFloat | None = Field(
+        description="Fitted calendar days per astronomical year. Positive means a later rising date."
+    )
+    minimum_found_years: int
+    calendar_year_days: int
+    samples: list[SothicDriftSampleResponse]
+    method: Literal["ordinary_least_squares"] = "ordinary_least_squares"
+    missing_year_policy: Literal["exclude_without_imputation"] = "exclude_without_imputation"
+    wrap_policy: Literal["shortest_signed_step_between_found_years"] = "shortest_signed_step_between_found_years"
+    half_cycle_tie_policy: Literal["retain_signed_step"] = "retain_signed_step"
+    engine_entrypoint: Literal["SothicRisingSeries.fit_drift"] = "SothicRisingSeries.fit_drift"
+
+
+class SothicDriftRateResponse(_StrictModel):
+    """Annual search evidence and its fitted Egyptian civil-calendar drift."""
+
+    rising: SothicRisingResponse
+    fit: SothicDriftFitResponse
+
+
 __all__ = [
     "MAX_SOTHIC_RANGE_YEARS",
     "EgyptianDateRequest",
@@ -191,4 +223,7 @@ __all__ = [
     "SothicEntryResponse",
     "SothicYearOutcomeResponse",
     "SothicRisingResponse",
+    "SothicDriftSampleResponse",
+    "SothicDriftFitResponse",
+    "SothicDriftRateResponse",
 ]

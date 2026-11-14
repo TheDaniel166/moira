@@ -358,6 +358,15 @@ def load_comet_kernel(path: str | Path | None = None) -> None:
     from .spk_reader import add_to_global_pool
     add_to_global_pool(path)
 
+def _comet_kernel(name: str, naif_id: int, reader) -> SmallBodyKernel:
+    """Select the first loaded small-body kernel that owns this comet."""
+    readers = getattr(reader, "_readers", (reader,))
+    for candidate in readers:
+        if isinstance(candidate, SmallBodyKernel) and candidate.has_body(naif_id):
+            return candidate
+    raise KeyError(f"Comet {name} (NAIF {naif_id}) not found in the provided reader.")
+
+
 def comet_at(name: str, jd_ut: float, reader=None) -> CometData:
     """
     Return the geocentric tropical ecliptic position of *name* at *jd_ut*.
@@ -386,18 +395,7 @@ def comet_at(name: str, jd_ut: float, reader=None) -> CometData:
 
     naif_id = COMET_NAIF[name]
     
-    # Find the comet kernel in the pool
-    kernel = None
-    if hasattr(reader, "_readers"):
-        for r in reader._readers:
-            if isinstance(r, SmallBodyKernel) and r.has_body(naif_id):
-                kernel = r
-                break
-    elif isinstance(reader, SmallBodyKernel) and reader.has_body(naif_id):
-        kernel = reader
-
-    if kernel is None:
-        raise KeyError(f"Comet {name} (NAIF {naif_id}) not found in the provided reader.")
+    kernel = _comet_kernel(name, naif_id, reader)
 
     lon, lat, dist, speed = _comet_geocentric_ecliptic(naif_id, jd_ut, kernel, reader)
     sign_name, sign_sym, _sign_degree = sign_of(lon)

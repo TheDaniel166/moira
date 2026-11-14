@@ -71,7 +71,7 @@ from .coordinates import (
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
-from .julian import local_sidereal_time, DeltaTPolicy, tt_to_tdb
+from .julian import local_sidereal_time, DeltaTPolicy, tdb_to_tt, tt_to_tdb
 from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelPool, KernelReader, SpkReader,
@@ -79,7 +79,8 @@ from .spk_reader import (
 )
 from .small_body_identity import SmallBodyFamily, resolve_small_body_identity
 from .corrections import (
-    _iterate_light_time, apply_light_time, apply_aberration, apply_deflection,
+    _iterate_light_time, _observer_position_icrf, _observer_velocity_icrf,
+    apply_light_time, apply_aberration, apply_deflection,
     apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
@@ -3419,6 +3420,60 @@ def planet_at(
 planet_at.__doc__ = _planet_at_impl.__doc__
 
 
+def _comet_topocentric_equatorial_vector(
+    name: str,
+    jd_ut: float,
+    context: _ApparentContext,
+    *,
+    observer_lat: float,
+    observer_lon: float,
+    observer_elev_m: float,
+    lst_deg: float,
+    aberration: bool,
+    grav_deflection: bool,
+) -> Vec3:
+    """Reduce a comet's reception ray from the station to equatorial of date."""
+    from .comets import COMET_NAIF, _comet_kernel, _sun_barycentric
+
+    reader = context.reader
+    body_id = COMET_NAIF[name]
+    kernel = _comet_kernel(name, body_id, reader)
+
+    station_of_date = _observer_position_icrf(
+        observer_lat,
+        observer_lon,
+        lst_deg,
+        observer_elev_m,
+        jd_ut=jd_ut,
+        observer_frame="equatorial_of_date",
+    )
+    to_icrf = tuple(zip(*context.rot_mat))
+    observer_ssb = vec_add(context.earth_ssb, mat_vec_mul(to_icrf, station_of_date))
+
+    def sun_at(epoch_tdb: float) -> Vec3:
+        return _sun_barycentric(tdb_to_tt(epoch_tdb), reader)
+
+    def comet_at_emission(delay: float) -> Vec3:
+        emission_tdb = reception_tdb - delay
+        return vec_add(kernel.position_tdb(10, body_id, emission_tdb), sun_at(emission_tdb))
+
+    reception_tdb = tt_to_tdb(context.jd_tt)
+    reception_sun = sun_at(reception_tdb)
+    reception_comet = vec_add(kernel.position_tdb(10, body_id, reception_tdb), reception_sun)
+    ray, _ = _iterate_light_time(observer_ssb, reception_comet, comet_at_emission)
+    if grav_deflection:
+        ray = apply_deflection(
+            ray, [(vec_sub(reception_sun, observer_ssb), SCHWARZSCHILD_RADII["Sun"])]
+        )
+
+    station_velocity = mat_vec_mul(
+        to_icrf,
+        _observer_velocity_icrf(station_of_date, observer_frame="equatorial_of_date"),
+    )
+    observer_velocity = vec_add(context.earth_vel, station_velocity) if aberration else station_velocity
+    return _apply_rotation_matrix(context.rot_mat, apply_aberration(ray, observer_velocity))
+
+
 def _sky_position_at_impl(
     body: str,
     jd_ut: float,
@@ -3445,6 +3500,8 @@ def _sky_position_at_impl(
     correction → gravitational deflection → annual aberration → frame bias
     → precession → nutation → topocentric correction → diurnal aberration
     → optional atmospheric refraction, then projects to RA/Dec and Az/Alt.
+    Comets use the WGS-84 station in the reception light-time solve, followed
+    by Sun-only deflection and aberration from the observer's velocity.
 
     Individual correction stages can be disabled via the ``aberration``,
     ``grav_deflection``, ``nutation``, and ``refraction`` switches. The first
@@ -3540,6 +3597,11 @@ def _sky_position_at_impl(
 
     if small_body is not None:
         family, canonical_name = small_body
+        lst_deg = (
+            _lst_deg_override
+            if _lst_deg_override is not None
+            else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity, jd_tt)
+        )
         if family == "asteroid":
             from .asteroids import _asteroid_apparent_equatorial_vector
 
@@ -3553,63 +3615,36 @@ def _sky_position_at_impl(
                 aberration=aberration,
                 grav_deflection=grav_deflection,
             )
-        else:
-            from .comets import COMET_NAIF, SmallBodyKernel, _sun_barycentric
-
-            body_id = COMET_NAIF[canonical_name]
-            kernel = None
-            if hasattr(reader, "_readers"):
-                for subreader in reader._readers:
-                    if isinstance(subreader, SmallBodyKernel) and subreader.has_body(body_id):
-                        kernel = subreader
-                        break
-            elif isinstance(reader, SmallBodyKernel) and reader.has_body(body_id):
-                kernel = reader
-            if kernel is None:
-                raise KeyError(f"Comet {canonical_name} (NAIF {body_id}) not found in the provided reader.")
-
-            xyz = _apparent_geocentric_equatorial_vector(
-                body_id,
-                jd_tt,
-                reader,
-                barycentric_fn=lambda body_, jd_tt_, reader_: vec_add(
-                    kernel.position(10, body_, jd_tt_),
-                    _sun_barycentric(jd_tt_, reader_),
-                ),
-                deflectors=(
-                    [(vec_sub(_sun_barycentric(jd_tt, reader), earth_ssb), SCHWARZSCHILD_RADII["Sun"])]
-                    if grav_deflection
-                    else []
-                ),
-                earth_ssb=earth_ssb,
-                earth_vel=earth_vel,
-                rot_mat=rot_mat,
-                aberration=aberration,
+            xyz = topocentric_correction(
+                xyz,
+                observer_lat,
+                observer_lon,
+                lst_deg,
+                observer_elev_m,
+                jd_ut=jd_ut,
+                observer_frame="equatorial_of_date",
             )
-
-        lst_deg = (
-            _lst_deg_override
-            if _lst_deg_override is not None
-            else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity, jd_tt)
-        )
-        xyz = topocentric_correction(
-            xyz,
-            observer_lat,
-            observer_lon,
-            lst_deg,
-            observer_elev_m,
-            jd_ut=jd_ut,
-            observer_frame="equatorial_of_date",
-        )
-        xyz = apply_diurnal_aberration(
-            xyz,
-            observer_lat,
-            observer_lon,
-            lst_deg,
-            observer_elev_m,
-            jd_ut=jd_ut,
-            observer_frame="equatorial_of_date",
-        )
+            xyz = apply_diurnal_aberration(
+                xyz,
+                observer_lat,
+                observer_lon,
+                lst_deg,
+                observer_elev_m,
+                jd_ut=jd_ut,
+                observer_frame="equatorial_of_date",
+            )
+        else:
+            xyz = _comet_topocentric_equatorial_vector(
+                canonical_name,
+                jd_ut,
+                context,
+                observer_lat=observer_lat,
+                observer_lon=observer_lon,
+                observer_elev_m=observer_elev_m,
+                lst_deg=lst_deg,
+                aberration=aberration,
+                grav_deflection=grav_deflection,
+            )
         ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
         az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)
         if refraction:

@@ -47,6 +47,7 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -75,7 +76,7 @@ __all__ = [
     # Data types
     "SothicYearStatus", "SothicCycleModel", "SothicAnchor",
     "SothicEpochReference", "SothicEpochPrediction",
-    "SothicYearOutcome", "SothicRisingSeries",
+    "SothicYearOutcome", "SothicRisingSeries", "SothicDriftSample", "SothicDriftFit",
     "EgyptianDate", "SothicEntry", "SothicEpoch",
     # Constants
     "EGYPTIAN_MONTHS", "EGYPTIAN_SEASONS", "EPAGOMENAL_BIRTHS",
@@ -101,6 +102,7 @@ _SOTHIC_EPOCH_139_JD: float = 1772027.5
 
 # Length of the Egyptian civil year (exactly 365 days, no leap)
 _EGYPTIAN_YEAR_DAYS: int = 365
+_MIN_SOTHIC_DRIFT_ENTRIES = 5
 
 # Sothic cycle: 1460 Julian years = 1461 Egyptian civil years = 533265 Julian days
 # Identity: 1460 × 365.25 = 533265 = 1461 × 365  (exact)
@@ -1251,6 +1253,25 @@ class SothicYearOutcome:
                 raise ValueError("exhausted Sothic outcome must not contain an entry")
 
 
+@dataclass(frozen=True, slots=True)
+class SothicDriftSample:
+    """A found year's civil-day offset before and after calendar unwrapping."""
+
+    year: int
+    drift_days: float
+    unwrapped_drift_days: float
+
+
+@dataclass(frozen=True, slots=True)
+class SothicDriftFit:
+    """Drift slope and the samples used in the fit, if enough years were found."""
+
+    rate_days_per_year: float | None
+    samples: tuple[SothicDriftSample, ...]
+    minimum_found_years: int = field(default=_MIN_SOTHIC_DRIFT_ENTRIES, init=False)
+    calendar_year_days: int = field(default=_EGYPTIAN_YEAR_DAYS, init=False)
+
+
 @dataclass(slots=True)
 class SothicRisingSeries:
     """Exhaustive bounded result for a range of annual Sirius searches."""
@@ -1294,6 +1315,20 @@ class SothicRisingSeries:
             outcome.entry
             for outcome in self.outcomes
             if outcome.entry is not None
+        )
+
+    def fit_drift(self) -> SothicDriftFit:
+        """Fit the found years using their actual astronomical year numbers."""
+        entries = self.entries
+        if len(entries) < _MIN_SOTHIC_DRIFT_ENTRIES:
+            return SothicDriftFit(rate_days_per_year=None, samples=())
+        rate, unwrapped = _fit_sothic_drift(entries)
+        return SothicDriftFit(
+            rate_days_per_year=rate,
+            samples=tuple(
+                SothicDriftSample(entry.year, entry.drift_days, drift)
+                for entry, drift in zip(entries, unwrapped, strict=True)
+            ),
         )
 
     @property
@@ -1719,8 +1754,15 @@ def sothic_drift_rate(entries: list[SothicEntry]) -> float:
     -------
     Drift rate in days per year (positive = rising moves later in calendar)
     """
-    if len(entries) < 5:
-        raise ValueError("Need at least 5 entries to estimate drift rate")
+    rate, _ = _fit_sothic_drift(entries)
+    return rate
+
+
+def _fit_sothic_drift(entries: Sequence[SothicEntry]) -> tuple[float, list[float]]:
+    """Return the canonical slope and the unwrapped values used to fit it."""
+    n = len(entries)
+    if n < _MIN_SOTHIC_DRIFT_ENTRIES:
+        raise ValueError(f"Need at least {_MIN_SOTHIC_DRIFT_ENTRIES} entries to estimate drift rate")
     for entry in entries:
         if not hasattr(entry, "year") or not hasattr(entry, "drift_days"):
             raise ValueError("sothic drift rate entries must preserve year and drift_days")
@@ -1729,18 +1771,18 @@ def sothic_drift_rate(entries: list[SothicEntry]) -> float:
         if not math.isfinite(entry.drift_days):
             raise ValueError("sothic drift rate entry drift_days must be finite")
 
-    # Linear regression on drift_days vs year
-    n = len(entries)
     xs = [e.year for e in entries]
     ys = [e.drift_days for e in entries]
 
-    # Unwrap: remove the 365-day jumps when drift wraps around
+    # Shift the remaining observations by one civil year when the current
+    # step exceeds half a year. Exact half-year steps keep their sign.
+    half_cycle_days = _EGYPTIAN_YEAR_DAYS / 2
     for i in range(1, n):
         diff = ys[i] - ys[i - 1]
-        if diff > 182.5:
+        if diff > half_cycle_days:
             for j in range(i, n):
                 ys[j] -= _EGYPTIAN_YEAR_DAYS
-        elif diff < -182.5:
+        elif diff < -half_cycle_days:
             for j in range(i, n):
                 ys[j] += _EGYPTIAN_YEAR_DAYS
 
@@ -1748,9 +1790,8 @@ def sothic_drift_rate(entries: list[SothicEntry]) -> float:
     mean_y = sum(ys) / n
     num = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
     den = sum((x - mean_x) ** 2 for x in xs)
-    if abs(den) < 1e-10:
-        return 0.0
-    return num / den
+    rate = 0.0 if abs(den) < 1e-10 else num / den
+    return rate, ys
 
 
 def predicted_sothic_epoch_year(

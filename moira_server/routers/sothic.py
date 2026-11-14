@@ -7,9 +7,11 @@ from fastapi import APIRouter, Depends
 from moira import Moira
 
 from ..dependencies import get_engine
+from ..models.common import ErrorEnvelope
 from ..models.sothic import (
     EgyptianDateRequest,
     EgyptianDateResponse,
+    SothicDriftRateResponse,
     SothicPredictionRequest,
     SothicPredictionResponse,
     SothicRisingRequest,
@@ -17,6 +19,7 @@ from ..models.sothic import (
 )
 from ..services.sothic import (
     compute_egyptian_date,
+    compute_sothic_drift_rate,
     compute_sothic_prediction,
     compute_sothic_rising,
 )
@@ -49,6 +52,22 @@ def rising_route(
     """Return exhaustive outcomes for at most 200 annual Sirius searches."""
 
     return compute_sothic_rising(engine, request)
+
+
+@router.post(
+    "/drift-rate",
+    response_model=SothicDriftRateResponse,
+    responses={
+        422: {"model": ErrorEnvelope, "description": "Invalid annual search parameters."},
+        503: {"model": ErrorEnvelope, "description": "The required ephemeris is unavailable."},
+    },
+)
+def drift_rate_route(
+    request: SothicRisingRequest,
+    engine: Moira = Depends(get_engine),
+) -> SothicDriftRateResponse:
+    """Fit calendar drift from bounded annual Sirius rising outcomes."""
+    return compute_sothic_drift_rate(engine, request)
 
 
 __all__ = ["router"]

@@ -435,7 +435,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "sothic",
         "x-displayName": "Sothic and Egyptian Calendar",
-        "description": "Bounded Sirius heliacal outcomes, Egyptian civil dates, and explicitly schematic cycle projections.",
+        "description": "Bounded Sirius heliacal outcomes and drift fits, Egyptian civil dates, and schematic cycle projections.",
         "x-family": "phenomena",
     },
     {

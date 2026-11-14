@@ -354,7 +354,61 @@ def test_astrocartography_chart_lines_preserves_selected_asteroid_provenance(
 
 
 @pytest.mark.requires_ephemeris
-def test_astrocartography_chart_lines_defer_comet_topocentric_ra_dec_path(
+def test_astrocartography_chart_lines_projects_comet_ra_from_the_selected_observer(
+    client_with_small_body_engine: TestClient,
+    borrowed_small_body_moira_engine,
+) -> None:
+    from moira.planets import sky_position_at
+
+    body = "comet:Halley"
+    payload = {
+        "dt": _DT_ISO,
+        "bodies": [body],
+        "observer_lat": 40.7128,
+        "observer_lon": -74.0060,
+        "acg_observer_lat": 51.477,
+        "acg_observer_lon": 0.0,
+        "acg_observer_elev_m": 46.0,
+        "lat_step": 10.0,
+    }
+    response = client_with_small_body_engine.post("/v1/astrocartography/chart/lines", json=payload)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    lines = _line_map(result["lines"])
+    assert set(lines) == {(body, angle) for angle in ("MC", "IC", "ASC", "DSC")}
+    provenance = result["provenance"]
+    assert provenance["coordinate_source"] == "chart_apparent_topocentric_ra_dec"
+    assert provenance["observer"] == {
+        "latitude": 51.477,
+        "longitude": 0.0,
+        "elevation_m": 46.0,
+        "source": "acg_override",
+    }
+    subject = _subject_map(provenance)[body]
+    assert subject["subject_class"] == "comet"
+    assert subject["canonical_name"] == "1P/Halley"
+    assert subject["naif_id"] == 1000001
+    assert subject["position_source"] == "moira.planets.sky_position_at:comet"
+
+    sky = sky_position_at(
+        body, provenance["jd_ut"], 51.477, 0.0, 46.0,
+        reader=borrowed_small_body_moira_engine._reader, refraction=False,
+    )
+    expected_mc = (sky.right_ascension - provenance["gmst_deg"]) % 360
+    assert lines[body, "MC"]["longitude"] == pytest.approx(expected_mc, abs=1e-10, rel=0)
+
+    for field in ("acg_observer_lat", "acg_observer_lon", "acg_observer_elev_m"):
+        payload.pop(field)
+    response = client_with_small_body_engine.post("/v1/astrocartography/chart/lines", json=payload)
+    assert response.status_code == 200, response.text
+    chart_observer_result = response.json()
+    assert chart_observer_result["provenance"]["observer"]["source"] == "chart_request"
+    chart_observer_mc = _line_map(chart_observer_result["lines"])[body, "MC"]["longitude"]
+    assert abs(chart_observer_mc - expected_mc) > 1e-7
+
+
+@pytest.mark.requires_ephemeris
+def test_astrocartography_chart_lines_require_a_loaded_comet_kernel(
     client_with_engine: TestClient,
 ) -> None:
     response = client_with_engine.post(
@@ -370,7 +424,7 @@ def test_astrocartography_chart_lines_defer_comet_topocentric_ra_dec_path(
 
     _assert_validation_envelope(
         response,
-        message_fragment="comet bodies currently support only the default apparent geocentric ecliptic path",
+        message_fragment="Comet 1P/Halley (NAIF 1000001) not found in the provided reader",
     )
 
 

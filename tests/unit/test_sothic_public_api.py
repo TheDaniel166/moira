@@ -24,6 +24,8 @@ _CURATED_PUBLIC_NAMES = [
     "SothicEpochPrediction",
     "SothicYearOutcome",
     "SothicRisingSeries",
+    "SothicDriftSample",
+    "SothicDriftFit",
     # Truth / classification
     "EgyptianCalendarTruth",
     "SothicComputationTruth",
@@ -61,6 +63,7 @@ _CURATED_PUBLIC_NAMES = [
 
 _INTERNAL_NAMES = [
     "_resolve_sothic_policy",
+    "_fit_sothic_drift",
     "_validate_sothic_policy",
     "_classify_egyptian_calendar_truth",
     "_classify_sothic_computation_truth",
@@ -96,5 +99,5 @@ class TestModuleAgreement:
                 f"moira.sothic.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_42(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 42
+    def test_curated_count_is_44(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 44

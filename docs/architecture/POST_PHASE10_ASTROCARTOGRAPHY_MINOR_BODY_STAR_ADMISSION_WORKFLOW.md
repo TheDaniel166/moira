@@ -2,10 +2,51 @@
 
 Version: 0.3
 Date: 2026-06-12
-Status: Direct-coordinate support admitted; selected minor-body chart support
-partially admitted; fixed-star server-derived support deferred
+Status: Initial admission recorded below. Selected topocentric comet lines
+were admitted in the 2026-11-10 follow-up.
 Scope: Selected minor-body and fixed-star Astrocartography admission before
 rendering convenience work
+
+## Selected topocentric comet lines
+
+The 2026-11-10 follow-up admits selected comets in
+`POST /v1/astrocartography/chart/lines` through `sky_position_at`. This
+route uses one reference station. Its MC, IC, ASC, and DSC lines project
+the station's apparent RA/Dec. The mixed-subject line route serves
+geocentric comet coordinates and identifies that source per subject.
+[REST contract](../../wiki/02_services/REST_API_REFERENCE.md#astrocartography-routes)
+
+The engine forms the station state from its WGS-84 coordinates, UT1
+rotation, and polar motion. It rotates that state into ICRF, adds Earth's
+barycentric state at reception, and solves the one-way TDB light cone
+against the comet's heliocentric SPK position and the barycentric Sun at
+each emission trial. It applies Sun-only gravitational deflection and
+aberration using the station's velocity, then rotates to equatorial of
+date. The default orientation is the true equator and equinox of date.
+Missing comet resources or coverage raise through the normal reader
+boundary. [NAIF reception geometry](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkcpo_c.html)
+
+The parity test uses DE441 and the admitted comet SPKs at the following
+UTC instants, with refraction disabled.
+
+| Comet | UTC reception instant | Latitude | East longitude | Elevation |
+| --- | --- | ---: | ---: | ---: |
+| 1P/Halley | 2000-01-01 12:00 | 40.7128° | −74.0060° | 31 m |
+| 67P/Churyumov–Gerasimenko | 2021-11-12 00:00 | −31.27° | 149.06° | 1165 m |
+| 2P/Encke | 2023-10-23 12:00 | 51.477° | 0° | 46 m |
+
+The independent calculation uses the same SPK vectors, reception clock
+inputs, and polar motion data. It bisects the light-time equation and
+uses ERFA for the station state, Sun deflection, aberration, and the
+equator/equinox rotation. The regression bounds are 20 microarcseconds
+of sky separation and 5 mm of range difference. A synthetic moving
+comet also checks the analytic reception solution and a coverage edge
+that changes outcome with the station. [Parity test](../../tests/integration/test_comet_topocentric.py) ·
+[ERFA station state](https://raw.githubusercontent.com/liberfa/erfa/master/src/pvtob.c) ·
+[Deflection](https://raw.githubusercontent.com/liberfa/erfa/master/src/ld.c) ·
+[Aberration](https://raw.githubusercontent.com/liberfa/erfa/master/src/ab.c)
+
+## Initial admission record
 
 This document defines the next Astrocartography expansion after the first
 bounded P10-01 REST admission and before any rendering-adapter implementation.
@@ -57,7 +98,7 @@ invented.
 
 ---
 
-## 2. Current Truth
+## 2. Initial Route Truth
 
 The current P10-01 REST surface has four admitted routes:
 
@@ -640,7 +681,7 @@ the policy layer for minor bodies, fixed stars, or catalog sweeps.
 
 ## 10. Implementation Receipt
 
-Implemented current admission boundary:
+Implemented boundary at the initial admission:
 
 - direct-coordinate selected non-planet labels are admitted through the
   existing direct line and subplanetary routes

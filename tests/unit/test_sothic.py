@@ -215,7 +215,7 @@ def test_sothic_series_does_not_swallow_delegated_failures(
 
 def test_sothic_drift_rate_recovers_wrapped_linear_trend() -> None:
     entries = []
-    drift = 360.0
+    drift = 364.0
     for year in range(0, 10):
         entries.append(type("Entry", (), {"year": year, "drift_days": drift}))
         drift = (drift + 0.242) % _EGYPTIAN_YEAR_DAYS
