@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 564
-- Registered OpenAPI operations: 564 (GET 52, POST 512)
+- Registered OpenAPI paths: 566
+- Registered OpenAPI operations: 566 (GET 52, POST 514)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 560
+- Versioned `/v1` paths: 562
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -4150,6 +4150,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/orbits/class/batch` | orbits | `orbit_class_batch_route_v1_orbits_class_batch_post` |
 | `POST` | `/v1/orbits/distance-extremes` | orbits | `distance_extremes_route_v1_orbits_distance_extremes_post` |
 | `POST` | `/v1/orbits/elements` | orbits | `orbital_elements_route_v1_orbits_elements_post` |
+| `POST` | `/v1/out-of-bounds/search` | predictive | `out_of_bounds_search_route_v1_out_of_bounds_search_post` |
 | `GET` | `/v1/pancha-pakshi/constitution/uromarisi` | pancha-pakshi | `pancha_pakshi_uromarisi_constitution_status_route_v1_pancha_pakshi_constitution_uromarisi_get` |
 | `POST` | `/v1/pancha-pakshi/context/astronomical-paksha` | pancha-pakshi | `pancha_pakshi_astronomical_paksha_route_v1_pancha_pakshi_context_astronomical_paksha_post` |
 | `POST` | `/v1/pancha-pakshi/context/local-solar` | pancha-pakshi | `pancha_pakshi_local_solar_context_route_v1_pancha_pakshi_context_local_solar_post` |
@@ -4263,6 +4264,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/sidereal/convert` | sidereal | `sidereal_convert_route_v1_sidereal_convert_post` |
 | `POST` | `/v1/solar-condition/events` | generic-phenomena | `solar_condition_events_route_v1_solar_condition_events_post` |
 | `POST` | `/v1/solar-condition/instant` | generic-phenomena | `solar_condition_instant_route_v1_solar_condition_instant_post` |
+| `POST` | `/v1/sothic/drift-rate` | sothic | `drift_rate_route_v1_sothic_drift_rate_post` |
 | `POST` | `/v1/sothic/egyptian-date` | sothic | `egyptian_date_route_v1_sothic_egyptian_date_post` |
 | `POST` | `/v1/sothic/predict-epoch` | sothic | `predict_epoch_route_v1_sothic_predict_epoch_post` |
 | `POST` | `/v1/sothic/rising` | sothic | `rising_route_v1_sothic_rising_post` |

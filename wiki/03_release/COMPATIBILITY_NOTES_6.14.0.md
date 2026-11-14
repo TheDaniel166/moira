@@ -1,13 +1,37 @@
 # Compatibility Notes - Moira 6.14.0
 
-Python 3.10 through 3.15 are supported. This release is additive. No existing
-result changes value.
+Python 3.10 through 3.15 are supported. One existing product changes value:
+the topocentric apparent place of a comet. Everything else in this release is
+additive, and no new dependency is introduced — the base runtime remains the
+standard library plus the required compiled `moira._moira_native` extension.
 
-## Nothing to recalculate
+## Topocentric comet positions change value
 
-The out-of-bounds solver is a new module, a new facade method and a new REST
-route. It introduces no new dependency: the base runtime remains the standard
-library plus the required compiled `moira._moira_native` extension.
+`sky_position_at()` previously built a geocentric apparent vector for a comet
+and shifted it to the observer, leaving the observer's position out of the
+light-time solution entirely. Comets now take an observer-centred solve.
+
+- **Recalculate any stored topocentric comet right ascension or declination.**
+  The old values carried no parallax, and their diurnal aberration was applied
+  about the wrong origin. The error grows as the comet comes nearer, so stored
+  close-approach positions are the most affected.
+- **Geocentric comet positions are unchanged.** `comet_at()` and
+  `planet_at()` return exactly their previous values; the `_comet_kernel()`
+  extraction behind them preserves the same kernel search and the same
+  `KeyError`.
+- **Asteroids are unchanged**, including through `sky_position_at()`. They
+  still use the geocentric-apparent vector with a topocentric shift. The
+  asteroid path is now the weaker of the two; see the known limitation in the
+  release notes.
+- **Astrocartography comet lines change** accordingly: right ascension is now
+  projected from the selected observer. A comet line request also now requires
+  a loaded comet kernel and fails explicitly without one, where it previously
+  assumed one was present.
+
+## Nothing else to recalculate
+
+The out-of-bounds solver and Sothic drift fitting are new surfaces and change
+no existing result.
 
 ## One previously raising path now works
 
@@ -53,8 +77,14 @@ Exported from `moira.facade`:
 - `OutOfBoundsUnavailableError` and `OutOfBoundsBudgetError`, both of which
   subclass `ValueError`
 
-`POST /v1/out-of-bounds/search` is added under the `predictive` tag. Three new
-REST error codes are introduced:
+Exported from `moira.sothic`:
+
+- `SothicDriftSample`, `SothicDriftFit`, and `SothicRisingSeries.fit_drift()`
+
+`POST /v1/out-of-bounds/search` is added under the `predictive` tag and
+`POST /v1/sothic/drift-rate` under the `sothic` tag, whose tag description
+text also changes. `drift-rate` accepts the same request body as
+`/v1/sothic/rising`. Three new REST error codes are introduced:
 `out_of_bounds_date_outside_ephemeris_coverage` (category
 `ephemeris_coverage`), `out_of_bounds_unknown_body` (category
 `input_validation`), and `out_of_bounds_search_budget` (category
@@ -78,6 +108,9 @@ validation failure rather than enumerate the set.
   in the span, at roughly 3,800 evaluations per year of lunar scan, so a window
   beyond about 25 years of Moon needs splitting. An exhausted budget raises
   rather than truncating.
+- A Sothic drift fit over fewer than five found years returns
+  `status: "insufficient_found_years"` with `rate_days_per_year: null`. Treat
+  null as "not determinable from this window", not as zero drift.
 - `scan_truth.unresolved_intervals` is normally zero. A nonzero value discloses
   intervals that reached the subdivision limit without clearing; it is a stated
   gap in capture, not an error.

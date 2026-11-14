@@ -2,10 +2,10 @@
 
 **Release date:** 14 November 2026.
 
-This release adds an out-of-bounds declination solver. Read the
-[compatibility notes](COMPATIBILITY_NOTES_6.14.0.md) before upgrading; they are
-short, because nothing existing changes except a comet path that previously
-raised.
+This release adds an out-of-bounds declination solver and Sothic drift fitting,
+and corrects comet topocentric apparent places. Read the
+[compatibility notes](COMPATIBILITY_NOTES_6.14.0.md) before upgrading: one
+existing product changes value, which is the comet topocentric position.
 
 ## Out of bounds, solved rather than interpolated
 
@@ -94,6 +94,48 @@ which admits asteroids and comets alike and delegates to the same pipelines
 those surfaces own. Declination parallels and contra-parallels for comets work
 as a consequence. Asteroid results are unchanged and bit-identical.
 
+## Comet topocentric places are now observer-centred
+
+`sky_position_at()` built a *geocentric* apparent vector for a comet and then
+shifted it to the observer. The observer's own position was therefore absent
+from the light-time solution: no parallax, and diurnal aberration applied about
+the wrong origin. For a comet near Earth that is a large error, and it is
+exactly the regime in which anyone asks for a topocentric comet position.
+
+Comets now take an observer-centred light-time solve through
+`_comet_topocentric_equatorial_vector()`, built on `_observer_position_icrf`
+and `_observer_velocity_icrf`. **Topocentric comet right ascension and
+declination change value.** Geocentric comet positions are untouched:
+`comet_at()` and `planet_at()` return exactly what they returned before, and
+the kernel-selection refactor behind them is behaviour-preserving.
+
+The asteroid arm of the same branch is deliberately unchanged and still uses
+the geocentric-apparent vector with a topocentric shift. That approximation is
+negligible for a main-belt body and is not for a near-Earth one, so the
+asteroid path is now the weaker of the two. It is recorded as a known
+limitation rather than quietly equalised.
+
+Astrocartography follows from this: comet lines now project right ascension
+from the selected observer rather than the geocentre, and require a loaded
+comet kernel instead of assuming one. Comets are excluded from chart assembly
+in line context, which wants an ecliptic position they do not supply there.
+
+## Sothic drift, fitted rather than asserted
+
+`SothicRisingSeries.fit_drift()` returns a `SothicDriftFit` carrying
+`rate_days_per_year` — calendar days per astronomical year, positive for a
+later rising date — together with the `SothicDriftSample` series it was fitted
+from, each sample showing the civil-day offset both before and after calendar
+unwrapping. `POST /v1/sothic/drift-rate` transports it.
+
+The fit declines to guess. Below five found years the status is
+`insufficient_found_years` and the rate is null rather than extrapolated from
+too little. Unwrapping shifts a step that exceeds half an Egyptian year, and an
+exact half-year step keeps its sign rather than being silently resolved one
+way. The response states all of this in its own fields — method, missing-year
+policy, wrap policy, half-cycle tie policy and engine entrypoint — so a caller
+reads the doctrine rather than inferring it.
+
 ## Performance
 
 Python only; no native port was made. Measured with Python 3.14.8 against DE441
@@ -140,8 +182,17 @@ itself:
   excursion, bracket containment, ordering and disjointness, and that an
   unclipped excursion culminates strictly inside itself.
 
-No agreement with an external engine or published out-of-bounds table is
-claimed. No external authority publishes this product — apparent geocentric
+Comet topocentric places are validated differently, because an authority does
+govern that product: an independent ERFA reduction agrees to better than
+**2e-5 arcsecond** of separation for 1P/Halley at a topocentric site, with an
+analytic linear-comet light-time check alongside it. The Sothic drift rate is
+checked against the DE441 annual rising series and the engine slope. Because
+`_sky_position_at_impl` is a shared service, its dependent suites were run too
+— astrocartography, physical horizon, local space, rise/set, frame positions
+and the rendering adapter.
+
+For the out-of-bounds solver, no agreement with an external engine or published
+out-of-bounds table is claimed. No external authority publishes this product — apparent geocentric
 declination of date against the true obliquity of date — under matching
 semantics, so the evidence here is invariant testing and independent-scan
 corroboration, and the tests say so.

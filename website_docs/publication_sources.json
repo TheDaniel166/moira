@@ -320,19 +320,27 @@
     {
       "version": "6.14.0",
       "date": "2026-11-14",
-      "title": "Out-Of-Bounds Declination Solver",
+      "title": "Out-Of-Bounds Declination, Comet Topocentric Places And Sothic Drift",
       "added": [
         "An out-of-bounds declination solver: Moira.out_of_bounds() and POST /v1/out-of-bounds/search, solving entries and returns as roots of |declination| minus the true obliquity of date, with both terms moving.",
         "A conditioning receipt on every crossing: the declination rate, the obliquity rate, the rate of the bound function, the solver's achieved tolerance, and the time cost of one arcsecond of declination error.",
         "Explicit window-edge semantics, so an excursion clipped by the requested range reports a clipped edge and a duration marked as a lower bound.",
         "A scan cadence derived from the body's own measured motion rather than a per-body name table, admitting planets, points, asteroids and comets alike.",
-        "A declared evaluation budget: search cost is linear in the requested span, so the REST route caps one search at 100,000 declination evaluations and raises rather than returning a truncated excursion list."
+        "A declared evaluation budget: search cost is linear in the requested span, so the REST route caps one search at 100,000 declination evaluations and raises rather than returning a truncated excursion list.",
+        "Sothic drift fitting: SothicRisingSeries.fit_drift() and POST /v1/sothic/drift-rate, reporting calendar days per astronomical year with its own declared method, missing-year, calendar-unwrapping and half-cycle tie policies, and declining to estimate below five found years."
       ],
-      "changed": [],
+      "changed": [
+        "The asteroid arm of sky_position_at() keeps the geocentric-apparent vector with a topocentric shift rather than the observer-centred solve comets now receive; negligible for a main-belt body, not for a near-Earth one."
+      ],
       "fixed": [
+        "Comet topocentric apparent places left the observer's position out of the light-time solution, so sky_position_at() returned a shifted geocentric vector with no parallax and diurnal aberration about the wrong origin. Comets now take an observer-centred solve, so topocentric comet right ascension and declination change value; geocentric positions do not.",
+        "Astrocartography comet lines now project right ascension from the selected observer rather than the geocentre, and require a loaded comet kernel instead of assuming one.",
         "Comet names reached the star resolver and raised on the shared declination primitive; small bodies now route through the unified planet_at front door, which also makes comet declination parallels work. Asteroid results are bit-identical."
       ],
       "validation": [
+        "Comet topocentric places agree with an independent ERFA reduction to better than 2e-5 arcsecond of separation for 1P/Halley at a topocentric site, with an analytic linear-comet light-time check alongside.",
+        "The Sothic drift rate is checked against the DE441 annual rising series and the engine slope.",
+        "Dependent suites of the shared _sky_position_at_impl service were run as well: astrocartography, physical horizon, local space, rise/set, frame positions and the rendering adapter.",
         "A measured lunar counterexample is an acceptance test: on 2020-03-05 the Moon is out of bounds for 4.32 hours, clearing the obliquity by 20.6 arcseconds, and a 1-day scan step misses it in 8 of 10 grid phasings.",
         "Thirteen brute-force comparisons against a fine grid built from an independent declination path agree on every excursion count and edge.",
         "No external-engine or published-table agreement is claimed; the evidence is invariant testing and independent-scan corroboration."

@@ -36,8 +36,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a ceiling of 100,000 declination evaluations. An exhausted budget raises
   `OutOfBoundsBudgetError` rather than returning a truncated excursion list,
   which could not be told apart from a genuinely quiet interval.
+- Sothic drift fitting: `SothicRisingSeries.fit_drift()` and
+  `POST /v1/sothic/drift-rate`, returning a `SothicDriftFit` whose
+  `rate_days_per_year` is calendar days per astronomical year, positive for a
+  later rising date. Fewer than five found years reports
+  `insufficient_found_years` with a null rate rather than a guess. The response
+  names its own policy rather than implying it: ordinary least squares, found
+  years excluded without imputation, shortest signed step between found years
+  for calendar unwrapping, and an exact half-year step keeping its sign.
 
 ### Fixed
+- Comet topocentric apparent places. `sky_position_at()` built a geocentric
+  apparent vector for a comet and then shifted it, so the observer's own
+  position was ignored: no parallax, and diurnal aberration applied about the
+  wrong origin. Comets now take an observer-centred light-time solve.
+  Topocentric comet right ascension and declination therefore change value;
+  geocentric comet positions from `comet_at()` and `planet_at()` do not.
+- Astrocartography comet lines now project right ascension from the selected
+  observer rather than from the geocentre, and require a loaded comet kernel
+  instead of assuming one. Comets are excluded from chart assembly in line
+  context, which wants an ecliptic position they do not supply there.
 - `transits_equatorial._declination` routed small bodies through `asteroid_at`
   only, so comet names fell through to the star resolver and raised. Small
   bodies now route through `planets.planet_at`, the engine's unified front door,
@@ -52,6 +70,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   0.25-day step `transits._auto_step` assigns the Moon misses it in 2 of 10.
 - Thirteen independent brute-force comparisons against a fine grid built from a
   separate declination path agree on every excursion count and edge.
+- Comet topocentric places are checked against an independent ERFA reduction,
+  agreeing to better than 2e-5 arcsecond of separation for 1P/Halley at a
+  topocentric site, alongside an analytic linear-comet light-time check.
+- The Sothic drift rate is checked against the DE441 annual rising series and
+  the engine slope.
+- Because `_sky_position_at_impl` is a shared service, its dependent suites
+  were run as well: astrocartography, physical horizon, local space, rise/set,
+  frame positions and the rendering adapter.
+
+### Known limitations
+- The asteroid arm of `sky_position_at()` still uses the geocentric-apparent
+  vector with a topocentric shift, rather than the observer-centred solve
+  comets now receive. The difference is negligible for a main-belt body and is
+  not for a near-Earth one; the asteroid path is now the weaker of the two.
 
 ## [6.13.1] - 2026-11-09
 
