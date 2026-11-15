@@ -74,13 +74,45 @@ Evidence: above. `SothicHeliacalPolicy.arcus_visionis = 10.0` against
 `_default_arcus_for_star("Sirius") = 7.5`.
 
 To close: record which model governs the Sothic product and why, in the
-policy rather than in prose. If the Ptolemy/Schoch tradition governs because
-the research question is about ancient observers, say so and cite it; if the
-Schaefer magnitude relation governs, use it. Either is defensible. The current
-state — a constant that silently overrides a sourced model — is not.
+policy rather than in prose. The current state — a constant that silently
+overrides a sourced model — is not defensible either way.
 
-Evidence class required: **doctrine source**. This is a question about which
-authority governs the product, not about numerical agreement.
+**Choosing by accuracy does not select between 7.5 and 10.** Both are
+constants in the legacy geometric criterion, and neither carries external
+validation. The engine already has a path that does:
+
+| | geometric arcus path (what Sothic uses) | physical visibility path |
+|---|---|---|
+| criterion | solar depression and star altitude | limiting magnitude against target magnitude |
+| event definition | — | Schaefer, JHA 18 (1987), S19-S33 |
+| physical basis | — | Tousey and Koomen, JOSA 43 (1953), 177-183 |
+| independent oracle | — | Hipparcos + Astropy/ERFA + JPL Sun, reproduced to 0.01 s |
+| validated case | — | `phase3-sirius-2026-morning-first-rising` |
+
+So the accuracy question is not which constant, it is which path. Only the
+physical one is anchored, and routing the Sothic search through it is the
+change that an accuracy argument actually supports. That is G2, not G1.
+
+Two cautions keep this from being a clean win, both already stated by the
+repository itself:
+
+- `heliacal_rising_oracle_matrix.json` admits
+  `maximum_legacy_difference_days: 3.0` for Sirius, which is wider than the
+  2.5 day gap between the two arcus values. The existing anchor therefore
+  cannot discriminate 7.5 from 10 even in principle.
+- The visibility authority entry states that "exact dates remain
+  observer-policy dependent", the golden's observer protocol is
+  `known_location_directed_averted_observation_v1` — a modern directed and
+  averted-vision observer, not an ancient one watching an eastern horizon —
+  and its limitations record that "subjective observer and real atmosphere
+  uncertainty are not probabilistic confidence".
+
+An epoch date will therefore carry a band of days under any model. The
+physical path narrows and sources that band; it does not remove it, and no
+arcus constant can.
+
+Evidence class required: **doctrine source** for which path governs, then
+**authority validation** for the path chosen.
 
 ### G2 — the visibility model is geometric, and the physical stack is unwired
 
