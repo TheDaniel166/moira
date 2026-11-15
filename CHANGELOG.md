@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wrong origin. Comets now take an observer-centred light-time solve.
   Topocentric comet right ascension and declination therefore change value;
   geocentric comet positions from `comet_at()` and `planet_at()` do not.
+- `moira.facade` re-exports `SothicDriftSample` and `SothicDriftFit`. Twenty-three
+  other Sothic names already reached the facade, so a facade caller could invoke
+  `SothicRisingSeries.fit_drift()` and receive a type it could not import from
+  the same surface.
 - Astrocartography comet lines now project right ascension from the selected
   observer rather than from the geocentre, and require a loaded comet kernel
   instead of assuming one. Comets are excluded from chart assembly in line

@@ -77,7 +77,8 @@ Exported from `moira.facade`:
 - `OutOfBoundsUnavailableError` and `OutOfBoundsBudgetError`, both of which
   subclass `ValueError`
 
-Exported from `moira.sothic`:
+Exported from `moira.sothic`, and re-exported from `moira.facade` alongside the
+twenty-three Sothic names already there:
 
 - `SothicDriftSample`, `SothicDriftFit`, and `SothicRisingSeries.fit_drift()`
 
