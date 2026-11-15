@@ -1658,10 +1658,21 @@ def sothic_epochs(
 
     Returns
     -------
-    list[SothicEpoch], one per epoch found in the range.
+    list[SothicEpoch], one per *year* whose rising falls within
+    *tolerance_days* of the anchor. That is not one per realignment.
 
     Notes
     -----
+    Consecutive years in the result are a single realignment window, not
+    separate epochs. The rising drifts about 0.25 days per civil year, so a
+    tolerance of +/- tolerance_days admits roughly
+    ``2 * tolerance_days / 0.25`` consecutive years by construction. Measured
+    near Memphis one cycle before AD 139: +/-0.5 day gives 4 years, +/-1 day
+    gives 8 (-1319 through -1312), and +/-2 days gives 16. Within a window the
+    residual drift differs by well under a day, so the years are not ranked
+    and no one of them is "the" epoch. A caller wanting one row per
+    realignment should group consecutive years itself.
+
     This is a computational scan, not a historical chronology oracle. Runtime
     grows linearly with the number of requested years; callers should use
     deliberately bounded ranges.
@@ -1825,7 +1836,9 @@ def predicted_sothic_epoch_year(
 
     Returns
     -------
-    Predicted astronomical year (float)
+    Predicted astronomical year (float). This scalar drops the model identity
+    that ``predict_sothic_epoch`` carries; see that function for how far the
+    schematic projection sits from the computed realignment window.
     """
     return predict_sothic_epoch(
         known_epoch_year,
@@ -1845,6 +1858,15 @@ def predict_sothic_epoch(
 
     The calculation is fixed-interval arithmetic. It is not an observed
     heliacal event and does not validate a historical chronology.
+
+    Because the interval is fixed at 1460 years, the projection drifts away
+    from the realignment this engine computes, whose interval is nearer 1455
+    years. Measured near Memphis against ``sothic_epochs`` with a one-day
+    tolerance: one cycle back from AD 139 this returns -1321 while the
+    computed window is -1319 through -1312, and two cycles back it returns
+    -2781 against -2776 through -2769. The projection therefore lands 2 and
+    then 5 years before the window, widening by about 3 years per cycle.
+    Use ``sothic_epochs`` when the computed realignment is what matters.
     """
 
     policy = _resolve_sothic_policy(policy)

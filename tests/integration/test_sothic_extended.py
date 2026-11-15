@@ -22,7 +22,12 @@ from astropy.coordinates import AltAz, Distance, EarthLocation, SkyCoord, get_bo
 from astropy.time import Time
 import astropy.units as u
 
-from moira.sothic import sothic_drift_rate, sothic_epochs, sothic_rising
+from moira.sothic import (
+    predicted_sothic_epoch_year,
+    sothic_drift_rate,
+    sothic_epochs,
+    sothic_rising,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -466,3 +471,74 @@ def test_sothic_drift_rate_tracks_the_julian_year_not_the_tropical_year() -> Non
     # site they differ by about 0.0017 d/yr, which is the visibility model
     # responding to the epoch, not the calendar arithmetic changing.
     assert measured["roman"] == pytest.approx(measured["old_kingdom"], abs=0.004)
+
+
+# ---------------------------------------------------------------------------
+# Epoch windows: the finder returns years, the projection is schematic
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+def test_sothic_epoch_tolerance_selects_a_window_of_years_by_construction() -> None:
+    """A tolerance admits a span of years, not a single epoch.
+
+    The rising drifts about 0.25 days per civil year, so a +/- tolerance
+    admits roughly 2 * tolerance / 0.25 consecutive years. They are one
+    realignment window, which is why sothic_epochs documents its result as one
+    entry per year in tolerance rather than one per epoch.
+    """
+    latitude, longitude, _ = EGYPTIAN_SITES["Memphis"]
+    spans = {}
+    for tolerance_days, expected in ((0.5, 4), (1.0, 8), (2.0, 16)):
+        epochs = sothic_epochs(
+            latitude, longitude, -1335, -1300, tolerance_days=tolerance_days
+        )
+        years = sorted(epoch.year for epoch in epochs)
+        spans[tolerance_days] = years
+        assert years, f"tolerance {tolerance_days}: no epoch years found"
+        assert len(years) == pytest.approx(expected, abs=1), (
+            f"tolerance {tolerance_days} d admitted {len(years)} years, "
+            f"expected about {expected} at ~0.25 d/yr drift"
+        )
+        assert years == list(range(years[0], years[-1] + 1)), (
+            f"tolerance {tolerance_days}: window is not contiguous: {years}"
+        )
+
+    # Widening the tolerance may only widen the window.
+    assert set(spans[0.5]) <= set(spans[1.0]) <= set(spans[2.0])
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+def test_schematic_epoch_projection_lands_outside_the_computed_window() -> None:
+    """The 1460-year projection is arithmetic, and says so.
+
+    It is not wrong, it is schematic: the computed realignment interval is
+    nearer 1455 years, so the fixed-interval projection falls progressively
+    earlier than the window the engine computes. This pins that divergence so
+    it cannot grow silently, and so the documented figures stay true.
+    """
+    latitude, longitude, _ = EGYPTIAN_SITES["Memphis"]
+    gaps = {}
+    for n_cycles, (search_start, search_end) in (
+        (-1, (-1335, -1300)),
+        (-2, (-2795, -2760)),
+    ):
+        predicted = predicted_sothic_epoch_year(139, n_cycles)
+        epochs = sothic_epochs(
+            latitude, longitude, search_start, search_end, tolerance_days=1.0
+        )
+        years = sorted(epoch.year for epoch in epochs)
+        assert years, f"n_cycles={n_cycles}: no computed window found"
+        gaps[n_cycles] = years[0] - predicted
+        assert predicted < years[0], (
+            f"n_cycles={n_cycles}: projection {predicted:.0f} is expected to "
+            f"precede the computed window starting {years[0]}"
+        )
+
+    # One cycle back the projection is ~2 years early, two cycles ~5, so the
+    # divergence widens by roughly 3 years per cycle.
+    assert gaps[-1] == pytest.approx(2, abs=1)
+    assert gaps[-2] == pytest.approx(5, abs=1)
+    assert gaps[-2] > gaps[-1]
