@@ -226,7 +226,29 @@ class SothicCalendarPolicy:
 
 @dataclass(frozen=True, slots=True)
 class SothicHeliacalPolicy:
-    """Policy surface for the currently embodied Sirius heliacal search doctrine."""
+    """Policy surface for the currently embodied Sirius heliacal search doctrine.
+
+    ``arcus_visionis`` defaults to 10.0 degrees on Egyptological grounds, not
+    as a generic stellar value. Gautschy, R. (2011), "Der Stern Sirius im Alten
+    Aegypten", ZAeS, doi:10.1524/zaes.2011.0010, reports a mean arcus visionis
+    of about 10 degrees for Sirius in ancient Egypt, plausibly 9 to 11
+    depending on atmospheric transparency, and notes that even a known
+    observing site leaves roughly twelve years of chronological resolution.
+
+    The 9-to-11 band matters: the rising date moves about one day per degree,
+    so it carries some three days of spread. Callers studying that sensitivity
+    should sweep the band rather than treat 10.0 as exact.
+
+    Do not substitute ``heliacal._arcus_visionis``, which returns 7.5 degrees
+    here. That is a generic magnitude-stepped value for any star between
+    magnitude -2 and -1 and is not specific to Sirius or to Egypt; using it
+    moves the computed epoch window by more than a decade.
+
+    The default is externally corroborated at the civil-day level against the
+    IMCCE / Observatoire de Paris published Sirius model; see
+    ``tests/artifacts/oracle/sothic_reference_matrix.json`` and
+    ``tests/oracle/test_sothic_oracle.py``.
+    """
 
     arcus_visionis: float = 10.0
     search_days: int = 400
@@ -1654,7 +1676,10 @@ def sothic_epochs(
     epoch_jd       : civil-calendar anchor JD (default: Censorinus AD 139
                      calendar relation; no observer site is implied)
     tolerance_days : how close to 1 Thoth counts as an epoch (default ±1 day)
-    arcus_visionis : solar depression required (default 10° for Sirius)
+    arcus_visionis : solar depression required. The 10° default is Gautschy
+                     (2011) for Sirius in ancient Egypt, plausibly 9-11 by
+                     transparency; see SothicHeliacalPolicy. The rising
+                     moves about a day per degree.
 
     Returns
     -------
