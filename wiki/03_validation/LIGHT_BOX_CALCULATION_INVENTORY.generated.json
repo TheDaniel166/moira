@@ -6,7 +6,7 @@
     "tests": "identifier/path mentions in repository tests; a mention is not proof of coverage"
   },
   "classification_version": "moira.lightbox-surface-classification/v1",
-  "engine_version": "6.14.0",
+  "engine_version": "6.14.1",
   "generated_by": "scripts/generate_lightbox_calculation_inventory.py",
   "limitations": [
     "Inventory membership is not a correctness or validation claim.",
@@ -7375,6 +7375,7 @@
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -10246,7 +10247,7 @@
       "owner_qualname": "EgyptianCalendarClassification",
       "owner_resolution": "runtime-object",
       "public_name": "EgyptianCalendarClassification",
-      "source_line": 363,
+      "source_line": 385,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:EgyptianCalendarClassification",
       "surface_kind": "excluded_type",
@@ -10270,7 +10271,7 @@
       "owner_qualname": "EgyptianCalendarTruth",
       "owner_resolution": "runtime-object",
       "public_name": "EgyptianCalendarTruth",
-      "source_line": 293,
+      "source_line": 315,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:EgyptianCalendarTruth",
       "surface_kind": "excluded_type",
@@ -10297,7 +10298,7 @@
       "owner_qualname": "EgyptianDate",
       "owner_resolution": "runtime-object",
       "public_name": "EgyptianDate",
-      "source_line": 748,
+      "source_line": 770,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:EgyptianDate",
       "surface_kind": "excluded_type",
@@ -13423,7 +13424,7 @@
       "owner_qualname": "HISTORICAL_SOTHIC_EPOCHS",
       "owner_resolution": "symbol-definition",
       "public_name": "HISTORICAL_SOTHIC_EPOCHS",
-      "source_line": 2073,
+      "source_line": 2134,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:HISTORICAL_SOTHIC_EPOCHS",
       "surface_kind": "excluded_value",
@@ -14041,6 +14042,7 @@
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/02_standards/STARS_BACKEND_STANDARD.md"
@@ -22992,6 +22994,7 @@
         "docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md",
         "docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md",
         "docs/architecture/PUBLIC_API_HARDENING.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "docs/architecture/STAR_PARALLAX_SIGNIFICANCE_POLICY_DESIGN.md",
         "docs/architecture/THREAD_SAFETY_GIL_AUDIT_PLAN.md",
         "docs/architecture/TRACK_A_BOUNDED_CLOSURE_2026-08.md",
@@ -23174,6 +23177,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.13.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.13.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md",
@@ -23219,6 +23223,7 @@
         "wiki/03_release/RELEASE_NOTES_6.13.0.md",
         "wiki/03_release/RELEASE_NOTES_6.13.1.md",
         "wiki/03_release/RELEASE_NOTES_6.14.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
@@ -35509,7 +35514,7 @@
       "owner_qualname": "SOTHIC_EPOCH_REFERENCES",
       "owner_resolution": "symbol-definition",
       "public_name": "SOTHIC_EPOCH_REFERENCES",
-      "source_line": 2039,
+      "source_line": 2100,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SOTHIC_EPOCH_REFERENCES",
       "surface_kind": "excluded_value",
@@ -37960,7 +37965,7 @@
       "owner_qualname": "SothicChartConditionProfile",
       "owner_resolution": "runtime-object",
       "public_name": "SothicChartConditionProfile",
-      "source_line": 565,
+      "source_line": 587,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicChartConditionProfile",
       "surface_kind": "excluded_type",
@@ -37985,7 +37990,7 @@
       "owner_qualname": "SothicComputationClassification",
       "owner_resolution": "runtime-object",
       "public_name": "SothicComputationClassification",
-      "source_line": 377,
+      "source_line": 399,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicComputationClassification",
       "surface_kind": "excluded_type",
@@ -38011,7 +38016,7 @@
       "owner_qualname": "SothicComputationPolicy",
       "owner_resolution": "runtime-object",
       "public_name": "SothicComputationPolicy",
-      "source_line": 249,
+      "source_line": 271,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicComputationPolicy",
       "surface_kind": "excluded_type",
@@ -38037,7 +38042,7 @@
       "owner_qualname": "SothicComputationTruth",
       "owner_resolution": "runtime-object",
       "public_name": "SothicComputationTruth",
-      "source_line": 313,
+      "source_line": 335,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicComputationTruth",
       "surface_kind": "excluded_type",
@@ -38062,7 +38067,7 @@
       "owner_qualname": "SothicConditionNetworkEdge",
       "owner_resolution": "runtime-object",
       "public_name": "SothicConditionNetworkEdge",
-      "source_line": 643,
+      "source_line": 665,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicConditionNetworkEdge",
       "surface_kind": "excluded_type",
@@ -38087,7 +38092,7 @@
       "owner_qualname": "SothicConditionNetworkNode",
       "owner_resolution": "runtime-object",
       "public_name": "SothicConditionNetworkNode",
-      "source_line": 620,
+      "source_line": 642,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicConditionNetworkNode",
       "surface_kind": "excluded_type",
@@ -38113,7 +38118,7 @@
       "owner_qualname": "SothicConditionNetworkProfile",
       "owner_resolution": "runtime-object",
       "public_name": "SothicConditionNetworkProfile",
-      "source_line": 677,
+      "source_line": 699,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicConditionNetworkProfile",
       "surface_kind": "excluded_type",
@@ -38138,7 +38143,7 @@
       "owner_qualname": "SothicConditionProfile",
       "owner_resolution": "runtime-object",
       "public_name": "SothicConditionProfile",
-      "source_line": 488,
+      "source_line": 510,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicConditionProfile",
       "surface_kind": "excluded_type",
@@ -38161,7 +38166,7 @@
       "owner_qualname": "SothicConditionState",
       "owner_resolution": "runtime-object",
       "public_name": "SothicConditionState",
-      "source_line": 477,
+      "source_line": 499,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicConditionState",
       "surface_kind": "excluded_type",
@@ -38203,6 +38208,7 @@
         "CHANGELOG.md",
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
         "wiki/03_release/RELEASE_NOTES_6.14.0.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -38212,7 +38218,7 @@
       "owner_qualname": "SothicDriftFit",
       "owner_resolution": "runtime-object",
       "public_name": "SothicDriftFit",
-      "source_line": 1265,
+      "source_line": 1287,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicDriftFit",
       "surface_kind": "excluded_type",
@@ -38230,6 +38236,7 @@
         "CHANGELOG.md",
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
         "wiki/03_release/RELEASE_NOTES_6.14.0.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -38239,7 +38246,7 @@
       "owner_qualname": "SothicDriftSample",
       "owner_resolution": "runtime-object",
       "public_name": "SothicDriftSample",
-      "source_line": 1256,
+      "source_line": 1278,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicDriftSample",
       "surface_kind": "excluded_type",
@@ -38255,6 +38262,7 @@
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
@@ -38266,7 +38274,7 @@
       "owner_qualname": "SothicEntry",
       "owner_resolution": "runtime-object",
       "public_name": "SothicEntry",
-      "source_line": 890,
+      "source_line": 912,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicEntry",
       "surface_kind": "excluded_type",
@@ -38293,7 +38301,7 @@
       "owner_qualname": "SothicEpoch",
       "owner_resolution": "runtime-object",
       "public_name": "SothicEpoch",
-      "source_line": 1071,
+      "source_line": 1093,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicEpoch",
       "surface_kind": "excluded_type",
@@ -38318,7 +38326,7 @@
       "owner_qualname": "SothicEpochPolicy",
       "owner_resolution": "runtime-object",
       "public_name": "SothicEpochPolicy",
-      "source_line": 235,
+      "source_line": 257,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicEpochPolicy",
       "surface_kind": "excluded_type",
@@ -38385,7 +38393,10 @@
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
-        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md"
+        "CHANGELOG.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
+        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "export_kind": "dataclass",
@@ -38420,7 +38431,7 @@
       "owner_qualname": "SothicPredictionPolicy",
       "owner_resolution": "runtime-object",
       "public_name": "SothicPredictionPolicy",
-      "source_line": 242,
+      "source_line": 264,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicPredictionPolicy",
       "surface_kind": "excluded_type",
@@ -38446,7 +38457,7 @@
       "owner_qualname": "SothicRelation",
       "owner_resolution": "runtime-object",
       "public_name": "SothicRelation",
-      "source_line": 413,
+      "source_line": 435,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicRelation",
       "surface_kind": "excluded_type",
@@ -38468,6 +38479,7 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
         "wiki/03_release/RELEASE_NOTES_6.14.0.md"
       ],
       "exclusion_reason": "public type/exception/enum/dataclass declaration; not an executable calculation",
@@ -38477,7 +38489,7 @@
       "owner_qualname": "SothicRisingSeries",
       "owner_resolution": "runtime-object",
       "public_name": "SothicRisingSeries",
-      "source_line": 1275,
+      "source_line": 1297,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicRisingSeries",
       "surface_kind": "excluded_type",
@@ -38503,7 +38515,7 @@
       "owner_qualname": "SothicYearOutcome",
       "owner_resolution": "runtime-object",
       "public_name": "SothicYearOutcome",
-      "source_line": 1221,
+      "source_line": 1243,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:SothicYearOutcome",
       "surface_kind": "excluded_type",
@@ -42884,6 +42896,7 @@
       "classification_basis": "non-callable-export",
       "classification_rationale": "public type/exception/enum/dataclass declaration; not an executable calculation",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/03_validation/SWISS_EPHEMERIS_EXTENSIBILITY_ROADMAP.md",
         "wiki/03_validation/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md",
@@ -44815,7 +44828,7 @@
     },
     {
       "alias_of": null,
-      "api_contract_sha256": "2428349b7cd16b99e8e3bff62b190949386436486cbf3c3ad566991fd9ddbfb3",
+      "api_contract_sha256": "8ad2b822fce35f9bb793c568c3981847151b70c90966cd266ce353633f4db891",
       "canonical_id": "python:moira.facade:__version__",
       "classification_basis": "non-callable-export",
       "classification_rationale": "public constant or immutable value; not an executable calculation",
@@ -47393,6 +47406,7 @@
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md"
       ],
       "exclusion_reason": null,
@@ -51275,7 +51289,7 @@
       "owner_qualname": "days_from_1_thoth",
       "owner_resolution": "runtime-object",
       "public_name": "days_from_1_thoth",
-      "source_line": 1442,
+      "source_line": 1464,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:days_from_1_thoth",
       "surface_kind": "calculation",
@@ -52124,6 +52138,7 @@
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md"
       ],
       "exclusion_reason": null,
@@ -52778,7 +52793,7 @@
       "owner_qualname": "egyptian_civil_date",
       "owner_resolution": "runtime-object",
       "public_name": "egyptian_civil_date",
-      "source_line": 1350,
+      "source_line": 1372,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:egyptian_civil_date",
       "surface_kind": "calculation",
@@ -56610,6 +56625,7 @@
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
@@ -63776,6 +63792,7 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md",
         "wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md",
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CHECKPOINT_2026-07-30.md",
@@ -64649,8 +64666,10 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "CHANGELOG.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md"
+        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -64659,7 +64678,7 @@
       "owner_qualname": "predict_sothic_epoch",
       "owner_resolution": "runtime-object",
       "public_name": "predict_sothic_epoch",
-      "source_line": 1824,
+      "source_line": 1876,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:predict_sothic_epoch",
       "surface_kind": "calculation",
@@ -64676,7 +64695,8 @@
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md"
+        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -64685,11 +64705,12 @@
       "owner_qualname": "predicted_sothic_epoch_year",
       "owner_resolution": "runtime-object",
       "public_name": "predicted_sothic_epoch_year",
-      "source_line": 1797,
+      "source_line": 1847,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:predicted_sothic_epoch_year",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/integration/test_sothic_extended.py",
         "tests/unit/test_sothic.py",
         "tests/unit/test_sothic_public_api.py"
       ]
@@ -65393,6 +65414,7 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md"
       ],
       "exclusion_reason": null,
@@ -66756,7 +66778,7 @@
       "owner_qualname": "sothic_chart_condition_profile",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_chart_condition_profile",
-      "source_line": 1866,
+      "source_line": 1927,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_chart_condition_profile",
       "surface_kind": "composition_profile",
@@ -66781,7 +66803,7 @@
       "owner_qualname": "sothic_condition_network_profile",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_condition_network_profile",
-      "source_line": 1932,
+      "source_line": 1993,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_condition_network_profile",
       "surface_kind": "composition_profile",
@@ -66797,8 +66819,11 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "CHANGELOG.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
-        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md"
+        "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md"
       ],
       "exclusion_reason": null,
       "export_kind": "function",
@@ -66807,11 +66832,12 @@
       "owner_qualname": "sothic_drift_rate",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_drift_rate",
-      "source_line": 1740,
+      "source_line": 1776,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_drift_rate",
       "surface_kind": "calculation",
       "test_paths": [
+        "tests/integration/test_sothic_extended.py",
         "tests/server/test_server_sothic_routes.py",
         "tests/unit/test_sothic.py",
         "tests/unit/test_sothic_public_api.py"
@@ -66824,9 +66850,13 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "CHANGELOG.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
       "exclusion_reason": null,
@@ -66836,7 +66866,7 @@
       "owner_qualname": "sothic_epochs",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_epochs",
-      "source_line": 1633,
+      "source_line": 1655,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_epochs",
       "surface_kind": "calculation",
@@ -66854,6 +66884,7 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
@@ -66865,7 +66896,7 @@
       "owner_qualname": "sothic_rising",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_rising",
-      "source_line": 1601,
+      "source_line": 1623,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_rising",
       "surface_kind": "calculation",
@@ -66894,7 +66925,7 @@
       "owner_qualname": "sothic_rising_series",
       "owner_resolution": "runtime-object",
       "public_name": "sothic_rising_series",
-      "source_line": 1522,
+      "source_line": 1544,
       "source_path": "moira/sothic.py",
       "surface_id": "python:moira.facade:sothic_rising_series",
       "surface_kind": "calculation",
@@ -70187,6 +70218,7 @@
       "classification_basis": "conservative-callable-default",
       "classification_rationale": "conservative default for an admitted public callable; later conformance work may refine its stage/evidence contract",
       "documentation_paths": [
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/03_validation/HELIACAL_CLOSURE_AUDIT_2026-04-09.md",
         "wiki/03_validation/SWISS_EPHEMERIS_EXTENSIBILITY_ROADMAP.md",
@@ -88734,7 +88766,7 @@
     "python_surface_ids_sha256": "370af0089f209d8147df4455036733afc3af935b9ec0099633f0ddbc9f0dccc5",
     "rest_surface_ids_sha256": "a830ca78b98ae3b995dbfd829a0e1a499da226b72c0f8b5d1ccc0125915a1a0f"
   },
-  "structural_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "structural_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
   "structural_fingerprint_version": "moira.lightbox-structural-fingerprint/v1",
   "summary": {
     "python_aliases": 2,
@@ -88771,5 +88803,5 @@
     "rest_in_scope_without_test_mentions": 5,
     "rest_operations": 566
   },
-  "surface_fingerprint_sha256": "cc39ab2c95086fe4ea775626da0165767071a45f8cdc09a1b1891463993c0609"
+  "surface_fingerprint_sha256": "c7d84c42c24cd95d9fc57af37fb31ef1747911077f0fa1c1013990d1b1dcecab"
 }

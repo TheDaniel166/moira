@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.14.0",
+  "engine_version": "6.14.1",
   "families": [
     {
       "assessment_status": "partial",
@@ -2477,6 +2477,7 @@
         "CHANGELOG.md",
         "docs/architecture/MOIRA_SERVER_FULL_ENGINE_EXPOSURE_PLAN.md",
         "docs/architecture/MOIRA_SERVER_IMPLEMENTATION_PLAN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
@@ -7209,11 +7210,14 @@
         "docs/architecture/MOIRA_SERVER_PHASE12_LEDGER.md",
         "docs/architecture/MOIRA_SERVER_REST_FACADE_INIT_GAP_LEDGER.md",
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md",
         "wiki/03_release/RELEASE_NOTES_6.14.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.1.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
       "domain_group": "specialist-and-compositional",
@@ -7301,6 +7305,7 @@
         "docs/architecture/P11-03_MULTIPLE_STARS_TRANSPORT_DESIGN.md",
         "docs/architecture/P12-08_SOTHIC_TRANSPORT_DESIGN.md",
         "docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md",
+        "docs/architecture/SOTHIC_EPOCH_DATING_RESEARCH_READINESS.md",
         "docs/architecture/TRACK_A_BOUNDED_CLOSURE_2026-08.md",
         "docs/superpowers/plans/2026-05-04-conftest-fixture-adoption.md",
         "wiki/00_foundations/ENGINE_VS_SERVICE_BOUNDARY.md",
@@ -8775,7 +8780,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",

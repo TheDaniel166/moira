@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.14.0",
+  "engine_version": "6.14.1",
   "entries": [
     {
       "assessment_status": "partial",
@@ -5330,7 +5330,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1442,
+        "source_line": 1464,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -6609,7 +6609,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1350,
+        "source_line": 1372,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -16206,7 +16206,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1824,
+        "source_line": 1876,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -16231,7 +16231,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1797,
+        "source_line": 1847,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18060,7 +18060,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1866,
+        "source_line": 1927,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18085,7 +18085,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1932,
+        "source_line": 1993,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18110,7 +18110,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1740,
+        "source_line": 1776,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18135,7 +18135,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1633,
+        "source_line": 1655,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18160,7 +18160,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1601,
+        "source_line": 1623,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18185,7 +18185,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1522,
+        "source_line": 1544,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -34133,7 +34133,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",

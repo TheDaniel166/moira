@@ -1,9 +1,9 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
-  "baseline_date": "2026-11-14",
-  "source_parent_revision": "6e1942470e28a9a84f105a759b285b29d6752991",
-  "engine_version": "6.14.0",
-  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "baseline_date": "2026-11-15",
+  "source_parent_revision": "663b3d03bdc70a434171a9dd107cb96af11b8bd6",
+  "engine_version": "6.14.1",
+  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
   "canonical_entries": 1346,
   "minimum_partial": 219,
   "maximum_unresolved": 1127,
@@ -13,10 +13,10 @@
   "minimum_replayed_contracts": 69,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
   "review": {
-    "from_baseline_date": "2026-11-09",
-    "surface_change": "Eleven Python exports and two REST routes are added; none is removed or reclassified. The Python additions are find_out_of_bounds and the eight OutOfBounds result, policy and error vessels on moira.facade, plus the SothicDriftSample and SothicDriftFit vessels re-exported there. The routes are POST /v1/out-of-bounds/search and POST /v1/sothic/drift-rate. Two further REST surfaces, POST /v1/batch/spk/states and POST /v1/batch/spk/received-light, enter the inventory for the first time in this baseline: they were added in commit 770613a before 6.13.1 and the committed inventory was stale by them, so they are recorded here and are not products of 6.14.0. Two Python API contracts change: SothicRisingSeries gains fit_drift, and the published __version__ constant moves from 6.13.1 to 6.14.0. No REST contract hash changes; the eleven REST and one hundred and three Python inventory entries that differ do so only in source_line, test_paths and documentation_paths.",
-    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated. No consumer scan was run for this release, so none of the five new canonical surfaces carries usage attribution yet and production_user_entries is unchanged at 181.",
-    "admissions": "No existing admission or contract is weakened. Five canonical surfaces are added and all five enter unresolved: find_out_of_bounds, the two new routes, and the two previously unrecorded SPK batch routes. find_out_of_bounds forms the new out-of-bounds family, so the canonical denominator moves from 1341 to 1346, the unresolved ceiling from 1122 to 1127 and reviewed families from 160 to 161. The eight OutOfBounds vessels and the two Sothic drift vessels are passive dataclasses and classify out of calculation scope, so they do not move the denominator. The out-of-bounds solver carries invariant and independent-scan evidence described in its release notes and no external-authority claim; comet topocentric places carry an ERFA comparison. Neither is asserted as conformant here, and unresolved remains the correct disposition for all five.",
-    "unchanged": "minimum_partial=219, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are retained; partial coverage is unchanged at 219 and no earlier admission or product-used surface regresses."
+    "from_baseline_date": "2026-11-14",
+    "surface_change": "No Python export or REST route is added, removed or reclassified, and no canonical surface changes: the inventory holds 2573 Python exports and 566 REST operations at both baselines. One Python API contract changes, the published __version__ constant moving from 6.14.0 to 6.14.1. 6.14.0 was tagged but its publication workflow failed while building wheels, so nothing was uploaded and 6.14.1 carries the whole 6.14.0 surface.",
+    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated. No consumer scan was run. The surface set is identical to 6.14.0, so the five canonical surfaces that entered unresolved at that baseline remain without usage attribution and production_user_entries is unchanged at 181.",
+    "admissions": "No admission, contract or threshold changes. The macOS arm64 fix is a build-time guard: the AVX2 dispatch branch it removes from non-x86 builds was already unreachable at runtime there, so no computed result moves and x86 codegen is untouched. The Sothic changes correct three documented statements and the stated drift rate; no Sothic computation changes value. Because no canonical surface was added, the denominator does not move and every threshold carried from the 6.14.0 baseline is retained unedited.",
+    "unchanged": "canonical_entries=1346, minimum_partial=219, maximum_unresolved=1127, reviewed_families=161, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are all retained; no earlier admission or product-used surface regresses."
   }
 }

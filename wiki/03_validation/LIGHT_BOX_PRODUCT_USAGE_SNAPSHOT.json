@@ -1,7 +1,7 @@
 {
   "audit_date": "2026-10-31",
   "detection_policy": "Exact REST path literals plus explicit imports from moira or moira.facade in the exact committed Git tree, excluding test, documentation, design, changelog, build, nested-worktree, and generated product source.",
-  "engine_version": "6.14.0",
+  "engine_version": "6.14.1",
   "entries": [
     {
       "callsites": [
@@ -4204,7 +4204,7 @@
       "transport": "rest"
     }
   ],
-  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
   "limitations": [
     "Dynamic route construction and calls through engine-object methods require separate human review and are not guessed.",
     "A source callsite proves product use, not runtime reachability, correctness, frequency, or conformance.",
@@ -4214,7 +4214,8 @@
     "November 3, 2026 patch release 6.12.1: the October 31 audit date, callsites and product source revisions remain unchanged; only the exported __version__ constant changes the API structural fingerprint. This is a reviewed inventory rebind, not a fresh product-usage audit.",
     "November 9, 2026 minor release 6.13.0: the October 31 audit date, callsites and product source revisions remain unchanged; no export or route is removed or reclassified. Eight Python exports and one REST route are added for pattern grading and default orbs, with no product use recorded, and 38 Python and 23 REST contracts gain additive pattern-orb parameters and house-system codes. This is a reviewed inventory rebind, not a fresh consumer audit.",
     "November 9, 2026 patch release 6.13.1: the first published 6.13 release. The October 31 audit date, callsites and product source revisions remain unchanged; only the exported __version__ constant changes the API structural fingerprint from 6.13.0. This is a reviewed inventory rebind, not a fresh consumer audit.",
-    "November 14, 2026 minor release 6.14.0: this is a reviewed rebind, not a fresh consumer audit. The audited callsites and source revisions are retained unchanged from the October 31 audit and only the inventory fingerprint and engine version are rebound. The surface set is not identical this time: eleven Python exports and two REST routes were added, and two further REST routes already present in the engine were recorded in the inventory for the first time. None of the five resulting canonical surfaces has been scanned for consumer use, so none carries usage attribution and none may be read as unused; absence of a callsite here means the question was not asked for this release."
+    "November 14, 2026 minor release 6.14.0: this is a reviewed rebind, not a fresh consumer audit. The audited callsites and source revisions are retained unchanged from the October 31 audit and only the inventory fingerprint and engine version are rebound. The surface set is not identical this time: eleven Python exports and two REST routes were added, and two further REST routes already present in the engine were recorded in the inventory for the first time. None of the five resulting canonical surfaces has been scanned for consumer use, so none carries usage attribution and none may be read as unused; absence of a callsite here means the question was not asked for this release.",
+    "November 15, 2026 patch release 6.14.1: this is a reviewed rebind, not a fresh consumer audit. The audited callsites and source revisions are retained unchanged from the October 31 audit and only the inventory fingerprint and engine version are rebound. The surface set is identical to 6.14.0 - no export or route is added, removed or reclassified, and only the exported __version__ constant changes the API structure - so the limitation recorded for 6.14.0 carries forward unchanged: the five canonical surfaces added at that baseline still carry no usage attribution and absence of a callsite does not mean a surface is unused."
   ],
   "roots": [
     {
