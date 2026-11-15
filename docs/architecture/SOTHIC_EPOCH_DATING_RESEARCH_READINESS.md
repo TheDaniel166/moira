@@ -19,17 +19,57 @@ Astropy/ERFA corroboration at two sites and two epochs.
 decides whether the anchor year of the whole scheme registers as an epoch, and
 whether a computed window sits where it sits.
 
-## The decisive measurement
+## Correction, 2026-11-15
 
-`moira/stars.py::_default_arcus_for_star` derives arcus visionis from the
-star's catalogue magnitude under the visibility model whose canon
-`moira/heliacal.py` already names: Schaefer, B.E. (1990), PASP 102, 212-229,
-in the Ptolemy/Schoch tradition. For Sirius at magnitude -1.46 it returns
-**7.5 degrees**.
+**An earlier revision of this document was wrong about the central point and
+is corrected here.** It claimed `SothicHeliacalPolicy.arcus_visionis = 10.0`
+was "a constant with no recorded derivation" silently overriding the engine's
+own sourced model, and implied the Sothic path should adopt the 7.5 degrees
+that `_default_arcus_for_star` returns for Sirius.
 
-`moira/sothic.py` does not use it. `SothicHeliacalPolicy.arcus_visionis`
-is **10.0**, a constant with no recorded derivation, and it is passed through
-on every call. The two differ by 2.5 degrees.
+That was backwards. The 10.0 is the domain-sourced value and 7.5 is the
+generic one. Adopting 7.5 would have degraded the product.
+
+`tests/artifacts/oracle/sothic_reference_matrix.json` records the source:
+
+> Gautschy, R. (2011), "Der Stern Sirius im Alten Aegypten", ZAeS,
+> doi:10.1524/zaes.2011.0010 — "mean arcus visionis about 10 degrees,
+> plausibly 9 to 11 degrees depending on transparency; a known site still
+> gives approximately twelve years of chronological resolution."
+
+That is Egyptological work on Sirius specifically. By contrast
+`heliacal._arcus_visionis` is a generic magnitude-stepped table: any star
+between magnitude -2 and -1 gets 7.5 degrees, with corrections only for
+observer acuity and extinction. It is not Egypt-specific and was never
+intended to be.
+
+The engine is also externally validated at this value. `tests/oracle/
+test_sothic_oracle.py::test_sothic_civil_day_matches_published_imcce_sirius_model`
+replays five IMCCE / Observatoire de Paris cases from the published Bretagnon
+inverse-series calculator — arcus 9, 10 and 11 at Memphis, plus Alexandria and
+Elephantine at arcus 10 — and the engine reproduces the published civil day in
+each. IMCCE's own published domain admits arcus visionis from 6 to 12 degrees,
+which is the field treating it as a parameter rather than a constant.
+
+**So the real defect is narrow.** The value is right and sourced; the citation
+simply does not appear where a caller meets it. `sothic.py` should carry the
+Gautschy reference and the 9-to-11 band in its policy and docstring. It should
+not change the number.
+
+This also weakens the circularity concern recorded further down. Gautschy
+sources about 10 degrees from Egyptological evidence independent of the
+Censorinus statement, so the anchor landing within a day of 1 Thoth at that
+value is corroboration rather than a value tuned to produce it. The warning
+against tuning arcus to make the anchor land still stands as a rule; it is no
+longer a description of what this code does.
+
+## The measurement that remains valid
+
+The rising date moves about one day per degree of arcus visionis, which the
+IMCCE cases independently confirm: 0139-07-18, 07-19 and 07-21 Julian at
+arcus 9, 10 and 11. Gautschy's 9-to-11 band therefore carries roughly three
+days of spread, and her stated "approximately twelve years of chronological
+resolution" at a known site matches the window behaviour measured here.
 
 The rising date moves about one day per degree of arcus visionis. Measured at
 Memphis (29.8, 31.3), AD 139:
