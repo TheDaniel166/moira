@@ -1,22 +1,22 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
-  "baseline_date": "2026-11-09",
-  "source_parent_revision": "11aa7a412649647fefdb36da551114121688cb6a",
-  "engine_version": "6.13.1",
-  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
-  "canonical_entries": 1341,
+  "baseline_date": "2026-11-14",
+  "source_parent_revision": "6e1942470e28a9a84f105a759b285b29d6752991",
+  "engine_version": "6.14.0",
+  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
+  "canonical_entries": 1346,
   "minimum_partial": 219,
-  "maximum_unresolved": 1122,
+  "maximum_unresolved": 1127,
   "production_user_entries": 181,
   "maximum_production_user_unresolved": 0,
-  "reviewed_families": 160,
+  "reviewed_families": 161,
   "minimum_replayed_contracts": 69,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
   "review": {
-    "from_baseline_date": "2026-11-03",
-    "surface_change": "Eight Python exports and one REST route are added for pattern grading and default orbs; none is removed or reclassified. 38 Python and 23 REST contracts change: additive orbs and pattern_orbs parameters and applied_orbs truth on the pattern surfaces, five added house-system codes, and the published __version__ constant moving from 6.12.1 to 6.13.1. 6.13.0 was tagged but not published, and 6.13.1 differs from it only in that constant and the recorded schema renderer.",
-    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated.",
-    "admissions": "No admission or contract is changed. The two new calculation surfaces, evaluate_pattern_coherence and pattern_default_orbs, enter unresolved and form the new pattern-coherence family, so the canonical denominator moves from 1339 to 1341, the unresolved ceiling from 1120 to 1122 and reviewed families from 159 to 160.",
-    "unchanged": "minimum_partial=219, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are retained; no earlier admission or product-used surface regresses."
+    "from_baseline_date": "2026-11-09",
+    "surface_change": "Eleven Python exports and two REST routes are added; none is removed or reclassified. The Python additions are find_out_of_bounds and the eight OutOfBounds result, policy and error vessels on moira.facade, plus the SothicDriftSample and SothicDriftFit vessels re-exported there. The routes are POST /v1/out-of-bounds/search and POST /v1/sothic/drift-rate. Two further REST surfaces, POST /v1/batch/spk/states and POST /v1/batch/spk/received-light, enter the inventory for the first time in this baseline: they were added in commit 770613a before 6.13.1 and the committed inventory was stale by them, so they are recorded here and are not products of 6.14.0. Two Python API contracts change: SothicRisingSeries gains fit_drift, and the published __version__ constant moves from 6.13.1 to 6.14.0. No REST contract hash changes; the eleven REST and one hundred and three Python inventory entries that differ do so only in source_line, test_paths and documentation_paths.",
+    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated. No consumer scan was run for this release, so none of the five new canonical surfaces carries usage attribution yet and production_user_entries is unchanged at 181.",
+    "admissions": "No existing admission or contract is weakened. Five canonical surfaces are added and all five enter unresolved: find_out_of_bounds, the two new routes, and the two previously unrecorded SPK batch routes. find_out_of_bounds forms the new out-of-bounds family, so the canonical denominator moves from 1341 to 1346, the unresolved ceiling from 1122 to 1127 and reviewed families from 160 to 161. The eight OutOfBounds vessels and the two Sothic drift vessels are passive dataclasses and classify out of calculation scope, so they do not move the denominator. The out-of-bounds solver carries invariant and independent-scan evidence described in its release notes and no external-authority claim; comet topocentric places carry an ERFA comparison. Neither is asserted as conformant here, and unresolved remains the correct disposition for all five.",
+    "unchanged": "minimum_partial=219, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are retained; partial coverage is unchanged at 219 and no earlier admission or product-used surface regresses."
   }
 }

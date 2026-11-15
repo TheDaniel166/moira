@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.13.1",
+  "engine_version": "6.14.0",
   "entries": [
     {
       "assessment_status": "partial",
@@ -440,7 +440,7 @@
       "family_id": "comets",
       "family_label": "Comets",
       "ownership": {
-        "source_line": 417,
+        "source_line": 415,
         "source_path": "moira/comets.py"
       },
       "priority": "P0",
@@ -567,7 +567,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3946,
+        "source_line": 4030,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -1344,7 +1344,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3123,
+        "source_line": 3134,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -3445,7 +3445,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 781,
+        "source_line": 792,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -3470,7 +3470,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 643,
+        "source_line": 654,
         "source_path": "moira/dispatch.py"
       },
       "priority": "P2",
@@ -3974,7 +3974,7 @@
       "family_id": "comets",
       "family_label": "Comets",
       "ownership": {
-        "source_line": 361,
+        "source_line": 370,
         "source_path": "moira/comets.py"
       },
       "priority": "P0",
@@ -5153,7 +5153,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 859,
+        "source_line": 870,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -5180,7 +5180,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 889,
+        "source_line": 900,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -5330,7 +5330,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1407,
+        "source_line": 1442,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -5630,7 +5630,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1365,
+        "source_line": 1376,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -5705,7 +5705,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1456,
+        "source_line": 1467,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -5732,7 +5732,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1481,
+        "source_line": 1492,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -6609,7 +6609,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1315,
+        "source_line": 1350,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -7586,7 +7586,7 @@
       "family_id": "transits-equatorial",
       "family_label": "Transits Equatorial",
       "ownership": {
-        "source_line": 157,
+        "source_line": 193,
         "source_path": "moira/transits_equatorial.py"
       },
       "priority": "P2",
@@ -8198,6 +8198,31 @@
       "review_stage": "stage_5_remaining_tail",
       "review_state": "reviewed",
       "surface_id": "python:moira.facade:find_named_stars",
+      "surface_kind": "calculation",
+      "transport": "python"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "python owner module moira.out_of_bounds",
+      "canonical_surface_id": "python:moira.facade:find_out_of_bounds",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "source_only",
+      "family_id": "out-of-bounds",
+      "family_label": "Out Of Bounds",
+      "ownership": {
+        "source_line": 1068,
+        "source_path": "moira/out_of_bounds.py"
+      },
+      "priority": "P2",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "python:moira.facade:find_out_of_bounds",
       "surface_kind": "calculation",
       "transport": "python"
     },
@@ -8986,7 +9011,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 585,
+        "source_line": 596,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -9565,7 +9590,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2939,
+        "source_line": 2950,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -10094,7 +10119,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3878,
+        "source_line": 3962,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -11019,7 +11044,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 689,
+        "source_line": 700,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -11046,7 +11071,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 723,
+        "source_line": 734,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -11071,7 +11096,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 602,
+        "source_line": 613,
         "source_path": "moira/dispatch.py"
       },
       "priority": "P2",
@@ -12275,7 +12300,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3158,
+        "source_line": 3169,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -12302,7 +12327,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3198,
+        "source_line": 3209,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -13902,7 +13927,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4201,
+        "source_line": 4285,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15652,7 +15677,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 2671,
+        "source_line": 2721,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15677,7 +15702,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4065,
+        "source_line": 4149,
         "source_path": "moira/planets.py"
       },
       "priority": "P0",
@@ -15704,7 +15729,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4157,
+        "source_line": 4241,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -16181,7 +16206,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1783,
+        "source_line": 1824,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -16206,7 +16231,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1756,
+        "source_line": 1797,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -17210,7 +17235,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 826,
+        "source_line": 837,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -18035,7 +18060,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1825,
+        "source_line": 1866,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18060,7 +18085,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1891,
+        "source_line": 1932,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18085,7 +18110,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1705,
+        "source_line": 1740,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18110,7 +18135,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1598,
+        "source_line": 1633,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18135,7 +18160,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1566,
+        "source_line": 1601,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -18160,7 +18185,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 1487,
+        "source_line": 1522,
         "source_path": "moira/sothic.py"
       },
       "priority": "P2",
@@ -19770,7 +19795,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2554,
+        "source_line": 2565,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -19795,7 +19820,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 1815,
+        "source_line": 1826,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -19822,7 +19847,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2364,
+        "source_line": 2375,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -19847,7 +19872,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2281,
+        "source_line": 2292,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -19874,7 +19899,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2319,
+        "source_line": 2330,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -22277,7 +22302,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 53,
+        "source_line": 65,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P0",
@@ -22304,7 +22329,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 72,
+        "source_line": 84,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P0",
@@ -22331,7 +22356,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 134,
+        "source_line": 172,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P0",
@@ -22358,7 +22383,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 154,
+        "source_line": 192,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P0",
@@ -22385,7 +22410,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 173,
+        "source_line": 211,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P1",
@@ -22410,7 +22435,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 103,
+        "source_line": 141,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P0",
@@ -22430,6 +22455,56 @@
     {
       "assessment_status": "partial",
       "assignment_basis": "primary OpenAPI tag 'batch'",
+      "canonical_surface_id": "rest:POST:/v1/batch/spk/received-light",
+      "domain_group": "predictive-and-time",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "batch",
+      "family_label": "Batch",
+      "ownership": {
+        "source_line": 108,
+        "source_path": "moira_server/routers/batch.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/batch/spk/received-light",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'batch'",
+      "canonical_surface_id": "rest:POST:/v1/batch/spk/states",
+      "domain_group": "predictive-and-time",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "batch",
+      "family_label": "Batch",
+      "ownership": {
+        "source_line": 95,
+        "source_path": "moira_server/routers/batch.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/batch/spk/states",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'batch'",
       "canonical_surface_id": "rest:POST:/v1/batch/transits",
       "domain_group": "predictive-and-time",
       "entry_role": "canonical",
@@ -22437,7 +22512,7 @@
       "family_id": "batch",
       "family_label": "Batch",
       "ownership": {
-        "source_line": 83,
+        "source_line": 121,
         "source_path": "moira_server/routers/batch.py"
       },
       "priority": "P1",
@@ -28952,6 +29027,31 @@
       "transport": "rest"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'predictive'",
+      "canonical_surface_id": "rest:POST:/v1/out-of-bounds/search",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "predictive",
+      "family_label": "Predictive",
+      "ownership": {
+        "source_line": 21,
+        "source_path": "moira_server/routers/out_of_bounds.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/out-of-bounds/search",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
       "assessment_status": "strong_exemplar",
       "assignment_basis": "primary OpenAPI tag 'pancha-pakshi'",
       "canonical_surface_id": "rest:POST:/v1/pancha-pakshi/context/astronomical-paksha",
@@ -31727,6 +31827,31 @@
     {
       "assessment_status": "partial",
       "assignment_basis": "primary OpenAPI tag 'sothic'",
+      "canonical_surface_id": "rest:POST:/v1/sothic/drift-rate",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "sothic",
+      "family_label": "Sothic",
+      "ownership": {
+        "source_line": 57,
+        "source_path": "moira_server/routers/sothic.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/sothic/drift-rate",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'sothic'",
       "canonical_surface_id": "rest:POST:/v1/sothic/egyptian-date",
       "domain_group": "specialist-and-compositional",
       "entry_role": "canonical",
@@ -31734,7 +31859,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 28,
+        "source_line": 31,
         "source_path": "moira_server/routers/sothic.py"
       },
       "priority": "P1",
@@ -31759,7 +31884,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 35,
+        "source_line": 38,
         "source_path": "moira_server/routers/sothic.py"
       },
       "priority": "P1",
@@ -31784,7 +31909,7 @@
       "family_id": "sothic",
       "family_label": "Sothic",
       "ownership": {
-        "source_line": 44,
+        "source_line": 47,
         "source_path": "moira_server/routers/sothic.py"
       },
       "priority": "P1",
@@ -34008,7 +34133,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
+  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -34052,30 +34177,30 @@
       "astronomy-and-chart-core": 132,
       "locational": 70,
       "phenomena-and-visibility": 126,
-      "predictive-and-time": 167,
+      "predictive-and-time": 169,
       "relationship": 42,
-      "specialist-and-compositional": 391,
+      "specialist-and-compositional": 394,
       "traditional-western": 132,
       "vedic-and-electional": 281
     },
     "canonical_by_exposure": {
       "production_user": 181,
-      "public_api": 371,
-      "source_only": 789
+      "public_api": 375,
+      "source_only": 790
     },
     "canonical_by_priority": {
       "P0": 181,
-      "P1": 371,
-      "P2": 789
+      "P1": 375,
+      "P2": 790
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1341,
+      "reviewed": 1346,
       "seeded": 0
     },
-    "canonical_entries": 1341,
+    "canonical_entries": 1346,
     "cross_transport_families": 55,
-    "entries_total": 1345,
-    "family_count": 160
+    "entries_total": 1350,
+    "family_count": 161
   }
 }

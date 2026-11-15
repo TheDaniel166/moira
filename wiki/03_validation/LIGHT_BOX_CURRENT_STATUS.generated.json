@@ -1,5 +1,5 @@
 {
-  "artifact_status": "exact_source_revision",
+  "artifact_status": "local_unreleased_worktree",
   "claim_dispositions": [
     {
       "claim": "Transparency is the Primary Metric of Accuracy.",
@@ -27,14 +27,14 @@
     }
   ],
   "doctrine_text_changed": false,
-  "engine_version": "6.13.1",
-  "evidence_source_revision": "6bff307cacf6c735951cbba154705741474dc596",
+  "engine_version": "6.14.0",
+  "evidence_source_revision": "6e1942470e28a9a84f105a759b285b29d6752991",
   "generated_by": "scripts/generate_lightbox_public_status.py",
-  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
+  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
   "limitations": [
     "This source-tree status is not a production deployment receipt.",
     "Bounded replay contracts cover 219 calculations and do not generalize to their entire families.",
-    "All 1341 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
+    "All 1346 residual dispositions remain unresolved until the appropriate numeric, invariant, doctrine/source, regression/parity, or not-applicable receipt is admitted."
   ],
   "links": {
     "assurance_matrix": "wiki/03_validation/LIGHT_BOX_ASSURANCE_MATRIX.generated.json",
@@ -43,15 +43,15 @@
     "manifest": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json",
     "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
   },
-  "publication_disposition": "exact_release_status",
+  "publication_disposition": "local_unreleased_status",
   "schema_version": "moira.lightbox-current-status/v2",
   "summary": {
-    "canonical_calculations": 1341,
+    "canonical_calculations": 1346,
     "conformant": 0,
     "family_dispositions": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 142,
+      "partial": 143,
       "strong_exemplar": 4,
       "unresolved": 0
     },
@@ -65,12 +65,12 @@
     },
     "production_user_calculations": 181,
     "replayed_contracts": 69,
-    "replayed_contracts_passed_exact_source": 69,
-    "replayed_contracts_passed_local": 0,
-    "reviewed_families": 160,
+    "replayed_contracts_passed_exact_source": 0,
+    "replayed_contracts_passed_local": 69,
+    "reviewed_families": 161,
     "surfaces_with_replay_contracts": 219,
-    "surfaces_without_replay_contracts": 1122,
-    "unresolved": 1122
+    "surfaces_without_replay_contracts": 1127,
+    "unresolved": 1127
   },
   "universal_current_conformance_supported": false
 }

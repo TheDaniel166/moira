@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.13.1",
+  "engine_version": "6.14.0",
   "families": [
     {
       "assessment_status": "partial",
@@ -446,8 +446,10 @@
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/ASTEROID_FAMILIES_BACKEND_STANDARD.md",
         "wiki/02_standards/TRANSITS_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
         "wiki/03_release/RELEASE_NOTES_6.0.1.md",
         "wiki/03_release/RELEASE_NOTES_6.1.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.1.md",
         "wiki/03_release/RELEASE_NOTES_6.4.1.md",
         "wiki/03_validation/PARTIAL_CLOSURE_ROADMAP.md",
@@ -489,6 +491,7 @@
         "tests/integration/test_custom_type13_toutatis_kernel.py",
         "tests/integration/test_horizons_accuracy.py",
         "tests/integration/test_horizons_asteroid_apparent.py",
+        "tests/integration/test_out_of_bounds_de441.py",
         "tests/integration/test_small_body_native_reader_killer.py",
         "tests/integration/test_sovereign_small_body_manifest_routing.py",
         "tests/integration/test_wheel_asteroid_catalog_positions.py",
@@ -728,13 +731,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 15,
+      "canonical_surface_count": 17,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 6,
-        "unresolved": 9
+        "unresolved": 11
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -770,7 +773,7 @@
         "rest:POST:/v1/batch/returns"
       ],
       "python_surface_count": 8,
-      "rest_surface_count": 7,
+      "rest_surface_count": 9,
       "review_stages": [
         "stage_3_product_use",
         "stage_5_remaining_tail"
@@ -780,6 +783,7 @@
         "tests/server/test_server_adversarial_routes.py",
         "tests/server/test_server_batch_routes.py",
         "tests/server/test_server_natal_aspect_routes.py",
+        "tests/server/test_server_spk_batch_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_aspect_consumer_contracts.py",
         "tests/unit/test_batch.py"
@@ -1013,13 +1017,16 @@
         "unresolved": 1
       },
       "documentation_leads": [
+        "CHANGELOG.md",
         "docs/architecture/MOIRA_NATIVE_MIGRATION_TRACKER.md",
         "docs/architecture/MOIRA_NATIVE_TYPE13_EVALUATION_COMPLETION_PLAN.md",
         "docs/architecture/MOIRA_SERVER_PHASE11_LEDGER.md",
         "docs/architecture/P11-05_COMETS_TRANSPORT_DESIGN.md",
         "docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md",
         "wiki/02_services/REST_API_REFERENCE.md",
-        "wiki/02_standards/API_REFERENCE.md"
+        "wiki/02_standards/API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.0.md"
       ],
       "domain_group": "specialist-and-compositional",
       "family_id": "comets",
@@ -1116,6 +1123,7 @@
         "tests/integration/test_eclipse_lunar_contacts_nasa_reference.py",
         "tests/integration/test_horizons_planet_apparent.py",
         "tests/integration/test_occultation_polar_topology_horizons_reference.py",
+        "tests/integration/test_out_of_bounds_de441.py",
         "tests/integration/test_r2b_truth_evidence.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/server/test_server_astrocartography_routes.py",
@@ -3478,6 +3486,7 @@
         "tests/integration/test_astrometric_corrections_external.py",
         "tests/integration/test_bulletin_a_044_c2t_erfa.py",
         "tests/integration/test_classical_perfection_de441.py",
+        "tests/integration/test_comet_topocentric.py",
         "tests/integration/test_custom_type13_toutatis_kernel.py",
         "tests/integration/test_delta_t_ancient_month_continuity.py",
         "tests/integration/test_delta_t_hybrid.py",
@@ -3512,6 +3521,7 @@
         "tests/integration/test_occultation_target_classes.py",
         "tests/integration/test_oracle_hostile_semantic_audit.py",
         "tests/integration/test_oracle_hostile_semantic_audit_wave2.py",
+        "tests/integration/test_out_of_bounds_de441.py",
         "tests/integration/test_physical_visibility_phase7_broad_oracle.py",
         "tests/integration/test_polar_motion_erfa.py",
         "tests/integration/test_progressions_external_reference.py",
@@ -3562,6 +3572,7 @@
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
+        "tests/server/test_server_sothic_routes.py",
         "tests/server/test_server_stars_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
         "tests/server/test_server_transit_routes.py",
@@ -5012,11 +5023,13 @@
         "wiki/03_release/RELEASE_NOTES_4.1.0.md",
         "wiki/03_release/RELEASE_NOTES_5.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.12.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.2.md",
         "wiki/03_release/RELEASE_NOTES_6.8.2.md",
         "wiki/03_release/RELEASE_NOTES_6.9.0.md",
         "wiki/03_standards/VALIDATION_CASE_STELLAR_HELIACAL_RISING.md",
         "wiki/03_standards/VALIDATION_CASE_VENUS_STAR.md",
+        "wiki/03_validation/APPARENT_CHART_BENCHMARK_2026-11-10.md",
         "wiki/03_validation/GOCHARA_DATE_DERIVED_VALIDATION_2026-10-06.md",
         "wiki/03_validation/GOCHARA_WINDOWS_VALIDATION_2026-10-11.md",
         "wiki/03_validation/MARRIAGE_ELECTION_PERFORMANCE_2026-10-10.md",
@@ -5081,6 +5094,7 @@
         "tests/integration/test_houses_polar_external_reference.py",
         "tests/integration/test_mean_node_frame_consistency.py",
         "tests/integration/test_oracle_hostile_semantic_audit.py",
+        "tests/integration/test_out_of_bounds_de441.py",
         "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_true_lilith_speed.py",
         "tests/integration/test_true_node_frame_consistency.py",
@@ -5274,6 +5288,44 @@
         "tests/unit/test_orbital_elements.py",
         "tests/unit/test_orbital_errors.py",
         "tests/unit/test_planetary_nodes_orbital_core.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 1,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 1
+      },
+      "documentation_leads": [
+        "wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/07_audit/FEATURE_AUDIT_2026.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "out-of-bounds",
+      "family_label": "Out Of Bounds",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira/out_of_bounds.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 1,
+      "rest_surface_count": 0,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/integration/test_out_of_bounds_de441.py",
+        "tests/unit/test_aspects.py",
+        "tests/unit/test_out_of_bounds.py"
       ]
     },
     {
@@ -6182,13 +6234,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 9,
+      "canonical_surface_count": 10,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 9,
-        "unresolved": 0
+        "unresolved": 1
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -6196,8 +6248,10 @@
         "docs/architecture/TRACK_A_BOUNDED_CLOSURE_2026-08.md",
         "docs/superpowers/plans/2026-09-02-natal-grid-series-provider.md",
         "wiki/02_services/REST_API_REFERENCE.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.4.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.4.1.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.0.md",
         "wiki/03_release/RELEASE_NOTES_6.2.0.md",
         "wiki/03_release/RELEASE_NOTES_6.4.0.md",
         "wiki/03_release/RELEASE_NOTES_6.4.1.md"
@@ -6210,6 +6264,7 @@
       "missing_test_surface_ids": [],
       "ownership_sources": [
         "moira_server/routers/forecasting.py",
+        "moira_server/routers/out_of_bounds.py",
         "moira_server/routers/returns.py",
         "moira_server/routers/transits.py"
       ],
@@ -6226,9 +6281,10 @@
         "rest:POST:/v1/transits/search"
       ],
       "python_surface_count": 0,
-      "rest_surface_count": 9,
+      "rest_surface_count": 10,
       "review_stages": [
-        "stage_3_product_use"
+        "stage_3_product_use",
+        "stage_5_remaining_tail"
       ],
       "review_state": "reviewed",
       "test_leads": [
@@ -6236,6 +6292,7 @@
         "tests/server/test_server_forecasting_routes.py",
         "tests/server/test_server_heliacal_eclipse_phase_routes.py",
         "tests/server/test_server_natal_aspect_routes.py",
+        "tests/server/test_server_out_of_bounds_routes.py",
         "tests/server/test_server_transit_routes.py"
       ]
     },
@@ -7139,13 +7196,13 @@
     },
     {
       "assessment_status": "partial",
-      "canonical_surface_count": 13,
+      "canonical_surface_count": 14,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 0,
-        "unresolved": 13
+        "unresolved": 14
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -7155,6 +7212,8 @@
         "wiki/02_services/REST_API_REFERENCE.md",
         "wiki/02_standards/API_REFERENCE.md",
         "wiki/02_standards/SOTHIC_BACKEND_STANDARD.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.14.0.md",
         "wiki/06_roadmap/MOIRA_ROADMAP.md"
       ],
       "domain_group": "specialist-and-compositional",
@@ -7170,7 +7229,7 @@
       "production_user_surface_count": 0,
       "production_user_surface_ids": [],
       "python_surface_count": 10,
-      "rest_surface_count": 3,
+      "rest_surface_count": 4,
       "review_stages": [
         "stage_5_remaining_tail"
       ],
@@ -7649,6 +7708,7 @@
         "unresolved": 1
       },
       "documentation_leads": [
+        "wiki/03_release/COMPATIBILITY_NOTES_6.14.0.md",
         "wiki/07_audit/FEATURE_AUDIT_2026.md"
       ],
       "domain_group": "specialist-and-compositional",
@@ -8715,7 +8775,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "cf29ca9cc0badf097baa8c5628dd868f81e2222dd7855a29a86d83d319b6a218",
+  "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8727,30 +8787,30 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
-    "canonical_surface_count": 1341,
+    "canonical_surface_count": 1346,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 46,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 137
+      "stage_5_remaining_tail": 139
     },
     "families_by_status": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 142,
+      "partial": 143,
       "strong_exemplar": 4,
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
     "families_with_missing_tests": 6,
-    "family_count": 160,
+    "family_count": 161,
     "production_user_surface_count": 181,
-    "reviewed_families": 160,
+    "reviewed_families": 161,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
       "partial": 219,
-      "unresolved": 1122
+      "unresolved": 1127
     }
   }
 }
