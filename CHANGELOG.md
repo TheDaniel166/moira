@@ -7,7 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.14.1] - 2026-11-15
+
+First published release of the 6.14 line. It carries every 6.14.0 change
+below. 6.14.0 was tagged but its publication workflow failed before any
+distribution was built, so upgrades from 6.13.1 receive the whole 6.14.0
+feature set here.
+
+### Fixed
+- macOS arm64 wheels failed to import. The AVX2 interpolation kernel is
+  compiled only on x86, but its four dispatch call sites were guarded by a
+  runtime CPU check alone, so a non-x86 build still emitted references to
+  symbols it never compiled and `dlopen` failed on the finished wheel. They
+  are now guarded by `MOIRA_NATIVE_AVX2_COMPILED`, the same condition CMake
+  uses to compile the implementations. x86 behaviour is unchanged.
+- `sothic_drift_rate` documented a drift of "~0.242 days/year", the
+  tropical-year excess. Sirius's heliacal rising recurs near the Julian year,
+  so the rate is about 0.25, which is what this module's own
+  `533265 / 1460 = 365.25` cycle identity already assumed. Measured 0.2491 to
+  0.2509 d/yr against DE441.
+
+### Changed
+- `sothic_epochs` documented its result as "one per epoch found". It is one
+  per *year* within tolerance, and consecutive years are a single realignment
+  window whose width is `2 * tolerance / 0.25` by construction.
+- `predict_sothic_epoch` now states how far its fixed 1460-year projection
+  sits from the realignment the engine computes: 2 years at one cycle back
+  from AD 139 and 5 at two, widening by about 3 years per cycle.
+- `SothicHeliacalPolicy` carries the Egyptological source for its 10 degree
+  arcus visionis, Gautschy (2011), together with the plausible 9 to 11 band
+  and the day-per-degree sensitivity.
+- `moira.facade` re-exports `SothicDriftSample` and `SothicDriftFit`, so a
+  facade caller can name the type `SothicRisingSeries.fit_drift()` returns.
+
+### Validation
+- The AVX2 fix is verified by compiling a translation unit that calls all four
+  dispatch wrappers and dumping its undefined symbols: 4 before the fix with
+  the macro undefined, 0 after, and 4 still resolved by linking on x86.
+- The Sothic drift rate is now anchored against real risings at two epochs
+  three thousand years apart, replacing a synthetic test that took its
+  expected value from the docstring it was meant to check.
+
 ## [6.14.0] - 2026-11-14
+
+Tagged but never published. Its changes ship in 6.14.1.
 
 ### Added
 - Out-of-bounds declination solver (`moira.out_of_bounds`), with

@@ -318,6 +318,27 @@
   ],
   "release_summaries": [
     {
+      "version": "6.14.1",
+      "date": "2026-11-15",
+      "title": "First Published Release Of The 6.14 Line",
+      "added": [],
+      "changed": [
+        "Carries every 6.14.0 change, because 6.14.0 was tagged but its publication workflow failed while building wheels and nothing was uploaded.",
+        "Sothic documentation now states what the code does: the drift rate is about 0.25 days per year rather than the 0.242 previously documented, sothic_epochs returns one entry per year within tolerance rather than one per realignment, the schematic epoch projection states how far it sits from the computed window, and the 10 degree arcus visionis carries its Egyptological source. No computed value changes.",
+        "moira.facade re-exports SothicDriftSample and SothicDriftFit."
+      ],
+      "fixed": [
+        "macOS arm64 wheels built successfully and then failed to import, because the AVX2 interpolation kernel is compiled only on x86 while its four dispatch sites were guarded by a runtime CPU check alone, leaving undefined symbols that dlopen rejected. The call sites now carry the same compile-time flag that builds the implementations; x86 behaviour is unchanged."
+      ],
+      "validation": [
+        "The AVX2 guard is verified at symbol level: a translation unit calling all four dispatch wrappers shows four undefined AVX2 symbols before the fix with the macro undefined, zero after, and four still resolved by linking on x86.",
+        "The Sothic drift rate is anchored against real risings at two epochs three thousand years apart, replacing a synthetic test that took its expected value from the docstring it was meant to check.",
+        "The epoch window width and the schematic projection gap are pinned by test."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.14.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.14.1.md"
+    },
+    {
       "version": "6.14.0",
       "date": "2026-11-14",
       "title": "Out-Of-Bounds Declination, Comet Topocentric Places And Sothic Drift",
