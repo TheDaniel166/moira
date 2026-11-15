@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for calendar unwrapping, and an exact half-year step keeping its sign.
 
 ### Fixed
+- macOS arm64 wheels failed to import. The AVX2 interpolation kernel is
+  compiled only on x86, but its four dispatch call sites were guarded by a
+  runtime CPU check alone, so a non-x86 build still emitted references to
+  symbols it never compiled. They are now guarded by
+  `MOIRA_NATIVE_AVX2_COMPILED`, the same condition CMake uses to compile the
+  implementations, so a build can no longer reference a kernel it did not
+  build. Behaviour on x86 is unchanged.
 - Comet topocentric apparent places. `sky_position_at()` built a geocentric
   apparent vector for a comet and then shifted it, so the observer's own
   position was ignored: no parallax, and diurnal aberration applied about the

@@ -135,6 +135,7 @@ inline void spk_chebyshev_record_avx2(
     size_t component_stride = 1
 ) {
     if (coefficient_count == 0) return;
+#if defined(MOIRA_NATIVE_AVX2_COMPILED)
     if (
         component_count == 3
         && runtime_avx2_available()
@@ -144,6 +145,7 @@ inline void spk_chebyshev_record_avx2(
         );
         return;
     }
+#endif
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
         __m256d s2 = _mm256_set1_pd(2.0 * s);
@@ -186,6 +188,7 @@ inline void spk_chebyshev_record_avx2_reverse(
     size_t component_stride = 1
 ) {
     if (coefficient_count == 0) return;
+#if defined(MOIRA_NATIVE_AVX2_COMPILED)
     if (
         component_count == 3
         && runtime_avx2_available()
@@ -195,6 +198,7 @@ inline void spk_chebyshev_record_avx2_reverse(
         );
         return;
     }
+#endif
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
         __m256d s2 = _mm256_set1_pd(2.0 * s);
@@ -238,6 +242,7 @@ inline void spk_chebyshev_record_with_derivative_inplace(
 ) {
     if (coefficient_count == 0) return;
 
+#if defined(MOIRA_NATIVE_AVX2_COMPILED)
     if (
         component_count == 3
         && runtime_avx2_available()
@@ -248,6 +253,7 @@ inline void spk_chebyshev_record_with_derivative_inplace(
         );
         return;
     }
+#endif
 
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
@@ -316,6 +322,7 @@ inline void spk_chebyshev_record_with_derivative_inplace_reverse(
 ) {
     if (coefficient_count == 0) return;
 
+#if defined(MOIRA_NATIVE_AVX2_COMPILED)
     if (
         component_count == 3
         && runtime_avx2_available()
@@ -326,6 +333,7 @@ inline void spk_chebyshev_record_with_derivative_inplace_reverse(
         );
         return;
     }
+#endif
 
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
