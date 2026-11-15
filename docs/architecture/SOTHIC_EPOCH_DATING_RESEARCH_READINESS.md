@@ -132,10 +132,49 @@ desert conditions at a July pre-dawn horizon, so wiring the stack in without
 site-appropriate parameters would exchange one undeclared assumption for
 another.
 
-To close: route the Sothic heliacal search through the physical visibility
-model with explicitly declared site conditions, and carry the extinction
-coefficient and limiting magnitude on the result so a reader can see what was
-assumed.
+**Desert conditions are a data-resource question, not a parameter question.**
+This is the practical finding, and it is easy to get wrong.
+
+The physical path does not take ad-hoc temperature and humidity. Its inputs are
+the axes of a precomputed data pack, `VisibilityDataPackDomain`:
+`atmosphere_profile`, `aerosol_profile`, `observer_altitude_m`,
+`surface_pressure_hpa`, `aod550`, `angstrom_exponent`, `ozone_du`,
+`ground_albedo`, and the viewing geometry. Egyptian desert conditions are
+expressed there — as aerosol optical depth, Angstrom exponent and the high
+ground albedo of sand — not as the `temperature_c` and `relative_humidity`
+fields on the legacy vessel.
+
+Three consequences:
+
+- Interpolation is `trilinear` and extrapolation is `prohibited` on every
+  axis. A desert value outside the installed pack's grid is not evaluable;
+  it is a typed domain error, by design.
+- The pack is an **external resource**, `moira-physical-heliacal-visibility`
+  1.2.0, CC BY-SA 4.0, built from libRadtran, REPTRAN and CIE source tables.
+  The distribution ships only the engine, the compatibility contracts and a
+  notice. There is no automatic downloader, and no pack is installed in this
+  checkout.
+- Rebuilding a pack for a domain the published one does not cover means
+  running `scripts/build_visibility_data_pack.py` against libRadtran, which is
+  its own provenance exercise.
+
+Two facts in this path's favour, both checked:
+
+- The pack's domain is atmosphere and geometry only. It carries no date axis,
+  so ancient epochs are **not** out of domain by virtue of being ancient. The
+  domain risk is entirely about atmospheric parameter coverage.
+- `Sirius` is already the stellar target profile the pack supports, and the
+  result vessel carries `derived_arcus_deg` rather than accepting a constant,
+  plus `visibility_margin_bracket_jd_ut` and an
+  `atmospheric_scenario_event_interval_jd_ut` on the sensitivity receipt —
+  that is G3's band, already built, merely not reached from Sothic.
+
+To close: install the published pack and read its actual domain before
+choosing any desert values. If Egyptian aerosol and albedo lie inside it,
+route the Sothic search through `physical_visibility_event` with a declared
+site profile and carry the receipts onto the Sothic result. If they lie
+outside, the honest options are to rebuild the pack or to state the Sothic
+product as restricted to the published domain.
 
 Evidence class required: **authority validation** against the named canon,
 plus **invariant** checks that the physical path reduces to the geometric one
