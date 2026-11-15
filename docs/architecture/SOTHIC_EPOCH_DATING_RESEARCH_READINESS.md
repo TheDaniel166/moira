@@ -1,0 +1,217 @@
+# Sothic epoch dating — research readiness
+
+**Status:** assessment, not a plan of record. No work here is scheduled.
+**Date:** 2026-11-15
+**Scope:** `moira/sothic.py` and the heliacal path it delegates to.
+**Question:** is the Sothic surface usable for research?
+
+## Verdict
+
+Two different uses, two different answers.
+
+**Drift-rate and cycle-structure work: yes.** The fitted rate moves only
+0.2491 to 0.2509 d/yr across arcus visionis 9 to 11 degrees, is stable across
+2,900 years, and the epoch window size is exactly `2 * tolerance / 0.25` at
+every tolerance tested. The astronomy underneath is DE441 with independent
+Astropy/ERFA corroboration at two sites and two epochs.
+
+**Epoch dating: not yet.** One parameter that the Sothic path sets by hand
+decides whether the anchor year of the whole scheme registers as an epoch, and
+whether a computed window sits where it sits.
+
+## The decisive measurement
+
+`moira/stars.py::_default_arcus_for_star` derives arcus visionis from the
+star's catalogue magnitude under the visibility model whose canon
+`moira/heliacal.py` already names: Schaefer, B.E. (1990), PASP 102, 212-229,
+in the Ptolemy/Schoch tradition. For Sirius at magnitude -1.46 it returns
+**7.5 degrees**.
+
+`moira/sothic.py` does not use it. `SothicHeliacalPolicy.arcus_visionis`
+is **10.0**, a constant with no recorded derivation, and it is passed through
+on every call. The two differ by 2.5 degrees.
+
+The rising date moves about one day per degree of arcus visionis. Measured at
+Memphis (29.8, 31.3), AD 139:
+
+| arcus visionis | rising date | drift from 1 Thoth |
+|---|---|---|
+| 7.5 deg — engine's own sourced model | 16 Jul | **-2.90 d** |
+| 8 deg | 16 Jul | -2.90 d |
+| 10 deg — Sothic hardcoded default | 18 Jul | **-0.91 d** |
+| 11 deg | 20 Jul | +1.09 d |
+| 14 deg | 23 Jul | +4.08 d |
+
+Two consequences, both load-bearing:
+
+**The Censorinus anchor registers as an epoch under one model and not the
+other.** At 10 degrees AD 139 sits 0.91 days from alignment and is inside a
+one-day tolerance. At the engine's own 7.5 degrees it sits 2.90 days out and
+is not an epoch at all.
+
+**The computed window moves by twelve years.** One cycle before AD 139, with a
+one-day tolerance:
+
+```
+arcus 10.0  ->  -1319 .. -1312
+arcus  7.5  ->  -1307 .. -1300
+```
+
+Twelve years of Egyptian chronology turn on a constant that contradicts the
+engine's own sourced derivation, with nothing recording why.
+
+This is the condition `AGENTS.md` Part IV calls a hidden default replacing
+declared policy. It is not a numerical error — both numbers are computed
+correctly from their inputs — and it is not a reason to prefer 7.5 over 10.
+It is a reason not to publish an epoch date from either until the choice is
+made deliberately and recorded.
+
+## Gaps, with evidence
+
+### G1 — arcus visionis is chosen, not derived, and dominates the result
+
+Evidence: above. `SothicHeliacalPolicy.arcus_visionis = 10.0` against
+`_default_arcus_for_star("Sirius") = 7.5`.
+
+To close: record which model governs the Sothic product and why, in the
+policy rather than in prose. If the Ptolemy/Schoch tradition governs because
+the research question is about ancient observers, say so and cite it; if the
+Schaefer magnitude relation governs, use it. Either is defensible. The current
+state — a constant that silently overrides a sourced model — is not.
+
+Evidence class required: **doctrine source**. This is a question about which
+authority governs the product, not about numerical agreement.
+
+### G2 — the visibility model is geometric, and the physical stack is unwired
+
+`heliacal_rising_event` gates on solar depression and star altitude.
+`HeliacalEvent` carries `arcus_visionis`, `elongation_threshold`,
+`qualifying_elongation`, `qualifying_sun_altitude` and `event_jd_ut`. There is
+no extinction, airmass, sky brightness or limiting magnitude in the result.
+
+`moira/heliacal.py` already implements all of it — `atmospheric_extinction`,
+`relative_optical_airmass`, `directional_twilight_sky_brightness`,
+`visual_limiting_magnitude`, Krisciunas & Schaefer 1991 — and the Sothic path
+never calls it. The physics exists in the repository and is not reached.
+
+Note also that `VisibilityModel()` defaults to 10 C, 1013.25 mbar, 50 percent
+relative humidity and extinction coefficient 0.25. Those are not Egyptian
+desert conditions at a July pre-dawn horizon, so wiring the stack in without
+site-appropriate parameters would exchange one undeclared assumption for
+another.
+
+To close: route the Sothic heliacal search through the physical visibility
+model with explicitly declared site conditions, and carry the extinction
+coefficient and limiting magnitude on the result so a reader can see what was
+assumed.
+
+Evidence class required: **authority validation** against the named canon,
+plus **invariant** checks that the physical path reduces to the geometric one
+under matched assumptions.
+
+### G3 — no uncertainty is carried on a rising date
+
+`SothicEntry` exposes a single `jd_rising`. Research needs "day X plus or
+minus N", and N is not derivable from the result.
+
+The sensitivity is already measurable and large: about one day per degree of
+arcus visionis, and 0.0017 d/yr of drift rate per 0.05 degrees of site
+latitude — the latter being larger than the rate's variation across three
+thousand years.
+
+To close: propagate the declared parameter ranges into a band on the rising
+date, and report it. A single JD with no band invites false precision, which
+this subsystem has already demonstrated once: see
+`moira/sothic.py::sothic_drift_rate`, whose docstring asserted a rate that was
+never measured.
+
+Evidence class required: **invariant** — the band must contain the result
+under the stated parameter sweep.
+
+### G4 — delta-T is a point value at epochs where its uncertainty rivals the signal
+
+Measured: 0.106 day at AD 139, 0.371 day at -1321, 0.414 day at -2790.
+`DeltaTTruth` carries `seconds`, `source_product`, `retarget_mode` and
+`tidal_terms` — no uncertainty band.
+
+At the third millennium BC the uncertainty in delta-T is itself of order the
+quantity being measured, so an epoch date there is less determinate than its
+single-value presentation suggests.
+
+To close: expose the delta-T uncertainty admitted by the chosen source product
+and fold it into the G3 band.
+
+Evidence class required: **authority validation** against the delta-T source
+product's own stated uncertainty.
+
+## The circularity to avoid
+
+The obvious move is to choose arcus visionis so that AD 139 lands on 1 Thoth,
+since Censorinus says it did. That would make the anchor confirm itself, and
+every epoch derived from it would inherit the assumption as though it were a
+result.
+
+This subsystem has already produced one instance of exactly this pattern at
+smaller scale. Until 2026-11-15 the only numeric test of the drift rate built
+a synthetic series stepping by the value the docstring asserted and then
+asserted the fit returned that value, so the stated rate could not fail. It
+was wrong by 3.7 percent for as long as it stood.
+
+Arcus visionis must therefore be fixed from the visibility model and the
+research question, and the anchor's agreement or disagreement reported as an
+outcome. If the chosen model puts AD 139 three days from 1 Thoth, that is a
+finding about the model, the site, or the tradition — not a defect to tune
+away.
+
+## What is already sound, and should not be redone
+
+- Heliacal risings against DE441, with independent Astropy/ERFA corroboration
+  at Memphis and Alexandria for AD 139 and -1321.
+- The drift rate, now anchored against real risings at two epochs three
+  thousand years apart and documented as a range rather than a false constant.
+- Epoch window semantics: the window size is `2 * tolerance / 0.25` by
+  construction, verified at three tolerances, and the result documents that
+  consecutive years are one realignment.
+- The schematic projection is labelled `SCHEMATIC_1460_JULIAN_YEAR`, the
+  oracle matrix calls the cycle an arithmetic identity rather than
+  observational confirmation, and the divergence from the computed window is
+  now stated and pinned by test.
+
+The honesty layer is in place. It is the physical layer that is thin.
+
+## Standing status
+
+All twelve Sothic canonical surfaces are classified `unresolved` in
+`wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json`. Engine-wide
+the count is 0 conformant, 219 partial, 1127 unresolved, so this is not a
+Sothic-specific deficit — but nothing here claims conformance, and this
+document does not either.
+
+## Reproduction
+
+With the project `.venv` and a discovered DE441 kernel:
+
+```python
+from moira import Moira
+from moira.spk_reader import use_reader_override
+from moira.sothic import sothic_rising, sothic_epochs
+from moira.stars import _default_arcus_for_star
+
+m = Moira()
+print(_default_arcus_for_star("Sirius"))          # 7.5
+with use_reader_override(m._reader):
+    for av in (7.5, 10.0):
+        e = sothic_rising(29.8, 31.3, 139, 139, arcus_visionis=av)[0]
+        w = sothic_epochs(29.8, 31.3, -1335, -1300,
+                          tolerance_days=1.0, arcus_visionis=av)
+        print(av, e.drift_days, sorted(x.year for x in w))
+```
+
+## What this document does not claim
+
+- It does not say 7.5 degrees is correct and 10.0 wrong, or the reverse.
+- It does not claim the engine's heliacal risings are inaccurate. No external
+  authority comparison of the rising date itself was performed here; the
+  Astropy/ERFA corroboration in the test suite is geometric.
+- It does not propose a chronology, or bear on any historical dating dispute.
+- It does not schedule work.
