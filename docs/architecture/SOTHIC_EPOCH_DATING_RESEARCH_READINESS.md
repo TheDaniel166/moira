@@ -170,7 +170,14 @@ Two facts in this path's favour, both checked:
   that is G3's band, already built, merely not reached from Sothic.
 
 To close: install the published pack and read its actual domain before
-choosing any desert values. If Egyptian aerosol and albedo lie inside it,
+choosing any desert values. It is pointed at by
+`MOIRA_PHASE3_VISIBILITY_PACK` for the golden replays and by
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY` for the server, with
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256` available to pin
+the manifest. Neither is set in any scope on the current development machine
+and no pack payload exists anywhere on it, so the physical path has most
+likely never been exercised locally; the Phase 3 goldens skip cleanly rather
+than fail, which is why nothing has surfaced it until now. If Egyptian aerosol and albedo lie inside it,
 route the Sothic search through `physical_visibility_event` with a declared
 site profile and carry the receipts onto the Sothic result. If they lie
 outside, the honest options are to rebuild the pack or to state the Sothic
