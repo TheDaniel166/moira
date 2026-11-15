@@ -22,7 +22,7 @@ from astropy.coordinates import AltAz, Distance, EarthLocation, SkyCoord, get_bo
 from astropy.time import Time
 import astropy.units as u
 
-from moira.sothic import sothic_epochs, sothic_rising
+from moira.sothic import sothic_drift_rate, sothic_epochs, sothic_rising
 
 
 # ---------------------------------------------------------------------------
@@ -408,3 +408,61 @@ def test_sothic_multi_century_stability() -> None:
         # Verify drift_days is in valid range [0, 365)
         assert 0 <= entry.drift_days < 365, \
             f"Year {year} drift_days {entry.drift_days:.2f} out of range"
+
+
+# ---------------------------------------------------------------------------
+# Drift rate: pinned against real risings, at both ends of the cycle
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+def test_sothic_drift_rate_tracks_the_julian_year_not_the_tropical_year() -> None:
+    """Pin the computed drift rate against real risings, far apart in time.
+
+    The drift is the excess of Sirius's heliacal recurrence interval over the
+    365-day civil year. That interval tracks the **Julian** year of 365.25
+    days, not the tropical year of 365.2422, which is why this module's cycle
+    identity holds exactly: 533265 / 1460 = 365.25. Reading the tropical year
+    here instead would give 0.2422 days/year and a cycle near 1508 years.
+
+    Without this test nothing could fail if the rate were wrong. The unit test
+    of the fit uses a synthetic slope, and the REST test asserts only that the
+    route reports whatever the engine computed, so both would pass unchanged.
+
+    The tolerance is 0.004 days/year about 0.25, which still excludes the
+    tropical reading by its full 0.0078 separation. It is deliberately loose
+    because the rate is a property of the heliacal visibility model, not a
+    constant: measured here it moves by 0.0017 d/yr for a 0.05 degree shift of
+    site latitude, which is more than it moves between the Roman era and the
+    Old Kingdom. A tight tolerance would pin the visibility doctrine rather
+    than the calendar arithmetic.
+    """
+    latitude, longitude, _ = EGYPTIAN_SITES["Memphis"]
+    measured = {}
+    for label, (year_start, year_end) in (
+        ("roman", (120, 160)),
+        ("old_kingdom", (-2790, -2750)),
+    ):
+        entries = sothic_rising(latitude, longitude, year_start, year_end)
+        assert len(entries) >= 20, f"{label}: too few risings to fit a rate"
+        rate = sothic_drift_rate(entries)
+        measured[label] = rate
+
+        assert rate == pytest.approx(0.25, abs=0.004), (
+            f"{label}: drift rate {rate:.6f} d/yr is not the Julian-year excess"
+        )
+        assert abs(rate - 0.2422) > 0.004, (
+            f"{label}: drift rate {rate:.6f} d/yr matches the tropical year, "
+            "which does not govern the heliacal recurrence"
+        )
+        implied_cycle_years = 365.0 / rate
+        assert 1420.0 < implied_cycle_years < 1500.0, (
+            f"{label}: implied cycle {implied_cycle_years:.1f} yr is not near "
+            "the 1460-year schematic cycle this module assumes"
+        )
+
+    # Both epochs land in the same band. They are not asserted equal: at this
+    # site they differ by about 0.0017 d/yr, which is the visibility model
+    # responding to the epoch, not the calendar arithmetic changing.
+    assert measured["roman"] == pytest.approx(measured["old_kingdom"], abs=0.004)

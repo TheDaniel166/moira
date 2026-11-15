@@ -214,14 +214,27 @@ def test_sothic_series_does_not_swallow_delegated_failures(
 
 
 def test_sothic_drift_rate_recovers_wrapped_linear_trend() -> None:
+    """Recover a known slope through a calendar wrap.
+
+    This exercises the least-squares fit and the half-year unwrapping in
+    _fit_sothic_drift, which are the non-trivial parts, so the series is
+    synthetic and starts near the wrap at 364.0 deliberately.
+
+    The slope is 0.37, chosen so it cannot be mistaken for the physical drift
+    of Sirius through the Egyptian civil calendar. The real rate is pinned
+    against actual risings in
+    tests/integration/test_sothic_extended.py::test_sothic_drift_rate_tracks_the_julian_year_not_the_tropical_year;
+    an exact tolerance like the 1e-6 below is appropriate for a synthetic
+    slope and would be false precision for an observed one.
+    """
     entries = []
     drift = 364.0
     for year in range(0, 10):
         entries.append(type("Entry", (), {"year": year, "drift_days": drift}))
-        drift = (drift + 0.242) % _EGYPTIAN_YEAR_DAYS
+        drift = (drift + 0.37) % _EGYPTIAN_YEAR_DAYS
 
     rate = sothic_drift_rate(entries)
-    assert rate == pytest.approx(0.242, abs=1e-6)
+    assert rate == pytest.approx(0.37, abs=1e-6)
 
 
 def test_phase3_inspectability_properties_are_derived_only() -> None:
