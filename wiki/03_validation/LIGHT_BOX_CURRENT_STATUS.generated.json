@@ -1,5 +1,5 @@
 {
-  "artifact_status": "local_unreleased_worktree",
+  "artifact_status": "exact_source_revision",
   "claim_dispositions": [
     {
       "claim": "Transparency is the Primary Metric of Accuracy.",
@@ -28,7 +28,7 @@
   ],
   "doctrine_text_changed": false,
   "engine_version": "6.14.0",
-  "evidence_source_revision": "6e1942470e28a9a84f105a759b285b29d6752991",
+  "evidence_source_revision": "410ce6a90404dc8129ed4883e567fadb1b3a57b8",
   "generated_by": "scripts/generate_lightbox_public_status.py",
   "inventory_fingerprint_sha256": "89a54119295f8e509c154890eafd13a224758ce945e698f445343127ff9b31c0",
   "limitations": [
@@ -43,7 +43,7 @@
     "manifest": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_MANIFEST.generated.json",
     "program": "wiki/03_validation/LIGHT_BOX_CONFORMANCE_PROGRAM.md"
   },
-  "publication_disposition": "local_unreleased_status",
+  "publication_disposition": "exact_release_status",
   "schema_version": "moira.lightbox-current-status/v2",
   "summary": {
     "canonical_calculations": 1346,
@@ -65,8 +65,8 @@
     },
     "production_user_calculations": 181,
     "replayed_contracts": 69,
-    "replayed_contracts_passed_exact_source": 0,
-    "replayed_contracts_passed_local": 69,
+    "replayed_contracts_passed_exact_source": 69,
+    "replayed_contracts_passed_local": 0,
     "reviewed_families": 161,
     "surfaces_with_replay_contracts": 219,
     "surfaces_without_replay_contracts": 1127,
