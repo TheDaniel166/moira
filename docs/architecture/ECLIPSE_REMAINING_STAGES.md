@@ -11,7 +11,7 @@ This continuation preserves the ordered research/repair specification from
 2026-11-16. Implementation, validation, source publication, package release,
 website deployment and final catalog admission are separate actions.
 
-## Current boundary: Stage 3 accepted
+## Current work: Stage 4
 
 **Continuation status:** Stage 3 is accepted within the declared direct-DE441,
 selected-model and arithmetic contract. `ECLIPSE_STAGE3_ACCEPTANCE.md` records
@@ -21,7 +21,12 @@ covers. Six source-seam regions have complete critical-set/value coverage
 without assumed join continuity. Native/canon clocks are explicit, and the
 selected serving routes are joined to their reference bounds.
 
-Stage 4 has not started. Public certificate integration remains Stage 6;
+Stage 3 is committed as `b132dbe0f6b3fffe23648d9cd270c068105e937e`.
+Stage 4 has begun with six Cartesian ellipsoid charts, uniform same-ray
+exclusion/witness bounds and a bounded fixed-snapshot surface ledger. Its
+first focused slice passes 56 tests. See `ECLIPSE_STAGE4_FOUNDATION.md` for
+the audit, derivation and explicit remaining time/topology gates. Stage 4
+as a whole is not accepted. Public certificate integration remains Stage 6;
 other ordinary/native/canon model profiles retain their existing scope.
 The first-increment record below is historical and does not override the
 final acceptance record.
@@ -101,7 +106,7 @@ $files = @(
 | Stage | Required outcome | Status |
 | --- | --- | --- |
 | 3: lunar phases and solar hybrid paths | Conservative coverage of the entire advertised TT interval for each selected lunar policy; all contact and extremum components; unresolved intervals block certified nearest-event selection. Isolate every legal solar central-axis interval and transition before assigning a complete path sequence or H2/H3. | Accepted for the declared supported domain. All three remaining gates passed; see ECLIPSE_STAGE3_ACCEPTANCE.md and the immutable complete acceptance receipt. Public integration and other model profiles retain their separate scope. |
-| 4: global occurrence and surface topology | Prove exclusion or retain uncertainty over the full time × WGS84 domain. Derive complete instantaneous cone/ellipsoid/horizon topology, including exact tangencies, multiple components and periodic charts. | Open. Existing positive witnesses and sampled candidates retain their current scope. |
+| 4: global occurrence and surface topology | Prove exclusion or retain uncertainty over the full time × WGS84 domain. Derive complete instantaneous cone/ellipsoid/horizon topology, including exact tangencies, multiple components and periodic charts. | Accepted for the declared bounded products: time/source binding, whole-domain ledger, exact cone and clipping-circle arrangements and all 1,656 corpus states pass. 240 distinct checks pass; see ECLIPSE_STAGE4_ACCEPTANCE.md. Three disputed global non-detections remain bounded unknowns, as required by the original gate; no absence or external agreement is fabricated. |
 | 5: event-wide boundaries and widths | Establish certified inner/outer enclosures of the visible footprint's spatial union. Derive time-stamped limits separately. Define the track tangent, metric, conditioning and missing-limit policy for geographic width; verify publication-specific conventions before claiming compatibility. | Open. The 92 withheld legacy widths remain withheld. |
 | 6: integration and compatibility | Immutable typed evidence, independent product status, complete budget/error metadata, consistent selectors, preserved legacy shapes, ASGI and actual transport validation, representative performance and determinism evidence. | Open. Private reference work does not silently become a public certified API. |
 | 7: final catalogs and readiness | Freeze final source/build/resources/configuration; regenerate independently discovered native solar, native lunar and NASA-compatible lunar catalogs; supply row-level diffs, provenance and individual dispositions for every dispute and changed event. | Open. Earlier catalogs remain provisional and are not final-source receipts. |

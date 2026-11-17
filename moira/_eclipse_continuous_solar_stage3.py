@@ -168,8 +168,11 @@ def _gast_reference(scope,domain,tt,dpsi,eps):
     return j.add(era,j.add(j.scale(poly,ARCSEC2RAD),equation))
 
 
-def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progress=None,jet_observer=None):
+def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progress=None,jet_observer=None,
+                                     scene_only=False):
     """Return request-local value/derivative enclosures and evaluation counters."""
+    if type(scene_only) is not bool:
+        raise TypeError('scene_only must be bool')
     vector_points = {index:{panel.midpoint:panel.point} for index,panel in enumerate(scope.panels)}
     orientation_points = {scope.orientation_midpoint:scope.orientation_point}
     stats = dict(calls=0,vector_points=len(scope.panels),orientation_points=1)
@@ -229,6 +232,12 @@ def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progr
         one = j.constant(1)
         spin = ((gc,gs,zero),(j.neg(gs),gc,zero),(zero,zero,one))
         rotation = j.matrix_product(transpose,j.matrix_product(spin,matrix))
+        if scene_only:
+            # Independent of cone/axis eligibility: valid also away from
+            # conjunction. Preserve the original Stage 3 default product.
+            from ._eclipse_solar_surface_bounds import SolarSceneBox
+            return SolarSceneBox(tuple(j.dot(row,sun)[0] for row in rotation),
+                                 tuple(j.dot(row,moon)[0] for row in rotation))
         # Q in the ray frame needs only U^T*z, the third row of U. Common
         # rotation of both rays cancels exactly from its isotropic part.
         pole = rotation[2]
