@@ -35,7 +35,8 @@ _CLOCK_SOURCE_BINDINGS = tuple(
     for name in _CLOCK_SOURCE_NAMES
 )
 _CLOCK_MATH_BINDINGS = tuple((name, getattr(math, name)) for name in
-                             ("floor", "fsum", "sin", "remainder", "isfinite", "nextafter", "ulp"))
+                             ("floor", "fsum", "sin", "remainder", "isfinite", "nextafter", "ulp", "fma")
+                             if hasattr(math, name))
 _CLOCK_HELPER_BINDINGS = tuple(
     (module, name, getattr(module, name), getattr(getattr(module, name), "__code__", None))
     for module, name in (

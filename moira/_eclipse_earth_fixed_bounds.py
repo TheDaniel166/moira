@@ -15,7 +15,8 @@ import math
 from ._eclipse_interval import IntervalBudgetError, IntervalDomainError, RationalInterval as I
 from ._eclipse_interval_roots import EnclosureUnavailable
 from ._eclipse_native_spk_bounds import _rounded
-from ._eclipse_nutation_amplitudes import bound_conditional_nutation_amplitudes
+from ._eclipse_nutation_amplitudes import (ConditionalNutationAmplitudeBounds,
+                                          bound_conditional_nutation_amplitudes)
 from ._eclipse_phase_pole import bound_fw_mean_ecliptic_pole
 from ._eclipse_polar_motion_bounds import bound_conditional_polar_motion, _trig_rounded
 from ._eclipse_sidereal_bounds import bound_conditional_sidereal_time
@@ -56,6 +57,10 @@ class ConditionalEarthFixedSolarBounds:
     eclipse_occurrence_certified: bool = False
     event_wide_path_certified: bool = False
     physical_accuracy_certified: bool = False
+    moon_xyz_itrf_km: tuple[I, I, I] | None = None
+    axis_projection_km: I | None = None
+    central_radius_km: I | None = None
+    central_cone_slope: I | None = None
 
 
 def _dot(a, b):
@@ -122,6 +127,11 @@ def bound_conditional_earth_fixed_solar_vectors(
     assume_builtin_sum_error: bool = False,
     assume_correctly_rounded_sqrt: bool = False,
     max_route_calls: int = 40, max_polar_segments: int = 512,
+    nutation_enclosure: ConditionalNutationAmplitudeBounds | None = None,
+    tight_light_time_norm: bool = False, refined_split_clock: bool = False,
+    correlated_moon: bool = False,
+    frozen_native_scope=None,
+    tight_sidereal: bool = False,
 ) -> ConditionalEarthFixedSolarBounds:
     """Enclose selected served ITRF vectors on the FW branch.
 
@@ -145,21 +155,42 @@ def bound_conditional_earth_fixed_solar_vectors(
     if not all(flags):
         raise EclipseEarthFixedBoundsUnavailable("Earth-fixed source and arithmetic premises are required")
     try:
-        vectors = bound_conditional_solar_serving_axis(
-            reader, tt_anchor_jd, tt_offset_days, max_route_calls=max_route_calls,
-            assume_builtin_sum_error=True, assume_correctly_rounded_sqrt=True,
-        )
+        if frozen_native_scope is None:
+            vectors = bound_conditional_solar_serving_axis(
+                reader, tt_anchor_jd, tt_offset_days, max_route_calls=max_route_calls,
+                assume_builtin_sum_error=True, assume_correctly_rounded_sqrt=True,
+                tight_light_time_norm=tight_light_time_norm,refined_split_clock=refined_split_clock,
+                correlated_moon=correlated_moon,
+            )
+        else:
+            from ._eclipse_frozen_native_vectors import bound_frozen_native_vectors
+            from ._eclipse_solar_serving import (bound_solar_shadow_axis_from_vectors,
+                                                ConditionalSolarServingAxisBounds)
+            if frozen_native_scope.model.tt_anchor_jd!=tt_anchor_jd:
+                raise ValueError('frozen native TT anchor mismatch')
+            rays = bound_frozen_native_vectors(frozen_native_scope,tt_offset_days)
+            axis = bound_solar_shadow_axis_from_vectors(rays.sun_retarded_km,rays.moon_retarded_km,
+                assume_builtin_sum_error=True,assume_correctly_rounded_sqrt=True)
+            vectors = ConditionalSolarServingAxisBounds(rays,axis)
         if vectors.axis.status != "forward":
             raise EclipseEarthFixedBoundsUnavailable("no finite forward solar shadow axis")
         precession = bound_fw_mean_ecliptic_pole(tt_anchor_jd, tt_offset_days)
-        nutation = bound_conditional_nutation_amplitudes(
-            tt_anchor_jd, tt_offset_days, assume_ieee_arithmetic=True,
-            assume_finite_unit_trig=True, assume_registered_tables_and_caches_match=True,
-        )
+        if nutation_enclosure is None:
+            nutation = bound_conditional_nutation_amplitudes(
+                tt_anchor_jd, tt_offset_days, assume_ieee_arithmetic=True,
+                assume_finite_unit_trig=True, assume_registered_tables_and_caches_match=True,
+            )
+        else:
+            if (not isinstance(nutation_enclosure,ConditionalNutationAmplitudeBounds)
+                    or nutation_enclosure.tt_anchor_jd!=tt_anchor_jd
+                    or nutation_enclosure.tt_offset_days!=tt_offset_days):
+                raise TypeError('nutation enclosure must retain the exact requested TT input')
+            nutation = nutation_enclosure
         sidereal = bound_conditional_sidereal_time(
             ut1_anchor_jd, ut1_offset_days, tt_anchor_jd, tt_offset_days,
             nutation.longitude_degrees, assume_ieee_arithmetic=True,
             assume_correctly_rounded_integer_powers=True, assume_finite_unit_trig=True,
+            tight_equation_of_equinoxes=tight_sidereal,
         )
         polar = bound_conditional_polar_motion(
             ut1_anchor_jd, ut1_offset_days, max_segments=max_polar_segments,
@@ -184,6 +215,7 @@ def bound_conditional_earth_fixed_solar_vectors(
 
         axis = _unit(icrf_to_itrf(vectors.axis.axis_unit))
         sun = icrf_to_itrf(vectors.vectors.sun_retarded_km)
+        moon = icrf_to_itrf(vectors.vectors.moon_retarded_km)
         plane = tuple(_rounded(moon - _rounded(vectors.axis.axis_projection_km * direction))
                       for moon, direction in zip(vectors.vectors.moon_retarded_km, vectors.axis.axis_unit))
         plane = icrf_to_itrf(plane)
@@ -191,10 +223,21 @@ def bound_conditional_earth_fixed_solar_vectors(
         sunward = tuple(-value for value in axis)
         east = _unit(_cross(pole, sunward))
         north = _unit(_cross(sunward, east))
+        from .constants import SUN_RADIUS_KM, MOON_RADIUS_KM
+        sine = _rounded(I.point(SUN_RADIUS_KM-MOON_RADIUS_KM)/vectors.axis.sun_to_moon_norm_km)
+        cosine = _rounded(_rounded(_rounded(1-sine)*_rounded(1+sine)).sqrt(128))
+        if cosine.lo<=0:
+            raise EclipseEarthFixedBoundsUnavailable('central cone cosine not positive')
+        slope = _rounded(sine/cosine)
+        central_radius = _rounded(_rounded(I.point(MOON_RADIUS_KM)/cosine)
+                                  +_rounded(vectors.axis.axis_projection_km*slope))
         return ConditionalEarthFixedSolarBounds(
             float(ut1_anchor_jd), ut1_offset_days, float(tt_anchor_jd), tt_offset_days,
             axis, sun, plane, east, north, sidereal.gast_degrees,
             polar.table_sha256, nutation.coefficient_sha256,
+            moon_xyz_itrf_km=moon,
+            axis_projection_km=vectors.axis.axis_projection_km,
+            central_radius_km=central_radius,central_cone_slope=slope,
         )
     except (EnclosureUnavailable, IntervalBudgetError, IntervalDomainError,
             OverflowError, ZeroDivisionError) as exc:

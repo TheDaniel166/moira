@@ -2875,14 +2875,31 @@ def _naif_tdb_minus_tt_seconds_at_tdb_split(
     """
     whole_seconds = (whole_tdb - J2000) * _SECONDS_PER_DAY
     fractional_seconds = fractional_tdb * _SECONDS_PER_DAY
-    mean_anomaly = math.remainder(
-        math.fsum((
-            _NAIF_DELTET_M0_RADIANS,
-            _NAIF_DELTET_M1_RADIANS_PER_SECOND * whole_seconds,
+    # Reduce the time-independent whole-day term before adding the fraction.
+    # Otherwise a large historical phase can round a tiny fixed-point update
+    # at its coarse ulp before remainder reduction. The periodic LSK model
+    # is unchanged; the iteration now retains the small part's precision.
+    phase_high = _NAIF_DELTET_M1_RADIANS_PER_SECOND * whole_seconds
+    if hasattr(math, "fma"):
+        phase_low = math.fma(_NAIF_DELTET_M1_RADIANS_PER_SECOND, whole_seconds, -phase_high)
+    else:
+        # Python 3.10-3.12 lack fma. Recover the same exact product residual
+        # from the represented words; no epoch or correction is rounded first.
+        from fractions import Fraction
+        phase_low = float(Fraction.from_float(_NAIF_DELTET_M1_RADIANS_PER_SECOND)
+                          * Fraction.from_float(whole_seconds)-Fraction.from_float(phase_high))
+    if whole_seconds == 0.0:
+        # Preserve the original well-conditioned J2000-day schedule exactly.
+        mean_anomaly = math.remainder(math.fsum((
+            _NAIF_DELTET_M0_RADIANS, phase_high,
             _NAIF_DELTET_M1_RADIANS_PER_SECOND * fractional_seconds,
-        )),
-        math.tau,
-    )
+        )), math.tau)
+    else:
+        whole_phase = math.remainder(math.fsum((
+            _NAIF_DELTET_M0_RADIANS, math.remainder(phase_high, math.tau), phase_low,
+        )), math.tau)
+        mean_anomaly = math.remainder(math.fsum((whole_phase,
+            _NAIF_DELTET_M1_RADIANS_PER_SECOND * fractional_seconds)), math.tau)
     eccentric_anomaly = mean_anomaly + _NAIF_DELTET_EB * math.sin(mean_anomaly)
     sine = math.sin(eccentric_anomaly)
     if not math.isfinite(sine) or abs(sine) > 1.0:
@@ -2932,7 +2949,14 @@ def _tt_to_tdb_split(jd_tt: float, jd_tt2: float = 0.0) -> tuple[float, float]:
 
 
 def _tt_to_tdb_with_receipt(jd_tt: float) -> _TtTdbConversion:
-    """Convert TT to TDB and retain the pre-assembly periodic offset."""
+    """Convert TT to TDB, recovering an adjacent-JD iteration cycle.
+
+    Rounding the large epoch inside the iteration can create an adjacent-JD
+    two-cycle even though the LSK offset is contractive. Existing converged
+    results retain their exact operation schedule. Only an exhausted legacy
+    solve retries with the compensated split iteration used by eclipse rays.
+    The receipt counts all evaluations, including that bounded retry.
+    """
 
     epoch_tt = _require_tt_tdb_jd("jd_tt", jd_tt)
     epoch_tdb = epoch_tt
@@ -2951,6 +2975,19 @@ def _tt_to_tdb_with_receipt(jd_tt: float) -> _TtTdbConversion:
                 tdb_minus_tt_seconds=offset_seconds,
                 iterations=iteration,
             )
+        previous_offset = offset_seconds
+    whole_tt, fractional_tt = _normalize_split_time_jd(epoch_tt, 0.0)
+    whole_tdb, fractional_tdb = whole_tt, fractional_tt
+    previous_offset = None
+    for retry in range(1, _TT_TDB_FIXED_POINT_MAX_ITERATIONS + 1):
+        offset_seconds = _naif_tdb_minus_tt_seconds_at_tdb_split(whole_tdb, fractional_tdb)
+        whole_tdb, fractional_tdb = _normalize_split_time_jd(
+            whole_tt, math.fsum((fractional_tt, offset_seconds / _SECONDS_PER_DAY)),
+        )
+        if (previous_offset is not None and abs(offset_seconds - previous_offset)
+                <= _TT_TDB_FIXED_POINT_RESIDUAL_SECONDS):
+            return _TtTdbConversion(epoch_tt, math.fsum((whole_tdb, fractional_tdb)),
+                offset_seconds, _TT_TDB_FIXED_POINT_MAX_ITERATIONS + retry)
         previous_offset = offset_seconds
     raise ArithmeticError(
         "NAIF LSK TT-to-TDB fixed-point iteration did not converge"

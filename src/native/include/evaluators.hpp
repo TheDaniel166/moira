@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <initializer_list>
 #include "interpolation.hpp"
 #include "sidereal.hpp"
 #include "math_utils.hpp"
@@ -188,6 +189,78 @@ inline double naif0012_tt_to_tdb(double jd_tt) {
             && std::abs(offset_seconds - previous_offset) <= residual_seconds
         ) {
             return jd_tdb;
+        }
+        previous_offset = offset_seconds;
+    }
+    // Match julian._tt_to_tdb_with_receipt: preserve every converged legacy
+    // result, but recover an adjacent-JD two-cycle in split coordinates.
+    // Expansion summation keeps the reduced whole-day phase and its exact
+    // product residual. Its final same-sign correction implements nearest-
+    // even rounding, including a half-way high part with a nonzero tail.
+    const auto sum_parts = [](std::initializer_list<double> values) {
+        double partials[4];
+        int count = 0;
+        for (double x : values) {
+            int kept = 0;
+            for (int index = 0; index < count; ++index) {
+                double y = partials[index];
+                if (std::abs(x) < std::abs(y)) std::swap(x, y);
+                const double high = x + y;
+                const double low = y - (high - x);
+                if (low != 0.0) partials[kept++] = low;
+                x = high;
+            }
+            partials[kept] = x;
+            count = kept + 1;
+        }
+        double high = partials[--count];
+        double low = 0.0;
+        while (count > 0) {
+            const double x = high;
+            const double y = partials[--count];
+            high = x + y;
+            low = y - (high - x);
+            if (low != 0.0) break;
+        }
+        if (count > 0 && ((low > 0.0 && partials[count - 1] > 0.0)
+                      || (low < 0.0 && partials[count - 1] < 0.0))) {
+            const double tail = low * 2.0;
+            const double rounded = high + tail;
+            if (rounded - high == tail) high = rounded;
+        }
+        return high;
+    };
+    const double whole_tt = std::floor(jd_tt);
+    const double fractional_tt = jd_tt - whole_tt;
+    double whole_tdb = whole_tt;
+    double fractional_tdb = fractional_tt;
+    previous_offset = std::numeric_limits<double>::quiet_NaN();
+    constexpr double tau = 2.0 * 3.141592653589793238462643383279502884;
+    for (int retry = 0; retry < max_iterations; ++retry) {
+        const double whole_seconds = (whole_tdb - j2000) * seconds_per_day;
+        const double fractional_seconds = fractional_tdb * seconds_per_day;
+        const double phase_high = m1_per_second * whole_seconds;
+        const double phase_low = std::fma(m1_per_second, whole_seconds, -phase_high);
+        if (!std::isfinite(phase_high) || !std::isfinite(phase_low)) break;
+        double mean_anomaly;
+        if (whole_seconds == 0.0) {
+            mean_anomaly = std::remainder(sum_parts(
+                {m0, phase_high, m1_per_second * fractional_seconds}), tau);
+        } else {
+            const double whole_phase = std::remainder(sum_parts(
+                {m0, std::remainder(phase_high, tau), phase_low}), tau);
+            mean_anomaly = std::remainder(sum_parts(
+                {whole_phase, m1_per_second * fractional_seconds}), tau);
+        }
+        const double eccentric_anomaly = mean_anomaly + eb * std::sin(mean_anomaly);
+        const double offset_seconds = k_seconds * std::sin(eccentric_anomaly);
+        const double updated_fraction = sum_parts({fractional_tt, offset_seconds / seconds_per_day});
+        const double carry = std::floor(updated_fraction);
+        whole_tdb = whole_tt + carry;
+        fractional_tdb = updated_fraction - carry;
+        if (std::isfinite(previous_offset)
+            && std::abs(offset_seconds - previous_offset) <= residual_seconds) {
+            return whole_tdb + fractional_tdb;
         }
         previous_offset = offset_seconds;
     }

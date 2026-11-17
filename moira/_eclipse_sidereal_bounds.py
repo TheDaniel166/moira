@@ -20,6 +20,7 @@ from ._eclipse_nutation_amplitudes import (
     bound_conditional_nutation_amplitudes,
 )
 from ._eclipse_wgs84_orientation import bound_conditional_earth_rotation_angle
+from ._eclipse_polar_motion_bounds import _trig_rounded
 
 
 class EclipseSiderealBoundsUnavailable(EnclosureUnavailable):
@@ -113,12 +114,61 @@ def _complementary_terms(T: I) -> I:
     return _rounded(total / 3600)
 
 
+def _mean_obliquity_cosine(T: I) -> I:
+    """Enclose both serving polynomial schedules and the one-ulp cosine."""
+    coefficients = (84381.406,-46.836769,-0.0001831,
+                    0.00200340,-0.000000576,-0.0000000434)
+    native,python = I.point(coefficients[0]),I.point(coefficients[0])
+    for exponent,coefficient in enumerate(coefficients[1:],1):
+        partial = I.point(coefficient)
+        for _ in range(exponent-1):
+            partial = _rounded(partial*T)
+        native = _sum_product(native,partial*T)
+        python = _rounded(python+_rounded(I.point(coefficient)*_rounded(T**exponent)))
+    degrees = _rounded(_hull(native,python)/3600)
+    return _trig_rounded(_rounded(degrees*I.point(math.pi/180)))[1]
+
+
+def _periodic_argument(value: I) -> I:
+    """Include Python remainder and native floored subtraction/FMA."""
+    tau = I.point(math.tau)
+    quotient = _hull(value/tau,_rounded(value/tau))
+    first,last = quotient.lo//1,quotient.hi//1
+    if first!=last or abs(first)>=2**40:
+        return I(-math.tau,2*math.tau)
+    product = I.point(first)*tau
+    return _hull(_rounded(value-_rounded(product)),_rounded(value-product))
+
+
+def _tight_complementary_terms(T: I) -> I:
+    """Bound the actual IERS-term arguments, including both source orders."""
+    arcsec = I.point(math.pi/648000)
+    om = _sum_product(I.point(7.4722),T*I.point(0.007702))
+    om = _sum_product(I.point(-6962890.5431),T*om)
+    om = _periodic_argument(_rounded(_sum_product(I.point(450160.398036),T*om)*arcsec))
+    f = _periodic_argument(_rounded(_sum_product(I.point(335779.526232),T*I.point(1739527262.8478))*arcsec))
+    d = _periodic_argument(_rounded(_sum_product(I.point(1072260.703692),T*I.point(1602961601.2090))*arcsec))
+    base = _rounded(_rounded(2*f)-_rounded(2*d))
+    args = (om,_rounded(2*om),_sum_product(base,3*om),
+            _rounded(base+om),_sum_product(base,2*om),
+            _sum_product(_rounded(2*f),3*om),_rounded(_rounded(2*f)+om),_rounded(3*om))
+    coefficients = (0.00264096,0.00006352,0.00001175,0.00001121,
+                    -0.00000455,0.00000202,0.00000198,-0.00000172)
+    sine = tuple(_trig_rounded(argument)[0] for argument in args)
+    total = _rounded(I.point(coefficients[0])*sine[0])
+    for coefficient,trig in zip(coefficients[1:],sine[1:]):
+        total = _sum_product(total,I.point(coefficient)*trig)
+    prefix = _rounded(I.point(-0.00000087)*T)
+    return _rounded(_sum_product(total,prefix*sine[0])/3600)
+
+
 def bound_conditional_sidereal_time(
     ut1_anchor_jd: float, ut1_offset_days: I,
     tt_anchor_jd: float, tt_offset_days: I,
     nutation_longitude_degrees: I, *, assume_ieee_arithmetic: bool = False,
     assume_correctly_rounded_integer_powers: bool = False,
     assume_finite_unit_trig: bool = False,
+    tight_equation_of_equinoxes: bool = False,
 ) -> ConditionalSiderealBounds:
     """Enclose successful serving GAST values with a supplied dpsi enclosure.
 
@@ -130,6 +180,8 @@ def bound_conditional_sidereal_time(
     TT and UT1 are separate represented inputs; neither conversion nor their
     physical correspondence is proved. Modulo/day seams fail closed.
     """
+    if type(tight_equation_of_equinoxes) is not bool:
+        raise TypeError('tight equation-of-equinoxes option must be bool')
     flags = (assume_ieee_arithmetic, assume_correctly_rounded_integer_powers, assume_finite_unit_trig)
     if not all(type(flag) is bool for flag in flags):
         raise TypeError("sidereal arithmetic premises must be booleans")
@@ -151,8 +203,9 @@ def bound_conditional_sidereal_time(
         T = _rounded(_rounded(tt - 2451545) / 36525)
         polynomial = _gmst_polynomial(T)
         gmst = _mod_360(_rounded(era.angle_degrees + _rounded(polynomial / 3600)))
-        complement = _complementary_terms(T)
-        product = nutation_longitude_degrees * I(-1, 1)
+        complement = _tight_complementary_terms(T) if tight_equation_of_equinoxes else _complementary_terms(T)
+        cosine = _mean_obliquity_cosine(T) if tight_equation_of_equinoxes else I(-1,1)
+        product = nutation_longitude_degrees * cosine
         equation = _sum_product(complement, product)
         gast = _mod_360(_rounded(gmst + equation))
         return ConditionalSiderealBounds(float(ut1_anchor_jd), ut1_offset_days, tt_anchor,

@@ -80,6 +80,10 @@ class ConditionalSolarServingBounds:
     earth_orientation_enclosed: bool = False
     rounded_shadow_axis_enclosed: bool = False
     physical_accuracy_certified: bool = False
+    tight_norm_assumptions_required: bool = False
+    refined_split_clock_used: bool = False
+    split_clock_convergence_conditionally_proved: bool = False
+    correlated_moon_used: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,6 +196,8 @@ def bound_conditional_solar_serving_axis(
     reader, tt_anchor_jd: float, tt_offset_days: I, *, max_route_calls: int = 40,
     assume_builtin_sum_error: bool = False,
     assume_correctly_rounded_sqrt: bool = False,
+    tight_light_time_norm: bool = False, refined_split_clock: bool = False,
+    correlated_moon: bool = False,
 ) -> ConditionalSolarServingAxisBounds:
     """Compose split-TT retarded-vector boxes with the conditional axis bound."""
     if type(assume_builtin_sum_error) is not bool or type(assume_correctly_rounded_sqrt) is not bool:
@@ -200,6 +206,8 @@ def bound_conditional_solar_serving_axis(
         raise EclipseSolarServingUnavailable("solar axis sum and square-root premises are required")
     vectors = bound_conditional_solar_serving_vectors(
         reader, tt_anchor_jd, tt_offset_days, max_route_calls=max_route_calls,
+        tight_norm=tight_light_time_norm, refined_split_clock=refined_split_clock,
+        correlated_moon=correlated_moon,
     )
     axis = bound_solar_shadow_axis_from_vectors(
         vectors.sun_retarded_km, vectors.moon_retarded_km,
@@ -211,8 +219,20 @@ def bound_conditional_solar_serving_axis(
 
 def bound_conditional_solar_serving_vectors(
     reader, tt_anchor_jd: float, tt_offset_days: I, *, max_route_calls: int = 40,
+    tight_norm: bool = False, refined_split_clock: bool = False,
+    correlated_moon: bool = False,
 ) -> ConditionalSolarServingBounds:
-    """Bound successful split-TT Sun/Moon rays under declared premises."""
+    """Bound successful split-TT Sun/Moon rays under declared premises.
+
+    Opt-in tight norms require correctly rounded float squares and square
+    roots, as in the lunar serving adapter. The refined clock option uses
+    the compensated reduced source's proved convergence and tighter output
+    tube. Its arithmetic/source premises remain distinct from attestation.
+    """
+    if any(type(flag) is not bool for flag in (tight_norm,refined_split_clock,correlated_moon)):
+        raise TypeError('solar serving options must be bool')
+    if correlated_moon and not (tight_norm and refined_split_clock):
+        raise EclipseSolarServingUnavailable('correlated Moon requires the tight norm and refined clock premises')
     if isinstance(tt_anchor_jd, bool) or not isinstance(tt_anchor_jd, (int, float)):
         raise ValueError("TT anchor must be finite")
     anchor = float(tt_anchor_jd)
@@ -232,7 +252,18 @@ def bound_conditional_solar_serving_vectors(
         nonlocal source_hash
         if len(states) >= max_route_calls:
             raise EclipseSolarServingUnavailable("solar route evaluation budget exhausted")
-        conversion = bound_serving_split_tdb(anchor, offsets)
+        if refined_split_clock:
+            from ._eclipse_refined_serving_clock import (
+                bound_refined_serving_split_tdb,prove_reduced_split_clock_convergence,
+            )
+            second = offsets-tt_offset_days
+            proof = prove_reduced_split_clock_convergence(anchor,second,
+                                                          first_part_offsets=tt_offset_days)
+            if proof.status!='proved':
+                raise EclipseSolarServingUnavailable('split clock convergence unproved: '+proof.reason)
+            conversion = bound_refined_serving_split_tdb(anchor,offsets)
+        else:
+            conversion = bound_serving_split_tdb(anchor, offsets)
         absolute = I.point(anchor) + conversion.tdb_offset_days
         first, last = absolute.lo // 1, absolute.hi // 1
         if first != last or abs(first) >= 2**53:
@@ -256,32 +287,73 @@ def bound_conditional_solar_serving_vectors(
         return tuple(_rounded(x - y) for x, y in zip(a, b))
 
     def delay(vector):
+        if tight_norm:
+            squares = tuple(_rounded(x.square()) for x in vector)
+            squared = _rounded(_rounded(squares[0]+squares[1])+squares[2])
+            if squared.lo<0:
+                raise EclipseSolarServingUnavailable('tight solar norm has an ambiguous square domain')
+            return _rounded(_rounded(squared.sqrt(128))/Fraction.from_float(C_KM_PER_DAY))
         peak = max(component.magnitude for component in vector)
         limit = min(2 * peak, Fraction.from_float(sys.float_info.max))
         return _rounded(I(0, limit) / Fraction.from_float(C_KM_PER_DAY))
 
     emb = route(0, 3, tt_offset_days)
-    earth = add(emb, route(3, 399, tt_offset_days))
+    emb_reception = states[-1]
+    earth_leg = route(3,399,tt_offset_days)
+    earth = add(emb, earth_leg)
     sun_initial = route(0, 10, tt_offset_days)
-    moon_initial = add(emb, route(3, 301, tt_offset_days))
+    moon_leg = route(3,301,tt_offset_days)
+    moon_initial = add(emb, moon_leg)
+    clock_error = None
+    if correlated_moon:
+        from ._eclipse_refined_serving_clock import refined_split_clock_error
+        clock_error = refined_split_clock_error(anchor,
+            I(tt_offset_days.lo-1,tt_offset_days.hi+1)).total_error_seconds
 
     def retarded(initial, pairs):
-        current = delay(sub(initial, earth))
-        steps = []
-        for _ in range(10):
+        if correlated_moon and len(pairs)==2:
+            from ._eclipse_correlated_emb import correlated_moon_initial
+            current = delay(correlated_moon_initial(emb,moon_leg,earth_leg))
+        else:
+            current = delay(sub(initial, earth))
+        steps, possible = [], []
+        for iteration in range(10):
             emission = tt_offset_days - current
             total = (I.point(0), I.point(0), I.point(0))
+            emitted_states,emitted_positions = [],[]
             for center, target in pairs:
-                total = add(total, route(center, target, emission))
+                position = route(center,target,emission)
+                emitted_positions.append(position)
+                emitted_states.append(states[-1])
+                total = add(total,position)
             geocentric = sub(total, earth)
+            if correlated_moon and len(pairs)==2 and current.hi<=1:
+                from ._eclipse_correlated_emb import correlated_moon_geocentric
+                try:
+                    correlated = correlated_moon_geocentric(emb_reception,emitted_states[0],
+                        emitted_positions[1],earth_leg,current,clock_error)
+                except EnclosureUnavailable:
+                    pass  # The ordinary enclosure still covers a record join.
+                else:
+                    intersections = tuple(a.intersect(b) for a,b in zip(geocentric,correlated))
+                    if any(value is None for value in intersections):
+                        raise ArithmeticError('correlated and ordinary Moon enclosures disagree')
+                    geocentric = intersections
             next_delay = delay(geocentric)
             steps.append(SolarServingIteration(emission, geocentric, next_delay, current))
+            residual = _rounded(next_delay-current)
+            threshold = Fraction.from_float(1e-14)
+            if iteration==9 or residual.lo<threshold and residual.hi>-threshold:
+                possible.append(geocentric)
             current = next_delay
-        box = tuple(I(min(step.geocentric_km[i].lo for step in steps),
-                      max(step.geocentric_km[i].hi for step in steps)) for i in range(3))
+        box = tuple(I(min(vector[i].lo for vector in possible),
+                      max(vector[i].hi for vector in possible)) for i in range(3))
         return box, tuple(steps)
 
     sun, sun_steps = retarded(sun_initial, ((0, 10),))
     moon, moon_steps = retarded(moon_initial, ((0, 3), (3, 301)))
     return ConditionalSolarServingBounds(anchor, tt_offset_days, sun, moon, sun_steps, moon_steps,
-                                         tuple(times), tuple(states))
+        tuple(times), tuple(states),tight_norm_assumptions_required=tight_norm,
+        refined_split_clock_used=refined_split_clock,
+        split_clock_convergence_conditionally_proved=refined_split_clock,
+        correlated_moon_used=correlated_moon)

@@ -7,14 +7,15 @@ strictly interior record for each direct route; it refuses descriptor and
 record seams rather than assuming the stored polynomials join continuously.
 Each subinterval reuses the same immutable coefficient tuples. Norms must be
 strictly positive and every emission must remain within the declared horizon.
-The record's raw MID/RADIUS words are not read or verified. Therefore this is
+By default the record's raw MID/RADIUS words are not read or verified; an
+opt-in record-word verifier can check them for the frozen request. This is
 an explicitly defined uniform-metadata model, not proof of an arbitrary SPK
 type-2 record's prescribed normalization. Neither live kernel integrity nor
 physical/legacy eclipse accuracy is attested.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from fractions import Fraction
 import hashlib
 import math
@@ -64,6 +65,7 @@ class ContinuousLunarReference:
     legacy_evaluator_enclosed: bool = False
     ut1_enclosed: bool = False
     physical_accuracy_certified: bool = False
+    raw_record_word_sha256: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,9 +168,12 @@ def build_continuous_lunar_reference(
         raise EclipseContinuousLunarUnavailable("reference light speed must be positive and finite")
     clock_domain = I(tt_offset_days.lo - max_light_delay_days, tt_offset_days.hi)
     clock = bound_continuous_reference_tdb(tt_anchor_jd, clock_domain, precision_bits=precision_bits)
+    reception = bound_continuous_reference_tdb(tt_anchor_jd, tt_offset_days, precision_bits=precision_bits)
     anchor = clock.tt_anchor_jd
     try:
-        records = tuple(_copy_single_record(reader, center, target, anchor, clock.tdb_offset_days)
+        records = tuple(_copy_single_record(reader, center, target, anchor,
+                            clock.tdb_offset_days if (center, target) == (0, 10)
+                            else reception.tdb_offset_days)
                         for center, target in ((0, 3), (3, 399), (3, 301), (0, 10)))
     except (IntervalBudgetError, IntervalDomainError, OverflowError) as exc:
         raise EclipseContinuousLunarUnavailable("reference record construction budget exhausted") from exc
@@ -176,6 +181,52 @@ def build_continuous_lunar_reference(
     if len(hashes) != 1:
         raise EclipseContinuousLunarUnavailable("reference route source identity changed")
     return ContinuousLunarReference(anchor, tt_offset_days, max_light_delay_days, precision_bits, records)
+
+
+def verify_continuous_lunar_record_words(reader, model: ContinuousLunarReference) -> ContinuousLunarReference:
+    """Verify MID/RADIUS and every coefficient word of the frozen records.
+
+    The NAIF type-2 normalizer is the record's MID/RADIUS. Admission here
+    requires those exact binary64 words to equal the model's uniform
+    INIT/INTLEN normalization, and every coefficient to match the frozen
+    tuple. This is a request-specific on-disk record witness, not a live
+    mapped-kernel, source/build or reader-lifetime attestation. A replacement
+    receipt is returned; the caller's original model is left unchanged.
+    """
+    if type(reader) is not SpkReader or reader._closed or not isinstance(model, ContinuousLunarReference):
+        raise EclipseContinuousLunarUnavailable("open direct reader and frozen model required")
+    if (len(model.records) != 4 or {(record.center, record.target) for record in model.records}
+            != {(0, 3), (3, 399), (3, 301), (0, 10)}):
+        raise EclipseContinuousLunarUnavailable("all four distinct reference routes required")
+    hashes = []
+    with open(reader.path, "rb") as source:
+        for record in model.records:
+            if record.source.source_sha256_at_reader_open != reader._source_identity.sha256:
+                raise EclipseContinuousLunarUnavailable("frozen and supplied reader identities differ")
+            segment = _select_descriptor(reader._segments_for_pair(record.center, record.target),
+                                         record.source.interval_seconds_tdb)
+            if len(record.coefficients) != 3 or not record.coefficients[0]:
+                raise EclipseContinuousLunarUnavailable("invalid frozen record dimensions")
+            count = len(record.coefficients[0])
+            if any(len(axis) != count for axis in record.coefficients):
+                raise EclipseContinuousLunarUnavailable("invalid frozen record dimensions")
+            words = 2+3*count
+            source.seek((segment.start_i-1+record.record_index*words)*8)
+            raw = source.read(words*8)
+            if len(raw) != words*8:
+                raise EclipseContinuousLunarUnavailable("selected raw type-2 record truncated")
+            values = struct.unpack(("<" if segment._little_endian else ">")+"d"*words, raw)
+            if not all(math.isfinite(value) for value in values):
+                raise EclipseContinuousLunarUnavailable("selected raw record is nonfinite")
+            midpoint, radius = map(Fraction.from_float, values[:2])
+            if (radius <= 0 or midpoint != record.record_start_seconds+record.record_length_seconds/2
+                    or radius != record.record_length_seconds/2):
+                raise EclipseContinuousLunarUnavailable("raw MID/RADIUS differs from reference normalization")
+            if tuple(map(Fraction.from_float, values[2:])) != tuple(
+                    coefficient for axis in record.coefficients for coefficient in axis):
+                raise EclipseContinuousLunarUnavailable("raw coefficient words differ from frozen reference")
+            hashes.append(hashlib.sha256(raw).hexdigest())
+    return replace(model, raw_record_mid_radius_verified=True, raw_record_word_sha256=tuple(hashes))
 
 
 def enclose_continuous_lunar_reference(model: ContinuousLunarReference, subinterval: I) -> ContinuousLunarVectorBounds:
@@ -262,7 +313,8 @@ def enclose_continuous_lunar_reference(model: ContinuousLunarReference, subinter
             sun = sub(emitted, earth)
             sun_rate = sub(scale(emitted_rate, one - current_rate), earth_rate)
             current, current_rate = delay(sun, sun_rate)
-        return ContinuousLunarVectorBounds(subinterval, sun, moon, sun_rate, moon_rate, tuple(clocks))
+        return ContinuousLunarVectorBounds(subinterval, sun, moon, sun_rate, moon_rate, tuple(clocks),
+                                           raw_record_mid_radius_verified=model.raw_record_mid_radius_verified)
     except (IntervalBudgetError, IntervalDomainError, OverflowError, ZeroDivisionError) as exc:
         raise EclipseContinuousLunarUnavailable("continuous lunar interval budget or domain exhausted") from exc
 
@@ -292,14 +344,18 @@ def certify_continuous_sun_light_time(
         clock = bound_continuous_reference_tdb(
             model.tt_anchor_jd, clock_domain, precision_bits=model.precision_bits,
         )
+        reception = bound_continuous_reference_tdb(
+            model.tt_anchor_jd, model.tt_offset_days, precision_bits=model.precision_bits,
+        )
         speed = Fraction.from_float(C_KM_PER_DAY)
-        seconds = _raw_seconds(model.tt_anchor_jd, clock.tdb_offset_days)
 
         def frozen_horizon(pair):
             # Derive these enclosures directly from the exact same immutable
             # coefficient tuples evaluated by ``route``. Receipt metadata is
             # informational and cannot override the model's actual values.
             record = records[pair]
+            conversion = clock if pair == (0, 10) else reception
+            seconds = _raw_seconds(model.tt_anchor_jd, conversion.tdb_offset_days)
             length = record.record_length_seconds
             start = record.record_start_seconds
             if length <= 0 or seconds.lo <= start or seconds.hi >= start + length:
