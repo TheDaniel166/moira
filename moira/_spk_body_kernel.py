@@ -19,12 +19,12 @@ from __future__ import annotations
 from bisect import bisect_left
 import hashlib
 import json
-import math
 from pathlib import Path
 
 from .coordinates import Vec3
 from .spk_reader import (
     _EphemerisKernelIdentity,
+    _SplitEpochUnsupported,
     _KernelSourceIdentity,
     _RoutedState,
     _SpkSegmentReceipt,
@@ -35,6 +35,8 @@ from .spk_reader import (
     _eval_chebyshev_record_with_derivative_scalar,
     _merge_closed_intervals,
     _source_sha256,
+    _split_epoch_covers,
+    _representable_jd_coverage,
 )
 
 try:
@@ -77,11 +79,13 @@ def _validate_segment_epoch(
     tdb2: float,
     start_jd: float,
     end_jd: float,
+    start_second: float,
+    end_second: float,
 ) -> float:
     """Return the combined epoch after enforcing inclusive descriptor truth."""
 
     epoch = float(tdb) + float(tdb2)
-    if not math.isfinite(epoch) or not start_jd <= epoch <= end_jd:
+    if not _split_epoch_covers(start_second, end_second, tdb, tdb2):
         raise OutOfRangeError(
             "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
             % (
@@ -467,7 +471,7 @@ class _NativeChebyshevSegment:
         return self._native_evaluator
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
-        _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd)
+        _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd, self.start_second, self.end_second)
         evaluator = self._load_native_evaluator()
         if evaluator is not None:
             if need_rates:
@@ -648,7 +652,7 @@ class _Type13Segment:
         return self._native_evaluator
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
-        t = _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd)
+        t = _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd, self.start_second, self.end_second)
         evaluator = self._load_native_evaluator()
         if evaluator is not None:
             if need_rates:
@@ -846,7 +850,7 @@ class SmallBodyKernel:
     def segment_center(self, naif_id: int) -> int:
         return self._center.get(naif_id, 0)
 
-    def _segment_for_tdb(self, center: int, target: int, epoch_tdb: float):
+    def _segment_for_tdb(self, center: int, target: int, epoch_tdb: float, *, offset_days: float = 0.0):
         """Select one exact small-body descriptor in its native TDB clock."""
 
         if not self.has_body(target):
@@ -860,12 +864,39 @@ class SmallBodyKernel:
                 f"{seg_center}, not center {center}"
             )
         for seg in self._kernel.segments:
-            if seg.target == target and seg.start_jd <= epoch_tdb <= seg.end_jd:
+            if seg.target == target and _split_epoch_covers(seg.start_second, seg.end_second, epoch_tdb, offset_days):
                 return seg
         raise KeyError(
             f"No segment covers NAIF {target} at JD(TDB) {epoch_tdb:.9f}. "
             "The date may be outside the kernel's coverage."
         )
+
+    def _has_segment_at_tdb_offset(self, center: int, target: int, epoch_tdb: float, offset_days: float) -> bool:
+        try:
+            self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+            return True
+        except (KeyError, ValueError):
+            return False
+
+    def _position_tdb_offset(self, center: int, target: int, epoch_tdb: float, offset_days: float) -> Vec3:
+        segment = self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+        if segment.data_type == 13:
+            raise _SplitEpochUnsupported("SPK type 13 does not support split-epoch interpolation")
+        if segment.data_type == 3 and segment._load_native_evaluator() is None:
+            raise _SplitEpochUnsupported("SPK type 3 split-epoch position requires the native evaluator")
+        pos = segment.compute(epoch_tdb, offset_days)
+        return (float(pos[0]), float(pos[1]), float(pos[2]))
+
+    def _position_and_velocity_tdb_offset(self, center: int, target: int, epoch_tdb: float, offset_days: float) -> tuple[Vec3, Vec3]:
+        segment = self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+        if segment.data_type == 13:
+            raise _SplitEpochUnsupported("SPK type 13 does not support split-epoch interpolation")
+        if segment.data_type == 3 and segment._load_native_evaluator() is None:
+            raise _SplitEpochUnsupported("SPK type 3 split-epoch state requires the native evaluator")
+        pos, vel = segment.compute_and_differentiate(epoch_tdb, offset_days)
+        # SPK type 3 stores velocities in km/s; this API returns km/day.
+        scale = S_PER_DAY if segment.data_type == 3 else 1.0
+        return (tuple(float(v) for v in pos[:3]), tuple(float(v) * scale for v in vel[:3]))
 
     def position_tdb(self, center: int, target: int, epoch_tdb: float) -> Vec3:
         """Return an ICRF position at an explicit TDB Julian day."""
@@ -915,12 +946,15 @@ class SmallBodyKernel:
         position, velocity = self.position_and_velocity_tdb(
             center, target, epoch_tdb
         )
+        bounds = _representable_jd_coverage(segment)
+        if bounds is None:
+            raise ValueError("segment has no representable single-JD coverage")
         receipt = _SpkSegmentReceipt(
             center=int(segment.center),
             target=int(segment.target),
             data_type=int(segment.data_type),
-            coverage_start_tdb=float(segment.start_jd),
-            coverage_end_tdb=float(segment.end_jd),
+            coverage_start_tdb=bounds[0],
+            coverage_end_tdb=bounds[1],
             source=self._source_identity,
             pool_index=int(pool_index),
         )
@@ -961,7 +995,8 @@ class SmallBodyKernel:
             if (
                 seg.target == target
                 and seg.center == center
-                and seg.start_jd <= epoch_tdb <= seg.end_jd
+                and (interval := _representable_jd_coverage(seg)) is not None
+                and interval[0] <= epoch_tdb <= interval[1]
             ):
                 return True
         return False
@@ -975,9 +1010,10 @@ class SmallBodyKernel:
 
         return _merge_closed_intervals(
             [
-                (float(seg.start_jd), float(seg.end_jd))
+                interval
                 for seg in self._kernel.segments
                 if seg.center == center and seg.target == target
+                if (interval := _representable_jd_coverage(seg)) is not None
             ]
         )
 
@@ -1002,6 +1038,8 @@ class SmallBodyKernel:
         result: dict[tuple[int, int], tuple[float, float]] = {}
         for pair in pairs:
             intervals = self.coverage_intervals_tdb(*pair)
+            if not intervals:
+                continue
             result[pair] = (
                 tdb_to_tt(intervals[0][0]),
                 tdb_to_tt(intervals[-1][1]),
@@ -1019,9 +1057,10 @@ class SmallBodyKernel:
         """Return a raw native evaluator selected in TDB."""
 
         segment = self._segment_for_tdb(center, target, epoch_tdb)
-        if epoch_end_tdb is not None and not (
-            segment.start_jd <= epoch_end_tdb <= segment.end_jd
-        ):
+        bounds = _representable_jd_coverage(segment)
+        if epoch_end_tdb is not None and (bounds is None or not (
+            bounds[0] <= epoch_end_tdb <= bounds[1]
+        )):
             return None
         return segment._load_native_evaluator()
 

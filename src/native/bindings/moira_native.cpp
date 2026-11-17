@@ -33,6 +33,7 @@
 #include "houses.hpp"
 #include "primary_directions.hpp"
 #include "marriage_enclosure.hpp"
+#include "eclipse_strict_snapshot.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -896,21 +897,25 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
         py::gil_scoped_release release;
         catalog = read_daf_catalog(path);
     }
-    const auto [coverage_start_jd, coverage_end_jd] =
-        spk_descriptor_coverage_jd(catalog, start_i, end_i, data_type);
+    const auto [coverage_start_second, coverage_end_second] =
+        spk_descriptor_coverage_seconds(catalog, start_i, end_i, data_type);
+    const double coverage_start_jd = coverage_start_second / 86400.0 + 2451545.0;
+    const double coverage_end_jd = coverage_end_second / 86400.0 + 2451545.0;
     if (data_type == 13) {
         SpkType13SegmentPayload payload;
         {
             py::gil_scoped_release release;
             payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
         }
-        return std::make_shared<SpkSegmentEvaluator>(
+        auto evaluator = std::make_shared<SpkSegmentEvaluator>(
             coverage_start_jd,
             coverage_end_jd,
             std::move(payload.epochs_jd),
             std::move(payload.states),
             static_cast<size_t>(payload.window_size)
         );
+        evaluator->set_descriptor_seconds(coverage_start_second, coverage_end_second);
+        return evaluator;
     }
 
     SpkChebyshevSegmentPayload payload;
@@ -920,7 +925,7 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
             path, start_i, end_i, little_endian, data_type
         );
     }
-    return std::make_shared<SpkSegmentEvaluator>(
+    auto evaluator = std::make_shared<SpkSegmentEvaluator>(
         coverage_start_jd,
         coverage_end_jd,
         data_type,
@@ -932,6 +937,8 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
         payload.coefficient_count,
         std::move(payload.coefficients)
     );
+    evaluator->set_descriptor_seconds(coverage_start_second, coverage_end_second);
+    return evaluator;
 }
 
 std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& path) {
@@ -1041,6 +1048,13 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
 
 PYBIND11_MODULE(_moira_native, m) {
     py::register_exception<PlanetaryEmissionRouteChanged>(m, "PlanetaryEmissionRouteChanged");
+    m.def("_eclipse_strict_snapshot_build_contract", &eclipse_strict_snapshot_build_contract,
+          "Private, self-reported strict snapshot build contract; not source-hash attestation.");
+    m.def("_eclipse_strict_snapshot_evaluate", &eclipse_strict_snapshot_evaluate,
+          py::arg("record"), py::arg("jd_tdb"), py::arg("offset_days"),
+          py::arg("init"), py::arg("record_length"), py::arg("record_count"),
+          py::arg("expected_record"), py::arg("descriptor_start"), py::arg("descriptor_end"),
+          "Private guarded scalar evaluation of one copied type-2 record.");
     m.def("_marriage_chebyshev_enclosure", &marriage_chebyshev_enclosure,
           py::arg("coefficients"), py::arg("argument"), py::arg("centered"),
           "Private exact-schedule interval Chebyshev value/derivative recurrence.");
@@ -1251,6 +1265,15 @@ PYBIND11_MODULE(_moira_native, m) {
         }, py::arg("first"), py::arg("count") = 1)
         .def("record_level", &SpkSegmentEvaluator::record_level)
         .def("cached_record_count", &SpkSegmentEvaluator::cached_record_count)
+        .def("_eclipse_position_from_copied_record", [](const SpkSegmentEvaluator& self,
+             double jd, double jd2, size_t index, const std::vector<double>& record) {
+            double result[3] = {0.0, 0.0, 0.0};
+            {
+                py::gil_scoped_release release;
+                self.position_from_copied_record(jd, jd2, index, record, result);
+            }
+            return py::make_tuple(result[0], result[1], result[2]);
+        }, py::arg("jd"), py::arg("jd2"), py::arg("index"), py::arg("record"))
         .def("position", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double result[3];
             {

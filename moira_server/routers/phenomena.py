@@ -72,6 +72,8 @@ from ..models.phenomena import (
     SolarEclipseLocationRequest,
     SolarEclipsePathRequest,
     SolarEclipsePathResponse,
+    SolarEclipsePathAvailabilityResponse,
+    SolarEclipseGlobalAvailabilityResponse,
     SolarEclipseVisibilityFootprintResponse,
     StationEventResponse,
     StationSearchRequest,
@@ -114,6 +116,8 @@ from ..serializers.phenomena import (
     serialize_solar_eclipse_cartography,
     serialize_solar_eclipse_global_circumstances,
     serialize_solar_eclipse_path,
+    serialize_solar_eclipse_path_availability,
+    serialize_solar_eclipse_global_availability,
     serialize_solar_eclipse_local,
     serialize_station_event,
     serialize_station_search_truth,
@@ -426,6 +430,28 @@ def solar_eclipse_path_route(
 ) -> SolarEclipsePathResponse:
     return serialize_solar_eclipse_path(compute_solar_eclipse_path(engine, request))
 
+
+
+# Availability is opt-in so strict v1 clients retain their existing schema.
+@router.post(
+    "/eclipses/solar/path/availability", response_model=SolarEclipsePathAvailabilityResponse
+)
+def solar_eclipse_path_availability_route(
+    request: SolarEclipsePathRequest, engine: Moira = Depends(get_engine),
+) -> SolarEclipsePathAvailabilityResponse:
+    return serialize_solar_eclipse_path_availability(compute_solar_eclipse_path(engine, request))
+
+
+@router.post(
+    "/eclipses/solar/global-circumstances/availability",
+    response_model=SolarEclipseGlobalAvailabilityResponse,
+)
+def solar_eclipse_global_availability_route(
+    request: SolarEclipseGlobalCircumstancesRequest, engine: Moira = Depends(get_engine),
+) -> SolarEclipseGlobalAvailabilityResponse:
+    return serialize_solar_eclipse_global_availability(
+        compute_solar_eclipse_global_circumstances(engine, request)
+    )
 
 @router.post(
     "/eclipses/solar/footprint",

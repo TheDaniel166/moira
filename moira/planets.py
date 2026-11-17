@@ -71,7 +71,7 @@ from .coordinates import (
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
-from .julian import local_sidereal_time, DeltaTPolicy, tdb_to_tt, tt_to_tdb
+from .julian import local_sidereal_time, DeltaTPolicy, tdb_to_tt, tt_to_tdb, _tt_to_tdb_split
 from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelPool, KernelReader, SpkReader,
@@ -1641,6 +1641,80 @@ def _deflectors_for_body(
 
     return deflectors
 
+def _barycentric_at_tt_offset(
+    body: str,
+    jd_tt: float,
+    offset_days: float,
+    reader: KernelReader,
+) -> Vec3:
+    """Evaluate a barycentric route at a split TT epoch without recombining it.
+
+    This private capability is admitted only when the reader supplies the
+    split-TDB route.  No fallback to a rounded single-part date is performed
+    here: callers choose their compatibility behavior before using the path.
+    """
+    position = getattr(reader, "_position_tdb_offset", None)
+    if not callable(position):
+        raise TypeError("reader does not support split-epoch TDB positions")
+    tdb, tdb2 = _tt_to_tdb_split(jd_tt, offset_days)
+    route = ((0, 3), (3, 301)) if body == Body.MOON else NAIF_ROUTES[body]
+    x = y = z = 0.0
+    for center, target in route:
+        px, py, pz = position(center, target, tdb, tdb2)
+        x += px
+        y += py
+        z += pz
+    return x, y, z
+
+
+def _earth_barycentric_at_tt_offset(
+    jd_tt: float,
+    offset_days: float,
+    reader: KernelReader,
+) -> Vec3:
+    """Return Earth's barycentric position at a split TT reception epoch."""
+    position = getattr(reader, "_position_tdb_offset", None)
+    if not callable(position):
+        raise TypeError("reader does not support split-epoch TDB positions")
+    tdb, tdb2 = _tt_to_tdb_split(jd_tt, offset_days)
+    return vec_add(position(0, 3, tdb, tdb2), position(3, 399, tdb, tdb2))
+
+
+def _earth_barycentric_state_at_tt_offset(
+    jd_tt: float,
+    offset_days: float,
+    reader: KernelReader,
+) -> tuple[Vec3, Vec3]:
+    """Return Earth's split-epoch barycentric state in km and km/day."""
+    state = getattr(reader, "_position_and_velocity_tdb_offset", None)
+    if not callable(state):
+        raise TypeError("reader does not support split-epoch TDB states")
+    tdb, tdb2 = _tt_to_tdb_split(jd_tt, offset_days)
+    emb_position, emb_velocity = state(0, 3, tdb, tdb2)
+    earth_position, earth_velocity = state(3, 399, tdb, tdb2)
+    return vec_add(emb_position, earth_position), vec_add(emb_velocity, earth_velocity)
+
+
+def _geocentric_at_tt_offset(
+    body: str,
+    jd_tt: float,
+    offset_days: float,
+    reader: KernelReader,
+) -> Vec3:
+    """Return a geometric geocentric body position at a split TT epoch."""
+    position = getattr(reader, "_position_tdb_offset", None)
+    if not callable(position):
+        raise TypeError("reader does not support split-epoch TDB positions")
+    tdb, tdb2 = _tt_to_tdb_split(jd_tt, offset_days)
+    if body == Body.MOON:
+        return vec_sub(position(3, 301, tdb, tdb2), position(3, 399, tdb, tdb2))
+    earth = vec_add(position(0, 3, tdb, tdb2), position(3, 399, tdb, tdb2))
+    result = (0.0, 0.0, 0.0)
+    for center, target in NAIF_ROUTES[body]:
+        result = vec_add(result, position(center, target, tdb, tdb2))
+    return vec_sub(result, earth)
+
+
 def _barycentric(
     body: str,
     jd_tt: float,
@@ -2127,7 +2201,11 @@ def _apparent_geocentric_ecliptic(
 def _apply_planetary_light_time(
     body: str, jd_tt: float, reader: KernelReader, earth_ssb: Vec3, barycentric_fn,
 ) -> tuple[Vec3, float]:
-    """Solve planetary reception light time on the TDB axis (NAIF spkltc)."""
+    """Solve reception light time on the TDB axis (NAIF spkltc).
+
+    Sun and Moon use the finite norm guard needed by phase-search enclosures.
+    The TDB-at-reception policy differs from the split-TT eclipse route.
+    """
     pairs = _NPE_BODY_ROUTE_PAIRS.get(body)
     if pairs is None:
         return apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)
@@ -2143,6 +2221,7 @@ def _apply_planetary_light_time(
 
         return _iterate_light_time(
             earth_ssb, barycentric_fn(body, jd_tt, spk), emission_position,
+            guard_norm=body in (Body.SUN, Body.MOON),
         )
 
     if isinstance(reader, SpkReader):
@@ -2320,7 +2399,9 @@ def _geocentric_longitude_rate(
     plus_longitude: float | None = None
     try:
         if minus_context is None:
-            raise OutOfRangeError("lower longitude-rate sample is outside coverage")
+            raise OutOfRangeError(
+                "lower longitude-rate sample is outside coverage", out_of_range_times=True,
+            )
         minus_longitude = _geocentric_ecliptic_longitude_for_rate(
             body,
             jd_tt - step,
@@ -2336,7 +2417,9 @@ def _geocentric_longitude_rate(
         pass
     try:
         if plus_context is None:
-            raise OutOfRangeError("upper longitude-rate sample is outside coverage")
+            raise OutOfRangeError(
+                "upper longitude-rate sample is outside coverage", out_of_range_times=True,
+            )
         plus_longitude = _geocentric_ecliptic_longitude_for_rate(
             body,
             jd_tt + step,
@@ -2384,7 +2467,9 @@ def _geocentric_longitude_rate(
         delta_one = _signed_longitude_delta(minus_longitude, central_longitude)
         delta_two = _signed_longitude_delta(minus_two, central_longitude)
         return (-4.0 * delta_one + delta_two) / (2.0 * step)
-    raise OutOfRangeError("longitude rate cannot be evaluated within kernel coverage")
+    raise OutOfRangeError(
+        "longitude rate cannot be evaluated within kernel coverage", out_of_range_times=True,
+    )
 
 
 def _planet_at_default_apparent_geocentric_ecliptic(

@@ -215,6 +215,7 @@ private:
             payload.coefficient_count,
             payload.coefficients
         );
+        evaluator->set_descriptor_seconds(summary.start_second, summary.end_second);
         evaluators_.emplace(key, evaluator);
         return evaluator;
     }

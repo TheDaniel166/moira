@@ -30,6 +30,7 @@ pybind11_add_module(_moira_native
     src/native/src/nutation.cpp
     src/native/src/spk_file_mapping.cpp
     src/native/src/marriage_enclosure.cpp
+    src/native/src/eclipse_strict_snapshot.cpp
 )
 
 # The marriage enclosure kernel preserves each Python reference rounding
@@ -57,6 +58,39 @@ endif()
 # separately dispatched translation unit.  This avoids making AVX2 a wheel-wide
 # CPU requirement while still admitting it on capable x86 hosts.
 include(CheckCXXCompilerFlag)
+
+# The eclipse snapshot is an explicitly separate scalar numerical policy. Only
+# its own translation unit is compiled with the attested strict contract; this
+# does not attest or change the existing serving evaluator or AVX dispatch.
+if(MSVC)
+    check_cxx_compiler_flag("/fp:strict" MOIRA_ECLIPSE_HAS_FP_STRICT)
+    check_cxx_compiler_flag("/GL-" MOIRA_ECLIPSE_HAS_NO_LTO)
+    if(MOIRA_ECLIPSE_HAS_FP_STRICT AND MOIRA_ECLIPSE_HAS_NO_LTO)
+        set_source_files_properties(src/native/src/eclipse_strict_snapshot.cpp PROPERTIES
+            COMPILE_OPTIONS "/fp:strict;/GL-"
+            COMPILE_DEFINITIONS "MOIRA_ECLIPSE_STRICT_SNAPSHOT_BUILD=1")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    check_cxx_compiler_flag("-fno-fast-math" MOIRA_ECLIPSE_HAS_NO_FAST_MATH)
+    check_cxx_compiler_flag("-ffp-contract=off" MOIRA_ECLIPSE_HAS_NO_CONTRACT)
+    check_cxx_compiler_flag("-frounding-math" MOIRA_ECLIPSE_HAS_ROUNDING_MATH)
+    check_cxx_compiler_flag("-fno-lto" MOIRA_ECLIPSE_HAS_NO_LTO)
+    set(MOIRA_ECLIPSE_STRICT_FLAGS "-fno-fast-math;-ffp-contract=off;-frounding-math;-fno-lto")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        check_cxx_compiler_flag("-fdenormal-fp-math=ieee" MOIRA_ECLIPSE_HAS_IEEE_DENORMAL)
+        set(MOIRA_ECLIPSE_DENORMAL_OK ${MOIRA_ECLIPSE_HAS_IEEE_DENORMAL})
+        list(APPEND MOIRA_ECLIPSE_STRICT_FLAGS "-fdenormal-fp-math=ieee")
+    else()
+        set(MOIRA_ECLIPSE_DENORMAL_OK TRUE)
+    endif()
+    if(MOIRA_ECLIPSE_HAS_NO_FAST_MATH AND MOIRA_ECLIPSE_HAS_NO_CONTRACT AND
+       MOIRA_ECLIPSE_HAS_ROUNDING_MATH AND MOIRA_ECLIPSE_HAS_NO_LTO AND MOIRA_ECLIPSE_DENORMAL_OK)
+        set_source_files_properties(src/native/src/eclipse_strict_snapshot.cpp PROPERTIES
+            COMPILE_OPTIONS "${MOIRA_ECLIPSE_STRICT_FLAGS}"
+            COMPILE_DEFINITIONS "MOIRA_ECLIPSE_STRICT_SNAPSHOT_BUILD=1")
+    endif()
+endif()
+
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64|X86_64|i[3-6]86)$")
     if(MSVC)
         set(MOIRA_AVX2_FLAG "/arch:AVX2")

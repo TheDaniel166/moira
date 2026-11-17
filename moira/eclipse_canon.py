@@ -33,7 +33,7 @@ from ._eclipse_contact_solver import (
     _find_contact_pair,
 )
 from .constants import Body
-from .corrections import apply_aberration, apply_light_time
+from .corrections import _apply_light_time_split, apply_aberration, apply_light_time
 from .eclipse_geometry import (
     EARTH_RADIUS_KM,
     MOON_RADIUS_KM,
@@ -42,11 +42,16 @@ from .eclipse_geometry import (
     umbra_radius,
 )
 from .eclipse_search import refine_minimum
+from .spk_reader import _SplitEpochUnsupported
 from .planets import (
     _barycentric,
+    _barycentric_at_tt_offset,
     _earth_barycentric,
+    _earth_barycentric_at_tt_offset,
     _earth_barycentric_state,
+    _earth_barycentric_state_at_tt_offset,
     _geocentric,
+    _geocentric_at_tt_offset,
 )
 from .julian import (
     calendar_from_jd,
@@ -574,8 +579,29 @@ def _lunar_canon_vectors_tt(
     still isolate geometric-versus-retarded Moon policy without silently
     changing their meaning.
     """
+    # A pool can expose split methods while routing to a legacy reader.  If
+    # that route cannot preserve both epoch parts, use the historical
+    # single-part policy; it cannot recover already-rounded time precision.
     reader = calculator._reader
+    split_position = callable(getattr(reader, "_position_tdb_offset", None))
+    split_state = callable(getattr(reader, "_position_and_velocity_tdb_offset", None))
     if method == "nasa_shadow_axis_apparent_sun_moon":
+        if split_position and split_state:
+            try:
+                earth_ssb, earth_velocity = _earth_barycentric_state_at_tt_offset(jd_tt, 0.0, reader)
+                sun_light_time, _ = _apply_light_time_split(
+                    Body.SUN, jd_tt, reader, earth_ssb, _barycentric_at_tt_offset,
+                )
+                moon_light_time, _ = _apply_light_time_split(
+                    Body.MOON, jd_tt, reader, earth_ssb, _barycentric_at_tt_offset,
+                )
+            except _SplitEpochUnsupported:
+                pass
+            else:
+                return (
+                    apply_aberration(sun_light_time, earth_velocity),
+                    apply_aberration(moon_light_time, earth_velocity),
+                )
         earth_ssb, earth_velocity = _earth_barycentric_state(jd_tt, reader)
         sun_light_time, _ = apply_light_time(
             Body.SUN,
@@ -596,10 +622,29 @@ def _lunar_canon_vectors_tt(
             apply_aberration(moon_light_time, earth_velocity),
         )
 
-    sun_xyz = _geocentric(Body.SUN, jd_tt, reader)
     if method == "nasa_shadow_axis_geometric_moon":
-        return sun_xyz, _geocentric(Body.MOON, jd_tt, reader)
+        if split_position:
+            try:
+                return (
+                    _geocentric_at_tt_offset(Body.SUN, jd_tt, 0.0, reader),
+                    _geocentric_at_tt_offset(Body.MOON, jd_tt, 0.0, reader),
+                )
+            except _SplitEpochUnsupported:
+                pass
+        return _geocentric(Body.SUN, jd_tt, reader), _geocentric(Body.MOON, jd_tt, reader)
     if method == "nasa_shadow_axis_retarded_moon":
+        if split_position:
+            try:
+                sun_xyz = _geocentric_at_tt_offset(Body.SUN, jd_tt, 0.0, reader)
+                earth_ssb = _earth_barycentric_at_tt_offset(jd_tt, 0.0, reader)
+                moon_xyz, _ = _apply_light_time_split(
+                    Body.MOON, jd_tt, reader, earth_ssb, _barycentric_at_tt_offset,
+                )
+            except _SplitEpochUnsupported:
+                pass
+            else:
+                return sun_xyz, moon_xyz
+        sun_xyz = _geocentric(Body.SUN, jd_tt, reader)
         earth_ssb = _earth_barycentric(jd_tt, reader)
         moon_xyz, _ = apply_light_time(
             Body.MOON,

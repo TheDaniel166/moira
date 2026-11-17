@@ -1,0 +1,16 @@
+{
+  "attribution": "OPALE - Space Service of the Paris Observatory",
+  "source_url": "https://opale.imcce.fr/api/v1/phenomena/eclipses/10/1999-08-11",
+  "terms_url": "https://opale.imcce.fr/terms/",
+  "licence": "Open Licence 2.0 (numeric calculation results)",
+  "retrieved_utc_date": "2026-11-16",
+  "source_last_update": null,
+  "source_last_update_note": "The returned calculation did not state a last-information-update date; the date above is the retrieval date, not a claimed source update.",
+  "request": {"calendar": "gregorian", "ephemerids": "INPOP19A", "frame": "TrueOfDate", "observer": 399, "timescale": "UTC", "tag": "eclipses_default"},
+  "model_note": "OPALE reports spherical Sun and Moon at greatest, lunar radius 1738.091 km, solar radius 695700 km, WGS84. Moira uses DE441 and a different mean lunar radius; this is an ordinary total-eclipse control, not a one-limit reference.",
+  "greatest": {"utc": "1999-08-11T11:03:06", "latitude_deg": 45.072832073182212, "longitude_deg": 24.307947885758718, "sun_elevation_deg": 59.34617, "magnitude": 1.02989, "ut1_minus_tt_seconds": -63.679},
+  "tai_minus_utc_seconds": 32,
+  "tai_minus_utc_source": "https://datacenter.iers.org/data/html/bulletinc-020.html",
+  "comparison_tolerances": {"tt_seconds": 5.0, "location_deg": 0.02, "sun_elevation_deg": 0.1, "magnitude": 0.003},
+  "tolerance_note": "Cross-model regression gates, not estimates of physical accuracy; event time is rounded to the second in the OPALE response. The lunar-radius model difference materially affects magnitude."
+}

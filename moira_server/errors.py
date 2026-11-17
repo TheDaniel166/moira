@@ -42,6 +42,7 @@ from moira import (
 )
 
 from .config import ServerConfigurationError
+from .eclipse_diagnostic_errors import EclipseDiagnosticCoverageError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
 from moira.gochara_windows import GocharaWindowBudgetError, GocharaWindowDomainError, GocharaWindowUnresolvedError
 from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
@@ -727,6 +728,13 @@ def register_exception_handlers(app: FastAPI) -> None:
                 request_id=request_id,
             ),
         )
+
+    @app.exception_handler(EclipseDiagnosticCoverageError)
+    async def handle_eclipse_diagnostic_coverage(request: Request, exc: EclipseDiagnosticCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="eclipse_ephemeris_coverage_unavailable", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", str(uuid4())),
+        ))
 
     @app.exception_handler(ValueError)
     async def handle_value_error(request: Request, exc: ValueError) -> JSONResponse:

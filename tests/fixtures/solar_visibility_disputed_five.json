@@ -1,0 +1,56 @@
+{
+  "scope": "Five previously disputed solar catalog memberships, one same-model optimized local site and epoch each; no global absence claim",
+  "source": "Independent scratch same-ray spherical-cap calculation using native DE441 state and WGS84; retarded Sun/Moon, geometric horizon; prior surface site/time obtained by sampled optimization.",
+  "sources": [
+    "https://eclipse.gsfc.nasa.gov/SEcat5/SE-1899--1800.html",
+    "https://eclipsewise.com/solar/SEcatalog/SE-1899--1800.html",
+    "https://eclipse.gsfc.nasa.gov/SEcat5/SE-0699--0600.html"
+  ],
+  "records": [
+    {
+      "lunation": -47467,
+      "jd_ut1": 1049821.6974162797,
+      "latitude_deg": 71.64354127077118,
+      "longitude_deg": 22.621533641274425,
+      "expected_status": "disjoint",
+      "separation_margin_arcsec": -5.850473918704348,
+      "maximum_altitude_arcsec": null
+    },
+    {
+      "lunation": -45765,
+      "jd_ut1": 1100082.7536394836,
+      "latitude_deg": 61.559749625388086,
+      "longitude_deg": 150.25300581163503,
+      "expected_status": "disjoint",
+      "separation_margin_arcsec": -4.330206646327973,
+      "maximum_altitude_arcsec": null
+    },
+    {
+      "lunation": -33903,
+      "jd_ut1": 1450374.0220425925,
+      "latitude_deg": 68.7734590970796,
+      "longitude_deg": 9.979358997371975,
+      "expected_status": "visible",
+      "separation_margin_arcsec": 1.1843289444447351,
+      "maximum_altitude_arcsec": 1.1866664867189236
+    },
+    {
+      "lunation": -32201,
+      "jd_ut1": 1500634.996511943,
+      "latitude_deg": 66.10561039299404,
+      "longitude_deg": -173.82319436099758,
+      "expected_status": "visible",
+      "separation_margin_arcsec": 14.074316482929385,
+      "maximum_altitude_arcsec": 14.106124451702454
+    },
+    {
+      "lunation": -24109,
+      "jd_ut1": 1739597.222609157,
+      "latitude_deg": 60.85161425486963,
+      "longitude_deg": 1.1311881845197433,
+      "expected_status": "disjoint",
+      "separation_margin_arcsec": -0.3501034264232865,
+      "maximum_altitude_arcsec": null
+    }
+  ]
+}

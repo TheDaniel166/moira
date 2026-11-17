@@ -61,11 +61,12 @@ def test_synthetic_pck_decodes_ni5_for_both_daf_byte_orders(tmp_path: Path, endi
     )
     handle = moira_native.open_pck_kernel(str(path))
     try:
-        assert handle.rotation_matrix(2451545.0) == (
-            (1.0, 0.0, 0.0),
-            (0.0, 1.0, 0.0),
-            (0.0, 0.0, 1.0),
-        )
+        for jd in (2451545.0, 2451545.5):
+            assert handle.rotation_matrix(jd) == (
+                (1.0, 0.0, 0.0),
+                (0.0, 1.0, 0.0),
+                (0.0, 0.0, 1.0),
+            )
     finally:
         handle.close()
 

@@ -204,6 +204,16 @@ def test_position_raises_when_no_segment_covers_requested_jd() -> None:
         raise AssertionError("Expected ValueError for uncovered JD")
 
 
+def test_split_emission_epoch_outside_segment_has_typed_coverage_error() -> None:
+    reader = _reader_with_segments(
+        _FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0),
+    )
+    with pytest.raises(ValueError) as exc:
+        reader._segment_for_tdb(0, 10, 1000.0, offset_days=-0.001)
+    assert isinstance(exc.value, spk_reader.OutOfRangeError)
+    assert exc.value.out_of_range_times is True
+
+
 def test_native_position_path_is_used_for_supported_type2_segments(monkeypatch) -> None:
     segment = _FakeType2Segment(center=0, target=10, start_jd=2451544.0, end_jd=2451546.0)
     reader = _reader_with_segments(segment)

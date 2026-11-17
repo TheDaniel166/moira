@@ -89,12 +89,17 @@ from .eclipse_besselian import (
 )
 from .planets import (
     _barycentric,
+    _barycentric_at_tt_offset,
     _earth_barycentric,
+    _earth_barycentric_at_tt_offset,
     _geocentric,
+    _geocentric_at_tt_offset,
     sky_position_at,
 )
 from .nodes import true_node
-from .spk_reader import get_reader, KernelReader, SpkReader
+from .spk_reader import _SplitEpochUnsupported, get_reader, KernelReader, SpkReader
+from ._eclipse_phase_window import PhaseWindowUnresolved, _phase_crossing_in_window
+from ._eclipse_canon_window import _canon_ut_half_window
 from .phenomena import next_moon_phase
 from .transits import last_full_moon, last_new_moon
 from .coordinates import (
@@ -142,7 +147,7 @@ from .eclipse_cartography import (
     SolarEclipseMapSample,
     _build_solar_eclipse_cartography,
 )
-from .corrections import apply_light_time
+from .corrections import _apply_light_time_split, apply_light_time
 from .obliquity import nutation, true_obliquity
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 from .geoutils import (
@@ -151,6 +156,63 @@ from .geoutils import (
     sample_interval as _sample_interval,
     wrap_longitude_deg as _wrap_longitude_deg,
 )
+
+
+def _eclipse_earth_barycentric(jd_tt: float, reader: KernelReader):
+    """Use split TT/TDB positions when the reader supplies that capability.
+
+    Readers implementing only the established ``KernelReader`` protocol,
+    including readers selected inside a pool, retain single-part behavior.
+    That fallback cannot recover precision lost by rounding Julian days.
+    """
+    if callable(getattr(reader, "_position_tdb_offset", None)):
+        try:
+            return _earth_barycentric_at_tt_offset(jd_tt, 0.0, reader)
+        except _SplitEpochUnsupported:
+            pass
+    return _earth_barycentric(jd_tt, reader)
+
+
+def _eclipse_light_time(body: str, jd_tt: float, reader: KernelReader, earth_ssb):
+    """Evaluate the existing reception-time policy with admitted epoch precision."""
+    if callable(getattr(reader, "_position_tdb_offset", None)):
+        try:
+            # A pooled route can support the target but not the observer. Keep
+            # both sides of a light-cone calculation on the same time path.
+            earth_ssb = _earth_barycentric_at_tt_offset(jd_tt, 0.0, reader)
+            return _apply_light_time_split(
+                body, jd_tt, reader, earth_ssb, _barycentric_at_tt_offset,
+            )
+        except _SplitEpochUnsupported:
+            # A pool can select a legacy reader for a different route leg.
+            # Recompute the observer as well to keep the legacy model coherent.
+            earth_ssb = _earth_barycentric(jd_tt, reader)
+    return apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
+
+
+def _eclipse_body_pair(jd_tt: float, reader: KernelReader, *, sun_retarded: bool, moon_retarded: bool):
+    """Evaluate a whole Sun/Moon observable on one supported epoch path.
+
+    A reader that cannot supply any required split leg falls back for the
+    entire pair. That established single-part path retains its rounding limit.
+    """
+    if callable(getattr(reader, "_position_tdb_offset", None)):
+        try:
+            earth = (_earth_barycentric_at_tt_offset(jd_tt, 0.0, reader)
+                     if sun_retarded or moon_retarded else None)
+            def split(body, retarded):
+                if retarded:
+                    return _apply_light_time_split(body, jd_tt, reader, earth, _barycentric_at_tt_offset)[0]
+                return _geocentric_at_tt_offset(body, jd_tt, 0.0, reader)
+            return split(Body.SUN, sun_retarded), split(Body.MOON, moon_retarded)
+        except _SplitEpochUnsupported:
+            pass
+    earth = _earth_barycentric(jd_tt, reader) if sun_retarded or moon_retarded else None
+    def legacy(body, retarded):
+        if retarded:
+            return apply_light_time(body, jd_tt, reader, earth, _barycentric)[0]
+        return _geocentric(body, jd_tt, reader)
+    return legacy(Body.SUN, sun_retarded), legacy(Body.MOON, moon_retarded)
 
 __all__ = [
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
@@ -340,8 +402,9 @@ class SolarEclipsePath:
         points.  Same length as ``central_line_lats``.
     umbral_width_km : float or None
         Cross-track support width of the umbral (or antumbral) shadow path in
-        kilometres at
-        maximum eclipse. Absent for a noncentral total/annular event.
+        kilometres at maximum eclipse. Absent for a noncentral total/annular
+        event or when this closed-width product is not admitted. Partial
+        eclipses retain the legacy value zero; see ``umbral_width_status``.
     duration_at_max_s : float
         Duration of totality (or annularity) in seconds at the point of
         maximum eclipse.
@@ -355,6 +418,13 @@ class SolarEclipsePath:
         Physical cone-boundary snapshots including U1, greatest eclipse, and
         U4. Both root arcs are retained without horizon clipping. Empty for
         ordinary central and partial products.
+    umbral_width_status : str
+        ``available``, ``not_applicable``, or ``closed_width_not_admitted``
+        for computed paths. ``unspecified`` is the default for legacy direct
+        construction. These values describe the width, not event topology.
+    umbral_width_reason : str or None
+        ``incomplete_generator_intersections`` when sampled generators fail
+        the existing closed-width prerequisite, otherwise None.
     """
     central_line_lats:  tuple
     central_line_lons:  tuple
@@ -368,6 +438,10 @@ class SolarEclipsePath:
     max_eclipse_lon:    float
     eclipse_data:       'EclipseData'
     noncentral_footprints: tuple[SolarEclipseShadowFootprint, ...] = ()
+    # The status describes this instantaneous width product, not the eclipse's
+    # event-wide topology or either of its geographic limit branches.
+    umbral_width_status: str = "unspecified"
+    umbral_width_reason: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -1677,12 +1751,9 @@ class EclipseCalculator:
                 method=lunar_canon_method,
             )
         else:
-            sun_xyz = _geocentric(Body.SUN, jd_tt, self._reader)
-        if lunar_canon_method is None and retarded_moon:
-            earth_ssb = _earth_barycentric(jd_tt, self._reader)
-            moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, self._reader, earth_ssb, _barycentric)
-        elif lunar_canon_method is None:
-            moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
+            sun_xyz, moon_xyz = _eclipse_body_pair(
+                jd_tt, self._reader, sun_retarded=False, moon_retarded=retarded_moon,
+            )
         sun_lon, sun_lat, sun_dist = icrf_to_true_ecliptic(jd_tt, sun_xyz)
         moon_lon, moon_lat, moon_dist = icrf_to_true_ecliptic(jd_tt, moon_xyz)
         node_data = true_node(jd, reader=self._reader, jd_tt=jd_tt)
@@ -1837,19 +1908,12 @@ class EclipseCalculator:
         compatibility surface.
         """
         jd_tt = self._jd_tt_from_ut(jd_ut, delta_t_mode=delta_t_mode)
-        earth_ssb = _earth_barycentric(jd_tt, self._reader)
         # The shadow axis is set by the retarded direction to the Sun, not by
         # observer-facing apparent corrections and not by the instantaneous
         # geometric Sun vector.
-        sun_xyz, _ = apply_light_time(Body.SUN, jd_tt, self._reader, earth_ssb, _barycentric)
-        if retarded_moon:
-            # Retained only for explicitly named diagnostic/compatibility
-            # comparisons.  A light-time-retarded Moon is an apparent
-            # Earth-observer state, not the physical Moon center intersecting
-            # Earth's shadow at this TT epoch.
-            moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, self._reader, earth_ssb, _barycentric)
-        else:
-            moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
+        sun_xyz, moon_xyz = _eclipse_body_pair(
+            jd_tt, self._reader, sun_retarded=True, moon_retarded=retarded_moon,
+        )
         sun_norm = math.sqrt(sum(v * v for v in sun_xyz))
         axis_unit = tuple(-v / sun_norm for v in sun_xyz)
         axis_proj = sum(moon_xyz[i] * axis_unit[i] for i in range(3))
@@ -1884,8 +1948,9 @@ class EclipseCalculator:
         (axis_distance_km, moon_distance_km, moon_radius_deg,
          umbra_radius_deg, penumbra_radius_deg)
         """
-        sun_xyz = _geocentric(Body.SUN, jd_tt, self._reader)
-        moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
+        sun_xyz, moon_xyz = _eclipse_body_pair(
+            jd_tt, self._reader, sun_retarded=False, moon_retarded=False,
+        )
         sun_lon, sun_lat, sun_dist = icrf_to_true_ecliptic(jd_tt, sun_xyz)
         moon_lon, moon_lat, moon_dist = icrf_to_true_ecliptic(jd_tt, moon_xyz)
         moon_radius = _apparent_radius(MOON_RADIUS_KM, moon_dist)
@@ -1911,12 +1976,9 @@ class EclipseCalculator:
         global event.
         """
         jd_tt = _ut1_to_ephemeris_tt(jd_ut, self._reader)
-        sun_xyz = _geocentric(Body.SUN, jd_tt, self._reader)
-        if retarded_moon:
-            earth_ssb = _earth_barycentric(jd_tt, self._reader)
-            moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, self._reader, earth_ssb, _barycentric)
-        else:
-            moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
+        sun_xyz, moon_xyz = _eclipse_body_pair(
+            jd_tt, self._reader, sun_retarded=False, moon_retarded=retarded_moon,
+        )
         sun_lon, sun_lat, _sun_dist = icrf_to_true_ecliptic(jd_tt, sun_xyz)
         moon_lon, moon_lat, _moon_dist = icrf_to_true_ecliptic(jd_tt, moon_xyz)
         return _angular_separation(sun_lon, sun_lat, moon_lon, moon_lat)
@@ -1937,20 +1999,8 @@ class EclipseCalculator:
         the identical Sun/Moon states and shadow line.
         """
 
-        earth_ssb = _earth_barycentric(jd_tt, self._reader)
-        sun_xyz, _ = apply_light_time(
-            Body.SUN,
-            jd_tt,
-            self._reader,
-            earth_ssb,
-            _barycentric,
-        )
-        moon_xyz, _ = apply_light_time(
-            Body.MOON,
-            jd_tt,
-            self._reader,
-            earth_ssb,
-            _barycentric,
+        sun_xyz, moon_xyz = _eclipse_body_pair(
+            jd_tt, self._reader, sun_retarded=True, moon_retarded=True,
         )
         sun_to_moon = tuple(moon_xyz[i] - sun_xyz[i] for i in range(3))
         axis_norm = math.sqrt(sum(value * value for value in sun_to_moon))
@@ -2114,12 +2164,9 @@ class EclipseCalculator:
         available only to explicitly named diagnostics and compatibility work;
         it is not an admitted native event-family policy.
         """
-        earth_ssb = _earth_barycentric(jd_tt, self._reader)
-        sun_xyz, _ = apply_light_time(Body.SUN, jd_tt, self._reader, earth_ssb, _barycentric)
-        if retarded_moon:
-            moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, self._reader, earth_ssb, _barycentric)
-        else:
-            moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
+        sun_xyz, moon_xyz = _eclipse_body_pair(
+            jd_tt, self._reader, sun_retarded=True, moon_retarded=retarded_moon,
+        )
 
         sun_dist = math.sqrt(sum(v * v for v in sun_xyz))
         moon_dist = math.sqrt(sum(v * v for v in moon_xyz))
@@ -2656,13 +2703,21 @@ class EclipseCalculator:
         Returns
         -------
         SolarEclipseLocalCircumstances
-            Local circumstances at the time of local maximum eclipse.
+            Local circumstances at the time of local maximum eclipse, strictly
+            after ``jd_start``. An eclipse with an earlier local maximum is
+            not returned even when it is still in progress.
 
         Raises
         ------
         RuntimeError
             If no visible eclipse of the requested kind is found within
             *max_lunations* lunations.
+        OutOfRangeError
+            If the ephemeris does not cover a phase-neighborhood evaluation
+            needed to rule out a nearer eligible maximum, or another required
+            evaluation is outside coverage. The bounded phase probe is not a
+            proof of completeness for arbitrary ephemerides or physical
+            eclipse models.
         """
         _validate_observer_inputs(latitude, longitude, elevation_m)
         if max_lunations <= 0:
@@ -2675,9 +2730,48 @@ class EclipseCalculator:
         _SCAN_STEP_DAYS = 12.0 / 1440.0   # 12 minutes
         _SCAN_HALF_WINDOW = 4.0 / 24.0    # ±4 hours
 
-        phase_jd = next_moon_phase("New Moon", jd_start, reader=self._reader).jd_ut
+        # The local maximum can be after the request even when its new moon
+        # was before it.  The existing numerical path refines the global
+        # maximum within 0.125 d of phase, scans ±4 h around it, then refines
+        # within one 12-minute scan step. This is the envelope of that
+        # implementation, not a physical bound on all possible eclipses.
+        from ._eclipse_phase_window import _phase_crossing_in_window
 
-        for _ in range(max_lunations):
+        phase_guard = 2.0e-6  # days; covers the existing phase solver bracket
+        local_search_reach = 0.125 + _SCAN_HALF_WINDOW + _SCAN_STEP_DAYS
+
+        def canonical_phase(approximate_jd: float) -> float:
+            # Phase-finder brackets depend on the caller's start time. Refine
+            # every candidate through the same phase observable so repeated
+            # searches at the returned maximum cannot rediscover the same
+            # event just because their phase brackets rounded differently.
+            phase = _phase_crossing_in_window(
+                "New Moon", approximate_jd - 2.0 * phase_guard,
+                approximate_jd + 2.0 * phase_guard, self._reader,
+            )
+            if phase is None:
+                raise ArithmeticError("new-moon candidate could not be bracketed for local eclipse search")
+            return phase
+
+        phase_jd = _phase_crossing_in_window(
+            "New Moon",
+            jd_start - local_search_reach - phase_guard,
+            jd_start + phase_guard,
+            self._reader,
+        )
+        if phase_jd is None:
+            phase_jd = next_moon_phase("New Moon", jd_start, reader=self._reader).jd_ut
+        phase_jd = canonical_phase(phase_jd)
+
+        # The additional phase on the previous side is a lookback, not one
+        # of the requested forward lunations when it does not produce an
+        # eligible local maximum. Forward phases retain the existing budget.
+        forward_lunations = 0
+        while True:
+            if phase_jd > jd_start:
+                if forward_lunations >= max_lunations:
+                    break
+                forward_lunations += 1
             phase_data = self.calculate_jd(phase_jd)
             if phase_data.is_eclipse_season:
                 best_jd = _refine_solar_maximum(
@@ -2753,7 +2847,7 @@ class EclipseCalculator:
                             if kind_key == "hybrid"
                             else _matches_solar_kind(refined_data, kind_key)
                         )
-                        if overlap and sun.altitude > 0.0 and local_kind_match:
+                        if overlap and sun.altitude > 0.0 and local_kind_match and refined_jd > jd_start:
                             refined_event = EclipseEvent(jd_ut=refined_jd, data=refined_data)
                             return SolarEclipseLocalCircumstances(
                                 event=refined_event,
@@ -2774,7 +2868,11 @@ class EclipseCalculator:
                                 topocentric_overlap=True,
                             )
 
-            phase_jd = next_moon_phase("New Moon", phase_jd + 1.0, reader=self._reader).jd_ut
+            if forward_lunations >= max_lunations:
+                break
+            phase_jd = canonical_phase(next_moon_phase(
+                "New Moon", max(jd_start, phase_jd + 1.0), reader=self._reader
+            ).jd_ut)
 
         raise RuntimeError(
             f"No solar eclipse of kind {kind!r} visible at "
@@ -2842,6 +2940,7 @@ class EclipseCalculator:
                 max_eclipse_lat=max_lat,
                 max_eclipse_lon=max_lon,
                 eclipse_data=path_data,
+                umbral_width_status="not_applicable",
             )
 
         start_boundary, end_boundary = _solve_solar_central_interval(
@@ -2888,6 +2987,7 @@ class EclipseCalculator:
                         south_lats.append(south_pts[0].latitude_deg)
                         south_lons.append(south_pts[0].longitude_deg)
 
+        width, width_status, width_reason = _central_width_at_epoch(self, event.jd_ut)
         return SolarEclipsePath(
             central_line_lats=tuple(lats),
             central_line_lons=tuple(lons),
@@ -2895,7 +2995,7 @@ class EclipseCalculator:
             northern_limit_lons=tuple(north_lons),
             southern_limit_lats=tuple(south_lats),
             southern_limit_lons=tuple(south_lons),
-            umbral_width_km=_solve_solar_umbral_width_km(self, event.jd_ut),
+            umbral_width_km=width,
             duration_at_max_s=_solve_local_solar_central_duration_s(
                 self,
                 event.jd_ut,
@@ -2905,6 +3005,8 @@ class EclipseCalculator:
             max_eclipse_lat=max_lat,
             max_eclipse_lon=max_lon,
             eclipse_data=path_data,
+            umbral_width_status=width_status,
+            umbral_width_reason=width_reason,
         )
 
     def solar_global_circumstances(
@@ -3149,12 +3251,47 @@ class EclipseCalculator:
             # refine to a maximum on the wrong side and must be skipped.
             return candidate_jd < jd_start if backward else candidate_jd > jd_start
 
+        # The ordinary phase solvers stop at 1e-6 day. Rebracket every returned
+        # phase to a deterministic represented crossing so the same eclipse is
+        # refined from the same seed for next/previous and adjacent floats.
+        # This is numerical stabilization, not a phase-completeness proof.
+        phase_guard = 4.0e-6
+
+        def canonical_phase(estimate: float) -> float:
+            phase = _phase_crossing_in_window(
+                "Full Moon", estimate - phase_guard, estimate + phase_guard,
+                self._reader,
+            )
+            if phase is None:
+                raise PhaseWindowUnresolved("full-moon phase solvers could not be reconciled")
+            return phase
+
+        window_days = _canon_ut_half_window(self._reader, jd_start) if use_canon else 0.125
+        if backward:
+            adjacent = _phase_crossing_in_window(
+                "Full Moon", jd_start - phase_guard, jd_start + window_days + phase_guard,
+                self._reader,
+            )
+        else:
+            adjacent = _phase_crossing_in_window(
+                "Full Moon", jd_start - window_days - phase_guard, jd_start + phase_guard,
+                self._reader,
+            )
+        if adjacent is not None:
+            event = self._lunar_eclipse_near_syzygy(
+                adjacent, kind_key=kind_key, use_canon=use_canon,
+            )
+            if event is not None and is_in_requested_direction(event.jd_ut):
+                self._lunar_search_cache[cache_key] = event
+                return event
+
         if backward:
             phase_jd = last_full_moon(jd_start, reader=self._reader)
         else:
             phase_jd = next_moon_phase("Full Moon", jd_start, reader=self._reader).jd_ut
 
-        for _ in range(max_lunations):
+        for lunation_index in range(max_lunations):
+            phase_jd = canonical_phase(phase_jd)
             event = self._lunar_eclipse_near_syzygy(
                 phase_jd,
                 kind_key=kind_key,
@@ -3164,6 +3301,10 @@ class EclipseCalculator:
                 self._lunar_search_cache[cache_key] = event
                 return event
 
+            # Do not query beyond the declared budget: the next phase could
+            # lie outside kernel coverage even though it is not needed.
+            if lunation_index + 1 == max_lunations:
+                break
             if backward:
                 phase_jd = last_full_moon(phase_jd - 1.0, reader=self._reader)
             else:
@@ -3207,6 +3348,36 @@ class EclipseCalculator:
             # same order relative to the caller's seed.
             return candidate_jd < jd_start if backward else candidate_jd > jd_start
 
+        # Probe the overlapping phase neighborhood on the other side of the
+        # request. The 0.125-day bound is the current optimizer's UT window,
+        # not a claim that all physically possible maxima lie in that window.
+        phase_guard = 4.0e-6
+
+        def canonical_phase(estimate: float) -> float:
+            phase = _phase_crossing_in_window(
+                "New Moon", estimate - phase_guard, estimate + phase_guard,
+                self._reader,
+            )
+            if phase is None:
+                raise PhaseWindowUnresolved("new-moon phase solvers could not be reconciled")
+            return phase
+
+        if backward:
+            adjacent = _phase_crossing_in_window(
+                "New Moon", jd_start - phase_guard, jd_start + 0.125 + phase_guard,
+                self._reader,
+            )
+        else:
+            adjacent = _phase_crossing_in_window(
+                "New Moon", jd_start - 0.125 - phase_guard, jd_start + phase_guard,
+                self._reader,
+            )
+        if adjacent is not None:
+            event = self._solar_eclipse_near_syzygy(adjacent, kind_key=kind_key)
+            if event is not None and is_in_requested_direction(event.jd_ut):
+                self._solar_search_cache[cache_key] = event
+                return event
+
         if backward:
             phase_jd = last_new_moon(jd_start, reader=self._reader)
         else:
@@ -3215,11 +3386,14 @@ class EclipseCalculator:
         lunations_searched = 0
         while max_lunations is None or lunations_searched < max_lunations:
             lunations_searched += 1
+            phase_jd = canonical_phase(phase_jd)
             event = self._solar_eclipse_near_syzygy(phase_jd, kind_key=kind_key)
             if event is not None and is_in_requested_direction(event.jd_ut):
                 self._solar_search_cache[cache_key] = event
                 return event
 
+            if max_lunations is not None and lunations_searched >= max_lunations:
+                break
             if backward:
                 phase_jd = last_new_moon(phase_jd - 1.0, reader=self._reader)
             else:
@@ -3325,17 +3499,37 @@ class EclipseCalculator:
         jd_start: float,
         jd_end: float,
     ) -> list[EclipseEvent]:
-        """Refine a native candidate superset through Python eclipse doctrine."""
+        """Refine native candidates from the same represented phase as search.
+
+        Native candidates locate a separation minimum and are not themselves
+        New or Full Moon crossings.  Refine a bracketed crossing first so the
+        represented maximum agrees with the next/previous selector, including
+        an event exactly on an inclusive range boundary.  The local phase
+        window is a numerical aid rather than an absence certificate: if it
+        cannot identify a crossing, the Python range search owns the result.
+        """
         events: list[EclipseEvent] = []
         for candidate_ut1 in candidates_ut1:
+            phase_name = "New Moon" if family == "solar" else "Full Moon"
+            try:
+                phase_jd = _phase_crossing_in_window(
+                    phase_name, candidate_ut1 - 0.125, candidate_ut1 + 0.125,
+                    self._reader,
+                )
+            except PhaseWindowUnresolved:
+                phase_jd = None
+            if phase_jd is None:
+                if family == "solar":
+                    return self._solar_eclipses_in_range_python(jd_start, jd_end)
+                return self._lunar_eclipses_in_range_python(jd_start, jd_end)
             if family == "solar":
                 event = self._solar_eclipse_near_syzygy(
-                    candidate_ut1,
+                    phase_jd,
                     kind_key="any",
                 )
             else:
                 event = self._lunar_eclipse_near_syzygy(
-                    candidate_ut1,
+                    phase_jd,
                     kind_key="any",
                     use_canon=False,
                 )
@@ -3884,6 +4078,14 @@ class _SearchLimitReached(RuntimeError):
     pass
 
 
+class _ClosedWidthUnavailable(_SearchLimitReached):
+    """Width product cannot admit an incomplete generator intersection family."""
+
+
+class _AxisTrackTangentUnavailable(ArithmeticError):
+    """The nominal track stencil has no neighboring axis surface point."""
+
+
 def _validate_observer_inputs(
     latitude: float,
     longitude: float,
@@ -4362,13 +4564,9 @@ def _earth_fixed_lunar_reception_vector(
     """
 
     jd_tt = _ut1_to_ephemeris_tt(jd_ut, calc._reader)
-    earth_ssb = _earth_barycentric(jd_tt, calc._reader)
-    moon_icrf, _light_time_days = apply_light_time(
-        Body.MOON,
-        jd_tt,
-        calc._reader,
-        earth_ssb,
-        lambda body, epoch, reader: _barycentric(body, epoch, reader),
+    earth_ssb = _eclipse_earth_barycentric(jd_tt, calc._reader)
+    moon_icrf, _light_time_days = _eclipse_light_time(
+        Body.MOON, jd_tt, calc._reader, earth_ssb,
     )
     moon_tete = mat_vec_mul(
         mat_mul(
@@ -5303,6 +5501,7 @@ def _solve_noncentral_solar_path(
             central=True,
         ),
         noncentral_footprints=tuple(footprints),
+        umbral_width_status="not_applicable",
     )
 
 
@@ -7951,7 +8150,9 @@ def _solar_axis_track_direction_itrf(
     elif after is not None:
         displacement = _shadow_subtract(after.xyz_itrf_km, center.xyz_itrf_km)
     else:
-        raise ArithmeticError("central shadow track has no neighboring surface point")
+        raise _AxisTrackTangentUnavailable(
+            "central shadow track has no neighboring surface point"
+        )
 
     normal = _wgs84_surface_normal_unit(center.xyz_itrf_km)
     tangent = _shadow_subtract(
@@ -7961,34 +8162,10 @@ def _solar_axis_track_direction_itrf(
     return _shadow_unit(tangent, label="central shadow track tangent")
 
 
-def _central_shadow_support_width_km(
+def _central_shadow_generator_points(
     shadow: _EarthFixedSolarShadow,
-    center_xyz_itrf_km: tuple[float, float, float],
-    track_direction_itrf: tuple[float, float, float],
-) -> float:
-    """Return the full cross-track support span of a closed shadow footprint.
-
-    Each azimuth selects one generator of the physical umbral/antumbral cone.
-    Its first lawful intersection with WGS-84 is a point on the instantaneous
-    mean-limb path boundary. Projecting the complete boundary onto the local
-    cross-track direction captures the tilted footprint; intersecting only a
-    centered chord does not.
-    """
-
-    surface_normal = _wgs84_surface_normal_unit(center_xyz_itrf_km)
-    tangent = _shadow_subtract(
-        track_direction_itrf,
-        _shadow_scale(
-            surface_normal,
-            _shadow_dot(track_direction_itrf, surface_normal),
-        ),
-    )
-    tangent = _shadow_unit(tangent, label="central shadow track tangent")
-    cross_track = _shadow_unit(
-        _shadow_cross(surface_normal, tangent),
-        label="central shadow cross-track direction",
-    )
-
+) -> tuple[tuple[float, float, float], ...]:
+    """Collect the exact generator samples used by the legacy width product."""
     axis_unit = shadow.axis_unit_away_from_sun
     reference = (0.0, 0.0, 1.0) if abs(axis_unit[2]) < 0.9 else (1.0, 0.0, 0.0)
     cone_east = _shadow_unit(
@@ -7996,7 +8173,7 @@ def _central_shadow_support_width_km(
         label="central shadow cone basis",
     )
     cone_north = _shadow_cross(axis_unit, cone_east)
-    projections: list[float] = []
+    points: list[tuple[float, float, float]] = []
 
     for index in range(_SOLAR_FOOTPRINT_AZIMUTH_SAMPLES):
         azimuth = math.tau * index / _SOLAR_FOOTPRINT_AZIMUTH_SAMPLES
@@ -8029,17 +8206,42 @@ def _central_shadow_support_width_km(
             generator_origin,
             _shadow_scale(generator_direction, min(lawful_roots)),
         )
-        projections.append(
-            _shadow_dot(
-                _shadow_subtract(boundary_xyz, center_xyz_itrf_km),
-                cross_track,
-            )
-        )
+        points.append(boundary_xyz)
 
-    if len(projections) != _SOLAR_FOOTPRINT_AZIMUTH_SAMPLES:
-        raise _SearchLimitReached(
+    if len(points) != _SOLAR_FOOTPRINT_AZIMUTH_SAMPLES:
+        raise _ClosedWidthUnavailable(
             "central-shadow footprint is not a closed two-limit product at this epoch"
         )
+    return tuple(points)
+
+
+def _central_shadow_support_width_km(
+    shadow: _EarthFixedSolarShadow,
+    center_xyz_itrf_km: tuple[float, float, float],
+    track_direction_itrf: tuple[float, float, float],
+) -> float:
+    """Return the full cross-track support span of a closed shadow footprint.
+
+    Each azimuth selects one generator of the physical umbral/antumbral cone.
+    Its first lawful intersection with WGS-84 is a point on the instantaneous
+    mean-limb path boundary. Projecting the complete boundary onto the local
+    cross-track direction captures the tilted footprint; intersecting only a
+    centered chord does not.
+    """
+    surface_normal = _wgs84_surface_normal_unit(center_xyz_itrf_km)
+    tangent = _shadow_subtract(
+        track_direction_itrf,
+        _shadow_scale(surface_normal, _shadow_dot(track_direction_itrf, surface_normal)),
+    )
+    tangent = _shadow_unit(tangent, label="central shadow track tangent")
+    cross_track = _shadow_unit(
+        _shadow_cross(surface_normal, tangent),
+        label="central shadow cross-track direction",
+    )
+    projections = [
+        _shadow_dot(_shadow_subtract(point, center_xyz_itrf_km), cross_track)
+        for point in _central_shadow_generator_points(shadow)
+    ]
     return max(projections) - min(projections)
 
 
@@ -8059,6 +8261,42 @@ def _solve_solar_umbral_width_km(
         center.xyz_itrf_km,
         track_direction,
     )
+
+
+def _central_width_at_epoch(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> tuple[float | None, str, str | None]:
+    """Preserve the closed-width failure as a narrow product-level outcome.
+
+    The sampled intersection condition does not identify event-wide topology.
+    When a tangent is unavailable, diagnose that independent prerequisite
+    before re-raising the tangent error if the prerequisite is satisfied.
+    Other failures continue to raise.
+    """
+    try:
+        width = _solve_solar_umbral_width_km(calc, jd_ut)
+    except _ClosedWidthUnavailable:
+        return None, "closed_width_not_admitted", "incomplete_generator_intersections"
+    except _AxisTrackTangentUnavailable:
+        # The legacy algorithm normally tests the track first. An unavailable
+        # tangent need not prevent diagnosing the distinct, earlier prerequisite
+        # that every sampled generator intersect; do not fabricate a tangent.
+        shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+        if shadow is None or _axis_surface_point_from_shadow(shadow) is None:
+            raise
+        try:
+            _central_shadow_generator_points(shadow)
+        except _ClosedWidthUnavailable:
+            return None, "closed_width_not_admitted", "incomplete_generator_intersections"
+        raise
+    if width == 0.0:
+        # The legacy solver uses zero as a no-axis sentinel. Do not publish it
+        # as a measured width when a separately selected epoch has no axis.
+        shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+        if shadow is None or _axis_surface_point_from_shadow(shadow) is None:
+            raise ArithmeticError("central width epoch has no axis surface point")
+    return width, "available", None
 
 
 # ---------------------------------------------------------------------------

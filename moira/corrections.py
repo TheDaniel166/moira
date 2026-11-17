@@ -87,6 +87,7 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
+import sys
 from .constants import DEG2RAD, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 
@@ -178,18 +179,74 @@ def apply_light_time(
 
 
 def _iterate_light_time(
-    observer: Vec3, geometric_body: Vec3, emission_position,
+    observer: Vec3, geometric_body: Vec3, emission_position, *, guard_norm: bool = False,
 ) -> tuple[Vec3, float]:
-    """Solve for reception light time using the caller's emission clock."""
+    """Solve for reception light time using the caller's emission clock.
+
+    The split-epoch caller enables a coarse finite-norm guard needed by its
+    conditional interval enclosure. Ordinary successful values are unchanged;
+    the legacy unsplit caller retains its original behavior.
+    """
+    if guard_norm and (isinstance(C_KM_PER_DAY, bool) or not math.isfinite(C_KM_PER_DAY) or C_KM_PER_DAY <= 0.0):
+        raise ArithmeticError("split light-time speed of light must be finite and positive")
+
+    def norm(xyz: Vec3) -> float:
+        if not guard_norm:
+            return vec_norm(xyz)
+        if not all(math.isfinite(component) for component in xyz):
+            raise ArithmeticError("split light-time vector must be finite")
+        value = vec_norm(xyz)
+        if not math.isfinite(value) or value < 0.0:
+            raise ArithmeticError("split light-time norm must be finite and nonnegative")
+        largest = max(abs(component) for component in xyz)
+        # The squared largest component is normal at this threshold. Below it
+        # retain the existing behavior, since the norm calculation can underflow.
+        if largest >= float.fromhex("0x1p-500") and value < largest / 2.0:
+            raise ArithmeticError("split light-time norm is below its finite vector bound")
+        # If doubling overflows, every finite binary64 norm is below the exact
+        # real quantity 2*largest. Otherwise the bound is exactly representable
+        # for a finite binary64 component under the declared IEEE model.
+        if largest <= sys.float_info.max / 2.0 and value > 2.0 * largest:
+            raise ArithmeticError("split light-time norm exceeds its finite vector bound")
+        return value
+
+    def light_delay(xyz: Vec3) -> float:
+        result = norm(xyz) / C_KM_PER_DAY
+        if guard_norm and not math.isfinite(result):
+            raise ArithmeticError("split light-time delay must be finite")
+        return result
+
     xyz = vec_sub(geometric_body, observer)
-    delay = vec_norm(xyz) / C_KM_PER_DAY
+    delay = light_delay(xyz)
     for _ in range(10):
         xyz = vec_sub(emission_position(delay), observer)
-        next_delay = vec_norm(xyz) / C_KM_PER_DAY
+        next_delay = light_delay(xyz)
         if abs(next_delay - delay) < 1e-14:  # Days, about one nanosecond.
             return xyz, next_delay
         delay = next_delay
     return xyz, delay
+
+
+def _apply_light_time_split(
+    body: str,
+    jd_tt: float,
+    reader,
+    earth_ssb: Vec3,
+    barycentric_offset_fn,
+) -> tuple[Vec3, float]:
+    """Solve reception light time without adding the delay to the TT day.
+
+    ``barycentric_offset_fn`` evaluates a body at a TT day plus a separate
+    offset in days.  The observer must be evaluated at the same split
+    reception epoch.  This private path preserves the existing physical
+    policy of :func:`apply_light_time`; only its epoch representation differs.
+    """
+    return _iterate_light_time(
+        earth_ssb,
+        barycentric_offset_fn(body, jd_tt, 0.0, reader),
+        lambda delay: barycentric_offset_fn(body, jd_tt, -delay, reader),
+        guard_norm=True,
+    )
 
 
 # ---------------------------------------------------------------------------

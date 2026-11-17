@@ -197,6 +197,10 @@ class SolarEclipseGreatestSite:
     magnitude: float
     obscuration: float
     local_class: str
+    # Availability belongs to this site's own epoch.  A missing closed-cone
+    # width does not by itself classify an eclipse's event-wide topology.
+    path_width_status: str = "unspecified"
+    path_width_reason: str | None = None
 
     def __post_init__(self) -> None:
         for name in (
@@ -220,6 +224,22 @@ class SolarEclipseGreatestSite:
             raise ValueError("longitude_deg must be in [-180, 180]")
         if self.path_width_km is not None and _finite("path_width_km", self.path_width_km) < 0.0:
             raise ValueError("width must be non-negative when present")
+        if self.path_width_status not in {
+            "available", "not_applicable", "closed_width_not_admitted", "width_not_computed", "unspecified",
+        }:
+            raise ValueError("invalid path width status")
+        if self.path_width_status == "available":
+            if self.path_width_km is None or self.path_width_reason is not None:
+                raise ValueError("available width requires a value and no unavailability reason")
+        elif self.path_width_status == "not_applicable":
+            if self.path_width_km not in (None, 0.0) or self.path_width_reason is not None:
+                raise ValueError("non-applicable width requires null or legacy zero and no reason")
+        elif self.path_width_status == "closed_width_not_admitted" and (self.path_width_km is not None or self.path_width_reason != "incomplete_generator_intersections"):
+            raise ValueError("unadmitted closed width requires null and its specific reason")
+        elif self.path_width_status == "width_not_computed" and (self.path_width_km is not None or self.path_width_reason != "central_axis_boundary"):
+            raise ValueError("uncomputed boundary width requires null and its specific reason")
+        elif self.path_width_status == "unspecified" and self.path_width_reason is not None:
+            raise ValueError("unspecified width cannot carry a reason")
         if self.central_duration_seconds < 0.0:
             raise ValueError("width and duration must be non-negative")
         if not 0.0 <= self.obscuration <= 1.0:
@@ -304,8 +324,12 @@ class SolarEclipseGlobalCircumstances:
                 raise ValueError("noncentral footprints require coverage without a central line")
             if self.greatest.path_width_km is not None:
                 raise ValueError("noncentral eclipse has no central-line width")
+            if self.greatest.path_width_status not in {"not_applicable", "unspecified"}:
+                raise ValueError("noncentral greatest-site width must be not applicable")
             if self.greatest_duration.path_width_km is not None:
                 raise ValueError("noncentral duration site has no central-line width")
+            if self.greatest_duration.path_width_status not in {"not_applicable", "unspecified"}:
+                raise ValueError("noncentral duration-site width must be not applicable")
             epochs = tuple(snapshot.jd_ut for snapshot in self.noncentral_footprints)
             if epochs != tuple(sorted(set(epochs))):
                 raise ValueError("noncentral footprint epochs must be strictly ordered")
@@ -315,8 +339,26 @@ class SolarEclipseGlobalCircumstances:
                 or self.event.jd_ut not in epochs
             ):
                 raise ValueError("noncentral footprints must retain U1, GE, and U4")
-        elif self.greatest.path_width_km is None:
-            raise ValueError("absent central width requires noncentral footprints")
+        elif self.greatest.path_width_km is None and not (
+            self.first_central_line_limit is not None
+            and self.greatest.path_width_status == "closed_width_not_admitted"
+        ):
+            raise ValueError("absent width requires noncentral footprints or an explicitly unadmitted central width")
+        if self.first_central_line_limit is not None and (
+            self.greatest.path_width_status == "not_applicable"
+            or (
+                self.greatest_duration is not None
+                and self.greatest_duration.path_width_status == "not_applicable"
+            )
+        ):
+            raise ValueError("central eclipse width cannot be not applicable")
+        if (
+            self.first_central_line_limit is not None
+            and self.greatest_duration is not None
+            and self.greatest_duration.path_width_km is None
+            and self.greatest_duration.path_width_status not in {"closed_width_not_admitted", "width_not_computed", "unspecified"}
+        ):
+            raise ValueError("absent central duration-site width must be explicitly unadmitted")
 
 
 def _epoch(calculator: "EclipseCalculator", jd_ut1: float) -> EclipseEpoch:
@@ -375,7 +417,7 @@ def _build_solar_global_circumstances(
         _solar_axis_surface_point,
         _solve_local_solar_central_duration_s,
         _solve_solar_central_interval,
-        _solve_solar_umbral_width_km,
+        _central_width_at_epoch,
         _solve_solar_umbral_contacts,
     )
 
@@ -610,15 +652,17 @@ def _build_solar_global_circumstances(
             abs(duration_time - interval_start),
             abs(duration_time - interval_end),
         ) <= 1.0e-10
+        if at_central_limit:
+            duration_width, duration_width_status, duration_width_reason = None, "width_not_computed", "central_axis_boundary"
+        else:
+            duration_width, duration_width_status, duration_width_reason = _central_width_at_epoch(
+                calculator, duration_time
+            )
         greatest_duration = SolarEclipseGreatestSite(
             epoch=_epoch(calculator, duration_time),
             latitude_deg=duration_point.latitude_deg,
             longitude_deg=duration_point.longitude_deg,
-            path_width_km=(
-                0.0
-                if at_central_limit
-                else _solve_solar_umbral_width_km(calculator, duration_time)
-            ),
+            path_width_km=duration_width,
             central_duration_seconds=duration_seconds,
             sun_altitude_deg=duration_discs.sun_altitude_deg,
             sun_azimuth_deg=duration_discs.sun_azimuth_deg,
@@ -630,6 +674,8 @@ def _build_solar_global_circumstances(
             magnitude=duration_discs.magnitude,
             obscuration=duration_discs.obscuration,
             local_class=duration_discs.local_class,
+            path_width_status=duration_width_status,
+            path_width_reason=duration_width_reason,
         )
     umbral_contacts = (
         _solve_solar_umbral_contacts(calculator, event.jd_ut)
@@ -658,6 +704,8 @@ def _build_solar_global_circumstances(
             magnitude=discs.magnitude,
             obscuration=discs.obscuration,
             local_class=discs.local_class,
+            path_width_status=path.umbral_width_status,
+            path_width_reason=path.umbral_width_reason,
         ),
         greatest_duration=greatest_duration,
         equatorial_conjunction=equatorial_conjunction,
@@ -759,4 +807,5 @@ def _noncentral_greatest_duration(
         separation_deg=discs.separation_deg, sun_semidiameter_deg=discs.sun_radius_deg,
         moon_semidiameter_deg=discs.moon_radius_deg, magnitude=discs.magnitude,
         obscuration=discs.obscuration, local_class=discs.local_class,
+        path_width_status="not_applicable", path_width_reason=None,
     )

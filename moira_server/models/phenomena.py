@@ -633,6 +633,22 @@ class SolarEclipseShadowFootprintResponse(_StrictModel):
         return self
 
 
+def _validate_solar_width_availability(value: float | None, status: str, reason: str | None) -> None:
+    """Enforce width/value consistency without inferring event topology."""
+    if status == "width_not_computed" and (value is not None or reason != "central_axis_boundary"):
+        raise ValueError("uncomputed boundary width requires null and its specific reason")
+    if status == "unspecified" and reason is not None:
+        raise ValueError("unspecified width cannot carry a reason")
+    if status == "available" and (value is None or reason is not None):
+        raise ValueError("available width requires a value and no reason")
+    if status == "not_applicable" and (value not in (None, 0.0) or reason is not None):
+        raise ValueError("non-applicable width requires null or legacy zero and no reason")
+    if status == "closed_width_not_admitted" and (
+        value is not None or reason != "incomplete_generator_intersections"
+    ):
+        raise ValueError("unadmitted closed width requires null and its specific reason")
+
+
 class SolarEclipsePathResponse(_StrictModel):
     central_line_lats: list[float]
     central_line_lons: list[float]
@@ -646,6 +662,18 @@ class SolarEclipsePathResponse(_StrictModel):
     max_eclipse_lon: float
     eclipse_data: EclipseDataResponse
     noncentral_footprints: list[SolarEclipseShadowFootprintResponse] = Field(default_factory=list)
+
+
+
+class SolarEclipsePathAvailabilityResponse(SolarEclipsePathResponse):
+    """Opt-in versioned width metadata; existing path responses are unchanged."""
+    umbral_width_status: Literal["available", "not_applicable", "closed_width_not_admitted", "width_not_computed", "unspecified"]
+    umbral_width_reason: Literal["incomplete_generator_intersections", "central_axis_boundary"] | None = None
+
+    @model_validator(mode="after")
+    def validate_width_availability(self):
+        _validate_solar_width_availability(self.umbral_width_km, self.umbral_width_status, self.umbral_width_reason)
+        return self
 
 
 SolarEclipseSearchKind = Literal[
@@ -820,6 +848,17 @@ class SolarEclipseGreatestSiteResponse(_StrictModel):
     local_class: Literal["none", "partial", "annular", "total"]
 
 
+
+class SolarEclipseGreatestSiteAvailabilityResponse(SolarEclipseGreatestSiteResponse):
+    path_width_status: Literal["available", "not_applicable", "closed_width_not_admitted", "width_not_computed", "unspecified"]
+    path_width_reason: Literal["incomplete_generator_intersections", "central_axis_boundary"] | None = None
+
+    @model_validator(mode="after")
+    def validate_width_availability(self):
+        _validate_solar_width_availability(self.path_width_km, self.path_width_status, self.path_width_reason)
+        return self
+
+
 class SolarBesselianElementsResponse(_StrictModel):
     jd_ut1: float = Field(allow_inf_nan=False)
     jd_tt: float = Field(allow_inf_nan=False)
@@ -946,6 +985,11 @@ class EclipseContourLevelResponse(_StrictModel):
     quantity: Literal["magnitude", "obscuration"]
     threshold: float = Field(gt=0.0, le=1.0, allow_inf_nan=False)
     components: list[EclipseContourComponentResponse]
+
+
+class SolarEclipseGlobalAvailabilityResponse(SolarEclipseGlobalCircumstancesResponse):
+    greatest: SolarEclipseGreatestSiteAvailabilityResponse
+    greatest_duration: SolarEclipseGreatestSiteAvailabilityResponse | None = None
 
 
 class SolarEclipseCartographyResponse(_StrictModel):
@@ -1837,6 +1881,9 @@ __all__ = [
     "StationStateResponse",
     "SolarEclipsePathRequest",
     "SolarEclipsePathResponse",
+    "SolarEclipsePathAvailabilityResponse",
+    "SolarEclipseGreatestSiteAvailabilityResponse",
+    "SolarEclipseGlobalAvailabilityResponse",
     "SolarEclipseShadowFootprintResponse",
     "SolarEclipseSearchKind",
     "SolarEclipseFootprintBoundaryKindValue",

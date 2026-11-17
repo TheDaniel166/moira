@@ -55,4 +55,6 @@ def test_central_global_products_survive_fold_polar_and_hybrid_geometry(
             result.first_central_line_limit.epoch.jd_ut1,
             abs=1.0e-10,
         )
-        assert result.greatest_duration.path_width_km == 0.0
+        assert result.greatest_duration.path_width_km is None
+        assert result.greatest_duration.path_width_status == "width_not_computed"
+        assert result.greatest_duration.path_width_reason == "central_axis_boundary"

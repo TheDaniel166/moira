@@ -1,5 +1,14 @@
 """Transport models for the Moira REST access surface."""
 
+from .eclipse_diagnostics import (
+    HybridDiagnosticRequest, HybridDiagnosticResponse,
+    LunarShadowCandidateRequest, LunarShadowCandidateResponse,
+    SolarVisibilitySiteRequest, SolarVisibilitySiteResponse,
+    SolarVisibilityRefinementRequest, SolarVisibilityRefinementResponse,
+    ClippedCentralBoundaryRequest, ClippedCentralBoundaryResponse,
+    SweptCentralInteriorRequest, SweptCentralInteriorResponse,
+)
+
 from .yoga_extensions import (
     YogaExtensionEvaluateRequest, YogaExtensionSourceResponse, YogaExtensionRuleResponse, YogaExtensionProfileResponse, YogaExtensionCatalogueResponse, YogaExtensionPolicyResponse, YogaExtensionPositionResponse, YogaExtensionClauseResponse, YogaExtensionBranchResponse, YogaExtensionQualificationResponse, YogaExtensionResultResponse, YogaExtensionChartResponse,
 )
@@ -258,6 +267,9 @@ from .phenomena import (
     SolarEclipseUmbralContactsResponse,
     SolarEclipseShadowFootprintResponse,
     SolarEclipseGreatestSiteResponse,
+    SolarEclipsePathAvailabilityResponse,
+    SolarEclipseGreatestSiteAvailabilityResponse,
+    SolarEclipseGlobalAvailabilityResponse,
     SolarBesselianElementsResponse,
     SolarEclipseCartographyRequest,
     SolarEclipseCartographyResponse,
@@ -1820,6 +1832,9 @@ __all__ = [
     "SolarEclipseUmbralContactsResponse",
     "SolarEclipseShadowFootprintResponse",
     "SolarEclipseGreatestSiteResponse",
+    "SolarEclipsePathAvailabilityResponse",
+    "SolarEclipseGreatestSiteAvailabilityResponse",
+    "SolarEclipseGlobalAvailabilityResponse",
     "SolarBesselianElementsResponse",
     "SolarEclipseCartographyRequest",
     "SolarEclipseCartographyResponse",
@@ -2070,3 +2085,12 @@ from . import gochara_windows as _gochara_window_models
 for _name in _gochara_window_models.__all__:
     globals()[_name] = getattr(_gochara_window_models, _name)
 __all__ += _gochara_window_models.__all__
+
+__all__ += [
+    "HybridDiagnosticRequest", "HybridDiagnosticResponse",
+    "LunarShadowCandidateRequest", "LunarShadowCandidateResponse",
+    "SolarVisibilitySiteRequest", "SolarVisibilitySiteResponse",
+    "SolarVisibilityRefinementRequest", "SolarVisibilityRefinementResponse",
+    "ClippedCentralBoundaryRequest", "ClippedCentralBoundaryResponse",
+    "SweptCentralInteriorRequest", "SweptCentralInteriorResponse",
+]

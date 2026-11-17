@@ -1,0 +1,761 @@
+{
+  "description": "Pre-implementation grid+golden research outputs, 26 NASA/Moira/Skyfield disagreements; local optimizer, not an independent physical truth or proof of completeness.",
+  "angular_policy": "retarded Sun, geometric Moon, Danjon radii, angular-circle margin times geocentric distance",
+  "cone_policy": "retarded Sun, geometric Moon, static common tangent cone, effective Earth radius 1.01",
+  "cases": [
+    {
+      "lunation": -44931,
+      "date": "-1633-05-02",
+      "seed_tt": 1124726.318610764,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 1.5003279530956206,
+        "umbral_partial": -3270.656964970085,
+        "umbral_total": -6745.470634794037
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 2.0147178059182806,
+        "umbral_partial": -3268.8990345619127,
+        "umbral_total": -6743.699034561912
+      }
+    },
+    {
+      "lunation": -40729,
+      "date": "-1293-01-24",
+      "seed_tt": 1248813.457560655,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": -1.1070356214295316,
+        "umbral_partial": -3648.003116045683,
+        "umbral_total": -7122.814677797792
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": -0.6310775601573368,
+        "umbral_partial": -3646.3069353669985,
+        "umbral_total": -7121.106935366999
+      }
+    },
+    {
+      "lunation": -34373,
+      "date": "-0780-12-13",
+      "seed_tt": 1436509.88252432,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "N"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": -0.23491014769933827,
+        "umbral_partial": -3422.3046814770732,
+        "umbral_total": -6897.118067295192
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 0.27923631793282766,
+        "umbral_partial": -3420.496151943877,
+        "umbral_total": -6895.296151943878
+      }
+    },
+    {
+      "lunation": -28827,
+      "date": "-0331-05-07",
+      "seed_tt": 1600287.087074463,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "Nb"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 0.395872643113762,
+        "umbral_partial": -3390.2391086489315,
+        "umbral_total": -6865.051868117367
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 0.891695598422757,
+        "umbral_partial": -3388.525020701432,
+        "umbral_total": -6863.325020701432
+      }
+    },
+    {
+      "lunation": -28663,
+      "date": "-0318-08-10",
+      "seed_tt": 1605129.711659577,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Total"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 7205.601825125419,
+        "umbral_partial": 3474.900509586212,
+        "umbral_total": 0.08975737507716985
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 7205.499770197024,
+        "umbral_partial": 3474.9042398034862,
+        "umbral_total": 0.10423980348605255
+      }
+    },
+    {
+      "lunation": -28346,
+      "date": "-0292-03-27",
+      "seed_tt": 1614490.650296558,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3611.3786207167022,
+        "umbral_partial": -0.27667245243355865,
+        "umbral_total": -3475.0881030113173
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3611.356748605292,
+        "umbral_partial": 0.19397627557145825,
+        "umbral_total": -3474.6060237244287
+      }
+    },
+    {
+      "lunation": -24004,
+      "date": "+0059-04-16",
+      "seed_tt": 1742713.201307122,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 1.9202691218324617,
+        "umbral_partial": -3579.327138292345,
+        "umbral_total": -7054.138673481833
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 2.3918334867544218,
+        "umbral_partial": -3577.6689952232123,
+        "umbral_total": -7052.468995223213
+      }
+    },
+    {
+      "lunation": -21345,
+      "date": "+0274-04-08",
+      "seed_tt": 1821234.344910896,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Total"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Total"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 7155.011355899128,
+        "umbral_partial": 3476.0058262160696,
+        "umbral_total": 1.1948458546962684
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 7154.901292837965,
+        "umbral_partial": 3476.003558137424,
+        "umbral_total": 1.2035581374238973
+      }
+    },
+    {
+      "lunation": -15247,
+      "date": "+0767-04-19",
+      "seed_tt": 2001312.523536443,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 7069.270455296686,
+        "umbral_partial": 3471.215841782192,
+        "umbral_total": -3.5956133565978234
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 7069.144947315734,
+        "umbral_partial": 3471.202818226647,
+        "umbral_total": -3.597181773352986
+      }
+    },
+    {
+      "lunation": -14930,
+      "date": "+0792-12-03",
+      "seed_tt": 2010672.950312953,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 7284.05590700265,
+        "umbral_partial": 3471.2084528046585,
+        "umbral_total": -3.602335245735503
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 7283.956505437167,
+        "umbral_partial": 3471.2156524473808,
+        "umbral_total": -3.5843475526194197
+      }
+    },
+    {
+      "lunation": -14108,
+      "date": "+0859-05-20",
+      "seed_tt": 2034947.068101852,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "Nb"
+        },
+        "moira": {
+          "present": false,
+          "type": null
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": -2.2372339383400686,
+        "umbral_partial": -3642.6019006253,
+        "umbral_total": -7117.412976685669
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": -1.7743148068307164,
+        "umbral_partial": -3640.9726500603033,
+        "umbral_total": -7115.772650060304
+      }
+    },
+    {
+      "lunation": -12354,
+      "date": "+1001-03-12",
+      "seed_tt": 2086743.845031588,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Total"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Total"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 6889.835442254835,
+        "umbral_partial": 3476.7112399827424,
+        "umbral_total": 1.8982367006506138
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 6889.663161117049,
+        "umbral_partial": 3476.6652342206557,
+        "umbral_total": 1.8652342206555659
+      }
+    },
+    {
+      "lunation": -11749,
+      "date": "+1050-02-09",
+      "seed_tt": 2104610.241759606,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3807.6409342145644,
+        "umbral_partial": -1.5714933290410045,
+        "umbral_total": -3476.3821203635316
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3807.6293830316513,
+        "umbral_partial": -1.1129654627770833,
+        "umbral_total": -3475.9129654627773
+      }
+    },
+    {
+      "lunation": -8434,
+      "date": "+1318-02-16",
+      "seed_tt": 2202503.64100768,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 0.08957718243073032,
+        "umbral_partial": -3596.0362200692743,
+        "umbral_total": -7070.848118317681
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 0.571922086558061,
+        "umbral_partial": -3594.322494406118,
+        "umbral_total": -7069.122494406118
+      }
+    },
+    {
+      "lunation": -7042,
+      "date": "+1430-09-02",
+      "seed_tt": 2243610.096817494,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3336.191288114649,
+        "umbral_partial": -2.443962877899139,
+        "umbral_total": -3477.2574443679596
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3336.146766788434,
+        "umbral_partial": -1.930527521620661,
+        "umbral_total": -3476.730527521621
+      }
+    },
+    {
+      "lunation": -5522,
+      "date": "+1553-07-25",
+      "seed_tt": 2288496.642143639,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3308.0985843632916,
+        "umbral_partial": -4.894372027246391,
+        "umbral_total": -3479.707808944196
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3308.0560850541174,
+        "umbral_partial": -4.38267594423678,
+        "umbral_total": -3479.182675944237
+      }
+    },
+    {
+      "lunation": -5300,
+      "date": "+1571-07-07",
+      "seed_tt": 2295052.665765717,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 0.8002194136843173,
+        "umbral_partial": -3271.632506670562,
+        "umbral_total": -6746.446212832111
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 1.315774558450812,
+        "umbral_partial": -3269.8697875577377,
+        "umbral_total": -6744.669787557737
+      }
+    },
+    {
+      "lunation": 188,
+      "date": "+2015-04-04",
+      "seed_tt": 2457117.001468788,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 7223.397157308541,
+        "umbral_partial": 3473.277859906907,
+        "umbral_total": -1.5329126083643132
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 7223.295428141422,
+        "umbral_partial": 3473.282277311559,
+        "umbral_total": -1.5177226884411539
+      }
+    },
+    {
+      "lunation": 1943,
+      "date": "+2157-02-24",
+      "seed_tt": 2508942.761995128,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3802.148098736302,
+        "umbral_partial": -3.751310115135311,
+        "umbral_total": -3478.5619997931376
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3802.135620173151,
+        "umbral_partial": -3.2908136757837383,
+        "umbral_total": -3478.090813675784
+      }
+    },
+    {
+      "lunation": 4531,
+      "date": "+2366-05-25",
+      "seed_tt": 2585368.003920847,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 6764.258073489153,
+        "umbral_partial": 3473.668738203061,
+        "umbral_total": -1.1449372030060658
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 6764.064074073614,
+        "umbral_partial": 3473.6069075623213,
+        "umbral_total": -1.1930924376788425
+      }
+    },
+    {
+      "lunation": 5212,
+      "date": "+2421-06-16",
+      "seed_tt": 2605478.648169427,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3340.844920283207,
+        "umbral_partial": -1.1370416136442145,
+        "umbral_total": -3475.950210423748
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3340.804721233377,
+        "umbral_partial": -0.632144413406877,
+        "umbral_total": -3475.432144413407
+      }
+    },
+    {
+      "lunation": 6996,
+      "date": "+2565-09-11",
+      "seed_tt": 2658161.100525226,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "T"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 6914.937157649516,
+        "umbral_partial": 3474.3906152556974,
+        "umbral_total": -0.4219613251498231
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 6914.776773193444,
+        "umbral_partial": 3474.3526935010022,
+        "umbral_total": -0.44730649899793207
+      }
+    },
+    {
+      "lunation": 7759,
+      "date": "+2627-05-22",
+      "seed_tt": 2680692.916562251,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "P"
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Penumbral"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3740.546265282699,
+        "umbral_partial": -1.6145032910490045,
+        "umbral_total": -3476.4251145448497
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3740.535861437824,
+        "umbral_partial": -1.1594686606908908,
+        "umbral_total": -3475.959468660691
+      }
+    },
+    {
+      "lunation": 8128,
+      "date": "+2657-03-22",
+      "seed_tt": 2691589.677852485,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "N"
+        },
+        "moira": {
+          "present": true,
+          "type": "Partial"
+        },
+        "skyfield": {
+          "present": true,
+          "type": "Partial"
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 3344.5130311073017,
+        "umbral_partial": 1.1516968903961242,
+        "umbral_total": -3473.662037281558
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 3344.46426083061,
+        "umbral_partial": 1.6711620624023453,
+        "umbral_total": -3473.128837937598
+      }
+    },
+    {
+      "lunation": 8615,
+      "date": "+2696-08-05",
+      "seed_tt": 2705971.049320618,
+      "prior_references": {
+        "nasa": {
+          "present": false,
+          "type": null
+        },
+        "moira": {
+          "present": true,
+          "type": "Penumbral"
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": 0.6841507067038037,
+        "umbral_partial": -3306.104573938067,
+        "umbral_total": -6780.918010945613
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": 1.1941320908240414,
+        "umbral_partial": -3304.354526718182,
+        "umbral_total": -6779.154526718183
+      }
+    },
+    {
+      "lunation": 9784,
+      "date": "+2791-02-11",
+      "seed_tt": 2740492.6247106483,
+      "prior_references": {
+        "nasa": {
+          "present": true,
+          "type": "N"
+        },
+        "moira": {
+          "present": false,
+          "type": null
+        },
+        "skyfield": {
+          "present": false,
+          "type": null
+        }
+      },
+      "angular_maximum_margins_km": {
+        "penumbral": -1.1572670053428737,
+        "umbral_partial": -3602.810906927167,
+        "umbral_total": -7077.622943050765
+      },
+      "cone_maximum_margins_km": {
+        "penumbral": -0.6706998952827234,
+        "umbral_partial": -3601.0757419052675,
+        "umbral_total": -7075.875741905267
+      }
+    }
+  ]
+}

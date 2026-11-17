@@ -88,7 +88,7 @@ struct SpkType13SegmentPayload {
     std::vector<double> epochs_jd;
 };
 
-inline std::pair<double, double> spk_descriptor_coverage_jd(
+inline std::pair<double, double> spk_descriptor_coverage_seconds(
     const DafCatalog& catalog,
     int32_t start_i,
     int32_t end_i,
@@ -108,12 +108,11 @@ inline std::pair<double, double> spk_descriptor_coverage_jd(
             "SPK segment payload has no matching descriptor coverage"
         );
     }
-    const double start_jd = summary->start_second / 86400.0 + 2451545.0;
-    const double end_jd = summary->end_second / 86400.0 + 2451545.0;
-    if (!std::isfinite(start_jd) || !std::isfinite(end_jd) || start_jd > end_jd) {
+    if (!std::isfinite(summary->start_second) || !std::isfinite(summary->end_second)
+        || summary->start_second > summary->end_second) {
         throw std::invalid_argument("SPK descriptor coverage is invalid");
     }
-    return {start_jd, end_jd};
+    return {summary->start_second, summary->end_second};
 }
 
 namespace detail {
@@ -797,8 +796,10 @@ public:
             return it->second.evaluator;
         }
         std::shared_ptr<SpkSegmentEvaluator> evaluator;
-        const auto [coverage_start_jd, coverage_end_jd] =
-            spk_descriptor_coverage_jd(catalog, start_i, end_i, data_type);
+        const auto [coverage_start_second, coverage_end_second] =
+            spk_descriptor_coverage_seconds(catalog, start_i, end_i, data_type);
+        const double coverage_start_jd = coverage_start_second / 86400.0 + 2451545.0;
+        const double coverage_end_jd = coverage_end_second / 86400.0 + 2451545.0;
         if (data_type == 13) {
             SpkType13SegmentPayload payload = read_spk_type13_segment_payload(
                 path,
@@ -859,6 +860,7 @@ public:
                 std::move(payload.coefficients)
             );
         }
+        evaluator->set_descriptor_seconds(coverage_start_second, coverage_end_second);
         if (segment_cache_limit_ == 0) {
             return evaluator;
         }

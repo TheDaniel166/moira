@@ -37,6 +37,7 @@ from collections.abc import Iterable, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
+from fractions import Fraction
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -46,6 +47,33 @@ S_PER_DAY = 86400.0
 
 def _jd(seconds: float) -> float:
     return T0 + seconds / S_PER_DAY
+
+
+def _split_epoch_covers(start_second: float, end_second: float, jd: float, offset_days: float) -> bool:
+    """Compare a split TDB JD to the unrounded DAF descriptor seconds."""
+    if not math.isfinite(jd) or not math.isfinite(offset_days):
+        return False
+    day1, day2 = math.floor(jd), math.floor(offset_days)
+    anchor = (day1 + day2 - int(T0)) * S_PER_DAY
+    fractional_seconds = math.fsum((jd - day1, offset_days - day2)) * S_PER_DAY
+    return (math.fsum((anchor, fractional_seconds, -start_second)) >= 0.0
+            and math.fsum((anchor, fractional_seconds, -end_second)) <= 0.0)
+
+
+def _representable_jd_coverage(segment):
+    """Closed single-float JD coverage lying inside the raw DAF interval."""
+    start, end = float(segment.start_jd), float(segment.end_jd)
+    if not hasattr(segment, "start_second") or not hasattr(segment, "end_second"):
+        return (start, end)
+    # Compute the correctly rounded binary64 endpoint without cancellation near
+    # JD zero. Descriptor seconds themselves are exact binary64 inputs.
+    start = float(Fraction.from_float(float(segment.start_second)) / 86400 + int(T0))
+    end = float(Fraction.from_float(float(segment.end_second)) / 86400 + int(T0))
+    if not _split_epoch_covers(segment.start_second, segment.end_second, start, 0.0):
+        start = math.nextafter(start, math.inf)
+    if not _split_epoch_covers(segment.start_second, segment.end_second, end, 0.0):
+        end = math.nextafter(end, -math.inf)
+    return (start, end) if start <= end else None
 
 
 def compute_calendar_date(jd_integer: float, julian_before=None):
@@ -60,6 +88,10 @@ def compute_calendar_date(jd_integer: float, julian_before=None):
     month = (h // 153 + 2) % 12 + 1
     year = e // 1461 - 4716 + (12 + 2 - month) // 12
     return year, month, day
+
+
+class _SplitEpochUnsupported(NotImplementedError):
+    """A selected ephemeris source cannot preserve a split epoch."""
 
 
 class OutOfRangeError(ValueError):
@@ -684,8 +716,7 @@ class _NativeChebyshevSegment:
         return self._data
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
-        epoch = float(tdb) + float(tdb2)
-        if not self.start_jd <= epoch <= self.end_jd:
+        if not _split_epoch_covers(self.start_second, self.end_second, float(tdb), float(tdb2)):
             raise OutOfRangeError(
                 "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
                 % (
@@ -1136,21 +1167,21 @@ class SpkReader:
     ):
         """Select the last covering descriptor at a TDB day and optional offset."""
         segments = self._segments_for_pair(center, target)
-        if offset_days:
-            # Compare relative seconds so the offset survives at a descriptor edge.
-            anchor_seconds = (epoch_tdb - T0) * S_PER_DAY
-            offset_seconds = offset_days * S_PER_DAY
-            for segment in segments:
-                if segment.start_second - anchor_seconds <= offset_seconds <= segment.end_second - anchor_seconds:
-                    return segment
-        else:
-            for segment in segments:
-                if segment.start_jd <= epoch_tdb <= segment.end_jd:
-                    return segment
-        raise ValueError(
+        for segment in segments:
+            if hasattr(segment, "start_second") and hasattr(segment, "end_second"):
+                covered = _split_epoch_covers(segment.start_second, segment.end_second, epoch_tdb, offset_days)
+            else:
+                # Compatibility for synthetic/duck-typed segments whose only
+                # declared coverage is in JD, not raw descriptor seconds.
+                covered = (math.fsum((epoch_tdb, offset_days, -segment.start_jd)) >= 0.0
+                           and math.fsum((epoch_tdb, offset_days, -segment.end_jd)) <= 0.0)
+            if covered:
+                return segment
+        raise OutOfRangeError(
             f"Segments exist for center={center}, target={target} but none "
             f"covers JD(TDB) {epoch_tdb + offset_days:.9f}. Kernel coverage may not extend "
-            "to this epoch."
+            "to this epoch.",
+            out_of_range_times=True,
         )
 
     def _segment_for(self, center: int, target: int, jd: float):
@@ -1190,12 +1221,15 @@ class SpkReader:
     ) -> _SpkSegmentReceipt:
         """Build a path-free receipt from the exact serving descriptor."""
 
+        bounds = _representable_jd_coverage(segment)
+        if bounds is None:
+            raise ValueError("segment has no representable single-JD coverage")
         return _SpkSegmentReceipt(
             center=int(segment.center),
             target=int(segment.target),
             data_type=int(segment.data_type),
-            coverage_start_tdb=float(segment.start_jd),
-            coverage_end_tdb=float(segment.end_jd),
+            coverage_start_tdb=bounds[0],
+            coverage_end_tdb=bounds[1],
             source=self._source_identity,
             pool_index=int(pool_index),
         )
@@ -1215,13 +1249,35 @@ class SpkReader:
         pos = segment.compute(epoch_tdb)
         return (float(pos[0]), float(pos[1]), float(pos[2]))
 
+    def _has_segment_at_tdb_offset(self, center: int, target: int, epoch_tdb: float, offset_days: float) -> bool:
+        try:
+            self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+            return True
+        except (KeyError, ValueError):
+            return False
+
     def _position_tdb_offset(
         self, center: int, target: int, epoch_tdb: float, offset_days: float,
     ) -> Vec3:
         """Select and interpolate without adding the offset to the Julian day."""
+        self._ensure_open()
         segment = self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+        if segment.data_type == 3 and segment._load_native_evaluator() is None:
+            raise _SplitEpochUnsupported("SPK type 3 split-epoch position requires the native evaluator")
         x, y, z = segment.compute(epoch_tdb, offset_days)
         return float(x), float(y), float(z)
+
+    def _position_and_velocity_tdb_offset(
+        self, center: int, target: int, epoch_tdb: float, offset_days: float,
+    ) -> tuple[Vec3, Vec3]:
+        self._ensure_open()
+        segment = self._segment_for_tdb(center, target, epoch_tdb, offset_days=offset_days)
+        if segment.data_type == 3 and segment._load_native_evaluator() is None:
+            raise _SplitEpochUnsupported("SPK type 3 split-epoch state requires the native evaluator")
+        pos, vel = segment.compute_and_differentiate(epoch_tdb, offset_days)
+        # SPK type 3 stores velocities in km/s; this API returns km/day.
+        scale = S_PER_DAY if segment.data_type == 3 else 1.0
+        return (tuple(float(v) for v in pos[:3]), tuple(float(v) * scale for v in vel[:3]))
 
     def position_and_velocity_tdb(
         self,
@@ -1408,13 +1464,7 @@ class SpkReader:
     ) -> bool:
         """Return whether a descriptor covers one explicit TDB epoch."""
 
-        try:
-            for segment in self._segments_for_pair(center, target):
-                if segment.start_jd <= epoch_tdb <= segment.end_jd:
-                    return True
-        except KeyError:
-            return False
-        return False
+        return self._has_segment_at_tdb_offset(center, target, epoch_tdb, 0.0)
 
     def coverage_intervals_tdb(
         self,
@@ -1426,7 +1476,8 @@ class SpkReader:
         self._ensure_open()
         segments = self._segments_by_pair.get((center, target), ())
         return _merge_closed_intervals(
-            [(float(segment.start_jd), float(segment.end_jd)) for segment in segments]
+            [interval for segment in segments
+             if (interval := _representable_jd_coverage(segment)) is not None]
         )
 
     def _coverage_pairs_tdb(self) -> tuple[tuple[int, int], ...]:
@@ -1474,6 +1525,8 @@ class SpkReader:
         result: dict[tuple[int, int], tuple[float, float]] = {}
         for pair in self._segments_by_pair:
             intervals = self.coverage_intervals_tdb(*pair)
+            if not intervals:
+                continue
             result[pair] = (
                 tdb_to_tt(intervals[0][0]),
                 tdb_to_tt(intervals[-1][1]),
@@ -1497,15 +1550,12 @@ class SpkReader:
         stores non-contiguous epochs for that pair.
         """
         self._ensure_open()
-        segs = self._segments_by_pair.get((center, target))
-        if not segs:
+        intervals = self.coverage_intervals_tdb(center, target)
+        if not intervals:
             return None
         from .julian import tdb_to_tt
 
-        return (
-            tdb_to_tt(min(s.start_jd for s in segs)),
-            tdb_to_tt(max(s.end_jd for s in segs)),
-        )
+        return (tdb_to_tt(intervals[0][0]), tdb_to_tt(intervals[-1][1]))
 
     @property
     def path(self) -> Path:
@@ -1580,14 +1630,13 @@ class SpkReader:
                     (
                         candidate
                         for candidate in self._segments_for_pair(center, target)
-                        if candidate.start_jd <= epoch_end_tdb
-                        and epoch_tdb <= candidate.end_jd
+                        if (bounds := _representable_jd_coverage(candidate)) is not None
+                        and bounds[0] <= epoch_end_tdb and epoch_tdb <= bounds[1]
                     ),
                     None,
                 )
-                if segment is None or not (
-                    segment.start_jd <= epoch_tdb and epoch_end_tdb <= segment.end_jd
-                ):
+                bounds = None if segment is None else _representable_jd_coverage(segment)
+                if bounds is None or not (bounds[0] <= epoch_tdb and epoch_end_tdb <= bounds[1]):
                     return None
         except (KeyError, ValueError):
             return None
@@ -2236,6 +2285,99 @@ class KernelPool:
             return fallback_route
 
         return None
+
+    def _position_tdb_offset(
+        self, center: int, target: int, epoch_tdb: float, offset_days: float,
+        *, snapshot: _PoolSnapshot | None = None,
+    ) -> Vec3:
+        """Evaluate a priority-preserving route with an unrounded split epoch.
+
+        A caller may hold ``_read_lease()`` across several evaluations and pass
+        its snapshot. Unsupported readers fail explicitly after route selection.
+        """
+        return self._state_tdb_offset(center, target, epoch_tdb, offset_days, snapshot=snapshot, velocity=False)
+
+    def _position_and_velocity_tdb_offset(
+        self, center: int, target: int, epoch_tdb: float, offset_days: float,
+        *, snapshot: _PoolSnapshot | None = None,
+    ) -> tuple[Vec3, Vec3]:
+        return self._state_tdb_offset(center, target, epoch_tdb, offset_days, snapshot=snapshot, velocity=True)
+
+    def _state_tdb_offset(self, center, target, epoch_tdb, offset_days, *, snapshot, velocity):
+        if snapshot is None:
+            with self._read_lease() as leased:
+                return self._state_tdb_offset(center, target, epoch_tdb, offset_days, snapshot=leased, velocity=velocity)
+        if not math.isfinite(epoch_tdb) or not math.isfinite(offset_days):
+            raise ValueError("split TDB epoch must be finite")
+        if center == target:
+            zero = (0.0, 0.0, 0.0)
+            return (zero, zero) if velocity else zero
+        # A legacy protocol reader has no TDB coverage information. It may
+        # take precedence over an otherwise available route, so do not infer
+        # that it is irrelevant or quietly choose a lower-priority source.
+        for reader in snapshot.readers:
+            if any(not callable(getattr(reader, name, None)) for name in
+                   ("_coverage_pairs_tdb", "coverage_intervals_tdb", "has_segment_at_tdb")):
+                raise _SplitEpochUnsupported("KernelPool contains a legacy reader without split-epoch TDB coverage")
+
+        def covers(reader, c, t):
+            if not callable(getattr(reader, "coverage_intervals_tdb", None)) or not callable(getattr(reader, "has_segment_at_tdb", None)):
+                return False
+            checker = getattr(reader, "_has_segment_at_tdb_offset", None)
+            if callable(checker):
+                return checker(c, t, epoch_tdb, offset_days)
+            # A duck-typed reader only advertises JD endpoints, so retain those
+            # as its coverage authority, without rounding the requested epoch.
+            return any(math.fsum((epoch_tdb, offset_days, -a)) >= 0.0 and
+                       math.fsum((epoch_tdb, offset_days, -b)) <= 0.0
+                       for a, b in reader.coverage_intervals_tdb(c, t))
+
+        pair_readers = snapshot.pair_readers
+        route = None
+        for c, t, sign in ((center, target, 1), (target, center, -1)):
+            for i, reader in pair_readers.get((c, t), ()):
+                if i < len(snapshot.readers) and snapshot.readers[i] is reader and covers(reader, c, t):
+                    route = (_RouteEdge(center, target, c, t, sign, reader, i),)
+                    break
+            if route is not None:
+                break
+
+        if route is None:
+            target_readers = snapshot.target_readers
+            indices = set(snapshot.hub_indices)
+            for idx, _ in target_readers.get(center, ()):
+                indices.add(idx)
+            for idx, _ in target_readers.get(target, ()):
+                indices.add(idx)
+            groups = ([sorted(i for i in indices if i < len(snapshot.readers))]
+                      if len(indices) < len(snapshot.readers) else [])
+            groups.append(range(len(snapshot.readers)))
+            for group in groups:
+                edges = []
+                for i in group:
+                    reader = snapshot.readers[i]
+                    for c, t in self._reader_pairs_tdb(reader):
+                        if covers(reader, c, t):
+                            edges.append(_RouteEdge(c, t, c, t, 1, reader, i))
+                            edges.append(_RouteEdge(t, c, c, t, -1, reader, i))
+                route = self._bfs_route(edges, center, target)
+                if route is not None:
+                    break
+        if route is None:
+            raise OutOfRangeError(f"No kernel covers center={center}, target={target} at split JD(TDB) {epoch_tdb} + {offset_days}", out_of_range_times=True)
+        components = [[[], [], []] for _ in range(2 if velocity else 1)]
+        method = "_position_and_velocity_tdb_offset" if velocity else "_position_tdb_offset"
+        for edge in route:
+            evaluate = getattr(edge.reader, method, None)
+            if not callable(evaluate):
+                raise _SplitEpochUnsupported("Selected SPK reader does not support split-epoch state evaluation")
+            value = evaluate(edge.source_center, edge.source_target, epoch_tdb, offset_days)
+            vectors = value if velocity else (value,)
+            for result, vector in zip(components, vectors):
+                for i in range(3):
+                    result[i].append(edge.sign * float(vector[i]))
+        result = tuple(tuple(math.fsum(axis) for axis in vector) for vector in components)
+        return result if velocity else result[0]
 
     @staticmethod
     def _route_is_receiptable(route: tuple[_RouteEdge, ...]) -> bool:

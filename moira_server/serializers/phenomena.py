@@ -1352,9 +1352,31 @@ __all__ = [
     "serialize_solar_eclipse_limit_track",
     "serialize_solar_eclipse_penumbral_contact",
     "serialize_solar_eclipse_path",
+    "serialize_solar_eclipse_path_availability",
+    "serialize_solar_eclipse_global_availability",
     "serialize_solar_eclipse_local",
     "serialize_station_event",
     "serialize_twilight_times",
     "serialize_visibility_assessment_compact",
     "serialize_void_of_course_window",
 ]
+
+
+def serialize_solar_eclipse_path_availability(path):
+    from moira_server.models.phenomena import SolarEclipsePathAvailabilityResponse
+    return SolarEclipsePathAvailabilityResponse(
+        **serialize_solar_eclipse_path(path).model_dump(),
+        umbral_width_status=path.umbral_width_status,
+        umbral_width_reason=path.umbral_width_reason,
+    )
+
+
+def serialize_solar_eclipse_global_availability(circumstances):
+    from moira_server.models.phenomena import SolarEclipseGlobalAvailabilityResponse
+    data = serialize_solar_eclipse_global_circumstances(circumstances).model_dump()
+    for key in ("greatest", "greatest_duration"):
+        site = getattr(circumstances, key)
+        if site is not None:
+            data[key]["path_width_status"] = site.path_width_status
+            data[key]["path_width_reason"] = site.path_width_reason
+    return SolarEclipseGlobalAvailabilityResponse.model_validate(data)

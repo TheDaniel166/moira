@@ -323,6 +323,9 @@ public:
     bool coefficients_in_file_order;
     double coverage_start_jd;
     double coverage_end_jd;
+    // Raw DAF descriptor seconds preserve precision lost in the JD conversion.
+    double coverage_start_second = 0.0;
+    double coverage_end_second = 0.0;
     double init;
     double intlen;
     size_t record_count;
@@ -416,6 +419,14 @@ public:
             init, intlen, record_count, component_count, coefficient_count,
             "SpkSegmentEvaluator"
         );
+    }
+
+    void set_descriptor_seconds(double start, double end) {
+        if (!std::isfinite(start) || !std::isfinite(end) || start > end) {
+            throw std::invalid_argument("SPK descriptor coverage is invalid");
+        }
+        coverage_start_second = start;
+        coverage_end_second = end;
     }
 
     bool record_level() const {
@@ -526,6 +537,30 @@ public:
         result[2] = full_state[2];
     }
 
+    // Evaluate a previously copied file-order type-2 record with the exact
+    // descriptor, selection, normalization and position kernel used above.
+    // The caller owns the copy and must separately establish its provenance.
+    void position_from_copied_record(
+        double jd, double jd2, size_t expected_index,
+        const std::vector<double>& record, double* result
+    ) const {
+        validate_descriptor_epoch(jd, jd2);
+        if (data_type != 2 || !coefficients_in_file_order || component_count != 3) {
+            throw std::invalid_argument("copied position requires a three-component file-order SPK type-2 evaluator");
+        }
+        if (record.size() != component_count * coefficient_count ||
+            !std::all_of(record.begin(), record.end(), [](double value) { return std::isfinite(value); })) {
+            throw std::invalid_argument("copied SPK record has invalid dimensions or coefficients");
+        }
+        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+        if (index != expected_index) {
+            throw std::invalid_argument("copied SPK record does not cover the requested epoch");
+        }
+        const double s = normalized_time(offset);
+        spk_chebyshev_record_avx2_reverse(record.data(), coefficient_count, component_count,
+                                          s, result, 1, coefficient_count);
+    }
+
     void position_and_velocity(double jd, double* position_out, double* velocity_out) const {
         position_and_velocity(jd, 0.0, position_out, velocity_out);
     }
@@ -601,11 +636,15 @@ public:
 
 private:
     void validate_descriptor_epoch(double jd, double jd2) const {
-        const double epoch = jd + jd2;
+        const double whole1 = std::floor(jd);
+        const double whole2 = std::floor(jd2);
+        const double anchor = (whole1 + whole2 - 2451545.0) * 86400.0;
+        const double fraction = (jd - whole1) + (jd2 - whole2);
+        const double from_start = std::fma(fraction, 86400.0, anchor - coverage_start_second);
+        const double from_end = std::fma(fraction, 86400.0, anchor - coverage_end_second);
         if (
-            !std::isfinite(epoch)
-            || epoch < coverage_start_jd
-            || epoch > coverage_end_jd
+            !std::isfinite(jd) || !std::isfinite(jd2)
+            || !std::isfinite(anchor) || from_start < 0.0 || from_end > 0.0
         ) {
             throw std::invalid_argument(
                 "SPK evaluator epoch is outside descriptor coverage"

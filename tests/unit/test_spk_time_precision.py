@@ -100,6 +100,18 @@ def _segment(synthetic, owner, monkeypatch):
     return segment
 
 
+@pytest.mark.parametrize("synthetic", [3], indirect=True)
+def test_copied_record_position_rejects_six_component_type3(synthetic, monkeypatch):
+    """A type-3 payload cannot write six components into a position buffer."""
+    evaluator = _segment(synthetic, "native_standalone", monkeypatch)
+    metadata = evaluator.chebyshev_metadata()
+    assert metadata[3] == 6
+    record = evaluator.chebyshev_records(0, 1)[0]
+    flattened = tuple(value for axis in record for value in axis)
+    with pytest.raises(ValueError, match="three-component"):
+        evaluator._eclipse_position_from_copied_record(WORST_JD, 0.0, 0, flattened)
+
+
 @pytest.mark.parametrize("owner", ["native_standalone", "native_handle", "planetary_fallback", "small_body_fallback"])
 @pytest.mark.parametrize("split", [False, True])
 def test_long_segment_time_preserves_record_local_precision(synthetic, monkeypatch, owner, split):
@@ -177,3 +189,170 @@ def test_event_enclosures_contain_exact_record_local_time():
             record_index == index and argument.value.lo <= expected <= argument.value.hi
             for record_index, argument in branches
         )
+
+@pytest.mark.parametrize("owner", ["native_standalone", "native_handle", "planetary_fallback", "small_body_fallback"])
+def test_split_descriptor_coverage_rejects_one_microsecond_beyond_end(synthetic, monkeypatch, owner):
+    segment = _segment(synthetic, owner, monkeypatch)
+    evaluate = segment.position if owner.startswith("native") else segment.compute
+    end = 2451545.0 + (INIT + COUNT * INTLEN) / 86400.0
+    anchor = math.floor(end)
+    fraction = end - anchor
+    one_us = 1e-6 / 86400.0
+    evaluate(anchor, fraction - one_us)
+    evaluate(anchor, fraction)
+    with pytest.raises(ValueError):
+        evaluate(anchor, fraction + one_us)
+
+
+def test_pool_split_routing_priority_direction_and_state():
+    class Reader:
+        def __init__(self, pair, value):
+            self.pair, self.value = pair, value
+        def _coverage_pairs_tdb(self):
+            return (self.pair,)
+        def coverage_intervals_tdb(self, center, target):
+            return ((2450000., 2460000.),) if (center, target) == self.pair else ()
+        def has_segment_at_tdb(self, center, target, epoch):
+            return (center, target) == self.pair
+        def _position_tdb_offset(self, center, target, epoch, offset):
+            return (self.value, offset, 0.)
+        def _position_and_velocity_tdb_offset(self, center, target, epoch, offset):
+            return self._position_tdb_offset(center, target, epoch, offset), (self.value * 2, 0., 0.)
+    first, lower, second = Reader((0, 1), 3.), Reader((0, 1), 40.), Reader((2, 1), 1.)
+    pool = planetary.KernelPool([first, lower, second])
+    with pool._read_lease() as snapshot:
+        p, v = pool._position_and_velocity_tdb_offset(0, 2, 2451545., 1e-10, snapshot=snapshot)
+        assert p == (2., 0., 0.)
+        assert v == (4., 0., 0.)
+        assert pool._position_tdb_offset(0, 1, 2451545., 1e-10, snapshot=snapshot) == (3., 1e-10, 0.)
+
+
+def test_pool_split_duck_reader_without_capability_fails_closed():
+    class Reader:
+        def _coverage_pairs_tdb(self): return ((0, 1),)
+        def coverage_intervals_tdb(self, center, target): return ((2450000., 2460000.),)
+        def has_segment_at_tdb(self, center, target, epoch): return True
+    pool = planetary.KernelPool([Reader()])
+    with pytest.raises(planetary._SplitEpochUnsupported, match="split-epoch"):
+        pool._position_tdb_offset(0, 1, 2451545., 1e-10)
+
+def test_split_reader_and_pool_state_matches_exact_oracle_including_type3(synthetic):
+    path, descriptor = synthetic
+    reader = planetary.SpkReader(path)
+    try:
+        pool = planetary.KernelPool([reader])
+        anchor = 2498657.0
+        fraction = 0.0966907064
+        expected = _oracle(anchor, fraction)
+        for source in (reader, pool):
+            position, velocity = source._position_and_velocity_tdb_offset(0, 1, anchor, fraction)
+            assert position == pytest.approx(expected[0], rel=0.0, abs=5e-8)
+            assert velocity == pytest.approx(expected[1], rel=0.0, abs=2e-9)
+    finally:
+        reader.close()
+
+def test_type13_split_state_fails_closed():
+    from types import SimpleNamespace
+    kernel = object.__new__(small.SmallBodyKernel)
+    kernel._available = {1}
+    kernel._center = {1: 0}
+    kernel._kernel = SimpleNamespace(segments=[SimpleNamespace(
+        target=1, data_type=13, start_second=-86400.0, end_second=86400.0
+    )])
+    for method in (kernel._position_tdb_offset, kernel._position_and_velocity_tdb_offset):
+        with pytest.raises(planetary._SplitEpochUnsupported, match="type 13"):
+            method(0, 1, 2451545.0, 1e-10)
+
+
+def test_split_pool_empty_snapshot_remains_empty_after_addition():
+    class Reader:
+        def _coverage_pairs_tdb(self): return ((0, 1),)
+        def coverage_intervals_tdb(self, center, target): return ((2450000., 2460000.),)
+        def has_segment_at_tdb(self, center, target, epoch): return True
+        def _position_tdb_offset(self, center, target, epoch, offset): return (1., 2., 3.)
+    pool = planetary.KernelPool()
+    with pool._read_lease() as snapshot:
+        pool.add(Reader())
+        with pytest.raises(planetary.OutOfRangeError):
+            pool._position_tdb_offset(0, 1, 2451545., 0., snapshot=snapshot)
+    assert pool._position_tdb_offset(0, 1, 2451545., 0.) == (1., 2., 3.)
+
+
+def test_pool_legacy_protocol_reader_fails_closed_before_precise_fallback():
+    class LegacyReader:
+        def position(self, center, target, jd): return (9., 0., 0.)
+        def position_and_velocity(self, center, target, jd): return ((9., 0., 0.), (0., 0., 0.))
+        def has_segment(self, center, target): return (center, target) == (0, 1)
+        def has_segment_at(self, center, target, jd): return self.has_segment(center, target)
+        def coverage(self): return {(0, 1): (2450000., 2460000.)}
+        def covered_bodies(self): return frozenset({1})
+        def close(self): pass
+    legacy = LegacyReader()
+    assert isinstance(legacy, planetary.KernelReader)
+    pool = planetary.KernelPool([legacy])
+    for method in (pool._position_tdb_offset, pool._position_and_velocity_tdb_offset):
+        with pytest.raises(planetary._SplitEpochUnsupported, match="legacy reader"):
+            method(0, 1, 2451545., 1e-10)
+    assert pool.position(0, 1, 2451545.) == (9., 0., 0.)
+
+
+def test_single_jd_coverage_endpoints_are_inside_fractional_descriptor(synthetic, tmp_path):
+    path, descriptor = synthetic
+    path = tmp_path / "fractional_descriptor.bsp"
+    payload = bytearray(synthetic[0].read_bytes())
+    struct.pack_into("<dd", payload, 3 * 1024 + 24, 1e-6, 1.0)
+    path.write_bytes(payload)
+    reader = planetary.SpkReader(path)
+    try:
+        (start, end), = reader.coverage_intervals_tdb(0, 1)
+        assert start > 2451545.0
+        for epoch in (start, end):
+            assert reader.has_segment_at_tdb(0, 1, epoch)
+            reader.position_tdb(0, 1, epoch)
+        for epoch in (math.nextafter(start, -math.inf), math.nextafter(end, math.inf)):
+            assert not reader.has_segment_at_tdb(0, 1, epoch)
+            with pytest.raises(ValueError):
+                reader.position_tdb(0, 1, epoch)
+    finally:
+        reader.close()
+
+
+def test_representable_coverage_handles_cancellation_near_jd_zero():
+    from types import SimpleNamespace
+    start_second = -211813487999.9999
+    end_second = start_second + 86400.
+    segment = SimpleNamespace(start_second=start_second, end_second=end_second,
+                              start_jd=planetary._jd(start_second), end_jd=planetary._jd(end_second))
+    start, end = planetary._representable_jd_coverage(segment)
+    assert planetary._split_epoch_covers(start_second, end_second, start, 0.)
+    assert planetary._split_epoch_covers(start_second, end_second, end, 0.)
+    assert not planetary._split_epoch_covers(start_second, end_second, math.nextafter(start, -math.inf), 0.)
+    assert not planetary._split_epoch_covers(start_second, end_second, math.nextafter(end, math.inf), 0.)
+
+
+def test_sub_ulp_descriptor_has_empty_single_jd_coverage(synthetic, tmp_path):
+    path = tmp_path / "sub_ulp_descriptor.bsp"
+    payload = bytearray(synthetic[0].read_bytes())
+    struct.pack_into("<dd", payload, 3 * 1024 + 24, 1e-6, 2e-6)
+    path.write_bytes(payload)
+    reader = planetary.SpkReader(path)
+    try:
+        assert reader.coverage_intervals_tdb(0, 1) == ()
+        assert (0, 1) not in reader.coverage()
+        assert reader.epoch_range(0, 1) is None
+        assert reader._has_segment_at_tdb_offset(0, 1, 2451545., 1.5e-6 / 86400.)
+    finally:
+        reader.close()
+
+
+def test_pool_propagates_implementation_not_implemented():
+    class Reader:
+        def _coverage_pairs_tdb(self): return ((0, 1),)
+        def coverage_intervals_tdb(self, center, target): return ((2450000., 2460000.),)
+        def has_segment_at_tdb(self, center, target, epoch): return True
+        def _position_tdb_offset(self, center, target, epoch, offset):
+            raise NotImplementedError("implementation defect")
+    pool = planetary.KernelPool([Reader()])
+    with pytest.raises(NotImplementedError, match="implementation defect") as caught:
+        pool._position_tdb_offset(0, 1, 2451545., 1e-10)
+    assert type(caught.value) is NotImplementedError

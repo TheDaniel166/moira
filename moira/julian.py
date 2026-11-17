@@ -2844,7 +2844,91 @@ def _naif_tdb_minus_tt_seconds_at_tdb(epoch_tdb: float) -> float:
         math.tau,
     )
     eccentric_anomaly = mean_anomaly + _NAIF_DELTET_EB * math.sin(mean_anomaly)
-    return _NAIF_DELTET_K_SECONDS * math.sin(eccentric_anomaly)
+    sine = math.sin(eccentric_anomaly)
+    if not math.isfinite(sine) or abs(sine) > 1.0:
+        raise ArithmeticError("NAIF TT-to-TDB sine is outside [-1, 1]")
+    return _NAIF_DELTET_K_SECONDS * sine
+
+
+def _normalize_split_time_jd(jd: float, offset_days: float) -> tuple[float, float]:
+    """Normalize two finite day parts without first summing the large epoch.
+
+    The integral first part and fractional second part represent the same
+    coordinate to binary64 fractional-day precision.  Reducing both parts
+    separately retains a small emission-time offset at an ancient epoch.
+    """
+    whole_jd = math.floor(jd)
+    whole_offset = math.floor(offset_days)
+    fractional = math.fsum((jd - whole_jd, offset_days - whole_offset))
+    carry = math.floor(fractional)
+    return float(whole_jd + whole_offset + carry), fractional - carry
+
+
+def _naif_tdb_minus_tt_seconds_at_tdb_split(
+    whole_tdb: float, fractional_tdb: float,
+) -> float:
+    """Evaluate the pinned NAIF periodic term at a two-part TDB epoch.
+
+    The first part is an integral Julian day and the second is its fractional
+    day.  Their contributions to the phase are reduced without assembling a
+    large single-part Julian day or a rounded combined epoch in seconds.
+    """
+    whole_seconds = (whole_tdb - J2000) * _SECONDS_PER_DAY
+    fractional_seconds = fractional_tdb * _SECONDS_PER_DAY
+    mean_anomaly = math.remainder(
+        math.fsum((
+            _NAIF_DELTET_M0_RADIANS,
+            _NAIF_DELTET_M1_RADIANS_PER_SECOND * whole_seconds,
+            _NAIF_DELTET_M1_RADIANS_PER_SECOND * fractional_seconds,
+        )),
+        math.tau,
+    )
+    eccentric_anomaly = mean_anomaly + _NAIF_DELTET_EB * math.sin(mean_anomaly)
+    sine = math.sin(eccentric_anomaly)
+    if not math.isfinite(sine) or abs(sine) > 1.0:
+        raise ArithmeticError("NAIF split TT-to-TDB sine is outside [-1, 1]")
+    return _NAIF_DELTET_K_SECONDS * sine
+
+
+def _tt_to_tdb_split(jd_tt: float, jd_tt2: float = 0.0) -> tuple[float, float]:
+    """Convert a two-part TT Julian day to normalized two-part TDB.
+
+    Both inputs are day-valued binary64 coordinates, with ``jd_tt2`` commonly
+    a small negative reception-to-emission offset.  The pinned NAIF LSK term
+    is solved at the represented emission epoch, not at a rounded sum of the
+    two parts.  This internal path retains the public single-part conversion
+    and its existing time-scale policy unchanged.
+
+    Returns an integral Julian-day anchor and fractional day in ``[0, 1)``.
+    The combined TT coordinate must lie within Moira's time-transform domain.
+    """
+    first = _require_tt_tdb_jd("jd_tt", jd_tt)
+    second = _require_tt_tdb_jd("jd_tt2", jd_tt2)
+    whole_tt, fractional_tt = _normalize_split_time_jd(first, second)
+    if (
+        whole_tt < -_MAX_ABS_TIME_JD
+        or whole_tt > _MAX_ABS_TIME_JD
+        or (whole_tt == _MAX_ABS_TIME_JD and fractional_tt > 0.0)
+    ):
+        raise ValueError("split TT coordinate lies outside Moira's representable time-transform domain")
+
+    whole_tdb, fractional_tdb = whole_tt, fractional_tt
+    previous_offset: float | None = None
+    for _ in range(_TT_TDB_FIXED_POINT_MAX_ITERATIONS):
+        offset_seconds = _naif_tdb_minus_tt_seconds_at_tdb_split(
+            whole_tdb, fractional_tdb,
+        )
+        whole_tdb, fractional_tdb = _normalize_split_time_jd(
+            whole_tt, math.fsum((fractional_tt, offset_seconds / _SECONDS_PER_DAY)),
+        )
+        if (
+            previous_offset is not None
+            and abs(offset_seconds - previous_offset)
+            <= _TT_TDB_FIXED_POINT_RESIDUAL_SECONDS
+        ):
+            return whole_tdb, fractional_tdb
+        previous_offset = offset_seconds
+    raise ArithmeticError("NAIF LSK split TT-to-TDB fixed-point iteration did not converge")
 
 
 def _tt_to_tdb_with_receipt(jd_tt: float) -> _TtTdbConversion:
