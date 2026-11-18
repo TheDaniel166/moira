@@ -169,10 +169,10 @@ def _gast_reference(scope,domain,tt,dpsi,eps):
 
 
 def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progress=None,jet_observer=None,
-                                     scene_only=False):
+                                     scene_only=False,frame_only=False):
     """Return request-local value/derivative enclosures and evaluation counters."""
-    if type(scene_only) is not bool:
-        raise TypeError('scene_only must be bool')
+    if type(scene_only) is not bool or type(frame_only) is not bool or (scene_only and frame_only):
+        raise TypeError('select at most one bool scene_only/frame_only product')
     vector_points = {index:{panel.midpoint:panel.point} for index,panel in enumerate(scope.panels)}
     orientation_points = {scope.orientation_midpoint:scope.orientation_point}
     stats = dict(calls=0,vector_points=len(scope.panels),orientation_points=1)
@@ -232,6 +232,9 @@ def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progr
         one = j.constant(1)
         spin = ((gc,gs,zero),(j.neg(gs),gc,zero),(zero,zero,one))
         rotation = j.matrix_product(transpose,j.matrix_product(spin,matrix))
+        if frame_only:
+            from ._eclipse_solar_frame import SolarFrameBounds
+            return SolarFrameBounds(domain,sun,moon,rotation,bool(clock_continuous and source_continuous))
         if scene_only:
             # Independent of cone/axis eligibility: valid also away from
             # conjunction. Preserve the original Stage 3 default product.
