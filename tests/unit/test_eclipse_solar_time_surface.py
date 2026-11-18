@@ -64,3 +64,13 @@ def test_unseeded_product_search_finds_and_rechecks_a_ray():
                                       max_evaluations=100,max_surface_depth=6)
     assert result.presence_proved and not result.absence_proved
     assert result.unresolved and result.witness.patch.u.width == 0
+
+
+def test_evaluation_only_mode_is_independent_of_elapsed_clock(monkeypatch):
+    from moira import _eclipse_solar_time_surface as core
+    clock = iter((0.,1000000.,2000000.))
+    monkeypatch.setattr(core.time,'monotonic',lambda:next(clock))
+    result = cover_solar_time_surface(I(-1,1),lambda t:None,
+        separation_provider=lambda t:I.point(1),max_evaluations=1,max_seconds=None)
+    assert result.absence_proved and result.evaluations == 1
+    assert result.max_seconds is None

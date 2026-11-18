@@ -49,3 +49,8 @@ Each endpoint enforces finite, bounded request parameters. Unsupported or
 unresolved geometry retains its own status, while ephemeris coverage and other
 provider failures are reported as errors. See the generated OpenAPI schema
 for the exact request fields, bounds, and response models.
+
+The additive solar and lunar `bounded-evidence` routes expose immutable
+model-specific interval results, exact bounds, retained uncertainty and
+independent product budgets. Their contract and supported-domain limits are
+documented in [Bounded eclipse evidence v1](eclipse-bounded-evidence.md).

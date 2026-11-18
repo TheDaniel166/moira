@@ -62,6 +62,7 @@ from .orbits import router as orbits_router
 from .phase import router as phase_router
 from .phenomena import router as phenomena_router
 from .eclipse_diagnostics import router as eclipse_diagnostics_router
+from .eclipse_evidence import router as eclipse_evidence_router
 from .paran_packet import router as paran_packet_router
 from .planetary_hours import router as planetary_hours_router
 from .pipeline import router as pipeline_router
@@ -155,6 +156,7 @@ __all__ = [
     "phase_router",
     "phenomena_router",
     "eclipse_diagnostics_router",
+    "eclipse_evidence_router",
     "paran_packet_router",
     "planetary_hours_router",
     "pipeline_router",

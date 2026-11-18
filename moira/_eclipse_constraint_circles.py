@@ -42,6 +42,7 @@ class ConstraintCircleArrangement:
     complete: bool
     unresolved: tuple
     reason: str
+    queries: int = 0
 
 
 def _planes(family):
@@ -124,7 +125,7 @@ def complete_constraint_circles(topology, *, max_queries=100000, max_refinements
     arcs = []
     if not topology.complete:
         return ConstraintCircleArrangement(topology,tuple(points.items()),(),False,
-                                            ('horizon','forward'),'cone cut set incomplete')
+                                            ('horizon','forward'),'cone cut set incomplete',oracle.queries)
     planes = _planes(family)
     try:
         shared = []
@@ -229,7 +230,7 @@ def complete_constraint_circles(topology, *, max_queries=100000, max_refinements
                         raise EnclosureUnavailable('circle complementary arc sign not separated')
                     arcs.append(CircleArc(name,chart,left,right,x,cone_sign,other_sign))
         return ConstraintCircleArrangement(topology,tuple(points.items()),tuple(arcs),True,(),
-                                            'complete cone, plane and complementary circle cut sets')
+                                            'complete cone, plane and complementary circle cut sets',oracle.queries)
     except (EnclosureUnavailable,IntervalBudgetError,ZeroDivisionError) as exc:
         return ConstraintCircleArrangement(topology,tuple(points.items()),tuple(arcs),False,
-                                            ('horizon','forward'),str(exc))
+                                            ('horizon','forward'),str(exc),oracle.queries)

@@ -49,6 +49,7 @@ from enum import Enum
 from numbers import Real
 
 from .constants import Body, J2000
+from .eclipse_evidence import EclipseEvidence
 from .eclipse_geometry import (
     EARTH_RADIUS_KM,
     MOON_RADIUS_KM,
@@ -2307,6 +2308,24 @@ class EclipseCalculator:
             retarded_moon=False,
             delta_t_mode=delta_t_mode,
         )
+
+    def solar_evidence(self,jd_ut1: float,**options) -> EclipseEvidence:
+        """Return opt-in bounded solar evidence using this calculator's reader.
+
+        Legacy search and result shapes remain separate. The explicit interval,
+        model, independent product states and unresolved domains are retained.
+        """
+        from .eclipse_evidence import inspect_solar_evidence
+        return inspect_solar_evidence(jd_ut1,reader=self._reader,**options)
+
+    def lunar_evidence(self,jd_tt: float,**options) -> EclipseEvidence:
+        """Return selected geometric-Moon reference evidence on explicit TT.
+
+        These reference policies are not aliases for the legacy native/canon
+        lunar searches. Inspect the returned model identifier before comparing.
+        """
+        from .eclipse_evidence import inspect_lunar_evidence
+        return inspect_lunar_evidence(jd_tt,reader=self._reader,**options)
 
     def next_lunar_eclipse(
         self,

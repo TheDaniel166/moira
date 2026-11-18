@@ -81,7 +81,7 @@ class SweptRegionEnclosure:
     evaluations: int
     elapsed_seconds: float
     max_evaluations: int
-    max_seconds: float
+    max_seconds: float | None
     scope: str = 'finite_interval_visible_central_footprint_union'
     horizon_policy: str = 'geometric_Sun_centre_no_refraction_or_terrain'
     full_atlas_domain_retained: bool = True
@@ -112,7 +112,7 @@ def enclose_swept_region(domain,provider, *, patches=None, common_time_hints=(),
     """
     if not isinstance(domain,I) or type(max_evaluations) is not int or max_evaluations < 0:
         raise ValueError('exact domain and finite nonnegative budget required')
-    if not 0 < max_seconds < float('inf') or min_time_width <= 0:
+    if (max_seconds is not None and not 0 < max_seconds < float('inf')) or min_time_width <= 0:
         raise ValueError('finite positive duration and time resolution required')
     hints = tuple(I.point(t).lo for t in common_time_hints)
     if any(not domain.contains(t) for t in hints):
@@ -123,7 +123,7 @@ def enclose_swept_region(domain,provider, *, patches=None, common_time_hints=(),
     spatial = deque((p,0) for p in surface)
 
     def available():
-        return calls < max_evaluations and time.monotonic()-start < max_seconds
+        return calls < max_evaluations and (max_seconds is None or time.monotonic()-start < max_seconds)
 
     while spatial:
         patch,depth = spatial.popleft()
@@ -173,4 +173,5 @@ def enclose_swept_region(domain,provider, *, patches=None, common_time_hints=(),
             ledger.extend((interval,'unresolved','finite_resource_budget') for interval,_ in pending)
             cells.append(SweptCell(patch,'unresolved',None,tuple(ledger),'retained in outer enclosure'))
     return SweptRegionEnclosure(domain,tuple(cells),calls,time.monotonic()-start,
-                                max_evaluations,float(max_seconds),full_atlas_domain_retained=full_atlas)
+                                max_evaluations,None if max_seconds is None else float(max_seconds),
+                                full_atlas_domain_retained=full_atlas)

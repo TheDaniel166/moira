@@ -81,3 +81,14 @@ def test_partial_horizon_certificate_never_becomes_positive_containment():
     assert b.outside and not b.inside
     unknown = CentralRegionBounds(None,I.point(1),None,None,None)
     assert not unknown.outside and not unknown.inside
+
+
+def test_evaluation_only_mode_retains_finite_budget_and_full_atlas(monkeypatch):
+    from moira import _eclipse_swept_region as core
+    clock = iter((0.,1000000.,2000000.))
+    monkeypatch.setattr(core.time,'monotonic',lambda:next(clock))
+    result = enclose_swept_region(I(-1,1),lambda t,p:predicate(I.point(-1)),
+        max_evaluations=1,max_seconds=None)
+    assert result.evaluations == 1 and result.max_seconds is None
+    assert result.full_atlas_domain_retained and result.unresolved
+    assert any(c.status=='outside' for c in result.cells)

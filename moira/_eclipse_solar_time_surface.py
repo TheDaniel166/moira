@@ -77,7 +77,7 @@ class SolarTimeSurfaceCover:
     evaluations: int
     elapsed_seconds: float
     max_evaluations: int
-    max_seconds: float
+    max_seconds: float | None
     full_domain_retained: bool = True
     scope: str = 'conditional_whole_interval_vector_enclosures'
     physical_accuracy_certified: bool = False
@@ -110,12 +110,13 @@ def cover_solar_time_surface(domain, scene_provider, *, separation_provider=None
     """
     if not isinstance(domain, I) or type(max_evaluations) is not int or max_evaluations < 0:
         raise ValueError('exact domain and nonnegative finite evaluation budget required')
-    if not 0 < max_seconds < float('inf') or min_time_width <= 0 or max_surface_depth < 0:
+    if ((max_seconds is not None and not 0 < max_seconds < float('inf')) or
+            min_time_width <= 0 or max_surface_depth < 0):
         raise ValueError('positive finite duration, time width and depth required')
     start, calls, cells, witness = time.monotonic(), 0, [], None
 
     def available():
-        return calls < max_evaluations and time.monotonic()-start < max_seconds
+        return calls < max_evaluations and (max_seconds is None or time.monotonic()-start < max_seconds)
 
     for epoch, patch, ray in witness_hints:
         epoch = I.point(epoch).lo
@@ -197,4 +198,4 @@ def cover_solar_time_surface(domain, scene_provider, *, separation_provider=None
         else:
             cells.append(TimeSurfaceCell(interval,patch,'unresolved',reason))
     return SolarTimeSurfaceCover(domain,tuple(cells),witness,calls,time.monotonic()-start,
-                                  max_evaluations,float(max_seconds))
+                                  max_evaluations,None if max_seconds is None else float(max_seconds))
