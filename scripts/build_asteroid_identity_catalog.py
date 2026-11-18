@@ -6,8 +6,8 @@ catalog boundary.  This script does not query the network and does not infer
 names from orbital data.
 
 The emitted registry is canonical identity metadata, not an ephemeris.  Each
-entry binds the JPL Horizons target name captured during the release build to
-the NAIF small-body convention ``2_000_000 + MPC catalog number``.
+entry binds the released name to either Moira's numbered-body ID
+(``2_000_000 + MPC catalog number``) or an explicit provisional JPL SPK ID.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -27,6 +28,33 @@ DEFAULT_OUTPUT = REPO_ROOT / "moira" / "data" / "asteroid_catalog_naif.json"
 DEFAULT_METADATA_OUTPUT = (
     REPO_ROOT / "moira" / "data" / "asteroid_catalog_naif.metadata.json"
 )
+_PROVISIONAL_DESIGNATION = re.compile(r"[0-9]{4} [A-Z]{2}[0-9]*\Z")
+
+
+def _target_naif_id(target: dict[str, Any], record: dict[str, Any]) -> int:
+    """Check that an ordered build record represents its admitted target."""
+    number = target.get("number")
+    if number is not None:
+        if record.get("number") is None or int(number) != int(record["number"]):
+            raise ValueError("unified master record order does not match admitted targets")
+        return 2_000_000 + int(number)
+
+    designation = target.get("designation")
+    naif_id = target.get("naif_id")
+    if (
+        not isinstance(designation, str)
+        or _PROVISIONAL_DESIGNATION.fullmatch(designation) is None
+        or type(naif_id) is not int
+        or not 50_000_000 <= naif_id < 60_000_000
+    ):
+        raise ValueError(f"invalid admitted provisional target {designation!r}")
+    if (
+        record.get("number") is not None
+        or record.get("designation") != designation
+        or record.get("name") != designation
+    ):
+        raise ValueError("unified master record order does not match admitted targets")
+    return naif_id
 
 
 def _sha256_bytes(payload: bytes) -> str:
@@ -130,25 +158,20 @@ def build_catalog(
     if int(master.get("built", -1)) != expected_count:
         raise ValueError("unified master built count does not match manifest")
 
-    target_numbers = [int(target["number"]) for target in targets]
-    record_numbers = [int(record["number"]) for record in records]
-    if target_numbers != record_numbers:
-        raise ValueError("unified master record order does not match admitted targets")
-
     catalog: dict[str, int] = {}
     seen_ids: set[int] = set()
     seen_casefold_names: dict[str, str] = {}
-    for record in records:
-        number = int(record["number"])
+    for target, record in zip(targets, records, strict=True):
+        expected_naif_id = _target_naif_id(target, record)
         naif_id = int(record["naif_id"])
         name = record["name"]
         if not isinstance(name, str) or not name or name != name.strip():
-            raise ValueError(f"invalid canonical name for asteroid {number}: {name!r}")
+            raise ValueError(f"invalid canonical name for asteroid {naif_id}: {name!r}")
         if unicodedata.normalize("NFC", name) != name:
             raise ValueError(f"canonical name is not NFC-normalized: {name!r}")
-        if naif_id != 2_000_000 + number:
+        if naif_id != expected_naif_id:
             raise ValueError(
-                f"asteroid {number} has NAIF ID {naif_id}, expected {2_000_000 + number}"
+                f"asteroid {name!r} has NAIF ID {naif_id}, expected {expected_naif_id}"
             )
         if name in catalog:
             raise ValueError(f"duplicate canonical asteroid name: {name!r}")
@@ -213,6 +236,10 @@ def build_catalog(
             "unique_naif_id_count": len(seen_ids),
         },
     }
+    if any(target.get("number") is None for target in targets):
+        metadata["identity_policy"]["provisional_id_source"] = (
+            "Explicit JPL SBDB SPK IDs keyed by canonical provisional designation"
+        )
     metadata_bytes = (
         json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")

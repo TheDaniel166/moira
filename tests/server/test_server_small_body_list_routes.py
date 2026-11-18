@@ -677,6 +677,36 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
     assert all(call[2] is not None for call in calls)
 
 
+def test_family_resonance_reports_no_mpc_number_for_a_provisional_designation(
+    client_with_small_body_reader: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_asteroid_at(body, jd_ut, *, reader=None):
+        name = str(body)
+        return AsteroidData(
+            name=name,
+            naif_id=ASTEROID_NAIF[name],
+            longitude=11.0,
+            latitude=0.0,
+            distance=6_000_000_000.0,
+            speed=0.01,
+            retrograde=False,
+        )
+
+    monkeypatch.setattr("moira_server.services.asteroids.asteroid_at", fake_asteroid_at)
+    response = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={"dt": "2026-11-18T12:00:00+00:00", "bodies": ["Ceres", "2026 ED138"]},
+    )
+
+    assert response.status_code == 200
+    nodes = {node["body"]: node for node in response.json()["nodes"]}
+    assert nodes["Ceres"]["mpc_number"] == 1
+    assert nodes["2026 ED138"]["naif_id"] == 54_667_839
+    assert nodes["2026 ED138"]["mpc_number"] is None
+    assert nodes["2026 ED138"]["family_names"] == []
+
+
 def test_asteroid_family_resonance_network_route_rejects_invalid_requests(
     client_with_small_body_reader: TestClient,
 ) -> None:

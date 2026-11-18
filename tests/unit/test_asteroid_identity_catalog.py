@@ -5,6 +5,8 @@ import json
 import unicodedata
 from pathlib import Path
 
+import pytest
+
 from moira.asteroids import ASTEROID_NAIF, _NAIF_TO_NAME
 from scripts.build_asteroid_identity_catalog import build_catalog
 
@@ -14,16 +16,16 @@ CATALOG_PATH = DATA_DIR / "asteroid_catalog_naif.json"
 METADATA_PATH = DATA_DIR / "asteroid_catalog_naif.metadata.json"
 
 EXPECTED_CATALOG_SHA256 = (
-    "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec"
+    "46f6ab9acbefccfba8df17fd9f2bc4b77d156e44154e828bfb28d1cbf4b2ad88"
 )
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
-    "3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d"
+    "a2b1eb95dc9037f105d0ae949973816b93c1ce1b1efbafa1352696edf9eafe28"
 )
 EXPECTED_UNIFIED_MASTER_SHA256 = (
-    "c0d983d66d664182dfe18b0aa9420f491802ac98ad9c205e2bb367c8d998ef0f"
+    "694befd672129c692c6e1fe5b617f9be5da944cb840999342aa402804250733f"
 )
 EXPECTED_ADMITTED_TARGETS_SHA256 = (
-    "676ca3b07acbb05b013ce5422441328275abc83f4109b6582f23bb203ac3b85f"
+    "e81f253ac9d8a7a9f6c2df9d57316e17129f529236b9d01078931b3ca7b589be"
 )
 
 
@@ -50,16 +52,18 @@ def _file_spec(path: Path) -> dict[str, object]:
 def test_identity_builder_derives_names_from_one_bound_release(
     tmp_path: Path,
 ) -> None:
-    targets = [{"number": 1}, {"number": 1_383}]
+    provisional = {"designation": "2026 ED138", "naif_id": 54_667_839}
+    targets = [{"number": 1}, {"number": 1_383}, provisional]
     master = {
-        "requested": 2,
-        "built": 2,
+        "requested": 3,
+        "built": 3,
         "failed": 0,
         "records": [
             {"number": 1, "naif_id": 2_000_001, "name": "Ceres"},
             {"number": 1_383, "naif_id": 2_001_383, "name": "Limburgia"},
+            {**provisional, "name": "2026 ED138"},
         ],
-        "naif_map": {"Ceres": 2_000_001, "Limburgia": 2_001_383},
+        "naif_map": {"Ceres": 2_000_001, "Limburgia": 2_001_383, "2026 ED138": 54_667_839},
     }
     targets_path = tmp_path / "moira_public_asteroid_targets.json"
     master_path = tmp_path / "unified_master.json"
@@ -68,7 +72,7 @@ def test_identity_builder_derives_names_from_one_bound_release(
     manifest = {
         "catalog_id": "moira-asteroids",
         "catalog_version": "test-release",
-        "body_count": 2,
+        "body_count": 3,
         "source": "test source",
         "provenance": {
             "trajectory_source": "JPL Horizons VECTORS",
@@ -77,6 +81,7 @@ def test_identity_builder_derives_names_from_one_bound_release(
         "shards": [
             {"bodies": [2_000_001]},
             {"bodies": [2_001_383]},
+            {"bodies": [54_667_839]},
         ],
         "release": {
             "source_revision": "test-source",
@@ -96,11 +101,19 @@ def test_identity_builder_derives_names_from_one_bound_release(
     assert json.loads(catalog_bytes) == {
         "Ceres": 2_000_001,
         "Limburgia": 2_001_383,
+        "2026 ED138": 54_667_839,
     }
     metadata = json.loads(metadata_bytes)
     assert metadata["catalog_version"] == "test-release"
     assert metadata["source"]["release_manifest_sha256"] == manifest_sha256
-    assert metadata["artifact"]["canonical_name_count"] == 2
+    assert metadata["artifact"]["canonical_name_count"] == 3
+
+    provisional["naif_id"] = 54_667_840
+    _write_json(targets_path, targets)
+    manifest["release"]["files"][1] = _file_spec(targets_path)
+    _write_json(manifest_path, manifest)
+    with pytest.raises(ValueError, match="has NAIF ID 54667839, expected 54667840"):
+        build_catalog(tmp_path)
 
 
 def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
@@ -110,7 +123,7 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert hashlib.sha256(catalog_bytes).hexdigest() == EXPECTED_CATALOG_SHA256
     assert metadata["schema_version"] == 1
     assert metadata["catalog_id"] == "moira-asteroids"
-    assert metadata["catalog_version"] == "2026.10.10.1"
+    assert metadata["catalog_version"] == "2026.11.18.2"
     assert metadata["source"]["release_manifest_sha256"] == (
         EXPECTED_RELEASE_MANIFEST_SHA256
     )
@@ -123,8 +136,8 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert metadata["artifact"] == {
         "path": "moira/data/asteroid_catalog_naif.json",
         "sha256": EXPECTED_CATALOG_SHA256,
-        "canonical_name_count": 11_223,
-        "unique_naif_id_count": 11_223,
+        "canonical_name_count": 11_250,
+        "unique_naif_id_count": 11_250,
     }
 
 
@@ -134,9 +147,9 @@ def test_packaged_asteroid_identities_are_unique_and_canonical() -> None:
         unicodedata.normalize("NFKC", name).casefold() for name in catalog
     }
 
-    assert len(catalog) == 11_223
-    assert len(set(catalog.values())) == 11_223
-    assert len(folded_names) == 11_223
+    assert len(catalog) == 11_250
+    assert len(set(catalog.values())) == 11_250
+    assert len(folded_names) == 11_250
     assert all(unicodedata.normalize("NFC", name) == name for name in catalog)
     assert all(isinstance(naif_id, int) and naif_id > 2_000_000 for naif_id in catalog.values())
 
@@ -145,8 +158,8 @@ def test_runtime_registry_matches_the_packaged_canonical_artifact() -> None:
     catalog = _load_json(CATALOG_PATH)
 
     assert ASTEROID_NAIF == catalog
-    assert len(ASTEROID_NAIF) == 11_223
-    assert len(_NAIF_TO_NAME) == 11_223
+    assert len(ASTEROID_NAIF) == 11_250
+    assert len(_NAIF_TO_NAME) == 11_250
     assert ASTEROID_NAIF["Ceres"] == 2_000_001
     assert ASTEROID_NAIF["Limburgia"] == 2_001_383
     assert ASTEROID_NAIF["Jacquet"] == 2_020_395
@@ -169,3 +182,8 @@ def test_runtime_registry_matches_the_packaged_canonical_artifact() -> None:
     assert _NAIF_TO_NAME[2_307_261] == "Mani"
     assert _NAIF_TO_NAME[2_594_913] == "'Aylo'chaxnim"
     assert _NAIF_TO_NAME[2_514_107] == "Ka`epaoka`awela"
+    assert ASTEROID_NAIF["2012 VP113"] == 50_666_516
+    assert ASTEROID_NAIF["2014 UZ224"] == 50_760_674
+    assert ASTEROID_NAIF["2017 OF201"] == 54_533_005
+    assert ASTEROID_NAIF["2021 DR15"] == 54_231_255
+    assert ASTEROID_NAIF["2026 ED138"] == 54_667_839

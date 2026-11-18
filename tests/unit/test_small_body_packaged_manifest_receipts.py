@@ -26,9 +26,9 @@ _ROOT = Path(__file__).resolve().parents[2]
             "moira/kernels/asteroids/manifest.json",
             "moira/data/asteroid_catalog_naif.metadata.json",
             "moira-asteroids",
-            "2026.10.10.1",
-            11_223,
-            449,
+            "2026.11.18.2",
+            11_250,
+            450,
             {
                 "base_step_days": 10,
                 "window_size": 7,
@@ -105,6 +105,8 @@ def test_packaged_manifest_matches_immutable_identity_receipt(
 
     shards = manifest["shards"]
     assert len(shards) == expected_shard_count
+    if expected_catalog_id == "moira-asteroids":
+        assert all(len(shard["bodies"]) == shard["body_count"] == 25 for shard in shards)
     assert sum(shard["body_count"] for shard in shards) == expected_body_count
     bodies = [body for shard in shards for body in shard["bodies"]]
     assert len(bodies) == len(set(bodies)) == expected_body_count
@@ -120,14 +122,14 @@ def test_website_catalog_metrics_publish_release_identity() -> None:
     metrics = _catalog_metrics()
 
     asteroid = metrics["position_capable_asteroid_ephemeris"]
-    assert asteroid["catalog_version"] == "2026.10.10.1"
-    assert asteroid["body_count"] == 11_223
-    assert asteroid["shard_count"] == 449
+    assert asteroid["catalog_version"] == "2026.11.18.2"
+    assert asteroid["body_count"] == 11_250
+    assert asteroid["shard_count"] == 450
     assert asteroid["sampling"]["base_step_days"] == 10
     assert asteroid["sampling"]["window_size"] == 7
     assert asteroid["sampling"]["adaptive_body_count"] == 59
     assert asteroid["manifest_sha256"] == (
-        "3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d"
+        "a2b1eb95dc9037f105d0ae949973816b93c1ce1b1efbafa1352696edf9eafe28"
     )
 
     comet = metrics["position_capable_periodic_comet_ephemeris"]

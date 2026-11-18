@@ -5,110 +5,21 @@
   "provenance": {
     "artifact_author": "Moira",
     "artifact_format": "DAF/SPK Type 13",
-    "trajectory_source": "JPL Horizons VECTORS",
+    "trajectory_source": "JPL Horizons VECTORS and SPK states",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
     "horizons_file_api": "https://ssd.jpl.nasa.gov/api/horizons_file.api",
     "center": "Sun (500@10)",
     "reference_plane": "FRAME",
     "units": "km and km/s",
-    "timescale": "JDTDB"
+    "timescale": "JDTDB",
+    "planetary_ephemeris": "DE441"
   },
   "coverage": {
     "start_date": "1600-01-01",
     "end_date": "2500-01-01",
-    "note": "default DE441 small-body span; see coverage_exceptions"
+    "note": "Nominal DE441-based asteroid intervals. See per-body SPK bounds and exceptions."
   },
   "coverage_exceptions": [
-    {
-      "naif_id": 2001566,
-      "name": "Icarus",
-      "start_date": "1949-07-01",
-      "end_date": "2026-09-07",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "196",
-      "solution_date": "2026-09-08 06:21:03"
-    },
-    {
-      "naif_id": 2001862,
-      "name": "Apollo",
-      "start_date": "1930-12-13",
-      "end_date": "2026-04-15",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "579",
-      "solution_date": "2026-08-31 06:24:24"
-    },
-    {
-      "naif_id": 2002201,
-      "name": "Oljato",
-      "start_date": "1931-12-03",
-      "end_date": "2026-09-14",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "360",
-      "solution_date": "2026-09-15 06:22:19"
-    },
-    {
-      "naif_id": 2004581,
-      "name": "Asclepius",
-      "start_date": "1989-03-31",
-      "end_date": "2021-04-18",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "113",
-      "solution_date": "2026-06-16 11:32:29"
-    },
-    {
-      "naif_id": 2004660,
-      "name": "Nereus",
-      "start_date": "1981-09-30",
-      "end_date": "2026-06-22",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "278",
-      "solution_date": "2026-06-22 06:20:32"
-    },
-    {
-      "naif_id": 2025143,
-      "name": "Itokawa",
-      "start_date": "1998-09-19",
-      "end_date": "2024-12-19",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "237",
-      "solution_date": "2025-05-22 17:09:17"
-    },
-    {
-      "naif_id": 2054509,
-      "name": "YORP",
-      "start_date": "2000-08-03",
-      "end_date": "2005-08-03",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "88",
-      "solution_date": "2022-12-20 14:08:08"
-    },
-    {
-      "naif_id": 2069230,
-      "name": "Hermes",
-      "start_date": "1937-10-25",
-      "end_date": "2026-09-14",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "205",
-      "solution_date": "2026-09-15 06:22:31"
-    },
-    {
-      "naif_id": 2099942,
-      "name": "Apophis",
-      "start_date": "2004-03-15",
-      "end_date": "2022-04-09",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "220",
-      "solution_date": "2024-06-25 10:48:08"
-    },
     {
       "naif_id": 2101955,
       "name": "Bennu",
@@ -119,14 +30,31 @@
       "note": "conservative full-year bounds parsed from the Horizons ephemeris-availability response"
     },
     {
+      "naif_id": 2001566,
+      "name": "Icarus",
+      "start_date": "1600-01-01",
+      "end_date": "2400-01-01",
+      "authority": "JPL Horizons",
+      "policy": "verified_nominal_horizons_trajectory",
+      "reason": "Independent VECTORS table changed position discontinuously near JD 2618073.0108 (2455); keep the continuous trajectory through the preceding century boundary."
+    },
+    {
+      "naif_id": 2001862,
+      "name": "Apollo",
+      "start_date": "1900-01-01",
+      "end_date": "2500-01-01",
+      "authority": "JPL Horizons",
+      "policy": "verified_nominal_horizons_trajectory",
+      "reason": "Full-span Apollo source failed the continuity gate. The independent VECTORS replacement also jumped by about 65,026 km near JD 2396400.62907. Start at the following century boundary, before the original observation arc and the 1930 encounter."
+    },
+    {
       "naif_id": 2367943,
       "name": "Duende",
-      "start_date": "2012-02-23",
-      "end_date": "2013-02-21",
-      "policy": "jpl_sbdb_observation_arc",
-      "authority": "JPL SBDB",
-      "orbit_id": "83",
-      "solution_date": "2026-07-27 16:25:51"
+      "start_date": "1600-01-01",
+      "end_date": "2400-01-01",
+      "authority": "JPL Horizons",
+      "policy": "verified_nominal_horizons_trajectory",
+      "reason": "Full-span Duende source failed the continuity gate. The independent VECTORS replacement jumped by about 45,570 km near JD 2625740.67. End at the preceding century boundary after validating the 2278 replacement."
     }
   ],
   "sampling": {
@@ -157,8 +85,8 @@
     "reserved_integration_anchor_epochs": 2,
     "refinement_request_max_span_days": 11688.0
   },
-  "body_count": 11223,
-  "shard_count": 449,
+  "body_count": 11250,
+  "shard_count": 450,
   "shards": [
     {
       "index": 0,
@@ -2609,12 +2537,12 @@
         2001574,
         2001575
       ],
-      "bytes": 44536832,
-      "sha256": "8f466f98e3ac13ccf5a3792b7978a839f3a595f37fd225cc28e5b017cf30c5cf",
+      "bytes": 56128512,
+      "sha256": "a4e6c89e81cb9dbf550365c555d8a24be02bb2d18dc09f8e771f71dc367b428e",
       "metadata": {
         "path": "asteroid_shard_062.metadata.json",
-        "bytes": 62650,
-        "sha256": "f4a34104dbf40bb821936f7573ab1f17382c7d4f8edd13e376c71300d5bc94a2"
+        "bytes": 58982,
+        "sha256": "ef9a32add3b24e73cb5cc59fa9dbf098d90536c88c4035c22e75ee3a7dbb11c0"
       }
     },
     {
@@ -3077,12 +3005,12 @@
         2001874,
         2001875
       ],
-      "bytes": 47549440,
-      "sha256": "ae607aee391fb1df98a23e68fbab7a42e7bbdfa565acfc2ec5564c998b4de77a",
+      "bytes": 51589120,
+      "sha256": "e21bb036c83cf51d705c575c1a7f0b22499e76748acda6b58c94b114ef2f42c1",
       "metadata": {
         "path": "asteroid_shard_074.metadata.json",
-        "bytes": 102957,
-        "sha256": "b86fe4beb0d3d941cf1449e93f1f60c66fdbae1df4762f481a9578c665b7ea4d"
+        "bytes": 99400,
+        "sha256": "2c230f8a34246e2baa6dfe939777a4eadf285e4af84d9229962b946337f47bc8"
       }
     },
     {
@@ -3623,12 +3551,12 @@
         2002224,
         2002225
       ],
-      "bytes": 45036544,
-      "sha256": "6e55e3b8d05dc7a2c3c98536a373ba5f66eab67622cfd7858b9c323be7181ae3",
+      "bytes": 49480704,
+      "sha256": "bc1024432ebd26df7c2c045c5fcf5f97d3387af251578969cd07e7b98ac966e1",
       "metadata": {
         "path": "asteroid_shard_088.metadata.json",
-        "bytes": 75555,
-        "sha256": "3994312fe62c41c01a6403875ba7d58f4cd0acca97c5e88e9d4df099e841e220"
+        "bytes": 71682,
+        "sha256": "eef6ae272d72cc6d2b92e94e2d02cc582e6ed3c3cb1b72070f1eccc12244fa01"
       }
     },
     {
@@ -7328,12 +7256,12 @@
         2004600,
         2004601
       ],
-      "bytes": 44371968,
-      "sha256": "0656de81f2a5373012d59445b9356a03f64427414199c7388438e392c6ec3d71",
+      "bytes": 53248000,
+      "sha256": "245e792212fc29a6d9232e8405cdba99a96806606067c16c9b5aede9183ea6e2",
       "metadata": {
         "path": "asteroid_shard_183.metadata.json",
-        "bytes": 61777,
-        "sha256": "9b00abaf7be81159291d6246567c8962e6d681c59a5164aabfaefdaba85eaafd"
+        "bytes": 58827,
+        "sha256": "e9f9ec85f7f6fbb00d3b1dae5e362dd6f4d8e1693b268890b5e9ed60808ccf32"
       }
     },
     {
@@ -7445,12 +7373,12 @@
         2004675,
         2004676
       ],
-      "bytes": 44385280,
-      "sha256": "3e982906afd61eea98efb676edc00c21c39ab9620617a660ff4d5a777f6a0620",
+      "bytes": 49469440,
+      "sha256": "cec9107b556ca3cc8ef6d022c8b79f36418a51236716727fa4c0468b2dd1a5fd",
       "metadata": {
         "path": "asteroid_shard_186.metadata.json",
-        "bytes": 62233,
-        "sha256": "5635bcf01667db071e3e21eab35097809ac7d987cd3bc42fb46c1a1dfd3261cb"
+        "bytes": 58828,
+        "sha256": "bd356aab3bdc3a266131ffbf45725a78520e12c26b5a69e4cef111d4b5ca0da0"
       }
     },
     {
@@ -15713,12 +15641,12 @@
         2528381,
         2099942
       ],
-      "bytes": 44283904,
-      "sha256": "ef79b60a617ca5353ea14e33559a3deb9c441efa4cb8095ceb0bc86f84b54116",
+      "bytes": 52139008,
+      "sha256": "3eb22a8904a714f176c9a41b63d44b8b5930196545f04826ce0a6329b7701e0f",
       "metadata": {
         "path": "asteroid_shard_398.metadata.json",
-        "bytes": 52780,
-        "sha256": "a9893bff73442de5ea571937afbce636a40220eb88ce3d383bed11bed0f554eb"
+        "bytes": 51817,
+        "sha256": "a3588693d014ff25877cd2b97c49774fb2946eb2ab9dcc686c575cf118ec1e76"
       }
     },
     {
@@ -15752,12 +15680,12 @@
         2042355,
         2065489
       ],
-      "bytes": 53224448,
-      "sha256": "b707a634d142a64ee4b4ab2e8a6ae61075c3a502e9568617056895548a48032d",
+      "bytes": 80468992,
+      "sha256": "5938867aa3d4343b4827a1a5b9ccb2a6883250cdb6bbea9ece8d3b26c041cf30",
       "metadata": {
         "path": "asteroid_shard_399.metadata.json",
-        "bytes": 159156,
-        "sha256": "4fee2d19dd19deb097f6c2677455a5d018b81efe91e3585a70a84a074985fb1a"
+        "bytes": 149844,
+        "sha256": "0bed84088b91b01e85ea0d747aa19cf86264653aec93d47837073f63063e7e67"
       }
     },
     {
@@ -17635,7 +17563,6 @@
     {
       "index": 448,
       "path": "asteroid_shard_448.bsp",
-      "body_count": 23,
       "bodies": [
         2861011,
         2861890,
@@ -17659,21 +17586,109 @@
         2895847,
         2895852,
         2895864,
-        2895907
+        2895907,
+        50666516,
+        50760674
       ],
-      "bytes": 42403840,
-      "sha256": "7ff8cdd7e5bfff27bdcbe8a6e85f3263b72479dce25a43a5358d1c85aae37fff",
+      "body_count": 25,
+      "bytes": 46090240,
+      "sha256": "45ae0cf84164e49fe6e6559704f04f1ae260233d9958bd3de80645951e9c6607",
       "metadata": {
         "path": "asteroid_shard_448.metadata.json",
-        "bytes": 48402,
-        "sha256": "1928073351b4b038beaeb19f69cbfe69035531aeb294726a0a05283076a51a55"
+        "bytes": 51800,
+        "sha256": "2daddb14342b229f803d35919b0656cd13ad17d378b0500c1a3bd4bd0f5e9abd"
+      }
+    },
+    {
+      "index": 449,
+      "path": "asteroid_shard_449.bsp",
+      "bodies": [
+        54533005,
+        54231255,
+        54667839,
+        50836941,
+        54667840,
+        50525165,
+        54281066,
+        50802140,
+        54552545,
+        50755552,
+        50515045,
+        54642545,
+        50361603,
+        54198948,
+        50757890,
+        50601436,
+        50989560,
+        54341539,
+        50760011,
+        54281073,
+        50755643,
+        50825823,
+        50841293,
+        54375082,
+        50755974
+      ],
+      "body_count": 25,
+      "bytes": 46090240,
+      "sha256": "d96c0024c90bb882fccc2882ff8e7e38947b9b729f814538e8a72d53f8b15d73",
+      "metadata": {
+        "path": "asteroid_shard_449.metadata.json",
+        "bytes": 59430,
+        "sha256": "78db3321e6f8d0bb0c17356b7b673fd7210ca5f6106dd3d0bf9a83f774a28905"
       }
     }
   ],
-  "catalog_version": "2026.10.10.1",
+  "coverage_rebuild": {
+    "base_catalog_version": "2026.10.10.1",
+    "base_manifest_sha256": "3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d",
+    "status": "qualified",
+    "replaced_naif_ids": [
+      2001566,
+      2001862,
+      2002201,
+      2004581,
+      2004660,
+      2099942,
+      2054509,
+      2367943,
+      2025143,
+      2069230
+    ],
+    "rebuilt_shards": [
+      62,
+      74,
+      88,
+      183,
+      186,
+      398,
+      399
+    ],
+    "unchanged_in_rebuilt_shards": 165,
+    "validation_candidate_version": "2026.11.10.1",
+    "validation_candidate_manifest_sha256": "c6a6d756d99047532cf3976c8cc8cca7bcea394f3ac8d7953c7006cf710fd4ab"
+  },
+  "provisional_admission": {
+    "validation": "candidate-admission.json",
+    "construction": "JPL Type-21 resampled as Moira Type-13",
+    "count": 27,
+    "predecessor_manifest_sha256": "0021b645f3db6847e1b3d6a120a8eb4a39cf60fb8298e391aef676affdd2ab4b",
+    "added_since_public_base": 27,
+    "full_shard_completion": {
+      "base_catalog_version": "2026.11.18.1",
+      "base_manifest_sha256": "d1fc00d4ab8d7e54eb82a7dcf806743849b3f7390564f8894bf096bfdc104cb8",
+      "screening_receipt": "full-shard-screening.json",
+      "original_tail_shard": 449,
+      "original_tail_body_count": 3,
+      "full_shard_body_count": 25,
+      "unchanged_shards": 449,
+      "preserved_type13_tail_payloads": 3
+    }
+  },
+  "catalog_version": "2026.11.18.2",
   "release": {
-    "released_utc": "2026-10-10T12:33:17Z",
-    "source_manifest_sha256": "91f1ef2d129135cba2ea669c9c3ba32b88914f008ff0f4c48feae27cf1946bf8",
+    "released_utc": "2026-11-18T15:28:02Z",
+    "source_manifest_sha256": "c101b0b1c44df85707259572f84305eeebd29eb5fd736fe09db8dd6b8d801613",
     "integrity": {
       "algorithm": "sha256",
       "receipt": "SHA256SUMS",
@@ -17689,64 +17704,316 @@
       {
         "path": "NOTICE.md",
         "role": "provenance_notice",
-        "bytes": 1124,
-        "sha256": "b6e9c58d723f0d0443263c79159f15d129f5ec05540677cb7376c3f2c4afa10e"
+        "bytes": 1251,
+        "sha256": "238896c0cf740b6d7efa38877bcfd68f9e271192361c1127bce598b40cad6227"
       },
       {
-        "path": "asteroid_anchored_oracle_2026-10-03.json",
-        "role": "scientific_validation",
-        "bytes": 26538,
-        "sha256": "4ddc7ba4a8bdced95670b5501d5e7872437c2c53e48c19b167138c52b7c92acc"
-      },
-      {
-        "path": "asteroid_anchored_source_review_2026-10-03.json",
-        "role": "scientific_validation",
-        "bytes": 3341,
-        "sha256": "db800702ed89940659f85c1fca1cba757dd5cfa3189feb2ff874d2f9b1ae28f1"
-      },
-      {
-        "path": "asteroid_type13_adaptive_bodies.json",
-        "role": "adaptive_roster",
-        "bytes": 1234,
-        "sha256": "5e46410874fe5edc9a17e54d7b7eed1cf0ef1e060df602ee32adc618c2a9662d"
-      },
-      {
-        "path": "asteroid_type13_apsidal_sampling_audit_2026-09-28.json",
-        "role": "scientific_validation",
-        "bytes": 144711,
-        "sha256": "6cee053cb69f68b60a8343079691a1eb319845201a4bf547ff288dc375118008"
-      },
-      {
-        "path": "build_unified_asteroid_catalog.py",
+        "path": "builder/acquire.py",
         "role": "builder_source",
-        "bytes": 41543,
-        "sha256": "60cefce9f080dc9beeaea7ba498f32681eb568ddf03a87f702c97a5adc960266"
+        "bytes": 2233,
+        "sha256": "ec1851812f0a8d061915c514d905bbb8da30333182c6bc674ca95f11d05221e0"
       },
       {
-        "path": "horizons_response_cache.py",
+        "path": "builder/acquire_trajectories.py",
         "role": "builder_source",
-        "bytes": 2390,
-        "sha256": "1aee3939bd2eac44141f93c807f512b666e78527aa8946384c5b246a50e4769a"
+        "bytes": 3500,
+        "sha256": "d44f8c5f8474981bb1adff211d15e2e966fb3dcb00be332ef07d323588572ac6"
+      },
+      {
+        "path": "builder/build_candidate_release.py",
+        "role": "builder_source",
+        "bytes": 18050,
+        "sha256": "67a282ba59cd02b5e976750e6239fb76ce2d49ac29517d389e65b8ed8aa15124"
+      },
+      {
+        "path": "builder/full-shard/acquire_trajectories.py",
+        "role": "builder_source",
+        "bytes": 4778,
+        "sha256": "8feb5253c54b51cad6df4035211d9adad597ab80d8c67b603fd9d67bd1b5da68"
+      },
+      {
+        "path": "builder/full-shard/build_candidate_release.py",
+        "role": "builder_source",
+        "bytes": 18445,
+        "sha256": "c0609b00d99b341d282948f8b233083861afb1c975b5936ee0418511aef93a4a"
+      },
+      {
+        "path": "builder/full-shard/complete_full_shard.py",
+        "role": "builder_source",
+        "bytes": 7649,
+        "sha256": "65f2f93076231ea66f9079cdff0a8b3dc050537a0b0fc85596dcb07519e010ce"
+      },
+      {
+        "path": "builder/full-shard/restore_predecessor.py",
+        "role": "builder_source",
+        "bytes": 2485,
+        "sha256": "83c1ba699a0aab709c9ca525ef5a905d1ac33c907eefd5b32f4f56bc40ae3fc6"
+      },
+      {
+        "path": "builder/full-shard/screen_full_shard.py",
+        "role": "builder_source",
+        "bytes": 4361,
+        "sha256": "90fe9b5e2db59beadb42af6b544f59d228608b24066476b6742bc3c1b68ed374"
+      },
+      {
+        "path": "builder/oracle.py",
+        "role": "builder_source",
+        "bytes": 5940,
+        "sha256": "45be77675c31e4529a401dc622d718b3392aea255bf5fb42a9920f7ff17254c9"
+      },
+      {
+        "path": "builder/patch_source.py",
+        "role": "builder_source",
+        "bytes": 9995,
+        "sha256": "594d3c5ae82cc836e9ad2c1ebbecad74989419a1053a61613ba7b81bed7c35d1"
+      },
+      {
+        "path": "builder/qualify.py",
+        "role": "builder_source",
+        "bytes": 5276,
+        "sha256": "0e1cb2353f19b10682daa1e10bcc7ad14eccafb637b3abb673ad6a777d9cbf06"
+      },
+      {
+        "path": "builder/resample.py",
+        "role": "builder_source",
+        "bytes": 15150,
+        "sha256": "404118b121936ca590fc2d8ec7f3fd682a4a524206bfc9ea00fa3aba7a238d03"
+      },
+      {
+        "path": "builder/restore_predecessor.py",
+        "role": "builder_source",
+        "bytes": 2485,
+        "sha256": "83c1ba699a0aab709c9ca525ef5a905d1ac33c907eefd5b32f4f56bc40ae3fc6"
+      },
+      {
+        "path": "builder/source_continuity.py",
+        "role": "builder_source",
+        "bytes": 1910,
+        "sha256": "84b1f49eb005a5ac7d41031fac0615b32c84024e4bc9d9c976f2bd496a63be27"
+      },
+      {
+        "path": "builder/stage.py",
+        "role": "builder_source",
+        "bytes": 11992,
+        "sha256": "2d3112e9b3a8c48bb2cdcb5f69397a0ce1bd015a04a7541581f55774461ed500"
+      },
+      {
+        "path": "builder/window_decisions.json",
+        "role": "builder_source",
+        "bytes": 810,
+        "sha256": "eb73f8ac4536fc38ea2e0986ca4e8ab821dbdced91457e21e2ed03b58ac4b6d1"
+      },
+      {
+        "path": "candidate-admission.json",
+        "role": "scientific_validation",
+        "bytes": 287234,
+        "sha256": "cbb1e1a600915586c3a1081eddf0e7966c2c44ecd7bd9c08fde6e754e10e0ff5"
+      },
+      {
+        "path": "full-shard-screening.json",
+        "role": "catalog_build_evidence",
+        "bytes": 770610,
+        "sha256": "86a67b4a3e8037bee92084e24f6be80798024cd349b6fff7bbbdc7abaaeaef5d"
       },
       {
         "path": "moira_public_asteroid_targets.json",
         "role": "admitted_targets",
-        "bytes": 960044,
-        "sha256": "676ca3b07acbb05b013ce5422441328275abc83f4109b6582f23bb203ac3b85f"
-      },
-      {
-        "path": "type13_adaptive_sampling.py",
-        "role": "builder_source",
-        "bytes": 20409,
-        "sha256": "97886932b4dfc1ce451d8eefacff3cae4278aaf7b4dc2edae1c49aa6ad0cbe96"
+        "bytes": 896632,
+        "sha256": "e81f253ac9d8a7a9f6c2df9d57316e17129f529236b9d01078931b3ca7b589be"
       },
       {
         "path": "unified_master.json",
         "role": "catalog_build_evidence",
-        "bytes": 23510860,
-        "sha256": "c0d983d66d664182dfe18b0aa9420f491802ac98ad9c205e2bb367c8d998ef0f"
+        "bytes": 22946912,
+        "sha256": "694befd672129c692c6e1fe5b617f9be5da944cb840999342aa402804250733f"
+      },
+      {
+        "path": "validation/1566-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15041,
+        "sha256": "349a876b57fc4f1cd41342a6d917ac65c8b9ac1e1a76aaa8d1a48c3020d2522c"
+      },
+      {
+        "path": "validation/1566-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3745,
+        "sha256": "ca5d8d1c3a26a917ea5c46d531d2330df9b0128feadc781f3f41647c2e650abb"
+      },
+      {
+        "path": "validation/1566-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 30629,
+        "sha256": "56232957ba20316edc5ba39d7f69c28a6f7217341d722928a02e80be303ee800"
+      },
+      {
+        "path": "validation/1862-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15019,
+        "sha256": "b9ac6783bd625042cb8acdebcb0bbce6c32732e630072a1b8569d3a888457785"
+      },
+      {
+        "path": "validation/1862-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3780,
+        "sha256": "c543a58f061ab4bff328b615d39ac9fb3f9ae2c03cbe7f7b42018d30466eea6f"
+      },
+      {
+        "path": "validation/1862-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 6662,
+        "sha256": "07405fbe0fda564490aa3e011834a97c6855e045fe71a4909db15ba8457c7f75"
+      },
+      {
+        "path": "validation/2201-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 9069,
+        "sha256": "bcad48a5802040b62a804cdf3a9daaeb8fff5490e48e5e9a12911ebf6565ea32"
+      },
+      {
+        "path": "validation/2201-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3491,
+        "sha256": "b426fb55b16939ca00765e43be7497d9865527c97bbaab869f3f01cea8a763fa"
+      },
+      {
+        "path": "validation/2201-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 6980,
+        "sha256": "61605a8bcfcfd7d011fdcf5e97d09fa7e85b7a97e2a161b2d53df2342e44e793"
+      },
+      {
+        "path": "validation/25143-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15054,
+        "sha256": "1156072beb03d77885e483e6512feccc1ec8ada52e5cb5f6a66f8c204e87b659"
+      },
+      {
+        "path": "validation/25143-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3244,
+        "sha256": "21e3eacef52adac3fc24b3ae1221a283e14d6f97b05492770eaf25a5243c04e3"
+      },
+      {
+        "path": "validation/25143-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 823,
+        "sha256": "a82da2b6e079cce066f72b08efb973644c7b71b57839ac0cf30b46cd34c97807"
+      },
+      {
+        "path": "validation/367943-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15079,
+        "sha256": "c55adb878152dbc396d41c63cd46113eb8c2fe57cd896b8684db8bf2f9024dc5"
+      },
+      {
+        "path": "validation/367943-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 5324,
+        "sha256": "b87972f2547ab248dd210efa2b051a04a1816ac196604edfa7197182c2c4caa3"
+      },
+      {
+        "path": "validation/367943-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 2400,
+        "sha256": "6037065b08c47be31a40ccc28d03d78c035828ed3fd43688d8fb54a8227c6dba"
+      },
+      {
+        "path": "validation/4581-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15047,
+        "sha256": "edb256fda2c6b511abea853c608ae38bc20ced98a8acd4859c13a06a9d9329f7"
+      },
+      {
+        "path": "validation/4581-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3488,
+        "sha256": "a40d643c92cd9fea7aca1edbf75406d87c6f031fc03d72ac7265e043edf414b5"
+      },
+      {
+        "path": "validation/4581-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 5058,
+        "sha256": "af8b13fbc9874f527d80a79af245929ec90dacc01f92264fe1398b31c63fa7ad"
+      },
+      {
+        "path": "validation/4660-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15070,
+        "sha256": "55e28bfa64087cb1fabda220b15bb61bd4737e67a7692f2a3a697fa1b856e027"
+      },
+      {
+        "path": "validation/4660-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3221,
+        "sha256": "e0722060df7f9735a29e0148d7a9d3d7e13f5a1ad1878dc95a750b314c164190"
+      },
+      {
+        "path": "validation/4660-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 821,
+        "sha256": "a9cc46c291112edd1df4c623704274ecec8977f8fef0efe87bf8978d6e2b7c83"
+      },
+      {
+        "path": "validation/54509-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15056,
+        "sha256": "eb4ff5ab36207b9a192d64ebcf52840be2155b311d476e6f825d65d53c36b032"
+      },
+      {
+        "path": "validation/54509-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3499,
+        "sha256": "426e97bf4f3ac764178aa8d9e33c247aa308ca1682b716832ca8e08fcc53448a"
+      },
+      {
+        "path": "validation/54509-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 5727,
+        "sha256": "c2f9ac763230cec33f69e38556733547d6080bc42a078f3f5040bc5f75e255c5"
+      },
+      {
+        "path": "validation/69230-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15055,
+        "sha256": "b4044318e34c271b706a88aae37a79837769694e2cd9f964c898553b36f4d72c"
+      },
+      {
+        "path": "validation/69230-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 3771,
+        "sha256": "e3838c0b06717603d7d3851efd08d684aee1f2228713ea4a9cc502a7ae0e1101"
+      },
+      {
+        "path": "validation/69230-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 14294,
+        "sha256": "565f8b12259dd878be023417eae65c898d7f4ddce88161c637f214978f9a6842"
+      },
+      {
+        "path": "validation/99942-horizons.json",
+        "role": "scientific_validation",
+        "bytes": 15056,
+        "sha256": "9af18c928c54440585d745be091352f63ee29a2d68309367a0211810902137e1"
+      },
+      {
+        "path": "validation/99942-resampling.json",
+        "role": "scientific_validation",
+        "bytes": 4921,
+        "sha256": "171420728336bbc69b33fe270c2595150cbd50e68d375f95740d3c9b2b31845e"
+      },
+      {
+        "path": "validation/99942-source-patches.json",
+        "role": "scientific_validation",
+        "bytes": 176,
+        "sha256": "b694eca0dfe1d9a208e7dab2df5b560ff506a26927034070a542d73d790fb228"
+      },
+      {
+        "path": "validation/source-continuity.json",
+        "role": "scientific_validation",
+        "bytes": 28880,
+        "sha256": "10542800a52dc880d078b57a4ee773154c808e82393db60aa28b7c6d910ad86d"
       }
     ],
-    "source_revision": "e4e9a72e115e972438d3bb07d48388fcf8c440dd"
+    "source_revision": "3d95ef58dbeb40740033b996ce8a9e178f1f71a8"
   }
 }

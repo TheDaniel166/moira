@@ -513,7 +513,9 @@ def group_asteroid_families_in_chart(
     )
 
 
-def _mpc_number_from_naif_id(naif_id: int) -> int:
+def _mpc_number_from_naif_id(naif_id: int) -> int | None:
+    if 50_000_000 <= naif_id < 60_000_000:
+        return None
     return naif_id - SMALL_BODY_NAIF_OFFSET
 
 
@@ -576,7 +578,11 @@ def compute_asteroid_family_resonance_network(
             raise ValueError(f"duplicate resolved asteroid body {data.name!r}")
 
         mpc_number = explicit_number if explicit_number is not None else _mpc_number_from_naif_id(data.naif_id)
-        family_names = asteroid_families(mpc_number) if mpc_number > 0 else []
+        family_names = (
+            asteroid_families(mpc_number)
+            if mpc_number is not None and mpc_number > 0
+            else []
+        )
         family_name = family_names[0] if family_names else None
         loaded_kernel_available = data.naif_id in covered
 
@@ -597,7 +603,8 @@ def compute_asteroid_family_resonance_network(
         )
         positions[data.name] = data.longitude
         speeds[data.name] = data.speed
-        body_catalog_numbers[data.name] = mpc_number
+        if mpc_number is not None:
+            body_catalog_numbers[data.name] = mpc_number
 
     aspects = find_aspects(
         positions,

@@ -1,8 +1,8 @@
 """
 Build canonical asteroid orbit class registry for Moira 6.8.0.
 
-Queries JPL SBDB Query API for all non-MBA numbered classes (CEN, TNO, IEO, ATE, APO,
-AMO, MCA, TJN, IMB, OMB, AST, PAA, HYA) and assigns MBA to all remaining admitted bodies.
+Queries the JPL SBDB Query API for numbered orbit classes and separately
+resolves unnumbered TNOs by the JPL SPK IDs in the admitted catalog.
 Produces moira/data/asteroid_orbit_classes.json mapping NAIF ID string -> {
     "code": "CEN" | "TNO" | "MBA" | ...,
     "title": "Centaur" | ...
@@ -42,8 +42,9 @@ CLASS_TITLES: dict[str, str] = {
 }
 
 
-def _fetch_classes(sb_classes: str) -> list[tuple[int, str]]:
-    url = f"{SBDB_QUERY_URL}?fields=spkid,class&sb-class={sb_classes}&sb-ns=n"
+def _fetch_classes(sb_classes: str, *, numbered: bool = True) -> list[tuple[int, str]]:
+    subset = "n" if numbered else "u"
+    url = f"{SBDB_QUERY_URL}?fields=spkid,class&sb-class={sb_classes}&sb-ns={subset}"
     print(f"Fetching classes for {sb_classes}...", flush=True)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=60) as resp:
@@ -51,8 +52,9 @@ def _fetch_classes(sb_classes: str) -> list[tuple[int, str]]:
     records = []
     for row in data.get("data", []):
         spkid, cls = row
-        mpc_num = int(spkid) - 20000000
-        naif_id = 2000000 + mpc_num
+        naif_id = int(spkid)
+        if numbered:
+            naif_id = 2_000_000 + (naif_id - 20_000_000)
         records.append((naif_id, cls))
     print(f"  Received {len(records)} records.", flush=True)
     return records
@@ -95,7 +97,20 @@ def build_catalog() -> None:
         if naif_id in admitted_naifs:
             known_classes[naif_id] = cls
 
-    # 2. All remaining admitted bodies are MBA (Main-belt Asteroids)
+    provisional_ids = {
+        naif_id for naif_id in admitted_naifs if 50_000_000 <= naif_id < 60_000_000
+    }
+    if provisional_ids:
+        known_classes.update(
+            (naif_id, cls)
+            for naif_id, cls in _fetch_classes("TNO", numbered=False)
+            if naif_id in provisional_ids
+        )
+        missing = provisional_ids - known_classes.keys()
+        if missing:
+            raise ValueError(f"Admitted provisional SPK IDs absent from JPL TNO query: {sorted(missing)}")
+
+    # 2. Remaining numbered bodies are MBA (Main-belt Asteroids).
     orbit_classes: dict[str, dict[str, str]] = {}
     class_counts: dict[str, int] = {}
     for naif_id in sorted(admitted_naifs):
@@ -111,8 +126,6 @@ def build_catalog() -> None:
     for cls, count in sorted(class_counts.items(), key=lambda x: -x[1]):
         print(f"  {cls} ({CLASS_TITLES.get(cls, cls)}): {count}")
     print(f"Total: {sum(class_counts.values())}")
-
-    assert len(orbit_classes) == len(admitted_naifs) == 11223, "Must cover all 11,223 admitted bodies!"
 
     # Write output JSON
     OUTPUT_PATH.write_text(json.dumps(orbit_classes, indent=2), encoding="utf-8")

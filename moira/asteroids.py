@@ -60,7 +60,8 @@ QUATERNARY — minor_bodies.bsp  (generated locally)
 
 Body routing priority: SECONDARY → TERTIARY → QUATERNARY → PRIMARY.
 
-NAIF IDs for small bodies: 2_000_000 + catalogue_number
+Numbered bodies use 2_000_000 + catalogue_number. Provisional bodies
+use the JPL SPK ID attached to their admitted designation.
   e.g. Ceres = 2000001, Chiron = 2002060
 
 Usage
@@ -503,9 +504,8 @@ ASTEROID_NAIF: dict[str, int] = {
     "Gonggong":     2225088,
 }
 
-# Data-driven sovereign identity catalog: merge the canonical names admitted by
-# scripts/build_asteroid_identity_catalog.py from the finalized public asteroid
-# release (name -> NAIF id, 11,223 bodies in release 2026.10.10.1).
+# Data-driven sovereign identity catalog: merge canonical names from the
+# finalized asteroid release via scripts/build_asteroid_identity_catalog.py.
 # Kept in a data file rather than inline so the entries do not bloat this module;
 # loaded here (before the reverse map) so name and NAIF lookups both see them.
 # `setdefault` keeps the curated names above for the core bodies while the data
@@ -940,6 +940,11 @@ def asteroid_at(
             rot_mat=rot_mat,
         )
     except KeyError as exc:
+        if 50_000_000 <= naif_id < 60_000_000:
+            raise KeyError(
+                f"No loaded small-body kernel has {name} (JPL SPK ID {naif_id}). "
+                "Load an asteroid catalog that includes this provisional designation."
+            ) from exc
         raise KeyError(
             f"No loaded small-body kernel has {name} (NAIF {naif_id}). "
             f"Install asteroid catalog {FULL_CATALOG_VERSION} from {EPHEMERIDES_URL}"

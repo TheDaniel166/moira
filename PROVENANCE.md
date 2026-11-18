@@ -248,8 +248,8 @@ event semantics, and result construction. The Jones/Paranal moonlight
 experiment is quarantined research. It has no runtime module, public contract,
 packaged resource, release gate, or active-roadmap dependency.
 
-The unified numbered-asteroid catalog is generated from JPL Horizons
-heliocentric `VECTORS` states and materialized as Moira Type-13 shards. Moira
+The unified asteroid catalog is generated from JPL Horizons heliocentric
+`VECTORS` and SPK states and materialized as Moira Type-13 shards. Moira
 writes the resulting DAF/SPK bytes through its own Type-13 writer, interpolation
 layout, shard assembly, metadata, and manifest pipeline; these are
 Moira-generated artifacts, not BSP files supplied by JPL. Horizons remains the
@@ -267,15 +267,27 @@ distribution includes the MIT license for Moira-authored software and
 packaging plus a notice that preserves JPL Horizons provenance without implying
 NASA, JPL, or Caltech endorsement.
 
-The bundled asteroid identity registry is bound to catalog
-`moira-asteroids`, version `2026.10.10.1`, through
-`moira/data/asteroid_catalog_naif.metadata.json`. That receipt identifies
-11,223 canonical names, the 449-shard adaptive external release, source
-revision, admitted-target and unified-ledger hashes, and manifest SHA-256
-`3d6ef5dee648dad240ef9db4dfcc460a3ecbf0f1cb4b103d1d99f1056878319d`.
-The wheel contains this identity registry, receipt, and metadata-only manifest,
-not the external BSP shards; known identity therefore remains distinct from
-installed position capability.
+The bundled asteroid identity receipt
+`moira/data/asteroid_catalog_naif.metadata.json` binds the canonical names to
+the exact `moira-asteroids` release manifest, admitted targets, and build ledger.
+The full-catalog BSP shards are installed separately from the wheel.
+
+Catalog `2026.11.18.2` extends `2026.11.10.2` with 27 trans-Neptunian
+objects. Five close the gaps in the two highest tiers of the dwarf-planet
+survey. The other 22 come from the next survey tiers and were screened
+for multi-year JPL observation arcs in `full-shard-screening.json`.
+Two additions fill shard 448 and 25 fill shard 449, bringing the catalog
+to 11,250 bodies in 450 full shards.
+[Michael Brown's survey](https://web.gps.caltech.edu/~mbrown/dps.html)
+
+Their identity keys are the provisional designations from the JPL Small-Body
+Database. Each target has an explicit JPL SPK ID. Numbered records continue
+to use Moira's catalog-number offset. The release's `candidate-admission.json`
+binds the source solution, observed arc, Types 21 and 13 validation, and
+separate Horizons VECTORS holdouts for each addition. The installed segments
+cover 1600–2500 TDB on the nominal JPL solutions, including extrapolated epochs
+outside the observations. Candidate status comes from the physical evidence
+survey. The ephemeris admission certifies the reproduced trajectories.
 
 The historical 10-day/7-node asteroid release was not universally admitted for the much
 stricter apsidal-passage distance product. The exhaustive September 28 audit

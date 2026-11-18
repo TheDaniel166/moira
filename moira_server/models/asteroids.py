@@ -414,7 +414,7 @@ class AsteroidFamilyResonanceNodeResponse(_StrictModel):
     body: str
     requested_body: str
     naif_id: int
-    mpc_number: int
+    mpc_number: int | None
     family_name: str | None
     family_names: list[str]
     longitude: float
