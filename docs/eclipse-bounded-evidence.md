@@ -67,6 +67,16 @@ negative event findings. An error in one product does not erase another.
 occurrence can be proved by one strict witness while its complement stays
 unresolved. A width can be bounded while `precision_met` is false.
 
+Geographic width uses the local implicit TT/TDB rate at the anchor. The
+solver can refine both limit bands within the section evaluation budget.
+If refinement exhausts that budget, a valid coarser interval can be
+returned with the precision and budget flags that describe it.
+
+The [Stage 7 catalog validation](architecture/ECLIPSE_STAGE7_CLOSURE.md)
+also computes spatial boundary bounds for the 92 catalog controls. That
+offline calculation uses the complete declared event interval and reports
+the measured resolution separately from the request-local mesh.
+
 `max_evaluations` allocates 0–4096 evaluations to **each** selected product;
 units differ and are reported (root callbacks, section predicates, Sturm
 queries, etc.). Zero budget retains uncertainty without source preparation.

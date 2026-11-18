@@ -225,24 +225,30 @@ def bound_geographic_width(section, *, epoch_ut1=None,tolerance_km=F(1,10),
         raise ValueError('positive finite quadrature panel budget required')
     calls,cells,pending = 0,[],[I(-1,1)]
     parameter_tolerance = F(tolerance_km)/(32*max(section.radii))
-    try:
+
+    def partition(resolution):
+        nonlocal calls
         while pending:
-            box = pending.pop()
+            box = pending[-1]
             if calls >= max_evaluations:
+                pending.pop()
                 cells.append((box,'unresolved','evaluation_budget'))
                 continue
             calls += 1
             bound = section_bounds(section,box)
+            pending.pop()
             if bound.inside:
                 cells.append((box,'inside',bound))
             elif bound.outside:
                 cells.append((box,'outside',bound))
-            elif box.width <= parameter_tolerance:
+            elif box.width <= resolution:
                 cells.append((box,'unresolved',bound))
             else:
                 mid = box.midpoint
                 pending.extend((I(mid,box.hi),I(box.lo,mid)))
         cells.sort(key=lambda row:row[0].lo)
+
+    def measure():
         groups = []
         for box,status,_ in cells:
             if groups and groups[-1][1] == status:
@@ -258,9 +264,34 @@ def bound_geographic_width(section, *, epoch_ut1=None,tolerance_km=F(1,10),
         width = I(inner.lo,outer.hi)
         if width.lo <= 0:
             raise EnclosureUnavailable('geographic_width_error_budget')
+        return width,left,right
+
+    try:
+        partition(parameter_tolerance)
+        width,left,right = measure()
+        if width.width > tolerance_km and calls < max_evaluations:
+            # Refine only the two previously bounded limit bands. Their
+            # sensitivity can exceed the nominal parameter-to-arc scaling
+            # near a grazing horizon. Preserve a valid coarse interval if
+            # the extra work reaches the shared evaluation budget.
+            coarse_cells = cells
+            pending = [box for box,status,_ in cells if status == 'unresolved']
+            cells = [row for row in cells if row[1] != 'unresolved']
+            partition(parameter_tolerance/16)
+            if calls >= max_evaluations:
+                cells = coarse_cells
+            else:
+                refined,left,right = measure()
+                width = width.intersect(refined)
+                if width is None:
+                    raise ArithmeticError('independent geographic arc enclosures disagree')
         status = 'bounded_width' if width.width <= tolerance_km else 'bounded_precision_limited'
-        reason = ('strict component interior, excluded complements and bounded arc integral'
-                  if status == 'bounded_width' else 'valid interval; requested precision blocked by track/limit conditioning')
+        if status == 'bounded_width':
+            reason = 'strict component interior, excluded complements and bounded arc integral'
+        elif calls >= max_evaluations:
+            reason = 'valid interval with requested precision limited by the section evaluation budget'
+        else:
+            reason = 'valid interval with requested precision limited by track or limit conditioning'
         return GeographicWidth(status,width,left,right,tuple(cells),calls,reason,section,epoch_ut1,
                                requested_tolerance_km=F(tolerance_km),model_profile=model_profile,
                                event_domain_offset_days=event_domain)

@@ -57,9 +57,10 @@ class ContinuousSolarStage3Scope:
     exact_real_model_only: bool = True
     native_continuity_claimed: bool = False
     physical_accuracy_certified: bool = False
+    local_point_rates: bool = False
 
 
-def prepare_continuous_solar_stage3(reader,anchor: float,domain: I, *, panel_count=16):
+def prepare_continuous_solar_stage3(reader,anchor: float,domain: I, *, panel_count=16,local_point_rates=False):
     """Freeze the explicit lift, including record and orientation derivatives."""
     if type(panel_count) is not int or not 1<=panel_count<=128:
         raise ValueError('finite panel count from 1 to 128 required')
@@ -76,7 +77,8 @@ def prepare_continuous_solar_stage3(reader,anchor: float,domain: I, *, panel_cou
     for index in range(panel_count):
         box = I(full.lo+full.width*index/panel_count,full.lo+full.width*(index+1)/panel_count)
         whole = enclose_piecewise_eclipse_vectors(records,box,retarded_moon=True)
-        point = enclose_piecewise_eclipse_vectors(records,I.point(box.midpoint),retarded_moon=True)
+        point = enclose_piecewise_eclipse_vectors(records,I.point(box.midpoint),
+                                                 retarded_moon=True,local_clock_rate=local_point_rates)
         panels.append(SolarReferencePanel(box,whole,box.midpoint,point))
     series = freeze_orientation_series()
     whole = bound_celestial_orientation(series,anchor,full)
@@ -84,7 +86,8 @@ def prepare_continuous_solar_stage3(reader,anchor: float,domain: I, *, panel_cou
     point = bound_celestial_orientation(series,anchor,I.point(middle))
     rows,_,polar_digest = _table_snapshot()
     return ContinuousSolarStage3Scope(float(anchor),domain,full,clock,records,tuple(panels),
-        series,whole,middle,point,rows,polar_digest,4*atan_enclosure(I.point(1),precision_bits=160))
+        series,whole,middle,point,rows,polar_digest,4*atan_enclosure(I.point(1),precision_bits=160),
+        local_point_rates=local_point_rates)
 
 
 def _hull_jets(values):
@@ -169,7 +172,7 @@ def _gast_reference(scope,domain,tt,dpsi,eps):
 
 
 def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progress=None,jet_observer=None,
-                                     scene_only=False,frame_only=False):
+                                     scene_only=False,frame_only=False,recenter_orientation=True):
     """Return request-local value/derivative enclosures and evaluation counters."""
     if type(scene_only) is not bool or type(frame_only) is not bool or (scene_only and frame_only):
         raise TypeError('select at most one bool scene_only/frame_only product')
@@ -189,7 +192,8 @@ def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progr
             if owned is None:
                 continue
             if not panel.whole.continuous_on_domain:
-                vectors = enclose_piecewise_eclipse_vectors(scope.records,owned,retarded_moon=True)
+                vectors = enclose_piecewise_eclipse_vectors(scope.records,owned,
+                    retarded_moon=True,local_clock_rate=scope.local_point_rates)
                 sun_parts.append(vectors.sun)
                 moon_parts.append(vectors.moon)
                 source_continuous &= vectors.continuous_on_domain
@@ -201,7 +205,8 @@ def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progr
                         for ray in (panel.whole.sun,panel.whole.moon) for component in ray)
             if owned.width<F(2,86400) and error>F(1,10**6):
                 near = owned.midpoint
-                cache[near] = enclose_piecewise_eclipse_vectors(scope.records,I.point(near),retarded_moon=True)
+                cache[near] = enclose_piecewise_eclipse_vectors(scope.records,I.point(near),
+                    retarded_moon=True,local_clock_rate=scope.local_point_rates)
                 stats['vector_points'] += 1
                 h = owned-near
             point = cache[near]
@@ -210,7 +215,7 @@ def continuous_solar_stage3_provider(scope: ContinuousSolarStage3Scope, *, progr
         sun = tuple(_chain(_hull_jets([part[k] for part in sun_parts]),tt) for k in range(3))
         moon = tuple(_chain(_hull_jets([part[k] for part in moon_parts]),tt) for k in range(3))
         near = min(orientation_points,key=lambda point:abs(point-tt[0].midpoint))
-        if tt[0].width<F(1,86400) and abs(near-tt[0].midpoint)>F(30,86400):
+        if recenter_orientation and tt[0].width<F(1,86400) and abs(near-tt[0].midpoint)>F(30,86400):
             near = tt[0].midpoint
             orientation_points[near] = bound_celestial_orientation(scope.orientation_series,
                 scope.ut1_anchor_jd,I.point(near))

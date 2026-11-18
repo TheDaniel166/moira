@@ -122,7 +122,9 @@ def freeze_eclipse_records(reader, anchor: float, domain: I, *,
     return FrozenEclipseRecordSet(float(anchor),domain,horizon_days,tuple(copied),reader._source_identity.sha256)
 
 
-def enclose_piecewise_eclipse_vectors(model: FrozenEclipseRecordSet, domain: I, *, retarded_moon=False):
+def enclose_piecewise_eclipse_vectors(
+    model: FrozenEclipseRecordSet, domain: I, *, retarded_moon=False, local_clock_rate=False,
+):
     """Enclose all selected record branches and their one-sided derivatives.
 
     A true continuity flag requires a unique record for every individual
@@ -143,7 +145,7 @@ def enclose_piecewise_eclipse_vectors(model: FrozenEclipseRecordSet, domain: I, 
                   (_NAIF_DELTET_K_SECONDS,_NAIF_DELTET_M1_RADIANS_PER_SECOND,_NAIF_DELTET_EB))
 
     def clock(tt):
-        conversion = bound_continuous_reference_tdb(model.tt_anchor_jd,tt[0])
+        conversion = bound_continuous_reference_tdb(model.tt_anchor_jd,tt[0],local_rate=local_clock_rate)
         g = conversion.derivative_tdb_per_tt
         second = k/86400*(86400*m1)**2*((1+eb)**2+eb)*g.hi**3
         return (conversion.tdb_offset_days,j.q(g*tt[1]),

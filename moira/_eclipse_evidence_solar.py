@@ -42,7 +42,7 @@ def compute_solar_evidence(reader,epoch,box,selected,limit,tolerance,width_toler
     def prepare(scope_box):
         if scope_box not in scopes:
             scope = prepare_continuous_solar_stage3(reader,epoch,scope_box,
-                                                   panel_count=1 if not scope_box.width else 4)
+                panel_count=1 if not scope_box.width else 4,local_point_rates=not scope_box.width)
             frames,stats = continuous_solar_stage3_provider(scope,frame_only=True)
             cache = {}
 
@@ -145,9 +145,9 @@ def compute_solar_evidence(reader,epoch,box,selected,limit,tolerance,width_toler
                                         ('occurrence_orientation_enclosures',2)))
             else:
                 scope_box = box if product in ('central_path','swept_region') else I.point(0)
-                # Reuse a wider source scope already prepared in this request.
-                existing = next((key for key in scopes if key.lo <= scope_box.lo <= scope_box.hi <= key.hi),None)
-                scope,frame,stats = prepare(scope_box if existing is None else existing)
+                # The width uses a point scope for tighter differentiated rates
+                # even when a wider path scope was requested in the same call.
+                scope,frame,stats = prepare(scope_box)
                 current_source = source(reader,src.model_id,scope.records,
                     (*scope.clock.source_digests,scope.orientation_series.sha256,scope.polar_sha256),
                     clock=scope.clock.branch,source_domain=domain('UT1',epoch,scope.domain),tt_domain=scope.tt_domain)
@@ -192,7 +192,8 @@ def compute_solar_evidence(reader,epoch,box,selected,limit,tolerance,width_toler
                             tuple(B.from_interval(v) for v in edge.xyz_itrf_km),edge.unique_root_proved) for edge in width.limits]
                     result[product] = EclipseProductEvidence(product,'bounded' if width.width_km is not None else 'unresolved',
                         width.reason,time,current_source,
-                        EvidenceBudget(limit,width.evaluations,'section_predicates',width.width_km is None and width.evaluations>=limit),
+                        EvidenceBudget(limit,width.evaluations,'section_predicates',
+                                       width.status != 'bounded_width' and width.evaluations >= limit),
                         coverage_complete=width.width_km is not None,values=tuple(values),cells=cells,metric=width.metric,
                         precision_met=None if width.width_km is None else width.width_km.width<=width_tolerance,
                         horizon_policy='sun_centre_geometric_WGS84_no_refraction_or_terrain',limits=tuple(limits),

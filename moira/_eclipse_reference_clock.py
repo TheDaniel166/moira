@@ -44,6 +44,7 @@ class ContinuousReferenceTdb:
 
 def bound_continuous_reference_tdb(
     tt_anchor_jd: float, tt_offset_days: I, *, steps: int = 4, precision_bits: int = 128,
+    local_rate: bool = False,
 ) -> ContinuousReferenceTdb:
     """Enclose the real implicit fixed point and d(TDB)/d(TT).
 
@@ -54,6 +55,10 @@ def bound_continuous_reference_tdb(
     itself and has one fixed point x(t), continuously differentiable with
     d(TDB)/d(TT) in [1/(1+q), 1/(1-q)]. This is a real-function proof, not
     an assertion about finite binary64 fixed-point iteration.
+
+    The optional local rate uses 1/(1-F') where F' differentiates the
+    correction as a function of TDB. The final iteration's input encloses
+    every fixed point and supplies both cosine bounds without extra trig.
     """
     if isinstance(tt_anchor_jd, bool) or not isinstance(tt_anchor_jd, (int, float)):
         raise ValueError("TT anchor must be finite")
@@ -85,15 +90,21 @@ def bound_continuous_reference_tdb(
     try:
         for _ in range(steps):
             mean = (I.point(m0) + (absolute + correction - 2451545) * (m1 * 86400)).quantize_outward(precision_bits)
-            inner = sin_cos_enclosure(mean, precision_bits=precision_bits).sine
-            anomaly = (mean + eb * inner).quantize_outward(precision_bits)
-            result = (sin_cos_enclosure(anomaly, precision_bits=precision_bits).sine * (k / 86400)).quantize_outward(precision_bits)
+            inner = sin_cos_enclosure(mean, precision_bits=precision_bits)
+            anomaly = (mean + eb * inner.sine).quantize_outward(precision_bits)
+            outer = sin_cos_enclosure(anomaly, precision_bits=precision_bits)
+            result = (outer.sine * (k / 86400)).quantize_outward(precision_bits)
             narrowed = correction.intersect(result)
             if narrowed is None:
                 raise ArithmeticError("reference fixed-point enclosures are inconsistent")
             correction = narrowed
         tdb = (tt_offset_days + correction).quantize_outward(precision_bits)
         derivative = I(Fraction(1, 1) / (1 + q), Fraction(1, 1) / (1 - q))
+        if local_rate:
+            slope = (k * m1 * outer.cosine * (1 + eb * inner.cosine)).intersect(I(-q, q))
+            if slope is None:
+                raise ArithmeticError("reference clock rate enclosures are inconsistent")
+            derivative = 1 / (1 - slope)
         return ContinuousReferenceTdb(anchor, tt_offset_days, tdb, correction, derivative, q, steps)
     except (IntervalBudgetError, IntervalDomainError, OverflowError) as exc:
         raise EclipseReferenceClockUnavailable("reference clock interval budget exhausted") from exc

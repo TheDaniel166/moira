@@ -66,3 +66,19 @@ def test_reference_clock_rejects_unsupported_domain_and_bad_budget():
         bound_continuous_reference_tdb(40000000.0, I.point(1))
     with pytest.raises(ValueError):
         bound_continuous_reference_tdb(2451545.0, I.point(0), steps=0)
+
+
+def test_local_reference_clock_rate_contains_the_exact_zero_phase_rate(monkeypatch):
+    from moira import _eclipse_reference_clock as clock
+
+    monkeypatch.setattr(clock, "_NAIF_DELTET_M0_RADIANS", 0.0)
+    anchor = 2451545.0
+    exact = 1 / (1 - Fraction(clock._NAIF_DELTET_K_SECONDS)
+                 * Fraction(clock._NAIF_DELTET_M1_RADIANS_PER_SECOND)
+                 * (1 + Fraction(clock._NAIF_DELTET_EB)))
+    domain = I.point(0)
+    original = bound_continuous_reference_tdb(anchor, domain)
+    local = bound_continuous_reference_tdb(anchor, domain, local_rate=True)
+    assert local.tdb_offset_days == original.tdb_offset_days
+    assert local.derivative_tdb_per_tt.contains(exact)
+    assert local.derivative_tdb_per_tt.width < original.derivative_tdb_per_tt.width / 100
