@@ -145,26 +145,18 @@ Pullen gives the closed-form solution:
 
 ### SD singularity doctrine
 
-Pullen explicitly states that SD fails as a pure sinusoidal-delta model for
-quadrants smaller than `30°`.
+Pullen's original formula gives a negative narrow middle width when
+`q < 30°`. His Astrolog 6.10 correction sets that width to zero. The narrow
+quadrant then has widths `q / 2`, `0`, `q / 2`.
+[Original formula](https://groups.google.com/g/alt.astrology/c/82vyejlAQNI) ·
+[Astrolog 6.10 release notes](https://www.astrolog.org/ftp/updat610.htm)
 
-Source-owned doctrine:
-
-- when `q >= 30°`, use the exact SD law above
-- when `q < 30°`, the pure SD law is no longer physically realizable with
-  positive house sizes
-- in that regime, Pullen's own recommendation is to:
-  - keep the middle house of the narrow quadrant at `0°`
-  - bisect the remaining narrow quadrant between the flanking houses
-
-Moira may adopt this degeneracy branch **only if it is coded as explicit
-doctrine**, not as a post hoc repair.
-
-If adopted, the implementation must state plainly that:
-
-- this branch is still Pullen-derived
-- the result no longer satisfies the ideal sinusoidal-delta law
-- it remains the source-preferred extension rather than a Moira invention
+The expanded quadrant uses the original delta widths for every `q`.
+With `W = 180° − q`, each flank is `30° + (W − 90°) / 4` and the middle
+is `30° + (W − 90°) / 2`. Here `x` in the equivalent expressions
+`x + 3n` and `x + 4n` retains its algebraic value. The zero-width rule
+applies when computing the narrow middle width. Both width laws are
+continuous at `q = 30°`.
 
 ---
 

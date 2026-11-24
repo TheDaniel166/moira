@@ -2430,18 +2430,26 @@ def _pullen_sd_widths(q: float) -> tuple[float, float, float, float, float, floa
     """
     Return the six doctrinal Pullen SD widths for compressed and expanded sides.
 
+    Pullen's sub-30° extension bisects the compressed quadrant with a
+    zero-width middle house. The expanded quadrant follows the original
+    delta law throughout, including when the narrow middle house collapses.
+
     Order:
       compressed flank, compressed middle, compressed flank,
       expanded flank, expanded middle, expanded flank
     """
     _require(0.0 <= q <= 90.0 + 1e-9, f"_pullen_sd_widths: q must lie in [0, 90], got {q!r}")
-    if q < 30.0:
-        flank = q / 2.0
-        return flank, 0.0, flank, (180.0 - q) / 4.0, (180.0 - q) / 2.0, (180.0 - q) / 4.0
-
     n = (90.0 - q) / 4.0
     x = (q - 30.0) / 2.0
-    return x + n, x, x + n, x + 3.0 * n, x + 4.0 * n, x + 3.0 * n
+    if q < 30.0:
+        compressed_flank, compressed_middle = q / 2.0, 0.0
+    else:
+        compressed_flank, compressed_middle = x + n, x
+    expanded_flank = x + 3.0 * n
+    return (
+        compressed_flank, compressed_middle, compressed_flank,
+        expanded_flank, x + 4.0 * n, expanded_flank,
+    )
 
 
 def _solve_pullen_sr_ratio(q: float) -> float:

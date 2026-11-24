@@ -57,11 +57,32 @@ def test_pullen_sd_closed_form_width_law_for_regular_quadrant() -> None:
 def test_pullen_sd_narrow_quadrant_branch_keeps_middle_house_zero() -> None:
     q = 20.0
     widths = _pullen_sd_widths(q)
-    assert widths == pytest.approx((10.0, 0.0, 10.0, 40.0, 80.0, 40.0))
+    assert widths == pytest.approx((10.0, 0.0, 10.0, 47.5, 65.0, 47.5))
 
     cusps = _pullen_sd(asc=100.0, mc=80.0)
     spans = _house_spans(cusps)
     assert spans[10] == pytest.approx(0.0)  # H11
+
+
+@pytest.mark.parametrize("armc_at_crossing", [216.91232061213, 323.08767938787])
+def test_pullen_sd_cusps_are_continuous_across_thirty_degree_quadrant(
+    armc_at_crossing: float,
+) -> None:
+    # At 65 N these crossings place the compressed quadrant on opposite sides of the Ascendant.
+    before, after = (
+        houses_from_armc(armc_at_crossing + offset, 23.4392911, 65.0, HouseSystem.PULLEN_SD)
+        for offset in (-0.001, 0.001)
+    )
+    narrow_widths = sorted(
+        min((chart.asc - chart.mc) % 360.0, (chart.ic - chart.asc) % 360.0)
+        for chart in (before, after)
+    )
+    assert narrow_widths[0] < 30.0 < narrow_widths[1]
+    cusp_deltas = [
+        abs(_wrap_delta(left, right))
+        for left, right in zip(before.cusps, after.cusps, strict=True)
+    ]
+    assert max(cusp_deltas) < 0.003
 
 
 def test_pullen_sr_ratio_law_for_regular_quadrant() -> None:
