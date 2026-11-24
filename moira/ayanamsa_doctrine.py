@@ -6,9 +6,9 @@ Archetype: Doctrine registry and textual ayanamsa families
 
 Purpose
 -------
-States what kind of claim every ayanamsa makes, and computes the three
-families the original texts support: the Grahalāghava formula, the
-siddhantic polar star, and the trepidation reconstructions.
+States what kind of claim every ayanamsa makes. Resolves the Grahalāghava
+formula, Siddhantic polar stars, trepidation reconstructions, and Galactic
+anchor conventions.
 
 Governing record: ``wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md``.
 Research basis: ``wiki/05_research/fixed_stars/AYANAMSA_ANCHORS_IN_ORIGINAL_TEXTS.md``.
@@ -17,10 +17,11 @@ Boundary declaration
 --------------------
 Owns: the provenance records (``AyanamsaDoctrine``), the doctrinal system
       values (``GrahalaghavaAyanamsa``, ``PolarStarAyanamsa``,
-      ``SuryaSiddhantaLibrationAyanamsa``, ``SuryadevaTrepidationAyanamsa``),
-      their arithmetic, and the polar-longitude construction.
+      ``SuryaSiddhantaLibrationAyanamsa``, ``SuryadevaTrepidationAyanamsa``,
+      ``GalacticAyanamsa``), the textual arithmetic, and polar projection.
 Delegates: nutation and obliquity to ``moira.obliquity``; star positions to
-           ``moira.stars``; truth assembly to ``moira.sidereal``.
+           ``moira.stars``; Galactic geometry to ``moira.galactic_ayanamsa``;
+           truth assembly to ``moira.sidereal``.
 
 Import-time side effects: None
 """
@@ -40,6 +41,7 @@ __all__ = [
     "PolarStarAyanamsa",
     "SuryaSiddhantaLibrationAyanamsa",
     "SuryadevaTrepidationAyanamsa",
+    "GalacticAyanamsa",
     "DoctrinalAyanamsa",
     "POLAR_STAR_CATALOGUE",
     "ayanamsa_doctrine",
@@ -55,6 +57,7 @@ FAMILY_TEXTUAL_FORMULA = "textual_formula"
 FAMILY_POLAR_STAR = "polar_star"
 FAMILY_TREPIDATION = "trepidation_reconstruction"
 FAMILY_USER_DEFINED = "user_defined"
+FAMILY_GALACTIC_ANCHOR = "galactic_anchor"
 
 LAYER_MODERN_CONVENTION = "modern_convention"
 LAYER_VERSE = "verse"
@@ -462,17 +465,38 @@ class SuryadevaTrepidationAyanamsa:
         return "Suryadeva trepidation (±24°)"
 
 
+@dataclass(frozen=True, slots=True)
+class GalacticAyanamsa:
+    """A Galactic anchor convention selected by its stable preset ID."""
+
+    preset: str
+
+    def __post_init__(self) -> None:
+        from .galactic_ayanamsa import _get_preset
+
+        _get_preset(self.preset)
+
+    @property
+    def name(self) -> str:
+        """Return the label for the selected convention."""
+        from .galactic_ayanamsa import _get_preset
+
+        return _get_preset(self.preset).name
+
+
 DoctrinalAyanamsa = Union[
     GrahalaghavaAyanamsa,
     PolarStarAyanamsa,
     SuryaSiddhantaLibrationAyanamsa,
     SuryadevaTrepidationAyanamsa,
+    GalacticAyanamsa,
 ]
 DOCTRINAL_TYPES = (
     GrahalaghavaAyanamsa,
     PolarStarAyanamsa,
     SuryaSiddhantaLibrationAyanamsa,
     SuryadevaTrepidationAyanamsa,
+    GalacticAyanamsa,
 )
 
 
@@ -674,6 +698,10 @@ def _polar_star(jd_tt: float, system: PolarStarAyanamsa, mode: str) -> _Doctrina
 
 def _resolve_doctrinal(jd_tt: float, system: DoctrinalAyanamsa, mode: str) -> _DoctrinalResolution:
     """Resolve a doctrinal ayanamsa at TT. Formula families add Δψ in true mode."""
+    if isinstance(system, GalacticAyanamsa):
+        from .galactic_ayanamsa import _resolve_galactic_ayanamsa
+
+        return _resolve_galactic_ayanamsa(jd_tt, system, mode)
     if isinstance(system, PolarStarAyanamsa):
         return _polar_star(jd_tt, system, mode)
     if isinstance(system, GrahalaghavaAyanamsa):
@@ -701,6 +729,10 @@ def _resolve_doctrinal(jd_tt: float, system: DoctrinalAyanamsa, mode: str) -> _D
 # ---------------------------------------------------------------------------
 
 def _doctrinal_doctrine(system: DoctrinalAyanamsa) -> AyanamsaDoctrine:
+    if isinstance(system, GalacticAyanamsa):
+        from .galactic_ayanamsa import _galactic_doctrine
+
+        return _galactic_doctrine(system)
     if isinstance(system, GrahalaghavaAyanamsa):
         return AyanamsaDoctrine(
             system=system.name,

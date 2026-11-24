@@ -14,10 +14,9 @@ an independently sourced default set of ayanamsa systems, and nakshatra position
 Additional or niche systems are supported through ``UserDefinedAyanamsa``
 by supplying a source-backed J2000 reference value and optional drift term.
 
-Every system carries a provenance record (``ayanamsa_doctrine``), and the
-textual families of ``moira.ayanamsa_doctrine`` are accepted wherever a system
-is: ``GrahalaghavaAyanamsa``, ``PolarStarAyanamsa``,
-``SuryaSiddhantaLibrationAyanamsa`` and ``SuryadevaTrepidationAyanamsa``
+Every system carries a provenance record (``ayanamsa_doctrine``). The scalar,
+conversion, and nakshatra functions also accept the typed doctrinal families,
+including ``GalacticAyanamsa`` from ``moira.galactic_ayanamsa``
 (wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md).
 
 Boundary declaration
@@ -673,12 +672,13 @@ def ayanamsa(
              instance for a caller-supplied reference value, or a doctrinal
              value (:class:`GrahalaghavaAyanamsa`, :class:`PolarStarAyanamsa`,
              :class:`SuryaSiddhantaLibrationAyanamsa`,
-             :class:`SuryadevaTrepidationAyanamsa`).
-    mode   : "mean" (precession only; polynomial for all systems) or
-             "true" (live star-anchored for systems in ``_STAR_ANCHORED``;
-             precession + nutation Δψ for all other polynomial systems).
-             Ignored for ``UserDefinedAyanamsa`` in ``mode='true'`` (Δψ still
-             applied) — star-anchored resolution is never attempted.
+             :class:`SuryadevaTrepidationAyanamsa`, or
+             :class:`moira.galactic_ayanamsa.GalacticAyanamsa`).
+    mode   : "mean" or "true". For Galactic ayanamsas this selects the
+             equinox of date and the equatorial frame for the hour circle.
+             For epoch-polynomial and user-defined systems, "true" adds
+             nutation in longitude Δψ. Named live star anchors use their
+             configured star product in "true" mode.
 
     Returns
     -------
@@ -690,8 +690,9 @@ def ayanamsa(
     ALDEBARAN_15_TAU, TRUE_PUSHYA, TRUE_MULA) use the live tropical longitude
     of their anchor star at ``jd``: the astrometric star for the base systems,
     the apparent star for their ``(apparent)`` variants.  The polynomial
-    path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
-    for all other systems and as a fallback when the star catalog is absent.
+    path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) applies
+    to named systems in mean mode, other named systems in true mode, and
+    named star anchors in true mode when the star catalog is absent.
 
     Ayanamsa.LAHIRI uses the stored J2000 mean reference value propagated by
     IAU 2006 general precession p_A, with Δψ added in true mode. Its historical
@@ -1033,7 +1034,7 @@ def _nakshatra_position_from_sidereal(
 def nakshatra_of(
     tropical_longitude: float,
     jd: float,
-    ayanamsa_system: str = Ayanamsa.LAHIRI,
+    ayanamsa_system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
 ) -> NakshatraPosition:
     """
     Return the nakshatra position for a tropical ecliptic longitude.
@@ -1096,7 +1097,7 @@ def nakshatra_of_with_truth(
 def all_nakshatras_at(
     positions: dict[str, float],
     jd: float,
-    ayanamsa_system: str = Ayanamsa.LAHIRI,
+    ayanamsa_system: 'str | UserDefinedAyanamsa | DoctrinalAyanamsa' = Ayanamsa.LAHIRI,
 ) -> dict[str, NakshatraPosition]:
     """
     Compute nakshatra positions for all bodies in a positions dict.
