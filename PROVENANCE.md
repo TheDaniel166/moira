@@ -388,6 +388,26 @@ Hale-Bopp, NEOWISE, West, and 1I/ʻOumuamua require separately admitted Horizons
 trajectories, while non-lunar planetary satellites require their applicable
 JPL satellite SPKs and coverage receipts.
 
+### Jupiter and Saturn planetary moons
+
+`moira.planetary_moons` admits the principal moons of Jupiter and Saturn
+through explicitly installed satellite-only JUP365 and SAT441 extracts.
+`scripts/prepare_planetary_moons.py` pins the two original source hashes and
+preserves the original ICRF segments for system centers 5 and 6 to the
+physical planet centers and their designated satellites. The resulting
+manifest records source and extract SHA-256, file length, and segment
+identifiers, types, frames and exact TDB coverage. The engine pairs those
+local states with DE441 through an owned reader pool.
+
+The finite-disk model uses the Jupiter and Saturn radii and rotation poles
+from NAIF `pck00011.tpc` and the mean spherical moon radii from JPL Solar
+System Dynamics. Geometry is relative to the declared observer and event
+epoch. CSPICE serves asset preparation and matched-model validation. See
+the [planetary moons contract](docs/PLANETARY_MOONS.md) for installation,
+timing conventions and the reference test. Source data are acknowledged to
+[JPL Solar System Dynamics](https://ssd.jpl.nasa.gov/sats/ephem/) and
+[NAIF](https://naif.jpl.nasa.gov/naif/rules.html).
+
 ### Typed cosmic reference registry
 
 The `moira-cosmic-references` registry version `2026.09.08.1` contains 12
