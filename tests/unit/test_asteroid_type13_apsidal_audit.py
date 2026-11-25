@@ -23,6 +23,11 @@ ARTIFACT_PATH = (
 )
 
 
+HISTORICAL_IDENTITY_PATH = (
+    ROOT / "tests/fixtures/asteroid_catalog_naif-2026.09.18.1.json"
+)
+
+
 @pytest.fixture(scope="module")
 def artifact() -> dict:
     return json.loads(ARTIFACT_PATH.read_text(encoding="utf-8"))
@@ -40,6 +45,9 @@ def test_git_preserves_byte_bound_adaptive_inputs(
     if shutil.which("git") is None:
         pytest.skip("Git is required to exercise checkout byte preservation")
     inputs = {
+        HISTORICAL_IDENTITY_PATH.relative_to(ROOT).as_posix(): (
+            "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec"
+        ),
         ARTIFACT_PATH.relative_to(ROOT).as_posix(): (
             "6cee053cb69f68b60a8343079691a1eb319845201a4bf547ff288dc375118008"
         ),
@@ -89,17 +97,15 @@ def test_audit_partitions_every_admitted_asteroid(artifact: dict) -> None:
 
 def test_audit_is_bound_to_original_identity_and_manifest(artifact: dict) -> None:
     universe = artifact["admitted_universe"]
-    identity_path = ROOT / universe["identity_path"]
-    # This September audit discovered the bodies requiring adaptive repair.
-    # Its original uniform-sampling evidence must not be rebound to the
-    # subsequently repaired October catalog. Current bytes have their own gate
-    # in test_small_body_packaged_manifest_receipts.py.
+    # The September audit records the original paths and hashes. The
+    # archived inputs preserve those bytes as the packaged files evolve.
+    assert universe["identity_path"] == "moira/data/asteroid_catalog_naif.json"
     assert universe["manifest_path"] == "moira/kernels/asteroids/manifest.json"
     manifest_path = (
         ROOT / "tests/fixtures/small_body_release_manifests/asteroids-2026.09.18.1.json"
     )
 
-    assert _sha256(identity_path) == universe["identity_sha256"]
+    assert _sha256(HISTORICAL_IDENTITY_PATH) == universe["identity_sha256"]
     assert _sha256(manifest_path) == universe["manifest_sha256"]
 
 
