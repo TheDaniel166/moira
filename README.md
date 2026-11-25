@@ -82,7 +82,7 @@ pip install "moira-astro[lunar-graze]"
 ```
 
 > [!NOTE]
-> This README documents the `6.14.1` patch-release baseline. The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
+> This README documents the `6.15.0` minor-release baseline. The PyPI badge identifies the latest packaged release; features merged after that release require a source checkout until the next version is published.
 
 ---
 
@@ -202,7 +202,7 @@ Selected correction policies can be toggled via `planet_at()`. The table below s
 - **Typed cosmic references and galactic frames** — Full equatorial-to-galactic transforms, the legacy five-point compatibility table, and 12 fixed ICRS/J2000 directions kept in three explicit classes: physical objects, coordinate landmarks, and declared proxies (keeping the formal supergalactic origin distinct from the legacy Virgo/M87 astrological SGC, and exposing selected cluster anchors for broad structures such as the Great Attractor and Shapley Concentration).
 - **Position-capable asteroid ephemeris** — Two layers:
   1. **Wheel catalog (`moira-asteroids-wheel` release `2026.08.14.1`):** 25 named bodies (classical four, named Centaurs including Chiron, named TNOs, and selected others) bundled as one Type-13 shard so Chiron and the locked roster compute immediately after `pip install` plus a planetary kernel.
-  2. **External archive (release `2026.10.10.1`):** 11,223 selected asteroids in release `2026.10.10.1` (449 Type-13 SPK shards from JPL Horizons, a 10-day / 7-node base with certified adaptive apsidal sampling for 59 audited bodies, manifest-discovered under any kernel search root). The wheel also carries the matching 11,223-body canonical identity registry (names only, no positional vectors). Separate from the positional shards, Moira bundles the Proper25/PDS asteroid-family membership catalog (342 families, 200,726 unique numbered asteroids, 221,095 membership rows).
+  2. **External asteroid catalog:** 11,250 selected asteroids in release `2026.11.24.1` across 450 NAIF Type 13 SPK shards. The release qualification measured sampled residuals against solution-matched JPL references within 1 m and 0.01 mm/s. The wheel carries the matching 11,250-body canonical identity registry (names only, no positional vectors). Separate from the positional shards, Moira bundles the Proper25/PDS asteroid-family membership catalog (342 families, 200,726 unique numbered asteroids, 221,095 membership rows).
 - **Numbered periodic comets** — 497 comets (1P/Halley through 516P) in immutable external release `2026.10.10.1`, generated from JPL Horizons as 20 sharded Type-13 kernels with certified adaptive apsidal sampling for all 497 bodies, manifest-declared coverage, canonical numbered designations (`"1P/Halley"`), and curated family-scoped short aliases (`comet:` qualifier supported on unified chart surfaces).
 - **Lunar nodes and planetary apsides** — True Node, Mean Node, Mean Lilith, True Lilith, and osculating/geometric orbital nodes and apsides for planetary bodies.
 - **[Named derived points](wiki/02_standards/DERIVED_POINTS.md)** — Baker Vulcan's symbolic longitude, explicitly mean/osculating Priapus, and central-focus-relative second focal points with strict orbital provenance and REST access.
@@ -330,10 +330,10 @@ moira-daf-writer
 ### Small-Body Catalogs (Asteroids and Comets)
 
 - **Bundled Wheel Roster (`moira-asteroids-wheel` `2026.08.14.1`):** Ships inside the wheel under `moira/kernels/asteroids_wheel/` with 25 named bodies (including Chiron, Ceres, Pallas, Juno, Vesta, Pholus, Nessus, Chariklo, Eris, Sedna, Haumea, Makemake, Quaoar, Orcus, Hygiea, Psyche, Eros, Lilith, Sappho, Iris, Astraea, Hebe, Flora, Metis, and Eunomia) ready for immediate calculation once a planetary kernel is present.
-- **Full External Catalogs (Release `2026.10.10.1`):**
-  - **Asteroids:** 11,223 selected asteroids across 449 Type-13 SPK shards in release `2026.10.10.1` (with certified adaptive apsidal sampling for 59 audited high-eccentricity bodies).
+- **Full External Catalogs:**
+  - **Asteroids:** 11,250 selected asteroids across 450 NAIF Type 13 SPK shards in release `2026.11.24.1`.
   - **Comets:** 497 comets (1P/Halley through 516P) across 20 Type-13 SPK shards in release `2026.10.10.1` (with certified adaptive apsidal sampling for all 497 bodies).
-  - Download shards and manifests from the [Moira Small-Body Ephemerides Archive](https://moira-astro.com/ephemerides) and place the complete release contents (`manifest.json`, `SHA256SUMS`, `.bsp` shards, and `.metadata.json` files) directly inside `kernels/asteroids/` or `kernels/comets/` (or `~/.moira/kernels/asteroids/` and `~/.moira/kernels/comets/`).
+  - Find published shards and manifests in the [Moira Small-Body Ephemerides Archive](https://moira-astro.com/ephemerides) and place the complete release contents (`manifest.json`, `SHA256SUMS`, `.bsp` shards, and `.metadata.json` files) directly inside `kernels/asteroids/` or `kernels/comets/` (or `~/.moira/kernels/asteroids/` and `~/.moira/kernels/comets/`).
 
 Verify an extracted small-body catalog release or archive before use:
 
@@ -352,9 +352,9 @@ Verify an extracted small-body catalog release or archive before use:
 | DE-series planetary kernel | JPL | No | `de430` (~114 MiB), `de440` (~114 MiB), or `de441` (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
 | Deep-sky coordinate-anchor catalog | Moira selection; SIMBAD coordinates/identities; NASA Exoplanet Archive host confirmation | Yes | 60 non-Solar-System anchors; per-artifact SHA-256 and source receipt included |
-| Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 11,223 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
+| Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 11,250 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
 | Wheel asteroid ephemeris | JPL Horizons (Moira Type-13 packaging) | Yes | Catalog `moira-asteroids-wheel` `2026.08.14.1`; 25 named bodies including Chiron; one Type-13 shard |
-| Full position-capable asteroid ephemeris | JPL Horizons | No | 11,223 selected asteroids; 449 Type-13 shards in release `2026.10.10.1`; adaptive apsidal sampling for 59 audited bodies; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
+| Full position-capable asteroid ephemeris | JPL Horizons | No | 11,250 selected asteroids in release `2026.11.24.1` across 450 NAIF Type 13 shards, discovered by manifest |
 | Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
 | Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.10.10.1`; adaptive apsidal sampling for all admitted bodies; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 

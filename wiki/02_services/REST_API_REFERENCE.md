@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 566
-- Registered OpenAPI operations: 566 (GET 52, POST 514)
+- Registered OpenAPI paths: 576
+- Registered OpenAPI operations: 576 (GET 52, POST 524)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 562
+- Versioned `/v1` paths: 572
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3922,18 +3922,28 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/draconic/chart` | draconic | `draconic_chart_route_v1_draconic_chart_post` |
 | `POST` | `/v1/draconic/longitude` | draconic | `draconic_longitude_route_v1_draconic_longitude_post` |
 | `POST` | `/v1/draconic/positions` | draconic | `draconic_positions_route_v1_draconic_positions_post` |
+| `POST` | `/v1/eclipses/lunar/bounded-evidence` | eclipse diagnostics | `lunar_bounded_evidence_route_v1_eclipses_lunar_bounded_evidence_post` |
 | `POST` | `/v1/eclipses/lunar/global-circumstances` | phenomena | `lunar_eclipse_global_circumstances_route_v1_eclipses_lunar_global_circumstances_post` |
 | `POST` | `/v1/eclipses/lunar/local` | phenomena | `lunar_eclipse_local_route_v1_eclipses_lunar_local_post` |
 | `POST` | `/v1/eclipses/lunar/next` | phenomena | `next_lunar_eclipse_route_v1_eclipses_lunar_next_post` |
 | `POST` | `/v1/eclipses/lunar/previous` | phenomena | `previous_lunar_eclipse_route_v1_eclipses_lunar_previous_post` |
+| `POST` | `/v1/eclipses/lunar/shadow-candidate` | eclipse diagnostics | `lunar_shadow_candidate_route_v1_eclipses_lunar_shadow_candidate_post` |
 | `POST` | `/v1/eclipses/lunar/visibility` | phenomena | `lunar_eclipse_visibility_route_v1_eclipses_lunar_visibility_post` |
+| `POST` | `/v1/eclipses/solar/bounded-evidence` | eclipse diagnostics | `solar_bounded_evidence_route_v1_eclipses_solar_bounded_evidence_post` |
 | `POST` | `/v1/eclipses/solar/cartography` | phenomena | `solar_eclipse_cartography_route_v1_eclipses_solar_cartography_post` |
+| `POST` | `/v1/eclipses/solar/central-cap-diagnostic` | eclipse diagnostics | `clipped_central_boundary_route_v1_eclipses_solar_central_cap_diagnostic_post` |
+| `POST` | `/v1/eclipses/solar/central-path-diagnostic` | eclipse diagnostics | `hybrid_diagnostic_route_v1_eclipses_solar_central_path_diagnostic_post` |
 | `POST` | `/v1/eclipses/solar/footprint` | phenomena | `solar_eclipse_footprint_route_v1_eclipses_solar_footprint_post` |
 | `POST` | `/v1/eclipses/solar/global-circumstances` | phenomena | `solar_eclipse_global_circumstances_route_v1_eclipses_solar_global_circumstances_post` |
+| `POST` | `/v1/eclipses/solar/global-circumstances/availability` | phenomena | `solar_eclipse_global_availability_route_v1_eclipses_solar_global_circumstances_availability_post` |
 | `POST` | `/v1/eclipses/solar/local-visible` | phenomena | `next_visible_solar_eclipse_route_v1_eclipses_solar_local_visible_post` |
 | `POST` | `/v1/eclipses/solar/next` | phenomena | `next_solar_eclipse_route_v1_eclipses_solar_next_post` |
 | `POST` | `/v1/eclipses/solar/path` | phenomena | `solar_eclipse_path_route_v1_eclipses_solar_path_post` |
+| `POST` | `/v1/eclipses/solar/path/availability` | phenomena | `solar_eclipse_path_availability_route_v1_eclipses_solar_path_availability_post` |
 | `POST` | `/v1/eclipses/solar/previous` | phenomena | `previous_solar_eclipse_route_v1_eclipses_solar_previous_post` |
+| `POST` | `/v1/eclipses/solar/swept-interior-witness` | eclipse diagnostics | `swept_central_interior_route_v1_eclipses_solar_swept_interior_witness_post` |
+| `POST` | `/v1/eclipses/solar/visibility-refinement` | eclipse diagnostics | `solar_visibility_refinement_route_v1_eclipses_solar_visibility_refinement_post` |
+| `POST` | `/v1/eclipses/solar/visibility-site` | eclipse diagnostics | `solar_visibility_site_route_v1_eclipses_solar_visibility_site_post` |
 | `POST` | `/v1/egyptian-bounds/aggregate` | egyptian-bounds | `egyptian_bounds_aggregate_route_v1_egyptian_bounds_aggregate_post` |
 | `POST` | `/v1/egyptian-bounds/bound` | egyptian-bounds | `egyptian_bound_route_v1_egyptian_bounds_bound_post` |
 | `POST` | `/v1/egyptian-bounds/classification` | egyptian-bounds | `egyptian_bound_classification_route_v1_egyptian_bounds_classification_post` |

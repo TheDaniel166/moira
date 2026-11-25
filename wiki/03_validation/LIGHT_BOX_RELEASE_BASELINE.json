@@ -1,22 +1,22 @@
 {
   "schema_version": "moira.lightbox-release-baseline/v2",
-  "baseline_date": "2026-11-15",
-  "source_parent_revision": "663b3d03bdc70a434171a9dd107cb96af11b8bd6",
-  "engine_version": "6.14.1",
-  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
-  "canonical_entries": 1346,
+  "baseline_date": "2026-11-24",
+  "source_parent_revision": "59affd0a0484f51fb533829039745b051f6442b1",
+  "engine_version": "6.15.0",
+  "inventory_fingerprint_sha256": "55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9",
+  "canonical_entries": 1356,
   "minimum_partial": 219,
-  "maximum_unresolved": 1127,
+  "maximum_unresolved": 1137,
   "production_user_entries": 181,
   "maximum_production_user_unresolved": 0,
-  "reviewed_families": 161,
+  "reviewed_families": 162,
   "minimum_replayed_contracts": 69,
   "boundary": "This baseline prevents public-surface drift and silent regression of reviewed coverage. It is not an accuracy baseline and does not certify unresolved calculations. Updating it requires a deliberate regenerated inventory and review.",
   "review": {
-    "from_baseline_date": "2026-11-14",
-    "surface_change": "No Python export or REST route is added, removed or reclassified, and no canonical surface changes: the inventory holds 2573 Python exports and 566 REST operations at both baselines. One Python API contract changes, the published __version__ constant moving from 6.14.0 to 6.14.1. 6.14.0 was tagged but its publication workflow failed while building wheels, so nothing was uploaded and 6.14.1 carries the whole 6.14.0 surface.",
-    "product_use": "The October 31 product-usage audit, callsites and source revisions are retained; only the inventory binding is updated. No consumer scan was run. The surface set is identical to 6.14.0, so the five canonical surfaces that entered unresolved at that baseline remain without usage attribution and production_user_entries is unchanged at 181.",
-    "admissions": "No admission, contract or threshold changes. The macOS arm64 fix is a build-time guard: the AVX2 dispatch branch it removes from non-x86 builds was already unreachable at runtime there, so no computed result moves and x86 codegen is untouched. The Sothic changes correct three documented statements and the stated drift rate; no Sothic computation changes value. Because no canonical surface was added, the denominator does not move and every threshold carried from the 6.14.0 baseline is retained unedited.",
-    "unchanged": "canonical_entries=1346, minimum_partial=219, maximum_unresolved=1127, reviewed_families=161, production_user_entries=181, maximum_production_user_unresolved=0 and minimum_replayed_contracts=69 are all retained; no earlier admission or product-used surface regresses."
+    "from_baseline_date": "2026-11-15",
+    "surface_change": "The inventory now covers 2,573 Python exports and 576 REST operations. Six Python contracts change across the version constant, eclipse calculation and path types, and the two nakshatra queries. Ten bounded or diagnostic eclipse endpoints are added to the canonical calculation set. The asteroid family resonance-network response now permits a nullable MPC number for eligible provisional targets.",
+    "product_use": "This is a reviewed rebind of the October 31 product-usage audit. Its callsites and product source revisions are retained. All 181 recorded production-used calculations remain partially admitted. The ten added endpoints have no usage attribution in this audit.",
+    "admissions": "The canonical denominator rises from 1,346 to 1,356. Each of the ten new eclipse diagnostic surfaces enters as unresolved for Light Box conformance, accounting for the entire increase from 1,127 to 1,137. All prior canonical classifications remain the same. The family assessment adds eclipse-diagnostics, with bounded evidence and documented limits.",
+    "unchanged": "The bound of 219 partial admissions, 181 production-used calculations, zero unresolved production-used calculations, and a minimum of 69 passing replay contracts carry forward."
   }
 }

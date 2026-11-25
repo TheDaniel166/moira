@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.14.1",
+  "engine_version": "6.15.0",
   "entries": [
     {
       "assessment_status": "partial",
@@ -413,7 +413,7 @@
       "family_id": "asteroids",
       "family_label": "Asteroids",
       "ownership": {
-        "source_line": 980,
+        "source_line": 985,
         "source_path": "moira/asteroids.py"
       },
       "priority": "P0",
@@ -567,7 +567,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4030,
+        "source_line": 4115,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -667,7 +667,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 1096,
+        "source_line": 1097,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -692,7 +692,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 1121,
+        "source_line": 1122,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -1019,7 +1019,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6009,
+        "source_line": 6017,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1044,7 +1044,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5980,
+        "source_line": 5988,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1069,7 +1069,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6050,
+        "source_line": 6058,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -1344,7 +1344,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3134,
+        "source_line": 3255,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -1996,7 +1996,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4421,
+        "source_line": 4429,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -2277,7 +2277,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 656,
+        "source_line": 655,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P0",
@@ -2304,7 +2304,7 @@
       "family_id": "ayanamsa-doctrine",
       "family_label": "Ayanamsa Doctrine",
       "ownership": {
-        "source_line": 777,
+        "source_line": 809,
         "source_path": "moira/ayanamsa_doctrine.py"
       },
       "priority": "P2",
@@ -2329,7 +2329,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 704,
+        "source_line": 705,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -2756,7 +2756,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5740,
+        "source_line": 5748,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -3191,7 +3191,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4202,
+        "source_line": 4210,
         "source_path": "moira/houses.py"
       },
       "priority": "P0",
@@ -4051,7 +4051,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5074,
+        "source_line": 5082,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4076,7 +4076,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5035,
+        "source_line": 5043,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -4853,7 +4853,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6092,
+        "source_line": 6100,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5807,7 +5807,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4846,
+        "source_line": 4854,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -5832,7 +5832,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 4611,
+        "source_line": 4619,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6107,7 +6107,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5285,
+        "source_line": 5293,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6132,7 +6132,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6930,
+        "source_line": 6938,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -6157,7 +6157,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6730,
+        "source_line": 6738,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -9590,7 +9590,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 2950,
+        "source_line": 3071,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -10119,7 +10119,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 3962,
+        "source_line": 4047,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -10294,7 +10294,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6177,
+        "source_line": 6185,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -10419,7 +10419,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 5359,
+        "source_line": 5367,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -12300,7 +12300,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3169,
+        "source_line": 3290,
         "source_path": "moira/julian.py"
       },
       "priority": "P0",
@@ -12327,7 +12327,7 @@
       "family_id": "julian",
       "family_label": "Julian",
       "ownership": {
-        "source_line": 3209,
+        "source_line": 3330,
         "source_path": "moira/julian.py"
       },
       "priority": "P2",
@@ -13627,7 +13627,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 1033,
+        "source_line": 1034,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -13652,7 +13652,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 1079,
+        "source_line": 1080,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -13927,7 +13927,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4285,
+        "source_line": 4370,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -14152,7 +14152,7 @@
       "family_id": "eclipse",
       "family_label": "Eclipse",
       "ownership": {
-        "source_line": 8078,
+        "source_line": 8335,
         "source_path": "moira/eclipse.py"
       },
       "priority": "P2",
@@ -15677,7 +15677,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 2721,
+        "source_line": 2806,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -15702,7 +15702,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4149,
+        "source_line": 4234,
         "source_path": "moira/planets.py"
       },
       "priority": "P0",
@@ -15729,7 +15729,7 @@
       "family_id": "planets",
       "family_label": "Planets",
       "ownership": {
-        "source_line": 4241,
+        "source_line": 4326,
         "source_path": "moira/planets.py"
       },
       "priority": "P2",
@@ -16631,7 +16631,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6470,
+        "source_line": 6478,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -16656,7 +16656,7 @@
       "family_id": "houses",
       "family_label": "Houses",
       "ownership": {
-        "source_line": 6358,
+        "source_line": 6366,
         "source_path": "moira/houses.py"
       },
       "priority": "P2",
@@ -17760,7 +17760,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 777,
+        "source_line": 778,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -17785,7 +17785,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 798,
+        "source_line": 799,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -19564,7 +19564,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 731,
+        "source_line": 732,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -19589,7 +19589,7 @@
       "family_id": "sidereal",
       "family_label": "Sidereal",
       "ownership": {
-        "source_line": 752,
+        "source_line": 753,
         "source_path": "moira/sidereal.py"
       },
       "priority": "P2",
@@ -23789,6 +23789,31 @@
       "transport": "rest"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/bounded-evidence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 21,
+        "source_path": "moira_server/routers/eclipse_evidence.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/lunar/bounded-evidence",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/global-circumstances",
@@ -23798,7 +23823,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 409,
+        "source_line": 413,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23823,7 +23848,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 388,
+        "source_line": 392,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -23850,7 +23875,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 356,
+        "source_line": 360,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -23877,7 +23902,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 372,
+        "source_line": 376,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23893,6 +23918,31 @@
       "transport": "rest"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/shadow-candidate",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 44,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/lunar/shadow-candidate",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/lunar/visibility",
@@ -23902,7 +23952,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 396,
+        "source_line": 400,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23918,6 +23968,31 @@
       "transport": "rest"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/bounded-evidence",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 12,
+        "source_path": "moira_server/routers/eclipse_evidence.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/bounded-evidence",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/cartography",
@@ -23927,7 +24002,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 463,
+        "source_line": 489,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23943,6 +24018,56 @@
       "transport": "rest"
     },
     {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/central-cap-diagnostic",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 59,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/central-cap-diagnostic",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/central-path-diagnostic",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 39,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/central-path-diagnostic",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/footprint",
@@ -23952,7 +24077,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 430,
+        "source_line": 456,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23977,7 +24102,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 450,
+        "source_line": 476,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -23995,6 +24120,31 @@
     {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/global-circumstances/availability",
+      "domain_group": "phenomena-and-visibility",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "phenomena",
+      "family_label": "Phenomena",
+      "ownership": {
+        "source_line": 445,
+        "source_path": "moira_server/routers/phenomena.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_4_phenomena_relationships",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/global-circumstances/availability",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/local-visible",
       "domain_group": "phenomena-and-visibility",
       "entry_role": "canonical",
@@ -24002,7 +24152,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 380,
+        "source_line": 384,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -24029,7 +24179,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 348,
+        "source_line": 352,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -24056,7 +24206,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 422,
+        "source_line": 426,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -24074,6 +24224,31 @@
     {
       "assessment_status": "major_gap",
       "assignment_basis": "primary OpenAPI tag 'phenomena'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/path/availability",
+      "domain_group": "phenomena-and-visibility",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "phenomena",
+      "family_label": "Phenomena",
+      "ownership": {
+        "source_line": 436,
+        "source_path": "moira_server/routers/phenomena.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_4_phenomena_relationships",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/path/availability",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "major_gap",
+      "assignment_basis": "primary OpenAPI tag 'phenomena'",
       "canonical_surface_id": "rest:POST:/v1/eclipses/solar/previous",
       "domain_group": "phenomena-and-visibility",
       "entry_role": "canonical",
@@ -24081,7 +24256,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 364,
+        "source_line": 368,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -24093,6 +24268,81 @@
       "review_stage": "stage_4_phenomena_relationships",
       "review_state": "reviewed",
       "surface_id": "rest:POST:/v1/eclipses/solar/previous",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/swept-interior-witness",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 64,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/swept-interior-witness",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/visibility-refinement",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 54,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/visibility-refinement",
+      "surface_kind": "calculation",
+      "transport": "rest"
+    },
+    {
+      "assessment_status": "partial",
+      "assignment_basis": "primary OpenAPI tag 'eclipse diagnostics'",
+      "canonical_surface_id": "rest:POST:/v1/eclipses/solar/visibility-site",
+      "domain_group": "specialist-and-compositional",
+      "entry_role": "canonical",
+      "exposure": "public_api",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "ownership": {
+        "source_line": 49,
+        "source_path": "moira_server/routers/eclipse_diagnostics.py"
+      },
+      "priority": "P1",
+      "product_usage": {
+        "matched_surface_count": 0,
+        "products": [],
+        "snapshot_path": null
+      },
+      "review_stage": "stage_5_remaining_tail",
+      "review_state": "reviewed",
+      "surface_id": "rest:POST:/v1/eclipses/solar/visibility-site",
       "surface_kind": "calculation",
       "transport": "rest"
     },
@@ -25927,7 +26177,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 744,
+        "source_line": 770,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -25952,7 +26202,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 726,
+        "source_line": 752,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -25979,7 +26229,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 735,
+        "source_line": 761,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28636,7 +28886,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 543,
+        "source_line": 569,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28661,7 +28911,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 483,
+        "source_line": 509,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28686,7 +28936,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 503,
+        "source_line": 529,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28711,7 +28961,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 563,
+        "source_line": 589,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28736,7 +28986,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 583,
+        "source_line": 609,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28761,7 +29011,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 637,
+        "source_line": 663,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28786,7 +29036,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 660,
+        "source_line": 686,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28811,7 +29061,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 523,
+        "source_line": 549,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28836,7 +29086,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 600,
+        "source_line": 626,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28861,7 +29111,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 620,
+        "source_line": 646,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28886,7 +29136,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 680,
+        "source_line": 706,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -28911,7 +29161,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 706,
+        "source_line": 732,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29643,7 +29893,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 847,
+        "source_line": 873,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29668,7 +29918,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 857,
+        "source_line": 883,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29693,7 +29943,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 867,
+        "source_line": 893,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29718,7 +29968,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 836,
+        "source_line": 862,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29743,7 +29993,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 877,
+        "source_line": 903,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29768,7 +30018,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 787,
+        "source_line": 813,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -29795,7 +30045,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 808,
+        "source_line": 834,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29820,7 +30070,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 753,
+        "source_line": 779,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -29845,7 +30095,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 826,
+        "source_line": 852,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -31444,7 +31694,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 324,
+        "source_line": 328,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -31471,7 +31721,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 332,
+        "source_line": 336,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -31496,7 +31746,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 340,
+        "source_line": 344,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -32111,7 +32361,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 245,
+        "source_line": 249,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -32138,7 +32388,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 199,
+        "source_line": 203,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -32165,7 +32415,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 262,
+        "source_line": 266,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -32190,7 +32440,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 187,
+        "source_line": 191,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -33879,7 +34129,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 295,
+        "source_line": 299,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -33906,7 +34156,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 285,
+        "source_line": 289,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P1",
@@ -33931,7 +34181,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 309,
+        "source_line": 313,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -33958,7 +34208,7 @@
       "family_id": "phenomena",
       "family_label": "Phenomena",
       "ownership": {
-        "source_line": 275,
+        "source_line": 279,
         "source_path": "moira_server/routers/phenomena.py"
       },
       "priority": "P0",
@@ -34133,7 +34383,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_register.py",
-  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
+  "inventory_fingerprint_sha256": "55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9",
   "inventory_schema_version": "moira.lightbox-calculation-inventory/v2",
   "limitations": [
     "Family membership and reviewed structural disposition are not correctness or conformance evidence.",
@@ -34176,31 +34426,31 @@
     "canonical_by_domain_group": {
       "astronomy-and-chart-core": 132,
       "locational": 70,
-      "phenomena-and-visibility": 126,
+      "phenomena-and-visibility": 128,
       "predictive-and-time": 169,
       "relationship": 42,
-      "specialist-and-compositional": 394,
+      "specialist-and-compositional": 402,
       "traditional-western": 132,
       "vedic-and-electional": 281
     },
     "canonical_by_exposure": {
       "production_user": 181,
-      "public_api": 375,
+      "public_api": 385,
       "source_only": 790
     },
     "canonical_by_priority": {
       "P0": 181,
-      "P1": 375,
+      "P1": 385,
       "P2": 790
     },
     "canonical_by_review_state": {
       "blocked": 0,
-      "reviewed": 1346,
+      "reviewed": 1356,
       "seeded": 0
     },
-    "canonical_entries": 1346,
+    "canonical_entries": 1356,
     "cross_transport_families": 55,
-    "entries_total": 1350,
-    "family_count": 161
+    "entries_total": 1360,
+    "family_count": 162
   }
 }

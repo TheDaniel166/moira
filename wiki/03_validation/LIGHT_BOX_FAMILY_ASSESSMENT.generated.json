@@ -1,5 +1,5 @@
 {
-  "engine_version": "6.14.1",
+  "engine_version": "6.15.0",
   "families": [
     {
       "assessment_status": "partial",
@@ -726,7 +726,8 @@
       "test_leads": [
         "tests/integration/test_ayanamsa_polar_erfa.py",
         "tests/server/test_server_ayanamsa_doctrine.py",
-        "tests/unit/test_ayanamsa_doctrine.py"
+        "tests/unit/test_ayanamsa_doctrine.py",
+        "tests/unit/test_galactic_ayanamsa.py"
       ]
     },
     {
@@ -1189,10 +1190,12 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_galactic_ayanamsa_erfa.py",
         "tests/integration/test_galactic_oracle_reference.py",
         "tests/server/test_server_galactic_routes.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
-        "tests/unit/test_cosmic_references.py"
+        "tests/unit/test_cosmic_references.py",
+        "tests/unit/test_galactic_ayanamsa.py"
       ]
     },
     {
@@ -1774,10 +1777,49 @@
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_solar_local_search_ordering.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/server/test_server_phenomena_routes.py",
         "tests/test_api_reference_validation.py",
         "tests/unit/test_eclipse_helpers.py"
+      ]
+    },
+    {
+      "assessment_status": "partial",
+      "canonical_surface_count": 8,
+      "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
+      "conformance_counts": {
+        "conformant": 0,
+        "not_applicable": 0,
+        "partial": 0,
+        "unresolved": 8
+      },
+      "documentation_leads": [
+        "CHANGELOG.md",
+        "docs/eclipse-bounded-evidence.md",
+        "wiki/02_services/REST_API_REFERENCE.md"
+      ],
+      "domain_group": "specialist-and-compositional",
+      "family_id": "eclipse-diagnostics",
+      "family_label": "Eclipse Diagnostics",
+      "finding": "Retain the implemented calculation while mapping its missing stage, semantic, evidence, residual, or release fields.",
+      "missing_documentation_surface_ids": [],
+      "missing_test_surface_ids": [],
+      "ownership_sources": [
+        "moira_server/routers/eclipse_diagnostics.py",
+        "moira_server/routers/eclipse_evidence.py"
+      ],
+      "production_user_surface_count": 0,
+      "production_user_surface_ids": [],
+      "python_surface_count": 0,
+      "rest_surface_count": 8,
+      "review_stages": [
+        "stage_5_remaining_tail"
+      ],
+      "review_state": "reviewed",
+      "test_leads": [
+        "tests/server/test_eclipse_bounded_evidence_api.py",
+        "tests/server/test_eclipse_diagnostics_api.py"
       ]
     },
     {
@@ -1814,6 +1856,7 @@
       "review_state": "reviewed",
       "test_leads": [
         "tests/integration/test_lunar_nasa_compat_reference.py",
+        "tests/unit/test_canon_lunar_catalog_runner.py",
         "tests/unit/test_nasa_compat_eclipse.py"
       ]
     },
@@ -3408,6 +3451,9 @@
       "documentation_leads": [
         "CHANGELOG.md",
         "PROVENANCE.md",
+        "docs/LUNAR_SHADOW_CANDIDATES.md",
+        "docs/SOLAR_SWEPT_INTERIOR_WITNESS.md",
+        "docs/SOLAR_VISIBILITY_WITNESSES.md",
         "docs/architecture/MOIRA_NATIVE_BACKEND_ARCHITECTURE.md",
         "docs/architecture/MOIRA_NATIVE_MIGRATION_TRACKER.md",
         "docs/architecture/MOIRA_NATIVE_PLANETARY_PATH.md",
@@ -3497,11 +3543,14 @@
         "tests/integration/test_eclipse_footprint_2027_junction_regression.py",
         "tests/integration/test_eclipse_footprint_fold_regression.py",
         "tests/integration/test_eclipse_footprint_hybrid_junction_regression.py",
+        "tests/integration/test_eclipse_global_phase_ordering.py",
         "tests/integration/test_eclipse_limiting_regressions.py",
         "tests/integration/test_eclipse_lunar_contacts_nasa_reference.py",
         "tests/integration/test_eclipse_nasa_completeness.py",
         "tests/integration/test_eclipse_nasa_reference.py",
         "tests/integration/test_eclipse_occultation_where_reference.py",
+        "tests/integration/test_eclipse_stage5_controls.py",
+        "tests/integration/test_eclipse_stage6_runtime.py",
         "tests/integration/test_erfa_validation.py",
         "tests/integration/test_gast_matches_erfa.py",
         "tests/integration/test_gauquelin_external_reference.py",
@@ -3516,6 +3565,7 @@
         "tests/integration/test_lunar_eclipse_global_reference.py",
         "tests/integration/test_lunar_month.py",
         "tests/integration/test_lunar_orientation_authority.py",
+        "tests/integration/test_lunar_shadow_candidates.py",
         "tests/integration/test_marriage_tradition_geometry.py",
         "tests/integration/test_mean_node_frame_consistency.py",
         "tests/integration/test_muhurta_search.py",
@@ -3528,9 +3578,15 @@
         "tests/integration/test_progressions_external_reference.py",
         "tests/integration/test_r2b_truth_evidence.py",
         "tests/integration/test_rise_set_published_reference.py",
+        "tests/integration/test_solar_clipped_p5.py",
+        "tests/integration/test_solar_eclipse_clipped.py",
         "tests/integration/test_solar_eclipse_global_adversarial.py",
         "tests/integration/test_solar_eclipse_global_reference.py",
         "tests/integration/test_solar_eclipse_noncentral.py",
+        "tests/integration/test_solar_imcce_control_reference.py",
+        "tests/integration/test_solar_one_limit_92.py",
+        "tests/integration/test_solar_swept_interior_witness.py",
+        "tests/integration/test_solar_visibility_witness.py",
         "tests/integration/test_sovereign_small_body_manifest_routing.py",
         "tests/integration/test_twilight_external_reference.py",
         "tests/integration/test_vedic_repair_resources.py",
@@ -3540,6 +3596,7 @@
         "tests/named_muhurta_support.py",
         "tests/oracle/test_oracle_validation.py",
         "tests/sayanadi_support.py",
+        "tests/server/test_eclipse_diagnostics_api.py",
         "tests/server/test_server_chart_routes.py",
         "tests/server/test_server_daily_panchanga.py",
         "tests/server/test_server_deep_sky_routes.py",
@@ -3573,6 +3630,7 @@
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
+        "tests/server/test_server_solar_width_availability.py",
         "tests/server/test_server_sothic_routes.py",
         "tests/server/test_server_stars_routes.py",
         "tests/server/test_server_time_scale_adapters.py",
@@ -3597,6 +3655,8 @@
         "tests/unit/test_astrocartography.py",
         "tests/unit/test_babylonian.py",
         "tests/unit/test_batch.py",
+        "tests/unit/test_canon_discovery_runner.py",
+        "tests/unit/test_canon_lunar_catalog_runner.py",
         "tests/unit/test_chart_metadata_truth.py",
         "tests/unit/test_continuous_utc_audit.py",
         "tests/unit/test_daily_panchanga.py",
@@ -3607,11 +3667,28 @@
         "tests/unit/test_delta_t_policy.py",
         "tests/unit/test_derived_points.py",
         "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_eclipse_ancient_clock_bounds.py",
+        "tests/unit/test_eclipse_ancient_inverse_bounds.py",
+        "tests/unit/test_eclipse_annual_clock_bounds.py",
+        "tests/unit/test_eclipse_canon_clock_bounds.py",
+        "tests/unit/test_eclipse_canon_phase_window.py",
         "tests/unit/test_eclipse_cartography.py",
         "tests/unit/test_eclipse_clock_boundaries.py",
+        "tests/unit/test_eclipse_clock_inverse_provider.py",
+        "tests/unit/test_eclipse_clock_provider.py",
+        "tests/unit/test_eclipse_eop_clock_bounds.py",
+        "tests/unit/test_eclipse_eop_gap_bounds.py",
+        "tests/unit/test_eclipse_eop_inverse_bounds.py",
         "tests/unit/test_eclipse_footprint.py",
+        "tests/unit/test_eclipse_future_clock_bounds.py",
+        "tests/unit/test_eclipse_future_inverse_bounds.py",
+        "tests/unit/test_eclipse_future_taper_bounds.py",
         "tests/unit/test_eclipse_global.py",
         "tests/unit/test_eclipse_helpers.py",
+        "tests/unit/test_eclipse_historical_inverse_bounds.py",
+        "tests/unit/test_eclipse_native_clock_bounds.py",
+        "tests/unit/test_eclipse_sidereal_bounds.py",
+        "tests/unit/test_eclipse_wide_calendar_bounds.py",
         "tests/unit/test_eop_dut1_range.py",
         "tests/unit/test_ephemeris_breadth_gauntlet.py",
         "tests/unit/test_ephemeris_stress_proofs.py",
@@ -3624,6 +3701,7 @@
         "tests/unit/test_experimental_topocentric.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_galactic.py",
+        "tests/unit/test_galactic_ayanamsa.py",
         "tests/unit/test_galactic_houses_public_api.py",
         "tests/unit/test_gauquelin.py",
         "tests/unit/test_geodetic_facade.py",
@@ -3647,6 +3725,8 @@
         "tests/unit/test_leap_second_gap.py",
         "tests/unit/test_local_solar_day.py",
         "tests/unit/test_local_space.py",
+        "tests/unit/test_lunar_candidate_supplement.py",
+        "tests/unit/test_lunar_catalog_runner.py",
         "tests/unit/test_lunar_limb_event_profile.py",
         "tests/unit/test_lunar_occultation_contacts.py",
         "tests/unit/test_makransky_sunshine.py",
@@ -4974,6 +5054,10 @@
         "CHANGELOG.md",
         "PROVENANCE.md",
         "README.md",
+        "docs/architecture/ECLIPSE_INTERVAL_FOUNDATION.md",
+        "docs/architecture/ECLIPSE_STAGE2_FOUNDATION_ACCEPTANCE.md",
+        "docs/architecture/ECLIPSE_STAGE3_ACCEPTANCE.md",
+        "docs/architecture/ECLIPSE_STAGE4_ACCEPTANCE.md",
         "docs/architecture/MOIRA_NATIVE_BACKEND_ARCHITECTURE.md",
         "docs/architecture/MOIRA_NATIVE_PLANETARY_CASH_IN_PLAN.md",
         "docs/architecture/MOIRA_NATIVE_PLANETARY_FINISH_PROOF.md",
@@ -4985,6 +5069,7 @@
         "docs/architecture/P10-01_ASTROCARTOGRAPHY_TRANSPORT_DESIGN.md",
         "docs/architecture/P10-02_LOCAL_SPACE_TRANSPORT_DESIGN.md",
         "docs/architecture/P10-06_GAUQUELIN_SECTORS_TRANSPORT_DESIGN.md",
+        "docs/eclipse-bounded-evidence.md",
         "docs/superpowers/plans/2026-05-20-adversarial-singularity-tests.md",
         "docs/superpowers/plans/2026-05-21-asteroid-integration-refactor.md",
         "docs/superpowers/plans/2026-08-12-planets-correctness-and-architecture-repair.md",
@@ -5113,6 +5198,11 @@
         "tests/unit/test_dasha_systems.py",
         "tests/unit/test_derived_points.py",
         "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_eclipse_nutation_amplitudes.py",
+        "tests/unit/test_eclipse_phase_pole.py",
+        "tests/unit/test_eclipse_sidereal_bounds.py",
+        "tests/unit/test_eclipse_tight_sidereal_bounds.py",
+        "tests/unit/test_eclipse_vondrak_bounds.py",
         "tests/unit/test_ephemeris_breadth_gauntlet.py",
         "tests/unit/test_experimental_alcabitius.py",
         "tests/unit/test_experimental_campanus.py",
@@ -5151,6 +5241,7 @@
         "tests/unit/test_pancha_pakshi_astronomical_paksha.py",
         "tests/unit/test_pancha_pakshi_natal_identity.py",
         "tests/unit/test_physics_layer.py",
+        "tests/unit/test_planet_longitude_rate_coverage.py",
         "tests/unit/test_planet_position_switches.py",
         "tests/unit/test_planetary_frame_contracts.py",
         "tests/unit/test_planets_architecture_invariants.py",
@@ -5792,13 +5883,13 @@
     },
     {
       "assessment_status": "major_gap",
-      "canonical_surface_count": 69,
+      "canonical_surface_count": 71,
       "claim_boundary": "Reviewed is a structural gap disposition. Documentation/test paths are leads; only per-surface manifest receipts can establish conformance.",
       "conformance_counts": {
         "conformant": 0,
         "not_applicable": 0,
         "partial": 23,
-        "unresolved": 46
+        "unresolved": 48
       },
       "documentation_leads": [
         "CHANGELOG.md",
@@ -5834,6 +5925,7 @@
         "wiki/03_release/COMPATIBILITY_NOTES_5.0.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_5.2.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_5.2.2.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.15.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
         "wiki/03_release/PHYSICAL_HELIACAL_VISIBILITY_COMPATIBILITY_NOTES_NEXT.md",
         "wiki/03_release/RELEASE_NOTES_4.0.1.md",
@@ -5894,13 +5986,14 @@
         "rest:POST:/v1/void-of-course/window"
       ],
       "python_surface_count": 17,
-      "rest_surface_count": 52,
+      "rest_surface_count": 54,
       "review_stages": [
         "stage_3_product_use",
         "stage_4_phenomena_relationships"
       ],
       "review_state": "reviewed",
       "test_leads": [
+        "tests/integration/test_eclipse_diagnostic_event_selection.py",
         "tests/integration/test_eclipse_limiting_regressions.py",
         "tests/integration/test_geometric_nodes_full_catalog.py",
         "tests/integration/test_geometric_nodes_kernels.py",
@@ -5908,6 +6001,7 @@
         "tests/integration/test_small_body_candidate_release_integration.py",
         "tests/oracle/oracle_policy.py",
         "tests/oracle/test_oracle_validation.py",
+        "tests/server/test_eclipse_diagnostics_api.py",
         "tests/server/test_server_eclipse_footprint.py",
         "tests/server/test_server_expensive_response_cache.py",
         "tests/server/test_server_generic_phenomena_routes.py",
@@ -5922,10 +6016,12 @@
         "tests/server/test_server_small_body_list_routes.py",
         "tests/server/test_server_solar_eclipse_noncentral.py",
         "tests/server/test_server_solar_eclipse_products.py",
+        "tests/server/test_server_solar_width_availability.py",
         "tests/unit/test_api_surface_adversarial_audit.py",
         "tests/unit/test_apsidal_passages.py",
         "tests/unit/test_asteroid_families.py",
         "tests/unit/test_distance_extremes.py",
+        "tests/unit/test_eclipse_global_ordering_contract.py",
         "tests/unit/test_ephemeris_stress_proofs.py",
         "tests/unit/test_orbital_elements.py",
         "tests/unit/test_phenomena_regressions.py",
@@ -7061,8 +7157,10 @@
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.0.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.10.1.md",
         "wiki/03_release/COMPATIBILITY_NOTES_6.12.0.md",
+        "wiki/03_release/COMPATIBILITY_NOTES_6.15.0.md",
         "wiki/03_release/RELEASE_NOTES_6.10.0.md",
         "wiki/03_release/RELEASE_NOTES_6.12.0.md",
+        "wiki/03_release/RELEASE_NOTES_6.15.0.md",
         "wiki/03_release/SPECIALIST_AUDIT_COMPLETION_2026-04-10.md",
         "wiki/03_validation/D60_CLASSICAL_DERIVED_VALIDATION_2026-10-07.md",
         "wiki/03_validation/D60_CROSS_ENGINE_VALIDATION_2026-10-07.md",
@@ -7174,6 +7272,7 @@
         "tests/unit/test_decanates.py",
         "tests/unit/test_electional.py",
         "tests/unit/test_facade_clock_boundaries.py",
+        "tests/unit/test_galactic_ayanamsa.py",
         "tests/unit/test_geodetic.py",
         "tests/unit/test_geodetic_facade.py",
         "tests/unit/test_gochara_dated.py",
@@ -7689,6 +7788,7 @@
         "tests/unit/test_batch.py",
         "tests/unit/test_chart_metadata_truth.py",
         "tests/unit/test_doctrine_alignment.py",
+        "tests/unit/test_eclipse_global_ordering_contract.py",
         "tests/unit/test_facade_clock_boundaries.py",
         "tests/unit/test_locational_forecasting.py",
         "tests/unit/test_mundane.py",
@@ -8780,7 +8880,7 @@
     }
   ],
   "generated_by": "scripts/generate_lightbox_family_assessment.py",
-  "inventory_fingerprint_sha256": "171486f3a9a0179d52e16009af4bcedba22a73a9164a1cb7a64abb32d99fd7c5",
+  "inventory_fingerprint_sha256": "55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9",
   "limitations": [
     "Family status guides remediation and cannot be aggregated into an accuracy or conformance percentage.",
     "A family can be reviewed while every member remains unresolved in the per-surface manifest.",
@@ -8792,30 +8892,30 @@
   "review_date": "2026-10-12",
   "schema_version": "moira.lightbox-family-assessment/v2",
   "summary": {
-    "canonical_surface_count": 1346,
+    "canonical_surface_count": 1356,
     "families_by_review_stage": {
       "stage_2_exemplars": 11,
       "stage_3_product_use": 46,
       "stage_4_phenomena_relationships": 9,
-      "stage_5_remaining_tail": 139
+      "stage_5_remaining_tail": 140
     },
     "families_by_status": {
       "major_gap": 11,
       "mixed": 3,
-      "partial": 143,
+      "partial": 144,
       "strong_exemplar": 4,
       "unresolved": 0
     },
     "families_with_missing_documentation": 24,
     "families_with_missing_tests": 6,
-    "family_count": 161,
+    "family_count": 162,
     "production_user_surface_count": 181,
-    "reviewed_families": 161,
+    "reviewed_families": 162,
     "surface_conformance_counts": {
       "conformant": 0,
       "not_applicable": 0,
       "partial": 219,
-      "unresolved": 1127
+      "unresolved": 1137
     }
   }
 }

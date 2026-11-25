@@ -318,6 +318,30 @@
   ],
   "release_summaries": [
     {
+      "version": "6.15.0",
+      "date": "2026-11-24",
+      "title": "Eclipse Evidence, Planetary Moons and NAIF Type 13",
+      "added": [
+        "Bounded solar and lunar eclipse evidence in Python and REST, including WGS84 solar cross-track width.",
+        "State snapshots for four Jupiter moons and eight Saturn moons from verified satellite kernels.",
+        "Eight Galactic ayanamsa presets with explicit mean and true mode provenance."
+      ],
+      "changed": [
+        "The separately installed asteroid catalog 2026.11.24.1 covers 11,250 bodies across 450 shards.",
+        "Asteroid family-resonance responses admit provisional designations and a null MPC number."
+      ],
+      "fixed": [
+        "The Type 13 reader and writer follow NAIF while retaining decoding for recognized historical Moira kernels.",
+        "Eclipse search order follows the represented maximum, and Pullen Sinusoidal Delta preserves continuity at narrow-quadrant collapse."
+      ],
+      "validation": [
+        "The catalog passed sampled JPL position and velocity limits of 1 m and 0.01 mm/s, and the six packing controls reproduced their stand-alone states exactly.",
+        "The release includes independent ERFA Galactic frame checks, CSPICE planetary moon checks, and the version-bound eclipse acceptance record."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.15.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.15.0.md"
+    },
+    {
       "version": "6.14.1",
       "date": "2026-11-15",
       "title": "First Published Release Of The 6.14 Line",

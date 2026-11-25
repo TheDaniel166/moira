@@ -3640,7 +3640,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.14.1"
+__version__ = "6.15.0"
 __author__  = "Moira contributors"
 
 

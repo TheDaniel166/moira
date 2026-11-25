@@ -7,6 +7,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.15.0] - 2026-11-24
+
+### Added
+
+- Opt-in solar and lunar eclipse diagnostics for central-path hybrid
+  evidence, lunar shadow candidates, solar visibility at a site and near a
+  supplied seed, instantaneous central-cap geometry, and swept-footprint
+  interior witnesses. The results identify the model, evaluation limits,
+  and unresolved geometry. [Eclipse diagnostic API](docs/eclipse-diagnostic-api.md)
+- `EclipseCalculator.solar_evidence()` and `lunar_evidence()`, with equivalent
+  `POST /v1/eclipses/solar/bounded-evidence` and
+  `POST /v1/eclipses/lunar/bounded-evidence` routes. Solar products cover
+  occurrence, central-path transitions, instantaneous topology, the swept
+  central footprint, and WGS84 geographic cross-track width. Lunar products
+  cover occurrence, contacts, and extrema for the geometric-Moon Danjon
+  angular and static finite-cone models. Each product reports its own bounds,
+  status, source, and evaluation budget. [Bounded eclipse evidence](docs/eclipse-bounded-evidence.md)
+- Opt-in solar path and global-circumstances `/availability` routes report
+  why a legacy support width is unavailable, including incomplete generator
+  intersections and central-axis boundaries. The bounded WGS84 geographic
+  width is a separate product. [Solar path and width validation](docs/architecture/ECLIPSE_STAGE7_READINESS.md)
+- Eight `GalacticAyanamsa` presets for the Python sidereal APIs. Five use
+  Sagittarius A* and three use the ecliptic intersections of the AllWISE
+  2024 or Liu–Zhu–Zhang 2011 Galactic planes. The computation-truth result
+  records the source, projection, and sidereal target in mean and true
+  modes. The doctrine also records the Mardyks/Skydram and Fiorenza epoch
+  settings for `UserDefinedAyanamsa`.
+  [Ayanamsa doctrine](wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md#25-galactic-anchors)
+- `moira.planetary_moons.PlanetaryMoons` returns chart-time snapshots for
+  four Jupiter moons and eight Saturn moons. A snapshot includes geometric
+  planet-relative states, Earth-view sky offsets, illuminated fractions,
+  and active planet–moon transits, occultations, and solar eclipses at the
+  moons. It uses an explicitly supplied DE441 and manifest-verified JUP365
+  and SAT441 extracts, with joint state coverage of approximately 1750–2200.
+  [Planetary moons and kernel preparation](docs/PLANETARY_MOONS.md)
+
+### Changed
+
+- The separately installed asteroid catalog `2026.11.24.1` qualifies
+  11,250 bodies in 450 shards against the 1 m position and 0.01 mm/s
+  velocity limits at sampled JPL epochs. It includes the 27 trans-Neptunian
+  objects introduced in the preceding catalog, with their explicit JPL SPK
+  IDs and orbit classifications. Asteroid family-resonance responses can
+  return `null` for `mpc_number` on unnumbered targets.
+  [Catalog provenance](PROVENANCE.md)
+- Eclipse computations can retain split TT/TDB epochs through supported
+  ephemeris routing and interpolation. Bounded products disclose their
+  source and clock policies and retain uncertainty where a source, seam,
+  or evaluation budget prevents a complete result.
+  [Bounded eclipse evidence](docs/eclipse-bounded-evidence.md)
+
+### Fixed
+
+- The Python and native Type 13 paths follow NAIF's window encoding,
+  centering, and TDB epoch conventions. The writer emits standard Type 13
+  records, and known historical Moira identifiers retain their original
+  interpretation. For unmarked historical files, callers can select the
+  legacy convention explicitly.
+  [Compatibility notes](wiki/03_release/COMPATIBILITY_NOTES_6.15.0.md)
+- Solar and lunar eclipse searches now order next and previous results by
+  the represented eclipse maximum, including the local maximum for the
+  location-specific solar search. Neighboring phase windows are checked
+  when their maxima can straddle the request time. Native bulk searches
+  refine candidate phases using the same phase observable before applying
+  inclusive range boundaries. [Eclipse search ordering](docs/ECLIPSE_EVENT_ORDERING.md)
+- Unavailable sample times in geocentric planetary longitude-rate queries
+  now carry an explicit coverage flag on `OutOfRangeError`.
+- Pullen Sinusoidal Delta preserves its expanded-quadrant width law when the
+  narrow quadrant drops below 30° and its middle house collapses. Cusps
+  remain continuous at the threshold, including both crossings in the
+  high-latitude regression. [Pullen admission doctrine](wiki/01_doctrines/houses/pullen_sinusoidal_admission_doctrine.md)
+
+### Validation
+
+- Regenerated the native solar, native lunar, and NASA-compatible lunar
+  eclipse catalogs over the frozen five-millennium source interval. The
+  acceptance record covers all 26 selected lunar neighborhoods and 20 solar
+  central-path requests, three full-Earth solar occurrence exclusions, and
+  event-wide boundary enclosures for 92 solar paths. All 92 selected
+  geographic-width requests met the default 1 km numerical interval span
+  at the 4,096-evaluation budget. A separate audit checked 424 NASA and 17
+  EclipseWise published widths against their printed Besselian inputs and
+  width convention.
+  [Eclipse catalog acceptance](docs/architecture/ECLIPSE_STAGE7_READINESS.md)
+- Added independent ERFA frame checks for all eight Galactic presets in
+  mean and true modes over ten epochs, and CSPICE checks for planetary moon
+  states, phases, disk contacts, and retention of the original SPK segments.
+  The moon tests include Hubble's observed 2009 Saturn quadruple transit.
+  [Galactic validation](wiki/02_standards/AYANAMSA_DOCTRINE_STANDARD.md#4-validation) ·
+  [Planetary moons validation](docs/PLANETARY_MOONS.md#focused-verification)
+
+### Documentation
+
+- Recorded the duplicate hardening and acceptance runs on the same commit
+  during release preparation and PyPI publication. The proposed CI change
+  remains an unscheduled follow-up. [Release gate follow-up](docs/architecture/CI_RELEASE_GATE_DUPLICATION.md)
+
 ## [6.14.1] - 2026-11-15
 
 First published release of the 6.14 line. It carries every 6.14.0 change
