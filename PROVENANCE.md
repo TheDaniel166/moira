@@ -272,9 +272,11 @@ The bundled asteroid identity receipt
 the exact `moira-asteroids` release manifest, admitted targets, and build ledger.
 The full-catalog BSP shards are installed separately from the wheel.
 
-Catalog `2026.11.24.1` qualifies the same 11,250 admitted identities across
-450 NAIF Type 13 shards. The finalized manifest binds the build-manifest
-SHA-256, the qualification report, and the six assembled controls. The
+Catalog `2026.11.24.1` qualifies bodies with 11,250 canonical names across
+450 NAIF Type 13 shards. The finalized manifest SHA-256 is
+`6ba756bfc291983b306986b7f0e51319c88795d9723b5e4d97e13dd6d8260173`.
+The manifest binds the build-manifest SHA-256, qualification report, and six
+assembled controls. The
 bundled identity receipt binds this exact manifest and the same admitted
 target list and identity ledger.
 
