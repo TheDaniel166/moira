@@ -102,6 +102,26 @@ def _verify_bound_file(
     return path
 
 
+def _release_build_provenance(
+    release_dir: Path, manifest: dict[str, Any], body_count: int,
+) -> dict[str, str]:
+    release = manifest["release"]
+    if "source_revision" in release:
+        return {"release_source_revision": release["source_revision"]}
+
+    source_manifest_sha256 = release.get("source_manifest_sha256", "")
+    if not re.fullmatch(r"[0-9a-f]{64}", source_manifest_sha256):
+        raise ValueError("release has no source revision or valid build-manifest SHA-256")
+    qualification_path = _verify_bound_file(release_dir, manifest, "catalog-qualification.json")
+    qualification = _read_json(qualification_path)
+    if qualification.get("bodies_total") != body_count or qualification.get("qualified") != body_count:
+        raise ValueError("catalog qualification does not cover the complete release")
+    return {
+        "release_source_manifest_sha256": source_manifest_sha256,
+        "catalog_qualification_sha256": _sha256_file(qualification_path),
+    }
+
+
 def build_catalog(
     release_dir: Path,
     *,
@@ -220,7 +240,7 @@ def build_catalog(
             "release_manifest": "manifest.json",
             "release_manifest_sha256": manifest_sha256,
             "release_source": manifest["source"],
-            "release_source_revision": manifest["release"]["source_revision"],
+            **_release_build_provenance(release_dir, manifest, expected_count),
             "released_utc": manifest["release"]["released_utc"],
             "unified_master": "unified_master.json",
             "unified_master_sha256": _sha256_file(master_path),

@@ -403,12 +403,13 @@ inline void spk_type13_record_inplace(
     const double* states, // Layout: [component][state_count]
     size_t state_count,
     size_t window_size,
-    double jd,
-    double* result
+    double epoch,
+    double* result,
+    bool naif = false
 ) {
     if (
         state_count == 0 || window_size == 0 || window_size > state_count
-        || !std::isfinite(jd)
+        || !std::isfinite(epoch)
     ) {
         throw std::invalid_argument(
             "SPK type-13 interpolation requires a finite epoch and a window in [1, state_count]"
@@ -418,8 +419,13 @@ inline void spk_type13_record_inplace(
     constexpr double T0 = 2451545.0;
     constexpr double S_PER_DAY = 86400.0;
 
-    const double* it = std::lower_bound(epochs, epochs + state_count, jd);
+    const double* it = std::lower_bound(epochs, epochs + state_count, epoch);
     size_t idx = std::distance(epochs, it);
+    // NAIF centers an odd window on the closest sample, with ties going right.
+    if (naif && window_size % 2 && idx > 0 && idx < state_count
+        && epoch - epochs[idx - 1] < epochs[idx] - epoch) {
+        --idx;
+    }
 
     int start_idx = static_cast<int>(idx) - static_cast<int>(window_size) / 2;
     if (start_idx < 0) start_idx = 0;
@@ -430,11 +436,12 @@ inline void spk_type13_record_inplace(
 
     size_t actual_window = std::min(window_size, state_count - start_idx);
     const size_t hermite_order = actual_window * 2;
-    const double t_sec = (jd - T0) * S_PER_DAY;
+    const double t_sec = naif ? epoch : (epoch - T0) * S_PER_DAY;
 
     std::vector<double> z(hermite_order);
     for (size_t i = 0; i < actual_window; ++i) {
-        const double epoch_sec = (epochs[start_idx + i] - T0) * S_PER_DAY;
+        const double tag = epochs[start_idx + i];
+        const double epoch_sec = naif ? tag : (tag - T0) * S_PER_DAY;
         z[2 * i] = epoch_sec;
         z[2 * i + 1] = epoch_sec;
     }

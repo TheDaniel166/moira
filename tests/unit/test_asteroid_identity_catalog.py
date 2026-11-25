@@ -19,7 +19,7 @@ EXPECTED_CATALOG_SHA256 = (
     "46f6ab9acbefccfba8df17fd9f2bc4b77d156e44154e828bfb28d1cbf4b2ad88"
 )
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
-    "a2b1eb95dc9037f105d0ae949973816b93c1ce1b1efbafa1352696edf9eafe28"
+    "6ba756bfc291983b306986b7f0e51319c88795d9723b5e4d97e13dd6d8260173"
 )
 EXPECTED_UNIFIED_MASTER_SHA256 = (
     "694befd672129c692c6e1fe5b617f9be5da944cb840999342aa402804250733f"
@@ -49,8 +49,9 @@ def _file_spec(path: Path) -> dict[str, object]:
     }
 
 
+@pytest.mark.parametrize("qualified_build", [False, True])
 def test_identity_builder_derives_names_from_one_bound_release(
-    tmp_path: Path,
+    tmp_path: Path, qualified_build: bool,
 ) -> None:
     provisional = {"designation": "2026 ED138", "naif_id": 54_667_839}
     targets = [{"number": 1}, {"number": 1_383}, provisional]
@@ -90,6 +91,12 @@ def test_identity_builder_derives_names_from_one_bound_release(
         },
     }
     manifest_path = tmp_path / "manifest.json"
+    qualification_path = tmp_path / "catalog-qualification.json"
+    if qualified_build:
+        manifest["release"].pop("source_revision")
+        manifest["release"]["source_manifest_sha256"] = "0a" * 32
+        _write_json(qualification_path, {"bodies_total": 3, "qualified": 3})
+        manifest["release"]["files"].append(_file_spec(qualification_path))
     _write_json(manifest_path, manifest)
     manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
 
@@ -107,6 +114,18 @@ def test_identity_builder_derives_names_from_one_bound_release(
     assert metadata["catalog_version"] == "test-release"
     assert metadata["source"]["release_manifest_sha256"] == manifest_sha256
     assert metadata["artifact"]["canonical_name_count"] == 3
+    if qualified_build:
+        assert metadata["source"]["release_source_manifest_sha256"] == "0a" * 32
+        assert metadata["source"]["catalog_qualification_sha256"] == _file_spec(qualification_path)["sha256"]
+        _write_json(qualification_path, {"bodies_total": 3, "qualified": 2})
+        manifest["release"]["files"][-1] = _file_spec(qualification_path)
+        _write_json(manifest_path, manifest)
+        with pytest.raises(ValueError, match="qualification does not cover the complete release"):
+            build_catalog(tmp_path)
+        _write_json(qualification_path, {"bodies_total": 3, "qualified": 3})
+        manifest["release"]["files"][-1] = _file_spec(qualification_path)
+    else:
+        assert metadata["source"]["release_source_revision"] == "test-source"
 
     provisional["naif_id"] = 54_667_840
     _write_json(targets_path, targets)
@@ -123,7 +142,7 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert hashlib.sha256(catalog_bytes).hexdigest() == EXPECTED_CATALOG_SHA256
     assert metadata["schema_version"] == 1
     assert metadata["catalog_id"] == "moira-asteroids"
-    assert metadata["catalog_version"] == "2026.11.18.2"
+    assert metadata["catalog_version"] == "2026.11.24.1"
     assert metadata["source"]["release_manifest_sha256"] == (
         EXPECTED_RELEASE_MANIFEST_SHA256
     )

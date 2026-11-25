@@ -84,8 +84,10 @@ struct SpkChebyshevSegmentPayload {
 struct SpkType13SegmentPayload {
     int32_t state_count;
     int32_t window_size;
+    bool legacy_type13;
     std::vector<double> states;
     std::vector<double> epochs_jd;
+    std::vector<double> epochs_seconds;
 };
 
 inline std::pair<double, double> spk_descriptor_coverage_seconds(
@@ -213,6 +215,28 @@ inline std::array<char, 1024> read_record(std::ifstream& file, uint32_t record_n
         throw std::runtime_error("failed to read full DAF record");
     }
     return buffer;
+}
+
+inline bool has_legacy_type13_name(std::ifstream& file) {
+    const auto record = read_record(file, 1);
+    const auto name = strip_ascii_space(strip_trailing(
+        std::string(record.data() + 16, 60), '\0'));
+    // Exact names previously emitted by Moira's historical Type 13 writer.
+    // Unmarked custom legacy files require an explicit reader override.
+    static constexpr const char* legacy_names[] = {
+        "MOIRA UNIFIED ASTEROID CATALOG", "MOIRA WHEEL ASTEROID CATALOG",
+        "MOIRA COMET CATALOG", "MOIRA COMET KERNEL", "MOIRA CENTAUR KERNEL",
+        "MOIRA CENTAUR KERNEL v2", "MOIRA MINOR BODIES KERNEL v1",
+        "MOIRA CUSTOM TYPE13", "MOIRA CUSTOM ASTEROID TEST", "MOIRA ASTEROID CANDIDATE",
+    };
+    for (const char* legacy : legacy_names) {
+        if (name == legacy) return true;
+    }
+    constexpr char shard_prefix[] = "MOIRA SB441 TYPE13 SHARD ";
+    constexpr size_t prefix_length = sizeof(shard_prefix) - 1;
+    return name.size() == prefix_length + 3 && name.rfind(shard_prefix, 0) == 0
+        && std::all_of(name.begin() + prefix_length, name.end(),
+                       [](char ch) { return ch >= '0' && ch <= '9'; });
 }
 
 inline std::pair<std::string, bool> detect_format(const std::array<char, 1024>& file_record) {
@@ -498,14 +522,19 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
     const std::string& path,
     int32_t start_i,
     int32_t end_i,
-    bool little_endian
+    bool little_endian,
+    std::optional<bool> legacy_type13 = std::nullopt
 ) {
+    if (start_i < 1 || end_i < start_i) {
+        throw std::invalid_argument("invalid SPK type 13 descriptor bounds");
+    }
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()) {
         throw std::runtime_error("unable to open DAF file");
     }
     const bool swap_bytes = detail::host_is_little_endian() != little_endian;
 
+    const bool legacy = legacy_type13 ? *legacy_type13 : detail::has_legacy_type13_name(file);
     std::array<char, 16> trailer_bytes{};
     const std::streamoff trailer_offset = static_cast<std::streamoff>(end_i - 2) * 8;
     file.seekg(trailer_offset, std::ios::beg);
@@ -517,11 +546,16 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
         throw std::runtime_error("failed to read SPK type 13 trailer");
     }
 
-    const int32_t window_size = static_cast<int32_t>(detail::read_f64_swapped(trailer_bytes.data(), swap_bytes));
-    const int32_t state_count = static_cast<int32_t>(detail::read_f64_swapped(trailer_bytes.data() + 8, swap_bytes));
-    if (state_count <= 0 || window_size <= 0) {
+    const double stored = detail::read_f64_swapped(trailer_bytes.data(), swap_bytes);
+    const double count = detail::read_f64_swapped(trailer_bytes.data() + 8, swap_bytes);
+    const double window = legacy ? stored : stored + 1.0;
+    if (!(1.0 <= count && count <= std::numeric_limits<int32_t>::max())
+        || std::floor(count) != count || !(1.0 <= window && window <= count)
+        || std::floor(stored) != stored || (!legacy && window > 14.0)) {
         throw std::runtime_error("invalid SPK type 13 payload sizing");
     }
+    const int32_t window_size = static_cast<int32_t>(window);
+    const int32_t state_count = static_cast<int32_t>(count);
 
     const int32_t directory_count = (state_count - 1) / 100;
     const int64_t expected_word_count =
@@ -553,8 +587,10 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
     SpkType13SegmentPayload payload;
     payload.state_count = state_count;
     payload.window_size = window_size;
+    payload.legacy_type13 = legacy;
     payload.states.resize(static_cast<size_t>(6) * state_count);
     payload.epochs_jd.resize(static_cast<size_t>(state_count));
+    payload.epochs_seconds.resize(static_cast<size_t>(state_count));
 
     for (int32_t row = 0; row < state_count; ++row) {
         for (int32_t axis = 0; axis < 6; ++axis) {
@@ -568,8 +604,9 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
     const size_t epoch_byte_offset = static_cast<size_t>(state_word_count) * 8;
     for (int32_t idx = 0; idx < state_count; ++idx) {
         const char* ptr = raw_bytes.data() + epoch_byte_offset + static_cast<size_t>(idx) * 8;
-        payload.epochs_jd[static_cast<size_t>(idx)] =
-            detail::read_f64_swapped(ptr, swap_bytes) / 86400.0 + 2451545.0;
+        const double seconds = detail::read_f64_swapped(ptr, swap_bytes);
+        payload.epochs_seconds[static_cast<size_t>(idx)] = seconds;
+        payload.epochs_jd[static_cast<size_t>(idx)] = seconds / 86400.0 + 2451545.0;
     }
 
     return payload;
@@ -810,9 +847,10 @@ public:
             evaluator = std::make_shared<SpkSegmentEvaluator>(
                 coverage_start_jd,
                 coverage_end_jd,
-                std::move(payload.epochs_jd),
+                std::move(payload.legacy_type13 ? payload.epochs_jd : payload.epochs_seconds),
                 std::move(payload.states),
-                static_cast<size_t>(payload.window_size)
+                static_cast<size_t>(payload.window_size),
+                !payload.legacy_type13
             );
         } else if (record_level_) {
             const SpkChebyshevSegmentMetadata metadata = read_spk_chebyshev_segment_metadata(

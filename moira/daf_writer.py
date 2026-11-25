@@ -145,7 +145,7 @@ def _build_type13_payload(
         [0 .. 6N-1]          N state records, each (x,y,z,vx,vy,vz)
         [6N .. 7N-1]         N epochs in seconds from J2000 TDB
         [7N .. 7N+n_dir-1]   epoch directory (every 100th entry)
-        [-2]                 window_size  (float)
+        [-2]                 window_size - 1  (float)
         [-1]                 N            (float)
     """
     epochs = [float(v) for v in epochs_jd]
@@ -154,8 +154,8 @@ def _build_type13_payload(
         raise ValueError("epochs_jd must contain at least one epoch")
     if window_size < 1:
         raise ValueError("window_size must be at least 1")
-    if window_size % 2 == 0:
-        raise ValueError("window_size must be odd for centered Hermite interpolation")
+    if window_size > 14:
+        raise ValueError("NAIF Type 13 supports at most 14 window samples (degree 27)")
     if window_size > count:
         raise ValueError(
             f"window_size ({window_size}) cannot exceed number of epochs ({count})"
@@ -184,7 +184,7 @@ def _build_type13_payload(
         epochs_sec[idx] for idx in range(99, 99 + 100 * directory_count, 100)
     ] if directory_count > 0 else []
 
-    tail = [float(window_size), float(count)]
+    tail = [float(window_size - 1), float(count)]
     return states_flat + epochs_sec + directory + tail
 
 
@@ -206,7 +206,7 @@ def write_spk_type13(
                  center     int      reference body (default 10 = Sun)
                  name       str      human label for the name record
                  window_size int     Hermite window points (default 7)
-    locifn : up to 60-char internal file identifier
+    locifn : internal file identifier after the standard-format provenance prefix
     """
     path = Path(path)
     if len(bodies) > _MAX_SUMMARIES:
@@ -254,7 +254,8 @@ def write_spk_type13(
 
     free = current_word
 
-    file_rec = _build_file_record(locifn, fward=2, bward=2, free=free)
+    # A standard kernel may use the same descriptive name as a legacy one.
+    file_rec = _build_file_record(f"MOIRA NAIF TYPE13 | {locifn}", fward=2, bward=2, free=free)
     summary_rec = _build_summary_record(summaries)
     name_rec = _build_name_record(names)
 

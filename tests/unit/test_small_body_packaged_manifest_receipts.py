@@ -26,7 +26,7 @@ _ROOT = Path(__file__).resolve().parents[2]
             "moira/kernels/asteroids/manifest.json",
             "moira/data/asteroid_catalog_naif.metadata.json",
             "moira-asteroids",
-            "2026.11.18.2",
+            "2026.11.24.1",
             11_250,
             450,
             {
@@ -91,9 +91,21 @@ def test_packaged_manifest_matches_immutable_identity_receipt(
         "failure_action": "halve_refinement_step_or_reject_body",
     }
     assert manifest["release"]["released_utc"] == identity["source"]["released_utc"]
-    assert manifest["release"]["source_revision"] == (
-        identity["source"]["release_source_revision"]
-    )
+    if expected_catalog_id == "moira-asteroids":
+        assert manifest["release"]["source_manifest_sha256"] == (
+            identity["source"]["release_source_manifest_sha256"]
+        )
+        qualification = next(
+            item for item in manifest["release"]["files"]
+            if item["path"] == "catalog-qualification.json"
+        )
+        assert qualification["sha256"] == identity["source"]["catalog_qualification_sha256"]
+        assert manifest["provenance"]["submeter_qualification"]["position_m"] == 1
+        assert manifest["provenance"]["submeter_qualification"]["velocity_mm_s"] == 0.01
+    else:
+        assert manifest["release"]["source_revision"] == (
+            identity["source"]["release_source_revision"]
+        )
     assert manifest["release"]["integrity"] == {
         "algorithm": "sha256",
         "receipt": "SHA256SUMS",
@@ -122,14 +134,14 @@ def test_website_catalog_metrics_publish_release_identity() -> None:
     metrics = _catalog_metrics()
 
     asteroid = metrics["position_capable_asteroid_ephemeris"]
-    assert asteroid["catalog_version"] == "2026.11.18.2"
+    assert asteroid["catalog_version"] == "2026.11.24.1"
     assert asteroid["body_count"] == 11_250
     assert asteroid["shard_count"] == 450
     assert asteroid["sampling"]["base_step_days"] == 10
     assert asteroid["sampling"]["window_size"] == 7
     assert asteroid["sampling"]["adaptive_body_count"] == 59
     assert asteroid["manifest_sha256"] == (
-        "a2b1eb95dc9037f105d0ae949973816b93c1ce1b1efbafa1352696edf9eafe28"
+        "6ba756bfc291983b306986b7f0e51319c88795d9723b5e4d97e13dd6d8260173"
     )
 
     comet = metrics["position_capable_periodic_comet_ephemeris"]

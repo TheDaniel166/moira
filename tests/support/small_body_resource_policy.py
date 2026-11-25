@@ -737,10 +737,22 @@ def _load_and_verify_manifest(
         "release.source_manifest_sha256",
         release.get("source_manifest_sha256"),
     )
-    source_revision = _require_nonempty_text(
-        "release.source_revision",
-        release.get("source_revision"),
-    )
+    if (
+        "source_revision" not in release
+        and catalog_id == "moira-asteroids"
+        and payload.get("provenance", {}).get("submeter_qualification")
+        and any(
+            isinstance(entry, dict) and entry.get("path") == "catalog-qualification.json"
+            for entry in release.get("files", [])
+        )
+    ):
+        # The release verifier already checked the receipt-bound qualification file.
+        source_revision = f"sha256:{source_manifest_sha256}"
+    else:
+        source_revision = _require_nonempty_text(
+            "release.source_revision",
+            release.get("source_revision"),
+        )
     integrity = release.get("integrity")
     if not isinstance(integrity, dict):
         raise SmallBodyResourceContractError(

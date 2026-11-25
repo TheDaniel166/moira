@@ -405,7 +405,8 @@ public:
     size_t component_count;
     size_t coefficient_count;
     std::vector<double> coefficients;
-    std::vector<double> type13_epochs_jd;
+    std::vector<double> type13_epochs;
+    bool type13_naif = false;
     std::vector<double> type13_states;
     size_t type13_window_size;
 
@@ -533,9 +534,10 @@ public:
     SpkSegmentEvaluator(
         double coverage_start_jd,
         double coverage_end_jd,
-        std::vector<double> epochs_jd,
+        std::vector<double> epochs,
         std::vector<double> states,
-        size_t window_size
+        size_t window_size,
+        bool naif = false
     )
         : data_type(13),
           coefficients_in_file_order(false),
@@ -546,7 +548,8 @@ public:
           record_count(0),
           component_count(0),
           coefficient_count(0),
-          type13_epochs_jd(std::move(epochs_jd)),
+          type13_epochs(std::move(epochs)),
+          type13_naif(naif),
           type13_states(std::move(states)),
           type13_window_size(window_size) {
         if (
@@ -556,7 +559,7 @@ public:
             throw std::invalid_argument("SpkSegmentEvaluator: invalid type-13 descriptor coverage");
         }
         validate_type13_payload(
-            type13_epochs_jd, type13_states, type13_window_size,
+            type13_epochs, type13_states, type13_window_size,
             "SpkSegmentEvaluator"
         );
     }
@@ -576,14 +579,7 @@ public:
         validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
-            spk_type13_record_inplace(
-                type13_epochs_jd.data(),
-                type13_states.data(),
-                type13_epochs_jd.size(),
-                type13_window_size,
-                jd + jd2,
-                full_state
-            );
+            evaluate_type13(jd, jd2, full_state);
             result[0] = full_state[0];
             result[1] = full_state[1];
             result[2] = full_state[2];
@@ -645,14 +641,7 @@ public:
         validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
-            spk_type13_record_inplace(
-                type13_epochs_jd.data(),
-                type13_states.data(),
-                type13_epochs_jd.size(),
-                type13_window_size,
-                jd + jd2,
-                full_state
-            );
+            evaluate_type13(jd, jd2, full_state);
             position_out[0] = full_state[0];
             position_out[1] = full_state[1];
             position_out[2] = full_state[2];
@@ -723,6 +712,18 @@ private:
                 "SPK evaluator epoch is outside descriptor coverage"
             );
         }
+    }
+
+    void evaluate_type13(double jd, double jd2, double* result) const {
+        // NAIF epochs stay in ET seconds. Existing Moira kernels retain their
+        // previous combined-Julian-date arithmetic and window selection.
+        const double epoch = type13_naif
+            ? (jd - 2451545.0) * 86400.0 + jd2 * 86400.0
+            : jd + jd2;
+        spk_type13_record_inplace(
+            type13_epochs.data(), type13_states.data(), type13_epochs.size(),
+            type13_window_size, epoch, result, type13_naif
+        );
     }
 
     std::pair<size_t, double> epoch_record_and_offset(double jd, double jd2) const {

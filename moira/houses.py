@@ -2309,12 +2309,12 @@ def _equatorial_division_cycle(
 def _ecl_to_eq(lon: float, lat: float, obliquity: float) -> tuple[float, float]:
     """Ecliptic → equatorial (RA, Dec) in degrees."""
     eps = obliquity * DEG2RAD
-    l   = lon * DEG2RAD
-    b   = lat * DEG2RAD
-    sin_dec = math.sin(b)*math.cos(eps) + math.cos(b)*math.sin(eps)*math.sin(l)
+    longitude_rad = lon * DEG2RAD
+    b = lat * DEG2RAD
+    sin_dec = math.sin(b) * math.cos(eps) + math.cos(b) * math.sin(eps) * math.sin(longitude_rad)
     dec = math.asin(max(-1.0, min(1.0, sin_dec))) * RAD2DEG
-    y = math.sin(l)*math.cos(eps) - math.tan(b)*math.sin(eps)
-    x = math.cos(l)
+    y = math.sin(longitude_rad) * math.cos(eps) - math.tan(b) * math.sin(eps)
+    x = math.cos(longitude_rad)
     ra = math.atan2(y, x) * RAD2DEG % 360.0
     return ra, dec
 
@@ -5280,7 +5280,7 @@ class HouseDistributionProfile:
             _require(occ.house == i + 1, f"HouseDistributionProfile: occupancies[{i}].house={occ.house}, expected {i+1}")
             _require(self.counts[i] == occ.count, f"HouseDistributionProfile: counts[{i}]={self.counts[i]} != occupancy.count={occ.count}")
         if self.point_count == 0:
-            _require(self.dominant_houses == (), f"HouseDistributionProfile: dominant_houses must be () when point_count==0")
+            _require(self.dominant_houses == (), "HouseDistributionProfile: dominant_houses must be () when point_count==0")
         else:
             max_count = max(self.counts)
             for h in self.dominant_houses:

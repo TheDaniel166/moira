@@ -87,12 +87,16 @@ def test_build_type13_payload_rejects_non_increasing_epochs() -> None:
         )
 
 
-def test_build_type13_payload_rejects_even_or_oversized_window() -> None:
-    with pytest.raises(ValueError, match="must be odd"):
-        _build_type13_payload(_sample_states(3), _sample_epochs(3), window_size=2)
+def test_build_type13_payload_stores_naif_window_minus_one() -> None:
+    payload = _build_type13_payload(_sample_states(3), _sample_epochs(3), window_size=2)
+    assert payload[-2:] == [1.0, 3.0]
 
+
+def test_build_type13_payload_rejects_oversized_windows() -> None:
     with pytest.raises(ValueError, match="cannot exceed"):
         _build_type13_payload(_sample_states(3), _sample_epochs(3), window_size=5)
+    with pytest.raises(ValueError, match="degree 27"):
+        _build_type13_payload(_sample_states(15), _sample_epochs(15), window_size=15)
 
 
 def test_single_record_builders_reject_overflow() -> None:

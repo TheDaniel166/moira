@@ -272,6 +272,20 @@ The bundled asteroid identity receipt
 the exact `moira-asteroids` release manifest, admitted targets, and build ledger.
 The full-catalog BSP shards are installed separately from the wheel.
 
+Catalog `2026.11.24.1` qualifies the same 11,250 admitted identities across
+450 NAIF Type 13 shards. The finalized manifest binds the build-manifest
+SHA-256, the qualification report, and the six assembled controls. The
+bundled identity receipt binds this exact manifest and the same admitted
+target list and identity ledger.
+
+The qualification used pinned Horizons Type 21 kernels, same-solution
+Horizons vectors to replace source discontinuities where needed, and a
+mission-vector reference for Bennu. The sampled position and velocity
+limits were 1 m and 0.01 mm/s. The report records each comparison's
+sample count and largest residual, including separate results for the
+direct Horizons holdouts. These residuals describe agreement with the
+admitted JPL references at the sampled epochs.
+
 Catalog `2026.11.18.2` extends `2026.11.10.2` with 27 trans-Neptunian
 objects. Five close the gaps in the two highest tiers of the dwarf-planet
 survey. The other 22 come from the next survey tiers and were screened

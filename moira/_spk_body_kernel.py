@@ -19,6 +19,7 @@ from __future__ import annotations
 from bisect import bisect_left
 import hashlib
 import json
+import os as _os
 from pathlib import Path
 
 from .coordinates import Vec3
@@ -108,7 +109,6 @@ _HAS_NATIVE_TYPE13 = _moira_native is not None and hasattr(
 
 # Private hooks for benchmarking and differential testing.
 # Type 13 (Hermite)
-import os as _os
 _FORCE_PYTHON_TYPE13_FALLBACK = (
     _os.environ.get("MOIRA_FORCE_PYTHON_TYPE13", "").lower() in ("1", "true", "yes")
 )
@@ -592,7 +592,11 @@ class _Type13Segment:
     [/MACHINE_CONTRACT]
     """
 
-    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
+    def __init__(
+        self, path: Path, source: bytes, descriptor, little_endian: bool,
+        legacy_type13: bool | None = None,
+    ) -> None:
+        self._legacy_override = legacy_type13
         self.path = path
         self.source = source
         self._little_endian = bool(little_endian)
@@ -623,7 +627,11 @@ class _Type13Segment:
                 int(self.start_i),
                 int(self.end_i),
                 self._little_endian,
+                legacy_type13=self._legacy_override,
+                include_epoch_details=True,
             )
+            self._legacy_type13 = bool(payload["legacy_type13"])
+            self._epochs_seconds = payload["epochs_seconds"]
             states = [list(axis) for axis in payload["states"]]
             epochs_jd = list(payload["epochs_jd"])
             self.__data = (states, epochs_jd, int(payload["window_size"]))
@@ -648,6 +656,7 @@ class _Type13Segment:
                     int(self.end_i),
                     self._little_endian,
                     int(self.data_type),
+                    legacy_type13=self._legacy_override,
                 )
         return self._native_evaluator
 
@@ -663,13 +672,20 @@ class _Type13Segment:
         # Only reached when native SpkSegmentEvaluator (data_type=13) is unavailable.
         # This path is intentionally kept as the permanent, no-native-dependency fallback.
         states, epochs_jd, ws = self._data
-        idx = bisect_left(epochs_jd, t)
-        half = ws // 2
-        start = max(0, min(idx - half, len(epochs_jd) - ws))
-
-        win_jd = epochs_jd[start:start + ws]
-        win_t = [(jd - T0) * S_PER_DAY for jd in win_jd]
-        t_sec = (t - T0) * S_PER_DAY
+        if self._legacy_type13:
+            idx = bisect_left(epochs_jd, t)
+            start = max(0, min(idx - ws // 2, len(epochs_jd) - ws))
+            win_t = [(jd - T0) * S_PER_DAY for jd in epochs_jd[start:start + ws]]
+            t_sec = (t - T0) * S_PER_DAY
+        else:
+            epochs = self._epochs_seconds
+            t_sec = (tdb - T0) * S_PER_DAY + tdb2 * S_PER_DAY
+            idx = bisect_left(epochs, t_sec)
+            if ws % 2 and 0 < idx < len(epochs):
+                if t_sec - epochs[idx - 1] < epochs[idx] - t_sec:
+                    idx -= 1
+            start = max(0, min(idx - ws // 2, len(epochs) - ws))
+            win_t = epochs[start:start + ws]
 
         pos = [axis[start:start + ws] for axis in states[:3]]
         vel = [axis[start:start + ws] for axis in states[3:]]
@@ -708,10 +724,12 @@ def _small_body_kernel_native_supported(catalog: dict) -> bool:
     return True
 
 
-def _native_segment_for(path: Path, descriptor, source: bytes, little_endian: bool):
+def _native_segment_for(
+    path: Path, descriptor, source: bytes, little_endian: bool, legacy_type13: bool | None,
+):
     data_type = int(descriptor[5])
     if data_type == 13:
-        return _Type13Segment(path, source, descriptor, little_endian)
+        return _Type13Segment(path, source, descriptor, little_endian, legacy_type13)
     if data_type in (2, 3):
         return _NativeChebyshevSegment(path, source, descriptor, little_endian)
     raise RuntimeError(f"unsupported small-body SPK segment type {data_type}")
@@ -747,6 +765,10 @@ class SmallBodyKernel:
             - ``_center`` stores one center mapping per discovered target.
         Failure behavior:
             - Missing files and unsupported kernels raise explicit exceptions.
+
+    Pass ``legacy_type13=True`` for unmarked files made by Moira's historical
+    writer, or ``False`` to force standard NAIF decoding. The default detects
+    named historical Moira files and reads other Type 13 files as NAIF.
 
     Canon: Native-supported SPK small-body kernel semantics within Moira.
 
@@ -790,6 +812,7 @@ class SmallBodyKernel:
         path: Path,
         *,
         source_identity: _KernelSourceIdentity | None = None,
+        legacy_type13: bool | None = None,
     ) -> None:
         path = Path(path)
         if not path.exists():
@@ -833,7 +856,9 @@ class SmallBodyKernel:
         self._catalog = catalog
         self._kernel = _NativeKernelHandle(
             [
-                _native_segment_for(path, item["descriptor"], item["name"], catalog["little_endian"])
+                _native_segment_for(
+                    path, item["descriptor"], item["name"], catalog["little_endian"], legacy_type13,
+                )
                 for item in catalog["summaries"]
             ]
         )

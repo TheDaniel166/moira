@@ -242,10 +242,12 @@ def _make_minimal_type13_kernel(tmp_path, window_size=3, n_epochs=3):
 
 
 def _make_huge_window_type13_kernel(tmp_path, n_epochs=50, window_size=25):
-    """Create a kernel with a very large window size relative to data (window_size must be odd)."""
+    """Create an old Moira kernel whose interpolation window exceeds NAIF's limit."""
+    import struct
+    from moira import moira_native
+
     path = tmp_path / "huge_window_type13.bsp"
-    if window_size % 2 == 0:
-        window_size += 1  # force odd
+    window_size = min(window_size | 1, n_epochs)
     epochs = [2451545.0 + i * 0.1 for i in range(n_epochs)]
     states = [
         [float(i * 1000) for i in range(n_epochs)],
@@ -262,12 +264,19 @@ def _make_huge_window_type13_kernel(tmp_path, n_epochs=50, window_size=25):
             "center": 10,
             "frame": 1,
             "name": "HUGE WINDOW TORTURE",
-            "window_size": min(window_size, n_epochs),
+            "window_size": min(window_size, 14),
             "epochs_jd": epochs,
             "states": states,
         }],
         locifn="MOIRA TYPE13 HUGE WINDOW TEST",
     )
+    end_word = moira_native.read_daf_catalog(str(path))["summaries"][0]["descriptor"][-1]
+    # Historical files stored the full window size and a legacy DAF name.
+    with path.open("r+b") as stream:
+        stream.seek(16)
+        stream.write(b"MOIRA CUSTOM TYPE13".ljust(60, b"\0"))
+        stream.seek((end_word - 2) * 8)
+        stream.write(struct.pack("<d", window_size))
     return path
 
 

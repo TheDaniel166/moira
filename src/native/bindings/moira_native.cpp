@@ -890,7 +890,8 @@ py::dict read_spk_chebyshev_segment_payload_py(
 }
 
 std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
-    const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
+    const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type,
+    std::optional<bool> legacy_type13
 ) {
     DafCatalog catalog;
     {
@@ -905,14 +906,15 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
         SpkType13SegmentPayload payload;
         {
             py::gil_scoped_release release;
-            payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
+            payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian, legacy_type13);
         }
         auto evaluator = std::make_shared<SpkSegmentEvaluator>(
             coverage_start_jd,
             coverage_end_jd,
-            std::move(payload.epochs_jd),
+            std::move(payload.legacy_type13 ? payload.epochs_jd : payload.epochs_seconds),
             std::move(payload.states),
-            static_cast<size_t>(payload.window_size)
+            static_cast<size_t>(payload.window_size),
+            !payload.legacy_type13
         );
         evaluator->set_descriptor_seconds(coverage_start_second, coverage_end_second);
         return evaluator;
@@ -1011,11 +1013,14 @@ std::shared_ptr<NativePckKernelHandle> open_pck_kernel_py(const std::string& pat
     return std::make_shared<NativePckKernelHandle>(path);
 }
 
-py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t start_i, int32_t end_i, bool little_endian) {
+py::dict read_spk_type13_segment_payload_py(
+    const std::string& path, int32_t start_i, int32_t end_i, bool little_endian,
+    std::optional<bool> legacy_type13, bool include_epoch_details
+) {
     SpkType13SegmentPayload payload;
     {
         py::gil_scoped_release release;
-        payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
+        payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian, legacy_type13);
     }
 
     py::tuple epochs(payload.state_count);
@@ -1036,6 +1041,10 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
     out_dict["epochs_jd"] = epochs;
     out_dict["states"] = states;
     out_dict["window_size"] = payload.window_size;
+    if (include_epoch_details) {
+        out_dict["epochs_seconds"] = py::cast(payload.epochs_seconds);
+        out_dict["legacy_type13"] = payload.legacy_type13;
+    }
     return out_dict;
 }
 
@@ -2154,8 +2163,12 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("open_spk_kernel", &open_spk_kernel_py, py::arg("path"));
     m.def("open_pck_kernel", &open_pck_kernel_py, py::arg("path"));
     m.def("read_spk_chebyshev_segment_payload", &read_spk_chebyshev_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
-    m.def("load_spk_segment_evaluator", &load_spk_segment_evaluator_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
-    m.def("read_spk_type13_segment_payload", &read_spk_type13_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"));
+    m.def("load_spk_segment_evaluator", &load_spk_segment_evaluator_py,
+          py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"),
+          py::arg("data_type"), py::arg("legacy_type13") = std::nullopt);
+    m.def("read_spk_type13_segment_payload", &read_spk_type13_segment_payload_py,
+          py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"),
+          py::arg("legacy_type13") = std::nullopt, py::arg("include_epoch_details") = false);
 
     // --- Solvers ---
     m.def("brent_root", &brent_root, py::arg("f"), py::arg("a"), py::arg("b"), py::arg("tol") = 1e-12, py::arg("max_iter") = 100);

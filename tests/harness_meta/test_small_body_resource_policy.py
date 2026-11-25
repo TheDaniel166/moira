@@ -437,6 +437,21 @@ def test_success_records_release_and_opened_descriptor_truth(
     assert close_small_body_readers(admission.readers) == ()
 
 
+def test_qualified_asteroid_catalog_records_build_manifest_revision(tmp_path: Path) -> None:
+    manifest = _write_manifest(tmp_path, catalog_id="moira-asteroids")
+    payload = json.loads(manifest.read_bytes())
+    payload["release"].pop("source_revision")
+    payload["release"]["files"] = [{"path": "catalog-qualification.json"}]
+    payload["provenance"] = {
+        "submeter_qualification": {"policy": "submeter-type13-full-coverage-v1"},
+    }
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+    admission = _admit([manifest], reader_factory=_reader_factory(manifest))
+    assert admission.receipt.disposition is SmallBodyResourceDisposition.RUN
+    assert admission.receipt.capabilities[0].source_revision == f"sha256:{'a' * 64}"
+    assert close_small_body_readers(admission.readers) == ()
+
+
 def _reader_factory_from_each_manifest():
     def _open(path: Path):
         payload = json.loads(

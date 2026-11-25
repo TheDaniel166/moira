@@ -6,7 +6,7 @@
     "unique_naif_id_count": 11250
   },
   "catalog_id": "moira-asteroids",
-  "catalog_version": "2026.11.18.2",
+  "catalog_version": "2026.11.24.1",
   "identity_policy": {
     "canonicalization": "exact released name; NFC; unique under NFKC casefold",
     "naif_convention": "2000000_plus_mpc_catalog_number",
@@ -20,13 +20,14 @@
   "source": {
     "admitted_targets": "moira_public_asteroid_targets.json",
     "admitted_targets_sha256": "e81f253ac9d8a7a9f6c2df9d57316e17129f529236b9d01078931b3ca7b589be",
+    "catalog_qualification_sha256": "56b25745a68e3b39d2441ef5899b83d17013f54d248690ab3ea890648456fe8f",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
     "release_manifest": "manifest.json",
-    "release_manifest_sha256": "a2b1eb95dc9037f105d0ae949973816b93c1ce1b1efbafa1352696edf9eafe28",
+    "release_manifest_sha256": "6ba756bfc291983b306986b7f0e51319c88795d9723b5e4d97e13dd6d8260173",
     "release_source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
-    "release_source_revision": "3d95ef58dbeb40740033b996ce8a9e178f1f71a8",
-    "released_utc": "2026-11-18T15:28:02Z",
-    "trajectory_source": "JPL Horizons VECTORS and SPK states",
+    "release_source_manifest_sha256": "341e3bf654cfd163a9cfe85452d00dbf651fb4223a4d20ea2bd8a29585fd67f6",
+    "released_utc": "2026-11-24T22:09:38Z",
+    "trajectory_source": "Pinned JPL Horizons Type 21, independently verified local VECTORS replacements, and the Bennu mission trajectory",
     "unified_master": "unified_master.json",
     "unified_master_sha256": "694befd672129c692c6e1fe5b617f9be5da944cb840999342aa402804250733f"
   }
