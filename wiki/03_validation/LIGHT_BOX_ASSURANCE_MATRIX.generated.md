@@ -4,7 +4,7 @@
 
 - Engine version: `6.15.0`
 - Inventory structural fingerprint: `55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9`
-- Receipt source revision: `4e8fad45d88d4442065097dae1b78997296a89e9`
+- Receipt source revision: `8a4f1a774abec7891f522f6bd38ab12f684b38d9`
 - Receipt artifact status: `exact_source_revision`
 - Canonical surfaces: 1356
 - Surfaces with replay contracts: 219
