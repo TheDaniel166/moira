@@ -4,8 +4,8 @@
 
 - Engine version: `6.15.0`
 - Inventory structural fingerprint: `55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9`
-- Receipt source revision: `59affd0a0484f51fb533829039745b051f6442b1`
-- Receipt artifact status: `local_unreleased_worktree`
+- Receipt source revision: `4e8fad45d88d4442065097dae1b78997296a89e9`
+- Receipt artifact status: `exact_source_revision`
 - Canonical surfaces: 1356
 - Surfaces with replay contracts: 219
 - Surfaces without replay contracts: 1137
@@ -20,90 +20,90 @@ The matrix keeps `not_run` cells visible. A passed regression or invariant cell 
 
 | Evidence class | Passed local | Passed exact source | Failed | Not run |
 |---|---:|---:|---:|---:|
-| `authority` | 33 | 0 | 0 | 1323 |
+| `authority` | 0 | 33 | 0 | 1323 |
 | `corroboration` | 0 | 0 | 0 | 1356 |
-| `invariant` | 219 | 0 | 0 | 1137 |
-| `doctrine_source` | 75 | 0 | 0 | 1281 |
-| `regression` | 219 | 0 | 0 | 1137 |
+| `invariant` | 0 | 219 | 0 | 1137 |
+| `doctrine_source` | 0 | 75 | 0 | 1281 |
+| `regression` | 0 | 219 | 0 | 1137 |
 | `native_parity` | 0 | 0 | 0 | 1356 |
 | `harness` | 0 | 0 | 0 | 1356 |
 | `performance` | 0 | 0 | 0 | 1356 |
-| `release` | 219 | 0 | 0 | 1137 |
+| `release` | 0 | 219 | 0 | 1137 |
 
 ## Replayed contracts
 
 | Claim | Surfaces | Evidence classes | Tests passed | Status | Artifact |
 |---|---:|---|---:|---|---|
-| `LB-ANTISCIA-CONTACTS-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-ASTEROIDS-POSITION-AND-FAMILY-TRUTH` | 6 | `authority,invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-ASTROCARTOGRAPHY-REST-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-ASTRODYNES-CHART-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-BATCH-ASSEMBLY-TRUTH` | 6 | `invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-CHART-SHAPE-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 16 | `passed` | `local_unreleased_worktree` |
-| `LB-CHART-WHEEL-PACKET-TRUTH` | 1 | `invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-CLASSICAL-DIGNITIES-TRUTH` | 8 | `doctrine_source,invariant,regression,release` | 10 | `passed` | `local_unreleased_worktree` |
-| `LB-CLASSICAL-LOTS-CHART-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-COMETS-POSITION-AND-BULK-TRUTH` | 3 | `invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-CORE-POSITIONS-HOUSES-CHART-TRUTH` | 4 | `invariant,regression,release` | 8 | `passed` | `local_unreleased_worktree` |
-| `LB-CORE-TAIL-HOUSES-ASPECT-AND-PIPELINE-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-DEEP-SKY-BULK-PROJECTION-TRUTH` | 1 | `authority,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-DRACONIC-CHART-AND-POSITIONS-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-ECLIPSE-HELIACAL-TWILIGHT-REST-TRUTH` | 6 | `invariant,regression,release` | 8 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-ASPECT-MOTION` | 1 | `invariant,regression,release` | 21 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-CORE-REDUCTIONS` | 4 | `invariant,regression,release` | 40 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-FRAME-POSITIONS` | 4 | `invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-HELLENISTIC-PROFILE` | 1 | `doctrine_source,invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-ORBITAL-ELEMENTS` | 1 | `authority,invariant,regression,release` | 15 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PANCHA-PAKSHI` | 1 | `doctrine_source,invariant,regression,release` | 18 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PRIMARY-DIRECTIONS` | 1 | `doctrine_source,invariant,regression,release` | 46 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-PROGRESSIONS` | 1 | `doctrine_source,invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
-| `LB-EXEMPLAR-WESTERN-ELECTIONAL` | 1 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-FIXED-STARS-CATALOG-AND-BULK-TRUTH` | 3 | `authority,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-FRAME-SINGULARITY-TRUTH` | 6 | `authority,invariant,regression,release` | 14 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-KERNEL-RELATIVE-TRUTH` | 4 | `invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `local_unreleased_worktree` |
-| `LB-GALACTIC-FRAME-AND-REFERENCE-POINTS-TRUTH` | 3 | `authority,invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-HARMOGRAMS-TRACE-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-HARMONICS-CHART-AND-SPECTRUM-TRUTH` | 8 | `doctrine_source,invariant,regression,release` | 8 | `passed` | `local_unreleased_worktree` |
-| `LB-HELLENISTIC-CIRCUMAMBULATIONS-TRUTH` | 1 | `invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-HUBER-LIFE-CLOCK-AND-INTENSITY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-LOCATIONAL-PROJECTION-REST-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-MANAZIL-POSITION-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-NATAL-DISCOVERY-PACKETS-TRUTH` | 3 | `invariant,regression,release` | 27 | `passed` | `local_unreleased_worktree` |
-| `LB-PANCHA-PAKSHI-SOURCE-SCOPED-REST-TRUTH` | 15 | `doctrine_source,invariant,regression,release` | 17 | `passed` | `local_unreleased_worktree` |
-| `LB-PARAN-SEARCH-PACKET-REST-TRUTH` | 2 | `invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-PLANETARY-HOURS-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-PRIMARY-DIRECTION-TIME-KEYS` | 1 | `invariant,regression,release` | 10 | `passed` | `local_unreleased_worktree` |
-| `LB-PRIMARY-DIRECTIONS-REST-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-PRIMARY-DIRECTIONS-TIMELINE-TRUTH` | 1 | `invariant,regression,release` | 17 | `passed` | `local_unreleased_worktree` |
-| `LB-PROGRESSIONS-REST-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-RECEIVED-LIGHT-CONE-TRUTH` | 1 | `authority,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-DERIVED-CHART-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH` | 3 | `invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-OVERLAY-TRUTH` | 2 | `invariant,regression,release` | 1 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH` | 1 | `invariant,regression,release` | 1 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 16 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `local_unreleased_worktree` |
-| `LB-RISE-SET-PHENOMENA-TRUTH` | 1 | `invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-SHADBALA-CHART-REST-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-SIDEREAL-PYTHON-TRUTH` | 10 | `invariant,regression,release` | 11 | `passed` | `local_unreleased_worktree` |
-| `LB-SIDEREAL-REST-TRUTH` | 4 | `invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-SOLAR-CONDITION-BOUNDARY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-STATION-MOTION-TRUTH` | 3 | `invariant,regression,release` | 12 | `passed` | `local_unreleased_worktree` |
-| `LB-STELLIUMS-ANALYSIS-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 14 | `passed` | `local_unreleased_worktree` |
-| `LB-SYNODIC-CYCLE-SYZYGY-TRUTH` | 5 | `invariant,regression,release` | 5 | `passed` | `local_unreleased_worktree` |
-| `LB-TIMELORDS-PROFECTIONS-REST-TRUTH` | 5 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-TRANSITS-RETURNS-PREDICTIVE-TRUTH` | 9 | `invariant,regression,release` | 7 | `passed` | `local_unreleased_worktree` |
-| `LB-URANIAN-HYPOTHETICAL-BODIES-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-VARGA-D60-SHODASHVARGA-VIMSHOPAKA-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 107 | `passed` | `local_unreleased_worktree` |
-| `LB-VEDIC-DIGNITIES-CHART-PROFILE-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `local_unreleased_worktree` |
-| `LB-VEDIC-YOGAS-PROOF-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-VIMSHOTTARI-DASHA-REST-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `local_unreleased_worktree` |
-| `LB-VISIBILITY-ASSESSMENT-TRUTH` | 1 | `invariant,regression,release` | 4 | `passed` | `local_unreleased_worktree` |
-| `LB-VOID-OF-COURSE-TRUTH` | 4 | `invariant,regression,release` | 13 | `passed` | `local_unreleased_worktree` |
+| `LB-ANTISCIA-CONTACTS-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-ASTEROIDS-POSITION-AND-FAMILY-TRUTH` | 6 | `authority,invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-ASTROCARTOGRAPHY-REST-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-ASTRODYNES-CHART-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-BATCH-ASSEMBLY-TRUTH` | 6 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-CHART-SHAPE-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 16 | `passed` | `exact_source_revision` |
+| `LB-CHART-WHEEL-PACKET-TRUTH` | 1 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-CLASSICAL-DIGNITIES-TRUTH` | 8 | `doctrine_source,invariant,regression,release` | 10 | `passed` | `exact_source_revision` |
+| `LB-CLASSICAL-LOTS-CHART-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-COMETS-POSITION-AND-BULK-TRUTH` | 3 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-CORE-POSITIONS-HOUSES-CHART-TRUTH` | 4 | `invariant,regression,release` | 8 | `passed` | `exact_source_revision` |
+| `LB-CORE-TAIL-HOUSES-ASPECT-AND-PIPELINE-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-DEEP-SKY-BULK-PROJECTION-TRUTH` | 1 | `authority,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-DRACONIC-CHART-AND-POSITIONS-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-ECLIPSE-HELIACAL-TWILIGHT-REST-TRUTH` | 6 | `invariant,regression,release` | 8 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-ASPECT-MOTION` | 1 | `invariant,regression,release` | 21 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-CORE-REDUCTIONS` | 4 | `invariant,regression,release` | 40 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-FRAME-POSITIONS` | 4 | `invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-HELLENISTIC-PROFILE` | 1 | `doctrine_source,invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-ORBITAL-ELEMENTS` | 1 | `authority,invariant,regression,release` | 15 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PANCHA-PAKSHI` | 1 | `doctrine_source,invariant,regression,release` | 18 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PRIMARY-DIRECTIONS` | 1 | `doctrine_source,invariant,regression,release` | 46 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-PROGRESSIONS` | 1 | `doctrine_source,invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
+| `LB-EXEMPLAR-WESTERN-ELECTIONAL` | 1 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-FIXED-STARS-CATALOG-AND-BULK-TRUTH` | 3 | `authority,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-FRAME-SINGULARITY-TRUTH` | 6 | `authority,invariant,regression,release` | 14 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-KERNEL-RELATIVE-TRUTH` | 4 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-FOUNDATION-TIME-TRUTH` | 12 | `authority,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
+| `LB-GALACTIC-FRAME-AND-REFERENCE-POINTS-TRUTH` | 3 | `authority,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-HARMOGRAMS-TRACE-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-HARMONICS-CHART-AND-SPECTRUM-TRUTH` | 8 | `doctrine_source,invariant,regression,release` | 8 | `passed` | `exact_source_revision` |
+| `LB-HELLENISTIC-CIRCUMAMBULATIONS-TRUTH` | 1 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-HUBER-LIFE-CLOCK-AND-INTENSITY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-LOCATIONAL-PROJECTION-REST-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-MANAZIL-POSITION-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-NATAL-DISCOVERY-PACKETS-TRUTH` | 3 | `invariant,regression,release` | 27 | `passed` | `exact_source_revision` |
+| `LB-PANCHA-PAKSHI-SOURCE-SCOPED-REST-TRUTH` | 15 | `doctrine_source,invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
+| `LB-PARAN-SEARCH-PACKET-REST-TRUTH` | 2 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-PHENOMENA-CONJUNCTION-RESONANCE-TRUTH` | 6 | `invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-PLANETARY-HOURS-TRUTH` | 4 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-PRIMARY-DIRECTION-TIME-KEYS` | 1 | `invariant,regression,release` | 10 | `passed` | `exact_source_revision` |
+| `LB-PRIMARY-DIRECTIONS-REST-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-PRIMARY-DIRECTIONS-TIMELINE-TRUTH` | 1 | `invariant,regression,release` | 17 | `passed` | `exact_source_revision` |
+| `LB-PROGRESSIONS-REST-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-RECEIVED-LIGHT-CONE-TRUTH` | 1 | `authority,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-DERIVED-CHART-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-MIDPOINT-SEARCH-TRUTH` | 3 | `invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-OVERLAY-TRUTH` | 2 | `invariant,regression,release` | 1 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-PATTERN-SEARCH-TRUTH` | 1 | `invariant,regression,release` | 1 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-POSITION-ASPECTS` | 1 | `invariant,regression,release` | 16 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-SYNASTRY-SEARCH-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-RELATIONSHIP-TRANSIT-TRUTH` | 2 | `invariant,regression,release` | 2 | `passed` | `exact_source_revision` |
+| `LB-RISE-SET-PHENOMENA-TRUTH` | 1 | `invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-SHADBALA-CHART-REST-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-SIDEREAL-PYTHON-TRUTH` | 10 | `invariant,regression,release` | 11 | `passed` | `exact_source_revision` |
+| `LB-SIDEREAL-REST-TRUTH` | 4 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-SOLAR-CONDITION-BOUNDARY-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-STATION-MOTION-TRUTH` | 3 | `invariant,regression,release` | 12 | `passed` | `exact_source_revision` |
+| `LB-STELLIUMS-ANALYSIS-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 14 | `passed` | `exact_source_revision` |
+| `LB-SYNODIC-CYCLE-SYZYGY-TRUTH` | 5 | `invariant,regression,release` | 5 | `passed` | `exact_source_revision` |
+| `LB-TIMELORDS-PROFECTIONS-REST-TRUTH` | 5 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-TRANSITS-RETURNS-PREDICTIVE-TRUTH` | 9 | `invariant,regression,release` | 7 | `passed` | `exact_source_revision` |
+| `LB-URANIAN-HYPOTHETICAL-BODIES-TRUTH` | 2 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-VARGA-D60-SHODASHVARGA-VIMSHOPAKA-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 107 | `passed` | `exact_source_revision` |
+| `LB-VEDIC-DIGNITIES-CHART-PROFILE-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 3 | `passed` | `exact_source_revision` |
+| `LB-VEDIC-YOGAS-PROOF-TRUTH` | 1 | `doctrine_source,invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-VIMSHOTTARI-DASHA-REST-TRUTH` | 3 | `doctrine_source,invariant,regression,release` | 6 | `passed` | `exact_source_revision` |
+| `LB-VISIBILITY-ASSESSMENT-TRUTH` | 1 | `invariant,regression,release` | 4 | `passed` | `exact_source_revision` |
+| `LB-VOID-OF-COURSE-TRUTH` | 4 | `invariant,regression,release` | 13 | `passed` | `exact_source_revision` |
 
 ## Release interpretation
 
-These receipts prove local bounded replays. They are not exact-source, package-publication, or deployment evidence; the conformance manifest correctly remains partial/unresolved.
+These receipts prove bounded replays from the clean exact source revision. They are source-candidate evidence, not package-publication or deployment evidence; the conformance manifest correctly remains partial/unresolved.

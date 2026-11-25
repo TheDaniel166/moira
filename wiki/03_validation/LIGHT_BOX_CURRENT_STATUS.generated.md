@@ -4,9 +4,9 @@
 
 - Engine version: `6.15.0`
 - Inventory structural fingerprint: `55ac6bf81eb77e3f6db95afd9ebf88723f68fc9a9b1844485989f5dc428e37e9`
-- Evidence source revision: `59affd0a0484f51fb533829039745b051f6442b1`
-- Artifact status: `local_unreleased_worktree`
-- Publication disposition: `local_unreleased_status`
+- Evidence source revision: `4e8fad45d88d4442065097dae1b78997296a89e9`
+- Artifact status: `exact_source_revision`
+- Publication disposition: `exact_release_status`
 
 ## Current answer
 
@@ -19,7 +19,7 @@ The Light Box doctrine is preserved. Universal current-release conformance is **
 | Not applicable | 0 | 0 |
 | Unresolved | 1137 | 0 |
 
-All 162 families have a structural review disposition. 69 bounded local contracts and 0 exact-source contracts passed across 219 calculations; 1137 calculations have no replay contract yet.
+All 162 families have a structural review disposition. 0 bounded local contracts and 69 exact-source contracts passed across 219 calculations; 1137 calculations have no replay contract yet.
 
 ## Claim disposition
 
@@ -32,4 +32,4 @@ All 162 families have a structural review disposition. 69 bounded local contract
 
 ## Release boundary
 
-This artifact is `local_unreleased_status`. It must be regenerated from a clean exact source revision and connected to release evidence before it can describe a release candidate. No Website or Workspace source is changed by this artifact.
+This artifact is `exact_release_status` for the recorded clean source revision. It is source-candidate evidence, not package-publication or deployment evidence. No Website or Workspace source is changed by this artifact.
