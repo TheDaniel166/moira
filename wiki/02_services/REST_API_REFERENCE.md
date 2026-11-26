@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 601
-- Registered OpenAPI operations: 601 (GET 56, POST 545)
+- Registered OpenAPI paths: 603
+- Registered OpenAPI operations: 603 (GET 57, POST 546)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 597
+- Versioned `/v1` paths: 599
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2846,6 +2846,7 @@ reduced from UTC to UT1 before astronomical computation.
 | GET | `/v1/asteroids/identity` | `asteroid_identity_route` |
 | POST | `/v1/asteroids/bulk` | `asteroids_bulk` |
 | GET | `/v1/asteroids/list` | `list_asteroids` |
+| GET | `/v1/asteroids/classes` | `asteroid_classes_route` |
 | GET | `/v1/asteroids/subsets` | `asteroid_subsets` |
 | GET | `/v1/asteroids/subsets/{subset}/list` | `asteroid_subset_list` |
 | POST | `/v1/asteroids/subsets/{subset}/positions` | `asteroid_subset_positions` |
@@ -2869,6 +2870,7 @@ reduced from UTC to UT1 before astronomical computation.
 | POST | `/v1/orbits/class` | `orbit_class_route` |
 | POST | `/v1/orbits/class/batch` | `orbit_class_batch_route` |
 | POST | `/v1/phenomena/planet` | `planet_phenomena_route` |
+| POST | `/v1/phenomena/orbital-period-ratio` | `orbital_period_ratio_route` |
 | POST | `/v1/phenomena/orbital-events` | `orbital_phenomena_events_route` |
 | POST | `/v1/phenomena/proximity` | `proximity_events_route` |
 | POST | `/v1/solar-condition/instant` | `solar_condition_instant_route` |
@@ -3120,6 +3122,7 @@ The admitted asteroid REST surface is the bounded synchronous
 - `POST /v1/asteroids/bulk`
 - `GET /v1/asteroids/list`
 - `GET /v1/asteroids/identity`
+- `GET /v1/asteroids/classes`
 
 Position and bulk responses include geocentric tropical ecliptic longitude,
 latitude, distance, speed, retrograde state, zodiac sign fields, and explicit
@@ -3152,6 +3155,30 @@ positions, asteroid photometry, rendered maps, kernel manifest management, or
 full small-body migration proof. Explicit selected-asteroid Astrocartography is
 admitted under `/v1/astrocartography/chart/subjects/*`; catalog-wide asteroid
 Astrocartography sweeps remain deferred.
+
+#### Published asteroid classes
+
+`GET /v1/asteroids/classes` pages Moira's bundled JPL SBDB-derived
+orbit-class registry. For example, use
+`GET /v1/asteroids/classes?class_code=TNO&limit=100` to browse
+trans-Neptunian objects. Omit `class_code` to page across all classes.
+`offset` is zero-based and defaults to zero. `limit` defaults to 100
+and accepts 1–500.
+
+The route sorts matching records by ascending NAIF ID before slicing the page.
+`total_available` counts all matching catalog records before pagination.
+Pass the returned `next_offset` with the same `class_code` and `limit`
+to continue. A null `next_offset` marks the final page. Valid codes with no
+records and offsets at or past the end return an empty page. Unrecognized codes
+and invalid page bounds return HTTP 422. An unavailable bundled registry returns
+HTTP 503.
+
+Each row includes the published class code and title, canonical identity,
+numbered or provisional ID fields, and `loaded_kernel_available`. Kernel
+coverage affects that flag alone. The source is the bundled registry,
+including its published main-belt assignments and provisional records.
+Epoch-specific osculating classification is available at
+`POST /v1/orbits/class`.
 
 ### Asteroid Subset And Family REST Admission Boundary
 
@@ -3292,39 +3319,52 @@ The admitted P-GAP-03 and Stage 6 orbital REST surface is the bounded synchronou
 - `POST /v1/orbits/class`
 - `POST /v1/orbits/class/batch`
 
-`/v1/orbits/elements` exposes one epoch's heliocentric fixed-J2000-ecliptic
-osculating elements for an admitted major planet, asteroid, or comet. The request `jd_ut` is UT1;
-the state is evaluated at the bound TDB epoch and `epoch_jd` is TT. The time
-block returns all three numerical epochs, Delta T, TDB-minus-TT, source-owned
-Delta-T policy, and the pinned NAIF `naif0012` conversion receipt.
+#### Strict orbit variants
 
-The response preserves the existing element field names and adds path-free,
-allowlisted provenance for the JPL Horizons gravity policy, exact frame
-construction, every routed SPK source leg and closed coverage interval, and
-the conic singularity thresholds. For parabolic and hyperbolic trajectories ($e \ge 1.0$),
-the open-conic fields `semi_major_axis_au`, `aphelion_distance_au`, `orbital_period_days`,
-`mean_anomaly_deg`, and `mean_motion_deg_per_day` are nullable and return `None`.
-It identifies the strict engine entrypoint as `osculating_elements`, even though transport
-fixes the policy to `center=SUN` and `frame=J2000_ECLIPTIC`.
+Both routes require `body` and a UT1 Julian day, `jd_ut`. The optional
+`center` defaults to `SUN` for admitted planets and small bodies. Request
+`body: "Moon"` with `center: "EARTH"` for a geocentric lunar result. The
+engine owns body and center admission and SPK coverage.
 
-`/v1/orbits/distance-extremes` exposes the next heliocentric perihelion and
-aphelion events after `jd_ut` on the live heliocentric distance curve for planets
-and admitted small bodies. The response records that the events are semantic extrema,
-not a forced chronological pair and not merely algebra from one epoch's osculating ellipse.
-It adapts the versioned `apsidal_passages` engine with `center=SUN` and
-`direction=NEXT`. Its legacy `perihelion_jd` and `aphelion_jd` fields are TT;
-the request is UT1 and all sampled states and roots are TDB. If a passage outcome is not
-`FOUND` (e.g. open conics lacking an apocenter, or outside coverage window), an
-`OrbitalPassageUnavailableError` is mapped cleanly to HTTP 422 (`orbital_event_availability`).
+`POST /v1/orbits/elements` accepts `frame` values `J2000_ECLIPTIC` (default),
+`MEAN_ECLIPTIC_OF_DATE`, and `TRUE_ECLIPTIC_OF_DATE`. The actual frame model,
+router branch, and applicable TT interval are in `provenance.frame_construction`.
+The engine returns HTTP 422 with `frame_outside_model_range` for an unsupported
+frame epoch. The state is evaluated at TDB and `elements.epoch_jd` is TT.
 
-The distance-extremes `time` block returns `jd_ut`, `epoch_tt`, `epoch_tdb`,
-Delta T, TDB-minus-TT, and the same source-owned Delta-T/pinned-NAIF conversion
-receipt as the elements route. Its allowlisted provenance contains both typed
-passage outcomes and the search algorithm, gravity policy, fixed route-plan
-identity, exact route entries and source legs, per-segment evaluation counts,
-seam-continuity measurements, search interval, fixed numerical policy, and
-total evaluation count. Local paths and arbitrary exception text are never
-serialized.
+Sun-centered elements use `arg_perihelion_deg`, `perihelion_distance_au`, and
+`aphelion_distance_au`. Earth-centered elements use `arg_perigee_deg`,
+`perigee_distance_au`, and `apogee_distance_au`. Undefined values are JSON
+`null`. The provenance reports the conic `shape`, the engine's canonical
+`undefined` fields and reasons, and the singularity thresholds. It also
+reports the JPL Horizons gravity policy, routed SPK source legs, and coverage.
+
+`POST /v1/orbits/distance-extremes` finds the nearest minimum and maximum
+distance from the selected center in the requested direction. `direction` is
+`NEXT` by default and also accepts `PREVIOUS`. The search starts at the bound
+TDB epoch inclusively. `max_days` is an optional positive finite number of TDB
+days. With no explicit bound, an elliptic search uses 1.5 osculating periods
+and other searches use the verified route coverage. All searches respect
+verified coverage and the engine's evaluation budget.
+
+The default Sun/next search without an explicit bound retains HTTP 422
+(`passage_unavailable`) when either event is unavailable. A completed search
+with `max_days`, `PREVIOUS`, or `EARTH` returns HTTP 200 with independent
+`FOUND`, `NOT_IN_WINDOW`, or `BEYOND_COVERAGE` outcomes in
+`provenance.pericenter` and `provenance.apocenter`. The convenience dates
+(`perihelion_jd` and `aphelion_jd`, or `perigee_jd` and `apogee_jd`) are
+TT Julian days. Their accompanying distances are in AU. A missing passage
+has `null` for both values.
+
+Both routes return numerical UT1, TT, and TDB epochs in `time`, with
+Delta T, TDB-minus-TT, and the engine's Delta-T and NAIF conversion receipts.
+Passage outcomes carry all three event times when found. The passage search
+receipt includes the actual searched TDB interval, window source, route
+schedule, source legs, seam checks, evaluation budget and count. The receipts
+are path-free. Numerical probes may extend outside the requested event
+window to check its boundary.
+
+#### Orbit classification
 
 `POST /v1/orbits/class` and `POST /v1/orbits/class/batch` compute heliocentric
 osculating small-body orbit classifications according to official JPL Small-Body
@@ -3340,18 +3380,13 @@ The batch variant `POST /v1/orbits/class/batch` accepts up to 128 targets evalua
 the same epoch, provides bounded error isolation per item with path redaction, and echoes
 the batch request parameters.
 
-This admission does not expose the strict Python API's Moon or EMB heliocentric orbital queries;
-selectable centers/reference planes; circular/equatorial undefined fields;
-mean element tables; Uranian mean elements; visual-binary Campbell elements;
-apparent or light-time-corrected element products; dense ephemeris tables; or
-kernel-path mutation. Those require a separately versioned transport design.
-
 ### Generic Phenomena And Solar Conditions REST Admission Boundary
 
 The admitted P-GAP-04 REST surface is the bounded synchronous generic
 phenomena and solar-condition surface:
 
 - `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-period-ratio`
 - `POST /v1/phenomena/orbital-events`
 - `POST /v1/phenomena/proximity`
 - `POST /v1/solar-condition/instant`
@@ -3360,6 +3395,28 @@ phenomena and solar-condition surface:
 `/v1/phenomena/planet` exposes one instant's physical/photometric state for
 an admitted body: phase angle, illuminated fraction, elongation, angular
 diameter, and apparent magnitude.
+
+#### Nominal orbital-period ratios
+
+`POST /v1/phenomena/orbital-period-ratio` takes an ordered body pair.
+
+```json
+{"body1": "Jupiter", "body2": "Saturn"}
+```
+
+The response gives both mean sidereal periods in Earth days from
+`period_source: "Body.SIDEREAL_PERIODS"`. The dimensionless
+`mean_period_ratio` divides the period of `body1` by that of `body2`,
+as recorded in `ratio_direction`. `synodic_interval_days` is the
+reciprocal of the absolute difference between the two mean orbital
+frequencies. Reversing the pair inverts the ratio and preserves the interval.
+
+The bundled table covers Mercury through Neptune and Pluto. Pairs with
+missing or identical periods return HTTP 422. This kernel-free calculation
+uses fixed table values at every request. Actual conjunction epochs depend on
+the ephemeris, and physical orbital resonance requires dynamical evidence.
+
+#### Bounded events and solar conditions
 
 `/v1/phenomena/orbital-events` exposes a bounded event search over admitted
 event kinds: greatest eastern/western elongation for Mercury and Venus, and
@@ -3527,6 +3584,31 @@ phase angle and does not require a kernel. Synodic phase, elongation,
 phase-angle, angular-diameter, and apparent-magnitude routes are direct
 one-epoch products over engine-supported bodies and preserve product-specific
 basis and kernel requirement truth in provenance.
+
+#### Eight-phase synodic cycle
+
+`POST /v1/phase/synodic` takes an ordered pair of bodies and a UT1 Julian day.
+The default `phase_model: "four_phase"` preserves the existing
+`conjunction`, `waxing`, `opposition`, and `waning` labels.
+To request the eight-phase cycle, send:
+
+```json
+{"body1": "Sun", "body2": "Moon", "jd_ut": 2451545.0, "phase_model": "eight_phase"}
+```
+
+The eight-phase result returns `body1_longitude_deg` and
+`body2_longitude_deg` from the apparent geocentric ecliptic reduction.
+`angle` is the forward difference from the first longitude to the second
+in degrees, normalized to `[0, 360)`. `is_waxing` is true only when the
+angle is strictly between 0° and 180°.
+
+The eight `state` values are, in cycle order, `new`, `waxing_crescent`,
+`first_quarter`, `waxing_gibbous`, `full`, `waning_gibbous`,
+`last_quarter`, and `waning_crescent`. Each state spans a 45° sector
+centered on the corresponding multiple of 45°. A boundary belongs to the
+sector beginning there. `new` wraps through 0° and covers
+`[337.5°, 360°)` and `[0°, 22.5°)`. Set `include_state: false` to omit
+the label while keeping the geometry and waxing flag in the eight-phase result.
 
 Angular diameter is admitted only for the engine radius-table support set:
 Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, and Pluto.
@@ -4077,6 +4159,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/aspects/motion-witness` | relationship | `aspect_motion_witness_route_v1_aspects_motion_witness_post` |
 | `GET` | `/v1/aspects/optional-sets` | relationship | `optional_aspect_sets_route_v1_aspects_optional_sets_get` |
 | `POST` | `/v1/asteroids/bulk` | asteroids (fast small-body) | `asteroids_bulk_v1_asteroids_bulk_post` |
+| `GET` | `/v1/asteroids/classes` | asteroids (fast small-body) | `asteroid_classes_route_v1_asteroids_classes_get` |
 | `GET` | `/v1/asteroids/families/by-number/{number}` | asteroids (fast small-body) | `asteroid_family_by_number_v1_asteroids_families_by_number__number__get` |
 | `POST` | `/v1/asteroids/families/chart` | asteroids (fast small-body) | `asteroid_families_in_chart_v1_asteroids_families_chart_post` |
 | `POST` | `/v1/asteroids/families/chart/resonance-network` | asteroids (fast small-body) | `asteroid_family_resonance_network_v1_asteroids_families_chart_resonance_network_post` |
@@ -4474,6 +4557,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/phase/synodic` | phase | `synodic_phase_route_v1_phase_synodic_post` |
 | `POST` | `/v1/phenomena/heliocentric-events` | generic-phenomena | `heliocentric_events_route_v1_phenomena_heliocentric_events_post` |
 | `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
+| `POST` | `/v1/phenomena/orbital-period-ratio` | generic-phenomena | `orbital_period_ratio_route_v1_phenomena_orbital_period_ratio_post` |
 | `POST` | `/v1/phenomena/planet` | generic-phenomena | `planet_phenomena_route_v1_phenomena_planet_post` |
 | `POST` | `/v1/phenomena/proximity` | generic-phenomena | `proximity_events_route_v1_phenomena_proximity_post` |
 | `POST` | `/v1/pipeline/chart` | website-pipeline | `pipeline_chart_route_v1_pipeline_chart_post` |

@@ -14,12 +14,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from moira._strenum import StrEnum
 from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
+from moira.orbits import OrbitClassCode
 from moira.small_body_identity import SmallBodyFamily
 
 from .relationship import AspectDataResponse, OptionalAspectSetValue, _OptionalAspectSetsRequest
 
 
 ASTEROIDS_BULK_MAX_ITEMS = 500
+ASTEROID_CLASS_PAGE_MAX_ITEMS = 500
 ASTEROID_FAMILY_MEMBER_MAX_ITEMS = 500
 ASTEROID_FAMILIES_CHART_MAX_ITEMS = 500
 ASTEROID_FAMILY_RESONANCE_NETWORK_MAX_ITEMS = 500
@@ -176,6 +178,31 @@ class AsteroidIdentityResponse(_StrictModel):
     loaded_kernel_available: bool
     catalog_source: Literal["ASTEROID_NAIF"] = "ASTEROID_NAIF"
     orbit_class: AsteroidCatalogOrbitClassResponse | None = None
+
+
+class AsteroidClassPageProvenanceResponse(_StrictModel):
+    """Catalog membership, ordering, and independent availability sources."""
+
+    classification_source: Literal["JPL SBDB"] = "JPL SBDB"
+    registry: Literal["moira.asteroids.asteroid_orbit_classes"] = (
+        "moira.asteroids.asteroid_orbit_classes"
+    )
+    ordering: Literal["naif_id_ascending"] = "naif_id_ascending"
+    availability_source: Literal["loaded_reader_covered_bodies"] = (
+        "loaded_reader_covered_bodies"
+    )
+
+
+class AsteroidClassPageResponse(_StrictModel):
+    """Bounded page of identities from the bundled orbit-class snapshot."""
+
+    class_code: OrbitClassCode | None
+    offset: int
+    limit: int
+    next_offset: int | None
+    total_available: int
+    bodies: list[AsteroidIdentityResponse] = Field(max_length=ASTEROID_CLASS_PAGE_MAX_ITEMS)
+    provenance: AsteroidClassPageProvenanceResponse
 
 
 class SmallBodyIdentityResponse(_StrictModel):

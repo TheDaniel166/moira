@@ -1,5 +1,5 @@
 {
-  "unmapped_baseline_sha256": "ba50ddaad831ff15702415e86e42f9b6ac9245fcee40a86410e68f9fc667a266",
+  "unmapped_baseline_sha256": "a50fe9d38598927b7a8797941002dad74ea3a94d1fc457d1374b83928955fd6a",
   "direct_modules": [
     {"module":"moira.planetary_moons","classes":["PlanetaryMoons"]},
     {"module":"moira.planetary_moon_events"},
@@ -7,6 +7,38 @@
     {"module":"moira.cycles"}
   ],
   "capabilities": [
+    {
+      "capability": "nominal_orbital_period_ratio",
+      "engine": ["moira.phenomena:resonance_with_truth"],
+      "witness": "tests/server/test_server_generic_phenomena_routes.py::test_nominal_orbital_period_ratio_preserves_pair_direction",
+      "routes": [
+        {"operation":"POST /v1/phenomena/orbital-period-ratio","request":["body1","body2"],"response":["body1_sidereal_period_days","body2_sidereal_period_days","mean_period_ratio","synodic_interval_days","ratio_direction","body1_over_body2","period_source","nominal_mean_sidereal_periods","kernel_required"]}
+      ]
+    },
+    {
+      "capability": "eight_phase_synodic_cycle",
+      "engine": ["moira.cycles:synodic_cycle_position"],
+      "witness": "tests/server/test_server_phase_routes.py::test_synodic_eight_phase_sector_boundaries",
+      "routes": [
+        {"operation":"POST /v1/phase/synodic","request":["phase_model","four_phase","eight_phase","include_state"],"response":["eight_phase","angle","state","waxing_crescent","waning_crescent","is_waxing","body1_longitude_deg","body2_longitude_deg"]}
+      ]
+    },
+    {
+      "capability": "strict_osculating_orbit_variants",
+      "engine": ["moira.orbits:osculating_elements"],
+      "witness": "tests/server/test_server_strict_orbit_variants.py::test_elements_select_center_and_frame",
+      "routes": [
+        {"operation":"POST /v1/orbits/elements","request":["center","SUN","EARTH","frame","J2000_ECLIPTIC","MEAN_ECLIPTIC_OF_DATE","TRUE_ECLIPTIC_OF_DATE"],"response":["frame_construction","arg_perigee_deg","shape","undefined"]}
+      ]
+    },
+    {
+      "capability": "bounded_apsidal_passage_variants",
+      "engine": ["moira.orbits:apsidal_passages"],
+      "witness": "tests/server/test_server_strict_orbit_variants.py::test_bounded_lunar_passages_follow_direction",
+      "routes": [
+        {"operation":"POST /v1/orbits/distance-extremes","request":["center","SUN","EARTH","direction","NEXT","PREVIOUS","max_days"],"response":["pericenter","apocenter","perigee_jd","apogee_jd","FOUND","NOT_IN_WINDOW","BEYOND_COVERAGE","searched_interval_tdb"]}
+      ]
+    },
     {
       "capability": "planetocentric_reduction_receipts",
       "engine": ["moira.planetocentric:all_planetocentric_at_with_truth","moira.planetocentric:all_planetocentric_at","moira.facade:Moira.planetocentric"],
@@ -130,6 +162,14 @@
       "witness": "tests/server/test_server_rest_capability_parity.py::test_unified_catalog_ambiguity_and_provisional_orbit_class",
       "routes": [
         {"operation":"GET /v1/asteroids/identity","request":["body"],"response":["naif_id","orbit_class","mpc_number","provisional_designation","loaded_kernel_available"]}
+      ]
+    },
+    {
+      "capability": "published_asteroid_class_pages",
+      "engine": ["moira.asteroids:asteroid_orbit_classes"],
+      "witness": "tests/server/test_server_small_body_list_routes.py::test_published_asteroid_class_membership_is_independent_of_installation",
+      "routes": [
+        {"operation":"GET /v1/asteroids/classes","request":["class_code","CEN","MBA","TNO","offset","limit"],"response":["bodies","naif_id","orbit_class","provisional_designation","loaded_kernel_available","total_available","next_offset","naif_id_ascending"]}
       ]
     },
     {

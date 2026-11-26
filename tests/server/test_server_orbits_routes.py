@@ -1,5 +1,9 @@
+"""Verify orbital REST defaults, validation, and strict result serialization."""
+
 from __future__ import annotations
 
+import json
+from dataclasses import replace
 from unittest.mock import ANY
 
 from fastapi.testclient import TestClient
@@ -34,6 +38,8 @@ from moira.orbits import (
     OrbitShape,
     OsculatingElements,
     OsculatingElementsProvenance,
+    UndefinedElement,
+    UndefinedElementReason,
 )
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -41,6 +47,36 @@ from moira_server.models.common import REST_BATCH_MAX_ITEMS
 
 
 pytestmark = pytest.mark.loopback
+
+
+def test_strict_orbit_openapi_declares_defaults_and_variants() -> None:
+    """Publish selector defaults and both center-specific response schemas."""
+    schemas = create_app(ServerConfig(docs_enabled=False)).openapi()["components"]["schemas"]
+    elements = schemas["OrbitalElementsRequest"]["properties"]
+    assert elements["center"]["default"] == "SUN"
+    assert elements["frame"]["default"] == "J2000_ECLIPTIC"
+    assert set(schemas["OrbitalCenter"]["enum"]) == {"SUN", "EARTH"}
+    assert set(schemas["OrbitalFrame"]["enum"]) == {
+        "J2000_ECLIPTIC", "MEAN_ECLIPTIC_OF_DATE", "TRUE_ECLIPTIC_OF_DATE",
+    }
+    extremes_schema = schemas["DistanceExtremesRequest"]
+    extremes = extremes_schema["properties"]
+    assert extremes["center"]["default"] == "SUN"
+    assert extremes["direction"]["default"] == "NEXT"
+    assert set(schemas["ApsidalDirection"]["enum"]) == {"NEXT", "PREVIOUS"}
+    assert "max_days" not in extremes_schema["required"]
+    assert {"type": "null"} in extremes["max_days"]["anyOf"]
+    assert {"exclusiveMinimum": 0.0, "type": "number"} in extremes["max_days"]["anyOf"]
+    for envelope, field, variants in (
+        ("OrbitalElementsEnvelopeResponse", "elements",
+         {"OrbitalElementsResponse", "LunarOrbitalElementsResponse"}),
+        ("DistanceExtremesEnvelopeResponse", "distance_extremes",
+         {"DistanceExtremesResponse", "LunarDistanceExtremesResponse"}),
+    ):
+        assert {
+            choice["$ref"].rsplit("/", 1)[-1]
+            for choice in schemas[envelope]["properties"][field]["anyOf"]
+        } == variants
 
 
 def test_orbit_class_batch_openapi_limit_matches_shared_server_limit() -> None:
@@ -495,11 +531,13 @@ def test_distance_extremes_route_returns_tt_extremes_and_search_provenance(
         *,
         center: object,
         direction: object,
+        max_days: float | None,
         reader: object | None,
     ) -> ApsidalPassages:
         calls.append((body, jd_ut, reader))
         assert center is OrbitalCenter.SUN
         assert direction is ApsidalDirection.NEXT
+        assert max_days is None
         return _strict_passages(body, jd_ut)
 
     monkeypatch.setattr(
@@ -694,6 +732,7 @@ def test_distance_extremes_route_admits_small_bodies(
         *,
         center: object,
         direction: object,
+        max_days: float | None,
         reader: object | None,
     ) -> ApsidalPassages:
         if body == "Ceres":
@@ -730,6 +769,99 @@ def test_distance_extremes_route_admits_small_bodies(
     assert res_comet.status_code == 422
     err = res_comet.json()
     assert err["category"] == "orbital_event_availability"
+
+
+@pytest.mark.parametrize("max_days", [0, -1, True, "35", float("inf"), float("nan")])
+def test_distance_extremes_requires_positive_finite_numeric_bound(
+    client: TestClient, max_days: object
+) -> None:
+    """Reject invalid bounds before invoking the strict solver."""
+    response = client.post(
+        "/v1/orbits/distance-extremes",
+        content=f'{{"body": "Mars", "jd_ut": 2451545, "max_days": {json.dumps(max_days)}}}',
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 422, response.text
+
+
+def test_explicit_apsidal_bound_preserves_partial_coverage_outcomes(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Keep one found event and the other event's coverage limit in the receipt."""
+    calls = []
+
+    def fake_apsidal_passages(body, jd_ut, *, center, direction, max_days, reader):
+        calls.append((center, direction, max_days))
+        passages = _strict_passages(body, jd_ut)
+        unavailable = ApsidalPassageOutcome(
+            status=ApsidalPassageStatus.BEYOND_COVERAGE,
+            epoch_tdb=None,
+            epoch_tt=None,
+            jd_ut=None,
+            distance_au=None,
+            coverage_edge_tdb=2451700.0,
+            detail="ROUTE_COVERAGE_EDGE",
+        )
+        return replace(passages, apocenter=unavailable)
+
+    monkeypatch.setattr("moira_server.services.orbits.apsidal_passages", fake_apsidal_passages)
+    request = {"body": "Earth", "jd_ut": 2451545.0, "center": "SUN", "direction": "NEXT"}
+    default_response = client.post("/v1/orbits/distance-extremes", json=request)
+    assert default_response.status_code == 422, default_response.text
+    assert default_response.json()["error_code"] == "passage_unavailable"
+
+    response = client.post("/v1/orbits/distance-extremes", json={**request, "max_days": 200})
+    assert response.status_code == 200, response.text
+    assert calls == [
+        (OrbitalCenter.SUN, ApsidalDirection.NEXT, None),
+        (OrbitalCenter.SUN, ApsidalDirection.NEXT, 200.0),
+    ]
+    payload = response.json()
+    assert payload["distance_extremes"]["aphelion_jd"] is None
+    assert payload["distance_extremes"]["aphelion_distance_au"] is None
+    assert payload["provenance"]["pericenter"]["status"] == "FOUND"
+    assert payload["distance_extremes"]["perihelion_jd"] == (
+        payload["provenance"]["pericenter"]["epoch_tt"]
+    )
+    assert payload["provenance"]["apocenter"] == {
+        "status": "BEYOND_COVERAGE",
+        "epoch_tdb": None,
+        "epoch_tt": None,
+        "jd_ut": None,
+        "distance_au": None,
+        "coverage_edge_tdb": 2451700.0,
+        "detail": "ROUTE_COVERAGE_EDGE",
+    }
+
+
+def test_orbital_elements_preserve_undefined_angles(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Serialize singular angles as null with the engine's canonical reasons."""
+    def fake_osculating_elements(body, jd_ut, *, center, frame, reader):
+        return replace(
+            _strict_elements(body, jd_ut),
+            lon_ascending_node_deg=None,
+            arg_pericenter_deg=None,
+            undefined=(
+                UndefinedElement("lon_ascending_node_deg", (UndefinedElementReason.EQUATORIAL,)),
+                UndefinedElement(
+                    "arg_pericenter_deg",
+                    (UndefinedElementReason.CIRCULAR, UndefinedElementReason.EQUATORIAL),
+                ),
+            ),
+        )
+
+    monkeypatch.setattr("moira_server.services.orbits.osculating_elements", fake_osculating_elements)
+    response = client.post("/v1/orbits/elements", json={"body": "Earth", "jd_ut": 2451545.0})
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["elements"]["lon_ascending_node_deg"] is None
+    assert payload["elements"]["arg_perihelion_deg"] is None
+    assert payload["provenance"]["undefined"] == [
+        {"field": "lon_ascending_node_deg", "reasons": ["EQUATORIAL"]},
+        {"field": "arg_pericenter_deg", "reasons": ["CIRCULAR", "EQUATORIAL"]},
+    ]
 
 
 def test_orbit_class_route_returns_sbdb_classification(

@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from moira.cycles import SynodicPhase
+
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -49,10 +51,57 @@ class PhaseBodyRequest(_StrictModel):
 
 
 class SynodicPhaseRequest(_StrictModel):
+    """Validate the ordered body pair, UT1 epoch, and phase model.
+
+    RITE:
+        Admit a directed synodic phase request at one epoch.
+
+    THEOREM:
+        The body names are nonempty, the Julian day is finite, and the
+        transport selects one of the two admitted phase models.
+
+    RITE OF PURPOSE:
+        Give the phase service an ordered pair and explicit labeling policy.
+
+    LAW OF OPERATION:
+        Strip surrounding whitespace, preserve body order, and validate the
+        epoch and selector without reading a kernel. The selected reducer
+        resolves the bodies and calculates the phase.
+
+    Canon: The POST /v1/phase/synodic request contract.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.server.models.phase.SynodicPhaseRequest",
+      "risk": "low",
+      "api": {
+        "frozen": ["body1", "body2", "jd_ut", "include_state", "phase_model"],
+        "internal": ["_valid_body1", "_valid_body2", "_finite_jd_ut"]
+      },
+      "state": {"mutable": true, "owners": ["SynodicPhaseRequest instance"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {
+        "thread": "request_local",
+        "cross_thread_calls": "forbidden",
+        "owner_thread_only_mutation": true
+      },
+      "failures": {"policy": "raise", "invalid_input": "pydantic.ValidationError"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": []}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={"description": "Ordered body pair, UT1 epoch, and synodic phase model."},
+    )
+
     body1: str
     body2: str
     jd_ut: float
     include_state: bool = True
+    phase_model: Literal["four_phase", "eight_phase"] = "four_phase"
 
     @field_validator("body1")
     @classmethod
@@ -212,6 +261,8 @@ class IlluminatedFractionResponse(_StrictModel):
 
 
 class SynodicPhaseResponse(_StrictModel):
+    """Directed longitude angle and the optional four-state label."""
+
     body1: str
     body2: str
     jd_ut: float
@@ -220,6 +271,16 @@ class SynodicPhaseResponse(_StrictModel):
     angle_range: list[float]
     state_policy: str
     provenance: PhaseProvenanceResponse
+
+
+class SynodicCycleResponse(SynodicPhaseResponse):
+    """Eight-phase state with waxing and both ordered apparent longitudes."""
+
+    phase_model: Literal["eight_phase"] = "eight_phase"
+    state: SynodicPhase | None = None
+    is_waxing: bool
+    body1_longitude_deg: float
+    body2_longitude_deg: float
 
 
 class ElongationResponse(_StrictModel):
@@ -278,4 +339,5 @@ __all__ = [
     "PhaseProvenanceResponse",
     "SynodicPhaseRequest",
     "SynodicPhaseResponse",
+    "SynodicCycleResponse",
 ]

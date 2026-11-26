@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from fastapi.testclient import TestClient
 import pytest
 
@@ -15,6 +17,8 @@ from moira import (
     LunarOrientationSource,
 )
 from moira.constants import Body
+from moira.cycles import SynodicCyclePosition, SynodicPhase
+from moira.planets import planet_at
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -274,6 +278,14 @@ def test_synodic_route_preserves_angle_wrap_and_state_policy(
     assert body["state_policy"] == "quadrant_labels_with_45_degree_boundaries"
     assert body["provenance"]["kernel_required"] is True
     assert body["provenance"]["stage_sequence"][0] == "body_pair_validation"
+    assert {"phase_model", "is_waxing", "body1_longitude_deg", "body2_longitude_deg"}.isdisjoint(body)
+
+    explicit = client.post(
+        "/v1/phase/synodic",
+        json={"body1": "A", "body2": "B", "jd_ut": 2451545.0, "phase_model": "four_phase"},
+    )
+    assert explicit.status_code == 200, explicit.text
+    assert explicit.json() == body
 
 
 def test_synodic_route_can_omit_state_when_requested(
@@ -294,6 +306,139 @@ def test_synodic_route_can_omit_state_when_requested(
 
     assert response.status_code == 200
     assert "state" not in response.json()
+
+
+@pytest.mark.parametrize(
+    ("angle", "state", "waxing"),
+    [
+        (0.0, "new", False),
+        (22.375, "new", True),
+        (22.5, "waxing_crescent", True),
+        (67.375, "waxing_crescent", True),
+        (67.5, "first_quarter", True),
+        (112.375, "first_quarter", True),
+        (112.5, "waxing_gibbous", True),
+        (157.375, "waxing_gibbous", True),
+        (157.5, "full", True),
+        (179.875, "full", True),
+        (180.0, "full", False),
+        (180.125, "full", False),
+        (202.375, "full", False),
+        (202.5, "waning_gibbous", False),
+        (247.375, "waning_gibbous", False),
+        (247.5, "last_quarter", False),
+        (292.375, "last_quarter", False),
+        (292.5, "waning_crescent", False),
+        (337.375, "waning_crescent", False),
+        (337.5, "new", False),
+        (359.875, "new", False),
+    ],
+)
+def test_synodic_eight_phase_sector_boundaries(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    angle: float,
+    state: str,
+    waxing: bool,
+) -> None:
+    """Exercise the canonical octant reducer with controlled longitudes."""
+    jd_ut = 2451545.0
+    longitudes = {"Sun": 350.0, "Moon": (350.0 + angle) % 360.0}
+    reader = object()
+    calls = []
+
+    def synthetic_planet_at(body, jd_ut, *, reader, apparent):
+        calls.append((body, jd_ut, reader, apparent))
+        return SimpleNamespace(longitude=longitudes[body])
+
+    monkeypatch.setattr("moira.cycles.get_reader", lambda: reader)
+    monkeypatch.setattr("moira.planets.planet_at", synthetic_planet_at)
+    response = client.post(
+        "/v1/phase/synodic",
+        json={"body1": "Sun", "body2": "Moon", "jd_ut": jd_ut, "phase_model": "eight_phase"},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["phase_model"] == "eight_phase"
+    assert payload["angle"] == angle
+    assert payload["angle_range"] == [0.0, 360.0]
+    assert payload["state"] == state
+    assert payload["is_waxing"] is waxing
+    assert payload["body1_longitude_deg"] == longitudes["Sun"]
+    assert payload["body2_longitude_deg"] == longitudes["Moon"]
+    assert payload["state_policy"] == "octant_labels_centered_on_45_degree_multiples"
+    assert payload["provenance"]["source_module"] == "moira.cycles"
+    assert payload["provenance"]["engine_entrypoint"] == "synodic_cycle_position"
+    assert payload["provenance"]["coordinate_frame"] == "apparent_geocentric_ecliptic_longitude"
+    assert calls == [("Sun", jd_ut, reader, True), ("Moon", jd_ut, reader, True)]
+
+
+def test_synodic_eight_phase_can_omit_state_without_omitting_cycle_geometry(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Retain the longitudes and waxing flag when the label is suppressed."""
+    jd_ut = 2451545.0
+    result = SynodicCyclePosition(
+        body1="Sun", body2="Moon", jd_ut=jd_ut, phase_angle=310.0,
+        phase=SynodicPhase.WANING_CRESCENT, is_waxing=False, lon1=60.0, lon2=10.0,
+    )
+    monkeypatch.setattr("moira_server.services.phase.synodic_cycle_position", lambda *args: result)
+    response = client.post(
+        "/v1/phase/synodic",
+        json={
+            "body1": "Sun", "body2": "Moon", "jd_ut": jd_ut,
+            "phase_model": "eight_phase", "include_state": False,
+        },
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert "state" not in payload
+    assert payload["phase_model"] == "eight_phase"
+    assert payload["angle"] == 310.0
+    assert payload["is_waxing"] is False
+    assert payload["body1_longitude_deg"] == 60.0
+    assert payload["body2_longitude_deg"] == 10.0
+
+
+def test_synodic_route_rejects_unknown_phase_model(client: TestClient) -> None:
+    """Reject unrecognized selectors at the request boundary."""
+    response = client.post(
+        "/v1/phase/synodic",
+        json={"body1": "Sun", "body2": "Moon", "jd_ut": 2451545.0, "phase_model": "six_phase"},
+    )
+    _assert_validation_envelope(response, message_fragment="'four_phase' or 'eight_phase'")
+
+
+@pytest.mark.requires_ephemeris
+def test_synodic_eight_phase_uses_ordered_de441_longitudes(
+    moira_engine, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Check both body orders against two explicit apparent geocentric states."""
+    jd_ut = 2451545.0
+    longitudes = {
+        body: planet_at(
+            body, jd_ut, reader=moira_engine._reader, apparent=True,
+            center="geocentric", frame="ecliptic",
+        ).longitude
+        for body in (Body.SUN, Body.MOON)
+    }
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    with TestClient(create_app(ServerConfig(docs_enabled=False))) as live_client:
+        for body1, body2 in ((Body.SUN, Body.MOON), (Body.MOON, Body.SUN)):
+            response = live_client.post(
+                "/v1/phase/synodic",
+                json={"body1": body1, "body2": body2, "jd_ut": jd_ut, "phase_model": "eight_phase"},
+            )
+            assert response.status_code == 200, response.text
+            payload = response.json()
+            lon1, lon2 = longitudes[body1], longitudes[body2]
+            assert payload["body1"] == body1
+            assert payload["body2"] == body2
+            assert payload["jd_ut"] == jd_ut
+            assert payload["body1_longitude_deg"] == lon1
+            assert payload["body2_longitude_deg"] == lon2
+            assert payload["angle"] == (lon2 - lon1) % 360.0
+            assert payload["is_waxing"] is (body1 == Body.MOON)
 
 
 def test_elongation_route_preserves_range_and_basis(

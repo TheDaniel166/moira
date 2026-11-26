@@ -1,7 +1,7 @@
 # P12-03 Phase And Photometry Transport Design
 
-Version: 0.2
-Date: 2026-06-13
+Version: 0.3
+Date: 2026-11-26
 Status: admitted
 Scope: phase, elongation, angular diameter, synodic phase, and apparent magnitude REST admission record
 
@@ -46,6 +46,11 @@ The governing objects are direct scalar products from `moira.phase`:
 - apparent angular diameter
 - apparent visual magnitude for admitted bodies
 
+The opt-in eight-phase synodic product uses
+`moira.cycles.synodic_cycle_position`. Its result owns the ordered apparent
+geocentric longitudes, normalized forward longitude difference, octant
+classification, and waxing flag at one UT1 epoch.
+
 The route family must not imply that all products share the same support set.
 It must preserve the per-product basis and limitations documented by the
 backend standard.
@@ -57,6 +62,9 @@ kernel reader.
 
 `synodic_phase_angle` and `elongation` depend on `planet_at(...)` geocentric
 ecliptic positions.
+
+The eight-phase synodic reducer uses the same serving-reader binding and
+preserves both apparent geocentric inputs to its reduction.
 
 `phase_angle`, `angular_diameter`, and `apparent_magnitude` depend on the
 astronomical substrate and loaded SPK reader paths, directly or indirectly.
@@ -78,11 +86,12 @@ Required fields:
 
 - `body1`: non-empty body name
 - `body2`: non-empty body name
-- `jd_ut`: finite Julian Day in UT
+- `jd_ut`: finite Julian Day in UT1
 
 Optional fields:
 
 - `include_state`: boolean, default `true`
+- `phase_model`: `four_phase` (default) or `eight_phase`
 
 `POST /v1/phase/elongation`
 
@@ -159,6 +168,12 @@ Synodic responses should contain:
 - `state_policy`
 - `provenance`
 
+The four-phase response retains its existing fields and labels. The
+eight-phase response adds `phase_model: "eight_phase"`, the engine's
+`is_waxing`, and `body1_longitude_deg` and `body2_longitude_deg` in request
+order. The eight-state label occupies the same optional `state` field.
+`include_state: false` omits that field in both products.
+
 Elongation responses should contain:
 
 - `body`
@@ -220,7 +235,7 @@ coordinate basis.
 
 Every response should preserve:
 
-- `source_module`: `moira.phase`
+- `source_module`: `moira.phase`, or `moira.cycles` for the eight-phase product
 - engine entrypoint
 - requested product
 - requested body or body pair
@@ -247,6 +262,9 @@ Route admission added focused server tests for:
 - illuminated-fraction boundaries at phase angles 0 and 180
 - synodic angle wrap forward and reverse
 - synodic state boundary labels
+- each eight-phase boundary, the 0° wrap, and waxing at exact syzygies
+- ordered apparent geocentric longitudes from DE441 in both pair directions
+- both products using the serving reader with no global kernel
 - elongation response range
 - phase-angle response range with monkeypatched vector substrate
 - angular-diameter supported body acceptance

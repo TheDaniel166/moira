@@ -12,6 +12,26 @@ families must continue to obey.
 
 Current implementation state:
 
+- The generic phenomena family exposes a kernel-free nominal orbital-period
+  ratio and synodic interval for an ordered pair. The response carries both
+  Earth-day source periods and identifies the bundled period table.
+  [Nominal orbital-period ratios](../../wiki/02_services/REST_API_REFERENCE.md#nominal-orbital-period-ratios)
+
+- The synodic phase route offers the eight-phase cycle as an opt-in, with
+  both apparent geocentric longitudes and the reducer's waxing flag. The
+  default four-state response retains its existing contract.
+  [Eight-phase synodic cycle](../../wiki/02_services/REST_API_REFERENCE.md#eight-phase-synodic-cycle)
+
+- Published asteroid orbit classes support bounded NAIF-ordered paging from
+  Moira's bundled JPL SBDB-derived registry. Kernel availability is reported
+  independently for each identity, including provisional objects.
+  [Published asteroid classes](../../wiki/02_services/REST_API_REFERENCE.md#published-asteroid-classes)
+
+- Strict orbit elements accept the engine's center and ecliptic frame
+  selectors. Distance extrema accept earlier or later searches with optional
+  TDB-day bounds and support Earth-centered lunar perigee and apogee.
+  [Strict orbit variants](../../wiki/02_services/REST_API_REFERENCE.md#strict-orbit-variants)
+
 - Planetocentric positions carry a per-result receipt for the resolved NAIF
   endpoints, ephemeris clock, instantaneous rate sampling, and true-of-date
   ecliptic frame. [Planetocentric reduction receipt](../../wiki/02_services/REST_API_REFERENCE.md#planetocentric-reduction-receipt)

@@ -31,7 +31,7 @@ def orbital_elements_route(
     request: OrbitalElementsRequest,
     engine=Depends(get_engine),
 ) -> OrbitalElementsEnvelopeResponse:
-    """Compute heliocentric J2000 osculating Keplerian elements."""
+    """Compute osculating elements in the selected center and ecliptic frame."""
     return compute_orbital_elements(engine, request)
 
 
@@ -40,7 +40,7 @@ def distance_extremes_route(
     request: DistanceExtremesRequest,
     engine=Depends(get_engine),
 ) -> DistanceExtremesEnvelopeResponse:
-    """Compute next heliocentric perihelion and aphelion events."""
+    """Search for apsidal passages in the selected direction and center."""
     return compute_distance_extremes(engine, request)
 
 

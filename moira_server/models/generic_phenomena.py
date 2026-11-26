@@ -110,6 +110,30 @@ def _validate_jd_window(jd_start: float, jd_end: float, max_span_days: float) ->
         raise ValueError(f"search span may not exceed {max_span_days:g} days")
 
 
+class OrbitalPeriodRatioRequest(_StrictModel):
+    """Ordered body pair for a nominal comparison of mean orbital periods."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    body1: str = Field(min_length=1, description="Numerator body")
+    body2: str = Field(min_length=1, description="Denominator body")
+
+
+class OrbitalPeriodRatioResponse(_StrictModel):
+    """Nominal ratio and synodic interval from two source periods in Earth days."""
+
+    body1: str
+    body2: str
+    body1_sidereal_period_days: float
+    body2_sidereal_period_days: float
+    mean_period_ratio: float
+    synodic_interval_days: float
+    ratio_direction: Literal["body1_over_body2"] = "body1_over_body2"
+    period_source: str
+    basis: Literal["nominal_mean_sidereal_periods"] = "nominal_mean_sidereal_periods"
+    kernel_required: Literal[False] = False
+
+
 class PlanetPhenomenaRequest(_StrictModel):
     body: str
     jd_ut: float

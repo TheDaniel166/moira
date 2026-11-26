@@ -12,7 +12,6 @@ from moira.orbits import (
     ApsidalPassageOutcome,
     ApsidalPassageStatus,
     ApsidalPassages,
-    DistanceExtremes,
     OrbitalCenter,
     OrbitalFrame,
     OsculatingElements,
@@ -36,6 +35,8 @@ from ..models.orbits import (
     DistanceExtremesRequest,
     DistanceExtremesResponse,
     DistanceExtremesTimeResponse,
+    LunarDistanceExtremesResponse,
+    LunarOrbitalElementsResponse,
     OrbitalElementsEnvelopeResponse,
     OrbitalElementsProvenanceResponse,
     OrbitalElementsRequest,
@@ -58,6 +59,7 @@ from ..models.orbits import (
     OrbitRequestEchoResponse,
     OrbitTimeConversionResponse,
     OrbitTimeResponse,
+    UndefinedOrbitalElementResponse,
 )
 
 
@@ -72,18 +74,31 @@ def _reader_owner(reader: Any | None) -> str:
     return "Moira engine instance" if reader is not None else "module_default_reader"
 
 
-def _serialize_elements(elements: OsculatingElements) -> OrbitalElementsResponse:
-    return OrbitalElementsResponse(
+def _serialize_elements(
+    elements: OsculatingElements,
+) -> OrbitalElementsResponse | LunarOrbitalElementsResponse:
+    """Use apsis terminology appropriate to the evaluated center."""
+    common = dict(
         name=elements.body.name,
         epoch_jd=elements.epoch_tt,
         semi_major_axis_au=elements.semi_major_axis_au,
         eccentricity=elements.eccentricity,
         inclination_deg=elements.inclination_deg,
         lon_ascending_node_deg=elements.lon_ascending_node_deg,
-        arg_perihelion_deg=elements.arg_pericenter_deg,
         mean_anomaly_deg=elements.mean_anomaly_deg,
         mean_motion_deg_per_day=elements.mean_motion_deg_per_day,
         orbital_period_days=elements.orbital_period_days,
+    )
+    if elements.center is OrbitalCenter.EARTH:
+        return LunarOrbitalElementsResponse(
+            **common,
+            arg_perigee_deg=elements.arg_pericenter_deg,
+            perigee_distance_au=elements.pericenter_distance_au,
+            apogee_distance_au=elements.apocenter_distance_au,
+        )
+    return OrbitalElementsResponse(
+        **common,
+        arg_perihelion_deg=elements.arg_pericenter_deg,
         perihelion_distance_au=elements.pericenter_distance_au,
         aphelion_distance_au=elements.apocenter_distance_au,
     )
@@ -189,8 +204,18 @@ def _serialize_elements_provenance(
     thresholds = provenance.singularity_thresholds
     return OrbitalElementsProvenanceResponse(
         reader_owner=reader_owner,
-        center=elements.center.value,
-        frame=elements.frame.value,
+        center=elements.center,
+        frame=elements.frame,
+        orientation={
+            OrbitalFrame.J2000_ECLIPTIC: "fixed_J2000_ecliptic",
+            OrbitalFrame.MEAN_ECLIPTIC_OF_DATE: "mean_ecliptic_of_date",
+            OrbitalFrame.TRUE_ECLIPTIC_OF_DATE: "true_ecliptic_of_date",
+        }[elements.frame],
+        shape=elements.shape,
+        undefined=[
+            UndefinedOrbitalElementResponse(field=entry.field, reasons=entry.reasons)
+            for entry in elements.undefined
+        ],
         gravity=OrbitalGravityResponse(
             rule=gravity.rule,
             gm_km3_s2=gravity.gm_km3_s2,
@@ -267,13 +292,25 @@ def _serialize_elements_provenance(
     )
 
 
-def _serialize_distance_extremes(extremes: DistanceExtremes) -> DistanceExtremesResponse:
+def _serialize_distance_extremes(
+    passages: ApsidalPassages,
+) -> DistanceExtremesResponse | LunarDistanceExtremesResponse:
+    """Project the passage outcomes onto the center-specific TT and AU fields."""
+    pericenter, apocenter = passages.pericenter, passages.apocenter
+    if passages.center is OrbitalCenter.EARTH:
+        return LunarDistanceExtremesResponse(
+            name=passages.body.name,
+            perigee_jd=pericenter.epoch_tt,
+            perigee_distance_au=pericenter.distance_au,
+            apogee_jd=apocenter.epoch_tt,
+            apogee_distance_au=apocenter.distance_au,
+        )
     return DistanceExtremesResponse(
-        name=extremes.name,
-        perihelion_jd=extremes.perihelion_jd,
-        perihelion_distance_au=extremes.perihelion_distance_au,
-        aphelion_jd=extremes.aphelion_jd,
-        aphelion_distance_au=extremes.aphelion_distance_au,
+        name=passages.body.name,
+        perihelion_jd=pericenter.epoch_tt,
+        perihelion_distance_au=pericenter.distance_au,
+        aphelion_jd=apocenter.epoch_tt,
+        aphelion_distance_au=apocenter.distance_au,
     )
 
 
@@ -281,12 +318,13 @@ def compute_orbital_elements(
     engine: Moira,
     request: OrbitalElementsRequest,
 ) -> OrbitalElementsEnvelopeResponse:
+    """Evaluate one osculating state through the serving reader."""
     reader = _get_reader(engine)
     elements = osculating_elements(
         request.body,
         request.jd_ut,
-        center=OrbitalCenter.SUN,
-        frame=OrbitalFrame.J2000_ECLIPTIC,
+        center=request.center,
+        frame=request.frame,
         reader=reader,
     )
     return OrbitalElementsEnvelopeResponse(
@@ -304,7 +342,7 @@ def _serialize_passage_outcome(
     outcome: ApsidalPassageOutcome,
 ) -> ApsidalPassageOutcomeResponse:
     return ApsidalPassageOutcomeResponse(
-        status=outcome.status.value,
+        status=outcome.status,
         epoch_tdb=outcome.epoch_tdb,
         epoch_tt=outcome.epoch_tt,
         jd_ut=outcome.jd_ut,
@@ -386,35 +424,31 @@ def compute_distance_extremes(
     engine: Moira,
     request: DistanceExtremesRequest,
 ) -> DistanceExtremesEnvelopeResponse:
+    """Search both apsides once and adapt the resulting passage receipts."""
     reader = _get_reader(engine)
     passages = apsidal_passages(
         request.body,
         request.jd_ut,
-        center=OrbitalCenter.SUN,
-        direction=ApsidalDirection.NEXT,
+        center=request.center,
+        direction=request.direction,
+        max_days=request.max_days,
         reader=reader,
     )
-    missing = tuple(
-        kind
-        for kind, outcome in (
-            ("PERICENTER", passages.pericenter),
-            ("APOCENTER", passages.apocenter),
+    if (
+        request.center is OrbitalCenter.SUN
+        and request.direction is ApsidalDirection.NEXT
+        and request.max_days is None
+    ):
+        missing = tuple(
+            kind
+            for kind, outcome in (
+                ("PERICENTER", passages.pericenter),
+                ("APOCENTER", passages.apocenter),
+            )
+            if outcome.status is not ApsidalPassageStatus.FOUND
         )
-        if outcome.status is not ApsidalPassageStatus.FOUND
-    )
-    if missing:
-        raise OrbitalPassageUnavailableError(passages, missing)
-    assert passages.pericenter.epoch_tt is not None
-    assert passages.pericenter.distance_au is not None
-    assert passages.apocenter.epoch_tt is not None
-    assert passages.apocenter.distance_au is not None
-    extremes = DistanceExtremes(
-        name=passages.body.name,
-        perihelion_jd=passages.pericenter.epoch_tt,
-        perihelion_distance_au=passages.pericenter.distance_au,
-        aphelion_jd=passages.apocenter.epoch_tt,
-        aphelion_distance_au=passages.apocenter.distance_au,
-    )
+        if missing:
+            raise OrbitalPassageUnavailableError(passages, missing)
     conversion = passages.provenance.time_conversion
     return DistanceExtremesEnvelopeResponse(
         request=OrbitRequestEchoResponse(body=request.body, jd_ut=request.jd_ut),
@@ -429,9 +463,11 @@ def compute_distance_extremes(
             * 86400.0,
             conversion=_serialize_time_conversion(conversion),
         ),
-        distance_extremes=_serialize_distance_extremes(extremes),
+        distance_extremes=_serialize_distance_extremes(passages),
         provenance=DistanceExtremesProvenanceResponse(
             reader_owner=_reader_owner(reader),
+            center=passages.center,
+            direction=passages.direction,
             pericenter=_serialize_passage_outcome(passages.pericenter),
             apocenter=_serialize_passage_outcome(passages.apocenter),
             search=_serialize_passage_provenance(passages),

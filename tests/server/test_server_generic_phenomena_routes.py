@@ -1,3 +1,5 @@
+"""Verify generic phenomena and solar-condition REST contracts."""
+
 from __future__ import annotations
 
 from unittest.mock import ANY
@@ -9,6 +11,7 @@ from moira.dignities_types import SolarConditionTruth
 from moira.phenomena import PhenomenonEvent, PlanetPhenomena, ProximityEvent
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.dependencies import get_engine
 
 
 pytestmark = pytest.mark.loopback
@@ -29,6 +32,76 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.mark.parametrize(
+    ("body1", "body2", "period1", "period2"),
+    [
+        ("Venus", "Earth", 224.700798, 365.256363),
+        ("Jupiter", "Saturn", 4332.589, 10759.22),
+    ],
+)
+def test_nominal_orbital_period_ratio_preserves_pair_direction(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch,
+    body1: str, body2: str, period1: float, period2: float,
+) -> None:
+    """Compare independent arithmetic, reversal, and repeatability without a reader."""
+    def forbidden_engine():
+        pytest.fail("The nominal period route must be independent of the serving engine.")
+
+    monkeypatch.setitem(client.app.dependency_overrides, get_engine, forbidden_engine)
+    monkeypatch.setattr("moira.phenomena.get_reader", forbidden_engine)
+    path = "/v1/phenomena/orbital-period-ratio"
+    requests = (
+        {"body1": body1, "body2": body2},
+        {"body1": body2, "body2": body1},
+        {"body1": f" {body1} ", "body2": body2},
+    )
+    responses = [client.post(path, json=request) for request in requests]
+    assert all(response.status_code == 200 for response in responses), [
+        response.text for response in responses
+    ]
+    forward, reverse, repeated = [response.json() for response in responses]
+    assert forward == repeated
+    for result, ordered in ((forward, (body1, body2, period1, period2)),
+                            (reverse, (body2, body1, period2, period1))):
+        first, second, first_days, second_days = ordered
+        assert result["body1"] == first
+        assert result["body2"] == second
+        assert result["body1_sidereal_period_days"] == first_days
+        assert result["body2_sidereal_period_days"] == second_days
+        assert result["ratio_direction"] == "body1_over_body2"
+        assert result["mean_period_ratio"] == first_days / second_days
+        assert result["period_source"] == "Body.SIDEREAL_PERIODS"
+        assert result["basis"] == "nominal_mean_sidereal_periods"
+        assert result["kernel_required"] is False
+
+    expected_interval = period1 * period2 / abs(period1 - period2)
+    assert forward["synodic_interval_days"] == pytest.approx(expected_interval, rel=2e-15)
+    assert reverse["synodic_interval_days"] == forward["synodic_interval_days"]
+    assert reverse["mean_period_ratio"] == pytest.approx(1.0 / forward["mean_period_ratio"], rel=2e-15)
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ({"body1": "Mercury", "body2": " Mercury "}, "distinct orbital periods"),
+        ({"body1": "Moon", "body2": "Earth"}, "requires mean orbital periods"),
+        ({"body1": "Unknown", "body2": "Pluto"}, "requires mean orbital periods"),
+        ({"body1": " ", "body2": "Earth"}, "at least 1 character"),
+        ({"body1": "Venus", "body2": "Earth", "jd_ut": 2451545.0}, "Extra inputs"),
+    ],
+)
+def test_nominal_orbital_period_ratio_rejects_invalid_pairs(
+    client: TestClient, payload: dict[str, object], message: str,
+) -> None:
+    """Report validation errors for inadmissible or malformed pair requests."""
+    response = client.post("/v1/phenomena/orbital-period-ratio", json=payload)
+    assert response.status_code == 422, response.text
+    error = response.json()
+    assert error["error_code"] == "validation_error"
+    assert error["category"] == "input_validation"
+    assert message in error["message"]
 
 
 def test_planet_phenomena_route_returns_snapshot_and_provenance(
@@ -425,6 +498,7 @@ def test_generic_phenomena_routes_reject_extra_fields(client: TestClient) -> Non
 
 
 def test_generic_phenomena_get_is_not_admitted(client: TestClient) -> None:
+    assert client.get("/v1/phenomena/orbital-period-ratio").status_code == 405
     assert client.get("/v1/phenomena/planet").status_code == 405
     assert client.get("/v1/phenomena/orbital-events").status_code == 405
     assert client.get("/v1/phenomena/proximity").status_code == 405

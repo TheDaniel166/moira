@@ -1,9 +1,22 @@
 # P11-04 Asteroids Transport Design
 
-Version: 0.1
-Date: 2026-06-13
+Version: 0.2
+Date: 2026-11-26
 Status: admitted
-Scope: bounded asteroid position, bulk position, and loaded-kernel list/search REST routes
+Scope: bounded asteroid positions, loaded-kernel list/search, and published orbit-class pages
+
+### Published orbit-class admission
+
+Decision `admit_now`. The public `moira.asteroids.asteroid_orbit_classes` registry
+owns membership in Moira's bundled JPL SBDB-derived classification snapshot.
+`ASTEROID_NAIF` owns the corresponding identities, including provisional SPK IDs.
+The existing serving reader supplies only independent per-identity kernel
+availability. The snapshot, its companion class-count metadata, and the
+provisional identity regressions provide offline verification.
+
+Membership is stable within the bundled snapshot. A bounded synchronous page
+over these read-only records is suitable for REST. Epoch-dependent osculating
+classification remains the separate `moira.orbits.orbit_class` product.
 
 ## 1. Admission Boundary
 
@@ -12,10 +25,21 @@ P11-04 admits the narrow asteroid REST surface:
 - `POST /v1/asteroids/position`
 - `POST /v1/asteroids/bulk`
 - `GET /v1/asteroids/list`
+- `GET /v1/asteroids/classes`
 
 This is not full small-body REST admission. It admits selected asteroid
 transport over the existing `moira.asteroids` engine surface and the server's
 loaded small-body reader.
+
+`GET /v1/asteroids/classes` accepts an optional JPL SBDB `class_code`,
+a zero-based `offset` defaulting to zero, and a `limit` of 1–500 defaulting
+to 100. It filters the bundled classification registry, orders by ascending
+NAIF ID, and then slices the page. Counts and continuation offsets describe
+the filtered registry. Each row uses the existing identity contract and reports
+whether the serving reader covers that ID. Valid classes with no entries and
+offsets at or past the end return an empty page. A missing registry returns
+HTTP 503. Positions, loaded-kernel list results, and individual identity
+lookups retain their existing contracts.
 
 Deferred:
 

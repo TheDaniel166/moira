@@ -8,6 +8,8 @@ from ..dependencies import get_engine
 from ..models.generic_phenomena import (
     HeliocentricEventsRequest,
     HeliocentricEventsResponse,
+    OrbitalPeriodRatioRequest,
+    OrbitalPeriodRatioResponse,
     OrbitalPhenomenaEventsEnvelopeResponse,
     OrbitalPhenomenaEventsRequest,
     PlanetPhenomenaEnvelopeResponse,
@@ -21,6 +23,7 @@ from ..models.generic_phenomena import (
 )
 from ..services.generic_phenomena import (
     compute_heliocentric_events,
+    compute_orbital_period_ratio,
     compute_orbital_phenomena_events,
     compute_planet_phenomena,
     compute_proximity_events,
@@ -30,6 +33,12 @@ from ..services.generic_phenomena import (
 
 
 router = APIRouter(prefix="/v1", tags=["generic-phenomena"])
+
+
+@router.post("/phenomena/orbital-period-ratio", response_model=OrbitalPeriodRatioResponse)
+def orbital_period_ratio_route(request: OrbitalPeriodRatioRequest) -> OrbitalPeriodRatioResponse:
+    """Compare two mean sidereal orbital periods in request order."""
+    return compute_orbital_period_ratio(request)
 
 
 @router.post("/phenomena/heliocentric-events", response_model=HeliocentricEventsResponse)

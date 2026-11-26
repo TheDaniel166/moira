@@ -8,10 +8,13 @@ They automatically use the native Type 13 evaluator for speed.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from moira.orbits import OrbitClassCode
 from moira.small_body_identity import SmallBodyFamily
 
 from ..dependencies import get_engine
 from ..models.asteroids import (
+    ASTEROID_CLASS_PAGE_MAX_ITEMS,
+    AsteroidClassPageResponse,
     AsteroidListResponse,
     AsteroidFamiliesInChartRequest,
     AsteroidFamiliesInChartResponse,
@@ -42,6 +45,7 @@ from ..services.asteroids import (
     list_asteroid_family_members,
     list_asteroid_subset,
     list_asteroid_subsets,
+    list_published_asteroid_classes,
     list_sovereign_asteroids,
     lookup_asteroid_family,
     lookup_asteroid_identity,
@@ -111,6 +115,24 @@ def list_asteroids(
     Use ?q=ceres or ?q=2000001 for filtering. Fast (no heavy computation).
     """
     return list_sovereign_asteroids(engine, name_filter=q, limit=limit)
+
+
+@router.get(
+    "/classes",
+    response_model=AsteroidClassPageResponse,
+    responses={503: {"description": "The bundled asteroid class registry is unavailable."}},
+)
+def asteroid_classes_route(
+    class_code: OrbitClassCode | None = Query(None, description="Published JPL SBDB class code"),
+    offset: int = Query(0, ge=0, description="Zero-based offset within the filtered catalog"),
+    limit: int = Query(100, ge=1, le=ASTEROID_CLASS_PAGE_MAX_ITEMS),
+    engine=Depends(get_engine),
+) -> AsteroidClassPageResponse:
+    """Page published asteroid orbit classes by ascending NAIF ID."""
+    page = list_published_asteroid_classes(engine, class_code=class_code, offset=offset, limit=limit)
+    if page is None:
+        raise HTTPException(status_code=503, detail="The bundled asteroid class registry is unavailable.")
+    return page
 
 
 @router.get(

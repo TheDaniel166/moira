@@ -1,10 +1,10 @@
 # Generic Phenomena And Solar Conditions Backend Standard
 
-Version: 0.2
-Date: 2026-06-14
+Version: 0.3
+Date: 2026-11-26
 Status: implemented backend standard for P-GAP-04 REST admission
-Scope: generic planetary phenomena, proximity threshold events, and classical
-solar-condition truth
+Scope: generic planetary phenomena, nominal period ratios, proximity threshold
+events, and classical solar-condition truth
 
 This standard governs the generic phenomena and solar-condition surfaces that
 are public through the Python engine and candidates for P-GAP-04 REST
@@ -17,6 +17,7 @@ admission:
 - `moira.phenomena.greatest_elongation`
 - `moira.phenomena.perihelion`
 - `moira.phenomena.aphelion`
+- `moira.phenomena.resonance_with_truth`
 - `moira.phenomena.proximity_events_in_range`
 - `moira.phenomena.solar_condition_at`
 - `moira.phenomena.solar_condition_events_in_range`
@@ -34,7 +35,7 @@ families or backend standards.
 
 ## 1. Governing Objects
 
-P-GAP-04 has four distinct governing objects.
+P-GAP-04 has five distinct governing objects.
 
 ### Planet Phenomena Snapshot
 
@@ -94,6 +95,20 @@ Admitted event fields:
 - `datetime_utc`
 - `value`
 - `value_unit`
+
+### Nominal Orbital-Period Ratio
+
+`moira.phenomena.resonance_with_truth` compares the ordered pair's mean
+sidereal periods from `Body.SIDEREAL_PERIODS`. The table uses Earth days
+and identifies NASA Planetary Fact Sheets / J2000.0 as its source.
+`P1 / P2` is dimensionless and order-dependent.
+`1 / abs(1/P1 - 1/P2)` is a nominal synodic interval in Earth days
+and is symmetric under reversal.
+
+The Python receipt exposes source periods through its `_days` accessors.
+The legacy `_years` fields retain the same Earth-day values for compatibility.
+The nominal product is a fixed mean-period comparison. Actual event times
+and dynamical resonance require separate astronomical evidence.
 
 ### Proximity Threshold Event
 
@@ -177,6 +192,7 @@ prefixes:
 Stage 1 routes are limited to:
 
 - `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-period-ratio`
 - `POST /v1/phenomena/orbital-events`
 - `POST /v1/phenomena/proximity`
 - `POST /v1/solar-condition/instant`
@@ -185,6 +201,7 @@ Stage 1 routes are limited to:
 The split is intentional:
 
 - `/v1/phenomena/planet` is an instantaneous physical snapshot.
+- `/v1/phenomena/orbital-period-ratio` compares an ordered pair's mean periods.
 - `/v1/phenomena/orbital-events` is a bounded event search over admitted event
   kinds.
 - `/v1/phenomena/proximity` is a generic threshold-crossing search.
@@ -210,6 +227,11 @@ Orbital event search:
 - reject small bodies unless a separate small-body orbital event standard is
   admitted
 
+Nominal orbital-period ratio:
+
+- admit nonempty named bodies with distinct periods in `Body.SIDEREAL_PERIODS`
+- reject identical bodies or missing table periods through the engine
+
 Proximity events:
 
 - Stage 1 should admit major planetary bodies and luminaries supported by the
@@ -230,7 +252,8 @@ Solar condition:
 
 ## 4. Time And Search Bounds
 
-Every Stage 1 request uses `jd_ut`, matching the engine entrypoints.
+Ephemeris-backed requests use an instant or a bounded interval. The nominal
+period ratio takes only the ordered pair and uses the bundled table.
 
 Transport must validate:
 
@@ -279,7 +302,7 @@ Solar condition:
 
 ## 6. Provenance Requirements
 
-Every response must state:
+Ephemeris-backed responses must state:
 
 - `source_module`: `moira.phenomena`
 - `engine_entrypoint`
@@ -287,6 +310,10 @@ Every response must state:
 - `time_scale`: `UT_JD`
 - `event_taxonomy`
 - `stage_sequence`
+
+The nominal ratio response carries its ordered body names and source periods,
+`period_source`, `ratio_direction`, its nominal basis, and the absence of a
+kernel dependency.
 
 Planet snapshot provenance must state:
 
@@ -346,6 +373,8 @@ P-GAP-04 does not admit:
 
 Before REST admission, tests must cover:
 
+- nominal period units, ordered ratio, reciprocal reversal, and symmetric interval
+- kernel independence and invalid nominal pairs
 - planet phenomena instant route parity with `planet_phenomena_at`
 - orbital event route parity with `Moira.phenomena` or direct admitted engine
   calls
@@ -371,6 +400,7 @@ Before REST admission, tests must cover:
 P-GAP-04 is admitted through:
 
 - `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-period-ratio`
 - `POST /v1/phenomena/orbital-events`
 - `POST /v1/phenomena/proximity`
 - `POST /v1/solar-condition/instant`

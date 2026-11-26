@@ -19,6 +19,7 @@ from ..models.phase import (
     LunarOrientationResponse,
     PhaseAngleResponse,
     PhaseBodyRequest,
+    SynodicCycleResponse,
     SynodicPhaseRequest,
     SynodicPhaseResponse,
 )
@@ -57,13 +58,17 @@ def illuminated_fraction_route(
     return compute_illuminated_fraction(request)
 
 
-@router.post("/synodic", response_model=SynodicPhaseResponse, response_model_exclude_none=True)
+@router.post(
+    "/synodic",
+    response_model=SynodicPhaseResponse | SynodicCycleResponse,
+    response_model_exclude_none=True,
+)
 @with_engine_reader
 def synodic_phase_route(
     request: SynodicPhaseRequest,
     engine: Moira = Depends(get_engine),
-) -> SynodicPhaseResponse:
-    """Compute forward synodic ecliptic phase angle between two bodies."""
+) -> SynodicPhaseResponse | SynodicCycleResponse:
+    """Compute forward synodic phase with four-state or eight-phase classification."""
     return compute_synodic_phase(request)
 
 

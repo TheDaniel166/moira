@@ -339,6 +339,14 @@ Governing object:
 - Phase angle, illuminated fraction, elongation, angular diameter, and apparent
   magnitude for supported bodies.
 
+Eight-phase synodic cycle decision: `admit_now`. The public
+`moira.cycles.synodic_cycle_position` reducer owns apparent geocentric
+longitude sampling, the ordered longitude difference, the octant labels, and
+the waxing flag. Its existing result vessel carries the complete instantaneous
+product. A synchronous opt-in on the existing phase route uses the serving
+reader and leaves the four-state default intact. Existing cycle and phase
+fixtures govern transport verification.
+
 Evidence:
 
 - Engine module exists.

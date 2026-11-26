@@ -7,6 +7,14 @@ import math
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from moira.constants import Body
+from moira.orbits import (
+    ApsidalDirection,
+    ApsidalPassageStatus,
+    OrbitalCenter,
+    OrbitalFrame,
+    OrbitShape,
+    UndefinedElementReason,
+)
 
 from .common import REST_BATCH_MAX_ITEMS
 
@@ -56,34 +64,74 @@ class _OrbitBaseRequest(_StrictModel):
 
 
 class OrbitalElementsRequest(_OrbitBaseRequest):
-    pass
+    """Select the dynamical center and axes for one osculating state."""
+
+    center: OrbitalCenter = OrbitalCenter.SUN
+    frame: OrbitalFrame = OrbitalFrame.J2000_ECLIPTIC
 
 
 class DistanceExtremesRequest(_OrbitBaseRequest):
-    pass
+    """Select the center, direction and optional TDB search span."""
+
+    center: OrbitalCenter = OrbitalCenter.SUN
+    direction: ApsidalDirection = ApsidalDirection.NEXT
+    max_days: float | None = Field(
+        default=None,
+        strict=True,
+        gt=0,
+        allow_inf_nan=False,
+        description="Maximum search span in TDB days from the inclusive start.",
+    )
 
 
-class OrbitalElementsResponse(_StrictModel):
+class _CenterRelativeElementsResponse(_StrictModel):
+    """Osculating elements shared by the solar and lunar responses."""
+
     name: str
     epoch_jd: float
     semi_major_axis_au: float | None = None
     eccentricity: float
     inclination_deg: float
-    lon_ascending_node_deg: float
-    arg_perihelion_deg: float
+    lon_ascending_node_deg: float | None
     mean_anomaly_deg: float | None = None
     mean_motion_deg_per_day: float | None = None
     orbital_period_days: float | None = None
+
+
+class OrbitalElementsResponse(_CenterRelativeElementsResponse):
+    """Sun-centered osculating elements with heliocentric apsis names."""
+
+    arg_perihelion_deg: float | None
     perihelion_distance_au: float
     aphelion_distance_au: float | None = None
 
 
+class LunarOrbitalElementsResponse(_CenterRelativeElementsResponse):
+    """Earth-centered lunar elements with geocentric apsis names."""
+
+    arg_perigee_deg: float | None
+    perigee_distance_au: float
+    apogee_distance_au: float | None = None
+
+
 class DistanceExtremesResponse(_StrictModel):
+    """Sun-centered apsidal passages with legacy TT and AU fields."""
+
     name: str
-    perihelion_jd: float
-    perihelion_distance_au: float
-    aphelion_jd: float
-    aphelion_distance_au: float
+    perihelion_jd: float | None
+    perihelion_distance_au: float | None
+    aphelion_jd: float | None
+    aphelion_distance_au: float | None
+
+
+class LunarDistanceExtremesResponse(_StrictModel):
+    """Earth-centered lunar apsidal passages in TT and AU."""
+
+    name: str
+    perigee_jd: float | None
+    perigee_distance_au: float | None
+    apogee_jd: float | None
+    apogee_distance_au: float | None
 
 
 class OrbitRequestEchoResponse(_StrictModel):
@@ -175,7 +223,9 @@ class OrbitalStateSourceResponse(_StrictModel):
 
 
 class ApsidalPassageOutcomeResponse(_StrictModel):
-    status: str
+    """One passage outcome with clocks populated when the root is found."""
+
+    status: ApsidalPassageStatus
     epoch_tdb: float | None
     epoch_tt: float | None
     jd_ut: float | None
@@ -216,13 +266,24 @@ class OrbitalSingularityThresholdsResponse(_StrictModel):
     policy: str
 
 
+class UndefinedOrbitalElementResponse(_StrictModel):
+    """Allowlisted canonical element name and geometric reasons."""
+
+    field: str
+    reasons: tuple[UndefinedElementReason, ...]
+
+
 class OrbitalElementsProvenanceResponse(_StrictModel):
+    """Source, frame and conic receipt for the osculating state."""
+
     source_module: str = "moira.orbits"
     engine_entrypoint: str = "osculating_elements"
     reader_owner: str
-    center: str
-    frame: str
-    orientation: str = "fixed_J2000_ecliptic"
+    center: OrbitalCenter
+    frame: OrbitalFrame
+    orientation: str
+    shape: OrbitShape
+    undefined: list[UndefinedOrbitalElementResponse]
     element_type: str = "osculating"
     position_basis: str = "center_relative_state_vector"
     apparent_corrections: str = "not_applied"
@@ -284,11 +345,13 @@ class ApsidalPassagesProvenanceResponse(_StrictModel):
 
 
 class DistanceExtremesProvenanceResponse(_StrictModel):
+    """Search settings and individual outcomes from the strict reducer."""
+
     source_module: str = "moira.orbits"
     engine_entrypoint: str = "apsidal_passages"
     reader_owner: str
-    center: str = "SUN"
-    direction: str = "NEXT"
+    center: OrbitalCenter
+    direction: ApsidalDirection
     pericenter: ApsidalPassageOutcomeResponse
     apocenter: ApsidalPassageOutcomeResponse
     search: ApsidalPassagesProvenanceResponse
@@ -296,16 +359,20 @@ class DistanceExtremesProvenanceResponse(_StrictModel):
 
 
 class OrbitalElementsEnvelopeResponse(_StrictModel):
+    """Elements and provenance for the selected center and frame."""
+
     request: OrbitRequestEchoResponse
     time: OrbitTimeResponse
-    elements: OrbitalElementsResponse
+    elements: OrbitalElementsResponse | LunarOrbitalElementsResponse
     provenance: OrbitalElementsProvenanceResponse
 
 
 class DistanceExtremesEnvelopeResponse(_StrictModel):
+    """Passage convenience fields and the detailed search receipt."""
+
     request: OrbitRequestEchoResponse
     time: DistanceExtremesTimeResponse
-    distance_extremes: DistanceExtremesResponse
+    distance_extremes: DistanceExtremesResponse | LunarDistanceExtremesResponse
     provenance: DistanceExtremesProvenanceResponse
 
 

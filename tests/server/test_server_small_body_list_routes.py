@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 import pytest
@@ -157,6 +158,128 @@ def test_asteroid_list_route_rejects_invalid_limit(
     response = client_with_small_body_reader.get("/v1/asteroids/list?limit=501")
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    ("code", "total", "first_naif"),
+    [
+        (None, 11_250, 2_000_001),
+        ("MBA", 8_923, 2_000_001),
+        ("CEN", 214, 2_000_944),
+        ("TNO", 1_075, 2_015_760),
+        ("HYA", 0, None),
+    ],
+)
+def test_published_asteroid_class_counts(
+    client_with_small_body_reader: TestClient,
+    code: str | None,
+    total: int,
+    first_naif: int | None,
+) -> None:
+    """Match the bundled registry's published total and representative classes."""
+    params = {} if code is None else {"class_code": code}
+    response = client_with_small_body_reader.get("/v1/asteroids/classes", params=params)
+    assert response.status_code == 200, response.text
+    page = response.json()
+    assert page["class_code"] == code
+    assert page["offset"] == 0
+    assert page["limit"] == 100
+    assert page["total_available"] == total
+    assert page["next_offset"] == (100 if total > 100 else None)
+    assert len(page["bodies"]) == min(total, 100)
+    assert page["provenance"] == {
+        "classification_source": "JPL SBDB",
+        "registry": "moira.asteroids.asteroid_orbit_classes",
+        "ordering": "naif_id_ascending",
+        "availability_source": "loaded_reader_covered_bodies",
+    }
+    if first_naif is not None:
+        ids = [body["naif_id"] for body in page["bodies"]]
+        assert ids == sorted(set(ids))
+        assert ids[0] == first_naif
+        if code is not None:
+            assert {body["orbit_class"]["code"] for body in page["bodies"]} == {code}
+
+
+def test_published_asteroid_class_page_boundaries(
+    client_with_small_body_reader: TestClient,
+) -> None:
+    """Continue from the returned offset and stop at an exhausted catalog."""
+    first, last, exhausted, beyond = [
+        client_with_small_body_reader.get(
+            "/v1/asteroids/classes", params={"class_code": "IEO", "offset": offset, "limit": 1},
+        )
+        for offset in (0, 1, 2, 1000)
+    ]
+    for response in (first, last, exhausted, beyond):
+        assert response.status_code == 200, response.text
+        assert response.json()["total_available"] == 2
+    assert first.json()["bodies"][0]["naif_id"] == 2_163_693
+    assert first.json()["next_offset"] == last.json()["offset"] == 1
+    assert last.json()["bodies"][0]["naif_id"] == 2_594_913
+    assert last.json()["next_offset"] is None
+    for response in (exhausted, beyond):
+        assert response.json()["bodies"] == []
+        assert response.json()["next_offset"] is None
+
+
+def test_published_asteroid_class_membership_is_independent_of_installation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Keep the numbered-to-provisional TNO page fixed when kernel coverage changes."""
+    pages = []
+    for engine in (SimpleNamespace(), _FakeEngine({50_361_603})):
+        monkeypatch.setattr("moira_server.app.create_engine", lambda config: engine)
+        with TestClient(create_app(ServerConfig(docs_enabled=False))) as client:
+            response = client.get(
+                "/v1/asteroids/classes", params={"class_code": "TNO", "offset": 1047, "limit": 2},
+            )
+        assert response.status_code == 200, response.text
+        pages.append(response.json())
+
+    absent, present = pages
+    assert absent["total_available"] == 1075
+    assert absent["next_offset"] == 1049
+    numbered, provisional = absent["bodies"]
+    assert numbered["naif_id"] == 2_895_907
+    assert numbered["mpc_number"] == 895_907
+    assert numbered["loaded_kernel_available"] is False
+    assert provisional == {
+        "name": "2006 QH181",
+        "naif_id": 50_361_603,
+        "mpc_number": None,
+        "provisional_designation": "2006 QH181",
+        "naif_convention": "explicit_jpl_spk_id_for_provisional_designation",
+        "loaded_kernel_available": False,
+        "catalog_source": "ASTEROID_NAIF",
+        "orbit_class": {
+            "code": "TNO", "title": "TransNeptunian Object", "source": "JPL SBDB",
+        },
+    }
+    assert present["bodies"][1]["loaded_kernel_available"] is True
+    present["bodies"][1]["loaded_kernel_available"] = False
+    assert present == absent
+
+
+@pytest.mark.parametrize(
+    "params", [{"class_code": "unknown"}, {"offset": -1}, {"limit": 0}, {"limit": 501}],
+)
+def test_published_asteroid_class_page_rejects_invalid_selectors(
+    client_with_small_body_reader: TestClient, params: dict,
+) -> None:
+    """Reject unknown codes and invalid page bounds at the request boundary."""
+    response = client_with_small_body_reader.get("/v1/asteroids/classes", params=params)
+    assert response.status_code == 422, response.text
+
+
+def test_published_asteroid_class_page_reports_unavailable_registry(
+    client_with_small_body_reader: TestClient, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Signal a missing authority separately from an empty filtered page."""
+    monkeypatch.setattr("moira_server.services.asteroids.asteroid_orbit_classes", lambda: {})
+    response = client_with_small_body_reader.get("/v1/asteroids/classes")
+    assert response.status_code == 503, response.text
+    assert "bundled asteroid class registry is unavailable" in response.text
 
 
 @pytest.mark.parametrize("body", ["2006 qh181", " 2006 QH181 ", "50361603"])

@@ -198,7 +198,7 @@ class OrbitalResonance:
         (e.g., the 8:13 Rose of Venus) that emerge from the substrate.
     """
     ratio: float             # Exact P1 / P2
-    synodic_period: float    # 1 / abs(1/P1 - 1/P2)
+    synodic_period: float    # 1 / abs(1/P1 - 1/P2), in Earth days
     harmonic_ratio: str      # Best integer ratio (e.g. "8:13")
     near_integer: tuple[int, int]  # (numerator, denominator)
     error: float             # Deviation from perfect integer resonance
@@ -799,7 +799,11 @@ def find_closest_resonance(ratio: float, max_denominator: int = 50) -> tuple[int
 
 @dataclass(frozen=True, slots=True)
 class OrbitalResonanceComputationTruth:
-    """Explicit period-source and rational-approximation truth for orbital resonance."""
+    """Source periods and approximation policy for a nominal orbital ratio.
+
+    The legacy period fields ending in ``_years`` store Earth days. The
+    day-named accessors expose the same values with their units.
+    """
 
     body1: str
     body2: str
@@ -808,6 +812,16 @@ class OrbitalResonanceComputationTruth:
     period_source: str = "Body.SIDEREAL_PERIODS"
     max_denominator: int = 50
     approximation_method: str = "fractions.Fraction.limit_denominator"
+
+    @property
+    def body1_sidereal_period_days(self) -> float:
+        """Return the numerator body's table period in Earth days."""
+        return self.body1_sidereal_period_years
+
+    @property
+    def body2_sidereal_period_days(self) -> float:
+        """Return the denominator body's table period in Earth days."""
+        return self.body2_sidereal_period_years
 
 
 @dataclass(frozen=True, slots=True)
@@ -819,7 +833,7 @@ class OrbitalResonanceWithTruth:
 
 
 def resonance_with_truth(body1: str, body2: str) -> OrbitalResonanceWithTruth:
-    """Compute the orbital resonance and synodic cycle of two bodies with explicit computation truth."""
+    """Compute a nominal period ratio and Earth-day synodic interval with provenance."""
     p1 = Body.SIDEREAL_PERIODS.get(body1)
     p2 = Body.SIDEREAL_PERIODS.get(body2)
 

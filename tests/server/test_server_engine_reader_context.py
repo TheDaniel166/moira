@@ -24,6 +24,10 @@ pytestmark = pytest.mark.loopback
     ("path", "body"),
     [
         ("/v1/phase/synodic", {"body1": "Mars", "body2": "Venus", "jd_ut": 2451545.0}),
+        (
+            "/v1/phase/synodic",
+            {"body1": "Mars", "body2": "Venus", "jd_ut": 2451545.0, "phase_model": "eight_phase"},
+        ),
         ("/v1/phase/elongation", {"body": "Mars", "jd_ut": 2451545.0}),
         ("/v1/phase/apparent-magnitude", {"body": "Mars", "jd_ut": 2451545.0}),
         (

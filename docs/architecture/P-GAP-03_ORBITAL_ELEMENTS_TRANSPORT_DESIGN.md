@@ -1,14 +1,16 @@
 # P-GAP-03 Orbital Elements Transport Design
 
-Version: 0.4<br>
-Date: 2026-09-15<br>
-Status: Stage 2 distance-extremes adapter upgraded; broader orbital transport deferred
-Scope: bounded REST adaptation of strict Sun/J2000 planet elements and passages
+Version: 0.5<br>
+Date: 2026-11-26<br>
+Status: Strict elements and bounded apsidal variants admitted
+Scope: Bounded REST adaptation of strict osculating elements and apsidal passages
 
 This design follows
-`wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md`. The Python engine now
-has a broader strict API, but P-GAP-03 deliberately retains a narrow transport
-surface.
+`wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md`. Center, frame and
+passage-direction selection are `admit_now` as synchronous read-only transport
+over the existing `osculating_elements` and `apsidal_passages` engines.
+The serving reader owns the geometric state. Frozen Horizons element and
+passage fixtures and two-sided DE441 lunar radial checks govern verification.
 
 ---
 
@@ -23,16 +25,14 @@ The elements route is a Stage 1 adapter over:
 osculating_elements(
     body,
     jd_ut,
-    center=OrbitalCenter.SUN,
-    frame=OrbitalFrame.J2000_ECLIPTIC,
+    center=request.center,
+    frame=request.frame,
     reader=engine._reader,
 )
 ```
 
-The distance-extremes route remains an adapter over
-`distance_extremes_at(body, jd_ut, reader)`, which is now the planet-only
-compatibility layer over one strict `apsidal_passages` call with `center=SUN`
-and `direction=NEXT`.
+The distance-extremes route makes one strict `apsidal_passages` call with
+the request's center, direction, optional TDB-day bound, and serving reader.
 
 ---
 
@@ -44,25 +44,25 @@ Both requests retain:
 - `jd_ut: float`
 - extra fields forbidden
 
-`jd_ut` means UT1 Julian Day on the elements route. It is not UTC, TT, or TDB.
+`jd_ut` is a UT1 Julian Day on both routes. The engine resolves body identity
+and center eligibility against its admitted sources. `SUN` remains the
+default for planets and admitted small bodies. The Moon requires `EARTH`.
 
-Transport admission remains the nine historical planet names: Mercury through
-Pluto. Sun, Moon, EMB, asteroids, comets, calculated points, fixed stars, and
-unknown names are rejected by request validation or translated engine errors.
-The broader Python admission is intentionally not inferred into REST.
+The elements request accepts `J2000_ECLIPTIC` (default),
+`MEAN_ECLIPTIC_OF_DATE`, or `TRUE_ECLIPTIC_OF_DATE`. The frame router applies
+its TT model intervals.
 
-Reasons for the narrower boundary:
-
-- the existing response requires elliptic fields to be non-null;
-- the request has no center or frame field;
-- small-body release ownership needs a separate deployment design; and
-- open-conic and undefined-field transport needs an explicit schema version.
+Distance extrema accept `NEXT` (default) or `PREVIOUS` from the inclusive
+start epoch. `max_days` accepts a positive finite JSON number. Omitted or
+null bounds use 1.5 osculating periods for elliptic conics and the verified
+route interval otherwise. The engine bounds all searches by coverage and its
+evaluation budget.
 
 ---
 
 ## 3. Elements Response
 
-The existing `elements` field names remain compatible:
+Sun-centered results retain the existing `elements` field names:
 
 - `name`
 - `epoch_jd` (now explicitly TT)
@@ -70,6 +70,11 @@ The existing `elements` field names remain compatible:
 - ascending node, argument of perihelion, and mean anomaly
 - mean motion and orbital period
 - derived perihelion and aphelion distances
+
+Earth-centered lunar results call the argument and derived distances
+`arg_perigee_deg`, `perigee_distance_au`, and `apogee_distance_au`.
+Undefined fields are nullable and the receipt preserves their engine names
+and geometric reasons.
 
 The surrounding `time` block is upgraded to carry:
 
@@ -84,7 +89,7 @@ The surrounding `time` block is upgraded to carry:
 The elements provenance is allowlisted and path-free. It carries:
 
 - source module and strict engine entrypoint;
-- required Sun center and fixed J2000-ecliptic frame;
+- evaluated center, frame, orientation, conic shape, and undefined fields;
 - the complete gravity rule and primary PCK receipt;
 - exact frame construction and router branch;
 - every routed SPK leg, traversal sign, segment type, coverage interval,
@@ -98,23 +103,23 @@ No local kernel or manifest path may be serialized.
 
 ## 4. Distance-Extremes Stage 2 Migration
 
-The distance-extremes request, top-level result field names, and planet-only
-admission remain compatible. Its semantics and receipt are corrected:
+Both passage outcomes share one immutable reader snapshot, clock identity,
+gravity model, and route plan.
 
-- `DistanceExtremesResponse` remains the result vessel.
-- `perihelion_jd` and `aphelion_jd` are explicitly TT.
+- Sun-centered events use `perihelion_jd` and `aphelion_jd` at TT, with
+  corresponding AU distances. Earth-centered lunar events use `perigee_jd`
+  and `apogee_jd` with the same units.
 - `DistanceExtremesTimeResponse` uses the common UT1 input, TT output, TDB
   state-evaluation contract and complete conversion receipt.
-- the engine is invoked once so the two outcomes share one immutable reader
-  snapshot, clock identity, gravity model, and route plan.
-- provenance serializes the algorithm/version, both scale-explicit outcomes,
+- Provenance serializes the evaluated center and direction, algorithm version,
+  both scale-explicit outcomes,
   frozen route schedule and path-free source legs, segment use counts, seam
   witnesses, search constants/window, and total evaluation count.
 
-The transport does not add strict-core request fields. Center, direction, and
-automatic window policy remain fixed adapter choices; the Moon, EMB, comets,
-asteroids, previous passages, and explicit windows remain Python-only pending a
-separately versioned transport design.
+The default Sun/next search with an automatic window retains HTTP 422 when
+either outcome is unavailable. Completed Earth-centered, previous, or
+explicitly bounded searches return both engine statuses independently.
+Missing convenience epochs and distances are null.
 
 ---
 
@@ -145,8 +150,8 @@ is absent from the client response.
 `moira_server/services/orbits.py` owns adaptation only:
 
 - retrieve the already configured engine reader;
-- invoke the strict element or passage function with the route's fixed policy;
-- map the result into the existing element names;
+- invoke the strict element or passage function with the requested policy;
+- map the result into the center-specific field names;
 - serialize the new time and provenance blocks; and
 - leave kernel selection, body resolution, time conversion, state routing,
   gravity selection, frame construction, and conic extraction in the engine.
@@ -166,17 +171,19 @@ The transport gate requires:
 - complete path-free source, gravity, frame, time, and singularity receipts;
 - request validation and all Stage 1 orbital error translations;
 - redaction of paths and non-finite internal measurements;
-- proof that `/v1/orbits/distance-extremes` retained its bounded Stage 2
-  admission;
+- preserved Sun/J2000 defaults and exact legacy numeric fields;
+- selected lunar center, admitted frame branches and stable out-of-range
+  errors;
 - exact distance-extremes UT1/TT/TDB values and conversion receipt;
 - complete outcome, route, source-usage, seam, search-policy, and gravity
   provenance with no local paths;
-- one strict passage invocation and TT parity with the engine adapter; and
+- one strict passage invocation, including a partial outcome under an
+  explicit bound;
+- earlier and later lunar apsides with two-sided DE441 radial witnesses; and
 - stable translations for passage-unavailable and search-computation errors.
 
-The REST tests use deterministic engine fixtures. Primary astronomical parity
-is owned by the engine's offline JPL Horizons/NAIF/SOFA fixtures and isolated
-live Horizons drift audit, not reimplemented in the adapter test.
+The REST tests use deterministic fixtures and the installed DE441 reader.
+The offline JPL Horizons, NAIF and SOFA fixtures govern engine parity.
 
 ---
 
@@ -184,11 +191,7 @@ live Horizons drift audit, not reimplemented in the adapter test.
 
 Separate approval and versioned schemas are required for:
 
-- Moon and Earth-centered requests;
-- EMB, asteroids, and comets;
-- selectable centers or frames;
-- circular/equatorial undefined fields;
-- parabolic and hyperbolic results;
-- bulk/range/table routes;
-- datetime convenience input; and
-- selectable passage direction/window or non-planet passage transport.
+- additional centers, frames, and body identities beyond the strict reducer;
+- mean element tables, visual-binary elements, and apparent orbital elements;
+- bulk/range/table routes; and
+- datetime convenience input.

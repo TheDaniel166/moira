@@ -13,7 +13,7 @@ from typing import Any
 
 from moira import Moira
 from moira.aspects import find_aspects
-from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at
+from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at, asteroid_orbit_classes
 from moira.asteroid_families import (
     asteroid_family,
     asteroid_families,
@@ -26,10 +26,13 @@ from moira.centaurs import CENTAUR_NAMES
 from moira.classical_asteroids import CLASSICAL_NAMES
 from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.main_belt import MAIN_BELT_NAMES
+from moira.orbits import OrbitClassCode
 from moira.small_body_identity import AmbiguousSmallBodyNameError, SmallBodyFamily, SmallBodyIdentity, resolve_small_body_identity
 from moira.tno import TNO_NAMES
 
 from ..models.asteroids import (
+    AsteroidClassPageProvenanceResponse,
+    AsteroidClassPageResponse,
     AsteroidFamiliesInChartProvenanceResponse,
     AsteroidFamiliesInChartRequest,
     AsteroidFamiliesInChartResponse,
@@ -184,6 +187,42 @@ def lookup_asteroid_identity(engine: Moira, body: str) -> AsteroidIdentityRespon
         name,
         naif_id,
         loaded_kernel_available=naif_id in _covered_bodies(_get_small_body_reader(engine)),
+    )
+
+
+def list_published_asteroid_classes(
+    engine: Moira,
+    *,
+    class_code: OrbitClassCode | None,
+    offset: int,
+    limit: int,
+) -> AsteroidClassPageResponse | None:
+    """Page catalog identities before looking up reader availability."""
+    registry = asteroid_orbit_classes()
+    if not registry:
+        return None
+
+    matching_ids = sorted(
+        naif_id for naif_id, record in registry.items()
+        if class_code is None or record["code"] == class_code.value
+    )
+    covered = _covered_bodies(_get_small_body_reader(engine))
+    bodies = [
+        serialize_asteroid_identity(
+            _ASTEROID_NAME_BY_ID[naif_id], naif_id, loaded_kernel_available=naif_id in covered,
+        )
+        for naif_id in matching_ids[offset:offset + limit]
+    ]
+    total_available = len(matching_ids)
+    end_offset = offset + len(bodies)
+    return AsteroidClassPageResponse(
+        class_code=class_code,
+        offset=offset,
+        limit=limit,
+        next_offset=end_offset if end_offset < total_available else None,
+        total_available=total_available,
+        bodies=bodies,
+        provenance=AsteroidClassPageProvenanceResponse(),
     )
 
 

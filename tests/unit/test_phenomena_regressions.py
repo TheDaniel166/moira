@@ -224,6 +224,8 @@ def test_resonance_with_truth_exposes_period_and_approximation_truth() -> None:
     assert with_truth.truth.body2 == Body.EARTH
     assert with_truth.truth.body1_sidereal_period_years == pytest.approx(Body.SIDEREAL_PERIODS[Body.VENUS])
     assert with_truth.truth.body2_sidereal_period_years == pytest.approx(Body.SIDEREAL_PERIODS[Body.EARTH])
+    assert with_truth.truth.body1_sidereal_period_days == Body.SIDEREAL_PERIODS[Body.VENUS]
+    assert with_truth.truth.body2_sidereal_period_days == Body.SIDEREAL_PERIODS[Body.EARTH]
     assert with_truth.truth.period_source == "Body.SIDEREAL_PERIODS"
     assert with_truth.truth.max_denominator == 50
     assert with_truth.truth.approximation_method == "fractions.Fraction.limit_denominator"

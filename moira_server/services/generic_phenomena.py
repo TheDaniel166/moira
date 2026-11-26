@@ -19,6 +19,7 @@ from moira.phenomena import (
     perihelion,
     planet_phenomena_at,
     proximity_events_in_range,
+    resonance_with_truth,
     solar_condition_at,
     solar_condition_events_in_range,
 )
@@ -34,6 +35,8 @@ from ..models.generic_phenomena import (
     HeliocentricEventsRequest,
     HeliocentricEventsResponse,
     HeliocentricLongitudeCrossingRequest,
+    OrbitalPeriodRatioRequest,
+    OrbitalPeriodRatioResponse,
     OrbitalPhenomenaEventsEnvelopeResponse,
     OrbitalPhenomenaEventsRequest,
     PhenomenonEventResponse,
@@ -59,6 +62,21 @@ _ORBITAL_VALUE_UNITS = {
     "perihelion": "AU",
     "aphelion": "AU",
 }
+
+
+def compute_orbital_period_ratio(request: OrbitalPeriodRatioRequest) -> OrbitalPeriodRatioResponse:
+    """Expose the engine's nominal period comparison in its source units."""
+    comparison = resonance_with_truth(request.body1, request.body2)
+    truth = comparison.truth
+    return OrbitalPeriodRatioResponse(
+        body1=truth.body1,
+        body2=truth.body2,
+        body1_sidereal_period_days=truth.body1_sidereal_period_days,
+        body2_sidereal_period_days=truth.body2_sidereal_period_days,
+        mean_period_ratio=comparison.result.ratio,
+        synodic_interval_days=comparison.result.synodic_period,
+        period_source=truth.period_source,
+    )
 
 
 def compute_heliocentric_events(engine: Moira, request: HeliocentricEventsRequest) -> HeliocentricEventsResponse:

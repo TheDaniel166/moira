@@ -7,6 +7,7 @@ import math
 
 from moira import LunarObserver, Moira
 from moira.constants import Body
+from moira.cycles import synodic_cycle_position
 from moira.phase import (
     angular_diameter,
     apparent_magnitude,
@@ -32,6 +33,7 @@ from ..models.phase import (
     PhaseAngleResponse,
     PhaseBodyRequest,
     PhaseProvenanceResponse,
+    SynodicCycleResponse,
     SynodicPhaseRequest,
     SynodicPhaseResponse,
 )
@@ -221,7 +223,47 @@ def compute_illuminated_fraction(
     )
 
 
-def compute_synodic_phase(request: SynodicPhaseRequest) -> SynodicPhaseResponse:
+def _compute_synodic_cycle(request: SynodicPhaseRequest) -> SynodicCycleResponse:
+    """Serialize the cycle reducer's eight-phase result from the bound reader."""
+    cycle = synodic_cycle_position(request.body1, request.body2, request.jd_ut)
+    return SynodicCycleResponse(
+        body1=cycle.body1,
+        body2=cycle.body2,
+        jd_ut=cycle.jd_ut,
+        angle=_assert_finite_result("synodic_cycle_position.phase_angle", cycle.phase_angle),
+        state=cycle.phase if request.include_state else None,
+        angle_range=[0.0, 360.0],
+        state_policy="octant_labels_centered_on_45_degree_multiples",
+        is_waxing=cycle.is_waxing,
+        body1_longitude_deg=_assert_finite_result("synodic_cycle_position.lon1", cycle.lon1),
+        body2_longitude_deg=_assert_finite_result("synodic_cycle_position.lon2", cycle.lon2),
+        provenance=PhaseProvenanceResponse(
+            source_module="moira.cycles",
+            engine_entrypoint="synodic_cycle_position",
+            product="synodic",
+            requested_body1=request.body1,
+            requested_body2=request.body2,
+            jd_ut=request.jd_ut,
+            basis="forward_ecliptic_longitude_difference_body1_to_body2",
+            support_set=["bodies_resolvable_by_planet_at"],
+            kernel_required=True,
+            coordinate_frame="apparent_geocentric_ecliptic_longitude",
+            stage_sequence=[
+                "body_pair_validation",
+                "jd_ut_validation",
+                "apparent_planet_at_ecliptic_lookup",
+                "synodic_cycle_position_computation",
+                "synodic_cycle_response_serialization",
+            ],
+        ),
+    )
+
+
+def compute_synodic_phase(request: SynodicPhaseRequest) -> SynodicPhaseResponse | SynodicCycleResponse:
+    """Dispatch to the selected synodic reducer and preserve the legacy default."""
+    if request.phase_model == "eight_phase":
+        return _compute_synodic_cycle(request)
+
     angle = _assert_finite_result(
         "synodic_phase_angle",
         synodic_phase_angle(request.body1, request.body2, request.jd_ut),

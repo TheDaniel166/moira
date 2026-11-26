@@ -435,7 +435,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "generic-phenomena",
         "x-displayName": "Generic Phenomena",
-        "description": "Generic planet, solar condition, proximity, elongation, and crossing surfaces.",
+        "description": "Planet phenomena, nominal period ratios, solar conditions, and bounded events.",
         "x-family": "phenomena",
     },
     {
@@ -471,7 +471,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "asteroids (fast small-body)",
         "x-displayName": "Asteroids",
-        "description": "Fast asteroid position, bulk, subset, family, and chart-family surfaces.",
+        "description": "Asteroid positions, published orbit classes, subsets, and family surfaces.",
         "x-family": "catalogs",
     },
     {

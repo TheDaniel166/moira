@@ -1,13 +1,29 @@
 # P-GAP-04 Generic Phenomena And Solar Conditions Transport Design
 
-Version: 0.2
-Date: 2026-06-14
+Version: 0.3
+Date: 2026-11-26
 Status: implemented and admitted
-Scope: bounded REST admission plan for generic planetary phenomena, proximity
-threshold crossings, and classical solar-condition truth
+Scope: generic planetary phenomena, nominal period ratios, proximity threshold
+crossings, and classical solar-condition truth
 
 This design follows
 `wiki/02_standards/GENERIC_PHENOMENA_SOLAR_CONDITIONS_BACKEND_STANDARD.md`.
+
+### Nominal orbital-period ratio admission
+
+Decision `admit_after_minor_engine_work`. The public
+`moira.phenomena.resonance_with_truth` reducer already owns the ordered
+mean-period ratio and nominal synodic interval. Its authority is the bundled
+`Body.SIDEREAL_PERIODS` table in Earth days, documented in the repository as
+NASA Planetary Fact Sheets / J2000.0. The legacy receipt has two fields whose
+names say years even though they contain the table's day values. Add day-named
+accessors that preserve those existing fields and their values.
+
+After those accessors are verified, a synchronous, read-only calculation is
+admissible. The bounded request needs only an ordered pair with distinct
+periods in the table. The calculation has no epoch or kernel dependency.
+Verification uses the existing resonance regression tests, independent
+arithmetic at the admitted day values, reversed pairs, and invalid pairs.
 
 P-GAP-04 evaluates the facade/root surfaces:
 
@@ -36,6 +52,7 @@ Prefixes:
 Routes:
 
 - `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-period-ratio`
 - `POST /v1/phenomena/orbital-events`
 - `POST /v1/phenomena/proximity`
 - `POST /v1/solar-condition/instant`
@@ -44,6 +61,7 @@ Routes:
 Route naming doctrine:
 
 - `planet` means one instant's physical/photometric phenomena snapshot.
+- `orbital-period-ratio` compares two fixed mean sidereal periods in request order.
 - `orbital-events` means bounded search for admitted elongation/apside events.
 - `proximity` means angular threshold ingress/egress crossings.
 - `solar-condition` keeps classical cazimi/combust/under-sunbeams doctrine
@@ -52,6 +70,13 @@ Route naming doctrine:
 ---
 
 ## 2. Request Models
+
+`OrbitalPeriodRatioRequest`:
+
+- `body1`: nonempty numerator body name
+- `body2`: nonempty denominator body name
+- The engine requires distinct periods in `Body.SIDEREAL_PERIODS`.
+- Extra fields are rejected.
 
 `PlanetPhenomenaRequest`:
 
@@ -150,6 +175,12 @@ Validation:
 
 ## 3. Response Models
 
+`OrbitalPeriodRatioResponse` carries the ordered bodies and day-valued source
+periods, the dimensionless `mean_period_ratio` (`P1 / P2`), and the
+`synodic_interval_days` (`1 / abs(1/P1 - 1/P2)`). The response states
+`ratio_direction`, `period_source`, its nominal basis, and
+`kernel_required: false`.
+
 `PlanetPhenomenaResponse`:
 
 - `body`
@@ -220,6 +251,7 @@ Expected service file:
 
 Service functions:
 
+- `compute_orbital_period_ratio`
 - `compute_planet_phenomena`
 - `compute_orbital_phenomena_events`
 - `compute_proximity_events`
@@ -243,7 +275,7 @@ which engine function produced the result.
 
 ## 5. Provenance
 
-Shared provenance fields:
+Shared provenance fields for the ephemeris-backed routes:
 
 - `source_module`: `moira.phenomena`
 - `engine_entrypoint`
@@ -350,6 +382,9 @@ Gap ledger update:
 
 Focused server tests:
 
+- nominal period ratio and interval from the admitted day values
+- swapped bodies and reciprocal ratio, repeatability, and kernel independence
+- identical and unavailable period validation
 - successful planet phenomena instant route
 - planet phenomena parity with `planet_phenomena_at`
 - successful orbital events route for Mercury/Venus including elongation
@@ -374,7 +409,7 @@ Implementation verification:
 
 - `python -m py_compile` for new and touched server files
 - `python -m pytest tests/server/test_server_generic_phenomena_routes.py -q`
-- route registry audit confirming the five designed routes
+- route registry audit confirming the admitted routes
 
 No new astronomy-oracle validation is required for REST admission. The route
 tests prove adapter truth over existing engine functions.
@@ -409,12 +444,13 @@ P-GAP-04 is implemented and admitted.
 Admitted implementation surface:
 
 - `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-period-ratio`
 - `POST /v1/phenomena/orbital-events`
 - `POST /v1/phenomena/proximity`
 - `POST /v1/solar-condition/instant`
 - `POST /v1/solar-condition/events`
 
-Verification performed:
+Original admission verification:
 
 - `.venv\Scripts\python.exe -m py_compile moira_server\models\generic_phenomena.py moira_server\services\generic_phenomena.py moira_server\routers\generic_phenomena.py moira_server\app.py moira_server\models\__init__.py`
 - `.venv\Scripts\python.exe -m pytest tests/server/test_server_generic_phenomena_routes.py -q`
