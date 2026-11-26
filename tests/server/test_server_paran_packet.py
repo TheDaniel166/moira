@@ -185,6 +185,37 @@ def test_paran_search_policy_inventory_and_natal_contacts_are_explicit(
     assert invalid_tier.status_code == 422
 
 
+@pytest.mark.parametrize(("operation", "epoch"), [("search", "jd_day"), ("natal", "natal_jd")])
+def test_paran_selectors_preserve_physical_crossings(kernel_free_client, operation, epoch):
+    """Match pair orientation and axis filters against one unchanged inventory."""
+    path = f"/v1/parans/{operation}"
+    request = {
+        "bodies": ["Regulus", "Capella", "Sirius"], epoch: 2451544.5,
+        "lat": 51.5, "lon": -0.1, "orb_minutes": 60.0, "include_crossing_inventory": True,
+    }
+    response = kernel_free_client.post(path, json=request)
+    assert response.status_code == 200, response.text
+    base = response.json()
+    first = base["events"][0]
+    pair = {first["body1"], first["body2"]}
+    axis = first["axis_family"]
+    expected = [
+        event for event in base["events"]
+        if {event["body1"], event["body2"]} == pair and event["axis_family"] == axis
+    ]
+    for requested_pair in ([first["body1"], first["body2"]], [first["body2"], first["body1"]]):
+        selected = kernel_free_client.post(path, json={**request, "policy_selectors": {
+            "allowed_body_pairs": [requested_pair], "allowed_axis_families": [axis],
+        }})
+        assert selected.status_code == 200, selected.text
+        assert selected.json()["events"] == expected
+        assert selected.json()["crossing_inventory"] == base["crossing_inventory"]
+    invalid = kernel_free_client.post(path, json={**request, "policy_selectors": {
+        "allowed_body_pairs": [["Regulus", "Vega"]],
+    }})
+    assert invalid.status_code == 422
+
+
 def test_fixed_star_target_traverses_kernel_free_field_routes(
     kernel_free_client: TestClient,
 ) -> None:

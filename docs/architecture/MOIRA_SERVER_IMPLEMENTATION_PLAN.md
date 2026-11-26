@@ -12,6 +12,11 @@ families must continue to obey.
 
 Current implementation state:
 
+- Bounded eclipse, void-of-course, stellar visibility, Jupiter–Saturn, and
+  verified geocentric conjunction products carry explicit limits and outcomes. The
+  existing paran and visibility-event operations expose opt-in policy
+  selectors. [Bounded astronomical searches](BOUNDED_ASTRONOMICAL_SEARCHES_ADMISSION.md)
+
 - The generic phenomena family exposes a kernel-free nominal orbital-period
   ratio and synodic interval for an ordered pair. The response carries both
   Earth-day source periods and identifies the bundled period table.

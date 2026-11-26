@@ -131,6 +131,21 @@ def test_conjunction_range_rejects_solver_result_beyond_end(
     assert search(Body.SUN, Body.MOON, 0.0, 10.0, reader=object()) == []
 
 
+def test_geocentric_conjunction_range_keeps_solver_roots_less_than_two_days_apart(monkeypatch):
+    """Preserve both distinct roots admitted by the next-event reducer."""
+    def next_root(_body1, _body2, start, *, reader, max_days):
+        return next(
+            (phenomena.PhenomenonEvent("A-B", "Conjunction", root, 0.0)
+             for root in (101.0, 102.0) if start <= root <= start + max_days),
+            None,
+        )
+
+    monkeypatch.setattr(phenomena, "next_conjunction", next_root)
+    result = phenomena.conjunctions_in_range_with_truth("A", "B", 100.0, 104.0, reader=object())
+    assert [event.jd_ut for event in result.events] == [101.0, 102.0]
+    assert result.truth.post_event_advance_days == 1e-6
+
+
 def test_proximity_scan_rejects_opposition_wrap(monkeypatch) -> None:
     def wrapped_separation(_body1, _body2, jd_ut, _reader, apparent=False):
         raw = 170.0 + 20.0 * jd_ut

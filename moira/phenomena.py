@@ -43,6 +43,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from fractions import Fraction
 
+from ._geocentric_conjunctions import GeocentricConjunctionResolution
+
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .dignities_types import SOLAR_CONDITION_THRESHOLDS_DEG, SolarConditionTruth
 from .julian import (
@@ -891,6 +893,8 @@ def _polish_conjunction_root(
     reader: SpkReader,
     apparent: bool = True,
     neighborhood_steps: int = 64,
+    *,
+    bracket: tuple[float, float] | None = None,
 ) -> float:
     """Pick the best nearby representable JD around a conjunction root."""
     one_second = 1.0 / 86400.0
@@ -915,6 +919,8 @@ def _polish_conjunction_root(
         candidate = jd
         for _ in range(neighborhood_steps):
             candidate = math.nextafter(candidate, direction)
+            if bracket is not None and not bracket[0] <= candidate <= bracket[1]:
+                break
             center, symmetry = metrics(candidate)
             score = (
                 abs(center) + symmetry,
@@ -984,7 +990,7 @@ def next_conjunction(
     reader: SpkReader | None = None,
     max_days: float = 800.0,
 ) -> PhenomenonEvent | None:
-    """Find the next conjunction between two bodies."""
+    """Find the next conjunction using a sampled geometric and apparent search."""
     if reader is None:
         reader = get_reader()
     _require_finite("jd_start", jd_start)
@@ -992,8 +998,7 @@ def next_conjunction(
     if max_days == 0.0:
         return None
 
-    # Step size: 1/10th of Earth's year or 3 days, whichever is smaller
-    step = min(3.0, 36.0) 
+    step = 3.0
     search_end = jd_start + max_days
 
     jd = jd_start
@@ -1003,33 +1008,65 @@ def next_conjunction(
         jd_next = min(jd + step, search_end)
         next_sep = _conjunction_separation(body1, body2, jd_next, reader, apparent=False)
 
-        # Detect 0° crossing
-        if prev_sep * next_sep < 0 and abs(prev_sep) < 90.0:
-            # Phase I: Rapid Geometric Bisection
-            jd_geo = _bisect_conjunction(body1, body2, jd, jd_next, reader, apparent=False)
-            
-            # Phase II: High-Precision Apparent Refinement
-            # Bracket by 0.1 days around geometric hit
-            jd_exact = _bisect_conjunction(body1, body2, jd_geo - 0.1, jd_geo + 0.1, reader, apparent=True)
-            jd_exact = _polish_conjunction_root(body1, body2, jd_exact, reader, apparent=True)
-            if jd_exact < jd_start:
-                jd = jd_next
-                prev_sep = next_sep
-                continue
-            if jd_exact > search_end:
-                return None
-            
-            p1 = planet_at(body1, jd_exact, reader=reader, apparent=True)
-            return PhenomenonEvent(
-                body=f"{body1}-{body2}",
-                phenomenon="Conjunction",
-                jd_ut=jd_exact,
-                value=p1.longitude,
-            )
+        if max(abs(prev_sep), abs(next_sep)) < 90.0:
+            def apparent(epoch: float) -> float:
+                return _conjunction_separation(body1, body2, epoch, reader, apparent=True)
+
+            jd_exact = None
+            bracket = None
+            if prev_sep * next_sep < 0:
+                jd_geo = _bisect_conjunction(body1, body2, jd, jd_next, reader, apparent=False)
+                a, b = jd_geo - 0.1, jd_geo + 0.1
+                if apparent(a) * apparent(b) <= 0.0:
+                    candidate = _bisect_conjunction(body1, body2, a, b, reader, apparent=True)
+                    if jd <= candidate <= jd_next:
+                        jd_exact = candidate
+                        bracket = (a, b)
+            if bracket is None:
+                bracket = _apparent_conjunction_bracket(apparent, jd, jd_next)
+            if bracket is not None:
+                a, b = bracket
+                if jd_exact is None:
+                    jd_exact = _bisect_conjunction(body1, body2, a, b, reader, apparent=True)
+                jd_exact = _polish_conjunction_root(
+                    body1, body2, jd_exact, reader, bracket=(max(a, jd_start), min(b, search_end)),
+                )
+                if jd_start <= jd_exact <= search_end:
+                    position = planet_at(body1, jd_exact, reader=reader, apparent=True)
+                    return PhenomenonEvent(f"{body1}-{body2}", "Conjunction", jd_exact, position.longitude)
 
         jd = jd_next
         prev_sep = next_sep
 
+    return None
+
+
+def _apparent_conjunction_bracket(separation, lower, upper):
+    """Look for an apparent sign change, including across a sampled turning point."""
+    left, right = separation(lower), separation(upper)
+    if max(abs(left), abs(right)) >= 90.0:
+        return None
+    if left * right < 0.0:
+        return lower, upper
+    if left * right == 0.0:
+        return None
+
+    middle = (lower + upper) / 2.0
+    center = separation(middle)
+    if abs(center) >= 90.0:
+        return None
+    if left * center < 0.0:
+        return lower, middle
+
+    # A quadratic through the samples identifies cells worth minimizing.
+    # Only an actual opposite-sign apparent sample establishes a bracket.
+    sign = math.copysign(1.0, left)
+    curvature = 2.0 * sign * (left + right - 2.0 * center)
+    if curvature <= abs(right - left):
+        return None
+    extremum, value = _golden_section(separation, lower, upper, maximise=left < 0.0)
+    if left * value < 0.0 and abs(value) < 90.0:
+        return lower, extremum
     return None
 
 
@@ -1059,6 +1096,12 @@ class ConjunctionRangeWithTruth:
 
     events: tuple[PhenomenonEvent, ...]
     truth: ConjunctionRangeComputationTruth
+    resolution: GeocentricConjunctionResolution | None = None
+
+
+# The restart exceeds the sub-second representable-time polish neighborhood
+# without imposing a multi-day minimum spacing between distinct crossings.
+_GEOCENTRIC_CONJUNCTION_RESTART_DAYS = 1.0e-6
 
 
 def conjunctions_in_range(
@@ -1068,7 +1111,7 @@ def conjunctions_in_range(
     jd_end: float,
     reader: SpkReader | None = None,
 ) -> list[PhenomenonEvent]:
-    """Find all conjunctions between two bodies in a range."""
+    """Find sampled geocentric conjunctions between two bodies in a range."""
     _require_ordered_range(jd_start, jd_end)
     conjs = []
     jd = jd_start
@@ -1076,7 +1119,7 @@ def conjunctions_in_range(
         ev = next_conjunction(body1, body2, jd, reader=reader, max_days=(jd_end - jd))
         if ev and jd_start <= ev.jd_ut <= jd_end:
             conjs.append(ev)
-            jd = ev.jd_ut + 2.0 # skip past
+            jd = ev.jd_ut + _GEOCENTRIC_CONJUNCTION_RESTART_DAYS
         else:
             break
     return conjs
@@ -1088,19 +1131,27 @@ def conjunctions_in_range_with_truth(
     jd_start: float,
     jd_end: float,
     reader: SpkReader | None = None,
+    *,
+    verify_intervals: bool = False,
 ) -> ConjunctionRangeWithTruth:
-    """Find all geocentric conjunctions between two bodies in a range with explicit solver truth."""
-    events = tuple(
-        conjunctions_in_range(
-            body1,
-            body2,
-            jd_start,
-            jd_end,
-            reader=reader,
+    """Find geocentric conjunctions and optionally verify the interval coverage.
+
+    The verified mode isolates apparent longitude roots from serving-record
+    enclosures within the admitted clock/frame domain. The resolution
+    receipt distinguishes unresolved intervals from an empty search.
+    """
+    resolution = None
+    if verify_intervals:
+        from ._geocentric_conjunctions import search
+
+        events, resolution = search(body1, body2, jd_start, jd_end, reader)
+    else:
+        events = tuple(
+            conjunctions_in_range(body1, body2, jd_start, jd_end, reader=reader)
         )
-    )
     return ConjunctionRangeWithTruth(
         events=events,
+        resolution=resolution,
         truth=ConjunctionRangeComputationTruth(
             body1=body1,
             body2=body2,
@@ -1109,12 +1160,18 @@ def conjunctions_in_range_with_truth(
             reference_frame="apparent_geocentric_true_ecliptic_of_date",
             center="geocenter",
             coarse_step_days=3.0,
-            coarse_pass="geometric_ecliptic_longitude",
-            refinement_pass="apparent_ecliptic_longitude_bisection_and_subsecond_polish",
+            coarse_pass=(
+                "source_bound_apparent_longitude_intervals" if verify_intervals
+                else "sampled_geometric_and_apparent_ecliptic_longitude"
+            ),
+            refinement_pass=(
+                "interval_existence_uniqueness_and_point_bisection" if verify_intervals
+                else "apparent_ecliptic_longitude_bisection_and_subsecond_polish"
+            ),
             bisection_tolerance_days=1e-8,
             bisection_max_iterations=96,
             polish_neighborhood_steps=64,
-            post_event_advance_days=2.0,
+            post_event_advance_days=0.0 if verify_intervals else _GEOCENTRIC_CONJUNCTION_RESTART_DAYS,
             result_count=len(events),
         ),
     )

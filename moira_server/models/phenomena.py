@@ -1503,6 +1503,15 @@ class HeliacalPhasisResponse(_StrictModel):
     events: list[HeliacalPhasisKindResponse]
 
 
+class ParanPolicySelectors(_StrictModel):
+    """Additional allowlists intersected with the selected engine preset."""
+
+    allowed_body_pairs: list[tuple[str, str]] | None = Field(default=None, max_length=64)
+    allowed_axis_families: list[
+        Literal["horizon-horizon", "horizon-meridian", "meridian-meridian"]
+    ] | None = Field(default=None, max_length=3)
+
+
 class ParanSearchRequest(_StrictModel):
     bodies: list[str]
     jd_day: float
@@ -1511,6 +1520,7 @@ class ParanSearchRequest(_StrictModel):
     orb_minutes: float = 4.0
     include_crossing_inventory: bool = False
     policy_preset: str = "permissive"
+    policy_selectors: ParanPolicySelectors | None = None
     star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 
@@ -1536,6 +1546,7 @@ class NatalParanSearchRequest(_StrictModel):
     orb_minutes: float = 4.0
     include_crossing_inventory: bool = False
     policy_preset: str = "permissive"
+    policy_selectors: ParanPolicySelectors | None = None
     star_product: Literal["astrometric", "apparent"] = "astrometric"
 
 

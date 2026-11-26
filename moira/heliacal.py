@@ -168,6 +168,8 @@ __all__ = [
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
+    "lunar_visibility_event_with_observation_truth",
+    "LunarVisibilitySearchTruth",
     "visibility_tonight",
     "is_visible_tonight",
     "planet_heliacal_rising",
@@ -8099,6 +8101,7 @@ def visibility_event(
     heliacal_policy: HeliacalPolicy | None = None,
     visibility_policy: VisibilityPolicy | None = None,
     search_policy: VisibilitySearchPolicy | None = None,
+    _lunar_observation_windows: list[bool] | None = None,
 ) -> GeneralVisibilityEvent | None:
     """
     Generalized visibility-event search surface for all admitted target families.
@@ -8267,9 +8270,14 @@ def visibility_event(
             )
             for d in range(search_days):
                 details = _lunar_crescent_details_for_evening(jd_mid0 + d, lat, lon)
+                if _lunar_observation_windows is not None:
+                    _lunar_observation_windows.append(details is not None)
                 observable = _young_crescent_observable(details)
                 if observable and not previous_observable:
                     assert details is not None
+                    if _lunar_observation_windows is not None and details.best_time_jd_ut < jd_start:
+                        previous_observable = observable
+                        continue
                     return _general_event_from_lunar_crescent_details(
                         event_kind,
                         details,
@@ -8293,6 +8301,8 @@ def visibility_event(
         last_visible: LunarCrescentDetails | None = None
         for d in range(search_days):
             details = crescent_details(jd_mid0 + d, lat, lon)
+            if _lunar_observation_windows is not None:
+                _lunar_observation_windows.append(details is not None)
             if details is not None and details.best_time_jd_ut < jd_start:
                 # Never remember a sighting before the forward search start.
                 continue
@@ -9020,3 +9030,27 @@ def phasis_events_near(
         lookahead_days=PHASIS_LOOKAHEAD_DAYS,
         results=tuple(results),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class LunarVisibilitySearchTruth:
+    """Yallop event and counts of usable and absent geometric observation windows."""
+
+    event: GeneralVisibilityEvent | None
+    observed_days: int
+    unavailable_days: int
+
+
+def lunar_visibility_event_with_observation_truth(
+    kind: HeliacalEventKind, jd_start: float, lat: float, lon: float, *, search_days: int,
+) -> LunarVisibilitySearchTruth:
+    """Run the engine's bounded naked-eye Yallop scan with observation counts."""
+    windows: list[bool] = []
+    event = visibility_event(
+        Body.MOON, kind, jd_start, lat, lon,
+        visibility_policy=VisibilityPolicy(criterion_family=VisibilityCriterionFamily.YALLOP_LUNAR_CRESCENT),
+        search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+        _lunar_observation_windows=windows,
+    )
+    observed = sum(windows)
+    return LunarVisibilitySearchTruth(event, observed, len(windows) - observed)

@@ -98,7 +98,9 @@ from .planets import (
     sky_position_at,
 )
 from .nodes import true_node
-from .spk_reader import _SplitEpochUnsupported, get_reader, KernelReader, SpkReader
+from .spk_reader import (
+    _SplitEpochUnsupported, get_reader, KernelReader, MissingEphemerisKernelError, SpkReader,
+)
 from ._eclipse_phase_window import PhaseWindowUnresolved, _phase_crossing_in_window
 from ._eclipse_canon_window import _canon_ut_half_window
 from .phenomena import next_moon_phase
@@ -3517,6 +3519,8 @@ class EclipseCalculator:
         candidates_ut1: list[float],
         jd_start: float,
         jd_end: float,
+        *,
+        require_bounded_scan: bool = False,
     ) -> list[EclipseEvent]:
         """Refine native candidates from the same represented phase as search.
 
@@ -3536,8 +3540,14 @@ class EclipseCalculator:
                     self._reader,
                 )
             except PhaseWindowUnresolved:
+                if require_bounded_scan:
+                    raise
                 phase_jd = None
             if phase_jd is None:
+                if require_bounded_scan:
+                    raise PhaseWindowUnresolved(
+                        "A padded eclipse candidate has no resolved phase crossing."
+                    )
                 if family == "solar":
                     return self._solar_eclipses_in_range_python(jd_start, jd_end)
                 return self._lunar_eclipses_in_range_python(jd_start, jd_end)
@@ -3654,6 +3664,8 @@ class EclipseCalculator:
         jd_end: float,
         natal_positions: dict[str, float],
         orb: float = 1.0,
+        *,
+        require_bounded_scan: bool = False,
     ) -> list["EclipseHit"]:
         """Return every eclipse in [jd_start, jd_end] that falls within *orb*
         degrees of any natal position.
@@ -3673,6 +3685,10 @@ class EclipseCalculator:
         orb : float
             Maximum angular separation in degrees for a hit to be recorded.
             Default is 1.0°.
+        require_bounded_scan : bool
+            Require the padded native candidate scan and bounded refinement.
+            Missing scan coverage and unresolved phases raise instead of
+            falling back to repeated next-event searches beyond the range.
 
         Returns
         -------
@@ -3682,7 +3698,28 @@ class EclipseCalculator:
         """
         hits: list[EclipseHit] = []
 
-        for event in self.solar_eclipses_in_range(jd_start, jd_end):
+        if require_bounded_scan:
+            candidates = [
+                self._native_eclipse_syzygy_candidates(family, jd_start, jd_end)
+                for family in ("solar", "lunar")
+            ]
+            solar_candidates, lunar_candidates = candidates
+            if solar_candidates is None or lunar_candidates is None:
+                raise MissingEphemerisKernelError(
+                    "Bounded eclipse contacts require native scan coverage for the "
+                    "requested interval and its 35-day padding on both ends."
+                )
+            solar_events = self._eclipses_from_syzygy_candidates(
+                "solar", solar_candidates, jd_start, jd_end, require_bounded_scan=True,
+            )
+            lunar_events = self._eclipses_from_syzygy_candidates(
+                "lunar", lunar_candidates, jd_start, jd_end, require_bounded_scan=True,
+            )
+        else:
+            solar_events = self.solar_eclipses_in_range(jd_start, jd_end)
+            lunar_events = self.lunar_eclipses_in_range(jd_start, jd_end)
+
+        for event in solar_events:
             eclipse_lon = event.data.sun_longitude
             for name, natal_lon in natal_positions.items():
                 sep = _ecliptic_arc(eclipse_lon, natal_lon)
@@ -3696,7 +3733,7 @@ class EclipseCalculator:
                         orb=sep,
                     ))
 
-        for event in self.lunar_eclipses_in_range(jd_start, jd_end):
+        for event in lunar_events:
             moon_lon = event.data.moon_longitude
             sun_lon  = event.data.sun_longitude
             for name, natal_lon in natal_positions.items():

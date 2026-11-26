@@ -8,6 +8,19 @@ from moira import Moira
 
 from ..cache import ResponseLRUCache, cached_response
 from ..dependencies import get_engine
+from ..models.bounded_searches import (
+    EclipseSnapshotRequest, EclipseSnapshotResponse,
+    ExplicitVisibilityRequest,
+    GeocentricConjunctionsRequest, GeocentricConjunctionsResponse,
+    GreatConjunctionsRequest, GreatConjunctionsResponse,
+    MultiBodyVoidRequest, MultiBodyVoidResponse,
+    NatalEclipseContactsRequest, NatalEclipseContactsResponse,
+    StellarVisibilityCatalogueRequest, StellarVisibilityCatalogueResponse, VisibilityCriterionOutcome,
+)
+from ..services.bounded_searches import (
+    compute_eclipse_snapshot, compute_explicit_visibility, compute_geocentric_conjunctions, compute_great_conjunctions,
+    compute_multi_body_void, compute_natal_eclipse_contacts, compute_stellar_visibility_catalogue,
+)
 from ..models.phenomena import (
     AllLunarOccultationsRequest,
     CloseApproachRequest,
@@ -185,6 +198,46 @@ from ..services.phenomena import (
 
 
 router = APIRouter(prefix="/v1", tags=["phenomena"])
+
+
+@router.post("/eclipses/snapshot", response_model=EclipseSnapshotResponse)
+def eclipse_snapshot_route(
+    request: EclipseSnapshotRequest, engine: Moira = Depends(get_engine),
+) -> EclipseSnapshotResponse:
+    """Evaluate eclipse geometry at one supplied UT1 epoch."""
+    return compute_eclipse_snapshot(engine, request)
+
+
+@router.post("/eclipses/natal-contacts", response_model=NatalEclipseContactsResponse)
+def natal_eclipse_contacts_route(
+    request: NatalEclipseContactsRequest, engine: Moira = Depends(get_engine),
+) -> NatalEclipseContactsResponse:
+    """Match natal longitudes to solar and lunar eclipse maxima."""
+    return compute_natal_eclipse_contacts(engine, request)
+
+
+@router.post("/void-of-course/multi-body", response_model=MultiBodyVoidResponse)
+def multi_body_void_route(
+    request: MultiBodyVoidRequest, engine: Moira = Depends(get_engine),
+) -> MultiBodyVoidResponse:
+    """Search bounded void-of-course windows for selected movers."""
+    return compute_multi_body_void(engine, request)
+
+
+@router.post("/phenomena/great-conjunctions", response_model=GreatConjunctionsResponse)
+def great_conjunctions_route(
+    request: GreatConjunctionsRequest, engine: Moira = Depends(get_engine),
+) -> GreatConjunctionsResponse:
+    """Return a site-independent bounded Jupiter–Saturn roots sequence."""
+    return compute_great_conjunctions(engine, request)
+
+
+@router.post("/phenomena/geocentric-conjunctions", response_model=GeocentricConjunctionsResponse)
+def geocentric_conjunctions_route(
+    request: GeocentricConjunctionsRequest, engine: Moira = Depends(get_engine),
+) -> GeocentricConjunctionsResponse:
+    """Search for apparent geocentric longitude crossings with interval evidence."""
+    return compute_geocentric_conjunctions(engine, request)
 
 
 def _expensive_cache(request: Request) -> ResponseLRUCache | None:
@@ -770,13 +823,26 @@ def planet_heliacal_event_route(
     return serialize_planet_heliacal_event(event) if event is not None else None
 
 
-@router.post("/heliacal/visibility-event", response_model=GeneralVisibilityEventResponse | None)
+@router.post(
+    "/heliacal/visibility-event",
+    response_model=GeneralVisibilityEventResponse | VisibilityCriterionOutcome | None,
+)
 def general_visibility_event_route(
-    request: GeneralVisibilityEventRequest,
+    request: GeneralVisibilityEventRequest | ExplicitVisibilityRequest,
     engine: Moira = Depends(get_engine),
-) -> GeneralVisibilityEventResponse | None:
+) -> GeneralVisibilityEventResponse | VisibilityCriterionOutcome | None:
+    if isinstance(request, ExplicitVisibilityRequest):
+        return compute_explicit_visibility(engine, request)
     event = compute_general_visibility_event(engine, request)
     return serialize_general_visibility_event(event) if event is not None else None
+
+
+@router.post("/heliacal/stellar-catalogue", response_model=StellarVisibilityCatalogueResponse)
+def stellar_visibility_catalogue_route(
+    request: StellarVisibilityCatalogueRequest, engine: Moira = Depends(get_engine),
+) -> StellarVisibilityCatalogueResponse:
+    """Search a named subset of the fixed-star visibility catalogue."""
+    return compute_stellar_visibility_catalogue(engine, request)
 
 
 @router.post("/heliacal/phasis", response_model=HeliacalPhasisResponse)

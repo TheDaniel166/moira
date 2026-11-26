@@ -1461,6 +1461,8 @@ def great_conjunctions(
     jd_start: float,
     jd_end: float,
     reader: KernelReader | None = None,
+    *,
+    bracket_boundaries: bool = False,
 ) -> GreatConjunctionSeries:
     """
     Find all Jupiter–Saturn conjunctions in a date range.
@@ -1479,6 +1481,8 @@ def great_conjunctions(
     jd_start : search window start (JD UT)
     jd_end   : search window end (JD UT)
     reader   : optional SpkReader
+    bracket_boundaries : bracket both inclusive endpoints with one coarse
+        conjunction cell of padding. Coverage must include the bracket.
 
     Returns
     -------
@@ -1489,7 +1493,15 @@ def great_conjunctions(
     if reader is None:
         reader = get_reader()
 
-    raw = _conj_range(Body.JUPITER, Body.SATURN, jd_start, jd_end, reader=reader)
+    if bracket_boundaries:
+        raw = [
+            event for event in _conj_range(
+                Body.JUPITER, Body.SATURN, jd_start - 3.0, jd_end + 3.0, reader=reader,
+            )
+            if jd_start <= event.jd_ut <= jd_end
+        ]
+    else:
+        raw = _conj_range(Body.JUPITER, Body.SATURN, jd_start, jd_end, reader=reader)
 
     conjs: list[GreatConjunction] = []
     seen_elements: list[GreatMutationElement] = []

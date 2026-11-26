@@ -13,7 +13,7 @@ import importlib
 import json
 import math
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -1200,6 +1200,11 @@ def _build_heliacal_event(
     qualifying_elongation: float | None,
     qualifying_sun_altitude: float | None,
     event_jd_ut: float | None,
+    *,
+    observed_twilight_days: int | None = None,
+    unavailable_twilight_days: int | None = None,
+    transition_confirmed: bool | None = None,
+    visibility_run_open: bool | None = None,
 ) -> HeliacalEvent:
     """Assemble canonical HeliacalEvent vessel with truth/classification layers.
 
@@ -1237,6 +1242,10 @@ def _build_heliacal_event(
             qualifying_elongation=qualifying_elongation,
             qualifying_sun_altitude=qualifying_sun_altitude,
             event_jd_ut=event_jd_ut,
+            observed_twilight_days=observed_twilight_days,
+            unavailable_twilight_days=unavailable_twilight_days,
+            transition_confirmed=transition_confirmed,
+            visibility_run_open=visibility_run_open,
         ),
         classification=HeliacalEventClassification(
             event_kind=event_kind,
@@ -1645,6 +1654,7 @@ def heliacal_setting_event(
     setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
     disappearance_threshold = setting_elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
     last_visible: tuple[int, float, float] | None = None
+    observed_days = unavailable_days = 0
 
     for day_offset in range(search_days):
         jd_midnight = jd_mid0 + day_offset
@@ -1655,8 +1665,12 @@ def heliacal_setting_event(
 
         if se > 0.0 and abs_se >= setting_elongation_threshold:
             twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, False)
-            if twilight_jd is None or twilight_jd < jd_ut:
+            if twilight_jd is None:
+                unavailable_days += 1
                 continue
+            if twilight_jd < jd_ut:
+                continue
+            observed_days += 1
             star_alt = _star_altitude(
                 name, twilight_jd, latitude, longitude,
                 star_product=resolved_policy.heliacal.star_product,
@@ -1677,6 +1691,9 @@ def heliacal_setting_event(
                 last_elongation,
                 -resolved_arcus,
                 last_jd,
+                observed_twilight_days=observed_days,
+                unavailable_twilight_days=unavailable_days,
+                transition_confirmed=True,
             )
 
     return _build_heliacal_event(
@@ -1690,6 +1707,10 @@ def heliacal_setting_event(
         None,
         None,
         None,
+        observed_twilight_days=observed_days,
+        unavailable_twilight_days=unavailable_days,
+        transition_confirmed=False,
+        visibility_run_open=last_visible is not None,
     )
 
 
@@ -1799,6 +1820,7 @@ def last_morning_visibility_event(
     setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
     disappearance_threshold = setting_elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
     last_visible: tuple[int, float, float] | None = None
+    observed_days = unavailable_days = 0
 
     for day_offset in range(search_days):
         jd_midnight = jd_mid0 + day_offset
@@ -1810,9 +1832,11 @@ def last_morning_visibility_event(
         if se < 0.0 and abs_se >= setting_elongation_threshold:
             twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
             if twilight_jd is None:
+                unavailable_days += 1
                 continue
             if twilight_jd < jd_ut:
                 continue
+            observed_days += 1
             star_alt = _star_altitude(
                 name, twilight_jd, latitude, longitude,
                 star_product=resolved_policy.heliacal.star_product,
@@ -1833,6 +1857,9 @@ def last_morning_visibility_event(
                 last_elongation,
                 -resolved_arcus,
                 last_jd,
+                observed_twilight_days=observed_days,
+                unavailable_twilight_days=unavailable_days,
+                transition_confirmed=True,
             )
 
     return _build_heliacal_event(
@@ -1846,6 +1873,10 @@ def last_morning_visibility_event(
         last_visible[1] if last_visible is not None else None,
         -resolved_arcus if last_visible is not None else None,
         last_visible[2] if last_visible is not None else None,
+        observed_twilight_days=observed_days,
+        unavailable_twilight_days=unavailable_days,
+        transition_confirmed=False,
+        visibility_run_open=last_visible is not None,
     )
 
 
@@ -1878,6 +1909,7 @@ def heliacal_catalog_batch(
     names: list[str] | None = None,
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
+    retain_search_truth: bool = False,
 ) -> HeliacalBatchResult:
     """
     Run a fixed-star heliacal event search across the sovereign star catalog.
@@ -1920,6 +1952,8 @@ def heliacal_catalog_batch(
     search_days : Forward search window per star (days). Default 400.
     policy : Fixed-star computation policy. Defaults to
         ``DEFAULT_FIXED_STAR_POLICY``.
+    retain_search_truth : include an event receipt for every searched name,
+        including misses, and use the Python scans that produce those receipts.
     """
     if event_kind not in _HELIACAL_BATCH_EVENT_KINDS:
         raise ValueError(
@@ -1938,6 +1972,8 @@ def heliacal_catalog_batch(
         raise ValueError("search_days must be a positive integer")
 
     resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
+    if retain_search_truth:
+        resolved_policy = replace(resolved_policy, use_native_heliacal=False)
 
     all_records = _load_registry_records()
     if names is not None:
@@ -2101,6 +2137,7 @@ def heliacal_catalog_batch(
     not_found: list[str] = []
     skipped_latitude: list[str] = []
     skipped_magnitude: list[str] = []
+    search_truth: list[HeliacalEvent] = []
 
     for record in records:
         # Pre-filter 1: magnitude
@@ -2126,6 +2163,8 @@ def heliacal_catalog_batch(
             search_days=search_days,
             policy=resolved_policy,
         )
+        if retain_search_truth:
+            search_truth.append(event)
         if event.is_found:
             found.append(event)
         else:
@@ -2144,6 +2183,7 @@ def heliacal_catalog_batch(
         not_found=tuple(not_found),
         skipped_latitude=tuple(skipped_latitude),
         skipped_magnitude=tuple(skipped_magnitude),
+        search_truth=tuple(search_truth),
     )
 
 

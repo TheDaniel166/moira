@@ -246,7 +246,11 @@ class StarConditionNetworkProfile:
 # Heliacal (Tier 1 & 2)
 @dataclass(slots=True)
 class HeliacalEventTruth:
-    """Vessel: Immutable astronomical truth for a heliacal event."""
+    """Astronomical evidence for a heliacal event or bounded search.
+
+    The Python dusk and dawn-last scans record usable and unavailable
+    twilight, and distinguish a confirmed transition from an open run.
+    """
     event_kind: str
     star_name: str
     jd_start: float
@@ -258,6 +262,10 @@ class HeliacalEventTruth:
     qualifying_elongation: float | None
     qualifying_sun_altitude: float | None
     event_jd_ut: float | None
+    observed_twilight_days: int | None = None
+    unavailable_twilight_days: int | None = None
+    transition_confirmed: bool | None = None
+    visibility_run_open: bool | None = None
 
 @dataclass(slots=True)
 class HeliacalEventClassification:
@@ -307,6 +315,8 @@ class HeliacalBatchResult:
     and the ephemeris loop is skipped entirely.
 
     ``found`` is sorted ascending by ``jd_ut`` (earliest event first).
+    ``search_truth`` is populated on request for the Python scan and includes
+    a receipt for searched names with or without an event.
     """
 
     event_kind: str
@@ -319,6 +329,7 @@ class HeliacalBatchResult:
     not_found: tuple[str, ...]
     skipped_latitude: tuple[str, ...]
     skipped_magnitude: tuple[str, ...]
+    search_truth: tuple[HeliacalEvent, ...] = ()
 
     @property
     def total_catalog(self) -> int:

@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 603
-- Registered OpenAPI operations: 603 (GET 57, POST 546)
+- Registered OpenAPI paths: 609
+- Registered OpenAPI operations: 609 (GET 57, POST 552)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 599
+- Versioned `/v1` paths: 605
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -697,7 +697,8 @@ manifest pin is read from
 `MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256`. If the directory
 is not configured, only the physical routes return the standard HTTP 503
 `server_not_configured` envelope. The legacy assessment, tonight, and
-`/v1/heliacal/visibility-event` contracts are unchanged.
+`/v1/heliacal/visibility-event` contracts remain the ordinary visibility
+interface. See the [explicit bounded criteria](#bounded-astronomical-searches).
 
 `POST /v1/returns/relocated` selects a solar, lunar, or admitted planetary
 return kind, delegates to the canonical return solver, and casts the same exact
@@ -884,6 +885,27 @@ claim that every astrological tradition uses the same definition.
 | POST | `/v1/parans/field/contours` | `paran_field_contours_route` |
 | POST | `/v1/parans/field/paths` | `paran_field_paths_route` |
 | POST | `/v1/parans/field/structure` | `paran_field_structure_route` |
+| POST | `/v1/eclipses/natal-contacts` | `natal_eclipse_contacts_route` |
+| POST | `/v1/eclipses/snapshot` | `eclipse_snapshot_route` |
+| POST | `/v1/void-of-course/multi-body` | `multi_body_void_route` |
+| POST | `/v1/heliacal/stellar-catalogue` | `stellar_visibility_catalogue_route` |
+| POST | `/v1/phenomena/great-conjunctions` | `great_conjunctions_route` |
+| POST | `/v1/phenomena/geocentric-conjunctions` | `geocentric_conjunctions_route` |
+
+#### Bounded astronomical searches
+
+All Julian day inputs in this table use UT1.
+
+| Operation | Request and outcome |
+|---|---|
+| `POST /v1/eclipses/natal-contacts` | Send `jd_start_ut1`, `jd_end_ut1`, and up to 64 named `natal_longitudes_deg` in the tropical ecliptic frame. Use at most 3,660 days, an inclusive `orb_deg` from 0 to 180, and a `limit` from 1 to 1,024. Solar matches use the Sun, and lunar matches test the Moon before the opposite Sun. Maxima at both endpoints qualify. Results are chronological, then sorted by point name. The native scan needs 35 days of ephemeris padding on each end. The response distinguishes a completed empty scan, an unresolved phase, and unavailable scan coverage. |
+| `POST /v1/eclipses/snapshot` | Send `jd_ut1` for one instant. The response carries the solar, lunar, or no-eclipse status, true-of-date geocentric longitudes and geometry, angular radii, shadow radii, and the native clock binding. |
+| `POST /v1/void-of-course/multi-body` | Send a positive interval of up to 32 days, unique classical `bodies` from Sun through Saturn including the Moon, and `aspect_set` of `traditional` or `modern`. Both use major aspects. The modern set adds the outer planets as aspect targets. Rows stay in request order and retain complete unclipped windows that overlap the range. A failed mover carries its own status. |
+| `POST /v1/heliacal/visibility-event` | Omit `criterion` for the existing generic response. Choose `named_star_setting` with `heliacal_setting`, `named_star_dawn_last` with `last_morning_visibility`, or `yallop_lunar_crescent` with Moon `evening_first` or `morning_last`. The explicit result distinguishes an event, a bounded miss, an unavailable observation, and an unresolved scan. Use 1–400 search days and exact sovereign names for fixed stars. |
+| `POST /v1/heliacal/stellar-catalogue` | Send up to 12 exact, unique `names`, a stellar `criterion`, observer coordinates, and 1–400 `search_window_days`. `max_magnitude` filters the catalogue and `max_star_days` limits reserved work. Each name receives its own result, including latitude and magnitude rejection, resource or coverage unavailability, and work-limit status. |
+| `POST /v1/phenomena/great-conjunctions` | Send a positive interval of up to 100 Julian years for the Jupiter–Saturn roots. Both endpoints are included and require three days of source padding. Empty intervals return an empty root array. Set `include_zodiac` to request a parallel sign and element projection. |
+| `POST /v1/phenomena/geocentric-conjunctions` | Send `body1`, `body2`, `jd_start_ut1`, and `jd_end_ut1` for a positive interval of up to 32 days. Choose two distinct bodies from the Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, and Pluto. The 1900–2100 clock/frame domain and the serving Type 2 kernel must cover the interval and its boundary witnesses. Each root carries its represented UT1 epoch, the first body's apparent tropical longitude, a crossing bracket, signed endpoint offsets, and the relative rate interval for `body1 − body2`. Represented roots at either endpoint qualify. Source hashes and measured work accompany the receipt. `complete` with empty roots is a proved empty window. `unresolved` retains unproved intervals alongside any proved roots. Coverage and work-budget failures return separate 422 categories. |
+| `POST /v1/parans/search` and `POST /v1/parans/natal` | Opt into `policy_selectors.allowed_body_pairs` or `policy_selectors.allowed_axis_families`. Pairs are unordered and must name distinct requested bodies. Axis families are `horizon-horizon`, `horizon-meridian`, and `meridian-meridian`. Selectors intersect the preset and leave the physical crossing inventory intact. |
 
 Solar-eclipse footprint/cartography, every occultation route, and Sade Sati
 window searches use a process-local 64-entry response LRU. A key includes the
@@ -4268,6 +4290,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/eclipses/lunar/previous` | phenomena | `previous_lunar_eclipse_route_v1_eclipses_lunar_previous_post` |
 | `POST` | `/v1/eclipses/lunar/shadow-candidate` | eclipse diagnostics | `lunar_shadow_candidate_route_v1_eclipses_lunar_shadow_candidate_post` |
 | `POST` | `/v1/eclipses/lunar/visibility` | phenomena | `lunar_eclipse_visibility_route_v1_eclipses_lunar_visibility_post` |
+| `POST` | `/v1/eclipses/natal-contacts` | phenomena | `natal_eclipse_contacts_route_v1_eclipses_natal_contacts_post` |
+| `POST` | `/v1/eclipses/snapshot` | phenomena | `eclipse_snapshot_route_v1_eclipses_snapshot_post` |
 | `POST` | `/v1/eclipses/solar/bounded-evidence` | eclipse diagnostics | `solar_bounded_evidence_route_v1_eclipses_solar_bounded_evidence_post` |
 | `POST` | `/v1/eclipses/solar/cartography` | phenomena | `solar_eclipse_cartography_route_v1_eclipses_solar_cartography_post` |
 | `POST` | `/v1/eclipses/solar/central-cap-diagnostic` | eclipse diagnostics | `clipped_central_boundary_route_v1_eclipses_solar_central_cap_diagnostic_post` |
@@ -4363,6 +4387,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
 | `POST` | `/v1/heliacal/phasis` | phenomena | `heliacal_phasis_route_v1_heliacal_phasis_post` |
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
+| `POST` | `/v1/heliacal/stellar-catalogue` | phenomena | `stellar_visibility_catalogue_route_v1_heliacal_stellar_catalogue_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
 | `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
 | `POST` | `/v1/hellenistic/circumambulations` | hellenistic-systems | `circumambulations_route_v1_hellenistic_circumambulations_post` |
@@ -4555,6 +4580,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/phase/illuminated-fraction` | phase | `illuminated_fraction_route_v1_phase_illuminated_fraction_post` |
 | `POST` | `/v1/phase/lunar-orientation` | phase | `lunar_orientation_route_v1_phase_lunar_orientation_post` |
 | `POST` | `/v1/phase/synodic` | phase | `synodic_phase_route_v1_phase_synodic_post` |
+| `POST` | `/v1/phenomena/geocentric-conjunctions` | phenomena | `geocentric_conjunctions_route_v1_phenomena_geocentric_conjunctions_post` |
+| `POST` | `/v1/phenomena/great-conjunctions` | phenomena | `great_conjunctions_route_v1_phenomena_great_conjunctions_post` |
 | `POST` | `/v1/phenomena/heliocentric-events` | generic-phenomena | `heliocentric_events_route_v1_phenomena_heliocentric_events_post` |
 | `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
 | `POST` | `/v1/phenomena/orbital-period-ratio` | generic-phenomena | `orbital_period_ratio_route_v1_phenomena_orbital_period_ratio_post` |
@@ -4723,6 +4750,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/visibility/tonight` | visibility | `visibility_tonight_route_v1_visibility_tonight_post` |
 | `POST` | `/v1/visibility/twilight-sky-brightness` | visibility | `twilight_sky_brightness_route_v1_visibility_twilight_sky_brightness_post` |
 | `POST` | `/v1/void-of-course/is-active` | phenomena | `void_of_course_state_route_v1_void_of_course_is_active_post` |
+| `POST` | `/v1/void-of-course/multi-body` | phenomena | `multi_body_void_route_v1_void_of_course_multi_body_post` |
 | `POST` | `/v1/void-of-course/next` | phenomena | `next_void_of_course_route_v1_void_of_course_next_post` |
 | `POST` | `/v1/void-of-course/range` | phenomena | `void_of_course_range_route_v1_void_of_course_range_post` |
 | `POST` | `/v1/void-of-course/window` | phenomena | `void_of_course_window_route_v1_void_of_course_window_post` |

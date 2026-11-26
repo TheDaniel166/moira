@@ -1111,7 +1111,7 @@ def void_periods_all_planets(
             seen_starts: set[float] = set()
 
             window = _build_body_void_window(body, jd_start, reader, modern)
-            if window.jd_voc_end >= jd_start:
+            if window.jd_voc_end >= jd_start and window.jd_voc_start < jd_end:
                 body_windows.append(window)
                 seen_starts.add(round(window.jd_voc_start, 6))
 

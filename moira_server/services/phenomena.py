@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 from moira import Body, Moira
 from moira.asteroids import ASTEROID_NAIF
@@ -32,6 +33,7 @@ from moira.occultations import (
 )
 from moira.parans import (
     Paran,
+    ParanPolicy,
     analyze_paran_field,
     analyze_paran_field_structure,
     consolidate_paran_contours,
@@ -1096,6 +1098,33 @@ def compute_heliacal_phasis(engine: Moira, request: HeliacalPhasisRequest):
         )
 
 
+def _resolve_paran_search_policy(request: ParanSearchRequest | NatalParanSearchRequest) -> ParanPolicy:
+    """Constrain selection without altering the crossing inventory or preset."""
+    policy = paran_policy_preset(request.policy_preset)
+    selectors = request.policy_selectors
+    if selectors is None:
+        return policy
+    if len(request.bodies) > 32:
+        raise ValueError("Paran policy selectors support at most 32 input bodies.")
+    pairs = selectors.allowed_body_pairs
+    normalized_pairs = None
+    if pairs is not None:
+        admitted = set(request.bodies)
+        if any(left == right or left not in admitted or right not in admitted for left, right in pairs):
+            raise ValueError("Each allowed paran pair must name two distinct requested bodies.")
+        normalized_pairs = frozenset(tuple(sorted(pair)) for pair in pairs)
+        if len(normalized_pairs) != len(pairs):
+            raise ValueError("Allowed paran pairs must be unique regardless of orientation.")
+    axes = selectors.allowed_axis_families
+    if axes is not None and len(set(axes)) != len(axes):
+        raise ValueError("Allowed paran axis families must be unique.")
+    return replace(
+        policy,
+        allowed_body_pairs=normalized_pairs,
+        allowed_axis_families=frozenset(axes) if axes is not None else None,
+    )
+
+
 def compute_parans(engine: Moira, request: ParanSearchRequest):
     _require_finite(request.jd_day, "jd_day")
     _validate_lat_lon(request.lat, request.lon)
@@ -1108,7 +1137,7 @@ def compute_parans(engine: Moira, request: ParanSearchRequest):
             request.lat,
             request.lon,
             orb_minutes=request.orb_minutes,
-            policy=paran_policy_preset(request.policy_preset),
+            policy=_resolve_paran_search_policy(request),
             star_product=request.star_product,
         )
 
@@ -1125,7 +1154,7 @@ def compute_parans_with_inventory(engine: Moira, request: ParanSearchRequest):
             request.lat,
             request.lon,
             orb_minutes=request.orb_minutes,
-            policy=paran_policy_preset(request.policy_preset),
+            policy=_resolve_paran_search_policy(request),
             star_product=request.star_product,
         )
 
@@ -1142,7 +1171,7 @@ def compute_natal_parans(engine: Moira, request: NatalParanSearchRequest):
             request.lat,
             request.lon,
             orb_minutes=request.orb_minutes,
-            policy=paran_policy_preset(request.policy_preset),
+            policy=_resolve_paran_search_policy(request),
             star_product=request.star_product,
         )
 
@@ -1159,7 +1188,7 @@ def compute_natal_parans_with_inventory(engine: Moira, request: NatalParanSearch
             request.lat,
             request.lon,
             orb_minutes=request.orb_minutes,
-            policy=paran_policy_preset(request.policy_preset),
+            policy=_resolve_paran_search_policy(request),
             star_product=request.star_product,
         )
 

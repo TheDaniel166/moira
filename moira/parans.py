@@ -484,6 +484,8 @@ class ParanPolicy:
                               classified as a named fixed star.
     allowed_named_stars     : optional allow-list for star bodies by name.
                               Non-star bodies are unaffected.
+    allowed_body_pairs      : optional allow-list of unordered named body pairs.
+    allowed_axis_families   : optional allow-list of normalized axis families.
     """
 
     allow_same_event_family: bool = True
@@ -491,6 +493,8 @@ class ParanPolicy:
     allowed_body_families: frozenset[str] | None = None
     include_stars: bool = True
     allowed_named_stars: frozenset[str] | None = None
+    allowed_body_pairs: frozenset[tuple[str, str]] | None = None
+    allowed_axis_families: frozenset[str] | None = None
 
 
 DEFAULT_PARAN_POLICY = ParanPolicy()
@@ -925,6 +929,12 @@ def _policy_allows_paran(paran: "Paran", policy: ParanPolicy) -> bool:
         return False
     if policy.allowed_body_families is not None and signature.body_family not in policy.allowed_body_families:
         return False
+    if policy.allowed_axis_families is not None and signature.axis_family not in policy.allowed_axis_families:
+        return False
+    if policy.allowed_body_pairs is not None:
+        body_pair = (paran.body1, paran.body2)
+        if body_pair not in policy.allowed_body_pairs and body_pair[::-1] not in policy.allowed_body_pairs:
+            return False
 
     star_bodies = [
         crossing.body

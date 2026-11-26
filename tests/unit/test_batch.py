@@ -674,6 +674,16 @@ def test_void_periods_all_planets_isolates_per_body_failures(monkeypatch) -> Non
     assert results[1].windows[0].moving_body == "Ceres"
 
 
+def test_void_periods_all_planets_excludes_a_first_window_starting_at_range_end(monkeypatch):
+    """The first sign may contain a void period wholly after the requested range."""
+    window = batch_module.BodyVoidWindow("Mars", "Aries", "Taurus", 105.0, 112.0, None, 168.0)
+    monkeypatch.setattr(batch_module, "_build_body_void_window", lambda *args: window)
+    monkeypatch.setattr(batch_module, "_body_next_sign_ingress", lambda *args: window.jd_voc_end)
+    result = batch_module.void_periods_all_planets(100.0, 105.0, bodies=["Mars"], reader=object())
+    assert result[0].ok
+    assert result[0].windows == ()
+
+
 def test_natal_aspect_movers_cover_planets_lunar_points_and_asteroids() -> None:
     from moira.asteroids import ASTEROID_NAIF
     from moira.constants import Body

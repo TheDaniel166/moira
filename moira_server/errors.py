@@ -45,6 +45,7 @@ from .config import ServerConfigurationError
 from .eclipse_diagnostic_errors import EclipseDiagnosticCoverageError
 from .services.planetary_moons import PlanetaryMoonsCoverageError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
+from moira._geocentric_conjunctions import GeocentricConjunctionBudgetError
 from moira.gochara_windows import GocharaWindowBudgetError, GocharaWindowDomainError, GocharaWindowUnresolvedError
 from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
 from moira.muhurta_search import MuhurtaResourceError, MuhurtaCoverageError
@@ -59,6 +60,10 @@ from moira.kalachakra import (
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class BoundedSearchCoverageError(ValueError):
+    """Safely report unavailable ephemeris coverage for a bounded product."""
 
 
 def _error_body(
@@ -735,6 +740,23 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=422, content=_error_body(
             error_code="eclipse_ephemeris_coverage_unavailable", message=str(exc),
             category="ephemeris_coverage", request_id=getattr(request.state, "request_id", str(uuid4())),
+        ))
+
+    @app.exception_handler(BoundedSearchCoverageError)
+    async def handle_bounded_search_coverage(request: Request, exc: BoundedSearchCoverageError) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="bounded_search_coverage_unavailable", message=str(exc),
+            category="ephemeris_coverage", request_id=getattr(request.state, "request_id", str(uuid4())),
+        ))
+
+    @app.exception_handler(GeocentricConjunctionBudgetError)
+    async def handle_geocentric_conjunction_budget(
+        request: Request, exc: GeocentricConjunctionBudgetError,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_error_body(
+            error_code="geocentric_conjunction_budget_exceeded", message=str(exc), category="search_budget",
+            request_id=getattr(request.state, "request_id", None),
+            details={"limit_kind": exc.limit_kind, "limit": exc.limit, "count": exc.count, "stage": exc.stage},
         ))
 
     @app.exception_handler(PlanetaryMoonsCoverageError)
