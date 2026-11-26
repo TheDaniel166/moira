@@ -6,7 +6,7 @@ resulting quadratic is the projected limb. A spherical target centered on
 that plane projects to a circle of radius tan(apparent angular radius).
 """
 
-from math import asin, atan2, cos, degrees, hypot, radians, sin, sqrt, tan, ulp
+from math import asin, atan2, cos, degrees, hypot, inf, nextafter, radians, sin, sqrt, tan, ulp
 from typing import Literal
 
 from .constants import J2000, JULIAN_CENTURY
@@ -91,19 +91,24 @@ def _limb_distance(x: float, y: float, a: float, b: float) -> float:
     return (-distance if inside else distance) * a
 
 
-def disk_overlap(
+def disk_contact_margins(
     planet: Vec3,
     pole: Vec3,
     planet_radii: tuple[float, float],
     target: Vec3,
     target_radius: float,
-) -> DiskOverlap:
-    """Classify a target sphere against an oblate planet in the same sky."""
+) -> tuple[float, float]:
+    """Return signed external and internal contact margins on the tangent plane."""
     equatorial, polar = planet_radii
     target_angle = asin(target_radius / vec_norm(target))
     planet_bound = asin(equatorial / vec_norm(planet))
-    if angle_between(planet, target) > planet_bound + target_angle + _CONTACT_TOL:
-        return "clear"
+    separation = angle_between(planet, target)
+    radius = tan(target_angle)
+    if separation > planet_bound + target_angle + _CONTACT_TOL:
+        # Outside the bounding sphere, this positive lower bound avoids
+        # projecting a spheroid that may be behind the tangent plane.
+        margin = max(separation - planet_bound - target_angle, nextafter(_CONTACT_TOL, inf))
+        return margin, margin + 2.0 * radius
 
     sight = vec_unit(target)
     east, north = _sky_axes(sight)
@@ -134,9 +139,27 @@ def disk_overlap(
     cr, sr = cos(rotation), sin(rotation)
     limb = _limb_distance(center_x * sr - center_y * cr,
                           center_x * cr + center_y * sr, major, minor)
-    radius = tan(target_angle)
-    if abs(abs(limb) - radius) <= _CONTACT_TOL:
+    return limb - radius, limb + radius
+
+
+def classify_disk_margins(margins: tuple[float, float]) -> DiskOverlap:
+    """Apply the nominal finite-disk classification to signed contact margins."""
+
+    outer, inner = margins
+    if min(abs(outer), abs(inner)) <= _CONTACT_TOL:
         return "contact"
-    if limb > radius:
+    if outer > 0.0:
         return "clear"
-    return "contained" if limb < -radius else "partial"
+    return "contained" if inner < 0.0 else "partial"
+
+
+def disk_overlap(
+    planet: Vec3,
+    pole: Vec3,
+    planet_radii: tuple[float, float],
+    target: Vec3,
+    target_radius: float,
+) -> DiskOverlap:
+    """Classify a target sphere against an oblate planet in the same sky."""
+
+    return classify_disk_margins(disk_contact_margins(planet, pole, planet_radii, target, target_radius))

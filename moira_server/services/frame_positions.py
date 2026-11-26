@@ -13,7 +13,7 @@ from moira.julian import (
     utc_to_ut1,
 )
 from moira.light_cone import RECEIVED_LIGHT_BODIES, ReceivedLightPosition
-from moira.planetocentric import VALID_OBSERVER_BODIES, PlanetocentricData
+from moira.planetocentric import VALID_OBSERVER_BODIES, PlanetocentricWithTruth, all_planetocentric_at_with_truth
 from moira.planets import HeliocentricData
 from moira.ssb import SSB_BODIES, SSBPosition
 
@@ -38,6 +38,7 @@ from ..models.frame_positions import (
     FrameSSBRequest,
     FrameSSBResponse,
 )
+from ._shared import require_engine_reader
 
 
 _STAGE_SEQUENCE = [
@@ -158,7 +159,8 @@ def _serialize_heliocentric(position: HeliocentricData) -> FrameHeliocentricPosi
     )
 
 
-def _serialize_planetocentric(position: PlanetocentricData) -> FramePlanetocentricPositionResponse:
+def _serialize_planetocentric(reduced: PlanetocentricWithTruth) -> FramePlanetocentricPositionResponse:
+    position = reduced.result
     return FramePlanetocentricPositionResponse(
         observer=position.observer,
         name=position.name,
@@ -174,6 +176,7 @@ def _serialize_planetocentric(position: PlanetocentricData) -> FramePlanetocentr
         center=position.observer,
         frame=_FRAME,
         product_kind="geometric_planetocentric_position",
+        reduction=reduced.truth,
     )
 
 
@@ -263,7 +266,10 @@ def compute_frame_planetocentric(engine: Moira, request: FramePlanetocentricRequ
         _require_membership(request.bodies, VALID_OBSERVER_BODIES, label="planetocentric target")
         if request.observer in request.bodies:
             raise ValueError("planetocentric target bodies must not include the observer")
-    result = engine.planetocentric(request.observer, request.dt, bodies=request.bodies)
+    time = _time_response(request.dt)
+    result = all_planetocentric_at_with_truth(
+        request.observer, time.jd_ut, bodies=request.bodies, reader=require_engine_reader(engine),
+    )
     positions = {name: _serialize_planetocentric(position) for name, position in result.items()}
     frame = _frame_response(
         center=request.observer,
@@ -276,13 +282,13 @@ def compute_frame_planetocentric(engine: Moira, request: FramePlanetocentricRequ
     return FramePlanetocentricResponse(
         positions=positions,
         request=_request_echo(request.dt, request.bodies, observer=request.observer),
-        time=_time_response(request.dt),
+        time=time,
         frame=frame,
         bounds=_bounds_response(len(positions)),
         validation=_validation_response(),
         provenance=_provenance_response(
             source_module="moira.planetocentric",
-            engine_entrypoint="all_planetocentric_at",
+            engine_entrypoint="all_planetocentric_at_with_truth",
             center=frame.center,
             correction_model=frame.correction_model,
             light_time_corrected=frame.light_time_corrected,

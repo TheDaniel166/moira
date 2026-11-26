@@ -43,6 +43,7 @@ from moira import (
 
 from .config import ServerConfigurationError
 from .eclipse_diagnostic_errors import EclipseDiagnosticCoverageError
+from .services.planetary_moons import PlanetaryMoonsCoverageError
 from moira.gochara_dated import GocharaResourceError, GocharaCoverageError
 from moira.gochara_windows import GocharaWindowBudgetError, GocharaWindowDomainError, GocharaWindowUnresolvedError
 from moira.sayanadi_dated import SayanadiResourceError, SayanadiCoverageError
@@ -735,6 +736,21 @@ def register_exception_handlers(app: FastAPI) -> None:
             error_code="eclipse_ephemeris_coverage_unavailable", message=str(exc),
             category="ephemeris_coverage", request_id=getattr(request.state, "request_id", str(uuid4())),
         ))
+
+    @app.exception_handler(PlanetaryMoonsCoverageError)
+    async def handle_planetary_moons_coverage(
+        request: Request,
+        exc: PlanetaryMoonsCoverageError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content=_error_body(
+                error_code="planetary_moons_epoch_out_of_coverage",
+                message=str(exc),
+                category="ephemeris_coverage",
+                request_id=getattr(request.state, "request_id", str(uuid4())),
+            ),
+        )
 
     @app.exception_handler(ValueError)
     async def handle_value_error(request: Request, exc: ValueError) -> JSONResponse:

@@ -146,8 +146,18 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         system: str | None = None,
         policy: Any | None = None,
         include_boundary_geometry: bool = False,
+        *,
+        sun_longitude: float | None = None,
+        sun_declination: float | None = None,
+        ayanamsa_offset: float | None = None,
     ):
-        """Calculate house cusps for a time and geographic location."""
+        """Calculate dated house cusps with optional degree-valued solar anchors and zodiac offset.
+
+        Solar longitude is geocentric tropical, and solar declination is
+        apparent geocentric of date. The engine derives an omitted solar
+        value when the selected system needs it and applies any supplied
+        ayanamsa offset to the zodiac labels.
+        """
         facade = _facade_module()
         jd = facade.jd_from_datetime(dt)
         jd_ut1 = facade.utc_to_ut1(jd)
@@ -158,6 +168,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             longitude,
             house_system,
             policy=policy,
+            sun_longitude=sun_longitude,
+            sun_declination=sun_declination,
+            ayanamsa_offset=ayanamsa_offset,
             include_boundary_geometry=include_boundary_geometry,
         )
 

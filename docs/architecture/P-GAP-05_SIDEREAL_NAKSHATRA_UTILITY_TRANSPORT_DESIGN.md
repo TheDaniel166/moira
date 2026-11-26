@@ -9,6 +9,9 @@ ayanamsa, and Nakshatra lookup primitives
 This design follows
 `wiki/02_standards/SIDEREAL_NAKSHATRA_UTILITY_BACKEND_STANDARD.md`.
 
+The later [REST capability expansion](../../wiki/02_services/REST_API_REFERENCE.md#capability-parity-routes)
+admits per-request user-defined ayanamsas. The original Stage 1 scope is recorded below.
+
 P-GAP-05 evaluates the root/facade surfaces:
 
 - `list_ayanamsa_systems`

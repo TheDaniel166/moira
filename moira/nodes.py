@@ -42,7 +42,7 @@ __all__ = [
 from dataclasses import dataclass, field
 
 from .constants import DEG2RAD, RAD2DEG, sign_of
-from .julian import centuries_from_j2000, ut_to_tt
+from .julian import _require_representable_time_jd, centuries_from_j2000, ut_to_tt
 from ._ephemeris_time import _bind_ephemeris_time, _ut1_to_ephemeris_tt
 from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .nutation_2000a import _fundamental_args
@@ -184,7 +184,9 @@ class TrueLilithWithTruth:
 # Mean Node — IERS 2003 lunar fundamental argument
 # ---------------------------------------------------------------------------
 
-def mean_node(jd_ut: float, *, nutation: bool = True) -> NodeData:
+def mean_node(
+    jd_ut: float, *, nutation: bool = True, jd_tt: float | None = None,
+) -> NodeData:
     """
     Compute the mean ascending node of the Moon from the IERS 2003
     fundamental argument Ω.
@@ -204,6 +206,9 @@ def mean_node(jd_ut: float, *, nutation: bool = True) -> NodeData:
         nutation: If ``True`` (default), add IAU 2000A nutation in longitude
             to express the mean orbital node in the true equinox of date.
             If ``False``, return the raw mean-equinox-of-date argument.
+        jd_tt: Optional TT Julian day for the same instant. When supplied, it
+            governs the orbital argument and the nutation correction.
+            Otherwise TT is derived from UT1 by the default time model.
 
     Returns:
         NodeData vessel with name="Mean Node", tropical longitude in degrees
@@ -212,13 +217,16 @@ def mean_node(jd_ut: float, *, nutation: bool = True) -> NodeData:
         nutation even when ``nutation=True``.
 
     Raises:
-        No exceptions under normal operation; propagates any exception raised
-        by ut_to_tt() or centuries_from_j2000() on invalid input.
+        ValueError: An epoch is outside the representable time domain.
 
     Side effects:
         None.
     """
-    jd_tt = ut_to_tt(jd_ut)
+    if jd_tt is None:
+        jd_tt = ut_to_tt(jd_ut)
+    else:
+        _require_representable_time_jd("jd_ut", jd_ut)
+        _require_representable_time_jd("jd_tt", jd_tt)
     T = centuries_from_j2000(jd_tt)
 
     # IERS Conventions (2003), Eq. 5.43 / SOFA-ERFA faom03. Reuse Moira's

@@ -59,7 +59,7 @@ def test_ayanamsa_systems_route_matches_engine_registry(client: TestClient) -> N
     )
     assert body["systems"][0]["supported_modes"] == ["true", "mean"]
     assert body["provenance"]["registry_owner"] == "moira.sidereal.Ayanamsa"
-    assert body["provenance"]["user_defined_ayanamsa"] == "not_admitted"
+    assert body["provenance"]["user_defined_ayanamsa"] == "admitted_per_request"
 
 
 def test_ayanamsa_value_route_matches_engine(client: TestClient) -> None:

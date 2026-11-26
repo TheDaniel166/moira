@@ -21,16 +21,112 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 576
-- Registered OpenAPI operations: 576 (GET 52, POST 524)
+- Registered OpenAPI paths: 601
+- Registered OpenAPI operations: 601 (GET 56, POST 545)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 572
+- Versioned `/v1` paths: 597
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
 <!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
+
+### Capability parity routes
+
+| Method and route | Contract |
+|---|---|
+| `POST /v1/chart/sidereal` | A timezone-aware chart instant, selected bodies and optional nodes, and a named or typed ayanamsa. Returns tropical and sidereal longitudes with the applied offset and computation truth. |
+| `POST /v1/houses/armc` | Static cusps and angles from supplied ARMC, true obliquity, and latitude. Accepts fallback policy, zodiac offset, solar inputs, and optional boundary geometry. |
+| `POST /v1/houses`, `POST /v1/houses/reduction` | Dated cusps and angles with optional solar longitude, solar declination, and zodiac offset. [Dated house anchors](#dated-house-anchors) |
+| `POST /v1/patterns/from-longitudes` | Caller-supplied ecliptic longitudes with the existing pattern policy. Limited to 16 supplied points and 500,000 candidate template assignments. |
+| `POST /v1/midpoints/tree`, `POST /v1/midpoints/activations` | Supplied natal longitudes and a focus or activating point. Supports 360°, 90°, 45°, and 22.5° dials. |
+| `GET /v1/small-bodies/identity` | Exact named or family-qualified asteroid/comet identity. A shared name returns HTTP 409 with typed alternatives. The dedicated asteroid identity route also provides the published JPL SBDB orbit class when available. |
+| `POST /v1/stars/search` | At explicit TT, search by ecliptic longitude and orb or by the inclusive visible-magnitude threshold. Separate result limit and pre-limit match count. |
+| `POST /v1/time/convert`, `POST /v1/time/delta-t` | Explicit civil/UTC JD conversion with [astronomical calendar input](#astronomical-calendar-input), UTC to UT1 or TT, and TT to or from UT1 and TDB. ΔT returns the active UT1 estimate, a decimal-year component breakdown, or the model's decimal-year distribution. |
+| `POST /v1/time/sidereal` | Mean or apparent sidereal time for Greenwich or a supplied local longitude, with explicit UT1 and TT Julian days. [Request and provenance](#sidereal-time) |
+| `POST /v1/coordinates/transform` | Ecliptic and equatorial rotations at a supplied obliquity, and a geometric horizontal inverse at a supplied sidereal meridian. [Supplied-coordinate transforms](#supplied-coordinate-transforms) |
+| `POST /v1/positions/time-series` | Sample one body's geocentric ecliptic state at up to 512 UT1 Julian days. Preserves caller order and repeats. |
+| `POST /v1/rise-set/availability` | A 24-hour geometric horizon classification with extrema and the sampled or analytic method. |
+| `POST /v1/nodes/lunar/next-crossing` | Next true-ecliptic lunar latitude crossing in the selected ascending or descending direction. The Western electional lunar-direction route also returns adjacent and nearest crossings. |
+| `POST /v1/lunar-phases/prenatal-syzygy` | Prior New or Full Moon at a supplied UT1 epoch. The natal discovery lunar-context route provides the chart-backed composition. |
+| `POST /v1/phenomena/heliocentric-events` | Bounded Sun-centered next conjunction, conjunction range, or fixed-longitude crossing. Valid searches without a solved event return `no_event`. |
+| `POST /v1/returns/series` | Full, half, and lifetime longitude-crossing series for the Sun, Moon, and supported planets. Uses station subdivisions and a start-exclusive, end-inclusive UT1 range. The natal, target, and evaluated event longitudes remain distinct. |
+| `POST /v1/planetary-moons/events` | Nominal finite-disk windows or the next event in a bounded TT interval, using the same kernels and reception geometry as the snapshot. |
+
+The capability map records the owning Python callable, the reviewed request variants, and each route's test witness. [Machine-readable capability map](../../docs/architecture/rest-capability-map.json) · [Planetary moon setup and examples](../../docs/PLANETARY_MOONS.md)
+
+#### Astronomical calendar input
+
+`POST /v1/time/convert` accepts `calendar` when `source_scale` is
+`civil_utc` and `target_scale` is `UTC`.
+
+```json
+{
+  "source_scale": "civil_utc",
+  "target_scale": "UTC",
+  "calendar": {"year": 0, "month": 2, "day": 29, "hour": 12}
+}
+```
+
+The calendar is proleptic Gregorian throughout and uses astronomical year
+numbering. Year `0` is 1 BCE, and year `-1` is 2 BCE. The structured input
+admits integer years from −100,000 to 100,000 inclusive. Supply integer
+`year`, `month`, and `day`. The UTC clock fields `hour`, `minute`,
+`second`, and `microsecond` default to zero. Seconds range from 0 to 59.
+Invalid dates or a calendar supplied together with `dt` or `jd` return 422.
+
+The example returns `jd: 1721119.0` with model `UTC_coded_civil_JD`. For the
+inverse, send that `jd` with `source_scale: "UTC"` and
+`target_scale: "civil_utc"` to receive `calendar_utc`. Round-trip clock
+precision follows binary64 Julian-day spacing. The offset-aware `dt`
+variant accepts an ISO datetime for the same forward conversion.
+
+#### Sidereal time
+
+`POST /v1/time/sidereal` is kernel-free. Supply `jd_ut1` and `jd_tt` as
+numeric Julian days for the same instant. Choose `mode` as `mean` or
+`apparent` and `reference` as `greenwich` or `local`. The Greenwich
+request uses longitude zero. The local request requires
+`longitude_deg_east` in the inclusive range −180° to 180°.
+
+The response echoes the request and returns `sidereal_time_deg` in
+`[0, 360)`. The `provenance` contains both supplied epochs, the evaluated
+longitude, Greenwich mean sidereal time, and the equation of the equinoxes.
+The mean reduction uses IAU 2006 Earth rotation from UT1 and equinox
+precession from TT. Apparent mode adds the engine's TT-based equation of the
+equinoxes, including IAU 2000A nutation and its existing complementary-term
+approximation. Mean mode reports an equation of the equinoxes of zero.
+
+#### Supplied-coordinate transforms
+
+`POST /v1/coordinates/transform` evaluates one direction from caller-supplied
+angles in degrees. Select the request with the `transform` field.
+
+| Transform | Input fields |
+|---|---|
+| `ecliptic_to_equatorial` | `ecliptic_longitude_deg`, `ecliptic_latitude_deg`, `obliquity_deg` |
+| `equatorial_to_ecliptic` | `right_ascension_deg`, `declination_deg`, `obliquity_deg` |
+| `horizontal_to_equatorial` | `azimuth_deg`, `altitude_deg`, `local_sidereal_time_deg`, `observer_latitude_deg` |
+
+The ecliptic/equatorial variants rotate about the caller's common equinox
+at the same epoch. Supply obliquity in `[0, 180]` degrees. The horizontal
+variant uses geometric altitude, azimuth measured clockwise from north,
+north-positive geographic latitude, and the supplied LST. At an exact
+geographic pole, LST fixes the reference meridian for azimuth.
+
+Latitude, declination, and altitude range from −90° to 90°. Circular angles
+are normalized to `[0, 360)`. The response carries the transform, frame
+identities, and both sets of coordinates. The horizontal response also
+carries west-positive hour angle in `[0, 360)` when defined.
+
+An undefined ecliptic longitude or right ascension is `null` at its pole.
+At a celestial pole, the horizontal inverse also returns `null` for hour
+angle. A unit-vector projection at or below `1e-14` is treated as polar.
+Source longitude or right ascension may be omitted at source latitude
+or declination ±90°. At altitude ±90°, the inverse accepts omitted or
+`null` azimuth and reports it as `null` regardless of the supplied value.
+Omitting these angles elsewhere returns HTTP 422.
 
 Seven [source-qualified hypothetical routes](../02_standards/HYPOTHETICAL_MODELS.md)
 are available under `/v1/hypothetical`: catalog, supplied and geometric
@@ -298,8 +394,12 @@ exact paths, methods, and tags in this checkout, see the
 |---|---|---|
 | POST | `/v1/chart` | `chart_route` |
 | POST | `/v1/chart/reduction` | `chart_reduction_route` |
+| POST | `/v1/chart/relocated` | `natal_relocation_route` |
 | POST | `/v1/houses` | `houses_route` |
 | POST | `/v1/houses/reduction` | `houses_reduction_route` |
+| POST | `/v1/houses/armc` | `houses_from_armc_route` |
+| POST | `/v1/houses/compare` | `house_comparison_route` |
+| POST | `/v1/houses/placements/compare` | `house_placement_comparison_route` |
 | POST | `/v1/houses/dynamics` | `house_dynamics_route` |
 | POST | `/v1/houses/dynamics/armc` | `house_dynamics_from_armc_route` |
 | POST | `/v1/houses/dynamics/analytical` | `analytical_house_dynamics_route` |
@@ -315,6 +415,85 @@ exact paths, methods, and tags in this checkout, see the
 | POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
 | POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
 | POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
+
+### Dated House Anchors
+
+`POST /v1/houses` and `POST /v1/houses/reduction` accept the same optional
+degree-valued inputs as `POST /v1/houses/armc`. The dated routes derive
+apparent ARMC and true obliquity from the supplied instant and location.
+
+| Field | Engine use |
+|---|---|
+| `sun_longitude` | Geocentric tropical ecliptic longitude of the Sun for Sunshine and Solar Sign. |
+| `sun_declination` | Apparent geocentric solar declination of date for Makransky Sunshine. |
+| `ayanamsa_offset` | Offset subtracted from tropical longitude labels. Whole Sign and Solar Sign sectors are selected in the resulting zodiac, including a Whole Sign polar fallback. |
+
+Values must be finite JSON numbers. Omission or `null` lets the dated
+engine resolve any required solar input through the serving ephemeris.
+The applied zodiac offset defaults to zero. ARMC and equatorial boundary
+vectors retain their physical frame. With `include_boundary_geometry`,
+the result reports the offset as `boundary_geometry.zodiac_offset_deg`.
+Both dated routes use the same calculation and fallback policy.
+
+### Natal Chart Relocation
+
+`POST /v1/chart/relocated` accepts one natal `dt` as an ISO 8601 datetime with
+an explicit UTC offset. Supply `source_latitude`, `source_longitude`,
+`relocated_latitude`, and `relocated_longitude` in degrees, north and east
+positive. `source_house_system` defaults to Placidus. When
+`relocated_house_system` is omitted or null, the destination uses the source's
+requested system. Both sites use the same optional `house_policy`, with each
+figure reporting its own effective system and fallback. `bodies` can select
+up to 16 supported bodies. Omission uses the engine's standard planet set.
+The true and mean lunar nodes and apogees are always included.
+
+The server builds `source_chart` once with its serving ephemeris reader.
+`relocated_chart` carries identical `jd_ut` (UT1), `jd_tt` (TT), apparent
+geocentric planet positions, and node records. It recalculates houses and
+angles for the destination at that same instant. The day/night field follows
+the engine's local chart context, which defaults to day when the Sun is absent.
+`relocation_truth` records the UTC instant, the engine entry points, and the
+verified epoch and celestial snapshot agreement.
+
+### Static House Comparison
+
+`POST /v1/houses/compare` evaluates `left_system` and `right_system` with one
+apparent `armc`, true `obliquity`, and north-positive geographic `latitude`,
+all in degrees. Both figures use the same optional policy, tropical solar
+longitude, apparent solar declination, zodiac offset, and boundary geometry
+selection as `/v1/houses/armc`. The comparison requires no ephemeris reader.
+
+`left` and `right` contain both house figures with their requested and
+effective system, fallback reason, and applied policy. `cusp_deltas` contains
+12 circular differences in house order, right minus left in `(-180, 180]`
+degrees. The `systems_agree` flag compares effective systems. A fallback can
+therefore give equal cusps while `fallback_differs` is true. `families_differ`
+reports the engine's classification comparison. If either figure is refused
+by its policy or lacks a required solar input, the comparison returns 422
+with the side identified.
+
+### Static House Placement Comparison
+
+`POST /v1/houses/placements/compare` takes the shared geometry, system pair
+and policy of `/v1/houses/compare` plus a `points` object with 1 to 128
+caller-named ecliptic longitudes. Names are nonempty trimmed strings of up to
+128 characters. Supply finite numeric degrees in the returned cusp zodiac.
+With an `ayanamsa_offset`, supply point longitudes already in that zodiac.
+The solar input for computing a Solar Sign figure remains tropical.
+
+The response returns the `left` and `right` house figures once, the
+`zodiac_offset_deg` used to label their cusps, and a `placements` object keyed
+by the submitted point names. Each point includes the longitude normalized into
+`[0, 360)` and uses 0° when wraparound rounds to 360°. Each side reports the
+house number, opening cusp longitude, and
+`exact_on_cusp` on each side. `all_agree` compares the assigned house
+numbers. `angularity_agrees` compares the engine's angular, succedent, or
+cadent categories.
+
+House membership uses half-open intervals. A shared cusp between a zero-width
+house and a house with positive width belongs to the latter when its interval
+opens there, as in compressed Pullen SD. Fallback decisions are retained in
+each figure. A refused figure returns 422 with the side identified.
 
 ### House Dynamics And Polar Admissibility Contracts
 
@@ -442,11 +621,31 @@ Admitted products:
 - `/v1/positions/frame/heliocentric`: Sun-centered true-of-date ecliptic
   positions for admitted planets except Sun and Moon
 - `/v1/positions/frame/planetocentric`: true-of-date ecliptic positions from a
-  named observer body center, with observer-target identity rejected
+  named observer's ephemeris center, with observer-target identity rejected
 - `/v1/positions/frame/ssb`: geometric Solar System Barycenter positions,
   including the Sun where requested
 - `/v1/positions/frame/received-light`: Earth received-light positions for
   admitted physical planets, with nonphysical points rejected
+
+#### Planetocentric Reduction Receipt
+
+`POST /v1/positions/frame/planetocentric` includes a `reduction` on
+each `positions` entry:
+
+- `center_body` and `target_body` are the named endpoints.
+  `center_naif_id` and `target_naif_id` identify the actual SPK endpoints.
+  The corresponding kind fields distinguish body centers from planetary
+  system barycenters. For example, the Mars endpoint in DE441 is NAIF 4.
+- `time_binding` gives the UT1, TT and TDB Julian days used in the
+  geometric reduction, the effective Delta-T and its source, the
+  retargeting correction, and the TDB–TT offset. The Delta-T kernel identity
+  is populated when the time policy uses that identity to bind a historical
+  tidal basis. The top-level `time` retains the civil request conversion.
+- `rate_sampling` records one TDB state epoch per body. The instantaneous
+  longitude rate includes a centered rotation derivative sampled at the
+  recorded TT epochs, currently ±0.001 day around the frame epoch.
+- `frame` identifies barycentric ICRF input states and the true ecliptic
+  and equinox of date, with the precession, nutation, and correction policy.
 
 ## Transits, Returns, Batch, And Visibility
 
@@ -1310,6 +1509,7 @@ their current conventions.
 | POST | `/v1/panchanga/day` | `panchanga_day_route` |
 | POST | `/v1/panchanga/lunar-month` | `panchanga_lunar_month_route` |
 | GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
+| GET | `/v1/sidereal/galactic-ayanamsa-presets` | `galactic_ayanamsa_presets_route` |
 | POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
 | POST | `/v1/sidereal/convert` | `sidereal_convert_route` |
 | POST | `/v1/nakshatra/position` | `nakshatra_position_route` |
@@ -1622,14 +1822,17 @@ The admitted P-GAP-05 utility surface is the bounded synchronous
 `/v1/sidereal/*` and `/v1/nakshatra/*` route family:
 
 - `GET /v1/sidereal/ayanamsa-systems`
+- `GET /v1/sidereal/galactic-ayanamsa-presets`
 - `POST /v1/sidereal/ayanamsa`
 - `POST /v1/sidereal/convert`
 - `POST /v1/nakshatra/position`
 - `POST /v1/nakshatra/bulk`
 
 `/v1/sidereal/ayanamsa-systems` exposes the built-in ayanamsa registry and
-J2000 reference values. `/v1/sidereal/ayanamsa` exposes one date-specific
-ayanamsa value for an admitted named system and mode. `/v1/sidereal/convert`
+J2000 reference values. The Galactic presets route lists all eight Galactic
+selections with their anchors, source links, and supported modes.
+`/v1/sidereal/ayanamsa` exposes one date-specific ayanamsa value for an
+admitted named system or doctrinal selection. `/v1/sidereal/convert`
 converts one longitude between tropical and sidereal frames.
 
 Every registry entry carries a `doctrine` record: what the system holds
@@ -1643,11 +1846,20 @@ conversion and Nakshatra requests accept `ayanamsa_doctrine`:
 {"family": "polar_star", "source": "surya_siddhanta", "nakshatra": "chitra", "star_product": "astrometric"}
 {"family": "surya_siddhanta_libration", "cycles_per_mahayuga": 600}
 {"family": "suryadeva_trepidation"}
+{"family": "galactic_anchor", "preset": "equator_allwise_2024"}
+{"family": "user_defined", "reference_value_j2000": 30.017793882, "drift_per_century": 0.0}
 ```
 
 Giving both fields is `422`. A polar star with `star_product: "apparent"`
 needs the server's planetary kernel (`503 kernel_not_ready` without it).
+Galactic selections use the public `jd_ut` input and report the TT epoch,
+projection, and anchor authority in computation truth. The supported domain
+is ±50 Julian centuries from J2000 in TT. Scalar ayanamsa and conversion
+accept both `mean` and `true`; the Nakshatra routes use their existing
+`true` mode. [Galactic anchor conventions](../02_standards/AYANAMSA_DOCTRINE_STANDARD.md#25-galactic-anchors)
 Gochara, Muhurta and Kalachakra routes accept named systems only.
+Custom and Galactic selections also work on `/v1/chart/sidereal`, with the
+chart's normalized UTC time and UT1 and TT reduction epochs in the result.
 
 `/v1/nakshatra/position` and `/v1/nakshatra/bulk` expose mechanical placement
 into Moira's current 27-equal-Nakshatra taxonomy. Responses preserve
@@ -1656,8 +1868,7 @@ degrees remaining, and sidereal longitude.
 
 This admission does not expose Panchanga judgement, Muhurta classification,
 Dasha balance, chart-backed Moon derivation, chart-backed sidereal houses,
-Varga projection, Manazil, Abhijit Nakshatra, user-defined (J2000
-reference value) ayanamsa REST payloads, mutable global sidereal mode, interpretation text, recommendations,
+Varga projection, Manazil, Abhijit Nakshatra, mutable global sidereal mode, interpretation text, recommendations,
 dense tables, async sweeps, or kernel path mutation.
 
 ### Muhurta REST Admission Boundary
@@ -2304,6 +2515,23 @@ semantic class, source frame and epoch, coordinate and semantic authorities,
 citations, registry version, and transport-stage receipt. No Local Group
 barycenter is exposed without a declared mass model.
 
+### Galactic Chart Nodes
+
+`POST /v1/galactic/chart/positions` accepts one optional `node_mode`.
+Use `"true"` for `True Node`, `"mean"` for `Mean Node`, or `"both"` to
+append them in that order. Omitted or `null` returns the planet positions.
+The existing `bodies` field selects planets or supported small bodies
+independently of the node mode. Selected nodes are appended to
+`positions` and `provenance.returned_bodies`.
+
+Each node is a geocentric lunar ascending point with ecliptic latitude
+zero, even when an observer is supplied for the Moon. The true node uses
+the serving ephemeris. The IERS mean node includes nutation in longitude
+to express it in the true equinox of date. Both use the chart's TT and
+true obliquity for the same true-ecliptic-of-date to Galactic rotation as
+the planet positions. The reduction stage list identifies each selected
+node calculation.
+
 ## Galactic Houses Routes
 
 | Method | Path | Handler |
@@ -2491,12 +2719,21 @@ while the legacy `is_peak_period` compatibility field remains `false`.
 | POST | `/v1/primary-directions/profile/reduction` | `primary_directions_profile_reduction_route` |
 | POST | `/v1/primary-directions/network` | `primary_directions_network_route` |
 | POST | `/v1/primary-directions/network/reduction` | `primary_directions_network_reduction_route` |
+| POST | `/v1/primary-directions/timeline` | `primary_directions_timeline_route` |
 
 ### Primary-directions transport contract
 
-The eight paths above are stable. The compact and reduction variants share the
-same engine computation; reduction responses add resolved preset/policy, key,
-search-mode, requested observer, and effective house-system truth.
+The compact and reduction variants share the same engine computation.
+Reduction responses add resolved preset/policy, key, search-mode, requested
+observer, and effective house-system truth.
+
+The timeline derives chronology and distributor periods from engine-searched
+arcs. It accepts advanced targets and contexts supported by the chosen policy.
+The deprecated compatibility fields accept `null` for `submitted_arcs` and
+`false` for both `include_relations` and `include_condition`. Submitting an
+arc list, including an empty list, or enabling either expansion returns 422.
+Use `/v1/primary-directions/profile` for expansion of relations or condition
+evidence and `/v1/primary-directions/relations` for submitted-arc relations.
 
 Policy resolution is enum-backed. Canonical preset names are preferred;
 recognized historical aliases remain adapters and the reduction truth preserves
@@ -2606,6 +2843,7 @@ reduced from UTC to UT1 before astronomical computation.
 | GET | `/v1/stars/multiple/{name}` | `multiple_star_catalog_route` |
 | POST | `/v1/stars/multiple/state` | `multiple_star_state_route` |
 | POST | `/v1/asteroids/position` | `asteroid_position` |
+| GET | `/v1/asteroids/identity` | `asteroid_identity_route` |
 | POST | `/v1/asteroids/bulk` | `asteroids_bulk` |
 | GET | `/v1/asteroids/list` | `list_asteroids` |
 | GET | `/v1/asteroids/subsets` | `asteroid_subsets` |
@@ -2881,6 +3119,7 @@ The admitted asteroid REST surface is the bounded synchronous
 - `POST /v1/asteroids/position`
 - `POST /v1/asteroids/bulk`
 - `GET /v1/asteroids/list`
+- `GET /v1/asteroids/identity`
 
 Position and bulk responses include geocentric tropical ecliptic longitude,
 latitude, distance, speed, retrograde state, zodiac sign fields, and explicit
@@ -2888,6 +3127,19 @@ provenance. The provenance records the requested datetime, normalized UTC
 datetime, UT Julian Day, requested and returned asteroid identity, returned
 NAIF ID, kernel source, known-catalog truth, loaded-kernel availability, NAIF
 convention, frame, and transport stage sequence.
+
+Use `GET /v1/asteroids/identity?body=2006%20QH181` or `?body=50361603` for
+exact catalog lookup. The response identifies the canonical name, NAIF ID,
+provisional designation, and loaded-kernel availability. A provisional object
+has `mpc_number: null` and the convention
+`explicit_jpl_spk_id_for_provisional_designation`. A numbered object reports
+its MPC number and `small_body_naif_id_2000000_plus_catalog_number`. Identity
+lookup works for catalog entries whose trajectories are absent from the
+loaded reader. A catalog miss returns HTTP 404.
+
+Position and bulk requests accept a designation or a full NAIF ID as a JSON
+integer or decimal string. Their provenance reports the ID convention for
+the returned object.
 
 The route family distinguishes a known asteroid identity in `ASTEROID_NAIF`
 from a body actually covered by the loaded small-body reader. `is_sovereign` is
@@ -3829,6 +4081,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/asteroids/families/chart` | asteroids (fast small-body) | `asteroid_families_in_chart_v1_asteroids_families_chart_post` |
 | `POST` | `/v1/asteroids/families/chart/resonance-network` | asteroids (fast small-body) | `asteroid_family_resonance_network_v1_asteroids_families_chart_resonance_network_post` |
 | `GET` | `/v1/asteroids/families/{family_name}/members` | asteroids (fast small-body) | `asteroid_family_members_v1_asteroids_families__family_name__members_get` |
+| `GET` | `/v1/asteroids/identity` | asteroids (fast small-body) | `asteroid_identity_route_v1_asteroids_identity_get` |
 | `GET` | `/v1/asteroids/list` | asteroids (fast small-body) | `list_asteroids_v1_asteroids_list_get` |
 | `POST` | `/v1/asteroids/position` | asteroids (fast small-body) | `asteroid_position_v1_asteroids_position_post` |
 | `GET` | `/v1/asteroids/subsets` | asteroids (fast small-body) | `asteroid_subsets_v1_asteroids_subsets_get` |
@@ -3872,11 +4125,14 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/chart` | chart | `chart_route_v1_chart_post` |
 | `POST` | `/v1/chart-shape/classify` | relationship | `chart_shape_route_v1_chart_shape_classify_post` |
 | `POST` | `/v1/chart/reduction` | chart | `chart_reduction_route_v1_chart_reduction_post` |
+| `POST` | `/v1/chart/relocated` | chart | `natal_relocation_route_v1_chart_relocated_post` |
+| `POST` | `/v1/chart/sidereal` | sidereal | `sidereal_chart_route_v1_chart_sidereal_post` |
 | `POST` | `/v1/comets/bulk` | comets (fast small-body) | `comets_bulk_v1_comets_bulk_post` |
 | `GET` | `/v1/comets/list` | comets (fast small-body) | `list_comets_v1_comets_list_get` |
 | `POST` | `/v1/comets/position` | comets (fast small-body) | `comet_position_v1_comets_position_post` |
 | `POST` | `/v1/composite/chart` | relationship | `composite_chart_route_v1_composite_chart_post` |
 | `POST` | `/v1/composite/transits` | relationship | `composite_transits_route_v1_composite_transits_post` |
+| `POST` | `/v1/coordinates/transform` | coordinates | `coordinate_transform_route_v1_coordinates_transform_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/chart/profile` | alternate-dashas | `ashtottari_chart_profile_route_v1_dasha_alternate_ashtottari_chart_profile_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/chart/sequence` | alternate-dashas | `ashtottari_chart_sequence_route_v1_dasha_alternate_ashtottari_chart_sequence_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/profile` | alternate-dashas | `ashtottari_profile_route_v1_dasha_alternate_ashtottari_profile_post` |
@@ -4036,9 +4292,12 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/horary/lilly-reception` | horary | `horary_lilly_reception` |
 | `POST` | `/v1/horary/perfection-routes` | horary | `horary_perfection_routes` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
+| `POST` | `/v1/houses/armc` | chart | `houses_from_armc_route_v1_houses_armc_post` |
+| `POST` | `/v1/houses/compare` | chart | `house_comparison_route_v1_houses_compare_post` |
 | `POST` | `/v1/houses/dynamics` | chart | `house_dynamics_route_v1_houses_dynamics_post` |
 | `POST` | `/v1/houses/dynamics/analytical` | chart | `analytical_house_dynamics_route_v1_houses_dynamics_analytical_post` |
 | `POST` | `/v1/houses/dynamics/armc` | chart | `house_dynamics_from_armc_route_v1_houses_dynamics_armc_post` |
+| `POST` | `/v1/houses/placements/compare` | chart | `house_placement_comparison_route_v1_houses_placements_compare_post` |
 | `POST` | `/v1/houses/polar-admissibility` | chart | `houses_polar_admissibility_route_v1_houses_polar_admissibility_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |
@@ -4086,15 +4345,18 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/lots/chart/network` | lots | `lots_chart_network_route_v1_lots_chart_network_post` |
 | `POST` | `/v1/lots/chart/profile` | lots | `lots_chart_profile_route_v1_lots_chart_profile_post` |
 | `POST` | `/v1/lunar-phases` | predictive | `lunar_phase_route_v1_lunar_phases_post` |
+| `POST` | `/v1/lunar-phases/prenatal-syzygy` | predictive | `prenatal_syzygy_route_v1_lunar_phases_prenatal_syzygy_post` |
 | `POST` | `/v1/manazil/bulk` | manazil | `manazil_bulk_route_v1_manazil_bulk_post` |
 | `GET` | `/v1/manazil/catalog` | manazil | `manazil_catalog_route_v1_manazil_catalog_get` |
 | `POST` | `/v1/manazil/position` | manazil | `manazil_position_route_v1_manazil_position_post` |
 | `GET` | `/v1/manazil/traditions/{tradition}/mansions/{mansion_index}` | manazil | `manazil_tradition_lookup_route_v1_manazil_traditions__tradition__mansions__mansion_index__get` |
 | `GET` | `/v1/meta/routes` | meta | `route_catalog_v1_meta_routes_get` |
+| `POST` | `/v1/midpoints/activations` | relationship | `midpoint_activations_route_v1_midpoints_activations_post` |
 | `POST` | `/v1/midpoints/calculate` | relationship | `midpoints_route_v1_midpoints_calculate_post` |
 | `POST` | `/v1/midpoints/clusters` | relationship | `midpoint_clusters_route_v1_midpoints_clusters_post` |
 | `POST` | `/v1/midpoints/pictures` | relationship | `midpoint_pictures_route_v1_midpoints_pictures_post` |
 | `POST` | `/v1/midpoints/to-point` | relationship | `midpoints_to_point_route_v1_midpoints_to_point_post` |
+| `POST` | `/v1/midpoints/tree` | relationship | `midpoint_tree_route_v1_midpoints_tree_post` |
 | `POST` | `/v1/midpoints/weighting` | relationship | `midpoint_weighting_route_v1_midpoints_weighting_post` |
 | `GET` | `/v1/muhurta/business/catalogue` | muhurta | `business_catalogue_route_v1_muhurta_business_catalogue_get` |
 | `POST` | `/v1/muhurta/business/compare` | muhurta | `business_compare_route_v1_muhurta_business_compare_post` |
@@ -4142,6 +4404,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/nine-parts/abu-mashar` | nine-parts | `abu_mashar_nine_parts_route_v1_nine_parts_abu_mashar_post` |
 | `GET` | `/v1/nodes/catalog` | nodes | `node_catalog_route_v1_nodes_catalog_get` |
 | `POST` | `/v1/nodes/geometric` | nodes | `geometric_node_route_v1_nodes_geometric_post` |
+| `POST` | `/v1/nodes/lunar/next-crossing` | nodes | `lunar_node_crossing_route_v1_nodes_lunar_next_crossing_post` |
 | `POST` | `/v1/nodes/planetary/mean` | nodes | `mean_planetary_node_route_v1_nodes_planetary_mean_post` |
 | `POST` | `/v1/nodes/planetary/mean/bulk` | nodes | `mean_planetary_nodes_bulk_route_v1_nodes_planetary_mean_bulk_post` |
 | `POST` | `/v1/occultations/all-lunar` | phenomena | `all_lunar_occultations_route_v1_occultations_all_lunar_post` |
@@ -4200,6 +4463,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/patterns/coherence` | relationship | `pattern_coherence_route_v1_patterns_coherence_post` |
 | `GET` | `/v1/patterns/default-orbs` | relationship | `pattern_default_orbs_route_v1_patterns_default_orbs_get` |
 | `POST` | `/v1/patterns/find` | relationship | `patterns_route_v1_patterns_find_post` |
+| `POST` | `/v1/patterns/from-longitudes` | relationship | `supplied_patterns_route_v1_patterns_from_longitudes_post` |
 | `POST` | `/v1/patterns/network` | relationship | `pattern_network_route_v1_patterns_network_post` |
 | `POST` | `/v1/phase/angle` | phase | `phase_angle_route_v1_phase_angle_post` |
 | `POST` | `/v1/phase/angular-diameter` | phase | `angular_diameter_route_v1_phase_angular_diameter_post` |
@@ -4208,6 +4472,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/phase/illuminated-fraction` | phase | `illuminated_fraction_route_v1_phase_illuminated_fraction_post` |
 | `POST` | `/v1/phase/lunar-orientation` | phase | `lunar_orientation_route_v1_phase_lunar_orientation_post` |
 | `POST` | `/v1/phase/synodic` | phase | `synodic_phase_route_v1_phase_synodic_post` |
+| `POST` | `/v1/phenomena/heliocentric-events` | generic-phenomena | `heliocentric_events_route_v1_phenomena_heliocentric_events_post` |
 | `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
 | `POST` | `/v1/phenomena/planet` | generic-phenomena | `planet_phenomena_route_v1_phenomena_planet_post` |
 | `POST` | `/v1/phenomena/proximity` | generic-phenomena | `proximity_events_route_v1_phenomena_proximity_post` |
@@ -4216,6 +4481,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/pipeline/positions/sky` | website-pipeline | `pipeline_sky_position_route_v1_pipeline_positions_sky_post` |
 | `POST` | `/v1/planetary-hours/hour-at` | planetary-hours | `planetary_hours_hour_at_route_v1_planetary_hours_hour_at_post` |
 | `POST` | `/v1/planetary-hours/schedule` | planetary-hours | `planetary_hours_schedule_route_v1_planetary_hours_schedule_post` |
+| `GET` | `/v1/planetary-moons/coverage` | planetary-moons | `planetary_moons_coverage_route_v1_planetary_moons_coverage_get` |
+| `POST` | `/v1/planetary-moons/events` | planetary-moons | `planetary_moon_events_route_v1_planetary_moons_events_post` |
+| `POST` | `/v1/planetary-moons/snapshot` | planetary-moons | `planetary_moons_snapshot_route_v1_planetary_moons_snapshot_post` |
 | `POST` | `/v1/positions/frame/heliocentric` | positions-frame | `frame_heliocentric_route_v1_positions_frame_heliocentric_post` |
 | `POST` | `/v1/positions/frame/planetocentric` | positions-frame | `frame_planetocentric_route_v1_positions_frame_planetocentric_post` |
 | `POST` | `/v1/positions/frame/received-light` | positions-frame | `frame_received_light_route_v1_positions_frame_received_light_post` |
@@ -4224,6 +4492,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/positions/planet/reduction` | positions | `planet_position_reduction_route_v1_positions_planet_reduction_post` |
 | `POST` | `/v1/positions/sky` | positions | `sky_position_route_v1_positions_sky_post` |
 | `POST` | `/v1/positions/sky/reduction` | positions | `sky_position_reduction_route_v1_positions_sky_reduction_post` |
+| `POST` | `/v1/positions/time-series` | positions | `planet_time_series_route_v1_positions_time_series_post` |
 | `POST` | `/v1/primary-directions/arcs` | primary-directions | `primary_directions_arcs_route_v1_primary_directions_arcs_post` |
 | `POST` | `/v1/primary-directions/arcs/reduction` | primary-directions | `primary_directions_arcs_reduction_route_v1_primary_directions_arcs_reduction_post` |
 | `POST` | `/v1/primary-directions/network` | primary-directions | `primary_directions_network_route_v1_primary_directions_network_post` |
@@ -4257,7 +4526,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/returns/lunar` | predictive | `lunar_return_route_v1_returns_lunar_post` |
 | `POST` | `/v1/returns/planet` | predictive | `planet_return_route_v1_returns_planet_post` |
 | `POST` | `/v1/returns/relocated` | predictive, astrocartography | `relocated_return_route_v1_returns_relocated_post` |
+| `POST` | `/v1/returns/series` | predictive | `return_series_route_v1_returns_series_post` |
 | `POST` | `/v1/returns/solar` | predictive | `solar_return_route_v1_returns_solar_post` |
+| `POST` | `/v1/rise-set/availability` | phenomena | `horizon_availability_route_v1_rise_set_availability_post` |
 | `POST` | `/v1/rise-set/phenomena` | phenomena | `rise_set_phenomena_route_v1_rise_set_phenomena_post` |
 | `POST` | `/v1/rise-set/transit` | phenomena | `rise_set_transit_route_v1_rise_set_transit_post` |
 | `POST` | `/v1/rise-set/twilight` | phenomena | `twilight_times_route_v1_rise_set_twilight_post` |
@@ -4272,6 +4543,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/sidereal/ayanamsa` | sidereal | `sidereal_ayanamsa_route_v1_sidereal_ayanamsa_post` |
 | `GET` | `/v1/sidereal/ayanamsa-systems` | sidereal | `sidereal_ayanamsa_systems_route_v1_sidereal_ayanamsa_systems_get` |
 | `POST` | `/v1/sidereal/convert` | sidereal | `sidereal_convert_route_v1_sidereal_convert_post` |
+| `GET` | `/v1/sidereal/galactic-ayanamsa-presets` | sidereal | `galactic_ayanamsa_presets_route_v1_sidereal_galactic_ayanamsa_presets_get` |
+| `GET` | `/v1/small-bodies/identity` | small-body-identity | `small_body_identity_route_v1_small_bodies_identity_get` |
 | `POST` | `/v1/solar-condition/events` | generic-phenomena | `solar_condition_events_route_v1_solar_condition_events_post` |
 | `POST` | `/v1/solar-condition/instant` | generic-phenomena | `solar_condition_instant_route_v1_solar_condition_instant_post` |
 | `POST` | `/v1/sothic/drift-rate` | sothic | `drift_rate_route_v1_sothic_drift_rate_post` |
@@ -4284,6 +4557,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/stars/multiple/state` | stars (fixed stars) | `multiple_star_state_route_v1_stars_multiple_state_post` |
 | `GET` | `/v1/stars/multiple/{name}` | stars (fixed stars) | `multiple_star_catalog_route_v1_stars_multiple__name__get` |
 | `POST` | `/v1/stars/position` | stars (fixed stars) | `star_position_v1_stars_position_post` |
+| `POST` | `/v1/stars/search` | stars (fixed stars) | `star_search_route_v1_stars_search_post` |
 | `POST` | `/v1/stars/variable/catalog-profile` | stars (fixed stars) | `variable_star_catalog_profile_route_v1_stars_variable_catalog_profile_post` |
 | `GET` | `/v1/stars/variable/list` | stars (fixed stars) | `list_variable_stars_route_v1_stars_variable_list_get` |
 | `POST` | `/v1/stars/variable/pair` | stars (fixed stars) | `variable_star_pair_route_v1_stars_variable_pair_post` |
@@ -4299,6 +4573,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/synastry/contacts` | relationship | `synastry_contacts_route_v1_synastry_contacts_post` |
 | `POST` | `/v1/synastry/overlay` | relationship | `synastry_directional_overlay_route_v1_synastry_overlay_post` |
 | `POST` | `/v1/synastry/overlays` | relationship | `synastry_overlays_route_v1_synastry_overlays_post` |
+| `POST` | `/v1/time/convert` | time | `time_conversion_route_v1_time_convert_post` |
+| `POST` | `/v1/time/delta-t` | time | `delta_t_route_v1_time_delta_t_post` |
+| `POST` | `/v1/time/sidereal` | time | `sidereal_time_route_v1_time_sidereal_post` |
 | `POST` | `/v1/timelords/decennials/active-pair` | timelords | `decennials_active_pair_route_v1_timelords_decennials_active_pair_post` |
 | `POST` | `/v1/timelords/decennials/active-path` | timelords | `decennials_active_path_route_v1_timelords_decennials_active_path_post` |
 | `POST` | `/v1/timelords/decennials/current` | timelords | `decennials_current_route_v1_timelords_decennials_current_post` |

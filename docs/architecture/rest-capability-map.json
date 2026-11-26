@@ -1,0 +1,315 @@
+{
+  "unmapped_baseline_sha256": "ba50ddaad831ff15702415e86e42f9b6ac9245fcee40a86410e68f9fc667a266",
+  "direct_modules": [
+    {"module":"moira.planetary_moons","classes":["PlanetaryMoons"]},
+    {"module":"moira.planetary_moon_events"},
+    {"module":"moira.small_body_identity"},
+    {"module":"moira.cycles"}
+  ],
+  "capabilities": [
+    {
+      "capability": "planetocentric_reduction_receipts",
+      "engine": ["moira.planetocentric:all_planetocentric_at_with_truth","moira.planetocentric:all_planetocentric_at","moira.facade:Moira.planetocentric"],
+      "witness": "tests/server/test_server_frame_positions_routes.py::test_frame_planetocentric_route_matches_facade_and_reduction",
+      "routes": [
+        {"operation":"POST /v1/positions/frame/planetocentric","request":["dt","observer","bodies"],"response":["positions","reduction","center_naif_id","target_naif_id","time_binding","jd_ut1","jd_tt","jd_tdb","delta_t_source_product","rate_sampling","frame_derivative_jd_tt","result_frame"]}
+      ]
+    },
+    {
+      "capability": "galactic_chart_lunar_nodes",
+      "engine": ["moira.nodes:true_node","moira.nodes:mean_node","moira.galactic:all_galactic_positions"],
+      "witness": "tests/server/test_server_galactic_routes.py::test_galactic_chart_nodes_match_direct_transform_at_the_chart_epoch",
+      "routes": [
+        {"operation":"POST /v1/galactic/chart/positions","request":["dt","bodies","node_mode","true","mean","both"],"response":["positions","body","ecliptic_longitude","ecliptic_latitude","galactic_longitude","galactic_latitude","returned_bodies","jd_tt","source_frame","target_frame","stage_sequence"]}
+      ]
+    },
+    {
+      "capability": "galactic_ayanamsa_presets",
+      "engine": ["moira.sidereal:ayanamsa_with_truth"],
+      "witness": "tests/server/test_server_ayanamsa_doctrine.py::test_galactic_preset_catalog_matches_engine_and_openapi",
+      "routes": [
+        {"operation":"GET /v1/sidereal/galactic-ayanamsa-presets","response":["centre_wilhelm","equator_allwise_2024","supported_modes","sources"]},
+        {"operation":"POST /v1/sidereal/ayanamsa","request":["galactic_anchor","preset"],"response":["computation_truth","doctrine"]}
+      ]
+    },
+    {
+      "capability": "caller_defined_ayanamsa",
+      "engine": ["moira.sidereal:ayanamsa_with_truth","moira.ayanamsa_doctrine:ayanamsa_doctrine"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_custom_and_chart_sidereal_reduction",
+      "routes": [
+        {"operation":"POST /v1/sidereal/ayanamsa","request":["user_defined","reference_value_j2000","drift_per_century","mean","true"],"response":["computation_truth","doctrine"]},
+        {"operation":"POST /v1/sidereal/convert","request":["user_defined","tropical_to_sidereal","sidereal_to_tropical"],"response":["computation_truth"]},
+        {"operation":"POST /v1/nakshatra/position","request":["user_defined","tropical_longitude_deg"],"response":["sidereal_longitude_deg"]},
+        {"operation":"POST /v1/nakshatra/bulk","request":["user_defined","positions"],"response":["sidereal_longitude_deg"]}
+      ]
+    },
+    {
+      "capability": "sidereal_chart",
+      "engine": ["moira.facade:Moira.sidereal_chart"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_custom_and_chart_sidereal_reduction",
+      "routes": [
+        {"operation":"POST /v1/chart/sidereal","request":["dt","bodies","include_nodes","galactic_anchor","user_defined","mean","true"],"response":["tropical_longitudes","sidereal_longitudes","jd_tt","computation_truth"]}
+      ]
+    },
+    {
+      "capability": "natal_chart_relocation",
+      "engine": ["moira.chart:relocated_chart","moira.facade:Moira.relocated_chart"],
+      "witness": "tests/server/test_server_forecasting_routes.py::test_natal_relocation_recasts_only_the_local_frame",
+      "routes": [
+        {"operation":"POST /v1/chart/relocated","request":["dt","source_latitude","source_longitude","relocated_latitude","relocated_longitude","source_house_system","relocated_house_system","bodies","house_policy"],"response":["source_chart","relocated_chart","jd_ut","jd_tt","planets","nodes","cusps","effective_system","fallback_reason","same_epoch","same_celestial_snapshot","datetime_utc"]}
+      ]
+    },
+    {
+      "capability": "static_armc_cusps",
+      "engine": ["moira.houses:houses_from_armc"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_static_armc_preserves_zodiac_and_physical_geometry",
+      "routes": [
+        {"operation":"POST /v1/houses/armc","request":["armc","obliquity","latitude","sun_longitude","sun_declination","ayanamsa_offset","policy","include_boundary_geometry"],"response":["cusps","effective_system","fallback","boundary_geometry"]}
+      ]
+    },
+    {
+      "capability": "dated_house_anchors",
+      "engine": ["moira.facade:Moira.houses","moira.houses:calculate_houses"],
+      "witness": "tests/server/test_server_dated_house_anchor_routes.py::test_dated_anchors_match_static_armc_without_solar_resolution",
+      "routes": [
+        {"operation":"POST /v1/houses","request":["dt","sun_longitude","sun_declination","ayanamsa_offset","policy","include_boundary_geometry"],"response":["cusps","armc","effective_system","fallback","boundary_geometry","zodiac_offset_deg","computation_truth"]},
+        {"operation":"POST /v1/houses/reduction","request":["dt","sun_longitude","sun_declination","ayanamsa_offset","policy","include_boundary_geometry"],"response":["result","reduction","effective_system","fallback","zodiac_offset_deg"]}
+      ]
+    },
+    {
+      "capability": "static_armc_house_comparison",
+      "engine": ["moira.houses:compare_systems"],
+      "witness": "tests/server/test_server_house_comparison_routes.py::test_house_comparison_matches_direct_engine",
+      "routes": [
+        {"operation":"POST /v1/houses/compare","request":["armc","obliquity","latitude","left_system","right_system","policy","sun_longitude","sun_declination","ayanamsa_offset","include_boundary_geometry"],"response":["left","right","cusp_deltas","systems_agree","fallback_differs","families_differ","effective_system","fallback_reason"]}
+      ]
+    },
+    {
+      "capability": "static_armc_house_placement_comparison",
+      "engine": ["moira.houses:compare_placements"],
+      "witness": "tests/server/test_server_house_placement_comparison_routes.py::test_placement_comparison_matches_direct_engine",
+      "routes": [
+        {"operation":"POST /v1/houses/placements/compare","request":["armc","obliquity","latitude","left_system","right_system","policy","sun_longitude","sun_declination","ayanamsa_offset","include_boundary_geometry","points"],"response":["placements","longitude","zodiac_offset_deg","left","right","all_agree","angularity_agrees","house","exact_on_cusp","cusp_longitude","effective_system","fallback_reason"]}
+      ]
+    },
+    {
+      "capability": "primary_directions_timeline",
+      "engine": ["moira.primary_directions.timeline:compute_primary_directions_timeline","moira.facade:Moira.primary_directions_timeline"],
+      "witness": "tests/server/test_server_primary_directions_timeline_routes.py::test_timeline_forwards_advanced_targets_and_empty_significators",
+      "routes": [
+        {"operation":"POST /v1/primary-directions/timeline","request":["max_arc","max_age_years","key","bound_doctrine","significators","promissors","antiscia_targets"],"response":["events","distributor_periods","perfection_jd_ut"]}
+      ]
+    },
+    {
+      "capability": "supplied_longitude_patterns",
+      "engine": ["moira.patterns:find_all_patterns","moira.patterns:find_mathematical_patterns"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_supplied_patterns_and_midpoints",
+      "routes": [
+        {"operation":"POST /v1/patterns/from-longitudes","request":["longitudes","templates","harmonic_presets","orbs","pattern_orbs","dominant_only"],"response":["events","caller_supplied_longitudes"]}
+      ]
+    },
+    {
+      "capability": "midpoint_tree",
+      "engine": ["moira.midpoints:midpoint_tree"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_supplied_patterns_and_midpoints",
+      "routes": [
+        {"operation":"POST /v1/midpoints/tree","request":["longitudes","focus","dial","planet_set","orb"],"response":["events","caller_supplied_longitudes"]}
+      ]
+    },
+    {
+      "capability": "midpoint_activation",
+      "engine": ["moira.midpoints:activated_midpoints"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_supplied_patterns_and_midpoints",
+      "routes": [
+        {"operation":"POST /v1/midpoints/activations","request":["longitudes","transit_longitude","dial","orb"],"response":["events","caller_supplied_longitudes"]}
+      ]
+    },
+    {
+      "capability": "asteroid_catalog_class",
+      "engine": ["moira.asteroids:asteroid_orbit_class"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_unified_catalog_ambiguity_and_provisional_orbit_class",
+      "routes": [
+        {"operation":"GET /v1/asteroids/identity","request":["body"],"response":["naif_id","orbit_class","mpc_number","provisional_designation","loaded_kernel_available"]}
+      ]
+    },
+    {
+      "capability": "unified_small_body_identity",
+      "engine": ["moira.small_body_identity:resolve_small_body_identity"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_unified_catalog_ambiguity_and_provisional_orbit_class",
+      "routes": [
+        {"operation":"GET /v1/small-bodies/identity","request":["body","family"],"response":["canonical_name","qualified_name","loaded_kernel_available"]},
+        {"operation":"GET /v1/small-bodies/identity","request":["body"],"response":["candidates","family","qualified_name"],"status":"409"}
+      ]
+    },
+    {
+      "capability": "fixed_star_search",
+      "engine": ["moira.stars:stars_near","moira.stars:stars_by_magnitude"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_fixed_star_queries_preserve_engine_order_and_inclusion",
+      "routes": [
+        {"operation":"POST /v1/stars/search","request":["longitude","magnitude","longitude_deg","max_magnitude","jd_tt","product"],"response":["matches","total_matches"]}
+      ]
+    },
+    {
+      "capability": "civil_and_julian_conversion",
+      "engine": ["moira.julian:jd_from_datetime_with_truth","moira.julian:calendar_datetime_from_jd","moira.julian:utc_to_ut1_with_truth","moira.julian:utc_to_tt_with_truth","moira.julian:ut_to_tt","moira.julian:tt_to_ut","moira.julian:tt_to_tdb","moira.julian:tdb_to_tt"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_clock_transformations_and_diagnostics",
+      "routes": [
+        {"operation":"POST /v1/time/convert","request":["civil_utc","UTC","UT1","TT","TDB","jd","dt"],"response":["jd","calendar_utc","provenance"]}
+      ]
+    },
+    {
+      "capability": "astronomical_year_calendar_conversion",
+      "engine": ["moira.julian:julian_day"],
+      "witness": "tests/server/test_server_astronomical_calendar_routes.py::test_calendar_matches_direct_engine_and_inverse",
+      "routes": [
+        {"operation":"POST /v1/time/convert","request":["civil_utc","UTC","calendar","year","month","day","hour","minute","second","microsecond"],"response":["jd","calendar_utc","model"]}
+      ]
+    },
+    {
+      "capability": "delta_t_diagnostics",
+      "engine": ["moira.julian:delta_t_from_jd_with_truth","moira.delta_t_physical:delta_t_breakdown","moira.delta_t_physical:delta_t_distribution"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_clock_transformations_and_diagnostics",
+      "routes": [
+        {"operation":"POST /v1/time/delta-t","request":["estimate","breakdown","distribution","year","jd_ut1"],"response":["units","uncertainty_interpretation"]}
+      ]
+    },
+    {
+      "capability": "sidereal_time_explicit_ut1_tt",
+      "engine": ["moira.julian:local_sidereal_time_with_truth"],
+      "witness": "tests/server/test_server_sidereal_time_routes.py::test_sidereal_time_matches_direct_engine",
+      "routes": [
+        {"operation":"POST /v1/time/sidereal","request":["jd_ut1","jd_tt","mean","apparent","greenwich","local","longitude_deg_east"],"response":["sidereal_time_deg","provenance","greenwich_mean_sidereal_time_deg","equation_of_equinoxes_deg","nutation_source"]}
+      ]
+    },
+    {
+      "capability": "planet_position_series",
+      "engine": ["moira.batch:planet_time_series"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_position_series_keeps_explicit_order_and_repeats",
+      "routes": [
+        {"operation":"POST /v1/positions/time-series","request":["body","jd_ut1"],"response":["longitudes_deg","latitudes_deg","distances_km","speeds_deg_per_day","retrogrades"]}
+      ]
+    },
+    {
+      "capability": "supplied_ecliptic_equatorial_rotation",
+      "engine": ["moira.coordinates:transform_ecliptic_equatorial_with_truth"],
+      "witness": "tests/server/test_server_supplied_coordinate_routes.py::test_ecliptic_equatorial_rotation_matches_cartesian_and_round_trips",
+      "routes": [
+        {"operation":"POST /v1/coordinates/transform","request":["ecliptic_to_equatorial","equatorial_to_ecliptic","obliquity_deg","ecliptic_longitude_deg","ecliptic_latitude_deg","right_ascension_deg","declination_deg"],"response":["ecliptic_longitude_deg","ecliptic_latitude_deg","right_ascension_deg","declination_deg","source_frame","target_frame","transform_method"]}
+      ]
+    },
+    {
+      "capability": "supplied_inverse_horizontal_transform",
+      "engine": ["moira.coordinates:horizontal_to_equatorial_with_truth"],
+      "witness": "tests/server/test_server_supplied_coordinate_routes.py::test_horizontal_inverse_matches_erfa_at_supplied_meridian",
+      "routes": [
+        {"operation":"POST /v1/coordinates/transform","request":["horizontal_to_equatorial","azimuth_deg","altitude_deg","local_sidereal_time_deg","observer_latitude_deg"],"response":["hour_angle_deg","right_ascension_deg","declination_deg","azimuth_convention","hour_angle_convention","polar_meridian_source"]}
+      ]
+    },
+    {
+      "capability": "geometric_horizon_diagnostics",
+      "engine": ["moira.rise_set:horizon_crossing_availability"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_geometric_horizon_availability",
+      "routes": [
+        {"operation":"POST /v1/rise-set/availability","request":["jd_start_ut1","latitude","longitude","altitude","steps"],"response":["always_above_horizon","always_below_horizon","crosses","minimum_altitude","maximum_altitude","method"]}
+      ]
+    },
+    {
+      "capability": "directed_lunar_node_crossing",
+      "engine": ["moira.nodes:next_moon_node_crossing"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_lunar_event_searches",
+      "routes": [
+        {"operation":"POST /v1/nodes/lunar/next-crossing","request":["jd_start_ut1","ascending","descending"],"response":["jd_ut1","direction"]}
+      ]
+    },
+    {
+      "capability": "adjacent_lunar_node_crossings",
+      "engine": ["moira.lunar_direction:lunar_ecliptic_direction_at","moira.facade:Moira.lunar_ecliptic_direction_at"],
+      "witness": "tests/server/test_server_lunar_direction_route.py::test_route_serializes_exact_crossings_without_doctrine",
+      "routes": [
+        {"operation":"POST /v1/electional/western/lunar-ecliptic-direction","request":["jd_ut"],"response":["previous_crossing","next_crossing","nearest_crossing"]}
+      ]
+    },
+    {
+      "capability": "prenatal_syzygy",
+      "engine": ["moira.transits:prenatal_syzygy"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_lunar_event_searches",
+      "routes": [
+        {"operation":"POST /v1/lunar-phases/prenatal-syzygy","request":["jd_ut1"],"response":["New Moon","Full Moon","jd_ut1"]}
+      ]
+    },
+    {
+      "capability": "natal_prior_lunation_context",
+      "engine": ["moira.transits:last_new_moon_with_truth","moira.transits:last_full_moon_with_truth"],
+      "witness": "tests/server/test_server_natal_discovery.py::test_real_kernel_packet_has_strict_prior_events_and_named_frame_contacts",
+      "routes": [
+        {"operation":"POST /v1/natal-discovery/lunar-context","response":["is_prenatal_syzygy"]}
+      ]
+    },
+    {
+      "capability": "heliocentric_event_search",
+      "engine": ["moira.planets:next_heliocentric_transit","moira.phenomena:next_heliocentric_conjunction","moira.phenomena:heliocentric_conjunctions_in_range_with_truth"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_heliocentric_events_and_bounded_miss",
+      "routes": [
+        {"operation":"POST /v1/phenomena/heliocentric-events","request":["next_conjunction","conjunctions_in_range","next_longitude_crossing"],"response":["no_event","range_computation_truth","jd_ut1"]}
+      ]
+    },
+    {
+      "capability": "bounded_full_half_and_lifetime_returns",
+      "engine": ["moira.cycles:bounded_return_series","moira.cycles:return_series","moira.cycles:half_return_series","moira.cycles:lifetime_returns"],
+      "witness": "tests/server/test_server_rest_capability_parity.py::test_bounded_half_return_uses_opposition_target",
+      "routes": [
+        {"operation":"POST /v1/returns/series","request":["full","half","lifetime","birth_jd_ut1","years","direction"],"response":["target_longitude_deg","longitude_deg","status"]}
+      ]
+    },
+    {
+      "capability": "batch_aspect_and_declination_events",
+      "engine": ["moira.batch:batch_events","moira.transits_aspects:find_aspect_transits","moira.transits_aspects:find_aspect_transits_to_longitudes","moira.transits_equatorial:find_declination_transits"],
+      "witness": "tests/server/test_server_batch_routes.py::test_batch_events_route_serializes_heterogeneous_event_payloads",
+      "routes": [
+        {"operation":"POST /v1/batch/events","request":["natal_longitudes","aspect_angles","is_contra_parallel"],"response":["declination_transit","aspect_transit"]}
+      ]
+    },
+    {
+      "capability": "lunar_eclipse_canon_selection",
+      "engine": ["moira.eclipse:EclipseCalculator.analyze_lunar_eclipse"],
+      "witness": "tests/server/test_server_lunar_eclipse_global.py::test_lunar_global_route_delegates_and_serializes_model_metadata",
+      "routes": [
+        {"operation":"POST /v1/eclipses/lunar/global-circumstances","request":["nasa_compat","backward"],"response":["source_model"]}
+      ]
+    },
+    {
+      "capability": "planetary_moon_snapshots",
+      "engine": ["moira.planetary_moons:PlanetaryMoons.at"],
+      "witness": "tests/server/test_server_planetary_moons_routes.py::test_installed_snapshot_and_coverage",
+      "routes": [
+        {"operation":"POST /v1/planetary-moons/snapshot","request":["jd_tt","planet"],"response":["earth_view","phase","eclipse","sources"]}
+      ]
+    },
+    {
+      "capability": "planetary_moon_coverage",
+      "engine": ["moira.planetary_moons:PlanetaryMoons.coverage_tdb"],
+      "witness": "tests/server/test_server_planetary_moons_routes.py::test_installed_snapshot_and_coverage",
+      "routes": [
+        {"operation":"GET /v1/planetary-moons/coverage","response":["systems","intervals_tdb"]}
+      ]
+    },
+    {
+      "capability": "planetary_moon_event_windows",
+      "engine": ["moira.planetary_moon_events:find_planetary_moon_events"],
+      "witness": "tests/server/test_server_planetary_moons_routes.py::test_event_windows_and_next_use_admitted_context",
+      "routes": [
+        {"operation":"POST /v1/planetary-moons/events","request":["window","next","moon_ids","kinds","max_evaluations","max_results"],"response":["status","contacts","unresolved_intervals","sources"]}
+      ]
+    },
+    {
+      "capability": "planetary_moon_reader_lifecycle",
+      "engine": ["moira.planetary_moons:PlanetaryMoons.open","moira.planetary_moons:PlanetaryMoons.close"],
+      "engine_only_reason": "The server owns kernel files and the request-local reader lifecycle."
+    },
+    {
+      "capability": "small_body_collision_inventory",
+      "engine": ["moira.small_body_identity:small_body_name_collisions"],
+      "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."
+    }
+  ]
+}

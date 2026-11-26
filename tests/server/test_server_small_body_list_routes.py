@@ -1,3 +1,5 @@
+"""REST contracts for asteroid and comet catalogs, positions, and families."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -155,6 +157,74 @@ def test_asteroid_list_route_rejects_invalid_limit(
     response = client_with_small_body_reader.get("/v1/asteroids/list?limit=501")
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize("body", ["2006 qh181", " 2006 QH181 ", "50361603"])
+def test_provisional_asteroid_identity_is_independent_of_kernel_coverage(
+    client_with_small_body_reader: TestClient, body: str,
+) -> None:
+    response = client_with_small_body_reader.get("/v1/asteroids/identity", params={"body": body})
+    assert response.status_code == 200, response.text
+    assert response.json() == {
+        "name": "2006 QH181",
+        "naif_id": 50_361_603,
+        "mpc_number": None,
+        "provisional_designation": "2006 QH181",
+        "naif_convention": "explicit_jpl_spk_id_for_provisional_designation",
+        "loaded_kernel_available": False,
+        "catalog_source": "ASTEROID_NAIF",
+        "orbit_class": {
+            "code": "TNO", "title": "TransNeptunian Object", "source": "JPL SBDB",
+        },
+    }
+
+
+def test_numbered_asteroid_identity_and_unknown_lookup(
+    client_with_small_body_reader: TestClient,
+) -> None:
+    response = client_with_small_body_reader.get("/v1/asteroids/identity", params={"body": "2000001"})
+    assert response.status_code == 200, response.text
+    identity = response.json()
+    assert identity["name"] == "Ceres"
+    assert identity["mpc_number"] == 1
+    assert identity["provisional_designation"] is None
+    assert identity["loaded_kernel_available"] is True
+    assert identity["naif_convention"] == "small_body_naif_id_2000000_plus_catalog_number"
+    unknown = client_with_small_body_reader.get("/v1/asteroids/identity", params={"body": "1"})
+    assert unknown.status_code == 404
+
+
+def test_provisional_naif_strings_use_the_same_id_in_single_and_bulk_positions(
+    client_with_small_body_reader: TestClient, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    name = "2006 QH181"
+    naif_id = ASTEROID_NAIF[name]
+    expected_scheme = "explicit_jpl_spk_id_for_provisional_designation"
+    seen: list[str | int] = []
+
+    def fake_asteroid_at(body: str | int, jd_ut: float, *, reader=None) -> AsteroidData:
+        seen.append(body)
+        return AsteroidData(
+            name=name, naif_id=naif_id, longitude=15.25, latitude=1.5,
+            distance=315_000_000.0, speed=0.22, retrograde=False,
+        )
+
+    monkeypatch.setattr("moira_server.services.asteroids.asteroid_at", fake_asteroid_at)
+    dt = "2026-06-13T12:00:00+00:00"
+    for body in (name, naif_id, str(naif_id)):
+        response = client_with_small_body_reader.post("/v1/asteroids/position", json={"dt": dt, "body": body})
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert result["naif_id"] == naif_id
+        assert result["provenance"]["requested_body"] == str(body)
+        assert result["provenance"]["naif_convention"] == expected_scheme
+
+    response = client_with_small_body_reader.post("/v1/asteroids/bulk", json={
+        "dt": dt, "bodies": [name, str(naif_id)], "skip_missing": False,
+    })
+    assert response.status_code == 200, response.text
+    assert seen == [name, naif_id, naif_id, name, naif_id]
+    assert response.json()["results"][str(naif_id)]["provenance"]["naif_convention"] == expected_scheme
 
 
 def test_asteroid_position_route_returns_position_with_provenance(

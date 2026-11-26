@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from moira import Moira
+from moira.nodes import next_moon_node_crossing
 from moira.planetary_nodes import (
     OrbitalNode,
     _geometric_node_computation,
@@ -16,6 +17,8 @@ from ..models.nodes import (
     GeometricNodeRequest,
     GeometricNodeProvenanceResponse,
     GeometricNodeResponse,
+    LunarNodeCrossingRequest,
+    LunarNodeCrossingResponse,
     MeanPlanetaryNodeRequest,
     MeanPlanetaryNodesBulkProvenanceResponse,
     MeanPlanetaryNodesBulkRequest,
@@ -29,6 +32,7 @@ from ..models.nodes import (
     OrbitalNodeResponse,
 )
 from ..models.orbits import OrbitalFrameConstructionResponse
+from ._shared import require_engine_reader
 from .orbits import (
     _serialize_elements_time,
     _serialize_gravity,
@@ -53,6 +57,17 @@ def _get_reader(engine: Moira) -> Any | None:
         return engine._reader
     except Exception:
         return None
+
+
+def compute_lunar_node_crossing(engine: Moira, request: LunarNodeCrossingRequest) -> LunarNodeCrossingResponse:
+    """Find the next crossing in the requested direction."""
+
+    return LunarNodeCrossingResponse(
+        jd_ut1=next_moon_node_crossing(
+            request.jd_start_ut1, reader=require_engine_reader(engine), ascending=request.direction == "ascending",
+        ),
+        direction=request.direction,
+    )
 
 
 def _kernel_source(reader: Any | None) -> str:

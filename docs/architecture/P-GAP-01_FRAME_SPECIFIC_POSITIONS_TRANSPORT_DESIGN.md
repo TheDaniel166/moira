@@ -40,7 +40,7 @@ Route naming doctrine:
 
 - `frame` marks that these are center/frame-specific products.
 - `heliocentric` means Sun-centered true-of-date ecliptic position.
-- `planetocentric` means target measured from a named observer body center.
+- `planetocentric` uses the ephemeris center selected for the named observer.
 - `ssb` means Solar System Barycenter origin.
 - `received-light` means apparent received-light position plus same-time
   geometric comparison.
@@ -191,6 +191,14 @@ Frame metadata:
 
 ### Planetocentric Position Record
 
+Additive per-result reduction truth is admitted after the engine exposes
+the existing planetocentric calculation's own receipt. Its governing rate
+is the instantaneous transformed state-vector derivative, with only the
+rotation differentiated by TT samples. The serving ephemeris supplies both
+state vectors. Receipt verification compares the dated and historical
+branches against the same reader and keeps observer names distinct from
+resolved NAIF endpoints.
+
 Fields:
 
 - `observer`
@@ -210,6 +218,8 @@ Frame metadata:
 - `center`: requested observer body
 - `frame`: `true_of_date_ecliptic`
 - `product_kind`: `geometric_planetocentric_position`
+- `reduction`: resolved NAIF endpoints, reader-bound epochs and Delta-T,
+  rate sampling, and the frame and correction policy for this position.
 
 ### SSB Position Record
 
@@ -295,7 +305,7 @@ Heliocentric:
 Planetocentric:
 
 - `source_module`: `moira.planetocentric`
-- `engine_entrypoint`: `all_planetocentric_at`
+- `engine_entrypoint`: `all_planetocentric_at_with_truth`
 - `center`: requested observer
 - `correction_model`: `geometric_planetocentric_precession_nutation`
 - `light_time_corrected`: `false`

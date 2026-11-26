@@ -9,6 +9,7 @@ from .astrodynes import router as astrodynes_router
 from .batch import router as batch_router
 from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
+from .coordinates import router as coordinates_router
 from .dasha import router as dasha_router
 from .decans import decanates_router
 from .deep_sky import router as deep_sky_router
@@ -35,6 +36,7 @@ from .hellenistic_systems import router as hellenistic_systems_router
 from .horary import router as horary_router
 from .mundane import router as mundane_router
 from .health import router as health_router
+from .time import router as time_router
 from .huber import router as huber_router
 from .jaimini import router as jaimini_router
 from .local_space import router as local_space_router
@@ -60,6 +62,7 @@ from .panchanga import router as panchanga_router
 from .pancha_pakshi import router as pancha_pakshi_router
 from .orbits import router as orbits_router
 from .phase import router as phase_router
+from .planetary_moons import router as planetary_moons_router
 from .phenomena import router as phenomena_router
 from .eclipse_diagnostics import router as eclipse_diagnostics_router
 from .eclipse_evidence import router as eclipse_evidence_router
@@ -82,6 +85,7 @@ from .vedic_dignities import router as vedic_dignities_router
 from .vedic_profile import router as vedic_profile_router
 from .varga import router as varga_router
 from .asteroids import router as asteroids_router
+from .asteroids import identity_router as small_body_identity_router
 from .comets import router as comets_router
 from .stars import router as stars_router
 from .sothic import router as sothic_router
@@ -101,12 +105,14 @@ __all__ = [
     "astrocartography_router",
     "astrodynes_router",
     "asteroids_router",
+    "small_body_identity_router",
     "comets_router",
     "stars_router",
     "sothic_router",
     "batch_router",
     "chart_router",
     "chart_wheel_router",
+    "coordinates_router",
     "dasha_router",
     "decanates_router",
     "deep_sky_router",
@@ -131,6 +137,7 @@ __all__ = [
     "horary_router",
     "mundane_router",
     "health_router",
+    "time_router",
     "huber_router",
     "jaimini_router",
     "local_space_router",
@@ -154,6 +161,7 @@ __all__ = [
     "panchanga_router",
     "pancha_pakshi_router",
     "phase_router",
+    "planetary_moons_router",
     "phenomena_router",
     "eclipse_diagnostics_router",
     "eclipse_evidence_router",

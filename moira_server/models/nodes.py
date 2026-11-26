@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -21,6 +22,21 @@ MEAN_PLANETARY_NODE_MAX_ITEMS = 8
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class LunarNodeCrossingRequest(_StrictModel):
+    """Select the next ascending or descending lunar node crossing."""
+
+    jd_start_ut1: float = Field(strict=True, allow_inf_nan=False)
+    direction: Literal["ascending", "descending"]
+
+
+class LunarNodeCrossingResponse(_StrictModel):
+    """Next latitude zero crossing in the true geocentric ecliptic of date."""
+
+    jd_ut1: float
+    direction: Literal["ascending", "descending"]
+    frame: Literal["geocentric_true_ecliptic_of_date"] = "geocentric_true_ecliptic_of_date"
 
 
 class NodeComputationMethod(StrEnum):

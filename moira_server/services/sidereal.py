@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from typing import get_args
 
 import moira.sidereal as sidereal_module
+from moira import Body, Moira
 from moira.sidereal import (
     Ayanamsa,
     AyanamsaComputationTruth,
@@ -27,9 +29,15 @@ from ..models.sidereal import (
     AyanamsaDoctrineResponse,
     AyanamsaSystemResponse,
     AyanamsaSystemsEnvelopeResponse,
+    GalacticAyanamsaPreset,
+    GalacticAyanamsaPresetResponse,
+    GalacticAyanamsaPresetsResponse,
+    GalacticAyanamsaSelection,
     NakshatraComputationTruthResponse,
     SiderealAyanamsaRequest,
     SiderealAyanamsaResponse,
+    SiderealChartRequest,
+    SiderealChartResponse,
     SiderealConversionRequest,
     SiderealConversionResponse,
     SiderealNakshatraBulkEnvelopeResponse,
@@ -40,6 +48,9 @@ from ..models.sidereal import (
     SiderealLongitudeConversionTruthResponse,
     SiderealUtilityProvenanceResponse,
 )
+from ..models.sidereal_context import SiderealChartBaseRequest
+from ..serializers.sidereal_context import serialize_sidereal_chart_context
+from .sidereal_context import SiderealChartRequirements, derive_sidereal_chart_context
 
 
 _LONGITUDE_RANGE = [0.0, "360_exclusive"]
@@ -55,7 +66,7 @@ def _registry_provenance() -> SiderealUtilityProvenanceResponse:
         product_kind="ayanamsa_system_registry",
         registry_owner="moira.sidereal.Ayanamsa",
         reference_epoch="J2000",
-        user_defined_ayanamsa="not_admitted",
+        user_defined_ayanamsa="admitted_per_request",
         stage_sequence=[
             "registry_lookup",
             "system_serialization",
@@ -166,6 +177,38 @@ def _serialize_nakshatra_truth(
 
 def _serialize_doctrine(system) -> AyanamsaDoctrineResponse:
     return AyanamsaDoctrineResponse.model_validate(asdict(ayanamsa_doctrine(system)))
+
+
+def compute_sidereal_chart(engine: Moira, request: SiderealChartRequest) -> SiderealChartResponse:
+    """Reduce the canonical chart at one shared UT1 epoch."""
+
+    selection = request.engine_system()
+    context = derive_sidereal_chart_context(
+        engine,
+        SiderealChartBaseRequest(dt=request.dt, include_nodes=request.include_nodes),
+        SiderealChartRequirements(required_bodies=tuple(request.bodies or Body.ALL_PLANETS)),
+        ayanamsa_selection=selection,
+        mode=request.mode,
+    )
+    return SiderealChartResponse(
+        **serialize_sidereal_chart_context(context).model_dump(),
+        computation_truth=_serialize_ayanamsa_truth(context.ayanamsa_truth),
+        doctrine=_serialize_doctrine(selection),
+    )
+
+
+def list_galactic_ayanamsa_presets() -> GalacticAyanamsaPresetsResponse:
+    """Describe every Galactic preset admitted by the REST request schema."""
+
+    presets = []
+    for preset in get_args(GalacticAyanamsaPreset):
+        selection = GalacticAyanamsaSelection(family="galactic_anchor", preset=preset)
+        presets.append(GalacticAyanamsaPresetResponse(
+            selection=selection,
+            supported_modes=["true", "mean"],
+            doctrine=_serialize_doctrine(selection.to_engine()),
+        ))
+    return GalacticAyanamsaPresetsResponse(presets=presets)
 
 
 def list_sidereal_ayanamsa_systems() -> AyanamsaSystemsEnvelopeResponse:

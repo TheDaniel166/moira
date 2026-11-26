@@ -1,3 +1,5 @@
+"""Authority checks for mean lunar node clocks, frame and longitude."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -33,6 +35,22 @@ def test_mean_node_mean_equinox_matches_iers_erfa(jd_tt: float) -> None:
 
     actual = mean_node(jd_ut, nutation=False).longitude
 
+    assert abs(_angular_difference_arcsec(actual, expected)) < 1.0e-5
+
+
+@pytest.mark.parametrize("apply_nutation", [False, True])
+def test_mean_node_uses_supplied_tt_for_argument_and_nutation(monkeypatch, apply_nutation: bool) -> None:
+    """The explicit clock binds both terms and bypasses UT1-to-TT derivation."""
+
+    def unexpected_conversion(_jd: float) -> float:
+        pytest.fail("mean_node must use supplied TT directly")
+
+    monkeypatch.setattr("moira.nodes.ut_to_tt", unexpected_conversion)
+    jd_ut1, jd_tt = 2451545.0, 2451546.0
+    expected = math.degrees(erfa.faom03(centuries_from_j2000(jd_tt)))
+    if apply_nutation:
+        expected += nutation(jd_tt)[0]
+    actual = mean_node(jd_ut1, nutation=apply_nutation, jd_tt=jd_tt).longitude
     assert abs(_angular_difference_arcsec(actual, expected)) < 1.0e-5
 
 

@@ -58,6 +58,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "core",
     },
     {
+        "name": "time",
+        "x-displayName": "Time Scales",
+        "description": "Canonical civil and Julian time conversion and Delta-T source diagnostics.",
+        "x-family": "core",
+    },
+    {
         "name": "positions-frame",
         "x-displayName": "Frame Positions",
         "description": "Frame-specific heliocentric, planetocentric, barycentric, and light-time products.",
@@ -385,6 +391,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "spatial",
     },
     {
+        "name": "coordinates",
+        "x-displayName": "Coordinates",
+        "description": "Supplied ecliptic, equatorial, and inverse horizontal transforms.",
+        "x-family": "spatial",
+    },
+    {
         "name": "geodetic",
         "x-displayName": "Geodetic",
         "description": "Geodetic zodiac, planet equivalents, chart positions, and profile surfaces.",
@@ -433,6 +445,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "phenomena",
     },
     {
+        "name": "planetary-moons",
+        "x-displayName": "Planetary Moons",
+        "description": "Jupiter and Saturn moon states, Earth-view events, phases, eclipses, and kernel coverage.",
+        "x-family": "phenomena",
+    },
+    {
         "name": "sothic",
         "x-displayName": "Sothic and Egyptian Calendar",
         "description": "Bounded Sirius heliacal outcomes and drift fits, Egyptian civil dates, and schematic cycle projections.",
@@ -443,6 +461,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-displayName": "Planetary Hours",
         "description": "Sunrise-based planetary hour schedule and current-hour surfaces.",
         "x-family": "phenomena",
+    },
+    {
+        "name": "small-body-identity",
+        "x-displayName": "Small-Body Identity",
+        "description": "Cross-catalog asteroid and comet name resolution and ambiguity evidence.",
+        "x-family": "catalogs",
     },
     {
         "name": "asteroids (fast small-body)",

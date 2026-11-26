@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from moira.astrocartography import FixedStarAstrocartographyResult
 from moira.chart import ChartContext
 from moira.locational_forecasting import (
@@ -28,6 +30,8 @@ from ..models.forecasting import (
     FixedStarAstrocartographyResponse,
     FixedStarAstrocartographySubjectResponse,
     FixedStarAstrocartographyTruthResponse,
+    NatalRelocationResponse,
+    NatalRelocationTruthResponse,
     RelocatedReturnResponse,
     RelationshipChartIdentityResponse,
     RelationshipChartTargetSetResponse,
@@ -301,7 +305,7 @@ def serialize_dynamic_astrocartography(
 
 def serialize_chart_context(chart: ChartContext) -> ChartContextResponse:
     if chart.houses is None:
-        raise ValueError("relocated return chart is missing its local house frame")
+        raise ValueError("relocated chart is missing its local house frame")
     return ChartContextResponse(
         jd_ut=chart.jd_ut,
         jd_tt=chart.jd_tt,
@@ -314,6 +318,22 @@ def serialize_chart_context(chart: ChartContext) -> ChartContextResponse:
         nodes={name: serialize_node(node) for name, node in chart.nodes.items()},
         houses=serialize_houses(chart.houses),
         is_day=chart.is_day,
+    )
+
+
+def serialize_natal_relocation(
+    source: ChartContext, relocated: ChartContext, dt: datetime,
+) -> NatalRelocationResponse:
+    """Serialize a verified pair of charts at one natal instant."""
+
+    if (source.jd_ut, source.jd_tt) != (relocated.jd_ut, relocated.jd_tt):
+        raise RuntimeError("Natal relocation changed the source epoch")
+    if source.planets != relocated.planets or source.nodes != relocated.nodes:
+        raise RuntimeError("Natal relocation changed the source celestial snapshot")
+    return NatalRelocationResponse(
+        source_chart=serialize_chart_context(source),
+        relocated_chart=serialize_chart_context(relocated),
+        relocation_truth=NatalRelocationTruthResponse(datetime_utc=dt.astimezone(timezone.utc)),
     )
 
 
@@ -368,6 +388,7 @@ __all__ = [
     "serialize_chart_context",
     "serialize_dynamic_astrocartography",
     "serialize_fixed_star_astrocartography",
+    "serialize_natal_relocation",
     "serialize_relationship_chart_identity",
     "serialize_relationship_target_set",
     "serialize_relationship_transit_event",

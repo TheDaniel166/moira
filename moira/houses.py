@@ -4451,7 +4451,7 @@ def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
             f"assign_house requires exactly 12 cusps; got {len(house_cusps.cusps)}"
         )
 
-    lon = longitude % 360.0
+    lon = normalize_degrees(longitude)
 
     for i in range(12):
         cusp_open  = house_cusps.cusps[i]
@@ -5120,7 +5120,7 @@ def compare_placements(
             f"got {len(house_cusps_seq)}"
         )
 
-    lon        = longitude % 360.0
+    lon        = normalize_degrees(longitude)
     placements = tuple(assign_house(lon, hc) for hc in house_cusps_seq)
     houses     = tuple(pl.house for pl in placements)
     all_agree  = len(set(houses)) == 1

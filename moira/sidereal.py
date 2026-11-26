@@ -53,6 +53,8 @@ import math
 from dataclasses import dataclass, replace
 from .ayanamsa_doctrine import (
     DOCTRINAL_TYPES,
+    FAMILY_USER_DEFINED,
+    LAYER_USER_SUPPLIED,
     AyanamsaDoctrine,
     DoctrinalAyanamsa,
     GrahalaghavaAyanamsa,
@@ -537,6 +539,9 @@ def _named_ayanamsa_truth_at_tt(
             anchor_source_mode=None,
             fallback_applied=False,
             fallback_reason=None,
+            doctrine_family=FAMILY_USER_DEFINED,
+            doctrine_layer=LAYER_USER_SUPPLIED,
+            doctrine_terms=(("drift_per_century", system.drift_per_century),),
         )
 
     if system not in _AYANAMSA_AT_J2000:

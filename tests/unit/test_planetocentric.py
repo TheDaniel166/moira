@@ -20,13 +20,17 @@ Verification strategy:
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
+from moira import planets
 from moira.constants import Body
 from moira.planetocentric import (
     VALID_OBSERVER_BODIES,
     PlanetocentricData,
     all_planetocentric_at,
+    all_planetocentric_at_with_truth,
     planetocentric_at,
 )
 
@@ -44,6 +48,33 @@ def _angular_diff(a: float, b: float) -> float:
     """Smallest signed angular difference a − b, in (−180°, +180°]."""
     d = (a - b + 180.0) % 360.0 - 180.0
     return d
+
+
+def test_receipt_matches_observed_center_state_and_rotation_samples(planetary_reader, monkeypatch):
+    state_calls = []
+    rotation_epochs = []
+    compose_rotation = planets._compose_rotation_matrix
+
+    def record_state(center, target, jd_tt):
+        state_calls.append((center, target, jd_tt))
+        return planetary_reader.position_and_velocity(center, target, jd_tt)
+
+    def record_rotation(jd_tt, **kwargs):
+        rotation_epochs.append(jd_tt)
+        return compose_rotation(jd_tt, **kwargs)
+
+    monkeypatch.setattr(planets, "_compose_rotation_matrix", record_rotation)
+    reduced = all_planetocentric_at_with_truth(
+        Body.EARTH, JD_J2000, bodies=[Body.MARS], reader=SimpleNamespace(position_and_velocity=record_state),
+    )[Body.MARS]
+    receipt = reduced.truth
+    tt = receipt.time_binding.jd_tt
+    assert state_calls == [(0, 3, tt), (3, 399, tt), (0, 4, tt)]
+    assert (receipt.center_naif_id, receipt.target_naif_id) == (399, 4)
+    assert (receipt.center_kind, receipt.target_kind) == ("body_center", "planetary_system_barycenter")
+    assert rotation_epochs[:2] == [tt, tt]
+    assert sorted(rotation_epochs[2:]) == list(receipt.rate_sampling.frame_derivative_jd_tt)
+    assert reduced.result == planetocentric_at(Body.EARTH, Body.MARS, JD_J2000, reader=planetary_reader)
 
 
 # ---------------------------------------------------------------------------

@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends
 
 from ..dependencies import get_engine
 from ..models.generic_phenomena import (
+    HeliocentricEventsRequest,
+    HeliocentricEventsResponse,
     OrbitalPhenomenaEventsEnvelopeResponse,
     OrbitalPhenomenaEventsRequest,
     PlanetPhenomenaEnvelopeResponse,
@@ -18,6 +20,7 @@ from ..models.generic_phenomena import (
     SolarConditionInstantRequest,
 )
 from ..services.generic_phenomena import (
+    compute_heliocentric_events,
     compute_orbital_phenomena_events,
     compute_planet_phenomena,
     compute_proximity_events,
@@ -27,6 +30,15 @@ from ..services.generic_phenomena import (
 
 
 router = APIRouter(prefix="/v1", tags=["generic-phenomena"])
+
+
+@router.post("/phenomena/heliocentric-events", response_model=HeliocentricEventsResponse)
+def heliocentric_events_route(
+    request: HeliocentricEventsRequest, engine=Depends(get_engine),
+) -> HeliocentricEventsResponse:
+    """Search bounded heliocentric conjunctions or fixed longitude crossings."""
+
+    return compute_heliocentric_events(engine, request)
 
 
 @router.post("/phenomena/planet", response_model=PlanetPhenomenaEnvelopeResponse)

@@ -6,7 +6,7 @@ import math
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from moira.cosmic_references import CosmicReferenceKind
 
@@ -141,6 +141,49 @@ class CosmicReferencePointsRequest(_StrictModel):
 
 
 class GalacticChartPositionsRequest(_StrictModel):
+    """Galactic positions for a dated chart with optional lunar ascending nodes.
+
+    RITE:
+        Bind one timezone-aware chart instant, planet selection and observer.
+
+    THEOREM:
+        A supplied observer requires both coordinates, and the optional node
+        mode selects at most two geocentric ascending nodes.
+
+    RITE OF PURPOSE:
+        Give the chart adapter the requested planet set and node modes.
+
+    LAW OF OPERATION:
+        Pydantic validates the mode and coordinate bounds. Validators read
+        the fields to enforce an aware datetime, paired observer coordinates,
+        finite observer values, and a bounded body list. The service owns
+        body resolution, ephemeris reads, and frame reduction.
+
+    Canon: POST /v1/galactic/chart/positions and GALACTIC_MAX_BODIES.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.server.models.galactic.GalacticChartPositionsRequest",
+      "risk": "low",
+      "api": {
+        "frozen": ["dt", "bodies", "observer_lat", "observer_lon", "observer_elev_m", "node_mode"],
+        "internal": ["_observer_pair", "_aware_datetime", "_valid_bodies", "_finite_observer"]
+      },
+      "state": {"mutable": true, "owners": ["GalacticChartPositionsRequest instance"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise", "invalid_input": "pydantic.ValidationError"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": []}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={"description": "Galactic positions for a dated chart with optional lunar ascending nodes."},
+    )
+
     dt: datetime
     bodies: list[str] | None = None
     # No observer means geocentric positions, like the natal chart. The former
@@ -149,6 +192,9 @@ class GalacticChartPositionsRequest(_StrictModel):
     observer_lat: float | None = Field(default=None, ge=-90.0, le=90.0)
     observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
     observer_elev_m: float = 0.0
+    node_mode: Literal["true", "mean", "both"] | None = Field(
+        default=None, description="Append the selected geocentric lunar ascending nodes.",
+    )
 
     @model_validator(mode="after")
     def _observer_pair(self) -> "GalacticChartPositionsRequest":

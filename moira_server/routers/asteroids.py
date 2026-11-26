@@ -7,7 +7,8 @@ They automatically use the native Type 13 evaluator for speed.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from moira.small_body_identity import SmallBodyFamily
 
 from ..dependencies import get_engine
 from ..models.asteroids import (
@@ -18,6 +19,7 @@ from ..models.asteroids import (
     AsteroidFamilyMembersResponse,
     AsteroidFamilyResonanceNetworkRequest,
     AsteroidFamilyResonanceNetworkResponse,
+    AsteroidIdentityResponse,
     AsteroidPositionRequest,
     AsteroidPositionResponse,
     AsteroidSubsetListResponse,
@@ -27,6 +29,9 @@ from ..models.asteroids import (
     AsteroidSubsetsResponse,
     AsteroidsBulkRequest,
     AsteroidsBulkResponse,
+    SmallBodyIdentityAmbiguity,
+    SmallBodyIdentityConflictResponse,
+    SmallBodyIdentityResponse,
 )
 from ..services.asteroids import (
     compute_asteroid_family_resonance_network,
@@ -39,9 +44,35 @@ from ..services.asteroids import (
     list_asteroid_subsets,
     list_sovereign_asteroids,
     lookup_asteroid_family,
+    lookup_asteroid_identity,
+    lookup_small_body,
 )
 
 router = APIRouter(prefix="/v1/asteroids", tags=["asteroids (fast small-body)"])
+identity_router = APIRouter(prefix="/v1/small-bodies", tags=["small-body-identity"])
+
+
+@identity_router.get(
+    "/identity",
+    response_model=SmallBodyIdentityResponse,
+    responses={
+        404: {"description": "The name is absent from the selected catalogs."},
+        409: {"model": SmallBodyIdentityConflictResponse, "description": "Multiple catalog matches."},
+    },
+)
+def small_body_identity_route(
+    body: str = Query(..., min_length=1, max_length=128),
+    family: SmallBodyFamily | None = None,
+    engine=Depends(get_engine),
+) -> SmallBodyIdentityResponse:
+    """Resolve a name or family-qualified designation across the two catalogs."""
+
+    identity = lookup_small_body(engine, body, family)
+    if identity is None:
+        raise HTTPException(status_code=404, detail="Small-body identity is absent from the catalog.")
+    if isinstance(identity, SmallBodyIdentityAmbiguity):
+        raise HTTPException(status_code=409, detail=identity.model_dump(mode="json"))
+    return identity
 
 
 @router.post("/position", response_model=AsteroidPositionResponse)
@@ -80,6 +111,23 @@ def list_asteroids(
     Use ?q=ceres or ?q=2000001 for filtering. Fast (no heavy computation).
     """
     return list_sovereign_asteroids(engine, name_filter=q, limit=limit)
+
+
+@router.get(
+    "/identity",
+    response_model=AsteroidIdentityResponse,
+    responses={404: {"description": "Asteroid identity is absent from the catalog."}},
+)
+def asteroid_identity_route(
+    body: str = Query(..., min_length=1, max_length=128, description="Exact name, designation, or NAIF ID"),
+    engine=Depends(get_engine),
+) -> AsteroidIdentityResponse:
+    """Resolve a catalog identity and report whether a loaded kernel contains it."""
+
+    identity = lookup_asteroid_identity(engine, body)
+    if identity is None:
+        raise HTTPException(status_code=404, detail="Asteroid identity is absent from the catalog.")
+    return identity
 
 
 @router.get("/subsets", response_model=AsteroidSubsetsResponse)

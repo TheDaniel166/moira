@@ -62,6 +62,8 @@ from ..models.phenomena import (
     RetrogradePeriodSearchResponse,
     RiseSetPhenomenaRequest,
     RiseSetPhenomenaResponse,
+    HorizonAvailabilityRequest,
+    HorizonAvailabilityResponse,
     RiseSetTransitRequest,
     SolarEclipseFootprintRequest,
     SolarEclipseCartographyRequest,
@@ -166,6 +168,7 @@ from ..services.phenomena import (
     compute_planet_heliacal_event,
     compute_retrograde_periods,
     compute_rise_set_phenomena,
+    compute_horizon_availability,
     compute_rise_set_transit,
     compute_solar_eclipse_footprint,
     compute_solar_eclipse_cartography,
@@ -323,6 +326,15 @@ def void_of_course_range_route(
         ],
         computation_truth=serialize_void_of_course_range_truth(result.truth),
     )
+
+
+@router.post("/rise-set/availability", response_model=HorizonAvailabilityResponse)
+def horizon_availability_route(
+    request: HorizonAvailabilityRequest, engine: Moira = Depends(get_engine),
+) -> HorizonAvailabilityResponse:
+    """Classify daily crossing availability at one geometric altitude."""
+
+    return compute_horizon_availability(engine, request)
 
 
 @router.post("/rise-set/phenomena", response_model=RiseSetPhenomenaResponse)

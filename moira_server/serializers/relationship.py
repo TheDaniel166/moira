@@ -115,6 +115,7 @@ from ..models.relationship import (
     PatternDetectionTruthResponse,
     PatternRequiredAspectLedgerResponse,
     PatternRequest,
+    SuppliedPatternRequest,
     PatternGeometryResponse,
     PatternSearchComputationTruthResponse,
     PlanetaryPictureResponse,
@@ -936,17 +937,20 @@ def serialize_aspect_pattern(
 
 
 def serialize_pattern_search_truth(
-    request: PatternRequest,
+    request: PatternRequest | SuppliedPatternRequest,
     *,
     pattern_count: int,
 ) -> PatternSearchComputationTruthResponse:
     """Expose pattern selection and coherence inputs beside the result list."""
 
     policy = request.engine_policy()
+    chart_backed = isinstance(request, PatternRequest)
     return PatternSearchComputationTruthResponse(
         aspect_catalog=("standard_plus_optional_longitude" if policy.optional_sets
                         else "standard_longitude"),
-        include_nodes=request.include_nodes,
+        position_source="chart_longitudes" if chart_backed else "caller_supplied_longitudes",
+        motion_source="chart_longitude_rates_for_coherence" if chart_backed else "not_requested",
+        include_nodes=request.include_nodes if chart_backed else False,
         orb_factor=request.orb_factor,
         orbs=dict(request.orbs),
         pattern_orbs=dict(request.pattern_orbs),

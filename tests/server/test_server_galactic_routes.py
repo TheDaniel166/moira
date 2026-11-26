@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 
+from moira.constants import Body
 from moira.cosmic_references import all_cosmic_references_at
 from moira.galactic import (
     ecliptic_to_galactic,
@@ -13,10 +16,14 @@ from moira.galactic import (
     galactic_to_ecliptic,
     galactic_to_equatorial,
 )
+from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
+from moira.nodes import mean_node, true_node
+from moira.obliquity import true_obliquity
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 from moira_server.models.galactic import GalacticChartPositionsRequest
 from moira_server.serializers.galactic import serialize_galactic_positions
+from moira_server.services import galactic as galactic_service
 from moira_server.services.galactic import compute_galactic_chart_positions
 
 
@@ -37,6 +44,7 @@ def client_with_engine(
 _DT_ISO = "2000-01-01T12:00:00Z"
 _JD_J2000 = 2451545.0
 _OBLIQUITY = 23.4392911
+_CHART_PATH = "/v1/galactic/chart/positions"
 
 
 def _assert_validation_envelope(response, *, message_fragment: str | None = None) -> None:
@@ -414,3 +422,117 @@ def test_galactic_chart_positions_default_to_geocentric(client_with_engine: Test
         json={"dt": "1879-03-14T10:50:02Z", "observer_lat": 48.4},
     )
     assert half.status_code == 422
+
+
+@pytest.mark.parametrize(("mode", "expected_names", "expected_stages"), [
+    ("true", [Body.TRUE_NODE], ["true_lunar_node_at_chart_tt"]),
+    ("mean", [Body.MEAN_NODE], ["mean_lunar_node_at_chart_tt"]),
+    (
+        "both", [Body.TRUE_NODE, Body.MEAN_NODE],
+        ["true_lunar_node_at_chart_tt", "mean_lunar_node_at_chart_tt"],
+    ),
+])
+def test_galactic_chart_nodes_match_direct_transform_at_the_chart_epoch(
+    client_with_engine, moira_engine, monkeypatch, mode, expected_names, expected_stages,
+):
+    payload = {
+        "dt": "1980-07-01T10:30:00Z", "bodies": ["Moon", "Sun"],
+        "observer_lat": 51.5, "observer_lon": -0.1,
+    }
+    jd_utc = jd_from_datetime(datetime.fromisoformat(payload["dt"]))
+    ut1, tt = utc_to_ut1(jd_utc), utc_to_tt(jd_utc)
+    obliquity = true_obliquity(tt)
+    calls = []
+    source_nodes = {}
+
+    def capture_true(jd_ut, *, reader, jd_tt):
+        assert reader is moira_engine._reader
+        assert (jd_ut, jd_tt) == (ut1, tt)
+        calls.append(Body.TRUE_NODE)
+        source = true_node(ut1, reader=reader, jd_tt=tt)
+        source_nodes[Body.TRUE_NODE] = source
+        return source
+
+    def capture_mean(jd_ut, *, jd_tt):
+        assert (jd_ut, jd_tt) == (ut1, tt)
+        calls.append(Body.MEAN_NODE)
+        source = mean_node(ut1, jd_tt=tt)
+        source_nodes[Body.MEAN_NODE] = source
+        return source
+
+    monkeypatch.setattr(galactic_service, "true_node", capture_true)
+    monkeypatch.setattr(galactic_service, "mean_node", capture_mean)
+    baseline = client_with_engine.post(_CHART_PATH, json=payload)
+    assert baseline.status_code == 200, baseline.text
+    assert calls == []
+
+    response = client_with_engine.post(_CHART_PATH, json={**payload, "node_mode": mode})
+    assert response.status_code == 200, response.text
+    actual = response.json()
+    assert calls == expected_names
+    assert actual["positions"][:2] == baseline.json()["positions"]
+    provenance = actual["provenance"]
+    assert provenance["requested_bodies"] == payload["bodies"]
+    assert provenance["returned_bodies"] == [*payload["bodies"], *expected_names]
+    assert provenance["source_frame"] == "ecliptic_true_of_date"
+    assert provenance["target_frame"] == "galactic_iau_1958"
+    assert (provenance["jd_ut"], provenance["jd_tt"], provenance["obliquity_deg"]) == (ut1, tt, obliquity)
+    assert provenance["stage_sequence"][-2 - len(expected_stages):-2] == expected_stages
+
+    for item, name in zip(actual["positions"][2:], expected_names, strict=True):
+        source = source_nodes[name]
+        assert item["body"] == name == source.name
+        assert (item["ecliptic_longitude"], item["ecliptic_latitude"]) == (source.longitude, 0.0)
+        direct = client_with_engine.post("/v1/galactic/ecliptic-to-galactic", json={
+            "ecliptic_longitude": source.longitude, "ecliptic_latitude": 0,
+            "obliquity": obliquity, "jd_tt": tt,
+        })
+        assert direct.status_code == 200, direct.text
+        coordinates = direct.json()
+        assert item["galactic_longitude"] == coordinates["galactic_longitude"]
+        assert item["galactic_latitude"] == coordinates["galactic_latitude"]
+
+
+def test_galactic_node_opt_in_preserves_default_planet_set_and_order(client_with_engine):
+    payload = {"dt": _DT_ISO}
+    baseline = client_with_engine.post(_CHART_PATH, json=payload)
+    explicit_none = client_with_engine.post(_CHART_PATH, json={**payload, "node_mode": None})
+    selected = client_with_engine.post(_CHART_PATH, json={**payload, "node_mode": "both"})
+    for response in (baseline, explicit_none, selected):
+        assert response.status_code == 200, response.text
+    assert explicit_none.json() == baseline.json()
+    bodies = baseline.json()["provenance"]["returned_bodies"]
+    assert bodies == Body.ALL_PLANETS
+    assert selected.json()["provenance"]["returned_bodies"] == [*bodies, Body.TRUE_NODE, Body.MEAN_NODE]
+    assert selected.json()["positions"][:-2] == baseline.json()["positions"]
+
+
+def test_galactic_nodes_remain_geocentric_for_topocentric_moon(client_with_engine):
+    payload = {"dt": "1879-03-14T10:50:02Z", "bodies": ["Moon"], "node_mode": "both"}
+    geocentric = client_with_engine.post(_CHART_PATH, json=payload)
+    topocentric = client_with_engine.post(_CHART_PATH, json={
+        **payload, "observer_lat": 0, "observer_lon": 0,
+    })
+    for response in (geocentric, topocentric):
+        assert response.status_code == 200, response.text
+    moon, *nodes = geocentric.json()["positions"]
+    local_moon, *local_nodes = topocentric.json()["positions"]
+    assert moon["ecliptic_longitude"] != local_moon["ecliptic_longitude"]
+    assert nodes == local_nodes
+
+
+@pytest.mark.parametrize("mode", [True, "north", ["true"]])
+def test_galactic_chart_rejects_unsupported_node_modes(client_with_engine, mode):
+    response = client_with_engine.post(_CHART_PATH, json={"dt": _DT_ISO, "bodies": ["Sun"], "node_mode": mode})
+    _assert_validation_envelope(response)
+    assert "node_mode" in response.text
+
+
+def test_galactic_chart_openapi_lists_optional_node_modes(client_with_engine):
+    schema = client_with_engine.app.openapi()
+    reference = schema["paths"][_CHART_PATH]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"]
+    request = schema["components"]["schemas"][reference.rsplit("/", 1)[-1]]
+    assert "node_mode" not in request["required"]
+    assert request["properties"]["node_mode"]["anyOf"] == [
+        {"type": "string", "enum": ["true", "mean", "both"]}, {"type": "null"},
+    ]

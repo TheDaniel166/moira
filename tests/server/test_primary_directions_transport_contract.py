@@ -873,6 +873,12 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
     assert "PrimaryDirectionConverseDoctrine" in str(policy["converse_doctrine"])
     timeline = schemas["PrimaryDirectionsTimelineRequest"]["properties"]
     assert "EgyptianBoundsDoctrine" in str(timeline["bound_doctrine"])
+    assert timeline["submitted_arcs"]["type"] == "null"
+    assert timeline["submitted_arcs"]["deprecated"] is True
+    for field in ("include_relations", "include_condition"):
+        assert timeline[field]["const"] is False
+        assert timeline[field]["deprecated"] is True
+        assert search[field]["type"] == "boolean"
     assert (
         "topocentric_zodiacal_aspect_signed_primary_motion"
         in schemas["PrimaryDirectionsPreset"]["enum"]
@@ -893,6 +899,7 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
     for field_name, schema_name in advanced_schemas.items():
         assert search[field_name]["maxItems"] == 256
         assert schema_name in str(search[field_name]["items"])
+        assert timeline[field_name] == search[field_name]
     assert "PrimaryDirectionAntisciaKind" in str(
         schemas["PrimaryDirectionAntisciaTargetRequest"]["properties"]["kind"]
     )

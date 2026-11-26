@@ -12,6 +12,60 @@ families must continue to obey.
 
 Current implementation state:
 
+- Planetocentric positions carry a per-result receipt for the resolved NAIF
+  endpoints, ephemeris clock, instantaneous rate sampling, and true-of-date
+  ecliptic frame. [Planetocentric reduction receipt](../../wiki/02_services/REST_API_REFERENCE.md#planetocentric-reduction-receipt)
+
+- Galactic chart positions can append the true or mean lunar ascending node
+  or both. The chart epoch and true obliquity govern their Galactic rotation,
+  and the serving reader supplies the true node's lunar state.
+  [Galactic chart nodes](../../wiki/02_services/REST_API_REFERENCE.md#galactic-chart-nodes)
+
+- Dated house anchors are `admit_now` on the synchronous house and house
+  reduction operations. The dated facade owns the reader binding, and
+  `calculate_houses` owns solar anchor resolution and the zodiac offset.
+  [Dated house anchors](../../wiki/02_services/REST_API_REFERENCE.md#dated-house-anchors)
+
+- Supplied-coordinate transforms use one synchronous, kernel-free operation
+  for ecliptic/equatorial rotation at caller-supplied obliquity and the
+  geometric horizon inverse at a caller-supplied sidereal meridian.
+  Engine results carry frame conventions and nullable singular angles.
+  [Supplied-coordinate transforms](../../wiki/02_services/REST_API_REFERENCE.md#supplied-coordinate-transforms)
+
+- Astronomical calendar input is `admit_now` as a synchronous, read-only,
+  kernel-free extension to time conversion. The public `moira.julian.julian_day`
+  reducer owns the Meeus proleptic Gregorian mapping, with the matching
+  `calendar_datetime_from_jd` inverse. The request validates Gregorian
+  dates before reduction and returns a UTC-coded civil JD for one supplied
+  instant. [Astronomical calendar input](../../wiki/02_services/REST_API_REFERENCE.md#astronomical-calendar-input)
+
+- Sidereal time is admitted as a synchronous, kernel-free operation. It
+  accepts explicit UT1 and TT for Greenwich or an east-positive local
+  meridian and returns the mean or apparent angle with the engine's
+  reduction provenance. [Sidereal time](../../wiki/02_services/REST_API_REFERENCE.md#sidereal-time)
+
+- Natal chart relocation is admitted as a synchronous operation using the
+  serving ephemeris reader. It builds one natal snapshot, verifies the shared
+  epochs and celestial records, and returns both local house frames.
+  [Natal relocation](../../wiki/02_services/REST_API_REFERENCE.md#natal-chart-relocation)
+
+- Static house placement comparison is admitted as a synchronous, kernel-free
+  operation. It reuses the shared ARMC house pair for up to 128 supplied
+  longitudes and returns the engine's membership and agreement results.
+  [Placement comparison](../../wiki/02_services/REST_API_REFERENCE.md#static-house-placement-comparison)
+
+- Static house comparison is admitted as a synchronous, kernel-free operation.
+  It calculates two house figures with shared ARMC, obliquity, latitude and
+  policy, then returns the engine's cusp comparison and both fallback receipts.
+  The primary-directions timeline request now rejects submitted-arc and
+  expansion modes outside its engine chronology contract. [House comparison](../../wiki/02_services/REST_API_REFERENCE.md#static-house-comparison) · [Timeline contract](../../wiki/02_services/REST_API_REFERENCE.md#primary-directions-transport-contract)
+
+- The local capability parity package adds static ARMC, sidereal chart and
+  custom-ayanamsa inputs, supplied-position analysis, catalog searches, time
+  diagnostics, and bounded event and series routes. The contract and
+  numerical verification are recorded in the [REST reference](../../wiki/02_services/REST_API_REFERENCE.md#capability-parity-routes)
+  and the [planetary moon guide](../PLANETARY_MOONS.md).
+
 - VED-009 admits `/v1/muhurta/doshas/{catalogue,direct,day}` for six named
   source-owned restrictions and three opt-in exceptions. Admission is
   `admit_now` for this validated engine contract: synchronous, read-only,

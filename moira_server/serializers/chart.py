@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 from moira import Chart, HouseCusps, NodeData
-from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
+from moira.houses import (
+    HousePlacement,
+    HousePlacementComparison,
+    HouseSystemComparison,
+    PolarFallbackPolicy,
+    UnknownSystemPolicy,
+)
 
 from ..models.chart import (
     AnalyticalHouseDynamicsResponse,
@@ -18,8 +24,12 @@ from ..models.chart import (
     HouseBoundaryCurvePointResponse,
     HouseBoundaryGeometryResponse,
     HouseBoundaryGeometrySetResponse,
+    HouseComparisonResponse,
     HouseDynamicsComputationResponse,
     HouseDynamicsResponse,
+    HousePlacementComparisonResponse,
+    HousePlacementSideResponse,
+    HousePointComparisonResponse,
     HousePolicyResponse,
     HousesReductionResponse,
     HousesReductionTruthResponse,
@@ -237,6 +247,53 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
         astronomical_asc_defined=houses.astronomical_asc_defined,
         sandhis=list(houses.sandhis) if houses.sandhis is not None else None,
         boundary_geometry=boundary_geometry,
+    )
+
+
+def serialize_house_comparison(comparison: HouseSystemComparison) -> HouseComparisonResponse:
+    """Preserve both figures and the engine's comparison vessel."""
+
+    return HouseComparisonResponse(
+        left=serialize_houses(comparison.left),
+        right=serialize_houses(comparison.right),
+        cusp_deltas=list(comparison.cusp_deltas),
+        systems_agree=comparison.systems_agree,
+        fallback_differs=comparison.fallback_differs,
+        families_differ=comparison.families_differ,
+    )
+
+
+def _serialize_house_placement_side(placement: HousePlacement) -> HousePlacementSideResponse:
+    return HousePlacementSideResponse(
+        house=placement.house,
+        exact_on_cusp=placement.exact_on_cusp,
+        cusp_longitude=placement.cusp_longitude,
+    )
+
+
+def serialize_house_placement_comparison(
+    left: HouseCusps,
+    right: HouseCusps,
+    comparisons: dict[str, HousePlacementComparison],
+    *,
+    zodiac_offset_deg: float,
+) -> HousePlacementComparisonResponse:
+    """Serialize both figures once and their per-point engine results."""
+
+    return HousePlacementComparisonResponse(
+        left=serialize_houses(left),
+        right=serialize_houses(right),
+        zodiac_offset_deg=zodiac_offset_deg,
+        placements={
+            name: HousePointComparisonResponse(
+                longitude=comparison.longitude,
+                left=_serialize_house_placement_side(comparison.placements[0]),
+                right=_serialize_house_placement_side(comparison.placements[1]),
+                all_agree=comparison.all_agree,
+                angularity_agrees=comparison.angularity_agrees,
+            )
+            for name, comparison in comparisons.items()
+        },
     )
 
 

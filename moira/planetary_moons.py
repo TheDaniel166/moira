@@ -28,7 +28,8 @@ from ._planetary_moon_data import (
 from ._planetary_moon_geometry import (
     DiskOverlap,
     angle_between,
-    disk_overlap,
+    classify_disk_margins,
+    disk_contact_margins,
     planet_pole,
     sky_offsets_arcsec,
 )
@@ -189,23 +190,63 @@ def _received(body: int, observer: Vec3, offset: float, position) -> tuple[Vec3,
     return direction, emission
 
 
+@dataclass(frozen=True, slots=True)
+class _MoonContactSample:
+    """Nominal limb margins and retarded epochs relative to Earth reception."""
+
+    earth_moon: Vec3
+    depth_km: float
+    moon_emission: float
+    planet_emission: float
+    shadow_planet_emission: float | None
+    shadow_sun_emission: float | None
+    earth_margins: tuple[float, float]
+    eclipse_margins: tuple[float, float] | None
+
+
+def _moon_contact_sample(
+    system: MoonSystem, identity: MoonIdentity, epoch: float,
+    earth: Vec3, earth_planet: Vec3, planet_emission: float, position,
+    *, include_eclipse: bool = True,
+) -> _MoonContactSample:
+    """Reduce the same finite disks for snapshots and contact searches."""
+
+    earth_moon, moon_emission = _received(identity.naif_id, earth, 0.0, position)
+    depth = vec_norm(earth_moon) - vec_norm(earth_planet)
+    earth_margins = disk_contact_margins(
+        earth_planet, planet_pole(system, epoch, planet_emission), system.radii_km,
+        earth_moon, identity.radius_km,
+    )
+    if not include_eclipse:
+        return _MoonContactSample(
+            earth_moon, depth, moon_emission, planet_emission, None, None, earth_margins, None,
+        )
+    moon_at_eclipse = vec_add(earth, earth_moon)
+    eclipse_planet, shade_emission = _received(system.center, moon_at_eclipse, moon_emission, position)
+    eclipse_sun, sun_emission = _received(10, moon_at_eclipse, moon_emission, position)
+    eclipse_margins = disk_contact_margins(
+        eclipse_planet, planet_pole(system, epoch, shade_emission), system.radii_km,
+        eclipse_sun, SUN_RADIUS_KM,
+    )
+    return _MoonContactSample(
+        earth_moon, depth, moon_emission, planet_emission, shade_emission, sun_emission,
+        earth_margins, eclipse_margins,
+    )
+
+
 def _moon_at(system: MoonSystem, identity: MoonIdentity, epoch: float,
              parent: Vec3, earth: Vec3, earth_planet: Vec3, planet_emission: float,
              state, position) -> PlanetaryMoon:
     body = identity.naif_id
     xyz, velocity = state(system.center, body)
+    contact = _moon_contact_sample(system, identity, epoch, earth, earth_planet, planet_emission, position)
 
-    earth_moon, moon_emission = _received(body, earth, 0.0, position)
-    east, north = sky_offsets_arcsec(earth_planet, earth_moon)
-    depth = vec_norm(earth_moon) - vec_norm(earth_planet)
-    overlap = disk_overlap(
-        earth_planet, planet_pole(system, epoch, planet_emission), system.radii_km,
-        earth_moon, identity.radius_km,
-    )
+    east, north = sky_offsets_arcsec(earth_planet, contact.earth_moon)
+    overlap = classify_disk_margins(contact.earth_margins)
     event = None
     if overlap in ("partial", "contained"):
-        event = "transit" if depth < 0.0 else "occultation"
-    view = EarthMoonView(east, north, depth, moon_emission, planet_emission, overlap, event)
+        event = "transit" if contact.depth_km < 0.0 else "occultation"
+    view = EarthMoonView(east, north, contact.depth_km, contact.moon_emission, planet_emission, overlap, event)
 
     parent_moon, phase_emission = _received(body, parent, 0.0, position)
     moon_at_phase = vec_add(parent, parent_moon)
@@ -213,17 +254,12 @@ def _moon_at(system: MoonSystem, identity: MoonIdentity, epoch: float,
     phase_angle = angle_between(phase_sun, vec_scale(parent_moon, -1.0))
     phase = MoonPhase(degrees(phase_angle), (1.0 + cos(phase_angle)) / 2.0, phase_emission)
 
-    moon_at_eclipse = vec_add(earth, earth_moon)
-    eclipse_planet, shade_emission = _received(system.center, moon_at_eclipse, moon_emission, position)
-    eclipse_sun, _ = _received(10, moon_at_eclipse, moon_emission, position)
-    obscuration = disk_overlap(
-        eclipse_planet, planet_pole(system, epoch, shade_emission), system.radii_km,
-        eclipse_sun, SUN_RADIUS_KM,
-    )
+    assert contact.eclipse_margins is not None
+    obscuration = classify_disk_margins(contact.eclipse_margins)
     eclipse = "total" if obscuration == "contained" else obscuration
     return PlanetaryMoon(
         identity.name, body, system.name, system.center, xyz, velocity, vec_norm(xyz),
-        view, phase, eclipse, moon_emission,
+        view, phase, eclipse, contact.moon_emission,
     )
 
 

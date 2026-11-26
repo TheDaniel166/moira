@@ -7,10 +7,11 @@ relationship-chart policy.
 
 from __future__ import annotations
 
+from datetime import datetime
 import math
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import HouseSystem
 from moira.aspect_registry import resolve_aspect, ASPECT_DEFINITIONS, _select_aspects
@@ -524,6 +525,45 @@ class RelocatedReturnRequest(_StrictModel):
         return self
 
 
+class NatalRelocationRequest(_StrictModel):
+    """Recast a chart from one timezone-aware natal instant at a second site."""
+
+    dt: AwareDatetime
+    source_latitude: float = Field(strict=True, ge=-90, le=90, allow_inf_nan=False)
+    source_longitude: float = Field(strict=True, ge=-180, le=180, allow_inf_nan=False)
+    relocated_latitude: float = Field(strict=True, ge=-90, le=90, allow_inf_nan=False)
+    relocated_longitude: float = Field(strict=True, ge=-180, le=180, allow_inf_nan=False)
+    source_house_system: str = Field(default=HouseSystem.PLACIDUS, min_length=1, max_length=128)
+    relocated_house_system: str | None = Field(default=None, min_length=1, max_length=128)
+    bodies: list[Annotated[str, Field(min_length=1, max_length=128)]] | None = Field(
+        default=None, min_length=1, max_length=16,
+    )
+    house_policy: HousePolicyRequest | None = None
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _require_civil_datetime(cls, value: Any) -> datetime:
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            iso = value[:-1] + "+00:00" if value.endswith("Z") else value
+            try:
+                return datetime.fromisoformat(iso)
+            except ValueError as exc:
+                raise ValueError("dt must be an ISO 8601 datetime with a UTC offset") from exc
+        raise ValueError("dt must be an ISO 8601 datetime with a UTC offset")
+
+    @field_validator("bodies")
+    @classmethod
+    def _require_unique_bodies(cls, value: list[str] | None) -> list[str] | None:
+        if value is not None:
+            if any(body != body.strip() for body in value):
+                raise ValueError("chart bodies must be non-empty trimmed strings")
+            if len(set(value)) != len(value):
+                raise ValueError("chart bodies must be unique")
+        return value
+
+
 class ChartContextResponse(_StrictModel):
     jd_ut: float
     jd_tt: float
@@ -533,6 +573,22 @@ class ChartContextResponse(_StrictModel):
     nodes: dict[str, NodePositionResponse]
     houses: HousesResponse
     is_day: bool
+
+
+class NatalRelocationTruthResponse(_StrictModel):
+    """Source epoch and preserved-snapshot receipt for natal relocation."""
+
+    datetime_utc: AwareDatetime
+    chart_source: Literal["moira.chart.create_chart"] = "moira.chart.create_chart"
+    relocation_source: Literal["moira.chart.relocated_chart"] = "moira.chart.relocated_chart"
+    same_epoch: Literal[True] = True
+    same_celestial_snapshot: Literal[True] = True
+
+
+class NatalRelocationResponse(_StrictModel):
+    source_chart: ChartContextResponse
+    relocated_chart: ChartContextResponse
+    relocation_truth: NatalRelocationTruthResponse
 
 
 class ReturnMomentTruthResponse(_StrictModel):
@@ -598,6 +654,8 @@ __all__ = [
     "FixedStarAstrocartographyResponse",
     "FixedStarAstrocartographySubjectResponse",
     "FixedStarAstrocartographyTruthResponse",
+    "NatalRelocationRequest",
+    "NatalRelocationResponse",
     "RelocatedReturnRequest",
     "RelocatedReturnResponse",
     "RelationshipChartIdentityResponse",

@@ -61,7 +61,7 @@ Phase 10 must distinguish:
 | P10-01 | Astrocartography | `admitted` | Four bounded line/subplanetary routes are live with direct and chart-backed shapes, explicit provenance, sampled-curve bounds, route tests, and route-count audit; dense map/grid products remain deferred. |
 | P10-02 | Local Space | `admitted` | Two bounded direct/chart-backed horizon-position routes are live with explicit observer, LST, RA/Dec provenance, route tests, and route-count audit; rendered compass charts, map products, projection products, and catalog sweeps remain deferred. |
 | P10-03 | Geodetic | `admitted` | Four bounded direct/chart-backed location-chart and equivalent-longitude routes are live with explicit zodiac and ayanamsa provenance, route tests, and route-count audit. A kernel-free step (2026-10-28) adds direct houses, geometry, sensitivity and uncertainty. Primitive helper routes, map products, projection products, geographic search, relocation synthesis, and catalog sweeps remain deferred. |
-| P10-03b | Geodetic analysis | `admitted` | Seven bounded routes (chart-backed houses, plus direct and chart-backed overlay, compare and loci) per `P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md`. They carry snapshot provenance, per-place failure isolation and analytic loci with witnesses; parity, adversarial and kernel-free tests pass. Rendered maps, projections, GeoJSON/grids, search and scoring, and relocated natal charts remain deferred. |
+| P10-03b | Geodetic analysis | `admitted` | Seven bounded routes (chart-backed houses, plus direct and chart-backed overlay, compare and loci) per `P10-03B_GEODETIC_ANALYSIS_TRANSPORT_DESIGN.md`. They carry snapshot provenance, per-place failure isolation and analytic loci with witnesses. Parity, adversarial and kernel-free tests pass. Rendered maps, projections, GeoJSON/grids, search and scoring remain deferred. Natal relocation is admitted separately at [`POST /v1/chart/relocated`](../../wiki/02_services/REST_API_REFERENCE.md#natal-chart-relocation). |
 | P10-03c | Geodetic timing | `admitted` | `POST /v1/geodetic/chart/transits` per `P10-03C_GEODETIC_TIMING_TRANSPORT_DESIGN.md`. Bounded to a 366-day span and a step of at least 0.25 day, with owner budgets as ceilings and caching by request. Epochs are JD UT1 with a UTC rendering. An exhausted budget returns 200 incomplete. Admitted after repairing orb windows narrower than the scan step. |
 | P10-04 | Galactic Coordinates | `admitted` | Six bounded raw-transform, reference-point, and chart-backed galactic position routes are live with explicit frame, epoch, body, and stage provenance; galactic houses, maps, projections, catalog sweeps, and proper-motion products remain deferred. |
 | P10-05 | Galactic Houses | `admitted` | Three bounded Galactic Porphyry cusp, direct-placement, and chart-backed placement routes are live with native galactic cusp truth, ecliptic projection truth, boundary profiles, provenance, route tests, and route-count audit; rendered charts, projections, maps, catalog sweeps, and alternate galactic house systems remain deferred. |
@@ -73,6 +73,16 @@ is admitted as a narrow synchronous geodetic chart/equivalent family. P10-04 is
 admitted as a narrow synchronous galactic coordinate-frame family. P10-05 is
 admitted as a narrow synchronous Galactic Porphyry house family. P10-06 is
 admitted as a narrow synchronous canonical Gauquelin sector family.
+
+**Supplied-coordinate transforms — admitted locally after minor engine work.**
+Same-epoch ecliptic/equatorial rotations and the inverse horizon direction
+cosines are stable, kernel-free geometry. The tuple transforms lack a
+representation for undefined angles, and the legacy horizontal inverse
+recognizes a historical zenith surrogate. Engine-owned spherical results
+now carry nullable pole angles and the geometric inverse. The operation
+evaluates one direction synchronously and read-only. Independent Cartesian
+rotation and SOFA/ERFA horizon checks cover round trips and both geographic
+poles. [REST reference](../../wiki/02_services/REST_API_REFERENCE.md#supplied-coordinate-transforms)
 
 ---
 
@@ -348,6 +358,11 @@ Resolved for transport design:
   galactic IAU 1958, and epoch/JD fields.
 - `moira.galactic` is the documented REST authority; `moira.sky.galactic`
   remains a re-export surface.
+- Opt-in lunar ascending nodes are admitted locally. Both node models
+  evaluate geocentric true-of-date longitude at the chart's exact TT.
+  The mean node accepts that epoch explicitly, and the true node uses the
+  serving reader. Direct-transform parity, ERFA mean-node clock checks,
+  and DE441 true-node fixtures cover the composition.
 
 Recommended first implementation stance:
 

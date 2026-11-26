@@ -301,6 +301,30 @@ class VoidOfCourseStateResponse(_StrictModel):
     computation_truth: VoidOfCourseWindowTruthResponse
 
 
+class HorizonAvailabilityRequest(_StrictModel):
+    """Inspect a 24-hour geometric altitude envelope."""
+
+    body: str = Field(min_length=1, max_length=128)
+    jd_start_ut1: float = Field(strict=True, allow_inf_nan=False)
+    latitude: float = Field(strict=True, ge=-90, le=90)
+    longitude: float = Field(strict=True, ge=-180, le=180)
+    altitude: float = Field(default=-0.5667, strict=True, ge=-90, le=90)
+    steps: int = Field(default=144, strict=True, ge=1, le=1440)
+    star_product: Literal["astrometric", "apparent"] = "astrometric"
+
+
+class HorizonAvailabilityResponse(_StrictModel):
+    """Geometric crossing classification and its sample or analytic evidence."""
+
+    request: HorizonAvailabilityRequest
+    state: Literal["crosses", "always_above_horizon", "always_below_horizon"]
+    target_altitude: float
+    minimum_altitude: float
+    maximum_altitude: float
+    sample_count: int
+    method: str
+
+
 class RiseSetPolicyRequest(_StrictModel):
     disc_reference: str = "limb"
     fixed_disc_size: bool = False

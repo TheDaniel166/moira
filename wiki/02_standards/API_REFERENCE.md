@@ -608,7 +608,7 @@ message.
 | Method | Returns | Description |
 |---|---|---|
 | `chart(dt, bodies=None, include_nodes=True, observer_lat=None, observer_lon=None, observer_elev_m=0.0)` | `Chart` | Complete planetary snapshot; supply observer coords for topocentric Moon |
-| `houses(dt, latitude, longitude, system=HouseSystem.PLACIDUS, policy=None)` | `HouseCusps` | House cusps, angles, ARMC under explicit house policy when supplied |
+| `houses(dt, latitude, longitude, system=None, policy=None, include_boundary_geometry=False, *, sun_longitude=None, sun_declination=None, ayanamsa_offset=None)` | `HouseCusps` | Dated cusps, angles, and ARMC. Defaults to Placidus and accepts degree-valued solar anchors and a zodiac offset. |
 | `sky_position(dt, body, latitude, longitude, elevation_m=0.0)` | `SkyPosition` | Apparent topocentric RA/Dec + altitude/azimuth |
 | `sidereal_chart(dt, ayanamsa_system=Ayanamsa.LAHIRI, bodies=None)` | `dict[str, float]` | Body → sidereal longitude |
 | `heliocentric(dt, bodies=None)` | `dict[str, HeliocentricData]` | Heliocentric ecliptic positions |
@@ -1075,7 +1075,7 @@ from moira.facade import (
 | Function | Returns | Description |
 |---|---|---|
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) lunar node; speed is the differentiated true-of-date longitude, not the mean-node rate |
-| `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar node; true equinox of date by default, raw mean equinox with `nutation=False` |
+| `mean_node(jd_ut, *, nutation=True, jd_tt=None)` | `NodeData` | IERS 2003 mean lunar node. An explicit TT governs the orbital argument and nutation. Use `nutation=False` for the raw mean equinox. |
 | `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar apogee (F+Ω−l+180°); true equinox of date by default, raw mean equinox with `nutation=False` |
 | `true_lilith(jd_ut, reader=None)` | `NodeData` | True Lilith (osculating lunar apogee); compatibility result only |
 | `true_lilith_with_truth(jd_ut, reader=None)` | `TrueLilithWithTruth` | The same `NodeData` plus UT1/TT/TDB, Delta-T branch, DE/LE identity, lunar tidal basis, gravitational parameter, frame, method, corrections, and finite-difference half-span |
@@ -1220,6 +1220,14 @@ does not have an ordinary rise/set pair at the selected horizon.
 `HORIZON_COINCIDENT`.
 
 ### Coordinate utilities
+
+`moira.coordinates` exposes two additional direction transforms with
+explicit frame and singularity results.
+
+| Function | Signature | Description |
+|---|---|---|
+| `transform_ecliptic_equatorial_with_truth` | `(longitude_deg, latitude_deg, obliquity_deg, *, transform) -> EclipticEquatorialTransformTruth` | Rotates by the supplied obliquity at a common epoch. Select `ecliptic_to_equatorial` or `equatorial_to_ecliptic`. A pole longitude or right ascension is `None`. |
+| `horizontal_to_equatorial_with_truth` | `(azimuth_deg, altitude_deg, lst_deg, lat_deg) -> HorizontalToEquatorialTruth` | Inverts north-clockwise azimuth and geometric altitude. Zenith and nadir have `None` azimuth. A celestial pole has `None` right ascension and hour angle. At geographic poles the caller's LST fixes the azimuth reference meridian. |
 
 ```python
 from moira.facade import (
@@ -1381,7 +1389,7 @@ for name, pos in all_pos.items():
 ```python
 from moira.planetocentric import (
     PlanetocentricData, VALID_OBSERVER_BODIES,
-    planetocentric_at, all_planetocentric_at,
+    planetocentric_at, all_planetocentric_at, all_planetocentric_at_with_truth,
 )
 ```
 
@@ -1394,6 +1402,7 @@ Valid observers: `Body.SUN`, `Body.MOON`, `Body.MERCURY`, `Body.VENUS`, `Body.EA
 | `VALID_OBSERVER_BODIES` | `frozenset[str]` | Bodies that may serve as observer or target |
 | `planetocentric_at(observer, target, jd_ut)` | `PlanetocentricData` | Position of `target` as seen from `observer` |
 | `all_planetocentric_at(observer, jd_ut)` | `dict[str, PlanetocentricData]` | All visible bodies from the observer |
+| `all_planetocentric_at_with_truth(observer, jd_ut, bodies=None, reader=None)` | `dict[str, PlanetocentricWithTruth]` | Same geometric positions with per-target NAIF endpoints, reader-bound clocks, rate sampling, and frame truth. |
 
 #### `PlanetocentricData` fields
 
@@ -4988,7 +4997,7 @@ from moira.facade import (
 | `safe_datetime_from_jd` | `(jd: float) → datetime \| None` | Returns None for out-of-range JDs |
 | `greenwich_mean_sidereal_time` | `(jd_ut: float) → float` | GMST in degrees |
 | `local_sidereal_time` | `(jd_ut, longitude, nutation_longitude=0.0, obliquity=23.4392911) → float` | Compatibility surface; its defaults return local mean sidereal time, while supplied equinox terms produce local apparent sidereal time |
-| `local_sidereal_time_with_truth` | `(jd_ut, longitude, *, mode="apparent", nutation_longitude=None, obliquity=None) → LocalSiderealTimeTruth` | Explicit mean/apparent reduction; apparent mode derives IAU 2000A nutation and IAU 2006 mean obliquity on TT when terms are omitted |
+| `local_sidereal_time_with_truth` | `(jd_ut, longitude, *, mode="apparent", nutation_longitude=None, obliquity=None, jd_tt=None) → LocalSiderealTimeTruth` | Mean or apparent sidereal time in degrees. Uses supplied TT or derives TT from UT1 with the default ΔT policy. Apparent mode derives IAU 2000A nutation and IAU 2006 mean obliquity on TT when the terms are omitted. |
 | `delta_t` | `(year: float) → float` | ΔT in seconds for a decimal year |
 | `delta_t_from_jd_with_truth` | `(jd_ut1: float) → DeltaTTruth` | ΔT plus the selected source product, retarget mode, and source-owned tidal-basis terms |
 | `utc_to_ut1_with_truth` | `(jd_utc: float) → UtcToUt1Truth` | UT1 plus the admitted EOP, historical proxy/handoff, or outer model branch used |
@@ -5396,7 +5405,7 @@ from moira.sky.bodies import (
 | `all_ssb_positions_at(jd_ut, reader=None)` | `dict[str, SSBPosition]` | All `SSB_BODIES` from SSB |
 | `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Geometric target position measured from the center of observer body |
 | `all_planetocentric_at(observer_body, jd_ut)` | `dict[str, PlanetocentricData]` | All targets from observer body |
-| `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar ascending node; true equinox of date by default |
+| `mean_node(jd_ut, *, nutation=True, jd_tt=None)` | `NodeData` | IERS 2003 mean lunar ascending node in the true equinox of date by default. Optional TT fixes the evaluation epoch. |
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node; speed is the differentiated true-of-date longitude, not the mean-node rate |
 | `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar apogee (F+Ω−l+180°); true equinox of date by default, raw mean equinox with `nutation=False` |
 | `true_lilith(jd_ut)` | `NodeData` | True Lilith (osculating apogee); speed is the differentiated true-of-date longitude, not the mean-apogee rate |

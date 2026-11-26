@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from moira import Moira
+from moira import Body, Moira
 from moira.cosmic_references import (
     COSMIC_REFERENCE_CATALOG_VERSION,
     CosmicReferencePosition,
@@ -20,6 +20,7 @@ from moira.galactic import (
     galactic_to_equatorial,
 )
 from moira.julian import utc_to_tt, utc_to_ut1
+from moira.nodes import mean_node, true_node
 from moira.obliquity import true_obliquity
 
 from ..models.chart import ChartRequest
@@ -35,7 +36,7 @@ from ..models.galactic import (
     GalacticGalacticToEquatorialRequest,
     GalacticReferencePointsRequest,
 )
-from ._shared import build_chart_context, require_supported_chart_bodies
+from ._shared import build_chart_context, require_engine_reader, require_supported_chart_bodies
 
 
 EQUATORIAL_TO_GALACTIC_STAGE_SEQUENCE = (
@@ -83,8 +84,6 @@ CHART_POSITIONS_STAGE_SEQUENCE = (
     "obliquity_derivation",
     "jd_tt_derivation",
     "chart_ecliptic_coordinate_selection",
-    "ecliptic_to_galactic_computation",
-    "response_materialization",
 )
 
 
@@ -267,6 +266,8 @@ def compute_galactic_chart_positions(
     engine: Moira,
     request: GalacticChartPositionsRequest,
 ) -> GalacticPositionsResult:
+    """Transform the selected planets and ascending nodes in the chart frame."""
+
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
     jd_ut = utc_to_ut1(chart.jd_ut)
@@ -276,6 +277,15 @@ def compute_galactic_chart_positions(
         body: (chart.planets[body].longitude, chart.planets[body].latitude)
         for body in bodies
     }
+    node_stages = []
+    if request.node_mode in ("true", "both"):
+        node = true_node(jd_ut, reader=require_engine_reader(engine), jd_tt=jd_tt)
+        body_data[Body.TRUE_NODE] = (node.longitude, 0.0)
+        node_stages.append("true_lunar_node_at_chart_tt")
+    if request.node_mode in ("mean", "both"):
+        node = mean_node(jd_ut, jd_tt=jd_tt)
+        body_data[Body.MEAN_NODE] = (node.longitude, 0.0)
+        node_stages.append("mean_lunar_node_at_chart_tt")
     positions = all_galactic_positions(body_data, obliquity, jd_tt)
     returned_bodies = tuple(position.body for position in positions)
     return GalacticPositionsResult(
@@ -291,7 +301,10 @@ def compute_galactic_chart_positions(
             source_frame="ecliptic_true_of_date",
             target_frame="galactic_iau_1958",
             coordinate_source="chart_ecliptic_true_of_date",
-            stage_sequence=CHART_POSITIONS_STAGE_SEQUENCE,
+            stage_sequence=(
+                *CHART_POSITIONS_STAGE_SEQUENCE, *node_stages,
+                "ecliptic_to_galactic_computation", "response_materialization",
+            ),
         ),
     )
 

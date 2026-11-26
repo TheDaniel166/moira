@@ -14,7 +14,7 @@ from moira.multiple_stars import (
     multiple_stars_by_type,
 )
 from moira.spk_reader import MissingEphemerisKernelError
-from moira.stars import StarPosition, find_stars, list_stars, star_at
+from moira.stars import StarPosition, find_stars, list_stars, star_at, stars_by_magnitude, stars_near
 from moira.variable_stars import (
     VarStarPolicy,
     catalog_profile,
@@ -37,6 +37,9 @@ from ..models.stars import (
     StarListResponse,
     StarPositionRequest,
     StarPositionResponse,
+    StarLongitudeSearchRequest,
+    StarSearchRequest,
+    StarSearchResponse,
     StarsBulkRequest,
     StarsBulkResponse,
     VARIABLE_STAR_RANGE_MAX_DAYS,
@@ -131,6 +134,25 @@ def list_or_search_stars(engine: Moira, q: str | None = None, limit: int = 50) -
 
     all_names = list_stars()[:limit]
     return StarListResponse(stars=all_names, total=len(all_names))
+
+
+def search_fixed_stars(engine: Moira, request: StarSearchRequest) -> StarSearchResponse:
+    """Apply the catalog's longitude or magnitude ordering at a supplied TT epoch."""
+
+    reader = _star_reader(engine, request.product)
+    if isinstance(request, StarLongitudeSearchRequest):
+        matches = stars_near(
+            request.longitude_deg, request.jd_tt, request.orb_deg, product=request.product, reader=reader,
+        )
+    else:
+        matches = stars_by_magnitude(
+            request.max_magnitude, request.jd_tt, product=request.product, reader=reader,
+        )
+    return StarSearchResponse(
+        request=request,
+        matches=[serialize_star(star, jd_tt=request.jd_tt) for star in matches[:request.limit]],
+        total_matches=len(matches),
+    )
 
 
 def _policy(threshold: float | None) -> VarStarPolicy | None:

@@ -4,14 +4,23 @@ from __future__ import annotations
 
 from moira import Body, Moira
 from moira.constants import HOUSE_SYSTEM_NAMES
-from moira.houses import HouseSystem, calculate_houses, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
-from moira.julian import jd_from_datetime, utc_to_ut1
+from moira.houses import HouseSystem, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.small_body_identity import resolve_small_body_identity
+from moira.spk_reader import KernelReader, MissingEphemerisKernelError
 
 from ..models.chart import ChartRequest, HousesRequest
 
 
 _VALID_CHART_BODIES = frozenset(Body.ALL_PLANETS)
+
+
+def require_engine_reader(engine: Moira) -> KernelReader:
+    """Bind a kernel-dependent request to the server's own reader."""
+
+    reader = getattr(engine, "_reader", None)
+    if reader is None:
+        raise MissingEphemerisKernelError("The planetary ephemeris is unavailable.")
+    return reader
 
 
 def _house_system_lookup_key(value: str) -> str:
@@ -95,43 +104,36 @@ def build_chart_context(engine: Moira, request: ChartRequest):
 
 
 def build_houses_context(engine: Moira, request: HousesRequest):
-    if getattr(request, "time_unknown", False):
+    """Build dated houses through the reader-bound facade."""
+
+    if request.time_unknown:
         raise ValueError("Houses cannot be computed for unknown birth times")
     require_aware_datetime(request.dt)
 
-    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
-
-    # Convert transport policy (if any) to engine HousePolicy
     engine_policy = None
-    if getattr(request, "policy", None) is not None:
+    if request.policy is not None:
         engine_policy = HousePolicy(
             unknown_system=UnknownSystemPolicy(request.policy.unknown_system),
             polar_fallback=PolarFallbackPolicy(request.policy.polar_fallback),
         )
 
-    system = _resolve_house_system(request.system)
-
-    # For the common case (no custom policy or advanced anchors), use the high-level
-    # engine.houses(dt, ...) exactly as other callers (including tests) do. This
-    # guarantees numeric parity for the default path.
-    # When rich policy or sun_longitude/ayanamsa_offset are supplied, drop to the
-    # full calculate_houses surface (the source of Moira's rich polar fallback etc.).
-    if engine_policy is None and getattr(request, "sun_longitude", None) is None and getattr(request, "ayanamsa_offset", None) is None:
-        return engine.houses(
-            request.dt,
-            latitude=request.latitude,
-            longitude=request.longitude,
-            system=system,
-            include_boundary_geometry=request.include_boundary_geometry,
+    options = {
+        field: value
+        for field, value in (
+            ("policy", engine_policy),
+            ("sun_longitude", request.sun_longitude),
+            ("sun_declination", request.sun_declination),
+            ("ayanamsa_offset", request.ayanamsa_offset),
         )
-
-    return calculate_houses(
-        jd_ut,
+        if value is not None
+    }
+    return engine.houses(
+        request.dt,
         latitude=request.latitude,
         longitude=request.longitude,
-        system=system,
-        policy=engine_policy,
+        system=_resolve_house_system(request.system),
         include_boundary_geometry=request.include_boundary_geometry,
+        **options,
     )
 
 

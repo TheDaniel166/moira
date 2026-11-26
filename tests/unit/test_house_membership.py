@@ -20,8 +20,6 @@ from moira.houses import (
     HouseCusps,
     HousePolicy,
     HouseSystemFamily,
-    HouseSystemCuspBasis,
-    HouseSystemClassification,
     assign_house,
     calculate_houses,
     classify_house_system,
@@ -562,6 +560,15 @@ class TestInputHandling:
         hc = _make_cusps(_equal_cusps(0.0), HouseSystem.EQUAL)
         pl = assign_house(360.0, hc)
         assert pl.longitude == 0.0
+
+    def test_negative_longitude_that_rounds_to_360_normalises_to_0(self):
+        hc = _make_cusps(_equal_cusps(0.0), HouseSystem.EQUAL)
+        longitude = -1e-15
+        assert longitude % 360.0 == 360.0
+        placement = assign_house(longitude, hc)
+        assert placement.longitude == 0.0
+        assert placement.house == 1
+        assert placement.exact_on_cusp
 
     def test_bad_cusp_count_raises(self):
         # HouseCusps.__post_init__ prevents a <12-cusp vessel from being

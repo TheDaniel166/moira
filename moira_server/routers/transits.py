@@ -16,6 +16,8 @@ from ..models.transits import (
     NatalAspectSearchRequest,
     NatalAspectSearchResponse,
     NextIngressRequest,
+    PrenatalSyzygyRequest,
+    PrenatalSyzygyResponse,
     TransitSearchRequest,
     TransitSearchResponse,
 )
@@ -31,11 +33,21 @@ from ..services.transits import (
     compute_lunar_phases,
     compute_natal_aspect_transits,
     compute_next_ingress,
+    compute_prenatal_syzygy,
     compute_transits,
 )
 
 
 router = APIRouter(prefix="/v1", tags=["predictive"])
+
+
+@router.post("/lunar-phases/prenatal-syzygy", response_model=PrenatalSyzygyResponse)
+def prenatal_syzygy_route(
+    request: PrenatalSyzygyRequest, engine: Moira = Depends(get_engine),
+) -> PrenatalSyzygyResponse:
+    """Return the previous syzygy for a standalone epoch."""
+
+    return compute_prenatal_syzygy(engine, request)
 
 
 @router.post("/transits/search", response_model=TransitSearchResponse)

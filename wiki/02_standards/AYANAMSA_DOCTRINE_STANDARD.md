@@ -162,6 +162,12 @@ public `jd` is UT. The sidereal engine converts it once to TT. This technique
 uses the IAU 2006 P03 bias–precession and obliquity pair and admits TT dates
 within ±50 Julian centuries of J2000, inclusive.
 
+The REST discovery route is `GET /v1/sidereal/galactic-ayanamsa-presets`.
+Use `{"family": "galactic_anchor", "preset": "equator_allwise_2024"}` as the
+`ayanamsa_doctrine` value on the sidereal and Nakshatra utility routes.
+Discovery returns the exact request selections with the corresponding
+doctrine and source links. [REST utility contracts](../02_services/REST_API_REFERENCE.md#sidereal-and-nakshatra-utility-rest-admission-boundary)
+
 | Preset ID | Anchor | Sidereal target |
 |---|---|---:|
 | `centre_sagittarius` | Sgr A* ecliptic longitude | 240° |
@@ -234,6 +240,12 @@ truth = ayanamsa_with_truth(jd_ut, GalacticAyanamsa("equator_allwise_2024"), mod
 Both recipes supply a J2000 reference to `UserDefinedAyanamsa`. Use
 `mode="mean"` to reproduce the stated epoch offsets. Dates away from the
 anchor use Moira's IAU 2006 general precession.
+
+REST clients send the same reference in an `ayanamsa_doctrine` object
+with `family: "user_defined"`, `reference_value_j2000`, and optional
+`drift_per_century` in degrees per Julian century. Scalar, conversion,
+and sidereal chart requests accept `mode: "mean"` to reproduce the
+stated reference. [REST utility contracts](../02_services/REST_API_REFERENCE.md#sidereal-and-nakshatra-utility-rest-admission-boundary)
 
 - **Mardyks / Skydram.** Adopt the documented 30° at the September equinox of
   1998 as a mean offset. The USNO lists 23 September, 05:37 UT, to the minute.

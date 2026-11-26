@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import math
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import Body
+from moira.phenomena import ConjunctionRangeComputationTruth
 
 
 PHENOMENA_MAX_ORBITAL_EVENT_SPAN_DAYS = 5000.0
@@ -172,6 +174,87 @@ class OrbitalPhenomenaEventsRequest(_StrictModel):
             if invalid:
                 raise ValueError("greatest elongation events are admitted only for Mercury and Venus")
         return self
+
+
+_HeliocentricJD = Annotated[float, Field(strict=True, allow_inf_nan=False)]
+_MAX_HELIOCENTRIC_DAYS = 100_000.0
+
+
+class _HeliocentricSearchRequest(_StrictModel):
+    body: str
+    jd_start_ut1: _HeliocentricJD
+
+    @field_validator("body")
+    @classmethod
+    def _orbital_body(cls, value: str) -> str:
+        return _validate_body(value, "body", ORBITAL_EVENT_BODIES)
+
+
+class _HeliocentricPairRequest(_HeliocentricSearchRequest):
+    other_body: str
+
+    @field_validator("other_body")
+    @classmethod
+    def _other_orbital_body(cls, value: str) -> str:
+        return _validate_body(value, "other_body", ORBITAL_EVENT_BODIES)
+
+    @model_validator(mode="after")
+    def _distinct_bodies(self):
+        if self.body == self.other_body:
+            raise ValueError("conjunction searches require two distinct bodies")
+        return self
+
+
+class HeliocentricNextConjunctionRequest(_HeliocentricPairRequest):
+    """Search for the next Sun-centered longitude conjunction."""
+
+    kind: Literal["next_conjunction"]
+    max_days: float = Field(default=800.0, strict=True, gt=0, le=_MAX_HELIOCENTRIC_DAYS)
+
+
+class HeliocentricConjunctionRangeRequest(_HeliocentricPairRequest):
+    """Search a bounded interval for Sun-centered conjunctions."""
+
+    kind: Literal["conjunctions_in_range"]
+    jd_end_ut1: _HeliocentricJD
+
+    @model_validator(mode="after")
+    def _bounded_range(self):
+        _validate_jd_window(self.jd_start_ut1, self.jd_end_ut1, _MAX_HELIOCENTRIC_DAYS)
+        return self
+
+
+class HeliocentricLongitudeCrossingRequest(_HeliocentricSearchRequest):
+    """Search for the next crossing of a fixed Sun-centered longitude."""
+
+    kind: Literal["next_longitude_crossing"]
+    target_longitude_deg: _HeliocentricJD
+    max_days: float = Field(default=400.0, strict=True, gt=0, le=_MAX_HELIOCENTRIC_DAYS)
+
+
+HeliocentricEventsRequest = Annotated[
+    HeliocentricNextConjunctionRequest | HeliocentricConjunctionRangeRequest | HeliocentricLongitudeCrossingRequest,
+    Field(discriminator="kind"),
+]
+
+
+class HeliocentricEventResponse(_StrictModel):
+    """One solved event and the moving body's heliocentric longitude."""
+
+    jd_ut1: float
+    longitude_deg: float
+
+
+class HeliocentricEventsResponse(_StrictModel):
+    """Events found by the selected canonical scan within its search bound."""
+
+    request: HeliocentricEventsRequest
+    status: Literal["found", "no_event"]
+    searched_end_jd_ut1: float
+    events: list[HeliocentricEventResponse]
+    center: Literal["Sun"] = "Sun"
+    frame: Literal["true_ecliptic_of_date"] = "true_ecliptic_of_date"
+    range_computation_truth: ConjunctionRangeComputationTruth | None = None
 
 
 class ProximityEventsRequest(_StrictModel):

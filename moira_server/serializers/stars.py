@@ -83,13 +83,17 @@ def serialize_star_provenance(
         relation_star_name=getattr(relation, "star_name", None),
         condition_result_kind=getattr(condition_profile, "result_kind", None),
         condition_state=_condition_state_name(data),
-        stage_sequence=_star_stage_sequence(getattr(truth, "position_product", None)),
+        stage_sequence=_star_stage_sequence(
+            getattr(truth, "position_product", None),
+            supplied_tt=requested_datetime is None and jd_tt is not None,
+        ),
     )
 
 
-def _star_stage_sequence(product: str | None) -> list[str]:
+def _star_stage_sequence(product: str | None, *, supplied_tt: bool = False) -> list[str]:
     """The fixed-star pipeline stages that produced a position of ``product``."""
-    stages = ["datetime_validation", "ut_to_tt", "star_catalog_resolution", "space_motion"]
+    stages = ["tt_epoch_validation"] if supplied_tt else ["datetime_validation", "ut_to_tt"]
+    stages += ["star_catalog_resolution", "space_motion"]
     if product == "geometric":
         stages.append("light_time_advance")
     elif product == "apparent":

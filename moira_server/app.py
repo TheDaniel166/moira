@@ -26,10 +26,12 @@ from .routers import (
     astrocartography_router,
     astrodynes_router,
     asteroids_router,
+    small_body_identity_router,
     comets_router,
     batch_router,
     chart_router,
     chart_wheel_router,
+    coordinates_router,
     dasha_router,
     decanates_router,
     deep_sky_router,
@@ -54,6 +56,7 @@ from .routers import (
     horary_router,
     mundane_router,
     health_router,
+    time_router,
     huber_router,
     jaimini_router,
     local_space_router,
@@ -80,6 +83,7 @@ from .routers import (
     panchanga_router,
     pancha_pakshi_router,
     phase_router,
+    planetary_moons_router,
     phenomena_router,
     eclipse_diagnostics_router,
     eclipse_evidence_router,
@@ -175,6 +179,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(health_router)
+    app.include_router(time_router)
     app.include_router(meta_router)
     app.include_router(chart_router)
     app.include_router(western_profile_router)  # Western profile bundle composition surface
@@ -222,6 +227,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(varga_router)  # Phase-9 Varga divisional chart surface
     app.include_router(decanates_router)  # Phase-9 decanate doctrine surface
     app.include_router(astrocartography_router)  # Phase-10 bounded spatial line/point surface
+    app.include_router(coordinates_router)
     app.include_router(local_space_router)  # Phase-10 observer-local horizon surface
     app.include_router(geodetic_router)  # Phase-10 geodetic zodiac mapping surface
     app.include_router(galactic_router)  # Phase-10 galactic coordinate-frame surface
@@ -229,6 +235,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(gauquelin_router)  # Phase-10 Gauquelin sector surface
     app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
+    app.include_router(small_body_identity_router)
     app.include_router(comets_router)      # Symmetric fast comet surfaces
     app.include_router(stars_router)       # Fixed stars for the website / Manus AI
     app.include_router(sothic_router)      # Bounded Sirius/Egyptian-calendar outcomes
@@ -249,6 +256,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(uranian_router)      # Phase-12 Uranian/Hamburg School hypothetical-body surface
     app.include_router(harmonics_router)    # Phase-12 direct harmonic projection surface
     app.include_router(phase_router)        # Phase-12 phase, elongation, and photometry surface
+    app.include_router(planetary_moons_router)
     app.include_router(sidereal_router)     # P-GAP-05 sidereal and Nakshatra utility primitives
     app.include_router(harmograms_router)    # P-GAP-06 bounded harmogram vector/intensity/trace surface
     app.include_router(antiscia_router)      # Phase-12 ordinary antiscia reflection/contact surface

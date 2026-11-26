@@ -8,6 +8,8 @@ from ..dependencies import get_engine
 from ..models.nodes import (
     GeometricNodeRequest,
     GeometricNodeResponse,
+    LunarNodeCrossingRequest,
+    LunarNodeCrossingResponse,
     MeanPlanetaryNodeRequest,
     MeanPlanetaryNodesBulkRequest,
     MeanPlanetaryNodesBulkResponse,
@@ -16,6 +18,7 @@ from ..models.nodes import (
 )
 from ..services.nodes import (
     compute_geometric_node,
+    compute_lunar_node_crossing,
     compute_mean_planetary_node,
     compute_mean_planetary_nodes_bulk,
     list_node_catalog,
@@ -23,6 +26,15 @@ from ..services.nodes import (
 
 
 router = APIRouter(prefix="/v1/nodes", tags=["nodes"])
+
+
+@router.post("/lunar/next-crossing", response_model=LunarNodeCrossingResponse)
+def lunar_node_crossing_route(
+    request: LunarNodeCrossingRequest, engine=Depends(get_engine),
+) -> LunarNodeCrossingResponse:
+    """Search forward for a real lunar latitude sign change."""
+
+    return compute_lunar_node_crossing(engine, request)
 
 
 @router.get("/catalog", response_model=NodeCatalogResponse)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,6 +48,28 @@ class PlanetPositionResponse(_StrictModel):
     sign_symbol: str
     sign_degree: float
     distance_au: float
+
+
+class PlanetTimeSeriesRequest(_StrictModel):
+    """Sample one body at supplied, ordered UT1 Julian days."""
+
+    body: str = Field(min_length=1, max_length=128)
+    jd_ut1: list[Annotated[float, Field(strict=True, allow_inf_nan=False)]] = Field(
+        min_length=1, max_length=512,
+    )
+
+
+class PlanetTimeSeriesResponse(_StrictModel):
+    """Aligned geocentric ecliptic states at the requested epochs."""
+
+    body: str
+    jd_ut1: tuple[float, ...]
+    longitudes_deg: tuple[float, ...]
+    latitudes_deg: tuple[float, ...]
+    distances_km: tuple[float, ...]
+    speeds_deg_per_day: tuple[float, ...]
+    retrogrades: tuple[bool, ...]
+    frame: Literal["geocentric_true_ecliptic_of_date"] = "geocentric_true_ecliptic_of_date"
 
 
 class PositionObserverContextResponse(_StrictModel):

@@ -54,6 +54,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from enum import Enum
+from typing import Literal
 
 from .constants import Body, sign_of
 from .spk_reader import KernelReader, get_reader
@@ -74,6 +75,9 @@ __all__ = [
     "return_series",
     "half_return_series",
     "lifetime_returns",
+    "BoundedReturnCrossing",
+    "BoundedReturnSeries",
+    "bounded_return_series",
     # Synodic cycles
     "SynodicCyclePosition",
     "synodic_cycle_position",
@@ -1277,6 +1281,105 @@ def lifetime_returns(
 
 
 # ===========================================================================
+@dataclass(frozen=True, slots=True)
+class BoundedReturnCrossing:
+    """A signed crossing with its solved epoch and realized longitude."""
+
+    jd_ut1: float
+    longitude_deg: float
+    direction: Literal["direct", "retrograde"]
+
+
+@dataclass(frozen=True, slots=True)
+class BoundedReturnSeries:
+    """The results and applied policy of a complete bounded return scan."""
+
+    body: str
+    jd_start_ut1: float
+    jd_end_ut1: float
+    natal_longitude_deg: float
+    target_longitude_deg: float
+    step_days: float
+    station_count: int
+    events: tuple[BoundedReturnCrossing, ...]
+    status: Literal["complete"] = "complete"
+    interval_ownership: Literal["start_exclusive_end_inclusive"] = "start_exclusive_end_inclusive"
+
+
+def bounded_return_series(
+    body: str,
+    natal_longitude_deg: float,
+    jd_start_ut1: float,
+    jd_end_ut1: float,
+    *,
+    half: bool = False,
+    direction: Literal["direct", "retrograde", "either"] = "either",
+    reader: KernelReader | None = None,
+) -> BoundedReturnSeries:
+    """Find crossings over a bounded UT1 interval with station subdivisions.
+
+    Longitude roots reuse Moira's transit reducer. The cut points at stations
+    allow a direct and retrograde crossing inside the same regular scan cell.
+    Coverage and solver failures propagate to the caller.
+    """
+    from .stations import _speed, find_stations
+    from .transits import _auto_step, _find_crossing, _lon, _signed_diff
+
+    if body not in Body.ALL_PLANETS:
+        raise ValueError("return series requires an admitted planet, Sun, or Moon")
+    if direction not in ("direct", "retrograde", "either"):
+        raise ValueError("direction must be direct, retrograde, or either")
+    if not all(math.isfinite(value) for value in (natal_longitude_deg, jd_start_ut1, jd_end_ut1)):
+        raise ValueError("return series inputs must be finite")
+    span = jd_end_ut1 - jd_start_ut1
+    if not 0.0 < span <= 120.0 * _JULIAN_YEAR:
+        raise ValueError("return series requires a positive window of at most 120 Julian years")
+
+    step = _auto_step(body)
+    count = math.ceil(span / step)
+    if count > 160_000:
+        raise ValueError("return series exceeds the 160,000-cell scan limit")
+    if reader is None:
+        reader = get_reader()
+    natal = natal_longitude_deg % 360.0
+    target = (natal + 180.0) % 360.0 if half else natal
+    stations = find_stations(body, jd_start_ut1, jd_end_ut1, step_days=step, reader=reader)
+    station_epochs = {station.jd_ut for station in stations if jd_start_ut1 < station.jd_ut < jd_end_ut1}
+    epochs = sorted(station_epochs.union(
+        min(jd_start_ut1 + index * step, jd_end_ut1) for index in range(count + 1)
+    ))
+    if epochs[-1] != jd_end_ut1:
+        epochs.append(jd_end_ut1)
+    offsets = [_signed_diff(_lon(body, jd, reader), target) for jd in epochs]
+    events: list[BoundedReturnCrossing] = []
+
+    for index, (before, after) in enumerate(zip(offsets, offsets[1:])):
+        if max(abs(before), abs(after)) >= 90.0 or before == 0.0:
+            continue
+        exact = after == 0.0
+        if exact:
+            following = index + 2
+            if following < len(offsets) and (before * offsets[following] >= 0.0
+                                            or abs(offsets[following]) >= 90.0):
+                continue
+            if following == len(offsets) and body not in (Body.SUN, Body.MOON):
+                if before * _speed(body, jd_end_ut1, reader) >= 0.0:
+                    continue
+        elif before * after >= 0.0:
+            continue
+
+        motion = "direct" if before < 0.0 else "retrograde"
+        if direction != "either" and direction != motion:
+            continue
+        lower, upper = epochs[index:index + 2]
+        root = upper if exact else _find_crossing(body, target, lower, upper, reader, tol_days=1e-6)[0]
+        events.append(BoundedReturnCrossing(root, _lon(body, root, reader), motion))
+
+    return BoundedReturnSeries(
+        body, jd_start_ut1, jd_end_ut1, natal, target, step, len(station_epochs), tuple(events),
+    )
+
+
 # SECTION 4 — SYNODIC CYCLE ANALYSIS
 # ===========================================================================
 

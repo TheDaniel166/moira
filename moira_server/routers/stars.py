@@ -15,6 +15,8 @@ from ..models.stars import (
     MultipleStarSystemResponse,
     StarPositionRequest,
     StarPositionResponse,
+    StarSearchRequest,
+    StarSearchResponse,
     StarsBulkRequest,
     StarsBulkResponse,
     StarListResponse,
@@ -41,6 +43,7 @@ from ..services.stars import (
     list_multiple_star_catalog,
     list_or_search_stars,
     list_variable_star_catalog,
+    search_fixed_stars,
 )
 
 router = APIRouter(prefix="/v1/stars", tags=["stars (fixed stars)"])
@@ -62,6 +65,13 @@ def stars_bulk(
 ) -> StarsBulkResponse:
     """Bulk star positions — perfect for rendering full constellations on your site."""
     return compute_stars_bulk(engine, request)
+
+
+@router.post("/search", response_model=StarSearchResponse)
+def star_search_route(request: StarSearchRequest, engine=Depends(get_engine)) -> StarSearchResponse:
+    """Search fixed stars by ecliptic longitude or limiting magnitude."""
+
+    return search_fixed_stars(engine, request)
 
 
 @router.get("/list", response_model=StarListResponse)

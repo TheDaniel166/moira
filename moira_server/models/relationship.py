@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import math
-from typing import Any, Literal, get_args
+from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
@@ -1071,9 +1071,7 @@ class GeometricTemplateRequest(_StrictModel):
         return self
 
 
-class PatternRequest(_StrictModel):
-    chart: RelationshipPartyRequest
-    include_nodes: bool = False
+class _PatternPolicyRequest(_StrictModel):
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
     orbs: dict[str, float] = Field(default_factory=dict, max_length=74)
     pattern_orbs: dict[str, float] = Field(default_factory=dict, max_length=128)
@@ -1119,6 +1117,29 @@ class PatternRequest(_StrictModel):
         if not isinstance(value, bool):
             raise ValueError("dominant_only must be a boolean")
         return value
+
+
+class PatternRequest(_PatternPolicyRequest):
+    chart: RelationshipPartyRequest
+    include_nodes: bool = False
+
+
+_SuppliedPoint = Annotated[str, Field(min_length=1, max_length=96, pattern=r"\S")]
+_SuppliedLongitude = Annotated[float, Field(strict=True, allow_inf_nan=False)]
+
+
+class SuppliedPatternRequest(_PatternPolicyRequest):
+    """Evaluate the chart-independent detector with a bounded longitude map."""
+
+    longitudes: dict[_SuppliedPoint, _SuppliedLongitude] = Field(min_length=2, max_length=16)
+
+    @model_validator(mode="after")
+    def _bound_template_work(self):
+        templates = _selected_geometric_templates(self.engine_policy())
+        candidates = sum(math.perm(len(self.longitudes), len(template.phases)) for template in templates)
+        if candidates > 500_000:
+            raise ValueError("supplied pattern templates exceed the candidate limit")
+        return self
 
 
 class PatternBodyRoleTruthResponse(_StrictModel):
@@ -1240,8 +1261,8 @@ class PatternSearchComputationTruthResponse(_StrictModel):
     aspect_tier: Literal[2] = 2
     source_module: Literal["moira.patterns"] = "moira.patterns"
     engine_entrypoint: Literal["find_all_patterns"] = "find_all_patterns"
-    position_source: Literal["chart_longitudes"] = "chart_longitudes"
-    motion_source: Literal["chart_longitude_rates_for_coherence"] = (
+    position_source: Literal["chart_longitudes", "caller_supplied_longitudes"] = "chart_longitudes"
+    motion_source: Literal["chart_longitude_rates_for_coherence", "not_requested"] = (
         "chart_longitude_rates_for_coherence"
     )
     include_nodes: bool
@@ -1389,6 +1410,33 @@ class MidpointHitResponse(_StrictModel):
 
 class MidpointHitSearchResponse(_StrictModel):
     events: list[MidpointHitResponse]
+
+
+class _SuppliedMidpointRequest(_StrictModel):
+    longitudes: dict[_SuppliedPoint, _SuppliedLongitude] = Field(min_length=2, max_length=64)
+    planet_set: Literal["classic", "modern", "extended"] = "classic"
+    dial: Literal[360, 90, 45, 22.5] = 360
+
+
+class MidpointTreeRequest(_SuppliedMidpointRequest):
+    """Search supplied midpoints around a focus on the selected dial."""
+
+    focus: _SuppliedLongitude
+    orb: float = Field(default=2.0, strict=True, ge=0, le=180)
+
+
+class MidpointActivationRequest(_SuppliedMidpointRequest):
+    """Test supplied natal midpoints against an activating longitude."""
+
+    transit_longitude: _SuppliedLongitude
+    orb: float = Field(default=1.5, strict=True, ge=0, le=180)
+
+
+class SuppliedMidpointSearchResponse(MidpointHitSearchResponse):
+    """Ordered midpoint hits with their dial and caller-supplied inputs."""
+
+    request: MidpointTreeRequest | MidpointActivationRequest
+    source: Literal["caller_supplied_longitudes"] = "caller_supplied_longitudes"
 
 
 class PlanetaryPictureResponse(_StrictModel):

@@ -52,6 +52,13 @@ The server must not expose, through normal request flow:
 
 ## 2. Present State
 
+The [REST capability map](rest-capability-map.json) binds reviewed engine
+capabilities to methods, paths, schema terms, and parity tests. Run
+`scripts/check_rest_capability_map.py` with the project Python to check the
+bindings and detect changes to the remaining public baseline. Use
+`--list-unmapped` to enumerate candidates for the next domain review.
+Those IDs may include existing composed or batched coverage.
+
 Authoritative live route inventory:
 
 - `wiki/02_services/REST_API_REFERENCE.md`

@@ -4,16 +4,55 @@ from __future__ import annotations
 
 from datetime import timezone
 
-from moira.asteroids import AsteroidData
+from moira.asteroids import AsteroidData, asteroid_orbit_class
 from moira.constants import sign_of
 
 from ..models.asteroids import (
+    AsteroidIdentityResponse,
+    AsteroidCatalogOrbitClassResponse,
+    AsteroidNaifConvention,
     AsteroidPositionProvenanceResponse,
     AsteroidPositionRequest,
     AsteroidPositionResponse,
     AsteroidsBulkProvenanceResponse,
     AsteroidsBulkRequest,
+    SMALL_BODY_NAIF_OFFSET,
 )
+
+
+def asteroid_mpc_number_from_naif_id(naif_id: int) -> int | None:
+    """Return the MPC number for a numbered asteroid ID."""
+
+    if 50_000_000 <= naif_id < 60_000_000:
+        return None
+    return naif_id - SMALL_BODY_NAIF_OFFSET
+
+
+def _asteroid_naif_convention(naif_id: int) -> AsteroidNaifConvention:
+    if asteroid_mpc_number_from_naif_id(naif_id) is None:
+        return "explicit_jpl_spk_id_for_provisional_designation"
+    return "small_body_naif_id_2000000_plus_catalog_number"
+
+
+def serialize_asteroid_identity(
+    name: str, naif_id: int, *, loaded_kernel_available: bool,
+) -> AsteroidIdentityResponse:
+    """Serialize the admitted catalog identity with loaded-reader availability."""
+
+    mpc_number = asteroid_mpc_number_from_naif_id(naif_id)
+    catalog_class = asteroid_orbit_class(naif_id)
+    return AsteroidIdentityResponse(
+        name=name,
+        naif_id=naif_id,
+        mpc_number=mpc_number,
+        provisional_designation=name if mpc_number is None else None,
+        naif_convention=_asteroid_naif_convention(naif_id),
+        loaded_kernel_available=loaded_kernel_available,
+        orbit_class=(
+            AsteroidCatalogOrbitClassResponse.model_validate(catalog_class)
+            if catalog_class is not None else None
+        ),
+    )
 
 
 def serialize_asteroid_position_provenance(
@@ -35,6 +74,7 @@ def serialize_asteroid_position_provenance(
         requested_body=str(request.body),
         returned_body=data.name,
         returned_naif_id=data.naif_id,
+        naif_convention=_asteroid_naif_convention(data.naif_id),
         stage_sequence=[
             "datetime_validation",
             "julian_day_conversion",

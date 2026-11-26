@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -17,6 +19,19 @@ class CrossingSearchTruthResponse(_StrictModel):
     bracket_end_jd_ut: float
     crossing_jd_ut: float
     solver_tolerance_days: float
+
+
+class PrenatalSyzygyRequest(_StrictModel):
+    """Find the lunar syzygy preceding the supplied UT1 epoch."""
+
+    jd_ut1: float = Field(strict=True, allow_inf_nan=False)
+
+
+class PrenatalSyzygyResponse(_StrictModel):
+    """The exact time and type of the most recent New or Full Moon."""
+
+    jd_ut1: float
+    phase: Literal["New Moon", "Full Moon"]
 
 
 class LongitudeResolutionTruthResponse(_StrictModel):

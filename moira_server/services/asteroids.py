@@ -26,6 +26,7 @@ from moira.centaurs import CENTAUR_NAMES
 from moira.classical_asteroids import CLASSICAL_NAMES
 from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.main_belt import MAIN_BELT_NAMES
+from moira.small_body_identity import AmbiguousSmallBodyNameError, SmallBodyFamily, SmallBodyIdentity, resolve_small_body_identity
 from moira.tno import TNO_NAMES
 
 from ..models.asteroids import (
@@ -41,6 +42,7 @@ from ..models.asteroids import (
     AsteroidFamilyResonanceNetworkRequest,
     AsteroidFamilyResonanceNetworkResponse,
     AsteroidFamilyResonanceNodeResponse,
+    AsteroidIdentityResponse,
     AsteroidListItem,
     AsteroidListProvenanceResponse,
     AsteroidListResponse,
@@ -57,11 +59,15 @@ from ..models.asteroids import (
     AsteroidSubsetsResponse,
     AsteroidsBulkRequest,
     AsteroidsBulkResponse,
+    SmallBodyIdentityAmbiguity,
+    SmallBodyIdentityResponse,
     SMALL_BODY_NAIF_OFFSET,
 )
 from ..serializers.asteroids import (
+    asteroid_mpc_number_from_naif_id,
     serialize_asteroid,
     serialize_asteroid_bulk_provenance,
+    serialize_asteroid_identity,
     serialize_asteroid_position_provenance,
 )
 from ..serializers.relationship import serialize_aspect
@@ -143,20 +149,68 @@ _ASTEROID_SUBSETS: dict[AsteroidSubsetSlug, _AsteroidSubset] = {
 }
 
 
+def _asteroid_body_input(body: str | int) -> str | int:
+    if isinstance(body, str) and body.isdecimal():
+        return int(body)
+    return body
+
+
 def _known_asteroid_entry(body: str | int) -> bool:
+    body = _asteroid_body_input(body)
     if isinstance(body, int):
         return body in _KNOWN_ASTEROID_IDS
-    if body.isdecimal():
-        return int(body) in _KNOWN_ASTEROID_IDS
     return body.casefold() in _KNOWN_ASTEROID_NAMES
 
 
 def _resolve_asteroid_name(body: str | int) -> str:
+    body = _asteroid_body_input(body)
     if isinstance(body, int):
         return _ASTEROID_NAME_BY_ID[body]
-    if body.isdecimal():
-        return _ASTEROID_NAME_BY_ID[int(body)]
     return _ASTEROID_NAME_BY_CASEFOLD[body.casefold()]
+
+
+def lookup_asteroid_identity(engine: Moira, body: str) -> AsteroidIdentityResponse | None:
+    """Resolve an exact asteroid catalog entry and check local kernel availability."""
+
+    query = body.strip()
+    if not query:
+        raise ValueError("body must be non-empty")
+    try:
+        name = _resolve_asteroid_name(query)
+    except KeyError:
+        return None
+    naif_id = ASTEROID_NAIF[name]
+    return serialize_asteroid_identity(
+        name,
+        naif_id,
+        loaded_kernel_available=naif_id in _covered_bodies(_get_small_body_reader(engine)),
+    )
+
+
+def lookup_small_body(
+    engine: Moira, body: str, family: SmallBodyFamily | None,
+) -> SmallBodyIdentityResponse | SmallBodyIdentityAmbiguity | None:
+    """Resolve the unified catalog, reporting cross-family alternatives."""
+
+    if not body.strip():
+        raise ValueError("body must be non-empty")
+    covered = _covered_bodies(_get_small_body_reader(engine))
+
+    def resolved(identity: SmallBodyIdentity) -> SmallBodyIdentityResponse:
+        return SmallBodyIdentityResponse(
+            family=identity.family, canonical_name=identity.canonical_name,
+            naif_id=identity.naif_id, matched_name=identity.matched_name,
+            is_alias=identity.is_alias, qualified_name=identity.qualified_name,
+            loaded_kernel_available=identity.naif_id in covered,
+        )
+
+    try:
+        identity = resolve_small_body_identity(body, family=family)
+    except AmbiguousSmallBodyNameError as exc:
+        return SmallBodyIdentityAmbiguity(
+            query=exc.query, candidates=[resolved(candidate) for candidate in exc.candidates],
+        )
+    return None if identity is None else resolved(identity)
 
 
 def _kernel_source(reader: Any | None) -> str:
@@ -170,7 +224,7 @@ def compute_asteroid_position(
     reader = _get_small_body_reader(engine)
     jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     data: AsteroidData = asteroid_at(
-        request.body,
+        _asteroid_body_input(request.body),
         jd_ut,
         reader=reader,   # This is the key: passes sovereign fast kernels if present
     )
@@ -205,7 +259,7 @@ def compute_asteroids_bulk(
     jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     for body in request.bodies:
         try:
-            data = asteroid_at(body, jd_ut, reader=reader)
+            data = asteroid_at(_asteroid_body_input(body), jd_ut, reader=reader)
             loaded_kernel_available = data.naif_id in covered
             results[str(body)] = serialize_asteroid(
                 data,
@@ -513,12 +567,6 @@ def group_asteroid_families_in_chart(
     )
 
 
-def _mpc_number_from_naif_id(naif_id: int) -> int | None:
-    if 50_000_000 <= naif_id < 60_000_000:
-        return None
-    return naif_id - SMALL_BODY_NAIF_OFFSET
-
-
 def _resonance_request_items(
     request: AsteroidFamilyResonanceNetworkRequest,
 ) -> tuple[str, list[tuple[str, str | int, int | None]]]:
@@ -567,7 +615,7 @@ def compute_asteroid_family_resonance_network(
 
     for requested_body, engine_body, explicit_number in request_items:
         try:
-            data = asteroid_at(engine_body, jd_ut, reader=reader)
+            data = asteroid_at(_asteroid_body_input(engine_body), jd_ut, reader=reader)
         except Exception:
             if not request.skip_missing:
                 raise
@@ -577,7 +625,10 @@ def compute_asteroid_family_resonance_network(
         if data.name in positions:
             raise ValueError(f"duplicate resolved asteroid body {data.name!r}")
 
-        mpc_number = explicit_number if explicit_number is not None else _mpc_number_from_naif_id(data.naif_id)
+        mpc_number = (
+            explicit_number if explicit_number is not None
+            else asteroid_mpc_number_from_naif_id(data.naif_id)
+        )
         family_names = (
             asteroid_families(mpc_number)
             if mpc_number is not None and mpc_number > 0

@@ -5,13 +5,14 @@ from __future__ import annotations
 from datetime import datetime
 import math
 from numbers import Real
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira.constants import HouseSystem
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
+from .common import REST_BATCH_MAX_ITEMS
 from .positions import PlanetPositionResponse, PositionObserverContextResponse
 
 
@@ -152,7 +153,26 @@ class HousePolicyRequest(_StrictModel):
     polar_fallback: PolarFallbackPolicy = PolarFallbackPolicy.FALLBACK_TO_PORPHYRY
 
 
-class HousesRequest(_StrictModel):
+class _HouseAnchorInputs(_StrictModel):
+    """Optional degree-valued anchors and zodiac offset for a house figure."""
+
+    sun_longitude: float | None = Field(
+        default=None, strict=True, allow_inf_nan=False,
+        description="Geocentric tropical solar longitude in degrees for Sunshine and Solar Sign.",
+    )
+    sun_declination: float | None = Field(
+        default=None, strict=True, allow_inf_nan=False,
+        description="Apparent geocentric solar declination of date in degrees for Makransky Sunshine.",
+    )
+    ayanamsa_offset: float | None = Field(
+        default=None, strict=True, allow_inf_nan=False,
+        description="Offset in degrees subtracted from tropical house longitudes.",
+    )
+
+
+class HousesRequest(_HouseAnchorInputs):
+    """Dated house figure at the supplied civil instant and geographic location."""
+
     dt: datetime
     time_unknown: bool = False
     latitude: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
@@ -168,6 +188,48 @@ class HousePolicyResponse(_StrictModel):
     """
     unknown_system: UnknownSystemPolicy
     polar_fallback: PolarFallbackPolicy
+
+
+class _ArmcHouseRequest(_HouseAnchorInputs):
+    """Shared inputs for static house figures at supplied apparent ARMC."""
+
+    armc: float = Field(strict=True, allow_inf_nan=False)
+    obliquity: float = Field(strict=True, gt=0, lt=90, allow_inf_nan=False)
+    latitude: float = Field(strict=True, ge=-90, le=90, allow_inf_nan=False)
+    policy: HousePolicyRequest | None = None
+    include_boundary_geometry: bool = False
+
+
+class HousesFromArmcRequest(_ArmcHouseRequest):
+    """Static cusps and angles at supplied apparent ARMC and true obliquity."""
+
+    system: str | None = None
+
+
+class HouseComparisonRequest(_ArmcHouseRequest):
+    """Compare two systems at one apparent ARMC, obliquity and latitude."""
+
+    left_system: str = Field(min_length=1, max_length=128)
+    right_system: str = Field(min_length=1, max_length=128)
+
+
+class HousePlacementComparisonRequest(HouseComparisonRequest):
+    """Compare named point placements in two house figures."""
+
+    points: dict[
+        Annotated[str, Field(min_length=1, max_length=128)],
+        Annotated[float, Field(strict=True, allow_inf_nan=False)],
+    ] = Field(
+        min_length=1, max_length=REST_BATCH_MAX_ITEMS,
+        description="Named ecliptic longitudes in degrees in the returned cusp zodiac.",
+    )
+
+    @field_validator("points")
+    @classmethod
+    def _require_trimmed_point_names(cls, points: dict[str, float]) -> dict[str, float]:
+        if any(name != name.strip() for name in points):
+            raise ValueError("point names must be non-empty trimmed strings")
+        return points
 
 
 class HouseBoundaryCurvePointResponse(_StrictModel):
@@ -222,6 +284,47 @@ class HousesResponse(_StrictModel):
     astronomical_asc_defined: bool | None = Field(default=None, description="Whether Alova's physical Ascendant is defined.")
     sandhis: list[float] | None = Field(default=None, description="Śrīpati closing junctions in house order.")
     boundary_geometry: HouseBoundaryGeometrySetResponse | None = None
+
+
+class HouseComparisonResponse(_StrictModel):
+    """The two source house figures and their signed cusp differences."""
+
+    left: HousesResponse
+    right: HousesResponse
+    cusp_deltas: list[Annotated[float, Field(gt=-180, le=180)]] = Field(
+        min_length=12, max_length=12,
+        description="Right minus left in degrees, in house order.",
+    )
+    systems_agree: bool
+    fallback_differs: bool
+    families_differ: bool
+
+
+class HousePlacementSideResponse(_StrictModel):
+    """House number and opening cusp for one point and one figure."""
+
+    house: int = Field(ge=1, le=12)
+    exact_on_cusp: bool
+    cusp_longitude: float = Field(ge=0, lt=360)
+
+
+class HousePointComparisonResponse(_StrictModel):
+    """Compare membership and angularity category for one longitude."""
+
+    longitude: float = Field(ge=0, lt=360)
+    left: HousePlacementSideResponse
+    right: HousePlacementSideResponse
+    all_agree: bool
+    angularity_agrees: bool
+
+
+class HousePlacementComparisonResponse(_StrictModel):
+    """The two source figures and a comparison for each named point."""
+
+    left: HousesResponse
+    right: HousesResponse
+    zodiac_offset_deg: float
+    placements: dict[str, HousePointComparisonResponse]
 
 
 class CuspSpeedResponse(_StrictModel):
@@ -531,6 +634,10 @@ __all__ = [
     "HouseBoundaryCurvePointResponse",
     "HouseBoundaryGeometryResponse",
     "HouseBoundaryGeometrySetResponse",
+    "HouseComparisonRequest",
+    "HouseComparisonResponse",
+    "HousePlacementComparisonRequest",
+    "HousePlacementComparisonResponse",
     "HouseDynamicsComputationResponse",
     "HouseDynamicsFromArmcRequest",
     "HouseDynamicsRequest",

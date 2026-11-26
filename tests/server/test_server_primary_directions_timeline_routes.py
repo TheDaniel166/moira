@@ -14,6 +14,7 @@ import pytest
 from datetime import datetime
 from moira.constants import TROPICAL_YEAR
 from moira.julian import jd_from_datetime, utc_to_ut1
+from moira.primary_directions import PrimaryDirectionAntisciaKind, PrimaryDirectionAntisciaTarget
 from fastapi.testclient import TestClient
 
 from moira_server.app import create_app
@@ -261,6 +262,61 @@ def test_timeline_endpoint_validation_errors(client_with_engine: TestClient):
         json={**_TIMELINE_BASE_PAYLOAD, "bound_doctrine": "not_a_doctrine"},
     )
     assert res4.status_code == 422
+
+
+@pytest.mark.parametrize(("field", "value"), [
+    ("submitted_arcs", []),
+    ("submitted_arcs", [{"significator": "Sun", "promissor": "Moon", "arc": 3, "direction": "D"}]),
+    ("include_relations", True),
+    ("include_relations", None),
+    ("include_relations", 0),
+    ("include_condition", True),
+    ("include_condition", None),
+    ("include_condition", "false"),
+])
+def test_timeline_rejects_unsupported_search_modes(client_with_engine, monkeypatch, field, value):
+    def unexpected_computation(*args, **kwargs):
+        pytest.fail("The timeline reached chart computation with an unsupported request.")
+
+    monkeypatch.setattr("moira_server.services.primary_directions._build_chart_and_houses", unexpected_computation)
+    response = client_with_engine.post(
+        "/v1/primary-directions/timeline", json={**_TIMELINE_BASE_PAYLOAD, field: value},
+    )
+    assert response.status_code == 422, response.text
+    assert f"body.{field}" in response.json()["details"]
+
+
+def test_timeline_compatibility_values_match_omission(client_with_engine):
+    path = "/v1/primary-directions/timeline"
+    baseline = client_with_engine.post(path, json=_TIMELINE_BASE_PAYLOAD)
+    compatibility = client_with_engine.post(path, json={
+        **_TIMELINE_BASE_PAYLOAD,
+        "submitted_arcs": None, "include_relations": False, "include_condition": False,
+    })
+    assert baseline.status_code == compatibility.status_code == 200
+    assert baseline.json() == compatibility.json()
+
+
+def test_timeline_forwards_advanced_targets_and_empty_significators(client_with_engine, moira_engine, monkeypatch):
+    engine_class = type(moira_engine)
+    compute = engine_class.primary_directions_timeline
+    targets = []
+
+    def observe_policy(engine, *args, **kwargs):
+        targets.append(kwargs["policy"].antiscia_targets)
+        return compute(engine, *args, **kwargs)
+
+    monkeypatch.setattr(engine_class, "primary_directions_timeline", observe_policy)
+    response = client_with_engine.post("/v1/primary-directions/timeline", json={
+        **_TIMELINE_BASE_PAYLOAD,
+        "policy": {"preset": "ptolemy_zodiacal_antiscia"},
+        "antiscia_targets": [{"source_name": "Venus", "kind": "CONTRA_ANTISCION"}],
+        "significators": [],
+    })
+    assert response.status_code == 200, response.text
+    assert targets == [(PrimaryDirectionAntisciaTarget("Venus", PrimaryDirectionAntisciaKind.CONTRA_ANTISCION),)]
+    assert response.json()["events"] == []
+    assert response.json()["distributor_periods"] == []
 
 
 @pytest.mark.parametrize("key", [

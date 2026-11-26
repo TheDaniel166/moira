@@ -6,7 +6,7 @@ Designed for high-performance website use with the sovereign star registry.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -129,6 +129,40 @@ class StarsBulkResponse(_StrictModel):
 class StarListResponse(_StrictModel):
     stars: list[str]  # names or designations
     total: int
+
+
+class _StarSearchRequest(_StrictModel):
+    jd_tt: float = Field(strict=True, allow_inf_nan=False)
+    product: StarPositionProduct = DEFAULT_STAR_POSITION_PRODUCT
+    limit: int = Field(default=100, strict=True, ge=1, le=500)
+
+
+class StarLongitudeSearchRequest(_StarSearchRequest):
+    """Catalog stars within an ecliptic longitude orb at one TT epoch."""
+
+    kind: Literal["longitude"]
+    longitude_deg: float = Field(strict=True, allow_inf_nan=False)
+    orb_deg: float = Field(default=1.0, strict=True, ge=0, le=180)
+
+
+class StarMagnitudeSearchRequest(_StarSearchRequest):
+    """Catalog stars at or brighter than the selected apparent V magnitude."""
+
+    kind: Literal["magnitude"]
+    max_magnitude: float = Field(strict=True, allow_inf_nan=False)
+
+
+StarSearchRequest = Annotated[
+    StarLongitudeSearchRequest | StarMagnitudeSearchRequest, Field(discriminator="kind"),
+]
+
+
+class StarSearchResponse(_StrictModel):
+    """Ordered fixed-star results, with the full match count before limiting."""
+
+    request: StarSearchRequest
+    matches: list[StarPositionResponse]
+    total_matches: int
 
 
 class VariableStarCatalogResponse(_StrictModel):

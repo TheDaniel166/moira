@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira import Body, Moira
+from moira.cycles import _JULIAN_YEAR, bounded_return_series
 from moira.transits import (
     TransitComputationPolicy,
     ReturnSearchPolicy,
@@ -15,10 +16,29 @@ from moira.transits import (
 )
 from moira.small_body_identity import resolve_small_body_identity
 
-from ..models.returns import LunarReturnRequest, PlanetReturnRequest, SolarReturnRequest
+from ..models.returns import (
+    LifetimeReturnSeriesRequest, LunarReturnRequest, PlanetReturnRequest,
+    ReturnSeriesRequest, ReturnSeriesResponse, SolarReturnRequest,
+)
+from ._shared import require_engine_reader
 
 
 _VALID_RETURN_BODIES = frozenset(Body.ALL_PLANETS)
+
+
+def compute_return_series(engine: Moira, request: ReturnSeriesRequest) -> ReturnSeriesResponse:
+    """Resolve a full or half-return interval before invoking the engine."""
+
+    if isinstance(request, LifetimeReturnSeriesRequest):
+        start = request.birth_jd_ut1
+        end = start + request.years * _JULIAN_YEAR
+    else:
+        start, end = request.jd_start_ut1, request.jd_end_ut1
+    series = bounded_return_series(
+        request.body, request.natal_longitude_deg, start, end,
+        half=request.kind == "half", direction=request.direction, reader=require_engine_reader(engine),
+    )
+    return ReturnSeriesResponse(request=request, series=series)
 
 
 def _require_supported_return_body(body: str) -> None:

@@ -5,15 +5,20 @@ from __future__ import annotations
 import math
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira.ayanamsa_doctrine import ayanamsa_doctrine
+from moira.galactic_ayanamsa import GalacticAyanamsa
 from moira.sidereal import (
     Ayanamsa,
     GrahalaghavaAyanamsa,
     PolarStarAyanamsa,
     SuryaSiddhantaLibrationAyanamsa,
     SuryadevaTrepidationAyanamsa,
+    UserDefinedAyanamsa,
 )
+
+from .sidereal_context import SiderealChartContextResponse
 
 
 SIDEREAL_NAKSHATRA_MAX_BULK_POSITIONS = 64
@@ -82,12 +87,47 @@ class SuryadevaTrepidationSelection(_StrictModel):
         return SuryadevaTrepidationAyanamsa()
 
 
+GalacticAyanamsaPreset = Literal[
+    "centre_sagittarius",
+    "centre_gil_brand",
+    "centre_cochrane",
+    "centre_wilhelm",
+    "centre_mid_mula",
+    "equator_allwise_2024",
+    "equator_liu_2011",
+    "equator_liu_2011_mid_mula",
+]
+
+
+class GalacticAyanamsaSelection(_StrictModel):
+    """An admitted Galactic centre or Galactic plane anchor."""
+
+    family: Literal["galactic_anchor"]
+    preset: GalacticAyanamsaPreset
+
+    def to_engine(self) -> GalacticAyanamsa:
+        return GalacticAyanamsa(self.preset)
+
+
+class UserDefinedAyanamsaSelection(_StrictModel):
+    """A caller-supplied J2000 reference and additional drift."""
+
+    family: Literal["user_defined"]
+    reference_value_j2000: float = Field(strict=True, allow_inf_nan=False)
+    drift_per_century: float = Field(default=0.0, strict=True, allow_inf_nan=False)
+
+    def to_engine(self) -> UserDefinedAyanamsa:
+        return UserDefinedAyanamsa(self.reference_value_j2000, self.drift_per_century)
+
+
 AyanamsaDoctrineSelection = Annotated[
     Union[
         GrahalaghavaSelection,
         PolarStarSelection,
         SuryaSiddhantaLibrationSelection,
         SuryadevaTrepidationSelection,
+        GalacticAyanamsaSelection,
+        UserDefinedAyanamsaSelection,
     ],
     Field(discriminator="family"),
 ]
@@ -118,30 +158,42 @@ class _AyanamsaChoice(_StrictModel):
 
     def system_name(self) -> str:
         if self.ayanamsa_doctrine is not None:
-            return self.ayanamsa_doctrine.to_engine().name
+            return ayanamsa_doctrine(self.ayanamsa_doctrine.to_engine()).system
         return self.ayanamsa_system
 
 
 def _validate_mode(value: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError("mode must be 'true' or 'mean'")
     mode = value.strip().lower()
     if mode not in SIDEREAL_AYANAMSA_MODES:
         raise ValueError("mode must be 'true' or 'mean'")
     return mode
 
 
-class SiderealAyanamsaRequest(_AyanamsaChoice):
-    jd_ut: float
+class _AyanamsaModeChoice(_AyanamsaChoice):
     mode: Literal["true", "mean"] = "true"
+
+    @field_validator("mode", mode="before")
+    @classmethod
+    def _valid_mode(cls, value: str) -> str:
+        return _validate_mode(value)
+
+
+class SiderealAyanamsaRequest(_AyanamsaModeChoice):
+    jd_ut: float
 
     @field_validator("jd_ut")
     @classmethod
     def _finite_jd_ut(cls, value: float) -> float:
         return _validate_finite(value, "jd_ut")
 
-    @field_validator("mode", mode="before")
-    @classmethod
-    def _valid_mode(cls, value: str) -> str:
-        return _validate_mode(value)
+class SiderealChartRequest(_AyanamsaModeChoice):
+    """A dated chart with an explicit request-local sidereal selection."""
+
+    dt: AwareDatetime
+    bodies: list[str] | None = Field(default=None, min_length=1, max_length=128)
+    include_nodes: bool = False
 
 
 class SiderealConversionRequest(SiderealAyanamsaRequest):
@@ -334,6 +386,27 @@ class AyanamsaSystemResponse(_StrictModel):
     default_mode: str = "true"
     supported_modes: list[str]
     doctrine: AyanamsaDoctrineResponse
+
+
+class SiderealChartResponse(SiderealChartContextResponse):
+    """Chart longitudes and the resolved sidereal reduction."""
+
+    computation_truth: AyanamsaComputationTruthResponse
+    doctrine: AyanamsaDoctrineResponse
+
+
+class GalacticAyanamsaPresetResponse(_StrictModel):
+    """An admitted request selection and its source-defined doctrine."""
+
+    selection: GalacticAyanamsaSelection
+    supported_modes: list[Literal["true", "mean"]]
+    doctrine: AyanamsaDoctrineResponse
+
+
+class GalacticAyanamsaPresetsResponse(_StrictModel):
+    """The Galactic ayanamsa presets available through the sidereal routes."""
+
+    presets: list[GalacticAyanamsaPresetResponse]
 
 
 class AyanamsaSystemsEnvelopeResponse(_StrictModel):

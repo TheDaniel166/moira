@@ -46,7 +46,7 @@ from moira.parans import (
     sample_paran_field,
 )
 from moira.paran_stars import PARAN_STAR_CANON, list_paran_stars, paran_star_tiers
-from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, twilight_times
+from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, horizon_crossing_availability, twilight_times
 from moira.spk_reader import MissingEphemerisKernelError, use_reader_override
 from moira.stations import (
     find_stations,
@@ -100,6 +100,8 @@ from ..models.phenomena import (
     ParanTargetRequest,
     RetrogradePeriodSearchRequest,
     RiseSetPhenomenaRequest,
+    HorizonAvailabilityRequest,
+    HorizonAvailabilityResponse,
     RiseSetPolicyRequest,
     SolarEclipseFootprintRequest,
     SolarEclipseCartographyRequest,
@@ -547,6 +549,25 @@ def compute_void_periods_with_truth(engine: Moira, request: VoidOfCourseRangeReq
         request.jd_end,
         reader=getattr(engine, "_reader", None),
         modern=request.modern,
+    )
+
+
+def compute_horizon_availability(engine: Moira, request: HorizonAvailabilityRequest) -> HorizonAvailabilityResponse:
+    """Expose the engine diagnostic at a caller-supplied geometric altitude."""
+
+    body = request.body.strip()
+    reader = _star_event_reader(engine, request.star_product)
+    if reader is None and body.casefold() in {name.casefold() for name in Body.ALL_PLANETS}:
+        raise MissingEphemerisKernelError("Planetary horizon diagnostics require the server's ephemeris.")
+    with use_reader_override(reader):
+        result = horizon_crossing_availability(
+            body, request.jd_start_ut1, request.latitude, request.longitude,
+            altitude=request.altitude, steps=request.steps, star_product=request.star_product,
+        )
+    return HorizonAvailabilityResponse(
+        request=request, state=result.state.value, target_altitude=result.target_altitude,
+        minimum_altitude=result.minimum_altitude, maximum_altitude=result.maximum_altitude,
+        sample_count=result.sample_count, method=result.method,
     )
 
 

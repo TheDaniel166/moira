@@ -13,11 +13,17 @@ from ..models.chart import (
     ChartReductionResponse,
     ChartRequest,
     ChartWithComputationTruthResponse,
+    HouseComparisonRequest,
+    HouseComparisonResponse,
     HouseDynamicsFromArmcRequest,
     HouseDynamicsRequest,
     HouseDynamicsResponse,
+    HousePlacementComparisonRequest,
+    HousePlacementComparisonResponse,
+    HousesFromArmcRequest,
     HousesReductionResponse,
     HousesRequest,
+    HousesResponse,
     HousesWithComputationTruthResponse,
     PolarAdmissibilityRequest,
     PolarAdmissibilityResponse,
@@ -26,7 +32,10 @@ from ..serializers.chart import (
     serialize_analytical_house_dynamics,
     serialize_chart_with_computation_truth,
     serialize_chart_with_reduction,
+    serialize_house_comparison,
     serialize_house_dynamics,
+    serialize_house_placement_comparison,
+    serialize_houses,
     serialize_houses_with_computation_truth,
     serialize_houses_with_reduction,
     serialize_polar_admissibility,
@@ -35,8 +44,11 @@ from ..services.chart import (
     UnsupportedPolarHouseSystemError,
     compute_analytical_house_dynamics,
     compute_chart_with_reduction,
+    compute_house_comparison,
     compute_house_dynamics,
     compute_house_dynamics_from_armc,
+    compute_house_placement_comparison,
+    compute_houses_from_armc,
     compute_houses_with_reduction,
     compute_polar_admissibility,
 )
@@ -121,6 +133,30 @@ def house_dynamics_route(
     """Compute instantaneous house cusp and angle speeds."""
     dynamics = compute_house_dynamics(engine, request)
     return serialize_house_dynamics(dynamics)
+
+
+@router.post("/houses/armc", response_model=HousesResponse)
+def houses_from_armc_route(request: HousesFromArmcRequest) -> HousesResponse:
+    """Return static cusps and angles from supplied ARMC and obliquity."""
+
+    return serialize_houses(compute_houses_from_armc(request))
+
+
+@router.post("/houses/compare", response_model=HouseComparisonResponse)
+def house_comparison_route(request: HouseComparisonRequest) -> HouseComparisonResponse:
+    """Compare the cusps of two systems with shared static geometry."""
+
+    return serialize_house_comparison(compute_house_comparison(request))
+
+
+@router.post("/houses/placements/compare", response_model=HousePlacementComparisonResponse)
+def house_placement_comparison_route(request: HousePlacementComparisonRequest) -> HousePlacementComparisonResponse:
+    """Compare point placements in two systems at the same static geometry."""
+
+    left, right, comparisons = compute_house_placement_comparison(request)
+    return serialize_house_placement_comparison(
+        left, right, comparisons, zodiac_offset_deg=request.ayanamsa_offset or 0.0,
+    )
 
 
 @router.post("/houses/dynamics/armc", response_model=HouseDynamicsResponse)

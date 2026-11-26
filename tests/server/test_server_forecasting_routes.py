@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from moira.constants import Body, Aspect
+from moira.chart import create_chart, relocated_chart
+from moira.constants import Body, Aspect, HouseSystem
+from moira.houses import calculate_houses
+from moira.julian import jd_from_datetime, utc_to_ut1
+from moira.spk_reader import get_active_reader, use_reader_override
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.dependencies import get_engine
 from moira_server.models.forecasting import (
     CompositeTransitRequest,
     DynamicAstrocartographyRequest,
@@ -67,6 +73,7 @@ def test_forecasting_routes_are_present_in_openapi() -> None:
         "/v1/astrocartography/fixed-stars",
         "/v1/astrocartography/dynamic/transits",
         "/v1/returns/relocated",
+        "/v1/chart/relocated",
     }
     assert expected <= set(schema["paths"])
 
@@ -79,6 +86,13 @@ def test_forecasting_routes_are_present_in_openapi() -> None:
         "observer_latitude",
         "observer_longitude",
     } <= set(dynamic_schema["required"])
+    natal = schema["components"]["schemas"]["NatalRelocationRequest"]
+    assert set(natal["required"]) == {
+        "dt", "source_latitude", "source_longitude", "relocated_latitude", "relocated_longitude",
+    }
+    assert natal["properties"]["dt"]["format"] == "date-time"
+    response = schema["paths"]["/v1/chart/relocated"]["post"]["responses"]["200"]
+    assert response["content"]["application/json"]["schema"]["$ref"].endswith("/NatalRelocationResponse")
 
 
 def test_fixed_star_route_needs_the_engine_kernel(
@@ -447,3 +461,135 @@ def test_relocated_return_route_preserves_epoch_and_sky_snapshot(
     assert body["relocation_truth"]["same_epoch"] is True
     assert body["relocation_truth"]["same_celestial_snapshot"] is True
     assert body["relocation_truth"]["interpretation"] == "none_geometry_only"
+
+
+_NATAL_RELOCATION_PATH = "/v1/chart/relocated"
+_NATAL_RELOCATION = {
+    "dt": "2000-01-01T07:00:00-05:00",
+    "source_latitude": 40.0,
+    "source_longitude": -75.0,
+    "relocated_latitude": 51.5,
+    "relocated_longitude": -0.1,
+    "source_house_system": "Equal",
+    "relocated_house_system": "Whole Sign",
+    "bodies": [Body.SUN, Body.MOON, Body.MARS],
+}
+
+
+@pytest.mark.requires_ephemeris
+def test_natal_relocation_recasts_only_the_local_frame(client_with_engine, moira_engine, monkeypatch):
+    reader = moira_engine._reader
+    jd_utc = jd_from_datetime(datetime.fromisoformat(_NATAL_RELOCATION["dt"]))
+    jd_ut1 = utc_to_ut1(jd_utc)
+    assert jd_ut1 != jd_utc
+    with use_reader_override(reader):
+        expected = create_chart(
+            jd_ut1, 40.0, -75.0, HouseSystem.EQUAL, list(_NATAL_RELOCATION["bodies"]), reader=reader,
+        )
+        expected_houses = calculate_houses(jd_ut1, 51.5, -0.1, HouseSystem.WHOLE_SIGN)
+
+    built = []
+    recasts = []
+
+    def observe_source(*args, **kwargs):
+        assert get_active_reader() is kwargs["reader"] is reader
+        source = create_chart(*args, **kwargs)
+        built.append(source)
+        return source
+
+    def observe_relocation(source, *args, **kwargs):
+        assert get_active_reader() is reader
+        recasts.append(source)
+        return relocated_chart(source, *args, **kwargs)
+
+    monkeypatch.setattr(service, "create_chart", observe_source)
+    monkeypatch.setattr(service, "relocated_chart", observe_relocation)
+    response = client_with_engine.post(_NATAL_RELOCATION_PATH, json=_NATAL_RELOCATION)
+    assert response.status_code == 200, response.text
+    assert len(built) == len(recasts) == 1
+    assert built[0] is recasts[0]
+
+    result = response.json()
+    source, relocated = result["source_chart"], result["relocated_chart"]
+    assert source["jd_ut"] == relocated["jd_ut"] == jd_ut1
+    assert source["jd_tt"] == relocated["jd_tt"] == expected.jd_tt
+    assert source["planets"] == relocated["planets"]
+    assert source["nodes"] == relocated["nodes"]
+    assert set(source["planets"]) == set(_NATAL_RELOCATION["bodies"])
+    assert set(source["nodes"]) == {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH}
+    for name, point in expected.planets.items():
+        assert source["planets"][name]["longitude"] == point.longitude
+        assert source["planets"][name]["is_topocentric"] is False
+    for name, node in expected.nodes.items():
+        assert source["nodes"][name]["longitude"] == node.longitude
+    assert (source["latitude"], source["longitude"]) == (40.0, -75.0)
+    assert (relocated["latitude"], relocated["longitude"]) == (51.5, -0.1)
+    assert source["houses"]["cusps"] == list(expected.houses.cusps)
+    assert relocated["houses"]["cusps"] == list(expected_houses.cusps)
+    assert relocated["houses"]["armc"] == expected_houses.armc
+    assert relocated["houses"]["asc"] == expected_houses.asc
+    assert relocated["houses"]["mc"] == expected_houses.mc
+    assert relocated["houses"]["cusps"] != source["houses"]["cusps"]
+    truth = result["relocation_truth"]
+    assert datetime.fromisoformat(truth["datetime_utc"].replace("Z", "+00:00")) == datetime(
+        2000, 1, 1, 12, tzinfo=timezone.utc,
+    )
+    assert truth["same_epoch"] is True
+    assert truth["same_celestial_snapshot"] is True
+    assert truth["chart_source"] == "moira.chart.create_chart"
+    assert truth["relocation_source"] == "moira.chart.relocated_chart"
+
+
+@pytest.mark.requires_ephemeris
+def test_natal_relocation_inherits_the_requested_system_after_polar_fallback(client_with_engine):
+    payload = {
+        **_NATAL_RELOCATION, "source_latitude": -72, "source_house_system": "Koch",
+        "relocated_house_system": None,
+    }
+    response = client_with_engine.post(_NATAL_RELOCATION_PATH, json=payload)
+    assert response.status_code == 200, response.text
+    result = response.json()
+    source, relocated = (result[key]["houses"] for key in ("source_chart", "relocated_chart"))
+    assert source["system"] == relocated["system"] == HouseSystem.KOCH
+    assert source["effective_system"] == HouseSystem.PORPHYRY
+    assert source["fallback"] and source["fallback_reason"]
+    assert relocated["effective_system"] == HouseSystem.KOCH
+    assert relocated["fallback"] is False
+
+    strict = client_with_engine.post(_NATAL_RELOCATION_PATH, json={
+        **payload, "house_policy": {"polar_fallback": "raise"},
+    })
+    assert strict.status_code == 422, strict.text
+    assert "critical latitude" in strict.json()["message"]
+
+
+@pytest.mark.parametrize("changes", [
+    {"dt": "2000-01-01T07:00:00"},
+    {"dt": "946728000"},
+    {"dt": 946728000},
+    {"source_latitude": True},
+    {"relocated_longitude": 181},
+    {"relocated_house_system": " "},
+    {"bodies": []},
+    {"bodies": [Body.SUN, Body.SUN]},
+    {"bodies": ["unknown"]},
+    {"relocated_dt": "2001-01-01T12:00:00Z"},
+])
+def test_natal_relocation_rejects_invalid_inputs_without_chart_computation(changes, monkeypatch):
+    app = create_app(ServerConfig(docs_enabled=False))
+    app.dependency_overrides[get_engine] = lambda: SimpleNamespace(_reader=None)
+
+    def unexpected_chart(*args, **kwargs):
+        pytest.fail("An invalid natal relocation request reached chart computation.")
+
+    monkeypatch.setattr(service, "create_chart", unexpected_chart)
+    response = TestClient(app).post(_NATAL_RELOCATION_PATH, json={**_NATAL_RELOCATION, **changes})
+    assert response.status_code == 422, response.text
+
+
+def test_natal_relocation_requires_the_serving_reader():
+    app = create_app(ServerConfig(docs_enabled=False))
+    app.dependency_overrides[get_engine] = lambda: SimpleNamespace(_reader=None)
+    response = TestClient(app).post(_NATAL_RELOCATION_PATH, json=_NATAL_RELOCATION)
+    assert response.status_code == 503, response.text
+    assert response.json()["error_code"] == "kernel_not_ready"

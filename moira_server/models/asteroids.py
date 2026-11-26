@@ -8,11 +8,13 @@ These are designed for high-performance website use:
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from moira._strenum import StrEnum
 from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
+from moira.small_body_identity import SmallBodyFamily
 
 from .relationship import AspectDataResponse, OptionalAspectSetValue, _OptionalAspectSetsRequest
 
@@ -22,6 +24,10 @@ ASTEROID_FAMILY_MEMBER_MAX_ITEMS = 500
 ASTEROID_FAMILIES_CHART_MAX_ITEMS = 500
 ASTEROID_FAMILY_RESONANCE_NETWORK_MAX_ITEMS = 500
 SMALL_BODY_NAIF_OFFSET = 2_000_000
+AsteroidNaifConvention = Literal[
+    "small_body_naif_id_2000000_plus_catalog_number",
+    "explicit_jpl_spk_id_for_provisional_designation",
+]
 
 
 class AsteroidSubsetSlug(StrEnum):
@@ -70,7 +76,7 @@ class AsteroidPositionProvenanceResponse(_StrictModel):
     requested_body: str
     returned_body: str
     returned_naif_id: int
-    naif_convention: str = "small_body_naif_id_2000000_plus_catalog_number"
+    naif_convention: AsteroidNaifConvention = "small_body_naif_id_2000000_plus_catalog_number"
     frame: str = "geocentric_tropical_ecliptic"
     stage_sequence: list[str]
 
@@ -149,6 +155,52 @@ class AsteroidsBulkResponse(_StrictModel):
 class AsteroidListItem(_StrictModel):
     name: str
     naif_id: int
+
+
+class AsteroidCatalogOrbitClassResponse(_StrictModel):
+    """Published JPL SBDB orbit class for the catalog identity."""
+
+    code: str
+    title: str
+    source: Literal["JPL SBDB"] = "JPL SBDB"
+
+
+class AsteroidIdentityResponse(_StrictModel):
+    """Canonical asteroid identity with separate catalog and kernel information."""
+
+    name: str
+    naif_id: int
+    mpc_number: int | None
+    provisional_designation: str | None
+    naif_convention: AsteroidNaifConvention
+    loaded_kernel_available: bool
+    catalog_source: Literal["ASTEROID_NAIF"] = "ASTEROID_NAIF"
+    orbit_class: AsteroidCatalogOrbitClassResponse | None = None
+
+
+class SmallBodyIdentityResponse(_StrictModel):
+    """A named asteroid or comet and its installed reader availability."""
+
+    family: SmallBodyFamily
+    canonical_name: str
+    naif_id: int
+    matched_name: str
+    is_alias: bool
+    qualified_name: str
+    loaded_kernel_available: bool
+
+
+class SmallBodyIdentityAmbiguity(_StrictModel):
+    """Alternatives for a name shared by asteroid and comet catalogs."""
+
+    query: str
+    candidates: list[SmallBodyIdentityResponse]
+
+
+class SmallBodyIdentityConflictResponse(_StrictModel):
+    """HTTP detail for a cross-family identity conflict."""
+
+    detail: SmallBodyIdentityAmbiguity
 
 
 class AsteroidListResponse(_StrictModel):

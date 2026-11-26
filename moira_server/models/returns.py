@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from moira.cycles import BoundedReturnSeries
 
 from .transits import TransitComputationTruthResponse
 
@@ -61,6 +65,43 @@ class ReturnEventResponse(_StrictModel):
     # Contains target resolution (natal_lon as numeric), search brackets, step, solver_tolerance,
     # direction_filter, wrapper as PLANET_RETURN, etc. Populated from the canonical return event.
     # Enhanced for reduction visibility per Returns Closure Plan.
+
+
+_ReturnNumber = Annotated[float, Field(strict=True, allow_inf_nan=False)]
+
+
+class _ReturnSeriesRequest(_StrictModel):
+    body: str = Field(min_length=1, max_length=128)
+    natal_longitude_deg: _ReturnNumber
+    direction: Literal["direct", "retrograde", "either"] = "either"
+
+
+class ReturnSeriesWindowRequest(_ReturnSeriesRequest):
+    """Full or half returns inside a bounded UT1 interval."""
+
+    kind: Literal["full", "half"]
+    jd_start_ut1: _ReturnNumber
+    jd_end_ut1: _ReturnNumber
+
+
+class LifetimeReturnSeriesRequest(_ReturnSeriesRequest):
+    """Full returns over a caller-selected span in Julian years."""
+
+    kind: Literal["lifetime"]
+    birth_jd_ut1: _ReturnNumber
+    years: float = Field(default=90.0, strict=True, gt=0, le=120)
+
+
+ReturnSeriesRequest = Annotated[
+    ReturnSeriesWindowRequest | LifetimeReturnSeriesRequest, Field(discriminator="kind"),
+]
+
+
+class ReturnSeriesResponse(_StrictModel):
+    """The request and the complete bounded search result."""
+
+    request: ReturnSeriesRequest
+    series: BoundedReturnSeries
 
 
 __all__ = [

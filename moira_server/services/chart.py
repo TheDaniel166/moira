@@ -16,19 +16,26 @@ from moira import (
     house_dynamics_from_armc,
 )
 from moira.constants import HouseSystem, J2000
-from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
+from moira.houses import (
+    HouseCusps, HousePlacementComparison, HousePolicy, HouseSystemComparison,
+    PolarFallbackPolicy, UnknownSystemPolicy, compare_placements, compare_systems, houses_from_armc,
+)
 from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 
 from ..models.chart import (
     AnalyticalHouseDynamicsRequest,
     ChartRequest,
+    HouseComparisonRequest,
     HouseDynamicsFromArmcRequest,
     HouseDynamicsRequest,
+    HousePlacementComparisonRequest,
+    HousesFromArmcRequest,
     HousesRequest,
     POLAR_ADMISSIBILITY_MAX_SAMPLES,
     POLAR_ADMISSIBILITY_PLACIDUS_MAX_SAMPLES,
     PolarAdmissibilityRequest,
+    _ArmcHouseRequest,
 )
 from ._shared import (
     build_chart_context,
@@ -394,6 +401,55 @@ def compute_house_dynamics(
             obliquity_held_fixed=False,
         ),
     )
+
+
+def _houses_at_armc(request: _ArmcHouseRequest, system: str | None) -> HouseCusps:
+    return houses_from_armc(
+        request.armc, request.obliquity, request.latitude,
+        _resolve_house_system(system),
+        policy=_engine_house_policy(request.policy),
+        sun_longitude=request.sun_longitude,
+        sun_declination=request.sun_declination,
+        ayanamsa_offset=request.ayanamsa_offset,
+        include_boundary_geometry=request.include_boundary_geometry,
+    )
+
+
+def compute_houses_from_armc(request: HousesFromArmcRequest) -> HouseCusps:
+    """Compute static house cusps with the engine's fallback policy."""
+
+    return _houses_at_armc(request, request.system)
+
+
+def _house_pair_at_armc(request: HouseComparisonRequest) -> tuple[HouseCusps, HouseCusps]:
+    figures = []
+    for side, system in (("left", request.left_system), ("right", request.right_system)):
+        try:
+            figures.append(_houses_at_armc(request, system))
+        except ValueError as exc:
+            raise ValueError(f"{side}_system: {exc}") from exc
+    left, right = figures
+    return left, right
+
+
+def compute_house_comparison(request: HouseComparisonRequest) -> HouseSystemComparison:
+    """Compute both figures in one shared geometry before comparison."""
+
+    left, right = _house_pair_at_armc(request)
+    return compare_systems(left, right)
+
+
+def compute_house_placement_comparison(
+    request: HousePlacementComparisonRequest,
+) -> tuple[HouseCusps, HouseCusps, dict[str, HousePlacementComparison]]:
+    """Compare the supplied longitudes in two request-local house figures."""
+
+    left, right = _house_pair_at_armc(request)
+    comparisons = {
+        name: compare_placements(longitude, left, right)
+        for name, longitude in request.points.items()
+    }
+    return left, right, comparisons
 
 
 def compute_house_dynamics_from_armc(

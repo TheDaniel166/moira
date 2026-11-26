@@ -30,9 +30,9 @@ Public surface:
     precession_matrix_equatorial, nutation_matrix_equatorial,
     HorizontalCoordinatesTruth, EquatorialCoordinatesTruth,
     equatorial_to_horizontal, equatorial_to_horizontal_with_truth,
-    horizontal_to_equatorial,
+    horizontal_to_equatorial, horizontal_to_equatorial_with_truth,
     ecliptic_to_equatorial, ecliptic_to_equatorial_with_truth,
-    equatorial_to_ecliptic,
+    equatorial_to_ecliptic, transform_ecliptic_equatorial_with_truth,
     aberration_correction,
     cotrans_sp,
     atmospheric_refraction, atmospheric_refraction_extended,
@@ -50,6 +50,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Literal
+
 from .constants import DEG2RAD, RAD2DEG
 
 
@@ -106,6 +108,45 @@ class EquatorialCoordinatesTruth:
     target_frame: str = "equatorial_spherical_same_epoch"
     transform_method: str = "spherical_rotation_about_x_axis"
 
+
+_EclipticEquatorialTransform = Literal["ecliptic_to_equatorial", "equatorial_to_ecliptic"]
+
+
+@dataclass(frozen=True, slots=True)
+class EclipticEquatorialTransformTruth:
+    """Same-epoch rotation with nullable ecliptic longitude and right ascension at poles."""
+
+    transform: _EclipticEquatorialTransform
+    ecliptic_longitude_deg: float | None
+    ecliptic_latitude_deg: float
+    right_ascension_deg: float | None
+    declination_deg: float
+    obliquity_deg: float
+    source_frame: str
+    target_frame: str
+    transform_method: str = "spherical_rotation_about_x_axis"
+
+
+@dataclass(frozen=True, slots=True)
+class HorizontalToEquatorialTruth:
+    """Geometric horizon inverse with nullable azimuth, hour angle and right ascension."""
+
+    transform: Literal["horizontal_to_equatorial"]
+    azimuth_deg: float | None
+    altitude_deg: float
+    local_sidereal_time_deg: float
+    observer_latitude_deg: float
+    right_ascension_deg: float | None
+    declination_deg: float
+    hour_angle_deg: float | None
+    source_frame: str = "observer_horizontal_at_caller_lst"
+    target_frame: str = "equatorial_spherical_caller_frame"
+    transform_method: str = "geometric_horizon_direction_cosines"
+    azimuth_convention: str = "north_zero_clockwise"
+    hour_angle_convention: str = "west_positive"
+    polar_meridian_source: str = "caller_local_sidereal_time"
+
+
 __all__ = [
     "Vec3", "Mat3",
     "vec_add", "vec_sub", "vec_scale", "vec_norm", "vec_unit",
@@ -115,10 +156,11 @@ __all__ = [
     "true_ecliptic_latitude",
     "precession_matrix_equatorial", "nutation_matrix_equatorial",
     "HorizontalCoordinatesTruth", "EquatorialCoordinatesTruth",
+    "EclipticEquatorialTransformTruth", "HorizontalToEquatorialTruth",
     "equatorial_to_horizontal", "equatorial_to_horizontal_with_truth",
-    "horizontal_to_equatorial",
+    "horizontal_to_equatorial", "horizontal_to_equatorial_with_truth",
     "ecliptic_to_equatorial", "ecliptic_to_equatorial_with_truth",
-    "equatorial_to_ecliptic",
+    "equatorial_to_ecliptic", "transform_ecliptic_equatorial_with_truth",
     "aberration_correction",
     "cotrans_sp",
     "atmospheric_refraction", "atmospheric_refraction_extended",
@@ -533,6 +575,76 @@ def equatorial_to_ecliptic(
     return lon, lat
 
 
+def _unit_direction(longitude_deg: float | None, latitude_deg: float) -> Vec3:
+    """Build a unit spherical direction, with an exact axis at either pole."""
+
+    if abs(latitude_deg) == 90.0:
+        return 0.0, 0.0, math.copysign(1.0, latitude_deg)
+    if longitude_deg is None:
+        raise ValueError("longitude is required away from a source pole")
+    lon = longitude_deg * DEG2RAD
+    lat = latitude_deg * DEG2RAD
+    cos_lat = math.cos(lat)
+    return cos_lat * math.cos(lon), cos_lat * math.sin(lon), math.sin(lat)
+
+
+def _direction_angles(vector: Vec3) -> tuple[float | None, float]:
+    """Project a unit direction to longitude and latitude, with a polar null."""
+
+    x, y, z = vector
+    planar_norm = math.hypot(x, y)
+    # Same planar norm floor as the angular-rate denominator in cotrans_sp.
+    if planar_norm <= 1e-14:
+        return None, math.copysign(90.0, z)
+    return normalize_degrees(math.atan2(y, x) * RAD2DEG), math.atan2(z, planar_norm) * RAD2DEG
+
+
+def transform_ecliptic_equatorial_with_truth(
+    longitude_deg: float | None,
+    latitude_deg: float,
+    obliquity_deg: float,
+    *,
+    transform: _EclipticEquatorialTransform,
+) -> EclipticEquatorialTransformTruth:
+    """Rotate a supplied direction about the common equinox at a single epoch.
+
+    Longitude and latitude denote ecliptic coordinates or RA and declination
+    according to the selected direction. All angles are degrees. Obliquity
+    is in [0, 180]. A source pole can omit longitude, and a rotated direction
+    with unit-vector planar norm at or below 1e-14 has undefined longitude.
+    """
+
+    latitude = _require_latitude("latitude_deg", latitude_deg)
+    longitude = None if longitude_deg is None else normalize_degrees(
+        _require_finite_coordinate("longitude_deg", longitude_deg)
+    )
+    obliquity = _require_finite_coordinate("obliquity_deg", obliquity_deg)
+    if not 0.0 <= obliquity <= 180.0:
+        raise ValueError("obliquity_deg must be within [0, 180] degrees")
+    if transform not in ("ecliptic_to_equatorial", "equatorial_to_ecliptic"):
+        raise ValueError("transform must select an ecliptic/equatorial direction")
+
+    forward = transform == "ecliptic_to_equatorial"
+    direction = _unit_direction(longitude, latitude)
+    angle = obliquity * DEG2RAD
+    rotated_longitude, rotated_latitude = _direction_angles(
+        mat_vec_mul(rot_x(angle if forward else -angle), direction)
+    )
+    if abs(latitude) == 90.0:
+        longitude = None
+
+    return EclipticEquatorialTransformTruth(
+        transform=transform,
+        ecliptic_longitude_deg=longitude if forward else rotated_longitude,
+        ecliptic_latitude_deg=latitude if forward else rotated_latitude,
+        right_ascension_deg=rotated_longitude if forward else longitude,
+        declination_deg=rotated_latitude if forward else latitude,
+        obliquity_deg=obliquity,
+        source_frame="ecliptic_spherical_caller_epoch" if forward else "equatorial_spherical_caller_epoch",
+        target_frame="equatorial_spherical_same_epoch" if forward else "ecliptic_spherical_same_epoch",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Aberration (annual) — approximate correction
 # ---------------------------------------------------------------------------
@@ -645,6 +757,16 @@ def horizontal_to_equatorial(
     if abs(az_norm) < 1e-14 and abs(altitude_deg - lat_deg) < 1e-14:
         return lst_deg % 360.0, float(lat_deg)
 
+    x, y, z = _horizontal_hour_angle_vector(azimuth_deg, altitude_deg, lat_deg)
+    dec_r = math.asin(_clamp_unit(z))
+    ha_r = math.atan2(y, x)
+    ra_deg = normalize_degrees(lst_deg - ha_r * RAD2DEG)
+    return ra_deg, dec_r * RAD2DEG
+
+
+def _horizontal_hour_angle_vector(azimuth_deg: float, altitude_deg: float, lat_deg: float) -> Vec3:
+    """Project north-clockwise horizon angles onto the west-positive hour-angle basis."""
+
     az_r = azimuth_deg * DEG2RAD
     alt_r = altitude_deg * DEG2RAD
     lat_r = lat_deg * DEG2RAD
@@ -659,16 +781,50 @@ def horizontal_to_equatorial(
     y_north = cos_alt * math.cos(az_r)
     z_up = sin_alt
 
-    sin_dec = z_up * sin_lat + y_north * cos_lat
-    dec_r = math.asin(_clamp_unit(sin_dec))
-    dec_deg = dec_r * RAD2DEG
+    return z_up * cos_lat - y_north * sin_lat, -x_east, z_up * sin_lat + y_north * cos_lat
 
-    # Hour angle (positive westward) from the same direction-cosine system.
-    ha_r = math.atan2(-x_east, z_up * cos_lat - y_north * sin_lat)
-    ha_deg = ha_r * RAD2DEG
 
-    ra_deg = normalize_degrees(lst_deg - ha_deg)
-    return ra_deg, dec_deg
+def horizontal_to_equatorial_with_truth(
+    azimuth_deg: float | None,
+    altitude_deg: float,
+    lst_deg: float,
+    lat_deg: float,
+) -> HorizontalToEquatorialTruth:
+    """Invert geometric horizon angles with the caller's sidereal meridian.
+
+    Azimuth is north-zero and clockwise. At zenith or nadir it is undefined,
+    and the vertical direction is independent of any azimuth supplied.
+    At geographic poles, LST fixes the reference meridian. Right ascension
+    and hour angle are undefined when the equatorial planar norm is at or
+    below 1e-14.
+    """
+
+    altitude = _require_latitude("altitude_deg", altitude_deg)
+    latitude = _require_latitude("lat_deg", lat_deg)
+    lst = normalize_degrees(_require_finite_coordinate("lst_deg", lst_deg))
+    azimuth = None if azimuth_deg is None else normalize_degrees(
+        _require_finite_coordinate("azimuth_deg", azimuth_deg)
+    )
+    if abs(altitude) == 90.0:
+        azimuth = None
+        phi = latitude * DEG2RAD
+        sign = math.copysign(1.0, altitude)
+        vector = sign * math.cos(phi), 0.0, sign * math.sin(phi)
+    else:
+        if azimuth is None:
+            raise ValueError("azimuth_deg is required away from zenith or nadir")
+        vector = _horizontal_hour_angle_vector(azimuth, altitude, latitude)
+    hour_angle, declination = _direction_angles(vector)
+    return HorizontalToEquatorialTruth(
+        transform="horizontal_to_equatorial",
+        azimuth_deg=azimuth,
+        altitude_deg=altitude,
+        local_sidereal_time_deg=lst,
+        observer_latitude_deg=latitude,
+        right_ascension_deg=None if hour_angle is None else normalize_degrees(lst - hour_angle),
+        declination_deg=declination,
+        hour_angle_deg=hour_angle,
+    )
 
 
 # ---------------------------------------------------------------------------

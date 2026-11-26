@@ -23,11 +23,13 @@ from ..models.relationship import (
     DavisonChartRequest,
     DavisonChartResponse,
     MidpointClusterRequest,
+    MidpointActivationRequest,
     MidpointClusterSearchResponse,
     MidpointHitSearchResponse,
     MidpointRequest,
     MidpointSearchResponse,
     MidpointToPointRequest,
+    MidpointTreeRequest,
     MidpointWeightRequest,
     MidpointWeightSearchResponse,
     MoonConnectionFlowAnalysisResponse,
@@ -39,6 +41,8 @@ from ..models.relationship import (
     PatternDefaultOrbsResponse,
     PatternRequest,
     PatternSearchResponse,
+    SuppliedMidpointSearchResponse,
+    SuppliedPatternRequest,
     PlanetaryPictureRequest,
     PlanetaryPictureSearchResponse,
     SingleChartAnalysisRequest,
@@ -84,6 +88,8 @@ from ..services.relationship import (
     compute_composite_chart_analysis,
     compute_davison_chart_analysis,
     compute_midpoint_clusters,
+    compute_midpoint_activations,
+    compute_midpoint_tree,
     compute_midpoint_weighting,
     compute_moon_connection_flow,
     compute_midpoints,
@@ -92,6 +98,7 @@ from ..services.relationship import (
     compute_pattern_network,
     compute_patterns_coherence,
     compute_patterns_with_coherence,
+    compute_supplied_patterns,
     compute_planetary_pictures,
     compute_synastry_aspects,
     compute_synastry_contacts,
@@ -267,6 +274,35 @@ def pattern_coherence_route(
             serialize_pattern_coherence(item)
             for item in compute_patterns_coherence(engine, request)
         ]
+    )
+
+
+@router.post("/patterns/from-longitudes", response_model=PatternSearchResponse)
+def supplied_patterns_route(request: SuppliedPatternRequest) -> PatternSearchResponse:
+    """Detect aspect patterns from caller-supplied ecliptic longitudes."""
+
+    patterns = compute_supplied_patterns(request)
+    return PatternSearchResponse(
+        events=[serialize_aspect_pattern(pattern) for pattern in patterns],
+        computation_truth=serialize_pattern_search_truth(request, pattern_count=len(patterns)),
+    )
+
+
+@router.post("/midpoints/tree", response_model=SuppliedMidpointSearchResponse)
+def midpoint_tree_route(request: MidpointTreeRequest) -> SuppliedMidpointSearchResponse:
+    """Return the midpoint hits closest to the supplied focus on a dial."""
+
+    return SuppliedMidpointSearchResponse(
+        request=request, events=[serialize_midpoint_hit(hit) for hit in compute_midpoint_tree(request)],
+    )
+
+
+@router.post("/midpoints/activations", response_model=SuppliedMidpointSearchResponse)
+def midpoint_activations_route(request: MidpointActivationRequest) -> SuppliedMidpointSearchResponse:
+    """Find natal midpoints activated by a supplied ecliptic longitude."""
+
+    return SuppliedMidpointSearchResponse(
+        request=request, events=[serialize_midpoint_hit(hit) for hit in compute_midpoint_activations(request)],
     )
 
 

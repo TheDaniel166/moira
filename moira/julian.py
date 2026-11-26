@@ -53,6 +53,7 @@ from operator import itemgetter
 from pathlib import Path
 from .dispatch import accelerate
 from .constants import J2000, JULIAN_CENTURY, TAI_TT_OFFSET
+from .coordinates import normalize_degrees as _normalize_degrees
 from .data.leap_seconds import LEAP_SECONDS
 
 
@@ -3334,30 +3335,31 @@ def local_sidereal_time_with_truth(
     mode: str = "apparent",
     nutation_longitude: float | None = None,
     obliquity: float | None = None,
+    jd_tt: float | None = None,
 ) -> LocalSiderealTimeTruth:
     """Return explicit LMST or LAST with the complete UT1/TT reduction truth.
 
-    The legacy :func:`local_sidereal_time` keeps its historical defaults.
-    This additive surface defaults to a self-contained apparent reduction and
-    derives missing equinox terms from the supplied UT1 epoch.
+    `jd_ut` supplies UT1 for Earth rotation. The optional `jd_tt` supplies TT
+    for equinox precession and any derived apparent-mode terms. If omitted,
+    TT is derived from UT1 with the default Delta-T policy. Longitude is
+    east-positive in degrees, and the result is in [0, 360).
     """
 
     jd_ut1 = float(jd_ut)
     longitude_deg = float(longitude)
-    _require_representable_time_jd("jd_ut", jd_ut1)
     _require_finite("longitude", longitude_deg)
     selected_mode = str(mode).strip().lower()
     if selected_mode not in {"mean", "apparent"}:
         raise ValueError("mode must be 'mean' or 'apparent'")
 
-    jd_tt = ut_to_tt(jd_ut1)
+    jd_tt = _resolve_sidereal_jd_tt(jd_ut1, jd_tt)
     gmst = _greenwich_mean_sidereal_time_at_tt(jd_ut1, jd_tt)
     if selected_mode == "mean":
         if nutation_longitude is not None or obliquity is not None:
             raise ValueError(
                 "mean sidereal time does not accept nutation_longitude or obliquity"
             )
-        result = (gmst + longitude_deg) % 360.0
+        result = _normalize_degrees(gmst + longitude_deg)
         return LocalSiderealTimeTruth(
             jd_ut1=jd_ut1,
             jd_tt=jd_tt,
@@ -3410,7 +3412,7 @@ def local_sidereal_time_with_truth(
         longitude_deg_east=longitude_deg,
         requested_mode=selected_mode,
         effective_mode="apparent",
-        local_sidereal_time_deg=result,
+        local_sidereal_time_deg=_normalize_degrees(result),
         greenwich_mean_sidereal_time_deg=gmst,
         equation_of_equinoxes_deg=equation_of_equinoxes,
         nutation_longitude_deg=dpsi,

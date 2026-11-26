@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import timezone
 
 from moira import Body, Moira, PlanetData, SkyPosition
+from moira.batch import planet_time_series
 from moira.julian import datetime_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import (
@@ -16,10 +17,25 @@ from moira.planets import (
 )
 from moira.small_body_identity import resolve_small_body_identity
 
-from ..models.positions import PlanetPositionRequest, SkyPositionRequest
+from ..models.positions import PlanetPositionRequest, PlanetTimeSeriesRequest, PlanetTimeSeriesResponse, SkyPositionRequest
+from ._shared import require_engine_reader, require_supported_chart_bodies
 
 
 _VALID_PLANET_BODIES = frozenset(Body.ALL_PLANETS)
+
+
+def compute_planet_time_series(engine: Moira, request: PlanetTimeSeriesRequest) -> PlanetTimeSeriesResponse:
+    """Sample the canonical planetary state in the supplied order."""
+
+    require_supported_chart_bodies([request.body])
+    result = planet_time_series(request.body, request.jd_ut1, reader=require_engine_reader(engine))
+    return PlanetTimeSeriesResponse(
+        body=result.body, jd_ut1=result.jd_uts, longitudes_deg=result.longitudes,
+        latitudes_deg=result.latitudes, distances_km=result.distances,
+        speeds_deg_per_day=result.speeds, retrogrades=result.retrogrades,
+    )
+
+
 _PLANET_STAGE_SEQUENCE = [
     "datetime_to_jd",
     "utc_to_tt",

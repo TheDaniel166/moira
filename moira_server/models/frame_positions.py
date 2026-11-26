@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import field_validator
 
+from moira.planetocentric import PlanetocentricReductionTruth
+
 from .common import _StrictModel
 
 
@@ -163,8 +165,11 @@ class FrameHeliocentricPositionResponse(_BaseFramePositionResponse):
 
 
 class FramePlanetocentricPositionResponse(_BaseFramePositionResponse):
+    """Geometric planetocentric position with its engine reduction receipt."""
+
     observer: str
     product_kind: Literal["geometric_planetocentric_position"]
+    reduction: PlanetocentricReductionTruth
 
 
 class FrameSSBPositionResponse(_BaseFramePositionResponse):

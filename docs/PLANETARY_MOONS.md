@@ -47,16 +47,52 @@ Pass `planet="Jupiter"` or `planet="Saturn"` to request one system. A directory 
 
 Emission offsets use TDB days relative to the snapshot epoch. The model uses converged one-way Newtonian light time, the NAIF PCK00011 oblate reference limbs for the planets, and JPL mean-radius spherical limbs for the moons. Eclipse geometry samples the moon’s center. The result describes parent–moon events with their nominal limbs. Ring opacity, mutual events, local visibility, and shadow footprints have separate geometry. [NAIF light-time conventions](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/abcorr.html) · [NAIF reference ellipsoids](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html) · [JPL satellite radii](https://ssd.jpl.nasa.gov/sats/phys_par/)
 
+## REST API
+
+Set `MOIRA_SERVER_PLANETARY_MOONS_MANIFEST` to the prepared `manifest.json` before starting Moira Server. The satellite extracts stay beside the manifest. The routes use `MOIRA_SERVER_KERNEL_PATH` when set and otherwise look for `de441.bsp` in Moira’s standard kernel directories.
+
+| Method and route | Result |
+|---|---|
+| `POST /v1/planetary-moons/snapshot` | TT and TDB epochs, moon states and phenomena, and source receipts. |
+| `GET /v1/planetary-moons/coverage` | Installed systems and their closed geometric state intervals, expressed as TDB Julian days. |
+| `POST /v1/planetary-moons/events` | Bounded finite-disk windows or the first new event, with TT contacts, TDB epochs, and source receipts. |
+
+For example, request Jupiter at J2000 TT with this JSON body:
+
+```json
+{"jd_tt": 2451545.0, "planet": "Jupiter"}
+```
+
+Use `"Saturn"` for Saturn’s eight moons. Omit `planet` for all twelve, which requires both installed systems. The state, phase, and event fields have the same meanings as the Python snapshot. `earth_view.event` is `null` when there is no active transit or occultation. `earth_view.side` reports the moon’s range ordering relative to the planet.
+
+Coverage returns a `systems` array with one entry per installed planet. Each entry contains `planet` and `intervals_tdb`, an array of objects with `start_jd_tdb` and `end_jd_tdb`. Keep separate intervals if there are gaps. A snapshot near the start of an interval can still fail when a required retarded epoch falls before coverage begins.
+
+The routes return the standard Moira error envelope. Invalid request bodies return HTTP 422 with `validation_error`. Unavailable reception or light-time coverage returns HTTP 422 with `planetary_moons_epoch_out_of_coverage`. Missing configuration returns HTTP 503 with `server_not_configured`. Unavailable or invalid kernels and missing requested systems return HTTP 503 with `kernel_not_ready`.
+
+### Search finite-disk events
+
+```json
+{"jd_start_tt": 2461369.0, "jd_end_tt": 2461371.0, "planet": "Jupiter",
+ "moon_ids": [503], "kinds": ["transit"], "mode": "next"}
+```
+
+Use `mode: "window"` to receive the selected event windows in the supplied interval.
+`next` returns at most one event that starts in the interval. Windows already in progress at the start are marked `start_clipped` in window mode. The start of the search owns ingress and grazes at its boundary. The end can close an active window or supply its exact egress. A contact at either boundary may require a geometry evaluation just outside the window to determine its direction.
+
+The search limits the window to 90 TT days and applies a shared evaluation budget to the 30-minute TDB scan, extremum checks, and contact refinement. Every result names its `status` and `resolution`. An empty `complete` result refers to the admitted sampled and refined search. An incomplete next search returns no event and includes unresolved intervals. `result_limit` indicates that the window-mode result was truncated after chronological sorting.
+
+Contacts use an Earth-reception TT/TDB epoch, so the viewer can pass a contact's `jd_tt` directly to the snapshot route. The observer offset is zero for a transit or occultation. For an eclipse it is the moon's Earth-directed emission offset. Internal contacts describe containment and eclipse totality. Contact times use nominal model limbs, and the search resolution is numerical.
+
 ## Focused verification
 
-The unit tests exercise analytic sphere and ellipsoid contacts, east/north signs, manifest failures, and retarded state selection. The integration tests additionally use local CSPICE with a matched DE441 source, the two output SPKs, and PCK00011. They cover state and phase, finite-disk events on both sides of ingress and egress, and the original SPK coverage and state of the extracted segments.
+The unit tests exercise analytic sphere and ellipsoid contacts, same-sign grazes and short windows, east/north signs, manifest failures, and retarded state selection. The integration tests use local CSPICE with matched DE441, satellite SPKs, and PCK00011. They compare the original segment states and coverage and the boundaries of 36 finite-disk transit, occultation, and eclipse windows with a one-second contact tolerance.
 
 Set `MOIRA_TEST_PLANETARY_MOONS_MANIFEST`, `MOIRA_TEST_DE441_CSPICE`, `MOIRA_TEST_PLANETARY_MOONS_PCK`, and `MOIRA_TEST_PLANETARY_MOONS_JPL` to the manifest, CSPICE-readable DE441 file, PCK00011, and directory holding the original satellite SPKs. Use the official `de441_part-2.bsp` for the CSPICE comparison and set `MOIRA_TEST_DE441_CSPICE_EARLY` to `de441_part-1.bsp` for the earlier epochs. Moira’s combined DE441 file supplies the engine query through its usual local discovery.
 
 ```powershell
 $env:MOIRA_NO_DOWNLOAD = "1"
 $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_planetary_moons.py tests\integration\test_planetary_moons_cspice.py -m "not external_network" -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_planetary_moons.py tests\unit\test_planetary_moon_event_search.py tests\integration\test_planetary_moons_cspice.py tests\server\test_server_planetary_moons_routes.py -m "not external_network" -q
 ```
 
 The reference verifies the same SPK and nominal shape model and does not estimate observational timing uncertainty near a graze. Hubble’s 2009 Saturn sequence supplies an observed multi-moon case. [Hubble Saturn transits](https://science.nasa.gov/missions/hubble/quadruple-saturn-moon-transit-snapped-by-hubble/) · [NAIF finite-disk classifications](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/occult_c.html)

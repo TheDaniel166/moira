@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from moira import Body, Moira
 from moira.astrocartography import fixed_star_astrocartography
-from moira.spk_reader import MissingEphemerisKernelError
+from moira.chart import ChartContext, create_chart, relocated_chart
+from moira.julian import jd_from_datetime, utc_to_ut1
+from moira.spk_reader import MissingEphemerisKernelError, use_reader_override
 from moira.aspect_registry import _select_aspects
 from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.locational_forecasting import (
@@ -30,9 +32,10 @@ from ..models.forecasting import (
     DavisonTransitRequest,
     DynamicAstrocartographyRequest,
     FixedStarAstrocartographyRequest,
+    NatalRelocationRequest,
     RelocatedReturnRequest,
 )
-from ._shared import require_supported_chart_bodies
+from ._shared import _resolve_house_system, require_engine_reader, require_supported_chart_bodies
 from .relationship import compute_composite_chart, compute_davison_chart
 
 
@@ -78,7 +81,7 @@ def _return_policy(request: RelocatedReturnRequest) -> TransitComputationPolicy 
     )
 
 
-def _house_policy(request: RelocatedReturnRequest) -> HousePolicy | None:
+def _house_policy(request: NatalRelocationRequest | RelocatedReturnRequest) -> HousePolicy | None:
     if request.house_policy is None:
         return None
     return HousePolicy(
@@ -268,6 +271,32 @@ def compute_dynamic_astrocartography(
     )
 
 
+def compute_natal_relocation(
+    engine: Moira, request: NatalRelocationRequest,
+) -> tuple[ChartContext, ChartContext]:
+    """Build the source once and recast its houses at the second site."""
+
+    require_supported_chart_bodies(request.bodies)
+    source_system = _resolve_house_system(request.source_house_system)
+    relocated_system = (
+        _resolve_house_system(request.relocated_house_system)
+        if request.relocated_house_system is not None else None
+    )
+    policy = _house_policy(request)
+    reader = require_engine_reader(engine)
+    jd_ut1 = utc_to_ut1(jd_from_datetime(request.dt))
+    with use_reader_override(reader):
+        source = create_chart(
+            jd_ut1, request.source_latitude, request.source_longitude,
+            house_system=source_system, bodies=request.bodies, reader=reader, policy=policy,
+        )
+        relocated = relocated_chart(
+            source, request.relocated_latitude, request.relocated_longitude,
+            house_system=relocated_system, policy=policy,
+        )
+    return source, relocated
+
+
 def compute_relocated_return(engine: Moira, request: RelocatedReturnRequest):
     require_supported_chart_bodies(request.bodies)
     common = {
@@ -315,5 +344,6 @@ __all__ = [
     "compute_davison_transits",
     "compute_dynamic_astrocartography",
     "compute_fixed_star_astrocartography",
+    "compute_natal_relocation",
     "compute_relocated_return",
 ]

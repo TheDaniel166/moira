@@ -11,6 +11,8 @@ from ..models.positions import (
     PlanetPositionRequest,
     PlanetPositionReductionResponse,
     PlanetPositionWithComputationTruthResponse,
+    PlanetTimeSeriesRequest,
+    PlanetTimeSeriesResponse,
     SkyPositionRequest,
     SkyPositionReductionResponse,
     SkyPositionWithComputationTruthResponse,
@@ -23,11 +25,21 @@ from ..serializers.positions import (
 )
 from ..services.positions import (
     compute_planet_position_with_reduction,
+    compute_planet_time_series,
     compute_sky_position_with_reduction,
 )
 
 
 router = APIRouter(prefix="/v1/positions", tags=["positions"])
+
+
+@router.post("/time-series", response_model=PlanetTimeSeriesResponse)
+def planet_time_series_route(
+    request: PlanetTimeSeriesRequest, engine: Moira = Depends(get_engine),
+) -> PlanetTimeSeriesResponse:
+    """Return aligned geocentric positions at explicit UT1 epochs."""
+
+    return compute_planet_time_series(engine, request)
 
 
 @router.post("/planet", response_model=PlanetPositionWithComputationTruthResponse)

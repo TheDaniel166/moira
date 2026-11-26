@@ -5,8 +5,10 @@ from __future__ import annotations
 from moira import Moira
 from moira.chart_shape import classify_chart_shape_with_truth
 from moira.midpoints import (
+    activated_midpoints,
     calculate_midpoints,
     midpoint_clusters,
+    midpoint_tree,
     midpoint_weighting,
     midpoints_to_point,
     planetary_pictures,
@@ -45,11 +47,14 @@ from ..models.relationship import (
     CompositeChartRequest,
     DavisonChartRequest,
     MidpointClusterRequest,
+    MidpointActivationRequest,
     MidpointRequest,
     MidpointToPointRequest,
+    MidpointTreeRequest,
     MidpointWeightRequest,
     MoonConnectionFlowRequest,
     PatternRequest,
+    SuppliedPatternRequest,
     PlanetaryPictureRequest,
     RelationshipPartyRequest,
     SingleChartAnalysisRequest,
@@ -409,7 +414,7 @@ def compute_chart_shape(engine: Moira, request: SingleChartAnalysisRequest):
     )
 
 
-def _find_patterns_for_positions(request: PatternRequest, positions: dict[str, float]):
+def _find_patterns_for_positions(request: PatternRequest | SuppliedPatternRequest, positions: dict[str, float]):
     return find_all_patterns(
         positions,
         policy=request.engine_policy(),
@@ -438,6 +443,25 @@ def compute_patterns(engine: Moira, request: PatternRequest):
         request.include_nodes,
     )
     return _find_patterns_for_positions(request, positions)
+
+
+def compute_supplied_patterns(request: SuppliedPatternRequest):
+    """Detect patterns using the supplied positions and common pattern policy."""
+
+    return _find_patterns_for_positions(request, request.longitudes)
+
+
+def compute_midpoint_tree(request: MidpointTreeRequest):
+    """Evaluate the engine's midpoint tree for supplied longitudes."""
+
+    return midpoint_tree(request.focus, request.longitudes, request.orb, request.planet_set, request.dial)
+
+
+def compute_midpoint_activations(request: MidpointActivationRequest):
+    """Evaluate an activating longitude against supplied natal longitudes."""
+
+    midpoints = calculate_midpoints(request.longitudes, request.planet_set)
+    return activated_midpoints(request.transit_longitude, midpoints, request.orb, request.dial)
 
 
 def compute_pattern_chart_profile(engine: Moira, request: PatternRequest):

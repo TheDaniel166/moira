@@ -223,11 +223,13 @@ def test_geodetic_and_sidereal_context_use_ut1_for_ayanamsa(monkeypatch) -> None
     )
 
     monkeypatch.setattr(sidereal_context, "utc_to_ut1", lambda _jd: _JD_UT1)
-    monkeypatch.setattr(
-        sidereal_context,
-        "ayanamsa",
-        lambda jd, _system: seen.append(("sidereal_context", jd)) or 24.0,
-    )
+    ayanamsa_with_truth = sidereal_context.ayanamsa_with_truth
+
+    def record_ayanamsa_epoch(jd, system, mode):
+        seen.append(("sidereal_context", jd))
+        return ayanamsa_with_truth(jd, system, mode)
+
+    monkeypatch.setattr(sidereal_context, "ayanamsa_with_truth", record_ayanamsa_epoch)
     sidereal_result = sidereal_context.derive_sidereal_chart_context(
         engine,
         SiderealChartBaseRequest(dt=_DT),
@@ -238,6 +240,7 @@ def test_geodetic_and_sidereal_context_use_ut1_for_ayanamsa(monkeypatch) -> None
     assert geodetic_result.provenance.jd_ut == _JD_UT1
     assert geodetic_result.provenance.jd_tt == _JD_TT
     assert sidereal_result.jd_ut == _JD_UT1
+    assert sidereal_result.ayanamsa_truth.jd_ut == _JD_UT1
     assert seen == [("geodetic", _JD_UT1), ("sidereal_context", _JD_UT1)]
 
 

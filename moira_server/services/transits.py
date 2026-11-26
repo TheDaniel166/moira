@@ -15,6 +15,7 @@ from moira.transits import (
     find_lunar_phases,
     find_transits,
     next_ingress,
+    prenatal_syzygy,
 )
 
 from ..models.transits import (
@@ -22,11 +23,21 @@ from ..models.transits import (
     LunarPhaseSearchRequest,
     NatalAspectSearchRequest,
     NextIngressRequest,
+    PrenatalSyzygyRequest,
+    PrenatalSyzygyResponse,
     TransitSearchRequest,
 )
+from ._shared import require_engine_reader
 
 
 _VALID_MOVING_BODIES = frozenset(Body.ALL_PLANETS)
+
+
+def compute_prenatal_syzygy(engine: Moira, request: PrenatalSyzygyRequest) -> PrenatalSyzygyResponse:
+    """Resolve the prior syzygy through the canonical lunar phase solver."""
+
+    jd, phase = prenatal_syzygy(request.jd_ut1, reader=require_engine_reader(engine))
+    return PrenatalSyzygyResponse(jd_ut1=jd, phase=phase)
 
 
 def _require_supported_body(body: str) -> None:

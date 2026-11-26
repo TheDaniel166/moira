@@ -9,7 +9,7 @@ from typing import Mapping
 
 from moira import Moira
 from moira.julian import jd_from_datetime, utc_to_ut1
-from moira.sidereal import ayanamsa
+from moira.sidereal import AyanamsaComputationTruth, DoctrinalAyanamsa, UserDefinedAyanamsa, ayanamsa_with_truth
 
 from ..models.chart import HousesRequest
 from ..models.sidereal_context import SiderealChartBaseRequest
@@ -86,12 +86,16 @@ class SiderealChartContext:
     sidereal_lagna: float | None
     sidereal_lagna_sign_index: int | None
     stage_sequence: tuple[str, ...]
+    ayanamsa_truth: AyanamsaComputationTruth
 
 
 def derive_sidereal_chart_context(
     engine: Moira,
     request: SiderealChartBaseRequest,
     requirements: SiderealChartRequirements,
+    *,
+    ayanamsa_selection: str | DoctrinalAyanamsa | UserDefinedAyanamsa | None = None,
+    mode: str = "true",
 ) -> SiderealChartContext:
     _validate_observer_requirements(request, requirements)
     bodies = _merge_bodies(requirements.required_bodies, request.bodies)
@@ -108,7 +112,9 @@ def derive_sidereal_chart_context(
     if jd_utc is None:
         jd_utc = jd_from_datetime(request.dt)
     jd_ut = utc_to_ut1(jd_utc)
-    ayanamsa_offset = ayanamsa(jd_ut, request.ayanamsa_system)
+    selection = request.ayanamsa_system if ayanamsa_selection is None else ayanamsa_selection
+    ayanamsa_truth = ayanamsa_with_truth(jd_ut, selection, mode)
+    ayanamsa_offset = ayanamsa_truth.ayanamsa_unwrapped_deg
 
     tropical_longitudes = {
         name: planet.longitude
@@ -165,7 +171,7 @@ def derive_sidereal_chart_context(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=chart.datetime_utc.isoformat(),
         jd_ut=jd_ut,
-        ayanamsa_system=request.ayanamsa_system,
+        ayanamsa_system=request.ayanamsa_system if ayanamsa_selection is None else ayanamsa_truth.ayanamsa_system,
         ayanamsa_offset=ayanamsa_offset,
         requested_bodies=tuple(bodies),
         returned_bodies=tuple(tropical_longitudes),
@@ -179,6 +185,7 @@ def derive_sidereal_chart_context(
         sidereal_lagna=sidereal_lagna,
         sidereal_lagna_sign_index=sidereal_lagna_sign_index,
         stage_sequence=SIDEREAL_CONTEXT_STAGE_SEQUENCE,
+        ayanamsa_truth=ayanamsa_truth,
     )
 
 

@@ -11,13 +11,22 @@ from ..models.returns import (
     LunarReturnRequest,
     PlanetReturnRequest,
     ReturnEventResponse,
+    ReturnSeriesRequest,
+    ReturnSeriesResponse,
     SolarReturnRequest,
 )
 from ..serializers.returns import serialize_return_event
-from ..services.returns import compute_lunar_return, compute_planet_return, compute_solar_return
+from ..services.returns import compute_lunar_return, compute_planet_return, compute_return_series, compute_solar_return
 
 
 router = APIRouter(prefix="/v1/returns", tags=["predictive"])
+
+
+@router.post("/series", response_model=ReturnSeriesResponse)
+def return_series_route(request: ReturnSeriesRequest, engine: Moira = Depends(get_engine)) -> ReturnSeriesResponse:
+    """Find bounded full or half-return crossings with the applied search policy."""
+
+    return compute_return_series(engine, request)
 
 
 @router.post("/solar", response_model=ReturnEventResponse)

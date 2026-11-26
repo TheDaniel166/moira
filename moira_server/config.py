@@ -24,6 +24,7 @@ class ServerConfig:
     docs_enabled: bool = True
     require_kernel_ready: bool = False
     prewarm_enabled: bool = False
+    planetary_moons_manifest: str | None = None
 
     @classmethod
     def from_env(cls) -> "ServerConfig":
@@ -53,4 +54,5 @@ class ServerConfig:
             docs_enabled=docs_raw not in {"0", "false", "no", "off"},
             require_kernel_ready=require_raw in {"1", "true", "yes", "on"},
             prewarm_enabled=prewarm_raw in {"1", "true", "yes", "on"},
+            planetary_moons_manifest=os.getenv("MOIRA_SERVER_PLANETARY_MOONS_MANIFEST") or None,
         )

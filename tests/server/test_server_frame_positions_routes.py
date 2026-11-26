@@ -1,11 +1,16 @@
+"""Frame-specific HTTP parity, admission and receipt checks."""
+
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime, timezone
+import json
 
 from fastapi.testclient import TestClient
 import pytest
 
-from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
+from moira.julian import jd_from_datetime, tt_to_tdb, utc_to_tt, utc_to_ut1
+from moira.planetocentric import VALID_OBSERVER_BODIES, all_planetocentric_at_with_truth
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -76,24 +81,81 @@ def test_frame_heliocentric_route_supports_default_bodies(
 
 
 @pytest.mark.requires_ephemeris
-def test_frame_planetocentric_route_matches_facade(
+@pytest.mark.parametrize(("year", "observer", "bodies", "center_id", "target_ids", "center_kind"), [
+    (2000, "Mars", ["Jupiter", "Earth"], 4, [5, 399], "planetary_system_barycenter"),
+    (100, "Earth", ["Moon", "Saturn"], 399, [301, 6], "body_center"),
+])
+def test_frame_planetocentric_route_matches_facade_and_reduction(
     client_with_engine: TestClient,
     moira_engine,
+    year, observer, bodies, center_id, target_ids, center_kind,
 ) -> None:
-    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.planetocentric("Mars", dt, bodies=["Jupiter"])
+    dt = datetime(year, 7, 1, 12, 0, tzinfo=timezone.utc)
+    jd_utc = jd_from_datetime(dt)
+    jd_ut1 = utc_to_ut1(jd_utc)
+    direct = moira_engine.planetocentric(observer, dt, bodies=bodies)
+    receipts = all_planetocentric_at_with_truth(
+        observer, jd_ut1, bodies=bodies, reader=moira_engine._reader,
+    )
 
     response = client_with_engine.post(
         "/v1/positions/frame/planetocentric",
-        json={"dt": dt.isoformat(), "observer": "Mars", "bodies": ["Jupiter"]},
+        json={"dt": dt.isoformat(), "observer": observer, "bodies": bodies},
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     body = response.json()
-    assert body["positions"]["Jupiter"]["observer"] == "Mars"
-    assert body["positions"]["Jupiter"]["longitude"] == pytest.approx(direct["Jupiter"].longitude)
-    assert body["frame"]["center"] == "Mars"
-    assert body["provenance"]["engine_entrypoint"] == "all_planetocentric_at"
+    assert list(body["positions"]) == bodies
+    assert body["time"]["jd_tt"] == utc_to_tt(jd_utc)
+    assert body["frame"]["center"] == observer
+    assert body["provenance"]["engine_entrypoint"] == "all_planetocentric_at_with_truth"
+    for name, target_id in zip(bodies, target_ids, strict=True):
+        item = body["positions"][name]
+        position = direct[name]
+        assert item["observer"] == item["center"] == observer
+        assert item["name"] == name
+        assert item["longitude"] == position.longitude
+        assert item["latitude"] == position.latitude
+        assert item["distance_km"] == position.distance
+        assert item["speed"] == position.speed
+        assert item["retrograde"] is position.retrograde
+        receipt = item["reduction"]
+        assert receipt == json.loads(json.dumps(asdict(receipts[name].truth)))
+        assert (receipt["center_body"], receipt["target_body"]) == (observer, name)
+        assert (receipt["center_naif_id"], receipt["target_naif_id"]) == (center_id, target_id)
+        assert receipt["center_kind"] == center_kind
+        assert receipt["frame"]["result_frame"] == "true_ecliptic_and_equinox_of_date"
+        assert receipt["frame"]["light_time_applied"] is False
+        time = receipt["time_binding"]
+        assert time["jd_ut1"] == jd_ut1
+        assert time["jd_tdb"] == tt_to_tdb(time["jd_tt"])
+        if year == 100:
+            assert time["delta_t_retarget_mode"] == "declared"
+            assert time["delta_t_correction_seconds"] > 26
+            assert time["delta_t_kernel_identity"] == "DE-0441LE-0441"
+            assert time["jd_tt"] > body["time"]["jd_tt"]
+        else:
+            assert time["delta_t_correction_seconds"] == 0
+            assert time["delta_t_kernel_identity"] is None
+        rate = receipt["rate_sampling"]
+        assert rate["method"] == "instantaneous_state_vector"
+        assert rate["ephemeris_state_samples_per_body"] == 1
+        assert rate["frame_derivative_timescale"] == "TT"
+        assert rate["frame_derivative_half_span_days"] == 0.001
+        assert rate["frame_derivative_jd_tt"] == [time["jd_tt"] - 0.001, time["jd_tt"] + 0.001]
+
+
+@pytest.mark.requires_ephemeris
+def test_frame_planetocentric_default_bodies_all_have_receipts(client_with_engine):
+    response = client_with_engine.post(
+        "/v1/positions/frame/planetocentric",
+        json={"dt": "2000-01-01T13:00:00+01:00", "observer": "Sun"},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert list(body["positions"]) == sorted(VALID_OBSERVER_BODIES - {"Sun"})
+    assert all(item["reduction"]["center_naif_id"] == 10 for item in body["positions"].values())
+    assert body["bounds"]["body_count"] == len(body["positions"])
 
 
 @pytest.mark.requires_ephemeris

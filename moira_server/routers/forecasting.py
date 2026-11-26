@@ -14,6 +14,8 @@ from ..models.forecasting import (
     DynamicAstrocartographyResponse,
     FixedStarAstrocartographyRequest,
     FixedStarAstrocartographyResponse,
+    NatalRelocationRequest,
+    NatalRelocationResponse,
     RelocatedReturnRequest,
     RelocatedReturnResponse,
     RelationshipTransitSearchResponse,
@@ -21,6 +23,7 @@ from ..models.forecasting import (
 from ..serializers.forecasting import (
     serialize_dynamic_astrocartography,
     serialize_fixed_star_astrocartography,
+    serialize_natal_relocation,
     serialize_relationship_transit_search,
     serialize_relocated_return,
 )
@@ -29,6 +32,7 @@ from ..services.forecasting import (
     compute_davison_transits,
     compute_dynamic_astrocartography,
     compute_fixed_star_astrocartography,
+    compute_natal_relocation,
     compute_relocated_return,
 )
 
@@ -98,6 +102,21 @@ def dynamic_astrocartography_route(
     return serialize_dynamic_astrocartography(
         compute_dynamic_astrocartography(engine, request)
     )
+
+
+@router.post(
+    "/chart/relocated",
+    response_model=NatalRelocationResponse,
+    tags=["chart"],
+)
+def natal_relocation_route(
+    request: NatalRelocationRequest,
+    engine: Moira = Depends(get_engine),
+) -> NatalRelocationResponse:
+    """Recast a natal chart's local houses while preserving its celestial snapshot."""
+
+    source, relocated = compute_natal_relocation(engine, request)
+    return serialize_natal_relocation(source, relocated, request.dt)
 
 
 @router.post(

@@ -14,6 +14,8 @@ from moira.phenomena import (
     SolarConditionTruth,
     aphelion,
     greatest_elongation,
+    heliocentric_conjunctions_in_range_with_truth,
+    next_heliocentric_conjunction,
     perihelion,
     planet_phenomena_at,
     proximity_events_in_range,
@@ -21,10 +23,17 @@ from moira.phenomena import (
     solar_condition_events_in_range,
 )
 from moira.spk_reader import use_reader_override
+from moira.planets import HeliocentricTransitNotFoundError, next_heliocentric_transit, planet_relative_to
+from moira.constants import Body
 
 from ..models.generic_phenomena import (
     ADMITTED_ORBITAL_EVENT_KINDS,
     GenericPhenomenaProvenanceResponse,
+    HeliocentricConjunctionRangeRequest,
+    HeliocentricEventResponse,
+    HeliocentricEventsRequest,
+    HeliocentricEventsResponse,
+    HeliocentricLongitudeCrossingRequest,
     OrbitalPhenomenaEventsEnvelopeResponse,
     OrbitalPhenomenaEventsRequest,
     PhenomenonEventResponse,
@@ -41,6 +50,7 @@ from ..models.generic_phenomena import (
     SolarConditionTruthResponse,
     default_orbital_event_kinds,
 )
+from ._shared import require_engine_reader
 
 
 _ORBITAL_VALUE_UNITS = {
@@ -49,6 +59,37 @@ _ORBITAL_VALUE_UNITS = {
     "perihelion": "AU",
     "aphelion": "AU",
 }
+
+
+def compute_heliocentric_events(engine: Moira, request: HeliocentricEventsRequest) -> HeliocentricEventsResponse:
+    """Adapt the paired or fixed-longitude heliocentric search."""
+
+    reader = require_engine_reader(engine)
+    start = request.jd_start_ut1
+    truth = None
+    if isinstance(request, HeliocentricConjunctionRangeRequest):
+        end = request.jd_end_ut1
+        result = heliocentric_conjunctions_in_range_with_truth(request.body, request.other_body, start, end, reader)
+        truth = result.truth
+        events = [HeliocentricEventResponse(jd_ut1=event.jd_ut, longitude_deg=event.value) for event in result.events]
+    elif isinstance(request, HeliocentricLongitudeCrossingRequest):
+        end = start + request.max_days
+        try:
+            jd = next_heliocentric_transit(request.body, request.target_longitude_deg, start, reader, request.max_days)
+        except HeliocentricTransitNotFoundError:
+            events = []
+        else:
+            state = planet_relative_to(request.body, Body.SUN, jd, reader=reader)
+            events = [HeliocentricEventResponse(jd_ut1=jd, longitude_deg=state.longitude)]
+    else:
+        end = start + request.max_days
+        event = next_heliocentric_conjunction(request.body, request.other_body, start, reader, request.max_days)
+        events = [] if event is None else [HeliocentricEventResponse(jd_ut1=event.jd_ut, longitude_deg=event.value)]
+
+    return HeliocentricEventsResponse(
+        request=request, status="found" if events else "no_event", searched_end_jd_ut1=end,
+        events=events, range_computation_truth=truth,
+    )
 
 _LABEL_TO_EVENT_KIND = {
     "Greatest Eastern Elongation": "greatest_eastern_elongation",

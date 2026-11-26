@@ -16,6 +16,7 @@ from moira._kernel_paths import find_planetary_kernel
 from moira._planetary_moon_data import SYSTEMS
 from moira.constants import J2000
 from moira.julian import tdb_to_tt
+from moira.planetary_moon_events import find_planetary_moon_events
 from moira.planetary_moons import PlanetaryMoons
 from moira.spk_reader import OutOfRangeError, S_PER_DAY
 
@@ -176,6 +177,37 @@ def test_transit_occultation_and_eclipse_contacts(authority, body):
             active.append(codes[1 if index == 2 else 0] != 0)
         assert active == [False, True, True, True, False]
 
+        # Expected contacts are finite-disk GF roots. Convert an eclipse's
+        # moon-centre observation epoch to the corresponding Earth reception.
+        expected_contacts = [start, stop]
+        if index == 2:
+            expected_contacts = [
+                time + spice.spkpos("399", time, "J2000", "XCN", str(body))[1]
+                for time in expected_contacts
+            ]
+        kind = ("transit", "occultation", "eclipse")[index]
+        search = find_planetary_moon_events(
+            engine,
+            tdb_to_tt(J2000 + (expected_contacts[0] - 1800) / S_PER_DAY),
+            tdb_to_tt(J2000 + (expected_contacts[1] + 1800) / S_PER_DAY),
+            moon_ids=(body,), kinds=(kind,),
+        )
+        assert search.status == "complete", (body, kind, search.unresolved_intervals)
+        assert len(search.events) == 1
+        event = search.events[0]
+        assert not event.start_clipped and not event.end_clipped
+        found_contacts = [
+            (contact.jd_tdb - J2000) * S_PER_DAY
+            for contact in event.contacts if contact.kind in ("ingress", "egress")
+        ]
+        # The earlier matched-state checks classify opposite signs one second
+        # from each reference root. Apply the same tolerance to both times.
+        assert found_contacts == pytest.approx(expected_contacts, abs=1.0, rel=0)
+        if index == 2:
+            for contact in event.contacts:
+                assert contact.observer_offset_days == contact.moon_emission_offset_days < 0
+                assert contact.sun_emission_offset_days < contact.observer_offset_days
+
 
 def test_hubble_and_ganymede_cases(authority):
     spice, engine, _ = authority
@@ -184,6 +216,12 @@ def test_hubble_and_ganymede_cases(authority):
     observed, epoch = _state_at(engine, 288757566.1853102)
     saturn = {r.naif_id for r in observed.moons if r.planet == "Saturn" and r.earth_view.event == "transit"}
     assert saturn == {601, 602, 604, 606}
+    centre = tdb_to_tt(J2000 + epoch / S_PER_DAY)
+    search = find_planetary_moon_events(
+        engine, centre - 0.15, centre + 0.15, moon_ids=tuple(sorted(saturn)), kinds=("transit",),
+    )
+    assert search.status == "complete"
+    assert {event.naif_id for event in search.events if event.start_jd_tt < centre < event.end_jd_tt} == saturn
     for row in observed.moons:
         _check_events(spice, row, epoch)
     for et, expected in ((848908869.1829523, "transit"), (849214869.1830335, "occultation")):
@@ -199,6 +237,18 @@ def test_coverage_and_repeatability(authority):
     earliest, _ = coverage["Saturn"][0]
     with pytest.raises(OutOfRangeError):
         engine.at(tdb_to_tt(earliest + 1.0 / S_PER_DAY), planet="Saturn")
+    with pytest.raises(OutOfRangeError):
+        find_planetary_moon_events(
+            engine, tdb_to_tt(earliest + 1.0 / S_PER_DAY), tdb_to_tt(earliest + 2.0 / S_PER_DAY),
+            planet="Saturn",
+        )
+    exhausted = find_planetary_moon_events(
+        engine, J2000, J2000 + 2.0, moon_ids=(501,), max_evaluations=1, mode="next",
+    )
+    assert exhausted.status == "evaluation_budget"
+    assert exhausted.evaluations == 1
+    assert exhausted.events == ()
+    assert exhausted.unresolved_intervals[0].naif_id == 501
     first = engine.at(tdb_to_tt(J2000), planet="Jupiter")
     assert engine.at(tdb_to_tt(J2000), planet="Jupiter") == first
     assert tuple(row.naif_id for row in first.moons) == COVERED_MOONS[:4]
@@ -217,6 +267,14 @@ def test_eclipse_status_is_independent_of_phase_and_disk_occultation(authority):
     mimas = saturn.moons[0]
     assert mimas.earth_view.event == "occultation" and mimas.eclipse == "total"
     _check_events(spice, mimas, epoch)
+    centre = tdb_to_tt(J2000 + epoch / S_PER_DAY)
+    search = find_planetary_moon_events(
+        engine, centre - 0.08, centre + 0.08, moon_ids=(601,), kinds=("occultation", "eclipse"),
+    )
+    assert search.status == "complete"
+    assert {event.kind for event in search.events if event.start_jd_tt < centre < event.end_jd_tt} == {
+        "occultation", "eclipse",
+    }
 
 
 def test_open_receipts_and_lifecycle(authority, monkeypatch):

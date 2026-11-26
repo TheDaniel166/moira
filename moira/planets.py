@@ -115,6 +115,7 @@ __all__ = [
     "planet_relative_to",
     "planet_relative_to_with_truth",
     "next_heliocentric_transit",
+    "HeliocentricTransitNotFoundError",
     "approx_year",
 ]
 
@@ -4367,6 +4368,10 @@ def planet_relative_to_with_truth(
 # Phase 2: next_heliocentric_transit
 # ---------------------------------------------------------------------------
 
+class HeliocentricTransitNotFoundError(ValueError):
+    """The bounded heliocentric longitude scan reached its limit without a crossing."""
+
+
 def next_heliocentric_transit(
     body: str,
     target_lon: float,
@@ -4421,6 +4426,8 @@ def next_heliocentric_transit(
         MissingKernelError: If no reader is available through the active
             context or legacy fallback.
     """
+    if not math.isfinite(max_days) or max_days <= 0.0:
+        raise ValueError("max_days must be finite and positive")
     if body == Body.SUN:
         raise ValueError("next_heliocentric_transit: Body.SUN has no heliocentric longitude.")
     if reader is None:
@@ -4444,8 +4451,9 @@ def next_heliocentric_transit(
 
     # Estimate orbital speed to choose a safe step
     lon0 = _helio_lon(jd_start)
-    lon1 = _helio_lon(jd_start + 1.0)
-    speed_deg_per_day = (lon1 - lon0 + 360.0) % 360.0  # always positive (direct)
+    sample_days = min(1.0, max_days)
+    lon1 = _helio_lon(jd_start + sample_days)
+    speed_deg_per_day = ((lon1 - lon0 + 360.0) % 360.0) / sample_days
     if speed_deg_per_day < 1e-6:
         speed_deg_per_day = 1e-6
     step = max(0.25, 1.5 / speed_deg_per_day)  # cover 1.5° per step
@@ -4461,7 +4469,7 @@ def next_heliocentric_transit(
         f_prev = f_next
         t = t_next
 
-    raise ValueError(
+    raise HeliocentricTransitNotFoundError(
         f"next_heliocentric_transit: {body!r} did not reach {target_lon:.2f}° "
         f"within {max_days} days of JD {jd_start:.1f}."
     )

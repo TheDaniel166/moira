@@ -564,6 +564,21 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
 class PrimaryDirectionsTimelineRequest(PrimaryDirectionsSearchRequest):
     """Request for the integrated chronological life timeline endpoint."""
 
+    submitted_arcs: None = Field(
+        default=None,
+        json_schema_extra={"deprecated": True},
+        description="Only null is accepted. Use profile or relations to evaluate submitted arcs.",
+    )
+    include_relations: Literal[False] = Field(
+        default=False,
+        json_schema_extra={"deprecated": True},
+        description="Only false is accepted. Use profile to request relation expansion.",
+    )
+    include_condition: Literal[False] = Field(
+        default=False,
+        json_schema_extra={"deprecated": True},
+        description="Only false is accepted. Use profile to request condition expansion.",
+    )
     max_age_years: float = Field(default=100.0, gt=0.0, le=150.0, allow_inf_nan=False)
     key: PrimaryDirectionKey | None = None
     bound_doctrine: EgyptianBoundsDoctrine | None = None
