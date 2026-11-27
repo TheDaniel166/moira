@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 
 from moira import Moira
 from moira.kp import kp_longitude, kp_profiles, kp_ruling_planets, kp_significators
+from moira.kp_period import kp_period_interpretation
 from moira.kuta import kuta_match, kuta_profiles
 
 from ..dependencies import get_engine
@@ -10,6 +11,8 @@ from ..models.vedic_matching import (
     KPChartRequest, KPChartResponse, KPLongitudeRequest, KPLongitudeResponse, KPProfileResponse,
     KPSignificatorChartResponse, KPSignificatorsRequest, KPSignificatorsResponse,
     KPRulingPlanetsMomentRequest, KPRulingPlanetsMomentResponse, KPRulingPlanetsRequest, KPRulingPlanetsResponse,
+    KPPeriodInterpretationMomentRequest, KPPeriodInterpretationMomentResponse,
+    KPPeriodInterpretationRequest, KPPeriodInterpretationResponse,
     KutaProfileResponse, KutaRequest, KutaResponse,
 )
 
@@ -82,3 +85,21 @@ def kp_chart_ruling_planets_route(
 
     result = engine.kp_ruling_planets_for_datetime(**request.model_dump())
     return KPRulingPlanetsMomentResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/period-interpretation", response_model=KPPeriodInterpretationResponse)
+def kp_period_interpretation_route(request: KPPeriodInterpretationRequest) -> KPPeriodInterpretationResponse:
+    """Interpret supplied period lords from natal sidereal longitudes."""
+
+    result = kp_period_interpretation(**request.model_dump())
+    return KPPeriodInterpretationResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/chart/period-interpretation", response_model=KPPeriodInterpretationMomentResponse)
+def kp_chart_period_interpretation_route(
+    request: KPPeriodInterpretationMomentRequest, engine: Moira = Depends(get_engine),
+) -> KPPeriodInterpretationMomentResponse:
+    """Annotate active Vimshottari periods with natal KP topic evidence."""
+
+    result = engine.kp_period_interpretation_for_datetime(**request.model_dump())
+    return KPPeriodInterpretationMomentResponse.model_validate(result, from_attributes=True)

@@ -239,6 +239,26 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             node_mode=node_mode, profile_id=profile_id, reader=self._reader,
         )
 
+    def kp_period_interpretation(
+        self, *, planet_longitudes, cusp_longitudes, period_lords, subject,
+        profile_id="krishnamurti_moira_placidus",
+    ):
+        """Interpret supplied Vimshottari lords through the natal KP house links."""
+        return _facade_module().kp_period_interpretation(
+            planet_longitudes=planet_longitudes, cusp_longitudes=cusp_longitudes,
+            period_lords=period_lords, subject=subject, profile_id=profile_id,
+        )
+
+    def kp_period_interpretation_for_datetime(
+        self, natal_dt: datetime, current_dt: datetime, latitude: float, longitude: float, *,
+        node_mode, subject, levels=3, year_basis=None, profile_id="krishnamurti_moira_placidus",
+    ):
+        """Interpret canonical active Vimshottari periods using this facade's reader."""
+        return _facade_module().kp_period_interpretation_for_datetime(
+            natal_dt, current_dt, latitude, longitude, node_mode=node_mode, subject=subject, levels=levels,
+            year_basis=year_basis, profile_id=profile_id, reader=self._reader,
+        )
+
     def narayana_dasha(
         self, lagna_sidereal_longitude, sidereal_longitudes, *, resolved_strength=None,
         resolved_co_lords=None, birth_jd_ut1=None, year_basis=None,

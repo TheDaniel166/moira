@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 639
-- Registered OpenAPI operations: 639 (GET 61, POST 578)
+- Registered OpenAPI paths: 641
+- Registered OpenAPI operations: 641 (GET 61, POST 580)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 635
+- Versioned `/v1` paths: 637
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -4588,9 +4588,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/jaimini/karakas/pair` | jaimini | `jaimini_karakas_pair_route_v1_jaimini_karakas_pair_post` |
 | `POST` | `/v1/jaimini/karakas/profile` | jaimini | `jaimini_karakas_profile_route_v1_jaimini_karakas_profile_post` |
 | `POST` | `/v1/kp/chart` | kp | `kp_chart_route_v1_kp_chart_post` |
+| `POST` | `/v1/kp/chart/period-interpretation` | kp | `kp_chart_period_interpretation_route_v1_kp_chart_period_interpretation_post` |
 | `POST` | `/v1/kp/chart/ruling-planets` | kp | `kp_chart_ruling_planets_route_v1_kp_chart_ruling_planets_post` |
 | `POST` | `/v1/kp/chart/significators` | kp | `kp_chart_significators_route_v1_kp_chart_significators_post` |
 | `POST` | `/v1/kp/longitude` | kp | `kp_longitude_route_v1_kp_longitude_post` |
+| `POST` | `/v1/kp/period-interpretation` | kp | `kp_period_interpretation_route_v1_kp_period_interpretation_post` |
 | `GET` | `/v1/kp/profiles` | kp | `kp_profiles_route_v1_kp_profiles_get` |
 | `POST` | `/v1/kp/ruling-planets` | kp | `kp_ruling_planets_route_v1_kp_ruling_planets_post` |
 | `POST` | `/v1/kp/significators` | kp | `kp_significators_route_v1_kp_significators_post` |

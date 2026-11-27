@@ -679,6 +679,22 @@
       ]
     },
     {
+      "capability": "kp_period_interpretation_from_longitudes",
+      "engine": ["moira.kp_period:kp_period_interpretation","moira.facade:Moira.kp_period_interpretation"],
+      "witness": "tests/server/test_server_kp_period.py::test_period_interpretation_direct_http",
+      "routes": [
+        {"operation":"POST /v1/kp/period-interpretation","request":["planet_longitudes","cusp_longitudes","period_lords","subject"],"response":["method","source_reference","star_matches","sub_matches","sub_evidence","assessment"]}
+      ]
+    },
+    {
+      "capability": "kp_period_interpretation_at_moment",
+      "engine": ["moira.kp_period:kp_period_interpretation_for_datetime","moira.facade:Moira.kp_period_interpretation_for_datetime"],
+      "witness": "tests/server/test_server_kp_period.py::test_active_period_interpretation_and_clock",
+      "routes": [
+        {"operation":"POST /v1/kp/chart/period-interpretation","request":["natal_dt","current_dt","node_mode","subject","levels","year_basis"],"response":["active_periods","start_jd_ut1","full_start_jd_ut1","end_jd_ut1","interpretation","cusp_unavailable_reason"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

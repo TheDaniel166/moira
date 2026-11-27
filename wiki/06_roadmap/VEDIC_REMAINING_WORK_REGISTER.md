@@ -1649,3 +1649,15 @@ local sunrise weekday and retains available evidence if the sunrise or
 Ascendant is unavailable. The [primary-source checkpoint](VEDIC_KP_RULING_PLANETS_PRIMARY_SOURCE_CHECKPOINT.md)
 records the printed examples, the historical Ascendant discrepancy and
 the Python and REST contracts. Period judgments remain a separate scope.
+
+KP ruling planets were pushed at
+[`d803c72`](https://github.com/TheDaniel166/moira/commit/d803c72464e56c49e971c66575a5fa564f03d1e1).
+
+## 71. KP period interpretation — 27 November 2026
+
+The C-03 continuation adds direct natal KP period evidence for education,
+marriage, and service through Sookshma. It returns the star and sub house
+links for each lord and preserves the existing Vimshottari timing and
+year-basis contract. The [primary-source checkpoint](VEDIC_KP_PERIOD_INTERPRETATION_PRIMARY_SOURCE_CHECKPOINT.md)
+records the reproduced examples, mixed evidence decisions, and Python
+and REST contracts.

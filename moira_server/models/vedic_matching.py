@@ -6,9 +6,10 @@ from pydantic import Field
 
 from moira.daily_panchanga import PanchangaSunriseDefinition
 from moira.kp import KPNodeMode, KPProfileId, KPRulingRole, KPSignificatorRank
+from moira.kp_period import KPPeriodAssessment, KPPeriodSubject
 from moira.kuta import FactorStatus, KutaProfileId
 
-from ._vedic_inputs import CivilDateTime, ClassicalPlanet, FiniteNumber, NodePlanet
+from ._vedic_inputs import CivilDateTime, ClassicalPlanet, FiniteNumber, NodePlanet, VimshottariYearBasis
 from .common import _StrictModel
 from .daily_panchanga import PanchangaMomentResponse
 
@@ -271,3 +272,95 @@ class KPRulingPlanetsMomentResponse(_StrictModel):
     ephemeris_identity: str
     status: Literal["available", "partial"]
     result: KPRulingPlanetsResponse
+
+
+class KPPeriodInterpretationRequest(KPSignificatorsRequest):
+    """Published or supplied natal geometry and an ordered Vimshottari line."""
+
+    period_lords: Annotated[tuple[ClassicalPlanet | NodePlanet, ...], Field(min_length=1, max_length=4)]
+    subject: KPPeriodSubject
+
+
+class KPPeriodInterpretationMomentRequest(_StrictModel):
+    """Natal instant, observation instant and canonical period clock choice."""
+
+    natal_dt: CivilDateTime
+    current_dt: CivilDateTime
+    latitude: Annotated[FiniteNumber, Field(ge=-90, le=90)]
+    longitude: Annotated[FiniteNumber, Field(ge=-180, le=180)]
+    node_mode: KPNodeMode
+    subject: KPPeriodSubject
+    levels: Annotated[int, Field(strict=True, ge=1, le=4)] = 3
+    year_basis: VimshottariYearBasis | None = None
+    profile_id: KPProfileId = "krishnamurti_moira_placidus"
+
+
+class KPPeriodPlanetHousesResponse(_StrictModel):
+    """House occupancy and cusp ownership of a natal graha."""
+
+    planet: ClassicalPlanet | NodePlanet
+    occupied_house: int
+    owned_houses: tuple[int, ...]
+
+
+class KPPeriodHouseMatchesResponse(_StrictModel):
+    """The supporting and opposing house matches for a selected topic."""
+
+    supporting: tuple[int, ...]
+    opposing: tuple[int, ...]
+
+
+class KPPeriodHouseEvidenceResponse(_StrictModel):
+    """Direct evidence connecting the sub lord with a topic house."""
+
+    house: int
+    significator: KPSignificatorResponse
+
+
+class KPPeriodReadingResponse(_StrictModel):
+    """A single period lord's interpretation and supporting evidence."""
+
+    level: int
+    level_name: str
+    period_lord: KPPeriodPlanetHousesResponse
+    star_lord: KPPeriodPlanetHousesResponse
+    sub_lord: KPPeriodPlanetHousesResponse
+    star_matches: KPPeriodHouseMatchesResponse
+    sub_matches: KPPeriodHouseMatchesResponse
+    sub_evidence: tuple[KPPeriodHouseEvidenceResponse, ...]
+    assessment: KPPeriodAssessment
+
+
+class KPPeriodInterpretationResponse(_StrictModel):
+    """The topic's documented houses and each period lord's evidence."""
+
+    profile_id: KPProfileId
+    method: Literal["bhatt_direct_house_evidence"]
+    source_reference: str
+    subject: KPPeriodSubject
+    supporting_houses: tuple[int, ...]
+    opposing_houses: tuple[int, ...]
+    readings: tuple[KPPeriodReadingResponse, ...]
+
+
+class KPPeriodWindowResponse(_StrictModel):
+    """A canonical Vimshottari interval with both clipped and full UT1 bounds."""
+
+    level: int
+    level_name: str
+    planet: ClassicalPlanet | NodePlanet
+    start_jd_ut1: float
+    end_jd_ut1: float
+    full_start_jd_ut1: float | None
+    full_end_jd_ut1: float | None
+
+
+class KPPeriodInterpretationMomentResponse(_StrictModel):
+    """An active Vimshottari line annotated with its natal KP evidence."""
+
+    chart: KPChartResponse
+    current_dt_utc: datetime
+    current_jd_ut1: float
+    year_basis: str
+    active_periods: tuple[KPPeriodWindowResponse, ...]
+    interpretation: KPPeriodInterpretationResponse | None

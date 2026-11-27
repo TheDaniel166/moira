@@ -134,5 +134,6 @@ worked Dina exception and source ambiguities, all 108 pada boundaries, the
 and modern DE441 chart cases. The [KP significators checkpoint](VEDIC_KP_SIGNIFICATORS_PRIMARY_SOURCE_CHECKPOINT.md)
 records the subsequent four-rank implementation. The
 [ruling planets checkpoint](VEDIC_KP_RULING_PLANETS_PRIMARY_SOURCE_CHECKPOINT.md)
-records the five roles and sunrise weekday. Period interpretation remains
-a separate research item.
+records the five roles and sunrise weekday. The
+[period interpretation checkpoint](VEDIC_KP_PERIOD_INTERPRETATION_PRIMARY_SOURCE_CHECKPOINT.md)
+records the subsequent direct evidence profile.
