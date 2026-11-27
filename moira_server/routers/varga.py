@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from moira import Moira
+from moira.pushkara import pushkara
 
 from ..dependencies import get_engine
 
@@ -15,6 +16,10 @@ from ..models.varga import (
     VimshopakaRequest,
     VargaChartNamedRequest,
     VargaChartNamedResponse,
+    PushkaraRequest,
+    PushkaraResponse,
+    VargaChartPushkaraRequest,
+    VargaChartPushkaraResponse,
     VargaChartShodashvargaBatchRequest,
     VargaChartShodashvargaBatchResponse,
     VargaChartShodashvargaRequest,
@@ -29,6 +34,7 @@ from ..models.varga import (
     VargaShodashvargaRequest,
     VargaShodashvargaResponse,
 )
+from ..serializers.sidereal_context import serialize_sidereal_chart_provenance
 from ..serializers.varga import (
     serialize_varga_chart_named,
     serialize_varga_chart_shodashvarga,
@@ -41,6 +47,7 @@ from ..serializers.varga import (
 from ..services.varga import (
     compute_vimshopaka,
     compute_varga_chart_named,
+    compute_varga_chart_pushkara,
     compute_varga_chart_shodashvarga,
     compute_varga_chart_shodashvarga_batch,
     compute_varga_generic,
@@ -60,6 +67,26 @@ def d60_sign_route(request: D60SignRequest) -> D60SignResponse:
     from moira.varga import d60_sign
     result = d60_sign(request.sidereal_longitude, method=request.method)
     return D60SignResponse(**{name: getattr(result, name) for name in D60SignResponse.model_fields})
+
+
+@router.post("/pushkara", response_model=PushkaraResponse)
+def varga_pushkara_route(request: PushkaraRequest) -> PushkaraResponse:
+    """Assess Pushkara Navamsa and the selected Pushkara Bhaga table."""
+    result = pushkara(request.sidereal_longitude, bhaga_profile=request.bhaga_profile)
+    return PushkaraResponse.model_validate(result, from_attributes=True)
+
+
+@router.post("/chart/pushkara", response_model=VargaChartPushkaraResponse)
+def varga_chart_pushkara_route(
+    request: VargaChartPushkaraRequest, engine: Moira = Depends(get_engine),
+) -> VargaChartPushkaraResponse:
+    """Assess both Pushkara rules for a chart-derived sidereal longitude."""
+    result, context = compute_varga_chart_pushkara(engine, request)
+    return VargaChartPushkaraResponse(
+        body=request.body,
+        result=PushkaraResponse.model_validate(result, from_attributes=True),
+        provenance=serialize_sidereal_chart_provenance(context),
+    )
 
 
 @router.post("/generic", response_model=VargaPointResponse)

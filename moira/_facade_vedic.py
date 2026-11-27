@@ -20,6 +20,8 @@ _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
+_special_lagnas = importlib.import_module("moira.special_lagnas")
+_pushkara = importlib.import_module("moira.pushkara")
 _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
 _gochara_windows = importlib.import_module("moira.gochara_windows")
@@ -78,6 +80,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     "api": {
         "frozen": [
             "panchanga", "panchanga_profile", "daily_panchanga", "lunar_month_at",
+            "special_lagnas", "special_lagnas_for_datetime", "pushkara", "pushkara_for_chart",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
             "pancha_pakshi_uromarisi_constitution_status",
             "pancha_pakshi_astronomical_paksha",
@@ -560,6 +563,26 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         return _daily_panchanga.daily_panchanga(
             local_date, latitude, longitude, timezone=timezone,
             policy=policy, reader=self._reader,
+        )
+
+    def special_lagnas(self, sun_sidereal_longitude: float, elapsed_seconds: float):
+        """Compute Special Lagnas from a resolved sunrise seed and elapsed time."""
+        return _special_lagnas.special_lagnas(sun_sidereal_longitude, elapsed_seconds)
+
+    def special_lagnas_for_datetime(
+        self,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        timezone: str,
+        ayanamsa_system: str = "Lahiri",
+        sunrise_definition=_daily_panchanga.PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB,
+    ):
+        """Compute Special Lagnas using this facade's reader for solar evidence."""
+        return _special_lagnas.special_lagnas_for_datetime(
+            dt, latitude, longitude, timezone=timezone, ayanamsa_system=ayanamsa_system,
+            sunrise_definition=sunrise_definition, reader=self._reader,
         )
 
     def pancha_pakshi_profiles(
@@ -1181,6 +1204,18 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=system,
         )[body]
         return function(sidereal)
+
+    def pushkara(self, sidereal_longitude: float, *, bhaga_profile: _pushkara.PushkaraBhagaProfile):
+        """Evaluate both Pushkara techniques for one input sidereal longitude."""
+        return _pushkara.pushkara(sidereal_longitude, bhaga_profile=bhaga_profile)
+
+    def pushkara_for_chart(
+        self, chart, body: str, *, bhaga_profile: _pushkara.PushkaraBhagaProfile,
+        ayanamsa_system: str = "Lahiri",
+    ):
+        """Evaluate the selected body's sidereal longitude in an existing chart."""
+        value = self._sidereal_longitudes_from_chart(chart, (body,), ayanamsa_system=ayanamsa_system)[body]
+        return self.pushkara(value, bhaga_profile=bhaga_profile)
 
     def shodashvarga(self, sidereal_longitude: float, *, d60_method=_varga.D60Method.HARMONIC):
         """Compute Moira's admitted Shodashvarga set for one sidereal longitude."""

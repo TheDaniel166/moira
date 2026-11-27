@@ -495,6 +495,38 @@
       "engine_only_reason": "The server owns kernel files and the request-local reader lifecycle."
     },
     {
+      "capability": "special_lagnas_from_sunrise",
+      "engine": ["moira.special_lagnas:special_lagnas","moira.facade:Moira.special_lagnas"],
+      "witness": "tests/server/test_server_special_lagnas_pushkara.py::test_direct_routes_have_no_ephemeris_dependency",
+      "routes": [
+        {"operation":"POST /v1/special-lagnas/from-sunrise","request":["sun_sidereal_longitude","elapsed_seconds"],"response":["bhava_longitude","hora_longitude","ghati_longitude","source_reference"]}
+      ]
+    },
+    {
+      "capability": "special_lagnas_at_birth",
+      "engine": ["moira.special_lagnas:special_lagnas_for_datetime","moira.facade:Moira.special_lagnas_for_datetime"],
+      "witness": "tests/server/test_server_special_lagnas_pushkara.py::test_dated_lagnas_http_and_facade_own_the_same_sunrise",
+      "routes": [
+        {"operation":"POST /v1/special-lagnas/birth","request":["dt","timezone","latitude","longitude","ayanamsa_system","sunrise_definition"],"response":["birth","candidate_sunrises","sunrise","unavailable_reason","reader_binding","result"]}
+      ]
+    },
+    {
+      "capability": "pushkara_from_sidereal_longitude",
+      "engine": ["moira.pushkara:pushkara","moira.facade:Moira.pushkara"],
+      "witness": "tests/server/test_server_special_lagnas_pushkara.py::test_direct_routes_have_no_ephemeris_dependency",
+      "routes": [
+        {"operation":"POST /v1/varga/pushkara","request":["sidereal_longitude","bhaga_profile","jataka_parijata_sastri","vidyamadhaviyam_1923"],"response":["navamsa_ordinal","in_pushkara_navamsa","bhaga_degree_interval","bhaga_source_subject","in_pushkara_bhaga"]}
+      ]
+    },
+    {
+      "capability": "chart_derived_pushkara",
+      "engine": ["moira.facade:Moira.pushkara_for_chart"],
+      "witness": "tests/server/test_server_special_lagnas_pushkara.py::test_chart_pushkara_agrees_with_public_sidereal_and_direct_evaluation",
+      "routes": [
+        {"operation":"POST /v1/varga/chart/pushkara","request":["dt","body","ayanamsa_system","bhaga_profile"],"response":["body","provenance","sidereal_longitude","in_pushkara_navamsa","in_pushkara_bhaga"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

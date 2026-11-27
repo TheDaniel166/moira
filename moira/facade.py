@@ -1962,6 +1962,10 @@ from .lunar_month import (
     LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
     LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
 )
+from .pushkara import PushkaraBhagaProfile, PushkaraResult, pushkara
+from .special_lagnas import (
+    SpecialLagnaBirthResult, SpecialLagnaResult, special_lagnas, special_lagnas_for_datetime,
+)
 from .daily_panchanga import (
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -3486,6 +3490,8 @@ __all__ += [
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
+    "SpecialLagnaBirthResult", "SpecialLagnaResult", "special_lagnas", "special_lagnas_for_datetime",
+    "PushkaraBhagaProfile", "PushkaraResult", "pushkara",
     "TithiConditionProfile", "PanchangaProfile", "panchanga_at",
     "tithi_condition_profile", "panchanga_profile",
     "validate_panchanga_output",

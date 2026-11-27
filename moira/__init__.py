@@ -674,6 +674,10 @@ from .lunar_month import (  # noqa: E402 - imports intentionally follow the kern
     LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
     LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
 )
+from .pushkara import PushkaraBhagaProfile, PushkaraResult, pushkara  # noqa: E402 - imports intentionally follow the kernel warning
+from .special_lagnas import (  # noqa: E402 - imports intentionally follow the kernel warning
+    SpecialLagnaBirthResult, SpecialLagnaResult, special_lagnas, special_lagnas_for_datetime,
+)
 from .daily_panchanga import (  # noqa: E402 - imports intentionally follow the kernel warning
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -2162,6 +2166,8 @@ __all__ = [
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
+    "SpecialLagnaBirthResult", "SpecialLagnaResult", "special_lagnas", "special_lagnas_for_datetime",
+    "PushkaraBhagaProfile", "PushkaraResult", "pushkara",
     "panchanga_at",
     "tithi_condition_profile",
     "panchanga_profile",

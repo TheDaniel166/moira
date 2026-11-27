@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from moira import Moira
+from moira.pushkara import PushkaraResult
 from moira.varga import (
     D60Method,
     VargaPoint,
@@ -31,6 +32,7 @@ from moira.varga import (
 
 from ..models.varga import (
     VargaChartNamedRequest,
+    VargaChartPushkaraRequest,
     VargaChartShodashvargaBatchRequest,
     VargaChartShodashvargaRequest,
     VargaGenericRequest,
@@ -140,6 +142,16 @@ def compute_varga_shodashvarga_batch(
     }
 
 
+def compute_varga_chart_pushkara(
+    engine: Moira, request: VargaChartPushkaraRequest,
+) -> tuple[PushkaraResult, SiderealChartContext]:
+    context = _derive_varga_context(engine, request, (request.body,))
+    result = engine.pushkara(
+        context.sidereal_longitudes[request.body], bhaga_profile=request.bhaga_profile,
+    )
+    return result, context
+
+
 def compute_varga_chart_named(
     engine: Moira,
     request: VargaChartNamedRequest,
@@ -247,6 +259,7 @@ __all__ = [
     "VargaChartShodashvargaBatchResult",
     "VargaChartShodashvargaResult",
     "compute_varga_chart_named",
+    "compute_varga_chart_pushkara",
     "compute_varga_chart_shodashvarga",
     "compute_varga_chart_shodashvarga_batch",
     "compute_varga_generic",

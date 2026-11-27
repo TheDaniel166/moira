@@ -6,11 +6,14 @@ import math
 from typing import Annotated, Literal
 
 from pydantic import AfterValidator, Field, field_validator, model_validator
+from moira.pushkara import PushkaraBhagaProfile
 from moira.varga import D60Method, _require_d60_full_point
 
 from .common import REST_BATCH_MAX_ITEMS, _StrictModel
 from ._vedic_inputs import ClassicalPlanet, FiniteNumber
-from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
+from .sidereal_context import (
+    SiderealChartBaseRequest, SiderealChartProvenanceResponse, VedicSiderealChartRequest,
+)
 
 
 def _full_d60_method(value: D60Method) -> D60Method:
@@ -58,6 +61,39 @@ VargaSelector = Literal[
     "akshavedamsha",
     "shashtiamsha",
 ]
+
+
+class PushkaraRequest(_StrictModel):
+    sidereal_longitude: FiniteNumber
+    bhaga_profile: PushkaraBhagaProfile
+
+
+class VargaChartPushkaraRequest(VedicSiderealChartRequest):
+    body: Annotated[str, Field(min_length=1)]
+    bhaga_profile: PushkaraBhagaProfile
+
+
+class PushkaraResponse(_StrictModel):
+    sidereal_longitude: float
+    sign: str
+    degree_in_sign: float
+    navamsa_ordinal: int
+    navamsa_sign: str
+    pushkara_navamsa_ordinals: tuple[int, int]
+    in_pushkara_navamsa: bool
+    navamsa_source_reference: str
+    bhaga_profile: PushkaraBhagaProfile
+    bhaga_source_reference: str
+    bhaga_source_subject: Literal["moon", "sign_degree"]
+    bhaga_degree_ordinal: int
+    bhaga_degree_interval: tuple[int, int]
+    in_pushkara_bhaga: bool
+
+
+class VargaChartPushkaraResponse(_StrictModel):
+    body: str
+    result: PushkaraResponse
+    provenance: SiderealChartProvenanceResponse
 
 
 class VargaGenericRequest(_StrictModel):

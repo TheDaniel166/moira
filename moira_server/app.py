@@ -69,6 +69,7 @@ from .routers import (
     muhurta_router,
     sade_sati_router,
     yogas_router,
+    special_lagnas_router,
     upagrahas_router,
     avasthas_router,
     jaimini_extended_router,
@@ -245,6 +246,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(gochara_router)     # Supplied and reader-bound dated Gochara snapshots
     app.include_router(sade_sati_router)   # Vedic Phase-2: Sade Sati status + kernel-timed windows
     app.include_router(yogas_router)        # Vedic Phase-2 flagship: yoga engine (proof-object evaluation)
+    app.include_router(special_lagnas_router)
     app.include_router(upagrahas_router)    # Vedic Phase-2: Gulika/Mandi kalavelas + Sun-derived upagrahas
     app.include_router(avasthas_router)     # Vedic Phase-2: planetary states (BPHS Ch. 45)
     app.include_router(jaimini_extended_router)  # Vedic Phase-2: arudhas, argala, karakamsa, Chara Dasha

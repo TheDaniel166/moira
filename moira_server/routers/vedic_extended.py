@@ -16,6 +16,10 @@ from ..services.jaimini_profiles import (
     jaimini_profile_catalogue, compute_chara_profile, compute_argala_assessment,
 )
 from ..models.sayanadi import AvasthaBirthRequest, SayanadiRequest, SayanadiResponse
+from ..models.special_lagnas import (
+    SpecialLagnaBirthRequest, SpecialLagnaBirthResponse, SpecialLagnaRequest, SpecialLagnaResponse,
+)
+from moira.special_lagnas import special_lagnas
 from ..serializers.avasthas import serialize_avastha_birth, serialize_avastha_chart
 from ..services.avasthas import compute_avastha_birth
 from ..models.vedic_extended import (
@@ -42,11 +46,31 @@ from ..models.vedic_extended import (
 )
 
 
+special_lagnas_router = APIRouter(prefix="/v1/special-lagnas", tags=["special-lagnas"])
 upagrahas_router = APIRouter(prefix="/v1/upagrahas", tags=["upagrahas"])
 avasthas_router = APIRouter(prefix="/v1/avasthas", tags=["avasthas"])
 jaimini_extended_router = APIRouter(
     prefix="/v1/jaimini/extended", tags=["jaimini"],
 )
+
+
+@special_lagnas_router.post("/from-sunrise", response_model=SpecialLagnaResponse)
+def special_lagnas_route(request: SpecialLagnaRequest) -> SpecialLagnaResponse:
+    """Compute Bhava, Hora and Ghati Lagna from supplied sunrise evidence."""
+    result = special_lagnas(request.sun_sidereal_longitude, request.elapsed_seconds)
+    return SpecialLagnaResponse.model_validate(result, from_attributes=True)
+
+
+@special_lagnas_router.post("/birth", response_model=SpecialLagnaBirthResponse)
+def special_lagnas_birth_route(
+    request: SpecialLagnaBirthRequest, engine: Moira = Depends(get_engine),
+) -> SpecialLagnaBirthResponse:
+    """Compute Special Lagnas at birth from local solar-event evidence."""
+    result = engine.special_lagnas_for_datetime(
+        request.dt, request.latitude, request.longitude, timezone=request.timezone,
+        ayanamsa_system=request.ayanamsa_system, sunrise_definition=request.sunrise_definition,
+    )
+    return SpecialLagnaBirthResponse.model_validate(result, from_attributes=True)
 
 
 @jaimini_extended_router.get("/profiles", response_model=JaiminiCatalogueResponse)

@@ -376,7 +376,10 @@ strict name/ghati context, optional chart evaluation and reader-bound
 previous-sunrise birth composition through root/facade/`vedic`. See the
 [Sayanadi standard](SAYANADI_ADMISSION_STANDARD.md) for source variants,
 inspectable trace, unavailable clocks and conditional-prose provenance.
-Special Lagnas remain a separate admission. Kalachakra now has a named
+[Special Lagnas and Pushkara](SPECIAL_LAGNAS_PUSHKARA_STANDARD.md) expose direct,
+birth- or chart-composed calculations with named source references. Use
+`special_lagnas`, `special_lagnas_for_datetime` and `pushkara`, or the owning
+`Moira` methods. Kalachakra now has a named
 Santhanam/BPHS profile with exact source years, bounded MD/AD trees and five
 REST operations; see the [Kalachakra API](../02_services/KALACHAKRA_DASHA_API.md).
 Daily sunrise-owned Panchanga has its separately

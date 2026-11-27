@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 615
-- Registered OpenAPI operations: 615 (GET 58, POST 557)
+- Registered OpenAPI paths: 619
+- Registered OpenAPI operations: 619 (GET 58, POST 561)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 611
+- Versioned `/v1` paths: 615
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2393,11 +2393,26 @@ inactive inputs in `policy_receipt`; omitted sections remain omitted.
 | POST | `/v1/ashtakavarga/chart/sign-profile` | `ashtakavarga_chart_sign_profile_route` |
 | POST | `/v1/ashtakavarga/chart/transit-strength` | `ashtakavarga_chart_transit_strength_route` |
 
+## Special Lagna Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/special-lagnas/from-sunrise` | `special_lagnas_route` |
+| POST | `/v1/special-lagnas/birth` | `special_lagnas_birth_route` |
+
+Supply a sidereal solar seed and elapsed seconds for the direct route. The
+birth route binds the engine reader to the offset-aware birth instant,
+coordinates, local timezone and selected sunrise definition. It returns the
+examined sunrise instants, selected anchor, computed longitudes or a named
+unavailable state. See the [source and clock standard](../02_standards/SPECIAL_LAGNAS_PUSHKARA_STANDARD.md).
+
 ## Varga Routes
 
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/varga/d60/sign` | `d60_sign_route` |
+| POST | `/v1/varga/pushkara` | `varga_pushkara_route` |
+| POST | `/v1/varga/chart/pushkara` | `varga_chart_pushkara_route` |
 | POST | `/v1/varga/vimshopaka` | `vimshopaka_route` |
 | POST | `/v1/varga/generic` | `varga_generic_route` |
 | POST | `/v1/varga/named` | `varga_named_route` |
@@ -2407,6 +2422,14 @@ inactive inputs in `policy_receipt`; omitted sections remain omitted.
 | POST | `/v1/varga/chart/named` | `varga_chart_named_route` |
 | POST | `/v1/varga/chart/shodashvarga` | `varga_chart_shodashvarga_route` |
 | POST | `/v1/varga/chart/shodashvarga/batch` | `varga_chart_shodashvarga_batch_route` |
+
+Pushkara takes an explicit `bhaga_profile` of `jataka_parijata_sastri` or
+`vidyamadhaviyam_1923`. The direct request supplies a finite sidereal
+longitude. The chart request supplies `body`, an offset-aware `dt`, and
+optional sidereal chart settings. Both return the Navamsa ordinal and match,
+the applied Bhaga interval and match, and the respective source references.
+The chart response also returns the body and existing chart provenance.
+See the [Pushkara standard](../02_standards/SPECIAL_LAGNAS_PUSHKARA_STANDARD.md#pushkara).
 
 Every `VargaPointResponse` includes canonical nullable `deity`, applied
 `d60_method`, `d60_source_references` and `d60_degree_attribution`. Named D60 supplies its corrected deity string; generic divisor
@@ -4754,6 +4777,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/sothic/egyptian-date` | sothic | `egyptian_date_route_v1_sothic_egyptian_date_post` |
 | `POST` | `/v1/sothic/predict-epoch` | sothic | `predict_epoch_route_v1_sothic_predict_epoch_post` |
 | `POST` | `/v1/sothic/rising` | sothic | `rising_route_v1_sothic_rising_post` |
+| `POST` | `/v1/special-lagnas/birth` | special-lagnas | `special_lagnas_birth_route_v1_special_lagnas_birth_post` |
+| `POST` | `/v1/special-lagnas/from-sunrise` | special-lagnas | `special_lagnas_route_v1_special_lagnas_from_sunrise_post` |
 | `POST` | `/v1/stars/bulk` | stars (fixed stars) | `stars_bulk_v1_stars_bulk_post` |
 | `POST` | `/v1/stars/conditions` | stars (fixed stars) | `star_conditions_route_v1_stars_conditions_post` |
 | `GET` | `/v1/stars/list` | stars (fixed stars) | `list_stars_v1_stars_list_get` |
@@ -4809,12 +4834,14 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/v1/uranian/catalog` | uranian | `uranian_catalog_route_v1_uranian_catalog_get` |
 | `POST` | `/v1/uranian/position` | uranian | `uranian_position_route_v1_uranian_position_post` |
 | `POST` | `/v1/varga/chart/named` | varga | `varga_chart_named_route_v1_varga_chart_named_post` |
+| `POST` | `/v1/varga/chart/pushkara` | varga | `varga_chart_pushkara_route_v1_varga_chart_pushkara_post` |
 | `POST` | `/v1/varga/chart/shodashvarga` | varga | `varga_chart_shodashvarga_route_v1_varga_chart_shodashvarga_post` |
 | `POST` | `/v1/varga/chart/shodashvarga/batch` | varga | `varga_chart_shodashvarga_batch_route_v1_varga_chart_shodashvarga_batch_post` |
 | `POST` | `/v1/varga/d60/sign` | varga | `d60_sign_route_v1_varga_d60_sign_post` |
 | `POST` | `/v1/varga/generic` | varga | `varga_generic_route_v1_varga_generic_post` |
 | `POST` | `/v1/varga/named` | varga | `varga_named_route_v1_varga_named_post` |
 | `POST` | `/v1/varga/named/batch` | varga | `varga_named_batch_route_v1_varga_named_batch_post` |
+| `POST` | `/v1/varga/pushkara` | varga | `varga_pushkara_route_v1_varga_pushkara_post` |
 | `POST` | `/v1/varga/shodashvarga` | varga | `varga_shodashvarga_route_v1_varga_shodashvarga_post` |
 | `POST` | `/v1/varga/shodashvarga/batch` | varga | `varga_shodashvarga_batch_route_v1_varga_shodashvarga_batch_post` |
 | `POST` | `/v1/varga/vimshopaka` | varga | `vimshopaka_route_v1_varga_vimshopaka_post` |

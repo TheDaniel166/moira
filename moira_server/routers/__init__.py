@@ -50,6 +50,7 @@ from .muhurta import router as muhurta_router
 from .sade_sati import router as sade_sati_router
 from .yogas import router as yogas_router
 from .vedic_extended import (
+    special_lagnas_router,
     upagrahas_router,
     avasthas_router,
     jaimini_extended_router,
@@ -150,6 +151,7 @@ __all__ = [
     "muhurta_router",
     "sade_sati_router",
     "yogas_router",
+    "special_lagnas_router",
     "upagrahas_router",
     "avasthas_router",
     "jaimini_extended_router",

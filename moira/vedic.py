@@ -77,6 +77,10 @@ from .lunar_month import (
     LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
     LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
 )
+from .pushkara import PushkaraBhagaProfile, PushkaraResult, pushkara
+from .special_lagnas import (
+    SpecialLagnaBirthResult, SpecialLagnaResult, special_lagnas, special_lagnas_for_datetime,
+)
 from .daily_panchanga import (
     PanchangaSunriseDefinition, DailyPanchangaPolicy, PanchangaMoment,
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
@@ -869,6 +873,8 @@ _VEDIC_OWN: list[str] = [
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
+    "SpecialLagnaBirthResult", "SpecialLagnaResult", "special_lagnas", "special_lagnas_for_datetime",
+    "PushkaraBhagaProfile", "PushkaraResult", "pushkara",
     "panchanga_at",
     "sankranti_at",
     "tithi_condition_profile",
