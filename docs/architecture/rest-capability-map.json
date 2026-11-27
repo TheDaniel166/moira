@@ -663,6 +663,22 @@
       ]
     },
     {
+      "capability": "kp_ruling_planets_from_longitudes",
+      "engine": ["moira.kp:kp_ruling_planets","moira.facade:Moira.kp_ruling_planets"],
+      "witness": "tests/server/test_server_kp_ruling_planets.py::test_ruling_planets_direct_http",
+      "routes": [
+        {"operation":"POST /v1/kp/ruling-planets","request":["moon_sidereal_longitude","ascendant_sidereal_longitude","weekday","node_longitudes","profile_id"],"response":["roles","ruling_planets","node_policy","node_agents","source_reference"]}
+      ]
+    },
+    {
+      "capability": "kp_ruling_planets_at_moment",
+      "engine": ["moira.kp:kp_ruling_planets_for_datetime","moira.facade:Moira.kp_ruling_planets_for_datetime"],
+      "witness": "tests/server/test_server_kp_ruling_planets.py::test_ruling_planets_dated_http_and_de441",
+      "routes": [
+        {"operation":"POST /v1/kp/chart/ruling-planets","request":["dt","latitude","longitude","timezone","sunrise_definition","node_mode","profile_id"],"response":["governing_sunrise","weekday_unavailable_reason","ascendant_unavailable_reason","reader_binding","ephemeris_identity","status","result"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

@@ -219,6 +219,26 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             dt, latitude, longitude, node_mode=node_mode, profile_id=profile_id, reader=self._reader,
         )
 
+    def kp_ruling_planets(self, *, moon_sidereal_longitude: float, ascendant_sidereal_longitude: float,
+                          weekday: int, node_longitudes=None, profile_id="krishnamurti_moira_placidus"):
+        """Resolve the five KP roles from a sunrise weekday and supplied longitudes."""
+        return _facade_module().kp_ruling_planets(
+            moon_sidereal_longitude=moon_sidereal_longitude,
+            ascendant_sidereal_longitude=ascendant_sidereal_longitude, weekday=weekday,
+            node_longitudes=node_longitudes, profile_id=profile_id,
+        )
+
+    def kp_ruling_planets_for_datetime(
+        self, dt: datetime, latitude: float, longitude: float, *, timezone: str,
+        sunrise_definition=_daily_panchanga.PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB,
+        node_mode=None, profile_id="krishnamurti_moira_placidus",
+    ):
+        """Resolve the five KP roles at the given moment using this facade's reader."""
+        return _facade_module().kp_ruling_planets_for_datetime(
+            dt, latitude, longitude, timezone=timezone, sunrise_definition=sunrise_definition,
+            node_mode=node_mode, profile_id=profile_id, reader=self._reader,
+        )
+
     def narayana_dasha(
         self, lagna_sidereal_longitude, sidereal_longitudes, *, resolved_strength=None,
         resolved_co_lords=None, birth_jd_ut1=None, year_basis=None,

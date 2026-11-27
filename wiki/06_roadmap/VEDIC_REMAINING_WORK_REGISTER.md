@@ -1637,3 +1637,15 @@ records the reproduced Reader III and Bhatt examples, exact cusp ownership,
 and scope of the two REST operations. Conjunction and aspect links, node
 representation, ruling planets, and period interpretation remain separately
 tracked extensions.
+
+KP house significators were pushed at
+[`cfbe722`](https://github.com/TheDaniel166/moira/commit/cfbe722f99bd5a6f43e96f2c9225e9b80901aaef).
+
+## 70. KP ruling planets — 27 November 2026
+
+The C-03 continuation implements the five direct ruling roles and the
+optional Reader VI sign-agent rule. The dated operation resolves the
+local sunrise weekday and retains available evidence if the sunrise or
+Ascendant is unavailable. The [primary-source checkpoint](VEDIC_KP_RULING_PLANETS_PRIMARY_SOURCE_CHECKPOINT.md)
+records the printed examples, the historical Ascendant discrepancy and
+the Python and REST contracts. Period judgments remain a separate scope.

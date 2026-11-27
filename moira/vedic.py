@@ -86,6 +86,8 @@ from .kp import (
     KPChart, KPLongitude, KPProfile, KPSector, kp_chart_for_datetime, kp_longitude, kp_profiles,
     KPHouseSignificators, KPPlanetPlacement, KPSignificator, KPSignificatorChart,
     KPSignificatorEvidence, KPSignificators, kp_significators, kp_significators_for_datetime,
+    KPRulingNodeAgent, KPRulingPlanetRole, KPRulingPlanets, KPRulingPlanetsMoment,
+    kp_ruling_planets, kp_ruling_planets_for_datetime,
 )
 from .kuta import (
     KutaFactor, KutaMatch, KutaMoon, KutaProfile, kuta_match, kuta_profiles,
@@ -904,6 +906,8 @@ _VEDIC_OWN: list[str] = [
     "KPChart", "KPLongitude", "KPProfile", "KPSector", "kp_chart_for_datetime", "kp_longitude", "kp_profiles",
     "KPHouseSignificators", "KPPlanetPlacement", "KPSignificator", "KPSignificatorChart",
     "KPSignificatorEvidence", "KPSignificators", "kp_significators", "kp_significators_for_datetime",
+    "KPRulingNodeAgent", "KPRulingPlanetRole", "KPRulingPlanets", "KPRulingPlanetsMoment",
+    "kp_ruling_planets", "kp_ruling_planets_for_datetime",
     "KutaFactor", "KutaMatch", "KutaMoon", "KutaProfile", "kuta_match", "kuta_profiles",
     "NarayanaDashaResult", "NarayanaDecision", "NarayanaPeriod", "active_narayana", "narayana_dasha",
     "VedicReturnCrossing", "VedicReturnChart", "TithiPraveshaCandidate", "TithiPraveshaResult",

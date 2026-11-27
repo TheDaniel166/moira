@@ -1,20 +1,24 @@
-"""Krishnamurti longitude chains, Placidus charts and house significators."""
+"""Krishnamurti charts, house significators and ruling planets."""
 from bisect import bisect_right
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from itertools import pairwise
 from typing import Literal
 
 from ._ephemeris_time import _bind_ephemeris_time
 from .constants import HouseSystem
-from .daily_panchanga import _finite_number, _validate_solar_location
+from .daily_panchanga import (
+    PanchangaMoment, PanchangaSunriseDefinition, _finite_number, _resolve_timezone, _solar_date, _validate_solar_location,
+)
 from .dasha import VIMSHOTTARI_YEARS, _sequence_from
 from .houses import HousePolicy, houses_from_armc
 from .julian import _local_sidereal_time_at_tt, jd_from_datetime, utc_to_ut1
 from .nodes import mean_node, true_node
 from .obliquity import mean_obliquity, nutation
+from .panchanga import VARA_LORDS
 from .planets import planet_at
+from .sayanadi_dated import _UndefinedLagnaError, _lagna_at_tt
 from .sidereal import Ayanamsa, NAKSHATRA_LORDS, NAKSHATRA_NAMES, _ayanamsa_truth_at_tt
 from .spk_reader import KernelReader, get_reader, use_reader_override
 from .varga import _normalize_longitude
@@ -24,11 +28,16 @@ __all__ = [
     "KPProfile", "KPSector", "KPLongitude", "KPChart", "kp_profiles", "kp_longitude", "kp_chart_for_datetime",
     "KPPlanetPlacement", "KPSignificatorEvidence", "KPSignificator", "KPHouseSignificators",
     "KPSignificators", "KPSignificatorChart", "kp_significators", "kp_significators_for_datetime",
+    "KPRulingPlanetRole", "KPRulingNodeAgent", "KPRulingPlanets", "KPRulingPlanetsMoment",
+    "kp_ruling_planets", "kp_ruling_planets_for_datetime",
 ]
 
 KPProfileId = Literal["krishnamurti_moira_placidus"]
 KPNodeMode = Literal["mean", "true"]
 KPSignificatorRank = Literal[1, 2, 3, 4]
+KPRulingRole = Literal["day_lord", "moon_star_lord", "moon_sign_lord", "ascendant_sign_lord", "ascendant_star_lord"]
+_RULING_SOURCE = "Krishnamurti Reader III pp. 506, 511; Reader VI pp. 123, 125–127, 223–224"
+
 
 _TICKS_PER_DEGREE = 10800  # three ticks per arcsecond
 _STAR_TICKS = 144000
@@ -144,6 +153,22 @@ def kp_longitude(
     )
 
 
+def _kp_utc_datetime(dt: datetime) -> datetime:
+    if not isinstance(dt, datetime) or dt.tzinfo is None or dt.utcoffset() is None:
+        raise ValueError("dt must be a timezone-aware civil datetime")
+    utc = dt.astimezone(timezone.utc)
+    civil = utc.astimezone(dt.tzinfo)
+    if civil.replace(tzinfo=None) != dt.replace(tzinfo=None) or civil.fold != dt.fold:
+        raise ValueError("dt is a nonexistent or inconsistent local civil instant")
+    return utc
+
+
+def _kp_node_longitudes(jd_ut1: float, jd_tt: float, mode: KPNodeMode, reader: KernelReader) -> dict[str, float]:
+    node = (mean_node(jd_ut1, jd_tt=jd_tt) if mode == "mean"
+            else true_node(jd_ut1, reader=reader, jd_tt=jd_tt))
+    return {"Rahu": node.longitude, "Ketu": _normalize_longitude(node.longitude + 180.0)}
+
+
 def kp_chart_for_datetime(
     dt: datetime, latitude: float, longitude: float, *,
     node_mode: KPNodeMode, profile_id: KPProfileId = "krishnamurti_moira_placidus",
@@ -155,12 +180,7 @@ def kp_chart_for_datetime(
     _validate_solar_location(latitude, longitude)
     if node_mode not in ("mean", "true"):
         raise ValueError("node_mode must be 'mean' or 'true'")
-    if not isinstance(dt, datetime) or dt.tzinfo is None or dt.utcoffset() is None:
-        raise ValueError("dt must be a timezone-aware civil datetime")
-    utc = dt.astimezone(timezone.utc)
-    civil = utc.astimezone(dt.tzinfo)
-    if civil.replace(tzinfo=None) != dt.replace(tzinfo=None) or civil.fold != dt.fold:
-        raise ValueError("dt is a nonexistent or inconsistent local civil instant")
+    utc = _kp_utc_datetime(dt)
     jd_ut1 = utc_to_ut1(jd_from_datetime(utc))
     bound = get_reader() if reader is None else reader
     with use_reader_override(bound):
@@ -171,10 +191,7 @@ def kp_chart_for_datetime(
             body: planet_at(body, jd_ut1, reader=bound, jd_tt=jd_tt).longitude
             for body in _CLASSICAL
         }
-        node = (mean_node(jd_ut1, jd_tt=jd_tt) if node_mode == "mean"
-                else true_node(jd_ut1, reader=bound, jd_tt=jd_tt))
-    point_longitudes["Rahu"] = node.longitude
-    point_longitudes["Ketu"] = _normalize_longitude(node.longitude + 180.0)
+        point_longitudes.update(_kp_node_longitudes(jd_ut1, jd_tt, node_mode, bound))
     offset = frame.ayanamsa_deg
     planets = {body: kp_longitude(_normalize_longitude(lon - offset)) for body, lon in point_longitudes.items()}
 
@@ -336,3 +353,176 @@ def kp_significators_for_datetime(
         return KPSignificatorChart(chart, None)
     result = _rank_significators(chart.planets, chart.cusps, profile_id)
     return KPSignificatorChart(chart, result)
+
+
+@dataclass(frozen=True, slots=True)
+class KPRulingPlanetRole:
+    """One of the five direct offices occupied at the observation instant."""
+
+    role: KPRulingRole
+    planet: str
+
+
+@dataclass(frozen=True, slots=True)
+class KPRulingNodeAgent:
+    """A node placed in a sign owned by a direct weekday or sign ruler."""
+
+    node: str
+    sidereal_longitude: float
+    represented_planet: str
+    represented_roles: tuple[KPRulingRole, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class KPRulingPlanets:
+    """The direct role receipts, distinct rulers and optional sign agents."""
+
+    profile_id: KPProfileId
+    source_reference: str
+    weekday: int | None
+    moon: KPLongitude
+    ascendant: KPLongitude | None
+    roles: tuple[KPRulingPlanetRole, ...]
+    ruling_planets: tuple[str, ...]
+    node_policy: Literal["none", "reader_vi_sign_agents"]
+    node_agents: tuple[KPRulingNodeAgent, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class KPRulingPlanetsMoment:
+    """Moment, sunrise and astronomy evidence for the five ruling roles."""
+
+    moment: PanchangaMoment
+    timezone: str
+    latitude: float
+    longitude: float
+    jd_tt: float
+    ayanamsa_degrees: float
+    ayanamsa_path: str
+    sunrise_definition: PanchangaSunriseDefinition
+    governing_sunrise: PanchangaMoment | None
+    weekday_unavailable_reason: Literal["sunrise_absent", "sunrise_ambiguous"] | None
+    ascendant_unavailable_reason: Literal["geographic_pole", "ascendant_undefined"] | None
+    node_mode: KPNodeMode | None
+    reader_binding: Literal["caller_owned_reader", "active_reader"]
+    ephemeris_identity: str
+    status: Literal["available", "partial"]
+    result: KPRulingPlanets
+
+
+def _ruling_roles(
+    moon: KPLongitude, ascendant: KPLongitude | None, weekday: int | None,
+    node_longitudes: Mapping[str, float] | None,
+) -> KPRulingPlanets:
+    roles = []
+    if weekday is not None:
+        roles.append(KPRulingPlanetRole("day_lord", VARA_LORDS[(weekday + 1) % 7]))
+    roles.extend((
+        KPRulingPlanetRole("moon_star_lord", moon.star.lord),
+        KPRulingPlanetRole("moon_sign_lord", moon.sign.lord),
+    ))
+    if ascendant is not None:
+        roles.extend((
+            KPRulingPlanetRole("ascendant_sign_lord", ascendant.sign.lord),
+            KPRulingPlanetRole("ascendant_star_lord", ascendant.star.lord),
+        ))
+    agents = []
+    if node_longitudes is not None:
+        if node_longitudes.keys() != {"Rahu", "Ketu"}:
+            raise ValueError("node_longitudes must contain Rahu and Ketu")
+        for node in ("Rahu", "Ketu"):
+            chain = kp_longitude(node_longitudes[node], profile_id=moon.profile_id)
+            owner = chain.sign.lord
+            represented = tuple(
+                item.role for item in roles
+                if item.planet == owner and item.role in {"day_lord", "moon_sign_lord", "ascendant_sign_lord"}
+            )
+            if represented:
+                agents.append(KPRulingNodeAgent(node, chain.sidereal_longitude, owner, represented))
+    identities = [item.planet for item in roles] + [item.node for item in agents]
+    return KPRulingPlanets(
+        moon.profile_id, _RULING_SOURCE, weekday, moon, ascendant, tuple(roles),
+        tuple(dict.fromkeys(identities)),
+        "none" if node_longitudes is None else "reader_vi_sign_agents", tuple(agents),
+    )
+
+
+def kp_ruling_planets(
+    *, moon_sidereal_longitude: float, ascendant_sidereal_longitude: float, weekday: int,
+    node_longitudes: Mapping[str, float] | None = None,
+    profile_id: KPProfileId = "krishnamurti_moira_placidus",
+) -> KPRulingPlanets:
+    """Return the five ruling roles given the sunrise weekday (Monday=0)."""
+
+    if type(weekday) is not int or not 0 <= weekday <= 6:
+        raise ValueError("weekday must be an integer in [0, 6] (Monday=0)")
+    moon = kp_longitude(moon_sidereal_longitude, profile_id=profile_id)
+    ascendant = kp_longitude(ascendant_sidereal_longitude, profile_id=profile_id)
+    return _ruling_roles(moon, ascendant, weekday, node_longitudes)
+
+
+def kp_ruling_planets_for_datetime(
+    dt: datetime, latitude: float, longitude: float, *, timezone: str,
+    sunrise_definition: PanchangaSunriseDefinition = PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB,
+    node_mode: KPNodeMode | None = None, profile_id: KPProfileId = "krishnamurti_moira_placidus",
+    reader: KernelReader | None = None,
+) -> KPRulingPlanetsMoment:
+    """Resolve the local sunrise weekday, geocentric Moon and eastern Ascendant."""
+
+    _require_profile(profile_id)
+    _validate_solar_location(latitude, longitude)
+    if node_mode is not None and node_mode not in ("mean", "true"):
+        raise ValueError("node_mode must be 'mean' or 'true' when supplied")
+    if not isinstance(sunrise_definition, PanchangaSunriseDefinition):
+        raise ValueError("sunrise_definition must be a PanchangaSunriseDefinition")
+    zone = _resolve_timezone(timezone)
+    utc = _kp_utc_datetime(dt)
+    try:
+        local = utc.astimezone(zone)
+    except OverflowError as exc:
+        raise ValueError("dt is outside the representable local calendar") from exc
+    if not date(1, 1, 2) <= local.date() <= date(9999, 12, 27):
+        raise ValueError("the local date must allow adjacent solar dates")
+    jd_ut1 = utc_to_ut1(jd_from_datetime(utc))
+    moment = PanchangaMoment(jd_ut1, utc, local)
+    altitude = sunrise_definition.altitude_degrees
+
+    bound = get_reader() if reader is None else reader
+    with use_reader_override(bound):
+        epoch = _bind_ephemeris_time(jd_ut1, bound)
+        jd_tt = epoch.epoch_tt
+        frame = _ayanamsa_truth_at_tt(jd_tt, _PROFILE.ayanamsa_system, mode=_PROFILE.ayanamsa_mode, jd_ut=jd_ut1)
+        offset = frame.ayanamsa_deg
+        moon_longitude = planet_at("Moon", jd_ut1, reader=bound, jd_tt=jd_tt).longitude
+        moon = kp_longitude(_normalize_longitude(moon_longitude - offset), profile_id=profile_id)
+        nodes = None if node_mode is None else {
+            name: _normalize_longitude(value - offset)
+            for name, value in _kp_node_longitudes(jd_ut1, jd_tt, node_mode, bound).items()
+        }
+
+        sunrises = _solar_date(local.date(), zone, latitude, longitude, altitude).sunrises
+        if not sunrises or (len(sunrises) == 1 and utc < sunrises[0].utc):
+            sunrises = _solar_date(local.date() - timedelta(days=1), zone, latitude, longitude, altitude).sunrises
+
+    sunrise = sunrises[0] if len(sunrises) == 1 else None
+    weekday = sunrise.local.weekday() if sunrise is not None else None
+    day_reason = None if sunrise is not None else "sunrise_ambiguous" if sunrises else "sunrise_absent"
+
+    ascendant = None
+    ascendant_reason = None
+    if abs(latitude) == 90:
+        ascendant_reason = "geographic_pole"
+    else:
+        try:
+            tropical, _ = _lagna_at_tt(jd_ut1, jd_tt, offset, latitude, longitude)
+        except _UndefinedLagnaError:
+            ascendant_reason = "ascendant_undefined"
+        else:
+            ascendant = kp_longitude(_normalize_longitude(tropical - offset), profile_id=profile_id)
+
+    result = _ruling_roles(moon, ascendant, weekday, nodes)
+    return KPRulingPlanetsMoment(
+        moment, timezone, latitude, longitude, jd_tt, offset, frame.effective_path, sunrise_definition, sunrise,
+        day_reason, ascendant_reason, node_mode, "active_reader" if reader is None else "caller_owned_reader",
+        epoch.identity.summary_label, "available" if len(result.roles) == 5 else "partial", result,
+    )

@@ -84,3 +84,7 @@ across Sagittarius 25°10′–25°19′.
 Tests exercise the printed examples, duplicates and malformed cusp order,
 exact cusp ownership and neighboring floats, and direct, facade, and REST
 parity with DE441 for both node modes and an unavailable Placidus figure.
+
+The later [ruling planets checkpoint](VEDIC_KP_RULING_PLANETS_PRIMARY_SOURCE_CHECKPOINT.md)
+records the five ruling roles and supplies a separate calculation of
+the observation instant.

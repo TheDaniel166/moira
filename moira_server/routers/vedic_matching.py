@@ -2,13 +2,14 @@
 from fastapi import APIRouter, Depends
 
 from moira import Moira
-from moira.kp import kp_longitude, kp_profiles, kp_significators
+from moira.kp import kp_longitude, kp_profiles, kp_ruling_planets, kp_significators
 from moira.kuta import kuta_match, kuta_profiles
 
 from ..dependencies import get_engine
 from ..models.vedic_matching import (
     KPChartRequest, KPChartResponse, KPLongitudeRequest, KPLongitudeResponse, KPProfileResponse,
     KPSignificatorChartResponse, KPSignificatorsRequest, KPSignificatorsResponse,
+    KPRulingPlanetsMomentRequest, KPRulingPlanetsMomentResponse, KPRulingPlanetsRequest, KPRulingPlanetsResponse,
     KutaProfileResponse, KutaRequest, KutaResponse,
 )
 
@@ -63,3 +64,21 @@ def kp_chart_significators_route(
 
     result = engine.kp_significators_for_datetime(**request.model_dump())
     return KPSignificatorChartResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/ruling-planets", response_model=KPRulingPlanetsResponse)
+def kp_ruling_planets_route(request: KPRulingPlanetsRequest) -> KPRulingPlanetsResponse:
+    """Resolve the five ruling roles from supplied sidereal angles and weekday."""
+
+    result = kp_ruling_planets(**request.model_dump())
+    return KPRulingPlanetsResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/chart/ruling-planets", response_model=KPRulingPlanetsMomentResponse)
+def kp_chart_ruling_planets_route(
+    request: KPRulingPlanetsMomentRequest, engine: Moira = Depends(get_engine),
+) -> KPRulingPlanetsMomentResponse:
+    """Compute the local sunrise weekday and the ruling planets at an instant."""
+
+    result = engine.kp_ruling_planets_for_datetime(**request.model_dump())
+    return KPRulingPlanetsMomentResponse.model_validate(result, from_attributes=True)
