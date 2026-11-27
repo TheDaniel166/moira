@@ -14,6 +14,8 @@ from ..models.relationship import (
     AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
     AspectsFromLongitudesResponse,
+    AspectsFromLongitudesWithGraphResponse,
+    AspectsFromLongitudesWithStrengthResponse,
     DeclinationAspectsFromDeclinationsRequest,
     DeclinationAspectsFromDeclinationsResponse,
     DeclinationAspectMotionAnalysisResponse,
@@ -58,6 +60,8 @@ from ..serializers.relationship import (
     serialize_aspect,
     serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
+    serialize_aspects_from_longitudes_with_graph_profile,
+    serialize_aspects_from_longitudes_with_strength,
     serialize_declination_aspects_from_declinations,
     serialize_declination_aspect_motion_witness,
     serialize_aspect_pattern,
@@ -82,6 +86,8 @@ from ..serializers.relationship import (
 from ..services.relationship import (
     compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
+    compute_longitude_aspect_graph_profile,
+    compute_longitude_aspect_strengths,
     compute_declination_aspects_from_declinations,
     compute_declination_aspect_motion_witness,
     compute_chart_shape,
@@ -148,17 +154,28 @@ def aspect_motion_witness_route(
 
 @router.post(
     "/aspects/from-longitudes",
-    response_model=AspectsFromLongitudesResponse,
+    response_model=(
+        AspectsFromLongitudesResponse | AspectsFromLongitudesWithStrengthResponse
+        | AspectsFromLongitudesWithGraphResponse
+    ),
 )
 def aspects_from_longitudes_route(
     request: AspectsFromLongitudesRequest,
     engine: Moira = Depends(get_engine),
-) -> AspectsFromLongitudesResponse:
+) -> AspectsFromLongitudesResponse | AspectsFromLongitudesWithStrengthResponse | AspectsFromLongitudesWithGraphResponse:
     """Analyze caller-supplied derived-chart longitudes under engine doctrine."""
 
-    return serialize_aspects_from_longitudes(
-        compute_aspects_from_longitudes(engine, request)
-    )
+    analysis = compute_aspects_from_longitudes(engine, request)
+    if request.include_strength:
+        base = serialize_aspects_from_longitudes_with_strength(
+            analysis, compute_longitude_aspect_strengths(analysis),
+        )
+    else:
+        base = serialize_aspects_from_longitudes(analysis)
+    if request.include_graph_profile:
+        graph, profile = compute_longitude_aspect_graph_profile(analysis)
+        return serialize_aspects_from_longitudes_with_graph_profile(base, analysis, graph, profile)
+    return base
 
 
 @router.post(

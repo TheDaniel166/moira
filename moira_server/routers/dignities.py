@@ -15,6 +15,11 @@ from ..models.dignities import (
     DignitiesConditionsResponse,
     DignitiesReceptionsResponse,
     DignitiesResultResponse,
+    DispositorshipComparisonRequest,
+    DispositorshipComparisonResponse,
+    DispositorshipNetworkResponse,
+    DispositorshipProfileRequest,
+    DispositorshipSubsystemResponse,
     PlanetaryConditionProfileResponse,
 )
 from ..serializers.dignities import (
@@ -23,6 +28,9 @@ from ..serializers.dignities import (
     serialize_dignities_conditions,
     serialize_dignities_receptions,
     serialize_dignities_result,
+    serialize_dispositorship_comparison,
+    serialize_dispositorship_network,
+    serialize_dispositorship_subsystem,
     serialize_planetary_condition_profile,
 )
 from ..services.dignities import (
@@ -32,6 +40,9 @@ from ..services.dignities import (
     compute_dignities_chart_network,
     compute_dignities_chart_profile,
     compute_dignities_chart_receptions,
+    compute_dispositorship_comparison,
+    compute_dispositorship_network,
+    compute_dispositorship_subsystem,
 )
 
 
@@ -94,3 +105,22 @@ def dignities_chart_network_route(
     return serialize_condition_network_profile(
         compute_dignities_chart_network(engine, request)
     )
+
+
+@router.post("/dispositorship/compare", response_model=DispositorshipComparisonResponse)
+def dispositorship_compare_route(request: DispositorshipComparisonRequest) -> DispositorshipComparisonResponse:
+    """Compare named dispositorship policies on the same supplied positions."""
+    return serialize_dispositorship_comparison(compute_dispositorship_comparison(request), request.positions)
+
+
+@router.post("/dispositorship/subsystem", response_model=DispositorshipSubsystemResponse)
+def dispositorship_subsystem_route(request: DispositorshipProfileRequest) -> DispositorshipSubsystemResponse:
+    """Return dispositorship chains, condition profiles, and their directed network."""
+    return serialize_dispositorship_subsystem(compute_dispositorship_subsystem(request), request.positions)
+
+
+@router.post("/dispositorship/network", response_model=DispositorshipNetworkResponse)
+def dispositorship_network_route(request: DispositorshipProfileRequest) -> DispositorshipNetworkResponse:
+    """Return the directed dispositor graph and the condition of each node."""
+    policy, profile = compute_dispositorship_network(request)
+    return serialize_dispositorship_network(policy, profile, request.positions)

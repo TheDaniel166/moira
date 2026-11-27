@@ -12,6 +12,11 @@ from moira.dignities_types import (
     ConditionNetworkEdge,
     ConditionNetworkNode,
     ConditionNetworkProfile,
+    DispositorshipComparisonBundle,
+    DispositorshipComputationPolicy,
+    DispositorshipNetworkProfile,
+    DispositorshipProfile,
+    DispositorshipSubsystemProfile,
     EssentialDignityComponentTruth,
     PlanetarySolarPhaseTruth,
     PlanetaryConditionProfile,
@@ -31,6 +36,17 @@ from ..models.dignities import (
     DignitiesConditionsResponse,
     DignitiesReceptionsResponse,
     DignitiesResultResponse,
+    DispositorshipChainResponse,
+    DispositorshipChartConditionProfileResponse,
+    DispositorshipComparisonItemResponse,
+    DispositorshipComparisonResponse,
+    DispositorshipConditionProfileResponse,
+    DispositorshipNetworkProfileResponse,
+    DispositorshipNetworkResponse,
+    DispositorshipPolicyResponse,
+    DispositorshipPosition,
+    DispositorshipProfileResponse,
+    DispositorshipSubsystemResponse,
     EssentialDignityComponentTruthResponse,
     EssentialDignityTruthResponse,
     PlanetaryConditionProfileResponse,
@@ -318,6 +334,69 @@ def serialize_condition_network_profile(
     )
 
 
+def _serialize_dispositorship_policy(policy: DispositorshipComputationPolicy) -> DispositorshipPolicyResponse:
+    return DispositorshipPolicyResponse(
+        subject_set=policy.subject.subject_set,
+        rulership=policy.rulership.doctrine,
+        unsupported_subjects=policy.unsupported_subjects.handling,
+        use_dignity_order=policy.ordering.use_dignity_order,
+        final_requires_self_domicile=policy.termination.final_requires_self_domicile,
+        cycles_are_terminal=policy.termination.cycles_are_terminal,
+    )
+
+
+def _serialize_dispositorship_profile(profile: DispositorshipProfile) -> DispositorshipProfileResponse:
+    return DispositorshipProfileResponse(
+        policy=_serialize_dispositorship_policy(profile.policy),
+        chains=[_typed_truth(chain, DispositorshipChainResponse) for chain in profile.chains],
+        final_dispositors=list(profile.final_dispositors),
+        terminal_cycles=[list(cycle) for cycle in profile.terminal_cycles],
+        unsupported_subjects=list(profile.unsupported_subjects),
+    )
+
+
+def serialize_dispositorship_comparison(
+    bundle: DispositorshipComparisonBundle, positions: list[DispositorshipPosition],
+) -> DispositorshipComparisonResponse:
+    return DispositorshipComparisonResponse(
+        positions=positions,
+        items=[
+            DispositorshipComparisonItemResponse(name=item.name, profile=_serialize_dispositorship_profile(item.profile))
+            for item in bundle.items
+        ],
+        doctrine_names=list(bundle.doctrine_names),
+        shared_final_dispositors=list(bundle.shared_final_dispositors),
+        all_final_dispositors=list(bundle.all_final_dispositors),
+    )
+
+
+def serialize_dispositorship_subsystem(
+    subsystem: DispositorshipSubsystemProfile, positions: list[DispositorshipPosition],
+) -> DispositorshipSubsystemResponse:
+    return DispositorshipSubsystemResponse(
+        positions=positions,
+        profile=_serialize_dispositorship_profile(subsystem.profile),
+        condition_profiles=[
+            _typed_truth(profile, DispositorshipConditionProfileResponse) for profile in subsystem.condition_profiles
+        ],
+        chart_condition_profile=_typed_truth(
+            subsystem.chart_condition_profile, DispositorshipChartConditionProfileResponse,
+        ),
+        network_profile=_typed_truth(subsystem.network_profile, DispositorshipNetworkProfileResponse),
+    )
+
+
+def serialize_dispositorship_network(
+    policy: DispositorshipComputationPolicy, profile: DispositorshipNetworkProfile,
+    positions: list[DispositorshipPosition],
+) -> DispositorshipNetworkResponse:
+    return DispositorshipNetworkResponse(
+        positions=positions,
+        policy=_serialize_dispositorship_policy(policy),
+        network_profile=_typed_truth(profile, DispositorshipNetworkProfileResponse),
+    )
+
+
 __all__ = [
     "serialize_besieging_truth",
     "serialize_chart_condition_profile",
@@ -327,6 +406,9 @@ __all__ = [
     "serialize_dignities_conditions",
     "serialize_dignities_receptions",
     "serialize_dignities_result",
+    "serialize_dispositorship_comparison",
+    "serialize_dispositorship_network",
+    "serialize_dispositorship_subsystem",
     "serialize_essential_dignity_component_truth",
     "serialize_planetary_condition_profile",
     "serialize_planetary_dignity",

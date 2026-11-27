@@ -279,14 +279,15 @@ The default handling is:
 The dispositorship backend currently has two ordering truths:
 
 - `DispositorshipProfile` respects `DispositorshipOrderingPolicy`, including
-  `use_dignity_order=False` for profile-level in-scope chain order and
-  `final_dispositors` order
+  `use_dignity_order=False` for in-scope chain and `final_dispositors` order.
+  The subsystem's per-subject condition profiles follow the chain order.
 - `DispositorshipChartConditionProfile` and `DispositorshipNetworkProfile`
-  currently freeze to deterministic dignity ordering over in-scope Classic 7
-  subjects
+  use deterministic dignity ordering over in-scope Classic 7 subjects.
 
-This asymmetry is part of current implementation truth and is therefore frozen
-here until explicitly revised.
+Subsystem validation matches the same subject evidence across the two
+orders. An out-of-scope subject contributes to `out_of_scope_count`.
+Only unresolved in-scope conditions can contribute to mixed terminals
+alongside a final or a terminal cycle.
 
 ---
 

@@ -1,4 +1,5 @@
 """Strict transport for the engine's bounded sampled Muhurta product."""
+from math import isclose, ulp
 from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
@@ -36,6 +37,7 @@ class MuhurtaSearchRequest(_StrictModel):
     end_jd_ut1: Annotated[FiniteNumber, Field(ge=-10_000_000, le=10_000_000)]
     janma_moon_sidereal_lon: FiniteNumber | None = None
     policy: MuhurtaSearchPolicyRequest = Field(default_factory=MuhurtaSearchPolicyRequest)
+    include_samples: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def _bounded_grid(self):
@@ -44,10 +46,32 @@ class MuhurtaSearchRequest(_StrictModel):
         return self
 
 
-class MuhurtaSearchMomentResponse(_StrictModel):
+class MuhurtaPrecomputedScoreRequest(_StrictModel):
+    """Supply tropical chart geometry and explicitly separated UT1 and TT clocks."""
+
+    jd_ut1: Annotated[FiniteNumber, Field(ge=-10_000_000, le=10_000_000)]
+    jd_tt: Annotated[FiniteNumber, Field(ge=-10_000_000, le=10_000_000)]
+    delta_t_seconds: FiniteNumber | None = None
+    sun_tropical_longitude: FiniteNumber
+    moon_tropical_longitude: FiniteNumber
+    janma_moon_sidereal_lon: FiniteNumber | None = None
+    ayanamsa_system: Literal[tuple(Ayanamsa.ALL)] = "Lahiri"
+    muhurta_policy: MuhurtaPolicyRequest = Field(default_factory=MuhurtaPolicyRequest)
+
+    @model_validator(mode="after")
+    def _consistent_clock(self):
+        if self.delta_t_seconds is not None:
+            observed = (self.jd_tt - self.jd_ut1) * 86400
+            precision = (ulp(self.jd_tt) + ulp(self.jd_ut1)) * 86400
+            if not isclose(observed, self.delta_t_seconds, rel_tol=0.0, abs_tol=precision):
+                raise ValueError("delta_t_seconds disagrees with the supplied UT1 and TT.")
+        return self
+
+
+class MuhurtaMomentResponse(_StrictModel):
     jd_ut1: float
     jd_tt: float
-    jd_tdb: float
+    jd_tdb: float | None
     delta_t_source: str
     clock_identity: str
     sun_tropical_longitude: float
@@ -57,6 +81,18 @@ class MuhurtaSearchMomentResponse(_StrictModel):
     score: MuhurtaScoreResponse
     tara: TaraBalaResponse | None
     chandra: ChandraBalaResponse | None
+
+
+class MuhurtaSearchMomentResponse(MuhurtaMomentResponse):
+    jd_tdb: float
+
+
+class MuhurtaPrecomputedScoreResponse(MuhurtaMomentResponse):
+    input_time_basis: Literal["supplied_ut1_tt"]
+    delta_t_seconds: float
+    janma_moon_sidereal_lon: float | None
+    natal_mode: Literal["omitted", "tara_chandra"]
+    policy: MuhurtaPolicyResponse
 
 
 class MuhurtaSearchWindowResponse(_StrictModel):
@@ -111,6 +147,22 @@ class MuhurtaSearchResponse(_StrictModel):
     truncated: bool
     windows: list[MuhurtaSearchWindowResponse]
     provenance: MuhurtaSearchProvenanceResponse
+
+
+class MuhurtaSearchSampleResponse(_StrictModel):
+    jd_ut1: float
+    jd_tt: float
+    jd_tdb: float
+    clock_identity: str
+    delta_t_source: str
+    sun_tropical_longitude: float
+    moon_tropical_longitude: float
+    ayanamsa_degrees: float
+    score_total: float
+
+
+class MuhurtaSearchWithSamplesResponse(MuhurtaSearchResponse):
+    samples: list[MuhurtaSearchSampleResponse]
 
 
 __all__ = [

@@ -3,6 +3,15 @@
 from __future__ import annotations
 
 from moira import Moira
+from moira.aspects import (
+    AspectGraph,
+    AspectHarmonicProfile,
+    AspectStrength,
+    LongitudeAspectAnalysis,
+    aspect_harmonic_profile,
+    aspect_strength,
+    build_aspect_graph,
+)
 from moira.chart_shape import classify_chart_shape_with_truth
 from moira.midpoints import (
     activated_midpoints,
@@ -130,7 +139,7 @@ def compute_synastry_aspects(engine: Moira, request: SynastryPairRequest):
 def compute_aspects_from_longitudes(
     engine: Moira,
     request: AspectsFromLongitudesRequest,
-):
+) -> LongitudeAspectAnalysis:
     return engine.aspects_from_longitudes(
         request.longitudes,
         tier=request.tier,
@@ -138,6 +147,23 @@ def compute_aspects_from_longitudes(
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
     )
+
+
+def compute_longitude_aspect_strengths(
+    analysis: LongitudeAspectAnalysis,
+) -> tuple[AspectStrength | None, ...]:
+    """Evaluate the admitted events in order, allowing undefined normalization at zero width."""
+    return tuple(
+        None if aspect.allowed_orb == 0.0 else aspect_strength(aspect) for aspect in analysis.aspects
+    )
+
+
+def compute_longitude_aspect_graph_profile(
+    analysis: LongitudeAspectAnalysis,
+) -> tuple[AspectGraph, AspectHarmonicProfile]:
+    """Project both engine views from the same admitted contacts and included points."""
+    aspects = list(analysis.aspects)
+    return build_aspect_graph(aspects, bodies=analysis.longitudes), aspect_harmonic_profile(aspects)
 
 
 def compute_declination_aspects_from_declinations(

@@ -95,35 +95,25 @@ class HouseFrameArcRequest(_StrictModel):
 # ---------------------------------------------------------------------------
 
 class ProgressionProfileRequest(_StrictModel):
-    """Aggregate chart condition profile over progression charts and/or house frames.
-
-    At least one of items or house_frame_items must be non-empty.
-    """
+    """Aggregate at least one selected chart or house-frame progression."""
 
     items: list[SecondaryProgressionRequest] = Field(default_factory=list)
     house_frame_items: list[HouseFrameProgressionRequest] = Field(default_factory=list)
+    arc_items: list[ArcProgressionRequest] = Field(default_factory=list, max_length=16)
+    time_key_items: list[TimeKeyProgressionRequest] = Field(default_factory=list, max_length=16)
 
     @model_validator(mode="after")
     def at_least_one_item(self) -> "ProgressionProfileRequest":
-        if not self.items and not self.house_frame_items:
-            raise ValueError("at least one of items or house_frame_items must be provided")
+        if not (self.items or self.house_frame_items or self.arc_items or self.time_key_items):
+            raise ValueError("at least one progression item must be provided")
         return self
 
 
-class ProgressionNetworkRequest(_StrictModel):
+class ProgressionNetworkRequest(ProgressionProfileRequest):
     """Network condition profile over progression charts and/or house frames.
 
-    All technique names across items and house_frame_items must be distinct.
+    All engine technique names across the submitted items must be distinct.
     """
-
-    items: list[SecondaryProgressionRequest] = Field(default_factory=list)
-    house_frame_items: list[HouseFrameProgressionRequest] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def at_least_one_item(self) -> "ProgressionNetworkRequest":
-        if not self.items and not self.house_frame_items:
-            raise ValueError("at least one of items or house_frame_items must be provided")
-        return self
 
 
 # ---------------------------------------------------------------------------

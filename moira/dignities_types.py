@@ -1225,7 +1225,9 @@ class DispositorshipSubsystemProfile:
             raise ValueError("DispositorshipSubsystemProfile invariant failed: chart_condition_profile must be present")
         if self.network_profile is None:
             raise ValueError("DispositorshipSubsystemProfile invariant failed: network_profile must be present")
-        if self.chart_condition_profile.profiles != self.condition_profiles:
+        if sorted(self.chart_condition_profile.profiles, key=lambda profile: profile.initial_subject) != sorted(
+            self.condition_profiles, key=lambda profile: profile.initial_subject,
+        ):
             raise ValueError("DispositorshipSubsystemProfile invariant failed: chart_condition_profile.profiles must match condition_profiles")
 
         in_scope_condition_names = [
@@ -1233,7 +1235,7 @@ class DispositorshipSubsystemProfile:
             if profile.subject_in_scope and profile.initial_subject in _PLANET_ORDER
         ]
         network_node_names = [node.subject for node in self.network_profile.nodes]
-        if network_node_names != in_scope_condition_names:
+        if network_node_names != sorted(in_scope_condition_names, key=_PLANET_ORDER.index):
             raise ValueError("DispositorshipSubsystemProfile invariant failed: network nodes must align with in-scope condition profiles")
 
         expected_final_count = len(self.profile.final_dispositors)

@@ -6,7 +6,7 @@ from moira import Moira
 from moira._eclipse_phase_window import PhaseWindowUnresolved
 from moira._event_search.intervals import EnclosureUnavailable
 from moira.batch import void_periods_all_planets
-from moira.cycles import great_conjunctions
+from moira.cycles import PlanetaryAgePeriod, great_conjunctions, planetary_age_profile
 from moira.eclipse import EclipseCalculator
 from moira.heliacal import HeliacalEventKind, lunar_visibility_event_with_observation_truth
 from moira.phenomena import conjunctions_in_range_with_truth
@@ -33,6 +33,8 @@ from ..models.bounded_searches import (
     NatalEclipseContactResponse,
     NatalEclipseContactsRequest,
     NatalEclipseContactsResponse,
+    PlanetaryAgePeriodResponse,
+    PlanetaryAgeProfileResponse,
     SearchWindow,
     StellarCriterion,
     StellarVisibilityCatalogueRequest,
@@ -51,6 +53,23 @@ def validate_search_span(request: SearchWindow, max_days: float) -> None:
     """Bound work before accessing the request's ephemeris."""
     if not 0.0 < request.jd_end_ut1 - request.jd_start_ut1 <= max_days:
         raise ValueError(f"The UT1 interval must be positive and at most {max_days:g} days.")
+
+
+def _planetary_age_period(period: PlanetaryAgePeriod) -> PlanetaryAgePeriodResponse:
+    return PlanetaryAgePeriodResponse(
+        ruler=period.ruler, start_age_years=period.start_age,
+        end_age_years=period.end_age, editorial_label=period.label,
+    )
+
+
+def compute_planetary_age_profile(age_years: float | None) -> PlanetaryAgeProfileResponse:
+    """Project the historical catalogue and the engine's optional age selection."""
+    result = planetary_age_profile(age_years)
+    return PlanetaryAgeProfileResponse(
+        queried_age_years=result.queried_age,
+        periods=[_planetary_age_period(period) for period in result.periods],
+        current=_planetary_age_period(result.current) if result.current is not None else None,
+    )
 
 
 def compute_eclipse_snapshot(engine: Moira, request: EclipseSnapshotRequest) -> EclipseSnapshotResponse:

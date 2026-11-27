@@ -24,8 +24,11 @@ from ..services.muhurta import (
 )
 
 
-from ..models.muhurta_search import MuhurtaSearchRequest, MuhurtaSearchResponse
-from ..services.muhurta_search import compute_muhurta_search
+from ..models.muhurta_search import (
+    MuhurtaPrecomputedScoreRequest, MuhurtaPrecomputedScoreResponse,
+    MuhurtaSearchRequest, MuhurtaSearchResponse, MuhurtaSearchWithSamplesResponse,
+)
+from ..services.muhurta_search import compute_muhurta_precomputed_score, compute_muhurta_search
 from ..models.named_muhurta import (
     NamedMuhurtaDirectRequest, NamedMuhurtaDayRequest, NamedMuhurtaResponse, NamedMuhurtaDayResponse,
 )
@@ -271,8 +274,18 @@ def named_muhurta_day_route(request: NamedMuhurtaDayRequest, engine: Moira = Dep
     return compute_named_muhurta_day(engine, request)
 
 
-@router.post("/search", response_model=MuhurtaSearchResponse)
-def muhurta_search_route(request: MuhurtaSearchRequest, engine: Moira = Depends(get_engine)) -> MuhurtaSearchResponse:
+@router.post("/precomputed/score", response_model=MuhurtaPrecomputedScoreResponse)
+def muhurta_precomputed_score_route(
+    request: MuhurtaPrecomputedScoreRequest, engine: Moira = Depends(get_engine),
+) -> MuhurtaPrecomputedScoreResponse:
+    """Score supplied tropical Sun and Moon with explicit UT1 and TT."""
+    return compute_muhurta_precomputed_score(engine, request)
+
+
+@router.post("/search", response_model=MuhurtaSearchWithSamplesResponse | MuhurtaSearchResponse)
+def muhurta_search_route(
+    request: MuhurtaSearchRequest, engine: Moira = Depends(get_engine),
+) -> MuhurtaSearchWithSamplesResponse | MuhurtaSearchResponse:
     """Search and rank bounded sampled Muhurta scores, optionally using natal Moon.
 
     JD-weekday Vara and consecutive qualifying samples are explicit. No

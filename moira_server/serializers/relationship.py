@@ -12,7 +12,11 @@ from ..models.relationship import (
 from moira.aspects import (
     AspectClassification,
     AspectData,
+    AspectFamilyProfile,
+    AspectGraph,
+    AspectHarmonicProfile,
     AspectMotionWitness,
+    AspectStrength,
     LongitudeAspectAnalysis,
 )
 from moira.declination_aspects import (
@@ -66,10 +70,17 @@ from moira.synastry import (
 from ..models.relationship import (
     AspectClassificationResponse,
     AspectDataResponse,
+    AspectDataWithStrengthResponse,
+    AspectFamilyProfileResponse,
+    AspectGraphNodeResponse,
+    AspectGraphResponse,
+    AspectHarmonicProfileResponse,
     AspectMotionAnalysisResponse,
     AspectMotionComputationTruthResponse,
     AspectMotionWitnessResponse,
     AspectsFromLongitudesResponse,
+    AspectsFromLongitudesWithGraphResponse,
+    AspectsFromLongitudesWithStrengthResponse,
     DeclinationAspectComputationTruthResponse,
     DeclinationAspectMotionAnalysisResponse,
     DeclinationAspectMotionComputationTruthResponse,
@@ -102,6 +113,7 @@ from ..models.relationship import (
     MoonConnectionFlowResponse,
     MutualHouseOverlayResponse,
     LongitudeAspectComputationTruthResponse,
+    LongitudeAspectStrengthResponse,
     PatternAspectContributionResponse,
     PatternBodyRoleClassificationResponse,
     PatternBodyRoleTruthResponse,
@@ -209,6 +221,70 @@ def serialize_aspects_from_longitudes(
             excluded_node_names=list(analysis.excluded_node_names),
             point_count=analysis.point_count,
             aspect_count=analysis.aspect_count,
+        ),
+    )
+
+
+def serialize_aspects_from_longitudes_with_strength(
+    analysis: LongitudeAspectAnalysis,
+    strengths: tuple[AspectStrength | None, ...],
+) -> AspectsFromLongitudesWithStrengthResponse:
+    """Attach strength to the same ordered aspect results and computation truth."""
+    base = serialize_aspects_from_longitudes(analysis)
+    return AspectsFromLongitudesWithStrengthResponse(
+        events=[
+            AspectDataWithStrengthResponse(
+                **event.model_dump(),
+                strength=LongitudeAspectStrengthResponse(
+                    exactness=strength.exactness if strength is not None else None,
+                    remaining_orb_margin_deg=strength.surplus if strength is not None else aspect.orb_surplus,
+                ),
+            )
+            for event, aspect, strength in zip(base.events, analysis.aspects, strengths, strict=True)
+        ],
+        computation_truth=base.computation_truth,
+    )
+
+
+def _serialize_aspect_family_profile(profile: AspectFamilyProfile) -> AspectFamilyProfileResponse:
+    return AspectFamilyProfileResponse(
+        counts={family.value: count for family, count in profile.counts.items()},
+        total=profile.total,
+        proportions={family.value: fraction for family, fraction in profile.proportions.items()},
+        dominant=[family.value for family in profile.dominant],
+    )
+
+
+def serialize_aspects_from_longitudes_with_graph_profile(
+    base: AspectsFromLongitudesResponse | AspectsFromLongitudesWithStrengthResponse,
+    analysis: LongitudeAspectAnalysis,
+    graph: AspectGraph,
+    profile: AspectHarmonicProfile,
+) -> AspectsFromLongitudesWithGraphResponse:
+    """Reference admitted events from the graph and project their family counts."""
+    # The graph retains the admitted AspectData instances, including parallel edges.
+    index_by_aspect = {id(aspect): index for index, aspect in enumerate(analysis.aspects)}
+    return AspectsFromLongitudesWithGraphResponse(
+        events=base.events,
+        computation_truth=base.computation_truth,
+        aspect_graph=AspectGraphResponse(
+            nodes=[
+                AspectGraphNodeResponse(
+                    name=node.name,
+                    degree=node.degree,
+                    incident_event_indices=[index_by_aspect[id(edge)] for edge in node.edges],
+                    aspect_counts=dict(node.aspect_counts),
+                )
+                for node in graph.nodes
+            ],
+            edge_event_indices=[index_by_aspect[id(edge)] for edge in graph.edges],
+            components=[sorted(component) for component in graph.components],
+            hubs=[node.name for node in graph.hubs],
+            isolated=[node.name for node in graph.isolated],
+        ),
+        harmonic_profile=AspectHarmonicProfileResponse(
+            chart=_serialize_aspect_family_profile(profile.chart),
+            by_body={name: _serialize_aspect_family_profile(body) for name, body in profile.by_body.items()},
         ),
     )
 

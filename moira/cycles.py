@@ -332,7 +332,7 @@ LAW OF OPERATION:
     Structural invariants:
         - Exactly seven members, one per classical planet.
 
-Canon: Ptolemy, Tetrabiblos I.10; Vettius Valens, Anthology I.
+Canon: Ptolemy, Tetrabiblos IV.10.
 
 [MACHINE_CONTRACT v1]
 {
@@ -711,7 +711,7 @@ class PlanetaryAgePeriod:
         Dependencies:
             - Used by `planetary_age_profile()` and `planetary_age_at()`.
 
-    Canon: Ptolemy, *Tetrabiblos* I.10
+    Canon: Ptolemy, *Tetrabiblos* IV.10.
 
     [MACHINE_CONTRACT v1]
     {
@@ -761,7 +761,7 @@ class PlanetaryAgeProfile:
         Dependencies:
             - Built from `PlanetaryAgePeriod` vessels in this Pillar.
 
-    Canon: Ptolemy, *Tetrabiblos* I.10
+    Canon: Ptolemy, *Tetrabiblos* IV.10.
 
     [MACHINE_CONTRACT v1]
     {
@@ -1531,7 +1531,7 @@ def great_conjunctions(
 
 
 # ===========================================================================
-# SECTION 6 — PLANETARY AGES (Ptolemy, Tetrabiblos I.10)
+# SECTION 6 — PLANETARY AGES (Ptolemy, Tetrabiblos IV.10)
 # ===========================================================================
 #
 # Ptolemy assigns each planet governance over an age of life, following
@@ -1545,7 +1545,8 @@ def great_conjunctions(
 #   Jupiter 56–68    elder years, withdrawal, dignity, philosophy
 #   Saturn  68+      old age, cooling, lessening, contraction
 #
-# The boundaries are Ptolemy's; the interpretive tone is his.
+# Moira accumulates the source durations from age zero and uses half-open
+# intervals. The labels are editorial summaries.
 # ===========================================================================
 
 _PTOLEMAIC_AGES: tuple[tuple[PlanetaryAgeName, float, float | None, str], ...] = (

@@ -484,7 +484,7 @@ def compute_progression_chart_condition_profile_service(
     engine: Moira,
     request: ProgressionProfileRequest,
 ) -> ProgressionChartConditionProfile:
-    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    charts, frames = _compute_progression_aggregate_inputs(engine, request)
     return progression_chart_condition_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,
@@ -495,7 +495,7 @@ def compute_progression_condition_network_profile_service(
     engine: Moira,
     request: ProgressionNetworkRequest,
 ) -> ProgressionConditionNetworkProfile:
-    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    charts, frames = _compute_progression_aggregate_inputs(engine, request)
     return progression_condition_network_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,
@@ -504,11 +504,12 @@ def compute_progression_condition_network_profile_service(
 
 def _compute_progression_aggregate_inputs(
     engine: Moira,
-    chart_items: list[SecondaryProgressionRequest],
-    house_frame_items: list[HouseFrameProgressionRequest],
+    request: ProgressionProfileRequest,
 ) -> tuple[list[ProgressedChart], list[ProgressedHouseFrame]]:
-    charts = [compute_secondary_progression_chart(engine, item) for item in chart_items]
-    frames = [compute_daily_house_frame(engine, item) for item in house_frame_items]
+    charts = [compute_secondary_progression_chart(engine, item) for item in request.items]
+    charts.extend(compute_arc_progression_chart(engine, item) for item in request.arc_items)
+    charts.extend(compute_time_key_progression_chart(engine, item) for item in request.time_key_items)
+    frames = [compute_daily_house_frame(engine, item) for item in request.house_frame_items]
     return charts, frames
 
 
@@ -537,7 +538,7 @@ def compute_progression_chart_condition_profile_with_reduction_service(
     engine: Moira,
     request: ProgressionProfileRequest,
 ) -> tuple[ProgressionChartConditionProfile, ProgressionAggregateReductionContext]:
-    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    charts, frames = _compute_progression_aggregate_inputs(engine, request)
     profile = progression_chart_condition_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,
@@ -554,7 +555,7 @@ def compute_progression_condition_network_profile_with_reduction_service(
     engine: Moira,
     request: ProgressionNetworkRequest,
 ) -> tuple[ProgressionConditionNetworkProfile, ProgressionAggregateReductionContext]:
-    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    charts, frames = _compute_progression_aggregate_inputs(engine, request)
     network = progression_condition_network_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,

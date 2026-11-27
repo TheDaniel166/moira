@@ -3175,6 +3175,13 @@ class DignitiesService:
     def _build_dispositorship_chart_condition_profile(
         profiles: list[DispositorshipConditionProfile],
     ) -> DispositorshipChartConditionProfile:
+        profiles = sorted(
+            profiles,
+            key=lambda profile: (
+                _PLANET_ORDER.index(profile.initial_subject)
+                if profile.subject_in_scope else len(_PLANET_ORDER)
+            ),
+        )
         final_dispositors = {
             terminal
             for profile in profiles
@@ -3189,8 +3196,7 @@ class DignitiesService:
         has_mixed_terminals = (
             bool(final_dispositors) and bool(cycles)
         ) or (bool(final_dispositors or cycles) and any(
-            profile.termination_kind is DispositorshipTerminationKind.UNRESOLVED
-            for profile in profiles
+            profile.is_unresolved for profile in profiles
         ))
         return DispositorshipChartConditionProfile(
             profiles=profiles,

@@ -1853,6 +1853,30 @@ def test_dispositorship_subsystem_profile_hardens_cross_layer_alignment() -> Non
     assert subsystem.network_profile.edge_count == 4
 
 
+def test_dispositorship_subsystem_preserves_chain_order_and_aggregate_dignity_order() -> None:
+    positions = [{"name": "Saturn", "degree": 280.0}, {"name": "Sun", "degree": 140.0}]
+    policy = DispositorshipComputationPolicy(ordering=DispositorshipOrderingPolicy(use_dignity_order=False))
+
+    result = calculate_dispositorship_subsystem_profile(positions, policy)
+
+    assert result.profile.final_dispositors == ("Saturn", "Sun")
+    assert [item.initial_subject for item in result.condition_profiles] == ["Saturn", "Sun"]
+    assert [item.initial_subject for item in result.chart_condition_profile.profiles] == ["Sun", "Saturn"]
+    assert [item.subject for item in result.network_profile.nodes] == ["Sun", "Saturn"]
+    assert result.chart_condition_profile == calculate_dispositorship_chart_condition_profile(positions, policy)
+
+
+def test_dispositorship_excluded_subject_does_not_make_terminals_mixed() -> None:
+    positions = [{"name": "Sun", "degree": 140.0}, {"name": "Pluto", "degree": 221.0}]
+    result = calculate_dispositorship_subsystem_profile(positions)
+
+    assert result.profile.final_dispositors == ("Sun",)
+    assert result.profile.unsupported_subjects == ("Pluto",)
+    assert result.chart_condition_profile.out_of_scope_count == 1
+    assert result.chart_condition_profile.unresolved_count == 0
+    assert result.chart_condition_profile.has_mixed_terminals is False
+
+
 def test_dispositorship_subsystem_profile_preserves_segregated_scope_cross_layer() -> None:
     planet_positions = [
         {"name": "Sun", "degree": 130.0, "is_retrograde": False},

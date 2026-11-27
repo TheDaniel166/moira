@@ -10,6 +10,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from moira.star_types import StarChartConditionProfile, StarConditionNetworkProfile
+
 
 STARS_BULK_MAX_ITEMS = 500
 VARIABLE_STAR_RANGE_MAX_DAYS = 366.0
@@ -124,6 +126,25 @@ class StarsBulkResponse(_StrictModel):
     product: StarPositionProduct | None = None
     results: dict[str, StarPositionResponse]
     missing: list[str] = []
+
+
+class StarConditionsRequest(StarsBulkRequest):
+    stars: list[Annotated[str, Field(min_length=1, max_length=128)]] = Field(min_length=1, max_length=32)
+
+    @field_validator("stars")
+    @classmethod
+    def _unique_queries(cls, value: list[str]) -> list[str]:
+        if len({name.casefold() for name in value}) != len(value):
+            raise ValueError("stars must contain distinct queries")
+        return value
+
+
+class StarConditionsResponse(StarsBulkResponse):
+    product: StarPositionProduct
+    jd_tt: float
+    frame: Literal["true_ecliptic_of_date"] = "true_ecliptic_of_date"
+    condition_profile: StarChartConditionProfile
+    network_profile: StarConditionNetworkProfile
 
 
 class StarListResponse(_StrictModel):

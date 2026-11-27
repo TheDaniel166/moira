@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, StringConstraints, field_validator, model_validator
 
 from moira.constants import HouseSystem
 from moira.dignities_types import (
+    DispositorshipConditionState,
+    DispositorshipNetworkEdgeMode,
+    DispositorshipRulership,
+    DispositorshipSubjectSet,
+    DispositorshipTerminationKind,
     DignityNodeDoctrine,
     DignityScoringMode,
     EgyptianBoundsDoctrine,
@@ -25,6 +30,7 @@ from moira.dignities_types import (
     TriplicityDoctrine,
     ParticipatingRulerPolicy,
     TruthEvaluationStatus,
+    UnsupportedSubjectHandling,
 )
 
 from .common import _StrictModel
@@ -454,6 +460,150 @@ class DignitiesConditionsResponse(_StrictModel):
     profiles: tuple[PlanetaryConditionProfileResponse, ...]
 
 
+class DispositorshipPosition(_StrictModel):
+    """One selected planet in the caller's zodiac."""
+
+    name: Literal["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+    longitude_deg: float = Field(strict=True, ge=0.0, lt=360.0, allow_inf_nan=False)
+
+
+class DispositorshipPositionsRequest(_StrictModel):
+    """Ordered, unique planet selections, including an empty selection."""
+
+    positions: list[DispositorshipPosition] = Field(max_length=10)
+
+    @model_validator(mode="after")
+    def _unique_planets(self):
+        if len({position.name for position in self.positions}) != len(self.positions):
+            raise ValueError("Dispositorship positions must name distinct planets.")
+        return self
+
+
+class DispositorshipPolicyRequest(_StrictModel):
+    """Select among the engine's admitted dispositorship policies."""
+
+    subject_set: DispositorshipSubjectSet = DispositorshipSubjectSet.CLASSIC_7
+    rulership: DispositorshipRulership = DispositorshipRulership.TRADITIONAL_DOMICILE
+    unsupported_subjects: UnsupportedSubjectHandling = UnsupportedSubjectHandling.IGNORE
+    use_dignity_order: bool = Field(default=True, strict=True)
+
+
+class DispositorshipProfileRequest(DispositorshipPositionsRequest):
+    policy: DispositorshipPolicyRequest = Field(default_factory=DispositorshipPolicyRequest)
+
+
+class NamedDispositorshipPolicyRequest(_StrictModel):
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+    policy: DispositorshipPolicyRequest = Field(default_factory=DispositorshipPolicyRequest)
+
+
+class DispositorshipComparisonRequest(DispositorshipPositionsRequest):
+    profiles: list[NamedDispositorshipPolicyRequest] = Field(min_length=1, max_length=8)
+
+
+class DispositorshipPolicyResponse(DispositorshipPolicyRequest):
+    final_requires_self_domicile: bool
+    cycles_are_terminal: bool
+
+
+class DispositorLinkResponse(_StrictModel):
+    subject: str
+    subject_sign: str
+    dispositor: str
+
+
+class DispositorshipSubjectResponse(_StrictModel):
+    initial_subject: str
+    initial_sign: str | None
+    subject_in_scope: bool
+    subject_has_dispositor: bool
+    visited_subjects: list[str]
+    termination_kind: DispositorshipTerminationKind
+    terminal_subjects: list[str]
+    cycle_members: list[str]
+
+
+class DispositorshipChainResponse(DispositorshipSubjectResponse):
+    links: list[DispositorLinkResponse]
+
+
+class DispositorshipProfileResponse(_StrictModel):
+    policy: DispositorshipPolicyResponse
+    chains: list[DispositorshipChainResponse]
+    final_dispositors: list[str]
+    terminal_cycles: list[list[str]]
+    unsupported_subjects: list[str]
+
+
+class DispositorshipConditionProfileResponse(DispositorshipSubjectResponse):
+    chain_length: int
+    state: DispositorshipConditionState
+
+
+class DispositorshipChartConditionProfileResponse(_StrictModel):
+    profiles: list[DispositorshipConditionProfileResponse]
+    self_disposed_count: int
+    resolved_to_final_count: int
+    terminal_cycle_count: int
+    unresolved_count: int
+    out_of_scope_count: int
+    final_dispositor_count: int
+    cycle_count: int
+    has_mixed_terminals: bool
+
+
+class DispositorshipNetworkNodeResponse(_StrictModel):
+    subject: str
+    profile: DispositorshipConditionProfileResponse
+    outgoing_count: int
+    incoming_count: int
+    reciprocal_count: int
+
+
+class DispositorshipNetworkEdgeResponse(_StrictModel):
+    source_subject: str
+    target_subject: str
+    mode: DispositorshipNetworkEdgeMode
+
+
+class DispositorshipNetworkProfileResponse(_StrictModel):
+    nodes: list[DispositorshipNetworkNodeResponse]
+    edges: list[DispositorshipNetworkEdgeResponse]
+    isolated_subjects: list[str]
+    most_connected_subjects: list[str]
+    reciprocal_edge_count: int
+    unilateral_edge_count: int
+
+
+class _DispositorshipResponse(_StrictModel):
+    positions: list[DispositorshipPosition]
+    longitude_basis: Literal["caller_supplied_ecliptic_longitudes"] = "caller_supplied_ecliptic_longitudes"
+
+
+class DispositorshipNetworkResponse(_DispositorshipResponse):
+    policy: DispositorshipPolicyResponse
+    network_profile: DispositorshipNetworkProfileResponse
+
+
+class DispositorshipSubsystemResponse(_DispositorshipResponse):
+    profile: DispositorshipProfileResponse
+    condition_profiles: list[DispositorshipConditionProfileResponse]
+    chart_condition_profile: DispositorshipChartConditionProfileResponse
+    network_profile: DispositorshipNetworkProfileResponse
+
+
+class DispositorshipComparisonItemResponse(_StrictModel):
+    name: str
+    profile: DispositorshipProfileResponse
+
+
+class DispositorshipComparisonResponse(_DispositorshipResponse):
+    items: list[DispositorshipComparisonItemResponse]
+    doctrine_names: list[str]
+    shared_final_dispositors: list[str]
+    all_final_dispositors: list[str]
+
+
 __all__ = [
     "AccidentalDignityConditionResponse",
     "AccidentalDignityPolicyRequest",
@@ -470,6 +620,11 @@ __all__ = [
     "DignitiesReceptionsResponse",
     "DignitiesResultResponse",
     "DignityComputationPolicyRequest",
+    "DispositorshipComparisonRequest",
+    "DispositorshipComparisonResponse",
+    "DispositorshipNetworkResponse",
+    "DispositorshipProfileRequest",
+    "DispositorshipSubsystemResponse",
     "EssentialDignityComponentTruthResponse",
     "EssentialDignityPolicyRequest",
     "EssentialDignityTruthResponse",

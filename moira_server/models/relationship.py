@@ -146,6 +146,10 @@ class AspectsFromLongitudesRequest(_OptionalAspectSetsRequest):
     tier: Literal[0, 1, 2] = 1
     orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
     include_nodes: bool = True
+    include_strength: bool = Field(default=False, strict=True)
+    include_graph_profile: bool = Field(
+        default=False, strict=True, description="Include the aspect graph and harmonic-family profile.",
+    )
 
     @field_validator("longitudes", mode="before")
     @classmethod
@@ -216,6 +220,60 @@ class LongitudeAspectComputationTruthResponse(_StrictModel):
 class AspectsFromLongitudesResponse(_StrictModel):
     events: list[AspectDataResponse]
     computation_truth: LongitudeAspectComputationTruthResponse
+
+
+class LongitudeAspectStrengthResponse(_StrictModel):
+    """Geometric strength within the applied orb window."""
+
+    exactness: float | None = Field(
+        ge=0.0, le=1.0, description="Normalized exactness, or null for a zero-width orb.",
+    )
+    remaining_orb_margin_deg: float = Field(ge=0.0, allow_inf_nan=False)
+
+
+class AspectDataWithStrengthResponse(AspectDataResponse):
+    strength: LongitudeAspectStrengthResponse
+
+
+class AspectsFromLongitudesWithStrengthResponse(_StrictModel):
+    events: list[AspectDataWithStrengthResponse]
+    computation_truth: LongitudeAspectComputationTruthResponse
+
+
+class AspectGraphNodeResponse(_StrictModel):
+    name: str
+    degree: int
+    incident_event_indices: list[int]
+    aspect_counts: dict[str, int]
+
+
+class AspectGraphResponse(_StrictModel):
+    """Pairwise aspect graph with references into the response's events."""
+
+    nodes: list[AspectGraphNodeResponse]
+    edge_event_indices: list[int] = Field(description="Zero-based indices into events, in graph edge order.")
+    components: list[list[str]]
+    hubs: list[str]
+    isolated: list[str]
+
+
+class AspectFamilyProfileResponse(_StrictModel):
+    counts: dict[str, int]
+    total: int
+    proportions: dict[str, float]
+    dominant: list[str]
+
+
+class AspectHarmonicProfileResponse(_StrictModel):
+    chart: AspectFamilyProfileResponse
+    by_body: dict[str, AspectFamilyProfileResponse]
+
+
+class AspectsFromLongitudesWithGraphResponse(_StrictModel):
+    events: list[AspectDataWithStrengthResponse] | list[AspectDataResponse]
+    computation_truth: LongitudeAspectComputationTruthResponse
+    aspect_graph: AspectGraphResponse
+    harmonic_profile: AspectHarmonicProfileResponse
 
 
 class DeclinationAspectResponse(_StrictModel):

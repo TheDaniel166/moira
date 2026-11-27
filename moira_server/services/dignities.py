@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Moira
-from moira.dignities import DignitiesService
+from moira.dignities import (
+    DignitiesService,
+    calculate_dispositorship_network_profile,
+    calculate_dispositorship_subsystem_profile,
+    compare_dispositorship,
+)
 from moira.dignities_types import (
     AccidentalDignityPolicy,
     ChartConditionProfile,
@@ -13,6 +18,14 @@ from moira.dignities_types import (
     DignityComputationPolicy,
     DignityScoringPolicy,
     DignityHorizonFrame,
+    DispositorshipComparisonBundle,
+    DispositorshipComputationPolicy,
+    DispositorshipNetworkProfile,
+    DispositorshipOrderingPolicy,
+    DispositorshipRulershipPolicy,
+    DispositorshipSubjectPolicy,
+    DispositorshipSubsystemProfile,
+    DispositorshipUnsupportedSubjectPolicy,
     EssentialDignityDoctrine,
     EssentialDignityPolicy,
     MutualReceptionPolicy,
@@ -29,6 +42,10 @@ from ..models.dignities import (
     DignitiesChartRequest,
     DignitiesConditionChartRequest,
     DignityComputationPolicyRequest,
+    DispositorshipComparisonRequest,
+    DispositorshipPolicyRequest,
+    DispositorshipPositionsRequest,
+    DispositorshipProfileRequest,
 )
 from ._shared import require_aware_datetime
 
@@ -268,6 +285,40 @@ def compute_dignities_chart_network(
     )
 
 
+def _dispositorship_positions(request: DispositorshipPositionsRequest) -> list[dict]:
+    return [{"name": position.name, "degree": position.longitude_deg} for position in request.positions]
+
+
+def _dispositorship_policy(request: DispositorshipPolicyRequest) -> DispositorshipComputationPolicy:
+    return DispositorshipComputationPolicy(
+        subject=DispositorshipSubjectPolicy(subject_set=request.subject_set),
+        rulership=DispositorshipRulershipPolicy(doctrine=request.rulership),
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(handling=request.unsupported_subjects),
+        ordering=DispositorshipOrderingPolicy(use_dignity_order=request.use_dignity_order),
+    )
+
+
+def compute_dispositorship_comparison(request: DispositorshipComparisonRequest) -> DispositorshipComparisonBundle:
+    """Apply each named engine policy to the same supplied positions."""
+    policies = [(item.name, _dispositorship_policy(item.policy)) for item in request.profiles]
+    return compare_dispositorship(_dispositorship_positions(request), policies)
+
+
+def compute_dispositorship_subsystem(request: DispositorshipProfileRequest) -> DispositorshipSubsystemProfile:
+    """Derive all subsystem layers together from one chain reduction."""
+    return calculate_dispositorship_subsystem_profile(
+        _dispositorship_positions(request), _dispositorship_policy(request.policy),
+    )
+
+
+def compute_dispositorship_network(
+    request: DispositorshipProfileRequest,
+) -> tuple[DispositorshipComputationPolicy, DispositorshipNetworkProfile]:
+    """Return the effective policy and its directed condition network."""
+    policy = _dispositorship_policy(request.policy)
+    return policy, calculate_dispositorship_network_profile(_dispositorship_positions(request), policy)
+
+
 __all__ = [
     "compute_dignities_chart",
     "compute_dignities_chart_condition",
@@ -275,4 +326,7 @@ __all__ = [
     "compute_dignities_chart_network",
     "compute_dignities_chart_profile",
     "compute_dignities_chart_receptions",
+    "compute_dispositorship_comparison",
+    "compute_dispositorship_network",
+    "compute_dispositorship_subsystem",
 ]

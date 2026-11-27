@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from moira._geocentric_conjunctions import GeocentricConjunctionUnresolved, GeocentricConjunctionWitness
+from moira.cycles import PlanetaryAgeName
 from moira.phenomena import ConjunctionRangeComputationTruth
 
 
@@ -36,6 +37,21 @@ class SearchWindow(_StrictModel):
 
     jd_start_ut1: FiniteNumber
     jd_end_ut1: FiniteNumber
+
+
+class PlanetaryAgePeriodResponse(_StrictModel):
+    ruler: PlanetaryAgeName
+    start_age_years: float
+    end_age_years: float | None
+    editorial_label: str
+
+
+class PlanetaryAgeProfileResponse(_StrictModel):
+    queried_age_years: float | None
+    periods: list[PlanetaryAgePeriodResponse]
+    current: PlanetaryAgePeriodResponse | None
+    source: Literal["Ptolemy, Tetrabiblos IV.10"] = "Ptolemy, Tetrabiblos IV.10"
+    boundary_rule: Literal["start_inclusive_end_exclusive"] = "start_inclusive_end_exclusive"
 
 
 class NatalEclipseContactsRequest(SearchWindow):

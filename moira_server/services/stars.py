@@ -14,7 +14,10 @@ from moira.multiple_stars import (
     multiple_stars_by_type,
 )
 from moira.spk_reader import MissingEphemerisKernelError
-from moira.stars import StarPosition, find_stars, list_stars, star_at, stars_by_magnitude, stars_near
+from moira.stars import (
+    FixedStar, find_stars, list_stars, star_at, star_chart_condition_profile,
+    star_condition_network_profile, stars_by_magnitude, stars_near,
+)
 from moira.variable_stars import (
     VarStarPolicy,
     catalog_profile,
@@ -35,6 +38,8 @@ from ..models.stars import (
     MultipleStarStateResponse,
     MultipleStarSystemResponse,
     StarListResponse,
+    StarConditionsRequest,
+    StarConditionsResponse,
     StarPositionRequest,
     StarPositionResponse,
     StarLongitudeSearchRequest,
@@ -91,7 +96,7 @@ def compute_star_position(engine: Moira, request: StarPositionRequest) -> StarPo
     """Single star position using the sovereign star catalog, as the requested product."""
     jd_tt = _to_jd_tt(request.dt)
     reader = _star_reader(engine, request.product)
-    data: StarPosition = star_at(request.star, jd_tt, product=request.product, reader=reader)
+    data = star_at(request.star, jd_tt, product=request.product, reader=reader)
     return serialize_star(data, requested_datetime=request.dt, jd_tt=jd_tt)
 
 
@@ -103,6 +108,18 @@ def compute_stars_bulk(engine: Moira, request: StarsBulkRequest) -> StarsBulkRes
     """
     jd_tt = _to_jd_tt(request.dt)
     reader = _star_reader(engine, request.product)
+    results, missing = _collect_star_positions(request, jd_tt, reader)
+    return StarsBulkResponse(
+        dt=request.dt,
+        product=request.product,
+        results={k: serialize_star(v, requested_datetime=request.dt, jd_tt=jd_tt) for k, v in results.items()},
+        missing=missing,
+    )
+
+
+def _collect_star_positions(
+    request: StarsBulkRequest, jd_tt: float, reader,
+) -> tuple[dict[str, FixedStar], list[str]]:
     results = {}
     missing = []
 
@@ -116,11 +133,25 @@ def compute_stars_bulk(engine: Moira, request: StarsBulkRequest) -> StarsBulkRes
             continue
         results[name] = data
 
-    return StarsBulkResponse(
+    return results, missing
+
+
+def compute_star_conditions(engine: Moira, request: StarConditionsRequest) -> StarConditionsResponse:
+    """Derive both views from the same sovereign position receipts."""
+    jd_tt = _to_jd_tt(request.dt)
+    reader = _star_reader(engine, request.product) if request.product == "apparent" else None
+    positions, missing = _collect_star_positions(request, jd_tt, reader)
+    stars = list(positions.values())
+    if len({star.name for star in stars}) != len(stars):
+        raise ValueError("Multiple queries resolve to the same fixed star.")
+    return StarConditionsResponse(
         dt=request.dt,
         product=request.product,
-        results={k: serialize_star(v, requested_datetime=request.dt, jd_tt=jd_tt) for k, v in results.items()},
+        jd_tt=jd_tt,
+        results={k: serialize_star(v, requested_datetime=request.dt, jd_tt=jd_tt) for k, v in positions.items()},
         missing=missing,
+        condition_profile=star_chart_condition_profile(fixed_stars=stars),
+        network_profile=star_condition_network_profile(fixed_stars=stars),
     )
 
 

@@ -13,6 +13,8 @@ from ..models.stars import (
     MultipleStarStateRequest,
     MultipleStarStateResponse,
     MultipleStarSystemResponse,
+    StarConditionsRequest,
+    StarConditionsResponse,
     StarPositionRequest,
     StarPositionResponse,
     StarSearchRequest,
@@ -31,6 +33,7 @@ from ..models.stars import (
     VariableStarStateResponse,
 )
 from ..services.stars import (
+    compute_star_conditions,
     compute_star_position,
     compute_stars_bulk,
     compute_multiple_star_state,
@@ -65,6 +68,12 @@ def stars_bulk(
 ) -> StarsBulkResponse:
     """Bulk star positions — perfect for rendering full constellations on your site."""
     return compute_stars_bulk(engine, request)
+
+
+@router.post("/conditions", response_model=StarConditionsResponse)
+def star_conditions_route(request: StarConditionsRequest, engine=Depends(get_engine)) -> StarConditionsResponse:
+    """Return fixed-star position provenance, conditions, and their relation network."""
+    return compute_star_conditions(engine, request)
 
 
 @router.post("/search", response_model=StarSearchResponse)

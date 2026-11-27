@@ -57,6 +57,13 @@ inputs; this does not add a new [0, 360) restriction to the supplied-position AP
 
 ## Engine and facade
 
+The precomputed REST score uses the supplied UT1 and TT clock, tropical
+Sun and Moon, and optional natal sidereal Moon. If the request includes
+Delta-T seconds, the REST model checks them against the JD pair to its
+representation precision. The search REST response supports an opt-in
+chronological sample receipt. It carries both the serving clock and raw
+scores for the complete bounded grid, including samples below threshold.
+
 `moira.muhurta_search` owns eight curated exports, shared by root, `facade` and
 `vedic`: `MuhurtaSearchPolicy`, `MuhurtaMomentScore`, `MuhurtaSearchWindow`,
 `MuhurtaSearchResult`, `MuhurtaResourceError`, `MuhurtaCoverageError`,

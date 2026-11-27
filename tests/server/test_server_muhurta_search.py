@@ -153,9 +153,10 @@ def test_empty_generic_search_distinguishes_omission_from_failure(client):
     assert body["qualifying_sample_count"] == 0
 
 
-def test_coverage_failure_has_specific_envelope(client):
+@pytest.mark.parametrize("include_samples", [False, True])
+def test_coverage_failure_has_specific_envelope(client, include_samples):
     response=client.post("/v1/muhurta/search",json={
-        "start_jd_ut1":-9500000,"end_jd_ut1":-9499999.9})
+        "start_jd_ut1":-9500000,"end_jd_ut1":-9499999.9,"include_samples":include_samples})
     assert response.status_code == 422
     body=response.json()
     assert body["error_code"] == "muhurta_date_outside_coverage"

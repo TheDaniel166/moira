@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 609
-- Registered OpenAPI operations: 609 (GET 57, POST 552)
+- Registered OpenAPI paths: 615
+- Registered OpenAPI operations: 615 (GET 58, POST 557)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 605
+- Versioned `/v1` paths: 611
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -891,6 +891,13 @@ claim that every astrological tradition uses the same definition.
 | POST | `/v1/heliacal/stellar-catalogue` | `stellar_visibility_catalogue_route` |
 | POST | `/v1/phenomena/great-conjunctions` | `great_conjunctions_route` |
 | POST | `/v1/phenomena/geocentric-conjunctions` | `geocentric_conjunctions_route` |
+| GET | `/v1/phenomena/planetary-ages` | `planetary_age_profile_route` |
+
+`GET /v1/phenomena/planetary-ages` returns the kernel-free, seven-period
+catalogue from [*Tetrabiblos* IV.10](https://penelope.uchicago.edu/Thayer/e/roman/texts/ptolemy/tetrabiblos/4c*.html).
+Supply `age_years` as a finite nonnegative number to select `current`.
+Each period starts inclusively and ends exclusively. Saturn starts at
+68 and has a null end. `editorial_label` is Moira's summary of the stage.
 
 #### Bounded astronomical searches
 
@@ -1397,6 +1404,27 @@ the canonical `moira.constants.Aspect` definitions through `find_aspects`.
 Responses use the existing `AspectData` transport shape and expose actual
 separation, target angle, orb, applied orb ceiling, classification, direction,
 and sign degrees.
+
+Set `include_strength: true` to include a `strength` receipt on each event.
+`exactness` is 1 at the target angle and 0 at the applied orb boundary.
+`remaining_orb_margin_deg` is the applied orb ceiling minus the measured
+orb, in degrees. If the applied orb rounds to zero, the exact contact has
+a zero margin and `exactness` is null. Omitting the flag or setting it to
+false omits `strength`. The receipt uses the admitted events and their
+existing motion fields.
+
+Set `include_graph_profile: true` to return `aspect_graph` and
+`harmonic_profile` alongside those same events. The graph reports each
+included point's degree and aspect-name counts, its connected component,
+all highest-degree hubs, and the isolated points. `edge_event_indices`
+and each node's `incident_event_indices` are zero-based positions in
+`events`. Distinct aspects on the same pair each count toward degree.
+The harmonic profile reports family counts, totals, proportions, and ties
+for the most frequent family for the whole chart and each body with an
+admitted aspect. If there are no contacts, every included point is an
+isolated component, the chart total is zero, and `by_body` is empty. The
+graph profile uses the same tier, orb factor, optional sets, and node
+selection as the event list. It can be combined with `include_strength`.
 
 These are caller-supplied positions, not a reconstructed birth moment.
 No ephemeris reduction, speed, retrograde state, applying/separating state,
@@ -1921,6 +1949,19 @@ bounded sampled search under `POST /v1/muhurta/personal/score` and
 `POST /v1/muhurta/search`; see the
 [personal/search standard](../02_standards/MUHURTA_PERSONAL_SEARCH_STANDARD.md).
 
+`POST /v1/muhurta/precomputed/score` takes `jd_ut1`, `jd_tt`,
+`sun_tropical_longitude`, `moon_tropical_longitude`, and an optional
+`janma_moon_sidereal_lon`. UT1 governs the weekday and TT governs the
+ayanamsa. If supplied, `delta_t_seconds` must agree with the JD pair to
+their representation precision. The receipt includes the effective policy,
+Panchanga, raw score, and any applied Tara and Chandra results.
+
+Set `include_samples: true` on `POST /v1/muhurta/search` to return clock,
+longitude, ayanamsa, and raw score evidence for every evaluated sample in
+chronological order. This includes samples outside qualifying windows and
+uses the engine's existing limit of 4,096 samples. The default response
+returns the ranked window summary.
+
 VED-007 adds `POST /v1/muhurta/named/direct` and
 `POST /v1/muhurta/named/day`. The first accepts supplied UT1 solar anchors
 and an explicit Monday=0 weekday. The second derives reader-bound solar
@@ -1993,6 +2034,35 @@ The REST dignity policy does not admit
 `include_timelord_distributions`. Valens distribution scoring is a closed
 exclusion from the public contract; supplying that former option is a `422
 validation_error`, not an inert no-op or pending feature.
+
+### Supplied-position dispositorship
+
+| Method | Path | Result |
+|---|---|---|
+| POST | `/v1/dignities/dispositorship/compare` | Named policies, their chains and terminals, and shared and combined final dispositors. |
+| POST | `/v1/dignities/dispositorship/subsystem` | Chain results, per-subject conditions, chart totals, and the directed condition graph. |
+| POST | `/v1/dignities/dispositorship/network` | The effective policy, directed edges, per-node conditions, isolates, and most-connected subjects. |
+
+Send an ordered `positions` array with `name` and `longitude_deg` for up to
+ten distinct canonical planets from Sun through Pluto. Longitudes are finite
+degrees in `[0, 360)` in the caller's zodiac. An empty array returns empty
+results. These routes use the supplied positions directly and require no
+ephemeris or birth time.
+
+The admitted doctrine is `classic_7` with `traditional_domicile`. The
+optional `policy` object supports `unsupported_subjects` of `ignore` (the
+default), `segregate`, or `reject`, and `use_dignity_order` (default `true`).
+`ignore` retains an out-of-scope chain and condition, `segregate` lists the
+planet in `unsupported_subjects` without a chain, and `reject` returns 422.
+Comparison takes one to eight `profiles`, each with a unique `name` and an
+optional `policy`. Chains and their per-subject conditions can follow the
+input order. Chart conditions and graph nodes use dignity order.
+
+A missing selected ruler remains an unresolved chain, with the ruler
+retained in the final link. Final dispositors are self-domiciled and kept
+distinct from cycles. Graph edges represent direct relations between selected
+in-scope planets, carrying `reciprocal` or `unilateral` mode. See the
+[dispositorship backend standard](../02_standards/DISPOSITORSHIP_BACKEND_STANDARD.md).
 
 ## Unified Hellenistic Profile Route
 
@@ -2653,6 +2723,14 @@ direction.
 | POST | `/v1/profections/monthly` | `monthly_profection_route` |
 | POST | `/v1/profections/schedule` | `profection_schedule_route` |
 
+The progression profile and network routes, including their `/reduction`
+variants, accept `arc_items` and `time_key_items` alongside secondary
+`items` and `house_frame_items`. Each new list accepts up to 16 individual
+route requests with explicit `method` and optional `converse`. The same
+progression dispatcher and condition reducers govern individual and
+aggregate results. Network requests require distinct engine technique
+names. Reduction receipts retain the technique and direction for each item.
+
 `/v1/profections/schedule` requires timezone-aware natal and current
 datetimes. It computes completed age at the natal civil anniversary in the
 natal timezone, rejects pre-birth instants, and requires
@@ -2854,6 +2932,7 @@ reduced from UTC to UT1 before astronomical computation.
 |---|---|---|
 | POST | `/v1/stars/position` | `star_position` |
 | POST | `/v1/stars/bulk` | `stars_bulk` |
+| POST | `/v1/stars/conditions` | `star_conditions_route` |
 | GET | `/v1/stars/list` | `list_stars` |
 | GET | `/v1/stars/variable/list` | `list_variable_stars_route` |
 | GET | `/v1/stars/variable/{name}` | `variable_star_catalog_route` |
@@ -2972,6 +3051,14 @@ reduced from UTC to UT1 before astronomical computation.
 
 All products are true ecliptic and equinox of date, computed at the request's
 UTC instant converted to TT.
+
+`POST /v1/stars/conditions` takes one to 32 `stars` at a timezone-aware
+`dt`, with a shared `product`. It returns the sovereign position receipts,
+condition profile, and relation network over those same resolved stars.
+Queries must resolve to distinct catalogue identities. The default
+`skip_missing` reports lookup misses separately, and `skip_missing: false`
+rejects the request on a miss. The apparent product uses the serving
+planetary kernel.
 
 - Any other `product` value is rejected with HTTP `422`.
 - An `apparent` request on a server engine without a planetary kernel fails
@@ -4280,6 +4367,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/dignities/chart/network` | dignities | `dignities_chart_network_route_v1_dignities_chart_network_post` |
 | `POST` | `/v1/dignities/chart/profile` | dignities | `dignities_chart_profile_route_v1_dignities_chart_profile_post` |
 | `POST` | `/v1/dignities/chart/receptions` | dignities | `dignities_chart_receptions_route_v1_dignities_chart_receptions_post` |
+| `POST` | `/v1/dignities/dispositorship/compare` | dignities | `dispositorship_compare_route_v1_dignities_dispositorship_compare_post` |
+| `POST` | `/v1/dignities/dispositorship/network` | dignities | `dispositorship_network_route_v1_dignities_dispositorship_network_post` |
+| `POST` | `/v1/dignities/dispositorship/subsystem` | dignities | `dispositorship_subsystem_route_v1_dignities_dispositorship_subsystem_post` |
 | `POST` | `/v1/draconic/chart` | draconic | `draconic_chart_route_v1_draconic_chart_post` |
 | `POST` | `/v1/draconic/longitude` | draconic | `draconic_longitude_route_v1_draconic_longitude_post` |
 | `POST` | `/v1/draconic/positions` | draconic | `draconic_positions_route_v1_draconic_positions_post` |
@@ -4488,6 +4578,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/named/day` | muhurta | `named_muhurta_day_route_v1_muhurta_named_day_post` |
 | `POST` | `/v1/muhurta/named/direct` | muhurta | `named_muhurta_direct_route_v1_muhurta_named_direct_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
+| `POST` | `/v1/muhurta/precomputed/score` | muhurta | `muhurta_precomputed_score_route_v1_muhurta_precomputed_score_post` |
 | `POST` | `/v1/muhurta/search` | muhurta | `muhurta_search_route_v1_muhurta_search_post` |
 | `GET` | `/v1/muhurta/shuddhi/catalogue` | muhurta | `shuddhi_catalogue_route_v1_muhurta_shuddhi_catalogue_get` |
 | `POST` | `/v1/muhurta/shuddhi/day` | muhurta | `shuddhi_day_route_v1_muhurta_shuddhi_day_post` |
@@ -4586,6 +4677,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
 | `POST` | `/v1/phenomena/orbital-period-ratio` | generic-phenomena | `orbital_period_ratio_route_v1_phenomena_orbital_period_ratio_post` |
 | `POST` | `/v1/phenomena/planet` | generic-phenomena | `planet_phenomena_route_v1_phenomena_planet_post` |
+| `GET` | `/v1/phenomena/planetary-ages` | phenomena | `planetary_age_profile_route_v1_phenomena_planetary_ages_get` |
 | `POST` | `/v1/phenomena/proximity` | generic-phenomena | `proximity_events_route_v1_phenomena_proximity_post` |
 | `POST` | `/v1/pipeline/chart` | website-pipeline | `pipeline_chart_route_v1_pipeline_chart_post` |
 | `POST` | `/v1/pipeline/positions/planet` | website-pipeline | `pipeline_planet_position_route_v1_pipeline_positions_planet_post` |
@@ -4663,6 +4755,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/sothic/predict-epoch` | sothic | `predict_epoch_route_v1_sothic_predict_epoch_post` |
 | `POST` | `/v1/sothic/rising` | sothic | `rising_route_v1_sothic_rising_post` |
 | `POST` | `/v1/stars/bulk` | stars (fixed stars) | `stars_bulk_v1_stars_bulk_post` |
+| `POST` | `/v1/stars/conditions` | stars (fixed stars) | `star_conditions_route_v1_stars_conditions_post` |
 | `GET` | `/v1/stars/list` | stars (fixed stars) | `list_stars_v1_stars_list_get` |
 | `GET` | `/v1/stars/multiple/list` | stars (fixed stars) | `list_multiple_stars_route_v1_stars_multiple_list_get` |
 | `POST` | `/v1/stars/multiple/state` | stars (fixed stars) | `multiple_star_state_route_v1_stars_multiple_state_post` |

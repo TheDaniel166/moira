@@ -15,11 +15,13 @@ from ..models.bounded_searches import (
     GreatConjunctionsRequest, GreatConjunctionsResponse,
     MultiBodyVoidRequest, MultiBodyVoidResponse,
     NatalEclipseContactsRequest, NatalEclipseContactsResponse,
+    PlanetaryAgeProfileResponse,
     StellarVisibilityCatalogueRequest, StellarVisibilityCatalogueResponse, VisibilityCriterionOutcome,
 )
 from ..services.bounded_searches import (
     compute_eclipse_snapshot, compute_explicit_visibility, compute_geocentric_conjunctions, compute_great_conjunctions,
-    compute_multi_body_void, compute_natal_eclipse_contacts, compute_stellar_visibility_catalogue,
+    compute_multi_body_void, compute_natal_eclipse_contacts, compute_planetary_age_profile,
+    compute_stellar_visibility_catalogue,
 )
 from ..models.phenomena import (
     AllLunarOccultationsRequest,
@@ -222,6 +224,14 @@ def multi_body_void_route(
 ) -> MultiBodyVoidResponse:
     """Search bounded void-of-course windows for selected movers."""
     return compute_multi_body_void(engine, request)
+
+
+@router.get("/phenomena/planetary-ages", response_model=PlanetaryAgeProfileResponse)
+def planetary_age_profile_route(
+    age_years: float | None = Query(default=None, ge=0, allow_inf_nan=False),
+) -> PlanetaryAgeProfileResponse:
+    """Return the seven-age catalogue and optionally select a period by age."""
+    return compute_planetary_age_profile(age_years)
 
 
 @router.post("/phenomena/great-conjunctions", response_model=GreatConjunctionsResponse)

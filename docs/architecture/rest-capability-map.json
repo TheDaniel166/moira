@@ -1,5 +1,5 @@
 {
-  "unmapped_baseline_sha256": "4225a20eb8fa4b1b70598f35bbfd5572890fb9d6c58049a73583d2dec70069a9",
+  "unmapped_baseline_sha256": "55739ff8354ad24080c2a544dbde012a6fe89f5376ba9e21acc728f2b6fcec1e",
   "direct_modules": [
     {"module":"moira.planetary_moons","classes":["PlanetaryMoons"]},
     {"module":"moira.planetary_moon_events"},
@@ -7,6 +7,89 @@
     {"module":"moira.cycles"}
   ],
   "capabilities": [
+    {
+      "capability": "fixed_star_conditions_and_network",
+      "engine": ["moira.stars:star_chart_condition_profile","moira.stars:star_condition_network_profile"],
+      "witness": "tests/server/test_server_section5_chart_evidence.py::test_fixed_star_conditions_match_shared_sovereign_positions",
+      "routes": [
+        {"operation":"POST /v1/stars/conditions","request":["stars","dt","product","skip_missing"],"response":["frame","jd_tt","results","missing","condition_profile","network_profile","relation_basis","position_product"]}
+      ]
+    },
+    {
+      "capability": "ptolemaic_planetary_ages",
+      "engine": ["moira.cycles:planetary_age_at","moira.cycles:planetary_age_profile"],
+      "witness": "tests/server/test_server_section5_chart_evidence.py::test_planetary_age_catalogue_and_all_source_boundaries",
+      "routes": [
+        {"operation":"GET /v1/phenomena/planetary-ages","request":["age_years"],"response":["periods","current","start_age_years","end_age_years","editorial_label","boundary_rule","source"]}
+      ]
+    },
+    {
+      "capability": "progression_arc_and_time_key_aggregates",
+      "engine": ["moira.progressions:progression_chart_condition_profile","moira.progressions:progression_condition_network_profile"],
+      "witness": "tests/server/test_server_section5_chart_evidence.py::test_progression_aggregates_match_individual_arc_and_time_key",
+      "routes": [
+        {"operation":"POST /v1/progressions/profile","request":["arc_items","time_key_items","method","converse"],"response":["profiles","technique_name","converse"]},
+        {"operation":"POST /v1/progressions/profile/reduction","request":["arc_items","time_key_items"],"response":["item_profiles","chart_item_count"]},
+        {"operation":"POST /v1/progressions/network","request":["arc_items","time_key_items"],"response":["nodes","edges","relation_basis"]},
+        {"operation":"POST /v1/progressions/network/reduction","request":["arc_items","time_key_items"],"response":["item_profiles","chart_item_count","edges"]}
+      ]
+    },
+    {
+      "capability": "muhurta_precomputed_chart_clock",
+      "engine": ["moira._facade_vedic:VedicFacadeMixin.muhurta_score_for_chart","moira.muhurta_search:muhurta_score_for_chart"],
+      "witness": "tests/server/test_server_section5_chart_evidence.py::test_muhurta_sample_opt_in_and_precomputed_clock_match_engine",
+      "routes": [
+        {"operation":"POST /v1/muhurta/precomputed/score","request":["jd_ut1","jd_tt","delta_t_seconds","janma_moon_sidereal_lon"],"response":["input_time_basis","supplied_ut1_tt","ayanamsa_degrees","natal_mode","score","tara","chandra"]}
+      ]
+    },
+    {
+      "capability": "muhurta_bounded_search_sample_receipt",
+      "engine": ["moira._facade_vedic:VedicFacadeMixin.find_muhurta_windows","moira.muhurta_search:find_muhurta_windows"],
+      "witness": "tests/server/test_server_section5_chart_evidence.py::test_muhurta_sample_opt_in_and_precomputed_clock_match_engine",
+      "routes": [
+        {"operation":"POST /v1/muhurta/search","request":["include_samples","start_jd_ut1","end_jd_ut1"],"response":["samples","sample_count","jd_tt","jd_tdb","clock_identity","score_total"]}
+      ]
+    },
+    {
+      "capability": "dispositorship_policy_comparison",
+      "engine": ["moira.dignities:compare_dispositorship"],
+      "witness": "tests/server/test_server_dispositorship.py::test_dispositorship_comparison_preserves_named_policy_results",
+      "routes": [
+        {"operation":"POST /v1/dignities/dispositorship/compare","request":["positions","profiles","unsupported_subjects","use_dignity_order"],"response":["items","doctrine_names","shared_final_dispositors","all_final_dispositors"]}
+      ]
+    },
+    {
+      "capability": "dispositorship_subsystem",
+      "engine": ["moira.dignities:calculate_dispositorship","moira.dignities:calculate_dispositorship_condition_profiles","moira.dignities:calculate_dispositorship_chart_condition_profile","moira.dignities:calculate_dispositorship_subsystem_profile"],
+      "witness": "tests/server/test_server_dispositorship.py::test_dispositorship_subsystem_matches_natal_default_and_engine_conditions",
+      "routes": [
+        {"operation":"POST /v1/dignities/dispositorship/subsystem","request":["positions","longitude_deg","policy"],"response":["profile","chains","terminal_cycles","condition_profiles","chart_condition_profile","network_profile","out_of_scope_count","unresolved_count"]}
+      ]
+    },
+    {
+      "capability": "dispositorship_condition_network",
+      "engine": ["moira.dignities:calculate_dispositorship_network_profile"],
+      "witness": "tests/server/test_server_dispositorship.py::test_dispositorship_network_matches_engine_and_subsystem",
+      "routes": [
+        {"operation":"POST /v1/dignities/dispositorship/network","request":["positions","policy"],"response":["nodes","edges","isolated_subjects","reciprocal_edge_count","unilateral_edge_count","state"]}
+      ]
+    },
+    {
+      "capability": "supplied_longitude_aspect_graph_and_harmonic_profile",
+      "engine": ["moira.aspects:build_aspect_graph", "moira.aspects:aspect_harmonic_profile"],
+      "witness": "tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_graph_profile_uses_the_same_admitted_aspects",
+      "routes": [
+        {"operation":"POST /v1/aspects/from-longitudes","request":["include_graph_profile","tier","orb_factor","include_nodes","optional_sets"],"response":["aspect_graph","edge_event_indices","incident_event_indices","aspect_counts","components","hubs","isolated","harmonic_profile","by_body","counts","proportions","dominant"]}
+      ]
+    },
+    {
+      "capability": "supplied_longitude_aspect_strength",
+      "engine": ["moira.aspects:aspect_strength"],
+      "witness": "tests/server/test_server_aspects_from_longitudes.py::test_positions_in_route_strength_is_opt_in_and_preserves_motion",
+      "routes": [
+        {"operation":"POST /v1/aspects/from-longitudes","request":["include_strength"],"response":["strength","exactness","remaining_orb_margin_deg","allowed_orb","motion_state"]}
+      ]
+    },
     {
       "capability": "verified_geocentric_conjunction_range",
       "engine": ["moira.phenomena:conjunctions_in_range_with_truth"],
