@@ -1615,3 +1615,15 @@ examples, reconstructed returns, and unresolved strength decisions.
 The focused engine and REST regression passed 208 tests with zero skips.
 Wave 2 was pushed at
 [`63f9311`](https://github.com/TheDaniel166/moira/commit/63f9311c201d125e700575549f8bca45d0facd6a).
+
+Wave 3 was pushed at
+[`9e74335`](https://github.com/TheDaniel166/moira/commit/9e743359e19a386068ba346b4bd3b5f6048ec550).
+
+## 68. Kuta matching and KP planetary and cusp chains - 27 November 2026
+
+Wave 4 covers the initial C-01 and C-03 engine scope. Charak Ashtakoota
+returns eight scored factors and Iyer Porutham returns ten qualitative
+factors with source ambiguities marked explicitly. The KP profile returns
+sign, star, sub and sub-sub chains for supplied longitudes or a reader-bound
+Placidus chart. See the [primary-source checkpoint](VEDIC_WAVE_4_PRIMARY_SOURCE_CHECKPOINT.md)
+for published examples, ambiguity decisions, and the five engine REST routes.

@@ -607,6 +607,46 @@
       ]
     },
     {
+      "capability": "kuta_profile_discovery",
+      "engine": ["moira.kuta:kuta_profiles"],
+      "witness": "tests/server/test_server_vedic_wave4.py::test_kuta_and_kp_direct_http",
+      "routes": [
+        {"operation":"GET /v1/kuta/profiles","request":[],"response":["charak_ashtakoota","iyer_porutham_1917","source_reference","maximum_points","minimum_agreements"]}
+      ]
+    },
+    {
+      "capability": "kuta_sidereal_match",
+      "engine": ["moira.kuta:kuta_match","moira.facade:Moira.kuta_match"],
+      "witness": "tests/server/test_server_vedic_wave4.py::test_kuta_and_kp_direct_http",
+      "routes": [
+        {"operation":"POST /v1/kuta/match","request":["profile_id","bride_moon","groom_moon"],"response":["raw_status","applied_status","raw_points","applied_points","exception","total_points","confirmed_agreements"]}
+      ]
+    },
+    {
+      "capability": "kp_profile_discovery",
+      "engine": ["moira.kp:kp_profiles"],
+      "witness": "tests/server/test_server_vedic_wave4.py::test_kuta_and_kp_direct_http",
+      "routes": [
+        {"operation":"GET /v1/kp/profiles","request":[],"response":["krishnamurti_moira_placidus","source_reference","ayanamsa_mode","house_system"]}
+      ]
+    },
+    {
+      "capability": "kp_longitude_chain",
+      "engine": ["moira.kp:kp_longitude","moira.facade:Moira.kp_longitude"],
+      "witness": "tests/server/test_server_vedic_wave4.py::test_kuta_and_kp_direct_http",
+      "routes": [
+        {"operation":"POST /v1/kp/longitude","request":["sidereal_longitude","profile_id"],"response":["sign","star","sub","sub_sub","start_ticks","end_ticks"]}
+      ]
+    },
+    {
+      "capability": "kp_placidus_chart",
+      "engine": ["moira.kp:kp_chart_for_datetime","moira.facade:Moira.kp_chart_for_datetime"],
+      "witness": "tests/server/test_server_vedic_wave4.py::test_kp_chart_reader_placidus_and_rest",
+      "routes": [
+        {"operation":"POST /v1/kp/chart","request":["dt","latitude","longitude","node_mode","profile_id"],"response":["ephemeris_identity","ayanamsa_path","planets","cusps","cusp_status","effective_house_system","cusp_unavailable_reason"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

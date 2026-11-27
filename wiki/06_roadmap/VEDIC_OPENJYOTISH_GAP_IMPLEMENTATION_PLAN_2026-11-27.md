@@ -308,3 +308,8 @@ Wave 3 begins with the primary texts and worked cases in sections 5–7.
 
 Wave 3 evidence and implementation decisions are recorded in the
 [primary-source checkpoint](VEDIC_WAVE_3_PRIMARY_SOURCE_CHECKPOINT.md).
+
+Wave 3 is published at [`9e74335`](https://github.com/TheDaniel166/moira/commit/9e743359e19a386068ba346b4bd3b5f6048ec550).
+Wave 4 implements Charak Ashtakoota, Iyer Porutham, and the first KP chart
+profile. The [Wave 4 checkpoint](VEDIC_WAVE_4_PRIMARY_SOURCE_CHECKPOINT.md)
+records the verified examples, source ambiguities, and Python and REST contracts.

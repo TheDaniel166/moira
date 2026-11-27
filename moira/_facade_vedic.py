@@ -191,6 +191,21 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         from .chara_profiles import evaluate_chara_profile
         return evaluate_chara_profile(chart, profile_id=profile_id, projection=projection)
 
+    def kuta_match(self, *, profile_id, bride_moon: float, groom_moon: float):
+        """Evaluate a named matching tradition from two sidereal Moon longitudes."""
+        return _facade_module().kuta_match(profile_id=profile_id, bride_moon=bride_moon, groom_moon=groom_moon)
+
+    def kp_longitude(self, sidereal_longitude: float, *, profile_id="krishnamurti_moira_placidus"):
+        """Classify one sidereal longitude in the KP partition."""
+        return _facade_module().kp_longitude(sidereal_longitude, profile_id=profile_id)
+
+    def kp_chart_for_datetime(self, dt: datetime, latitude: float, longitude: float, *,
+                              node_mode, profile_id="krishnamurti_moira_placidus"):
+        """Calculate KP planet and cusp chains using this facade's reader."""
+        return _facade_module().kp_chart_for_datetime(
+            dt, latitude, longitude, node_mode=node_mode, profile_id=profile_id, reader=self._reader,
+        )
+
     def narayana_dasha(
         self, lagna_sidereal_longitude, sidereal_longitudes, *, resolved_strength=None,
         resolved_co_lords=None, birth_jd_ut1=None, year_basis=None,

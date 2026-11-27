@@ -355,6 +355,18 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "kuta",
+        "x-displayName": "Kuta Matching",
+        "description": "Source-specific sidereal Moon matching profiles and factor results.",
+        "x-family": "classical-vedic",
+    },
+    {
+        "name": "kp",
+        "x-displayName": "Krishnamurti Paddhati",
+        "description": "Krishnamurti stellar chains and Placidus chart composition.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "prashna",
         "x-displayName": "Prashna",
         "description": "Raman's Prasna Marga sphutas with supplied longitudes or reader-bound question chart evidence.",

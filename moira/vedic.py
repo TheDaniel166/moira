@@ -82,6 +82,12 @@ from .prashna import (
     PrashnaSphutas, PrashnaGulikaEvidence, PrashnaSphutasChart,
     prashna_sphutas, prashna_sphutas_for_datetime,
 )
+from .kp import (
+    KPChart, KPLongitude, KPProfile, KPSector, kp_chart_for_datetime, kp_longitude, kp_profiles,
+)
+from .kuta import (
+    KutaFactor, KutaMatch, KutaMoon, KutaProfile, kuta_match, kuta_profiles,
+)
 from .narayana import (
     NarayanaDashaResult, NarayanaDecision, NarayanaPeriod, active_narayana, narayana_dasha,
 )
@@ -893,6 +899,8 @@ _VEDIC_OWN: list[str] = [
     "KharaCell", "KharaDivision", "KharaDivisionsResult", "khara_divisions",
     "PrashnaSphutas", "PrashnaGulikaEvidence", "PrashnaSphutasChart",
     "prashna_sphutas", "prashna_sphutas_for_datetime",
+    "KPChart", "KPLongitude", "KPProfile", "KPSector", "kp_chart_for_datetime", "kp_longitude", "kp_profiles",
+    "KutaFactor", "KutaMatch", "KutaMoon", "KutaProfile", "kuta_match", "kuta_profiles",
     "NarayanaDashaResult", "NarayanaDecision", "NarayanaPeriod", "active_narayana", "narayana_dasha",
     "VedicReturnCrossing", "VedicReturnChart", "TithiPraveshaCandidate", "TithiPraveshaResult",
     "MonthlyTajikaResult", "tithi_pravesha", "monthly_tajika",
