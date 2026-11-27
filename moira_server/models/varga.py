@@ -96,6 +96,60 @@ class VargaChartPushkaraResponse(_StrictModel):
     provenance: SiderealChartProvenanceResponse
 
 
+class KharaRequest(_StrictModel):
+    """Resolved sidereal Moon and Lagna longitudes."""
+
+    moon_sidereal_longitude: FiniteNumber
+    lagna_sidereal_longitude: FiniteNumber
+
+
+class KharaCellResponse(_StrictModel):
+    """Physical zodiac bounds and projected divisional rulership."""
+
+    zodiac_ordinal: int
+    sign_ordinal: int
+    zodiac_sign: str
+    arc_start_arcseconds: int
+    arc_end_arcseconds: int
+    varga_sign: str
+    varga_lord: str
+
+
+class KharaDivisionResponse(_StrictModel):
+    """The seed and the result of an inclusive divisional count."""
+
+    reference: Literal["Moon", "Lagna"]
+    sidereal_longitude: float
+    division: Literal[9, 3]
+    count: Literal[64, 22]
+    seed: KharaCellResponse
+    target: KharaCellResponse
+
+
+class KharaResponse(_StrictModel):
+    """The Moon D9 and Lagna D3 counts in the selected profile."""
+
+    navamsa_64: KharaDivisionResponse
+    drekkana_22: KharaDivisionResponse
+    profile_id: Literal["jataka_parijata_inclusive"]
+    source_reference: str
+
+
+class KharaChartRequest(VedicSiderealChartRequest):
+    """A chart instant and observer coordinates for Lagna."""
+
+    observer_lat: Annotated[FiniteNumber, Field(gt=-90, lt=90)]
+    observer_lon: Annotated[FiniteNumber, Field(ge=-180, le=180)]
+
+
+class KharaChartResponse(_StrictModel):
+    """The two counts with the supplying sidereal chart evidence."""
+
+    result: KharaResponse
+    moon_center: Literal["geocentric"]
+    provenance: SiderealChartProvenanceResponse
+
+
 class VargaGenericRequest(_StrictModel):
     sidereal_longitude: float
     divisor: int = Field(ge=1, le=60)

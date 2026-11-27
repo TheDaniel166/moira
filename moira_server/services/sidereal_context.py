@@ -40,6 +40,7 @@ class SiderealChartRequirements:
     require_lagna: bool = False
     require_speeds: bool = False
     observer_required: bool = False
+    geocentric_positions: bool = False
 
     def __post_init__(self) -> None:
         if not self.required_bodies:
@@ -107,6 +108,10 @@ def derive_sidereal_chart_context(
             "include_nodes": request.include_nodes or requirements.include_nodes,
         }
     )
+    if requirements.geocentric_positions:
+        chart_request = chart_request.model_copy(
+            update={"observer_lat": None, "observer_lon": None, "observer_elev_m": 0.0},
+        )
     chart = build_chart_context(engine, chart_request)
     jd_utc = getattr(chart, "jd_ut", None)
     if jd_utc is None:

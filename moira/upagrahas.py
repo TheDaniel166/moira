@@ -88,6 +88,12 @@ _KALIDASA_MANDI_DAY_GHATIS: tuple[float, ...] = (26.0, 22.0, 18.0, 14.0, 10.0, 6
 _KALIDASA_MANDI_NIGHT_GHATIS: tuple[float, ...] = (10.0, 6.0, 2.0, 26.0, 22.0, 18.0, 14.0)
 
 
+def _mandi_defining_jd(weekday_sunday_zero, is_day, arc_start, arc_end):
+    """Scale the source's nominal 30-ghati Māndi clock to the actual arc."""
+    table = _KALIDASA_MANDI_DAY_GHATIS if is_day else _KALIDASA_MANDI_NIGHT_GHATIS
+    return arc_start + (arc_end - arc_start) * (table[weekday_sunday_zero] / 30.0)
+
+
 @dataclass(frozen=True, slots=True)
 class UpagrahaPolicy:
     """Explicit doctrine switches (defaults are BPHS-primary)."""
@@ -382,12 +388,7 @@ def _kalavela_bound(jd_ut, latitude, longitude, ayanamsa_system, policy, reader)
     else:
         # Uttara Kalamrita I.7 table: ghatis after arc start, scaled by
         # the actual arc length over the nominal 30 ghatis.
-        table = (
-            _KALIDASA_MANDI_DAY_GHATIS if is_day
-            else _KALIDASA_MANDI_NIGHT_GHATIS
-        )
-        ghatis = table[weekday_index]
-        t = arc_start + duration * (ghatis / 30.0)
+        t = _mandi_defining_jd(weekday_index, is_day, arc_start, arc_end)
         asc_sid, asc_trop = _ascendant_at(t, latitude, longitude, ayanamsa_system)
         upagrahas['Mandi'] = KalavelaUpagraha(
             name='Mandi',

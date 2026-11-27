@@ -172,17 +172,25 @@ def _refine_sunrise(estimate, zone, lat, lon, policy):
     return SayanadiSunriseBracket(_moment((low + high) / 2, zone), low, high)
 
 
+class _UndefinedLagnaError(ValueError):
+    """The horizon and ecliptic fail to define a unique ascendant."""
+
+
 def _lagna(epoch, latitude, longitude):
-    dpsi, deps = nutation(epoch.jd_tt)
-    mean_eps = mean_obliquity(epoch.jd_tt)
+    return _lagna_at_tt(epoch.jd_ut1, epoch.jd_tt, epoch.ayanamsa_degrees, latitude, longitude)
+
+
+def _lagna_at_tt(jd_ut1, jd_tt, ayanamsa_degrees, latitude, longitude):
+    dpsi, deps = nutation(jd_tt)
+    mean_eps = mean_obliquity(jd_tt)
     eps = mean_eps + deps
-    armc = _local_sidereal_time_at_tt(epoch.jd_ut1, epoch.jd_tt, longitude, dpsi, mean_eps)
+    armc = _local_sidereal_time_at_tt(jd_ut1, jd_tt, longitude, dpsi, mean_eps)
     theta, epsilon, phi = map(math.radians, (armc, eps, latitude))
     x = math.sin(theta) * math.cos(epsilon) + math.tan(phi) * math.sin(epsilon)
     if math.hypot(x, -math.cos(theta)) < 1e-12:
-        raise ValueError("birth horizon/ecliptic does not define a unique Lagna")
+        raise _UndefinedLagnaError("birth horizon/ecliptic does not define a unique Lagna")
     tropical = _asc_from_armc(armc, eps, latitude)
-    return tropical, (tropical - epoch.ayanamsa_degrees) % 360
+    return tropical, (tropical - ayanamsa_degrees) % 360
 
 
 def avasthas_for_datetime(birth: datetime, latitude: float, longitude: float, *,

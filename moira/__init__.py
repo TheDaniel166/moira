@@ -674,6 +674,15 @@ from .lunar_month import (  # noqa: E402 - imports intentionally follow the kern
     LunarMonthSystem, LunarMonthPolicy, CalendarBoundary, LunarMonthLabel,
     LunarLunation, LunarMonthProvenance, LunarMonthResult, lunar_month_at,
 )
+from .khara_divisions import KharaCell, KharaDivision, KharaDivisionsResult, khara_divisions  # noqa: E402
+from .prashna import (  # noqa: E402
+    PrashnaSphutas, PrashnaGulikaEvidence, PrashnaSphutasChart,
+    prashna_sphutas, prashna_sphutas_for_datetime,
+)
+from .choghadiya import (  # noqa: E402
+    ChoghadiyaInterval, ChoghadiyaSchedule, ChoghadiyaDay,
+    choghadiya_from_solar_times, choghadiya_for_date,
+)
 from .pushkara import PushkaraBhagaProfile, PushkaraResult, pushkara  # noqa: E402 - imports intentionally follow the kernel warning
 from .special_lagnas import (  # noqa: E402 - imports intentionally follow the kernel warning
     SpecialLagnaBirthResult, SpecialLagnaResult, special_lagnas, special_lagnas_for_datetime,
@@ -2167,6 +2176,11 @@ __all__ = [
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
     "SpecialLagnaBirthResult", "SpecialLagnaResult", "special_lagnas", "special_lagnas_for_datetime",
+    "KharaCell", "KharaDivision", "KharaDivisionsResult", "khara_divisions",
+    "PrashnaSphutas", "PrashnaGulikaEvidence", "PrashnaSphutasChart",
+    "prashna_sphutas", "prashna_sphutas_for_datetime",
+    "ChoghadiyaInterval", "ChoghadiyaSchedule", "ChoghadiyaDay",
+    "choghadiya_from_solar_times", "choghadiya_for_date",
     "PushkaraBhagaProfile", "PushkaraResult", "pushkara",
     "panchanga_at",
     "tithi_condition_profile",

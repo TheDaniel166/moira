@@ -17,6 +17,7 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from enum import Enum
 from functools import lru_cache
+from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .julian import jd_from_datetime, utc_to_ut1, utc_datetime_from_ut1
@@ -297,6 +298,34 @@ def _solar_date(local_date: date, zone: tzinfo, latitude: float,
     )
 
 
+_SolarCycleMissing = Literal["sunrise_absent", "sunrise_ambiguous", "next_sunrise_absent",
+                   "next_sunrise_ambiguous", "sunset_absent", "sunset_ambiguous"]
+
+
+def _validate_solar_location(latitude: float, longitude: float) -> None:
+    _finite_number("latitude", latitude)
+    _finite_number("longitude", longitude)
+    if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+        raise ValueError("latitude/longitude must be within [-90,90]/[-180,180]")
+
+
+def _solar_cycle_on(
+    solar: PanchangaSolarDate, following: PanchangaSolarDate,
+) -> tuple[PanchangaMoment | None, PanchangaMoment | None, PanchangaMoment | None, _SolarCycleMissing | None]:
+    """Resolve unique rise, set and next rise from adjacent civil dates."""
+    rise = solar.sunrises[0] if len(solar.sunrises) == 1 else None
+    next_rise = following.sunrises[0] if len(following.sunrises) == 1 else None
+    if rise is None:
+        return rise, None, next_rise, "sunrise_ambiguous" if solar.sunrises else "sunrise_absent"
+    if next_rise is None:
+        return rise, None, next_rise, "next_sunrise_ambiguous" if following.sunrises else "next_sunrise_absent"
+    sunsets = tuple(event for event in solar.sunsets + following.sunsets
+                    if rise.jd_ut1 < event.jd_ut1 < next_rise.jd_ut1)
+    if len(sunsets) != 1:
+        return rise, None, next_rise, "sunset_ambiguous" if sunsets else "sunset_absent"
+    return rise, sunsets[0], next_rise, None
+
+
 _LIMBS = (("tithi", 12.0, 30), ("nakshatra", 360.0 / 27, 27),
           ("yoga", 360.0 / 27, 27), ("karana", 6.0, 60))
 
@@ -395,10 +424,7 @@ def daily_panchanga(local_date: date, latitude: float, longitude: float, *,
         raise TypeError("local_date must be a date, not a datetime or string")
     if not date(1, 1, 2) <= local_date <= date(9999, 12, 27):
         raise ValueError("local_date must allow adjacent dates and 72-hour lookahead")
-    for key, value in (("latitude", latitude), ("longitude", longitude)):
-        _finite_number(key, value)
-    if not -90.0 <= latitude <= 90.0 or not -180.0 <= longitude <= 180.0:
-        raise ValueError("latitude/longitude must be within [-90,90]/[-180,180]")
+    _validate_solar_location(latitude, longitude)
     if policy is not None and not isinstance(policy, DailyPanchangaPolicy):
         raise TypeError("policy must be DailyPanchangaPolicy")
     selected = policy or DailyPanchangaPolicy()

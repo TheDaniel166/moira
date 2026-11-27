@@ -349,6 +349,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "prashna",
+        "x-displayName": "Prashna",
+        "description": "Raman's Prasna Marga sphutas with supplied longitudes or reader-bound question chart evidence.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "upagrahas",
         "x-displayName": "Upagrahas",
         "description": "Gulika/Mandi and the kalavelas (BPHS 3.66-70, lineage variants as policy) plus the Sun-derived upagrahas (BPHS 3.61-64 with the verse-stated self-check).",

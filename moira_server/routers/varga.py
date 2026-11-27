@@ -6,12 +6,14 @@ from fastapi import APIRouter, Depends
 
 from moira import Moira
 from moira.pushkara import pushkara
+from moira.khara_divisions import khara_divisions
 
 from ..dependencies import get_engine
 
 from ..models.varga import (
     D60SignRequest,
     D60SignResponse,
+    KharaRequest, KharaResponse, KharaChartRequest, KharaChartResponse,
     VimshopakaChartResponse,
     VimshopakaRequest,
     VargaChartNamedRequest,
@@ -34,6 +36,7 @@ from ..models.varga import (
     VargaShodashvargaRequest,
     VargaShodashvargaResponse,
 )
+from ..services.sidereal_context import SiderealChartRequirements, derive_sidereal_chart_context
 from ..serializers.sidereal_context import serialize_sidereal_chart_provenance
 from ..serializers.varga import (
     serialize_varga_chart_named,
@@ -67,6 +70,31 @@ def d60_sign_route(request: D60SignRequest) -> D60SignResponse:
     from moira.varga import d60_sign
     result = d60_sign(request.sidereal_longitude, method=request.method)
     return D60SignResponse(**{name: getattr(result, name) for name in D60SignResponse.model_fields})
+
+
+@router.post("/khara-divisions", response_model=KharaResponse)
+def khara_divisions_route(request: KharaRequest) -> KharaResponse:
+    """Count from supplied sidereal Moon and Lagna positions."""
+    result = khara_divisions(**request.model_dump())
+    return KharaResponse.model_validate(result, from_attributes=True)
+
+
+@router.post("/chart/khara-divisions", response_model=KharaChartResponse)
+def khara_chart_divisions_route(
+    request: KharaChartRequest, engine: Moira = Depends(get_engine),
+) -> KharaChartResponse:
+    """Count from one derived sidereal chart and preserve its provenance."""
+    context = derive_sidereal_chart_context(
+        engine, request, SiderealChartRequirements(
+            required_bodies=("Moon",), require_lagna=True, geocentric_positions=True,
+        ),
+    )
+    result = engine.khara_divisions(context.sidereal_longitudes["Moon"], context.sidereal_lagna)
+    return KharaChartResponse(
+        result=KharaResponse.model_validate(result, from_attributes=True),
+        moon_center="geocentric",
+        provenance=serialize_sidereal_chart_provenance(context),
+    )
 
 
 @router.post("/pushkara", response_model=PushkaraResponse)

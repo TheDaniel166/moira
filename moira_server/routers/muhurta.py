@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from moira import Moira
+from moira.choghadiya import choghadiya_from_solar_times
 
 from ..dependencies import get_engine
 from ..models.muhurta import (
@@ -29,6 +30,9 @@ from ..models.muhurta_search import (
     MuhurtaSearchRequest, MuhurtaSearchResponse, MuhurtaSearchWithSamplesResponse,
 )
 from ..services.muhurta_search import compute_muhurta_precomputed_score, compute_muhurta_search
+from ..models.choghadiya import (
+    ChoghadiyaSolarRequest, ChoghadiyaResponse, ChoghadiyaDayRequest, ChoghadiyaDayResponse,
+)
 from ..models.named_muhurta import (
     NamedMuhurtaDirectRequest, NamedMuhurtaDayRequest, NamedMuhurtaResponse, NamedMuhurtaDayResponse,
 )
@@ -76,6 +80,22 @@ from ..services.muhurta_travel import compute_travel_datetime,compute_travel_win
 
 
 router = APIRouter(prefix="/v1/muhurta", tags=["muhurta"])
+
+
+@router.post("/choghadiya/from-solar-times", response_model=ChoghadiyaResponse)
+def choghadiya_solar_route(request: ChoghadiyaSolarRequest) -> ChoghadiyaResponse:
+    """Divide the supplied sunrise-day and night arcs into named eighths."""
+    result = choghadiya_from_solar_times(**request.model_dump())
+    return ChoghadiyaResponse.model_validate(result, from_attributes=True)
+
+
+@router.post("/choghadiya/day", response_model=ChoghadiyaDayResponse)
+def choghadiya_day_route(
+    request: ChoghadiyaDayRequest, engine: Moira = Depends(get_engine),
+) -> ChoghadiyaDayResponse:
+    """Resolve local solar anchors and preserve the sunrise's weekday overnight."""
+    result = engine.choghadiya_for_date(**request.model_dump())
+    return ChoghadiyaDayResponse.model_validate(result, from_attributes=True)
 
 
 @router.get('/travel/catalogue',response_model=TravelCatalogueResponse)

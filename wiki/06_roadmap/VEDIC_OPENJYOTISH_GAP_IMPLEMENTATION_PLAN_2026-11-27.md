@@ -247,3 +247,61 @@ fields and mark unrepresentable civil instants explicitly. Validate round trips
 through the chart time parser at the precision supported by both transports
 and separately cover birth-clipped starts and historical time support. The
 site can use the same released contract independently of the Vedic research waves.
+
+## Continuation checkpoint — 27 November 2026
+
+**Wave 1 is published.** GitHub `origin/main` was checked at
+[`2a3938b`](https://github.com/TheDaniel166/moira/commit/2a3938bab627b2b53b93b5c2f03f715a9b210a1a).
+That commit contains Special Lagnas and both Pushkara assessments. Its
+rebased validation passed 298 focused tests.
+
+Wave 2 includes the Moon's inclusive 64th Navamsa, Lagna's inclusive 22nd
+Drekkana, Raman's Tri-, Chatus- and Pancha-sphutas, and the Sirohi Choghadiya
+day and night schedules. Python, the Moira facade and six REST routes are in
+place. The [source standard](../02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDARD.md)
+records the source readings, worked examples and modern materialization
+choices. It documents why the numbered divisions preserve the in-sign
+ordinal, why Raman's profile uses the Māndi clock for Gulika, and why the
+night retains the sunrise weekday through midnight.
+
+**Verification recorded.** Python 3.14.8 and DE441 ran the initial focused
+suite with 450 passes and zero skips. The route inventory and REST
+capability map checks passed with 71 reviewed decisions and 1,109 baseline
+IDs still awaiting mapping. Ruff and docstring comparisons found no
+new findings against the Wave 1 commit. Existing findings on touched files
+at the baseline were 75 Ruff and 70 docstring findings.
+
+Replay the focused suite from the isolated worktree if the diff changes.
+
+```powershell
+$env:MOIRA_NO_DOWNLOAD = '1'
+$env:MOIRA_STRICT_KNOWN_ISSUES = '1'
+$wave2Tests = @(
+    'tests/unit/test_vedic_wave2.py',
+    'tests/unit/test_varga.py',
+    'tests/unit/test_varga_exact_partition.py',
+    'tests/unit/test_shodashvarga.py',
+    'tests/unit/test_upagrahas.py',
+    'tests/unit/test_sayanadi_dated.py',
+    'tests/unit/test_named_muhurta.py',
+    'tests/unit/test_daily_panchanga.py',
+    'tests/unit/test_rest_capability_map.py',
+    'tests/server/test_server_vedic_wave2.py',
+    'tests/server/test_server_varga_routes.py',
+    'tests/server/test_server_named_muhurta.py',
+    'tests/server/test_server_special_lagnas_pushkara.py',
+    'tests/integration/test_sayanadi_ephemeris.py'
+)
+.\.venv\Scripts\python.exe -m pytest -o addopts= -q @wave2Tests
+.\.venv\Scripts\python.exe scripts/sync_rest_api_reference.py --check
+.\.venv\Scripts\python.exe scripts/check_rest_capability_map.py
+git diff --check
+```
+
+The Wave 2 review corrected the Khara chart path to use a geocentric Moon
+and a local Lagna. The reconstructed Charak chart agrees within one
+arcminute of the printed Moon and reproduces both projected lords. The
+expanded focused suite passed 464 tests with zero skips, including the shared
+sidereal chart context.
+
+Wave 3 begins with the primary texts and worked cases in sections 5–7.

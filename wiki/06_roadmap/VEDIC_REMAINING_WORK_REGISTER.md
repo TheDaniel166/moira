@@ -1593,3 +1593,14 @@ unit and server passes and 15 real-ephemeris daily Panchanga integration passes,
 with zero skips. New tests cover source arithmetic, the 108 Navamsa divisions,
 both Bhaga tables, sunrise ownership, DST, polar unavailability and DE441
 direct/HTTP parity. Source publication and deployment are separate.
+
+## 66. Numbered divisions, Prashna sphutas, and Choghadiya local delivery - 27 November 2026
+
+The second engine wave implements the inclusive 64th Navamsa from the Moon
+and 22nd Drekkana from Lagna, the Tri-, Chatus- and Pancha-sphuta chain in
+Raman's Prasna Marga edition, and both Sirohi Choghadiya schedules. Six
+additive REST routes cover supplied and chart- or date-derived inputs.
+The [source standard](../02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDARD.md)
+records the editions, the count and clock variants, and the published cases
+used for regression testing. This checkpoint covers engine source and local
+verification.

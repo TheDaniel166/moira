@@ -527,6 +527,54 @@
       ]
     },
     {
+      "capability": "khara_divisions_from_sidereal_longitudes",
+      "engine": ["moira.khara_divisions:khara_divisions","moira.facade:Moira.khara_divisions"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_direct_routes_have_no_ephemeris_dependency",
+      "routes": [
+        {"operation":"POST /v1/varga/khara-divisions","request":["moon_sidereal_longitude","lagna_sidereal_longitude"],"response":["navamsa_64","drekkana_22","jataka_parijata_inclusive","arc_start_arcseconds","varga_lord"]}
+      ]
+    },
+    {
+      "capability": "chart_derived_khara_divisions",
+      "engine": ["moira.facade:Moira.khara_divisions_for_chart"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_khara_chart_http_and_facade_agree",
+      "routes": [
+        {"operation":"POST /v1/varga/chart/khara-divisions","request":["dt","observer_lat","observer_lon","ayanamsa_system"],"response":["result","provenance","sidereal_lagna","moon_center","geocentric","navamsa_64","drekkana_22"]}
+      ]
+    },
+    {
+      "capability": "prashna_sphutas_from_sidereal_longitudes",
+      "engine": ["moira.prashna:prashna_sphutas","moira.facade:Moira.prashna_sphutas"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_direct_routes_have_no_ephemeris_dependency",
+      "routes": [
+        {"operation":"POST /v1/prashna/sphutas","request":["lagna","moon","gulika","sun","rahu"],"response":["tri","chatus","pancha","prasna_marga_raman_1991"]}
+      ]
+    },
+    {
+      "capability": "chart_derived_prashna_sphutas",
+      "engine": ["moira.prashna:prashna_sphutas_for_datetime","moira.facade:Moira.prashna_sphutas_for_datetime"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_prashna_http_facade_mandi_and_explicit_nodes",
+      "routes": [
+        {"operation":"POST /v1/prashna/chart/sphutas","request":["dt","timezone","rahu_mode","mean","true","sunrise_definition"],"response":["raman_mandi_30_ghati_table","gulika","unavailable_reason","result"]}
+      ]
+    },
+    {
+      "capability": "choghadiya_from_solar_times",
+      "engine": ["moira.choghadiya:choghadiya_from_solar_times","moira.facade:Moira.choghadiya_from_solar_times"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_direct_routes_have_no_ephemeris_dependency",
+      "routes": [
+        {"operation":"POST /v1/muhurta/choghadiya/from-solar-times","request":["weekday","sunrise_jd_ut1","sunset_jd_ut1","next_sunrise_jd_ut1"],"response":["day","night","sirohi_1916"]}
+      ]
+    },
+    {
+      "capability": "dated_choghadiya",
+      "engine": ["moira.choghadiya:choghadiya_for_date","moira.facade:Moira.choghadiya_for_date"],
+      "witness": "tests/server/test_server_vedic_wave2.py::test_dated_choghadiya_http_facade_and_dst",
+      "routes": [
+        {"operation":"POST /v1/muhurta/choghadiya/day","request":["local_date","latitude","longitude","timezone","sunrise_definition"],"response":["schedule","boundaries","sunrise","sunset","next_sunrise","unavailable_reason"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

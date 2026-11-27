@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 619
-- Registered OpenAPI operations: 619 (GET 58, POST 561)
+- Registered OpenAPI paths: 625
+- Registered OpenAPI operations: 625 (GET 58, POST 567)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 615
+- Versioned `/v1` paths: 621
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2431,6 +2431,25 @@ the applied Bhaga interval and match, and the respective source references.
 The chart response also returns the body and existing chart provenance.
 See the [Pushkara standard](../02_standards/SPECIAL_LAGNAS_PUSHKARA_STANDARD.md#pushkara).
 
+The numbered divisions use the `jataka_parijata_inclusive` profile. The
+direct route takes sidereal Moon and Lagna longitudes. The chart route
+requires observer coordinates for Lagna, uses a geocentric Moon and returns
+sidereal chart provenance. Both return the seed and target zodiac cells, their arc bounds and their projected
+signs and lords.
+
+Prashna's direct route takes five sidereal longitudes in `[0, 360)`. The
+chart route takes a zoned question instant and location and requires an
+explicit `rahu_mode` of `mean` or `true`. It returns the three sphutas,
+their operands, and the Māndi-based Gulika anchor when available.
+
+Choghadiya's direct route takes the sunrise weekday (Monday=0) and three
+ordered UT1 solar anchors. The dated route resolves those anchors for the
+local date, place and horizon policy and gives the 17 boundary instants in
+order. The night retains the sunrise weekday through midnight. Missing or
+ambiguous anchors produce a named unavailable schedule.
+
+See the [numbered divisions, Prashna and Choghadiya source standard](../02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDARD.md).
+
 Every `VargaPointResponse` includes canonical nullable `deity`, applied
 `d60_method`, `d60_source_references` and `d60_degree_attribution`. Named D60 supplies its corrected deity string; generic divisor
 60 and other divisions retain `deity=null`. Full D60 numeric output uses
@@ -4586,6 +4605,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/business/windows` | muhurta | `business_windows_route_v1_muhurta_business_windows_post` |
 | `POST` | `/v1/muhurta/chart/classification` | muhurta | `muhurta_chart_classification_route_v1_muhurta_chart_classification_post` |
 | `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
+| `POST` | `/v1/muhurta/choghadiya/day` | muhurta | `choghadiya_day_route_v1_muhurta_choghadiya_day_post` |
+| `POST` | `/v1/muhurta/choghadiya/from-solar-times` | muhurta | `choghadiya_solar_route_v1_muhurta_choghadiya_from_solar_times_post` |
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
 | `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
 | `GET` | `/v1/muhurta/doshas/catalogue` | muhurta | `dosha_catalogue_route_v1_muhurta_doshas_catalogue_get` |
@@ -4719,6 +4740,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/positions/sky` | positions | `sky_position_route_v1_positions_sky_post` |
 | `POST` | `/v1/positions/sky/reduction` | positions | `sky_position_reduction_route_v1_positions_sky_reduction_post` |
 | `POST` | `/v1/positions/time-series` | positions | `planet_time_series_route_v1_positions_time_series_post` |
+| `POST` | `/v1/prashna/chart/sphutas` | prashna | `prashna_chart_sphutas_route_v1_prashna_chart_sphutas_post` |
+| `POST` | `/v1/prashna/sphutas` | prashna | `prashna_sphutas_route_v1_prashna_sphutas_post` |
 | `POST` | `/v1/primary-directions/arcs` | primary-directions | `primary_directions_arcs_route_v1_primary_directions_arcs_post` |
 | `POST` | `/v1/primary-directions/arcs/reduction` | primary-directions | `primary_directions_arcs_reduction_route_v1_primary_directions_arcs_reduction_post` |
 | `POST` | `/v1/primary-directions/network` | primary-directions | `primary_directions_network_route_v1_primary_directions_network_post` |
@@ -4833,12 +4856,14 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/uranian/bulk` | uranian | `uranian_bulk_route_v1_uranian_bulk_post` |
 | `GET` | `/v1/uranian/catalog` | uranian | `uranian_catalog_route_v1_uranian_catalog_get` |
 | `POST` | `/v1/uranian/position` | uranian | `uranian_position_route_v1_uranian_position_post` |
+| `POST` | `/v1/varga/chart/khara-divisions` | varga | `khara_chart_divisions_route_v1_varga_chart_khara_divisions_post` |
 | `POST` | `/v1/varga/chart/named` | varga | `varga_chart_named_route_v1_varga_chart_named_post` |
 | `POST` | `/v1/varga/chart/pushkara` | varga | `varga_chart_pushkara_route_v1_varga_chart_pushkara_post` |
 | `POST` | `/v1/varga/chart/shodashvarga` | varga | `varga_chart_shodashvarga_route_v1_varga_chart_shodashvarga_post` |
 | `POST` | `/v1/varga/chart/shodashvarga/batch` | varga | `varga_chart_shodashvarga_batch_route_v1_varga_chart_shodashvarga_batch_post` |
 | `POST` | `/v1/varga/d60/sign` | varga | `d60_sign_route_v1_varga_d60_sign_post` |
 | `POST` | `/v1/varga/generic` | varga | `varga_generic_route_v1_varga_generic_post` |
+| `POST` | `/v1/varga/khara-divisions` | varga | `khara_divisions_route_v1_varga_khara_divisions_post` |
 | `POST` | `/v1/varga/named` | varga | `varga_named_route_v1_varga_named_post` |
 | `POST` | `/v1/varga/named/batch` | varga | `varga_named_batch_route_v1_varga_named_batch_post` |
 | `POST` | `/v1/varga/pushkara` | varga | `varga_pushkara_route_v1_varga_pushkara_post` |

@@ -1,5 +1,5 @@
 """Bounded numeric and identity types for direct Vedic transport inputs."""
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Literal
 from pydantic import AfterValidator, BeforeValidator, Field
 
@@ -15,6 +15,20 @@ SignIndex = Annotated[int, Field(strict=True, ge=0, le=11)]
 RekhaCount = Annotated[int, Field(strict=True, ge=0, le=8)]
 RekhaTable = Annotated[tuple[RekhaCount, ...], Field(min_length=12, max_length=12)]
 CLASSICAL_PLANETS = frozenset(("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"))
+
+
+def require_civil_date(value):
+    """Admit a Gregorian ISO date or a Python date without timestamp coercion."""
+    if type(value) is date:
+        return value
+    if isinstance(value, str):
+        parsed = date.fromisoformat(value)
+        if parsed.isoformat() == value:
+            return parsed
+    raise ValueError("local_date must be a Gregorian YYYY-MM-DD date")
+
+
+CivilDate = Annotated[date, BeforeValidator(require_civil_date)]
 
 
 def require_civil_datetime(value):

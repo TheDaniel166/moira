@@ -22,6 +22,9 @@ _panchanga = importlib.import_module("moira.panchanga")
 _daily_panchanga = importlib.import_module("moira.daily_panchanga")
 _special_lagnas = importlib.import_module("moira.special_lagnas")
 _pushkara = importlib.import_module("moira.pushkara")
+_khara = importlib.import_module("moira.khara_divisions")
+_prashna = importlib.import_module("moira.prashna")
+_choghadiya = importlib.import_module("moira.choghadiya")
 _lunar_month = importlib.import_module("moira.lunar_month")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
 _gochara_windows = importlib.import_module("moira.gochara_windows")
@@ -563,6 +566,37 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         return _daily_panchanga.daily_panchanga(
             local_date, latitude, longitude, timezone=timezone,
             policy=policy, reader=self._reader,
+        )
+
+    def choghadiya_from_solar_times(self, *, weekday, sunrise_jd_ut1, sunset_jd_ut1, next_sunrise_jd_ut1):
+        """Build the local weekday's two Choghadiya arcs from supplied UT1 anchors."""
+        return _choghadiya.choghadiya_from_solar_times(
+            weekday=weekday, sunrise_jd_ut1=sunrise_jd_ut1, sunset_jd_ut1=sunset_jd_ut1,
+            next_sunrise_jd_ut1=next_sunrise_jd_ut1,
+        )
+
+    def choghadiya_for_date(
+        self, local_date, latitude, longitude, *, timezone,
+        sunrise_definition=_daily_panchanga.PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB,
+    ):
+        """Build a sunrise-owned Choghadiya schedule with the facade reader."""
+        return _choghadiya.choghadiya_for_date(
+            local_date, latitude, longitude, timezone=timezone,
+            sunrise_definition=sunrise_definition, reader=self._reader,
+        )
+
+    def prashna_sphutas(self, *, lagna, moon, gulika, sun, rahu):
+        """Evaluate the three Prasna Marga sphutas from supplied longitudes."""
+        return _prashna.prashna_sphutas(lagna=lagna, moon=moon, gulika=gulika, sun=sun, rahu=rahu)
+
+    def prashna_sphutas_for_datetime(
+        self, dt, latitude, longitude, *, timezone, rahu_mode, ayanamsa_system="Lahiri",
+        sunrise_definition=_daily_panchanga.PanchangaSunriseDefinition.RASHTRIYA_UPPER_LIMB,
+    ):
+        """Evaluate the sphutas from a reader-bound question chart and Māndi clock."""
+        return _prashna.prashna_sphutas_for_datetime(
+            dt, latitude, longitude, timezone=timezone, rahu_mode=rahu_mode,
+            ayanamsa_system=ayanamsa_system, sunrise_definition=sunrise_definition, reader=self._reader,
         )
 
     def special_lagnas(self, sun_sidereal_longitude: float, elapsed_seconds: float):
@@ -1204,6 +1238,23 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             ayanamsa_system=system,
         )[body]
         return function(sidereal)
+
+    def khara_divisions(self, moon_sidereal_longitude, lagna_sidereal_longitude):
+        """Count the 64th Navamsa from the Moon and the 22nd Drekkana from Lagna."""
+        return _khara.khara_divisions(moon_sidereal_longitude, lagna_sidereal_longitude)
+
+    def khara_divisions_for_chart(self, chart, *, tropical_lagna, ayanamsa_system="Lahiri"):
+        """Use a chart's geocentric Moon and its co-epoch tropical Lagna."""
+        if "Moon" in chart.planets and chart.planets["Moon"].is_topocentric:
+            raise ValueError("Khara divisions require a geocentric Moon")
+        jd_ut1 = _facade_module().utc_to_ut1(chart.jd_ut)
+        moon = self._sidereal_longitudes_from_chart(
+            chart, ("Moon",), ayanamsa_system=ayanamsa_system, _jd_ut1=jd_ut1,
+        )["Moon"]
+        lagna = self.tropical_to_sidereal(
+            _varga._normalize_longitude(tropical_lagna), jd_ut1, system=ayanamsa_system,
+        )
+        return self.khara_divisions(moon, lagna)
 
     def pushkara(self, sidereal_longitude: float, *, bhaga_profile: _pushkara.PushkaraBhagaProfile):
         """Evaluate both Pushkara techniques for one input sidereal longitude."""
