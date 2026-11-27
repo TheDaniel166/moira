@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 635
-- Registered OpenAPI operations: 635 (GET 61, POST 574)
+- Registered OpenAPI paths: 637
+- Registered OpenAPI operations: 637 (GET 61, POST 576)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 631
+- Versioned `/v1` paths: 633
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -4588,8 +4588,10 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/jaimini/karakas/pair` | jaimini | `jaimini_karakas_pair_route_v1_jaimini_karakas_pair_post` |
 | `POST` | `/v1/jaimini/karakas/profile` | jaimini | `jaimini_karakas_profile_route_v1_jaimini_karakas_profile_post` |
 | `POST` | `/v1/kp/chart` | kp | `kp_chart_route_v1_kp_chart_post` |
+| `POST` | `/v1/kp/chart/significators` | kp | `kp_chart_significators_route_v1_kp_chart_significators_post` |
 | `POST` | `/v1/kp/longitude` | kp | `kp_longitude_route_v1_kp_longitude_post` |
 | `GET` | `/v1/kp/profiles` | kp | `kp_profiles_route_v1_kp_profiles_get` |
+| `POST` | `/v1/kp/significators` | kp | `kp_significators_route_v1_kp_significators_post` |
 | `POST` | `/v1/kuta/match` | kuta | `kuta_match_route_v1_kuta_match_post` |
 | `GET` | `/v1/kuta/profiles` | kuta | `kuta_profiles_route_v1_kuta_profiles_get` |
 | `POST` | `/v1/local-space/chart/positions` | local-space | `local_space_chart_positions_route_v1_local_space_chart_positions_post` |

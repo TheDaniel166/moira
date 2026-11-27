@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from moira.kp import KPNodeMode, KPProfileId
+from moira.kp import KPNodeMode, KPProfileId, KPSignificatorRank
 from moira.kuta import FactorStatus, KutaProfileId
 
 from ._vedic_inputs import CivilDateTime, ClassicalPlanet, FiniteNumber, NodePlanet
@@ -134,3 +134,65 @@ class KPChartResponse(_StrictModel):
     cusp_status: Literal["available", "unavailable"]
     effective_house_system: str | None
     cusp_unavailable_reason: str | None
+
+
+class KPSignificatorsRequest(_StrictModel):
+    """Nine graha longitudes and twelve ordered sidereal opening cusps."""
+
+    planet_longitudes: Annotated[
+        dict[ClassicalPlanet | NodePlanet, _SiderealLongitude], Field(min_length=9, max_length=9),
+    ]
+    cusp_longitudes: Annotated[tuple[_SiderealLongitude, ...], Field(min_length=12, max_length=12)]
+    profile_id: KPProfileId = "krishnamurti_moira_placidus"
+
+
+class KPPlanetPlacementResponse(_StrictModel):
+    """The graha, sidereal longitude, occupied house and star lord."""
+
+    planet: ClassicalPlanet | NodePlanet
+    sidereal_longitude: float
+    occupied_house: int
+    star_lord: ClassicalPlanet | NodePlanet
+
+
+class KPSignificatorEvidenceResponse(_StrictModel):
+    """Rank and the occupant or cusp owner supporting it."""
+
+    rank: KPSignificatorRank = Field(
+        description="1 occupant's star, 2 occupant, 3 cusp owner's star, 4 cusp owner."
+    )
+    via: ClassicalPlanet | NodePlanet
+
+
+class KPSignificatorResponse(_StrictModel):
+    """The strongest rank with all direct evidence for that graha."""
+
+    planet: ClassicalPlanet | NodePlanet
+    strongest_rank: KPSignificatorRank
+    evidence: tuple[KPSignificatorEvidenceResponse, ...]
+
+
+class KPHouseSignificatorsResponse(_StrictModel):
+    """One house's opening cusp and direct significators."""
+
+    house: int
+    cusp_longitude: float
+    cusp_lord: ClassicalPlanet
+    significators: tuple[KPSignificatorResponse, ...]
+
+
+class KPSignificatorsResponse(_StrictModel):
+    """Direct KP ranks and the source and placement evidence behind them."""
+
+    profile_id: KPProfileId
+    method: Literal["four_direct_ranks"]
+    source_reference: str
+    placements: tuple[KPPlanetPlacementResponse, ...]
+    houses: tuple[KPHouseSignificatorsResponse, ...]
+
+
+class KPSignificatorChartResponse(_StrictModel):
+    """Reader-bound chart with ranked results when its cusps are available."""
+
+    chart: KPChartResponse
+    significators: KPSignificatorsResponse | None

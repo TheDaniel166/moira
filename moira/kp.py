@@ -1,7 +1,9 @@
-"""Krishnamurti stellar longitude chains and reader-bound Placidus charts."""
+"""Krishnamurti longitude chains, Placidus charts and house significators."""
 from bisect import bisect_right
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from itertools import pairwise
 from typing import Literal
 
 from ._ephemeris_time import _bind_ephemeris_time
@@ -20,16 +22,20 @@ from .vedic_dignities import _SIGN_RULER
 
 __all__ = [
     "KPProfile", "KPSector", "KPLongitude", "KPChart", "kp_profiles", "kp_longitude", "kp_chart_for_datetime",
+    "KPPlanetPlacement", "KPSignificatorEvidence", "KPSignificator", "KPHouseSignificators",
+    "KPSignificators", "KPSignificatorChart", "kp_significators", "kp_significators_for_datetime",
 ]
 
 KPProfileId = Literal["krishnamurti_moira_placidus"]
 KPNodeMode = Literal["mean", "true"]
+KPSignificatorRank = Literal[1, 2, 3, 4]
 
 _TICKS_PER_DEGREE = 10800  # three ticks per arcsecond
 _STAR_TICKS = 144000
 _SIGN_TICKS = 324000
 _STAR_STARTS = tuple(i * _STAR_TICKS / _TICKS_PER_DEGREE for i in range(27))
 _CLASSICAL = ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn")
+_GRAHAS = _CLASSICAL + ("Rahu", "Ketu")
 
 
 @dataclass(frozen=True, slots=True)
@@ -197,3 +203,136 @@ def kp_chart_for_datetime(
         "unavailable" if houses is None else "available",
         None if houses is None else houses.effective_system, reason,
     )
+
+
+@dataclass(frozen=True, slots=True)
+class KPPlanetPlacement:
+    """The sidereal input, occupied house and star lord of one graha."""
+
+    planet: str
+    sidereal_longitude: float
+    occupied_house: int
+    star_lord: str
+
+
+@dataclass(frozen=True, slots=True)
+class KPSignificatorEvidence:
+    """One direct rank and the occupant or cusp owner that supplies it."""
+
+    rank: KPSignificatorRank
+    via: str
+
+
+@dataclass(frozen=True, slots=True)
+class KPSignificator:
+    """One graha's best rank and every direct link to the same house."""
+
+    planet: str
+    strongest_rank: KPSignificatorRank
+    evidence: tuple[KPSignificatorEvidence, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class KPHouseSignificators:
+    """The opening cusp, its sign owner and ranked grahas for one house."""
+
+    house: int
+    cusp_longitude: float
+    cusp_lord: str
+    significators: tuple[KPSignificator, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class KPSignificators:
+    """The four direct KP ranks, from occupant's star to cusp sign owner."""
+
+    profile_id: KPProfileId
+    method: Literal["four_direct_ranks"]
+    source_reference: str
+    placements: tuple[KPPlanetPlacement, ...]
+    houses: tuple[KPHouseSignificators, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class KPSignificatorChart:
+    """Chart and significators, or the chart's receipt for unavailable cusps."""
+
+    chart: KPChart
+    significators: KPSignificators | None
+
+
+def kp_significators(
+    *, planet_longitudes: Mapping[str, float], cusp_longitudes: Sequence[float],
+    profile_id: KPProfileId = "krishnamurti_moira_placidus",
+) -> KPSignificators:
+    """Rank the nine grahas for each of twelve supplied sidereal opening cusps."""
+
+    _require_profile(profile_id)
+    if planet_longitudes.keys() != set(_GRAHAS):
+        raise ValueError("planet_longitudes must contain the seven classical planets, Rahu and Ketu")
+    if len(cusp_longitudes) != 12:
+        raise ValueError("cusp_longitudes must contain twelve opening cusps in house order")
+    cusps = tuple(kp_longitude(value, profile_id=profile_id) for value in cusp_longitudes)
+    planets = {name: kp_longitude(planet_longitudes[name], profile_id=profile_id) for name in _GRAHAS}
+    return _rank_significators(planets, cusps, profile_id)
+
+
+def _rank_significators(
+    planets: Mapping[str, KPLongitude], cusps: tuple[KPLongitude, ...], profile_id: KPProfileId,
+) -> KPSignificators:
+    angles = tuple(cusp.sidereal_longitude for cusp in cusps)
+
+    # Rotate the ordered cusp wheel at the zodiac seam. Comparing the
+    # original angles preserves half-open ownership at adjacent floats.
+    pivot = angles.index(min(angles))
+    ordered = angles[pivot:] + angles[:pivot]
+    if any(left >= right for left, right in pairwise(ordered)):
+        raise ValueError("cusp_longitudes must advance through exactly one zodiac cycle in house order")
+
+    placements = []
+    for planet in _GRAHAS:
+        chain = planets[planet]
+        longitude = chain.sidereal_longitude
+        index = bisect_right(ordered, longitude) - 1
+        occupied = (pivot + index) % 12 + 1
+        placements.append(KPPlanetPlacement(planet, longitude, occupied, chain.star.lord))
+
+    houses = []
+    for number, cusp in enumerate(cusps, 1):
+        owner = cusp.sign.lord
+        occupants = {point.planet for point in placements if point.occupied_house == number}
+        candidates = []
+        for point in placements:
+            links = []
+            if point.star_lord in occupants:
+                links.append(KPSignificatorEvidence(1, point.star_lord))
+            if point.planet in occupants:
+                links.append(KPSignificatorEvidence(2, point.planet))
+            if point.star_lord == owner:
+                links.append(KPSignificatorEvidence(3, owner))
+            if point.planet == owner:
+                links.append(KPSignificatorEvidence(4, owner))
+            if links:
+                candidates.append(KPSignificator(point.planet, links[0].rank, tuple(links)))
+        candidates.sort(key=lambda item: item.strongest_rank)
+        houses.append(KPHouseSignificators(number, cusp.sidereal_longitude, owner, tuple(candidates)))
+
+    return KPSignificators(
+        profile_id, "four_direct_ranks",
+        "Krishnamurti Reader III pp. 314–315, 405; Bhatt, Nakshatra Chintamani pp. 14–18",
+        tuple(placements), tuple(houses),
+    )
+
+
+def kp_significators_for_datetime(
+    dt: datetime, latitude: float, longitude: float, *,
+    node_mode: KPNodeMode, profile_id: KPProfileId = "krishnamurti_moira_placidus",
+    reader: KernelReader | None = None,
+) -> KPSignificatorChart:
+    """Rank the grahas in the reader-bound KP chart when Placidus cusps exist."""
+
+    chart = kp_chart_for_datetime(dt, latitude, longitude, node_mode=node_mode, profile_id=profile_id, reader=reader)
+    if chart.cusp_status == "unavailable":
+        return KPSignificatorChart(chart, None)
+    result = _rank_significators(chart.planets, chart.cusps, profile_id)
+    return KPSignificatorChart(chart, result)

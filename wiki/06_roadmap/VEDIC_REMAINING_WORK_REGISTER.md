@@ -1627,3 +1627,13 @@ factors with source ambiguities marked explicitly. The KP profile returns
 sign, star, sub and sub-sub chains for supplied longitudes or a reader-bound
 Placidus chart. See the [primary-source checkpoint](VEDIC_WAVE_4_PRIMARY_SOURCE_CHECKPOINT.md)
 for published examples, ambiguity decisions, and the five engine REST routes.
+
+## 69. KP house significators — 27 November 2026
+
+The C-03 continuation implements four direct significator ranks for all
+twelve houses. Supplied longitudes and reader-bound Placidus charts use
+the same ranking and evidence. The [source checkpoint](VEDIC_KP_SIGNIFICATORS_PRIMARY_SOURCE_CHECKPOINT.md)
+records the reproduced Reader III and Bhatt examples, exact cusp ownership,
+and scope of the two REST operations. Conjunction and aspect links, node
+representation, ruling planets, and period interpretation remain separately
+tracked extensions.

@@ -131,5 +131,6 @@ cusps are unavailable and the planet chains are still returned.
 The regression fixtures cover the eight printed Charak factors, Iyer's
 worked Dina exception and source ambiguities, all 108 pada boundaries, the
 2,187 KP sub-sub intervals and their adjacent floats, and the historical
-and modern DE441 chart cases. The separately tracked KP extensions are
-significators, ruling planets, and period interpretation.
+and modern DE441 chart cases. The [KP significators checkpoint](VEDIC_KP_SIGNIFICATORS_PRIMARY_SOURCE_CHECKPOINT.md)
+records the subsequent four-rank implementation. Ruling planets and period
+interpretation remain separate research items.

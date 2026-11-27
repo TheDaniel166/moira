@@ -206,6 +206,19 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             dt, latitude, longitude, node_mode=node_mode, profile_id=profile_id, reader=self._reader,
         )
 
+    def kp_significators(self, *, planet_longitudes, cusp_longitudes, profile_id="krishnamurti_moira_placidus"):
+        """Rank house significators from supplied sidereal longitudes."""
+        return _facade_module().kp_significators(
+            planet_longitudes=planet_longitudes, cusp_longitudes=cusp_longitudes, profile_id=profile_id,
+        )
+
+    def kp_significators_for_datetime(self, dt: datetime, latitude: float, longitude: float, *,
+                                     node_mode, profile_id="krishnamurti_moira_placidus"):
+        """Rank KP significators using this facade's reader and Placidus cusps."""
+        return _facade_module().kp_significators_for_datetime(
+            dt, latitude, longitude, node_mode=node_mode, profile_id=profile_id, reader=self._reader,
+        )
+
     def narayana_dasha(
         self, lagna_sidereal_longitude, sidereal_longitudes, *, resolved_strength=None,
         resolved_co_lords=None, birth_jd_ut1=None, year_basis=None,

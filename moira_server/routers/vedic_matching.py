@@ -2,12 +2,13 @@
 from fastapi import APIRouter, Depends
 
 from moira import Moira
-from moira.kp import kp_longitude, kp_profiles
+from moira.kp import kp_longitude, kp_profiles, kp_significators
 from moira.kuta import kuta_match, kuta_profiles
 
 from ..dependencies import get_engine
 from ..models.vedic_matching import (
     KPChartRequest, KPChartResponse, KPLongitudeRequest, KPLongitudeResponse, KPProfileResponse,
+    KPSignificatorChartResponse, KPSignificatorsRequest, KPSignificatorsResponse,
     KutaProfileResponse, KutaRequest, KutaResponse,
 )
 
@@ -44,3 +45,21 @@ def kp_chart_route(request: KPChartRequest, engine: Moira = Depends(get_engine))
     """Calculate the nine KP point chains and available ordered Placidus cusps."""
     result = engine.kp_chart_for_datetime(**request.model_dump())
     return KPChartResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/significators", response_model=KPSignificatorsResponse)
+def kp_significators_route(request: KPSignificatorsRequest) -> KPSignificatorsResponse:
+    """Rank house significators from supplied sidereal grahas and cusps."""
+
+    result = kp_significators(**request.model_dump())
+    return KPSignificatorsResponse.model_validate(result, from_attributes=True)
+
+
+@kp_router.post("/chart/significators", response_model=KPSignificatorChartResponse)
+def kp_chart_significators_route(
+    request: KPChartRequest, engine: Moira = Depends(get_engine),
+) -> KPSignificatorChartResponse:
+    """Calculate the chart and rank significators through its Placidus cusps."""
+
+    result = engine.kp_significators_for_datetime(**request.model_dump())
+    return KPSignificatorChartResponse.model_validate(result, from_attributes=True)

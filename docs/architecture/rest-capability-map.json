@@ -647,6 +647,22 @@
       ]
     },
     {
+      "capability": "kp_significators_from_longitudes",
+      "engine": ["moira.kp:kp_significators","moira.facade:Moira.kp_significators"],
+      "witness": "tests/server/test_server_kp_significators.py::test_direct_significators_rest_and_facade",
+      "routes": [
+        {"operation":"POST /v1/kp/significators","request":["planet_longitudes","cusp_longitudes","profile_id"],"response":["method","source_reference","occupied_house","cusp_lord","strongest_rank","evidence","via"]}
+      ]
+    },
+    {
+      "capability": "kp_placidus_chart_significators",
+      "engine": ["moira.kp:kp_significators_for_datetime","moira.facade:Moira.kp_significators_for_datetime"],
+      "witness": "tests/server/test_server_kp_significators.py::test_chart_significators_rest_and_de441",
+      "routes": [
+        {"operation":"POST /v1/kp/chart/significators","request":["dt","latitude","longitude","node_mode","profile_id"],"response":["significators","strongest_rank","cusp_unavailable_reason","ephemeris_identity"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

@@ -681,6 +681,8 @@ from .prashna import (  # noqa: E402
 )
 from .kp import (  # noqa: E402
     KPChart, KPLongitude, KPProfile, KPSector, kp_chart_for_datetime, kp_longitude, kp_profiles,
+    KPHouseSignificators, KPPlanetPlacement, KPSignificator, KPSignificatorChart,
+    KPSignificatorEvidence, KPSignificators, kp_significators, kp_significators_for_datetime,
 )
 from .kuta import (  # noqa: E402
     KutaFactor, KutaMatch, KutaMoon, KutaProfile, kuta_match, kuta_profiles,
@@ -2193,6 +2195,8 @@ __all__ = [
     "PrashnaSphutas", "PrashnaGulikaEvidence", "PrashnaSphutasChart",
     "prashna_sphutas", "prashna_sphutas_for_datetime",
     "KPChart", "KPLongitude", "KPProfile", "KPSector", "kp_chart_for_datetime", "kp_longitude", "kp_profiles",
+    "KPHouseSignificators", "KPPlanetPlacement", "KPSignificator", "KPSignificatorChart",
+    "KPSignificatorEvidence", "KPSignificators", "kp_significators", "kp_significators_for_datetime",
     "KutaFactor", "KutaMatch", "KutaMoon", "KutaProfile", "kuta_match", "kuta_profiles",
     "NarayanaDashaResult", "NarayanaDecision", "NarayanaPeriod", "active_narayana", "narayana_dasha",
     "VedicReturnCrossing", "VedicReturnChart", "TithiPraveshaCandidate", "TithiPraveshaResult",
