@@ -679,6 +679,13 @@ from .prashna import (  # noqa: E402
     PrashnaSphutas, PrashnaGulikaEvidence, PrashnaSphutasChart,
     prashna_sphutas, prashna_sphutas_for_datetime,
 )
+from .narayana import (  # noqa: E402
+    NarayanaDashaResult, NarayanaDecision, NarayanaPeriod, active_narayana, narayana_dasha,
+)
+from .vedic_returns import (  # noqa: E402
+    VedicReturnCrossing, VedicReturnChart, TithiPraveshaCandidate, TithiPraveshaResult,
+    MonthlyTajikaResult, tithi_pravesha, monthly_tajika,
+)
 from .choghadiya import (  # noqa: E402
     ChoghadiyaInterval, ChoghadiyaSchedule, ChoghadiyaDay,
     choghadiya_from_solar_times, choghadiya_for_date,
@@ -2179,6 +2186,9 @@ __all__ = [
     "KharaCell", "KharaDivision", "KharaDivisionsResult", "khara_divisions",
     "PrashnaSphutas", "PrashnaGulikaEvidence", "PrashnaSphutasChart",
     "prashna_sphutas", "prashna_sphutas_for_datetime",
+    "NarayanaDashaResult", "NarayanaDecision", "NarayanaPeriod", "active_narayana", "narayana_dasha",
+    "VedicReturnCrossing", "VedicReturnChart", "TithiPraveshaCandidate", "TithiPraveshaResult",
+    "MonthlyTajikaResult", "tithi_pravesha", "monthly_tajika",
     "ChoghadiyaInterval", "ChoghadiyaSchedule", "ChoghadiyaDay",
     "choghadiya_from_solar_times", "choghadiya_for_date",
     "PushkaraBhagaProfile", "PushkaraResult", "pushkara",

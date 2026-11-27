@@ -1604,3 +1604,14 @@ The [source standard](../02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDAR
 records the editions, the count and clock variants, and the published cases
 used for regression testing. This checkpoint covers engine source and local
 verification.
+
+## 67. Annual Tithi Pravesha, monthly Tājika, and Rath Narayana local delivery - 27 November 2026
+
+The Wave 3 branch implements the annual Rao conjunction-sign profiles,
+the Hāyanaratna monthly ephemeris projection, and the Rath D1 period
+profile with explicit strength evidence. The [source and verification
+record](VEDIC_WAVE_3_PRIMARY_SOURCE_CHECKPOINT.md) preserves the printed
+examples, reconstructed returns, and unresolved strength decisions.
+The focused engine and REST regression passed 208 tests with zero skips.
+Wave 2 was pushed at
+[`63f9311`](https://github.com/TheDaniel166/moira/commit/63f9311c201d125e700575549f8bca45d0facd6a).

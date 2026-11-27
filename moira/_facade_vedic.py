@@ -191,6 +191,24 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         from .chara_profiles import evaluate_chara_profile
         return evaluate_chara_profile(chart, profile_id=profile_id, projection=projection)
 
+    def narayana_dasha(
+        self, lagna_sidereal_longitude, sidereal_longitudes, *, resolved_strength=None,
+        resolved_co_lords=None, birth_jd_ut1=None, year_basis=None,
+    ):
+        """Build Rath's natal D1 schedule from sidereal placements and strength evidence."""
+        from .narayana import narayana_dasha
+
+        return narayana_dasha(
+            lagna_sidereal_longitude, sidereal_longitudes, resolved_strength=resolved_strength,
+            resolved_co_lords=resolved_co_lords, birth_jd_ut1=birth_jd_ut1, year_basis=year_basis,
+        )
+
+    def active_narayana(self, result, query_jd_ut1: float):
+        """Locate the active Narayana intervals on the result's declared UT1 clock."""
+        from .narayana import active_narayana
+
+        return active_narayana(result, query_jd_ut1)
+
     def assess_argala(self, chart, *, profile_id: str, references):
         """Assess one source profile without reader access or inferred context."""
         from .argala_assessment import assess_argala

@@ -5,6 +5,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from moira import Moira
+from moira.dasha_systems import _YEAR_BASIS
+from moira.narayana import _PROFILE_ID, _SOURCE_REFERENCE, active_narayana, narayana_dasha
 from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..dependencies import get_engine
@@ -14,6 +16,10 @@ from ..models.jaimini_profiles import (
 )
 from ..services.jaimini_profiles import (
     jaimini_profile_catalogue, compute_chara_profile, compute_argala_assessment,
+)
+from ..models.narayana import (
+    NarayanaActiveRequest, NarayanaActiveResponse, NarayanaPeriodResponse,
+    NarayanaProfileResponse, NarayanaRequest, NarayanaResponse,
 )
 from ..models.sayanadi import AvasthaBirthRequest, SayanadiRequest, SayanadiResponse
 from ..models.special_lagnas import (
@@ -83,6 +89,33 @@ def jaimini_profiles_route() -> JaiminiCatalogueResponse:
 def chara_profile_route(request: CharaProfileRequest) -> CharaProfileResponse:
     """One named Rangacharya recipe, source years and optional explicit Moira clock."""
     return compute_chara_profile(request)
+
+
+@jaimini_extended_router.get("/narayana-dasha/profile", response_model=NarayanaProfileResponse)
+def narayana_profile_route() -> NarayanaProfileResponse:
+    """Discover Rath's source profile and the available projection bases."""
+    return NarayanaProfileResponse(
+        profile_id=_PROFILE_ID, source_reference=_SOURCE_REFERENCE, year_bases=tuple(_YEAR_BASIS),
+        accepts_resolved_strength=True, accepts_resolved_co_lords=True,
+    )
+
+
+@jaimini_extended_router.post("/narayana-dasha/sequence", response_model=NarayanaResponse)
+def narayana_sequence_route(request: NarayanaRequest) -> NarayanaResponse:
+    """Apply Rath's D1 calculation with visible strength and resolution evidence."""
+    result = narayana_dasha(**request.model_dump())
+    return NarayanaResponse.model_validate(result, from_attributes=True)
+
+
+@jaimini_extended_router.post("/narayana-dasha/active", response_model=NarayanaActiveResponse)
+def narayana_active_route(request: NarayanaActiveRequest) -> NarayanaActiveResponse:
+    """Evaluate active major and subperiods on the explicitly requested clock."""
+    result = narayana_dasha(**request.model_dump(exclude={"query_jd_ut1"}))
+    active = active_narayana(result, request.query_jd_ut1)
+    return NarayanaActiveResponse(
+        query_jd_ut1=request.query_jd_ut1, unresolved=result.unresolved,
+        active=tuple(NarayanaPeriodResponse.model_validate(period, from_attributes=True) for period in active),
+    )
 
 
 @jaimini_extended_router.post("/argala/assessment", response_model=ArgalaAssessmentResponse)

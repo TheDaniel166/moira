@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 625
-- Registered OpenAPI operations: 625 (GET 58, POST 567)
+- Registered OpenAPI paths: 630
+- Registered OpenAPI operations: 630 (GET 59, POST 571)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 621
+- Versioned `/v1` paths: 626
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2450,6 +2450,20 @@ ambiguous anchors produce a named unavailable schedule.
 
 See the [numbered divisions, Prashna and Choghadiya source standard](../02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDARD.md).
 
+The Wave 3 returns expose `POST /v1/tithi-pravesha/chart` and
+`POST /v1/varshaphal/monthly/chart`. Tithi Pravesha requires a named Rao
+profile and an explicit timezone for the Gregorian year. It returns all
+eligible phase crossings and supplies a chart when a unique result is
+available. Monthly Tajika accepts months 1–12 and retains the sidereal
+Varshaphal anchors and the selected solar target.
+
+Rath Narayana Dasha exposes `GET /v1/jaimini/extended/narayana-dasha/profile`
+and the corresponding `POST` sequence and active operations. The sequence
+accepts natal D1 placements and optional explicit strength resolutions.
+With a birth UT1 and named year basis, it projects source-year durations
+as half-open UT1 intervals. See the
+[Wave 3 source and verification record](../06_roadmap/VEDIC_WAVE_3_PRIMARY_SOURCE_CHECKPOINT.md).
+
 Every `VargaPointResponse` includes canonical nullable `deity`, applied
 `d60_method`, `d60_source_references` and `d60_degree_attribution`. Named D60 supplies its corrected deity string; generic divisor
 60 and other divisions retain `deity=null`. Full D60 numeric output uses
@@ -4565,6 +4579,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/jaimini/extended/chara-dasha` | jaimini | `chara_dasha_route_v1_jaimini_extended_chara_dasha_post` |
 | `POST` | `/v1/jaimini/extended/chara-dasha/profile` | jaimini | `chara_profile_route_v1_jaimini_extended_chara_dasha_profile_post` |
 | `POST` | `/v1/jaimini/extended/karakamsa` | jaimini | `karakamsa_route_v1_jaimini_extended_karakamsa_post` |
+| `POST` | `/v1/jaimini/extended/narayana-dasha/active` | jaimini | `narayana_active_route_v1_jaimini_extended_narayana_dasha_active_post` |
+| `GET` | `/v1/jaimini/extended/narayana-dasha/profile` | jaimini | `narayana_profile_route_v1_jaimini_extended_narayana_dasha_profile_get` |
+| `POST` | `/v1/jaimini/extended/narayana-dasha/sequence` | jaimini | `narayana_sequence_route_v1_jaimini_extended_narayana_dasha_sequence_post` |
 | `GET` | `/v1/jaimini/extended/profiles` | jaimini | `jaimini_profiles_route_v1_jaimini_extended_profiles_get` |
 | `POST` | `/v1/jaimini/karakas` | jaimini | `jaimini_karakas_route_v1_jaimini_karakas_post` |
 | `POST` | `/v1/jaimini/karakas/condition` | jaimini | `jaimini_karakas_condition_route_v1_jaimini_karakas_condition_post` |
@@ -4844,6 +4861,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/timelords/zodiacal-releasing/level-pair` | timelords | `zr_level_pair_route_v1_timelords_zodiacal_releasing_level_pair_post` |
 | `POST` | `/v1/timelords/zodiacal-releasing/profile` | timelords | `zr_profile_route_v1_timelords_zodiacal_releasing_profile_post` |
 | `POST` | `/v1/timelords/zodiacal-releasing/sequence` | timelords | `zr_sequence_route_v1_timelords_zodiacal_releasing_sequence_post` |
+| `POST` | `/v1/tithi-pravesha/chart` | tithi-pravesha | `tithi_pravesha_chart_route_v1_tithi_pravesha_chart_post` |
 | `POST` | `/v1/transits/ingresses` | predictive | `ingress_search_route_v1_transits_ingresses_post` |
 | `POST` | `/v1/transits/natal-aspects` | predictive | `natal_aspect_search_route_v1_transits_natal_aspects_post` |
 | `POST` | `/v1/transits/next-ingress` | predictive | `next_ingress_route_v1_transits_next_ingress_post` |
@@ -4873,6 +4891,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/varshaphal/chart` | varshaphal | `varshaphal_chart_route_v1_varshaphal_chart_post` |
 | `POST` | `/v1/varshaphal/judgement/profile` | varshaphal | `varshaphal_judgement_profile_route_v1_varshaphal_judgement_profile_post` |
 | `POST` | `/v1/varshaphal/judgement/year` | varshaphal | `varshaphal_year_judgement_route_v1_varshaphal_judgement_year_post` |
+| `POST` | `/v1/varshaphal/monthly/chart` | varshaphal | `monthly_tajika_chart_route_v1_varshaphal_monthly_chart_post` |
 | `POST` | `/v1/varshaphal/mudda/active` | varshaphal | `varshaphal_mudda_active_route_v1_varshaphal_mudda_active_post` |
 | `POST` | `/v1/varshaphal/mudda/judgement` | varshaphal | `varshaphal_mudda_judgement_route_v1_varshaphal_mudda_judgement_post` |
 | `POST` | `/v1/varshaphal/summary` | varshaphal | `varshaphal_year_summary_route_v1_varshaphal_summary_post` |

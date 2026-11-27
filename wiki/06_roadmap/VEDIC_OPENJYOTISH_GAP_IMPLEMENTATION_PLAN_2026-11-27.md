@@ -305,3 +305,6 @@ expanded focused suite passed 464 tests with zero skips, including the shared
 sidereal chart context.
 
 Wave 3 begins with the primary texts and worked cases in sections 5–7.
+
+Wave 3 evidence and implementation decisions are recorded in the
+[primary-source checkpoint](VEDIC_WAVE_3_PRIMARY_SOURCE_CHECKPOINT.md).

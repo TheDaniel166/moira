@@ -130,6 +130,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "predictive",
     },
     {
+        "name": "tithi-pravesha",
+        "x-displayName": "Tithi Pravesha",
+        "description": "Annual Sun–Moon returns with natal lunation evidence and explicit unresolved candidates.",
+        "x-family": "predictive",
+    },
+    {
         "name": "varshaphal",
         "x-displayName": "Varshaphal",
         "description": "Annual chart, Mudda, Tasira, topic, window, and year-summary surfaces.",

@@ -743,6 +743,30 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             house_policy=house_policy,
         )
 
+    def tithi_pravesha(
+        self, natal_dt, return_year, latitude, longitude, *, timezone, profile,
+        ayanamsa_system="True Pushya", house_system=HouseSystem.PLACIDUS,
+    ):
+        """Search Rao's matching lunations and materialize a uniquely owned return chart."""
+        from .vedic_returns import tithi_pravesha
+
+        return tithi_pravesha(
+            natal_dt, return_year, latitude, longitude, timezone=timezone, profile=profile,
+            ayanamsa_system=ayanamsa_system, house_system=house_system, reader=self._reader,
+        )
+
+    def monthly_tajika(
+        self, birth_jd_ut1, return_year, month, latitude, longitude, *, timezone="UTC",
+        ayanamsa_system="Lahiri", house_system=HouseSystem.PLACIDUS,
+    ):
+        """Solve the selected monthly solar return from the sidereal Varshaphal anchor."""
+        from .vedic_returns import monthly_tajika
+
+        return monthly_tajika(
+            birth_jd_ut1, return_year, month, latitude, longitude, timezone=timezone,
+            ayanamsa_system=ayanamsa_system, house_system=house_system, reader=self._reader,
+        )
+
     def varshaphal(
         self,
         birth_jd: float,

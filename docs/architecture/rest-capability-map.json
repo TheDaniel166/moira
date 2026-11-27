@@ -575,6 +575,38 @@
       ]
     },
     {
+      "capability": "annual_tithi_pravesha",
+      "engine": ["moira.vedic_returns:tithi_pravesha","moira.facade:Moira.tithi_pravesha"],
+      "witness": "tests/server/test_server_vedic_returns.py::test_rao_1992_full_year_and_http",
+      "routes": [
+        {"operation":"POST /v1/tithi-pravesha/chart","request":["natal_dt","return_year","timezone","rao_2014_tropical","rao_2014_sidereal_comparison"],"response":["natal_conjunction","candidates","crossing","chart","status"]}
+      ]
+    },
+    {
+      "capability": "monthly_tajika_chart",
+      "engine": ["moira.vedic_returns:monthly_tajika","moira.facade:Moira.monthly_tajika"],
+      "witness": "tests/server/test_server_vedic_returns.py::test_tajika_shujah_modern_projection_and_http",
+      "routes": [
+        {"operation":"POST /v1/varshaphal/monthly/chart","request":["birth_jd_ut1","return_year","month"],"response":["annual_return_jd_ut1","next_annual_return_jd_ut1","target_sidereal_sun_degrees","crossing","chart"]}
+      ]
+    },
+    {
+      "capability": "rath_narayana_sequence",
+      "engine": ["moira.narayana:narayana_dasha","moira.facade:Moira.narayana_dasha"],
+      "witness": "tests/server/test_server_narayana.py::test_rath_sequence_active_and_unresolved_at_http_boundary",
+      "routes": [
+        {"operation":"POST /v1/jaimini/extended/narayana-dasha/sequence","request":["lagna_sidereal_longitude","sidereal_longitudes","resolved_strength","resolved_co_lords","year_basis"],"response":["rath_book_resolved_strength","starting_decision","co_lord_rules","periods","antardashas","unresolved"]}
+      ]
+    },
+    {
+      "capability": "rath_narayana_active",
+      "engine": ["moira.narayana:active_narayana","moira.facade:Moira.active_narayana"],
+      "witness": "tests/server/test_server_narayana.py::test_rath_sequence_active_and_unresolved_at_http_boundary",
+      "routes": [
+        {"operation":"POST /v1/jaimini/extended/narayana-dasha/active","request":["birth_jd_ut1","query_jd_ut1","year_basis"],"response":["active","antardashas","unresolved"]}
+      ]
+    },
+    {
       "capability": "small_body_collision_inventory",
       "engine": ["moira.small_body_identity:small_body_name_collisions"],
       "engine_only_reason": "The whole catalog collision inventory is an audit helper. The identity route exposes alternatives for each caller-supplied name."

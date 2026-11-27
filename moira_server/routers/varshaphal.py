@@ -21,6 +21,9 @@ from fastapi import APIRouter, Depends
 from moira import Moira
 
 from ..dependencies import get_engine, with_engine_reader
+from ..models.vedic_returns import (
+    MonthlyTajikaRequest, MonthlyTajikaResponse, TithiPraveshaRequest, TithiPraveshaResponse,
+)
 from ..models.varshaphal import (
     MuddaDashaActivationResponse,
     MuddaPeriodJudgementResponse,
@@ -60,6 +63,29 @@ from ..services.varshaphal import (
 
 
 router = APIRouter(prefix="/v1", tags=["varshaphal"])
+
+
+tithi_pravesha_router = APIRouter(prefix="/v1/tithi-pravesha", tags=["tithi-pravesha"])
+
+
+@tithi_pravesha_router.post("/chart", response_model=TithiPraveshaResponse)
+@with_engine_reader
+def tithi_pravesha_chart_route(
+    request: TithiPraveshaRequest, engine: Moira = Depends(get_engine),
+) -> TithiPraveshaResponse:
+    """Return Rao's candidate lunations and a chart for a unique match."""
+    result = engine.tithi_pravesha(**request.model_dump())
+    return TithiPraveshaResponse.model_validate(result, from_attributes=True)
+
+
+@router.post("/varshaphal/monthly/chart", response_model=MonthlyTajikaResponse)
+@with_engine_reader
+def monthly_tajika_chart_route(
+    request: MonthlyTajikaRequest, engine: Moira = Depends(get_engine),
+) -> MonthlyTajikaResponse:
+    """Cast the indexed true-solar Tājika return anchored to annual Varshaphal."""
+    result = engine.monthly_tajika(**request.model_dump())
+    return MonthlyTajikaResponse.model_validate(result, from_attributes=True)
 
 
 @router.post("/varshaphal/chart", response_model=VarshaphalChartResponse)

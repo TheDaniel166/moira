@@ -17,6 +17,7 @@ from .cache import (
 from .config import ServerConfig
 from .routers.natal_discovery import router as natal_discovery_router
 from .routers.prashna import router as prashna_router
+from .routers.varshaphal import tithi_pravesha_router
 from .errors import register_exception_handlers
 from .lifecycle import StartupReadiness, create_engine, prewarm_engine
 from .openapi import OPENAPI_TAGS, install_openapi_discovery
@@ -249,6 +250,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(yogas_router)        # Vedic Phase-2 flagship: yoga engine (proof-object evaluation)
     app.include_router(special_lagnas_router)
     app.include_router(prashna_router)
+    app.include_router(tithi_pravesha_router)
     app.include_router(upagrahas_router)    # Vedic Phase-2: Gulika/Mandi kalavelas + Sun-derived upagrahas
     app.include_router(avasthas_router)     # Vedic Phase-2: planetary states (BPHS Ch. 45)
     app.include_router(jaimini_extended_router)  # Vedic Phase-2: arudhas, argala, karakamsa, Chara Dasha
