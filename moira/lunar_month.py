@@ -5,16 +5,14 @@ solar sign containing their opening conjunction.  Solar signs name months
 Vaisakha through Chaitra.  Zero/one/two ingresses preserve adhika/ordinary/
 omitted-month evidence, without applying a hidden historical remapping.
 
-Ordinary Purnimanta months use the amanta lunation beginning a fortnight
-later.  Intercalary neighbourhoods require a distinct regional rule set:
-the official 1948 SE table itself interrupts a simple full-moon sequence.
-Such mappings are explicitly unavailable here, with all lunation evidence
-retained.  See wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md.
+Purnimanta and regional Amanta mappings are selected by named profiles.
+These project labels over the astronomical evidence without changing
+conjunction, opposition or ingress ownership.
 """
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from functools import lru_cache
 from typing import Literal
@@ -35,6 +33,22 @@ _MONTHS = ("Chaitra", "Vaisakha", "Jyaishtha", "Ashadha", "Sravana",
            "Magha", "Phalguna")
 _SOURCE = ("PAC Rashtriya Panchang 1948 SE, printed vi-vii and xii-xiii; "
            "S.K. Chatterjee, Indian Calendars, printed 93-94")
+LunarMonthNamingProfile = Literal[
+    "structural", "sewell_dikshit_gauna", "leow_eastern",
+    "leow_northwestern", "dharmasindhu_dual",
+]
+_REGIONAL_SOURCES = {
+    "leow_eastern": "Leow Choon Lian, Indian Calendars, pp. 42-44, Table 14 (Eastern)",
+    "leow_northwestern": "Leow Choon Lian, Indian Calendars, pp. 42-44, Table 14 (North Western)",
+    "dharmasindhu_dual": (
+        "Kashinatha Upadhyaya, Dharmasindhu, first Pariccheda, Kshayamasa example; "
+        "Leow Choon Lian, Indian Calendars, pp. 42-44, Table 14 (Southern)"
+    ),
+}
+_COMPANION_LUNATIONS = 5
+_REGIONAL_CONTEXT_LUNATIONS = 2 * _COMPANION_LUNATIONS
+_MAX_LUNATION_DAYS = 40
+_REGIONAL_SEARCH_DAYS = (_REGIONAL_CONTEXT_LUNATIONS + 2) * _MAX_LUNATION_DAYS
 
 
 class LunarMonthSystem(str, Enum):
@@ -46,15 +60,22 @@ class LunarMonthSystem(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class LunarMonthPolicy:
-    """Lunar-month system, sidereal reference, and boundary solver tolerance."""
+    """Lunar-month system, sidereal reference, boundary tolerance and naming profile."""
 
     system: LunarMonthSystem = LunarMonthSystem.AMANTA
     ayanamsa_system: str = "Lahiri"
     solver_tolerance_seconds: float = 0.1
+    naming_profile: LunarMonthNamingProfile = "structural"
 
     def __post_init__(self) -> None:
         if not isinstance(self.system, LunarMonthSystem):
             raise TypeError("system must be LunarMonthSystem")
+        if self.naming_profile not in ("structural", "sewell_dikshit_gauna", *_REGIONAL_SOURCES):
+            raise ValueError("unknown lunar month naming profile")
+        named_system = (LunarMonthSystem.PURNIMANTA if self.naming_profile == "sewell_dikshit_gauna"
+                        else LunarMonthSystem.AMANTA)
+        if self.naming_profile != "structural" and self.system is not named_system:
+            raise ValueError("lunar month naming profile is incompatible with the selected system")
         checked = DailyPanchangaPolicy(
             ayanamsa_system=self.ayanamsa_system,
             solver_tolerance_seconds=self.solver_tolerance_seconds,
@@ -96,13 +117,13 @@ class LunarMonthLabel:
 
     index: int
     name: str
-    qualifier: Literal["ordinary", "adhika", "ksaya_context"]
+    qualifier: Literal["ordinary", "adhika", "nija", "ksaya_context"]
 
     def __post_init__(self) -> None:
         if type(self.index) is not int or not 0 <= self.index < 12:
             raise ValueError("month index must be an integer in [0,11]")
         if self.name != _MONTHS[self.index] or self.qualifier not in (
-                "ordinary", "adhika", "ksaya_context"):
+                "ordinary", "adhika", "nija", "ksaya_context"):
             raise ValueError("month label must match its canonical identity")
 
 
@@ -194,6 +215,8 @@ class LunarMonthResult:
     month_start: CalendarBoundary | None
     month_end: CalendarBoundary | None
     label: LunarMonthLabel | None
+    regional_lunations: tuple[LunarLunation, ...] = ()
+    paired_month_name: str | None = None
 
     def __post_init__(self) -> None:
         _finite_number("jd_ut1", self.jd_ut1)
@@ -202,9 +225,17 @@ class LunarMonthResult:
         a, b, c = self.previous_lunation, self.amanta_lunation, self.next_lunation
         if a.end != b.start or b.end != c.start or not b.start.jd_ut1 <= self.jd_ut1 < b.end.jd_ut1:
             raise ValueError("month context requires contiguous surrounding lunations")
+        regional = self.regional_lunations
+        if regional and (
+            self.policy.naming_profile not in _REGIONAL_SOURCES
+            or b not in regional
+            or any(left.end != right.start for left, right in zip(regional, regional[1:]))
+        ):
+            raise ValueError("regional lunations must be contiguous and include the owned lunation")
         events = (a.start, a.end, b.end, c.end,
+                  *(edge for x in regional for edge in (x.start, x.end)),
                   *self.uncertain_phase_boundaries,
-                  *(e for x in (a, b, c) for e in (*x.ingresses, *x.uncertain_ingresses)))
+                  *(e for x in (a, b, c, *regional) for e in (*x.ingresses, *x.uncertain_ingresses)))
         if any((e.jd_ut1 - e.lower_jd_ut1)*86400 > self.policy.solver_tolerance_seconds + 0.0001
                for e in events):
             raise ValueError("month boundary bracket exceeds the selected solver tolerance")
@@ -214,29 +245,38 @@ class LunarMonthResult:
                for e in self.uncertain_phase_boundaries):
             raise ValueError("uncertain phase boundary must bracket the requested instant")
         needed = (b,) if self.policy.system is LunarMonthSystem.AMANTA else (a, b, c)
-        ambiguous = bool(self.uncertain_phase_boundaries or any(x.uncertain_ingresses for x in needed))
+        ambiguous = bool(self.uncertain_phase_boundaries or any(
+            x.uncertain_ingresses for x in (*needed, *regional)
+        ))
         if self.status == "available":
             if (ambiguous or self.unavailable_reasons or self.label is None or self.month_start is None
                     or self.month_end is None or not self.month_start.jd_ut1 <= self.jd_ut1 < self.month_end.jd_ut1):
                 raise ValueError("available month requires an owned period and label")
             if self.policy.system is LunarMonthSystem.AMANTA:
-                if self.label != b.label or self.month_start != b.start or self.month_end != b.end:
+                expected, paired = _regional_label(self.policy.naming_profile, b, regional)
+                if (self.label != expected or self.paired_month_name != paired
+                        or self.month_start != b.start or self.month_end != b.end):
                     raise ValueError("amanta month must preserve its lunation")
             else:
-                owner = b if self.paksha == "Shukla" else c
-                if (any(x.label is None or x.label.qualifier != "ordinary" for x in (a, b, c))
-                        or self.label != owner.label
-                        or self.month_start.kind != "full_moon" or self.month_end.kind != "full_moon"):
-                    raise ValueError("purnimanta admission requires an ordinary neighbourhood")
+                expected, left, right = _purnimanta_mapping(self.policy.naming_profile, self.paksha, a, b, c)
+                left_matches = self.month_start == left if left is not None else self.month_start.kind == "full_moon"
+                right_matches = self.month_end == right if right is not None else self.month_end.kind == "full_moon"
+                if (expected is None or self.label != expected or self.paired_month_name is not None
+                        or not left_matches or not right_matches):
+                    raise ValueError("purnimanta label and bounds must match the selected mapping")
         elif self.status in ("boundary_ambiguous", "unsupported_intercalation"):
-            if not self.unavailable_reasons or any(x is not None for x in (self.month_start, self.month_end, self.label)):
+            if not self.unavailable_reasons or any(
+                x is not None for x in (self.month_start, self.month_end, self.label, self.paired_month_name)
+            ):
                 raise ValueError("unavailable month must retain evidence without a selected label")
             if self.status == "boundary_ambiguous" and not ambiguous:
                 raise ValueError("ambiguous month requires retained overlapping brackets")
-            if self.status == "unsupported_intercalation" and (
-                    ambiguous or self.policy.system is not LunarMonthSystem.PURNIMANTA
-                    or all(x.label is not None and x.label.qualifier == "ordinary" for x in (a, b, c))):
-                raise ValueError("unsupported intercalation must identify an exceptional purnimanta context")
+            if self.status == "unsupported_intercalation":
+                if ambiguous or (not regional and (
+                    self.policy.system is not LunarMonthSystem.PURNIMANTA
+                    or _purnimanta_mapping(self.policy.naming_profile, self.paksha, a, b, c)[0] is not None
+                )):
+                    raise ValueError("unsupported intercalation requires exceptional lunation evidence")
         else:
             raise ValueError("unknown lunar month availability")
 
@@ -295,6 +335,73 @@ def _lunation(start: CalendarBoundary, end: CalendarBoundary,
     return LunarLunation(start, end, sign, inside, uncertain, label, omitted)
 
 
+def _purnimanta_mapping(profile, paksha, previous, current, following):
+    """Return the label and any conjunction bounds in the selected mapping."""
+    if profile == "structural":
+        if any(x.label.qualifier != "ordinary" for x in (previous, current, following)):
+            return None, None, None
+    else:
+        if current.label.qualifier == "adhika":
+            return current.label, current.start, current.end
+        if paksha == "Krishna" and following.label.qualifier == "adhika":
+            return replace(following.label, qualifier="ordinary"), None, current.end
+        if paksha == "Shukla" and previous.label.qualifier == "adhika":
+            label = replace(current.label, qualifier="nija") if current.label.qualifier == "ordinary" else current.label
+            return label, current.start, None
+    owner = current if paksha == "Shukla" else following
+    return owner.label, None, None
+
+
+def _regional_context(lunations, current):
+    """Find a single two-ingress lunation and its nearest zero-ingress companions."""
+    limit = _COMPANION_LUNATIONS
+    nearby = lunations[current - limit:current + limit + 1]
+    candidates = tuple(
+        index for index in range(current - limit, current + limit + 1)
+        if len(lunations[index].ingresses) + len(lunations[index].uncertain_ingresses) >= 2
+    )
+    if not candidates:
+        return (), False
+    if any(lunations[i].uncertain_ingresses for i in candidates):
+        return nearby, False
+    if len(candidates) != 1:
+        return nearby, True
+
+    middle, = candidates
+    first = next((i for i in range(middle - 1, middle - limit - 1, -1)
+                  if not lunations[i].ingresses), None)
+    last = next((i for i in range(middle + 1, middle + limit + 1)
+                 if not lunations[i].ingresses), None)
+    if first is None or last is None:
+        span = lunations[middle - limit:middle + limit + 1]
+        return span, True
+    if not first <= current <= last:
+        return (), False
+    window = lunations[first:last + 1]
+    return window, sum(len(lunation.ingresses) == 2 for lunation in window) != 1
+
+
+def _regional_label(profile, owned, window):
+    """Project a verified Kshaya group without changing its astronomical labels."""
+    if not window:
+        if profile in _REGIONAL_SOURCES and owned.label.qualifier == "ksaya_context":
+            raise ValueError("regional Kshaya label requires its companion lunations")
+        return owned.label, None
+    counts = tuple(len(x.ingresses) for x in window)
+    if counts[0] != 0 or counts[-1] != 0 or counts.count(0) != 2 or counts.count(2) != 1:
+        raise ValueError("regional month requires both Adhika companions and one Kshaya lunation")
+    i, omitted = window.index(owned), counts.index(2)
+    index = owned.label.index
+    if profile == "leow_eastern":
+        index = (index - (i > omitted)) % 12
+        return LunarMonthLabel(index, _MONTHS[index], "adhika" if i == 0 else "ordinary"), None
+    if profile == "leow_northwestern":
+        index = (index + (0 < i <= omitted)) % 12
+        qualifier = "adhika" if i == len(window) - 1 else "ordinary"
+        return LunarMonthLabel(index, _MONTHS[index], qualifier), None
+    return owned.label, owned.omitted_months[0] if i == omitted else None
+
+
 def lunar_month_at(jd_ut1: float, *, policy: LunarMonthPolicy | None = None,
                    reader=None) -> LunarMonthResult:
     """Return bounded astronomical month evidence at an instant in UT1.
@@ -325,15 +432,20 @@ def lunar_month_at(jd_ut1: float, *, policy: LunarMonthPolicy | None = None,
             sun, _ = longitudes(jd)
             return tropical_to_sidereal(sun, jd, selected.ayanamsa_system)
 
-        phases = _angular_boundaries(jd_ut1 - 65, jd_ut1 + 65, phase, 180,
+        regional = selected.naming_profile in _REGIONAL_SOURCES
+        radius = _REGIONAL_SEARCH_DAYS if regional else 65
+        phases = _angular_boundaries(jd_ut1 - radius, jd_ut1 + radius, phase, 180,
                                      selected.solver_tolerance_seconds, True)
         new = tuple(e for e in phases if e.kind == "new_moon")
         current = next((i for i in range(len(new) - 1) if new[i].jd_ut1 <= jd_ut1 < new[i+1].jd_ut1), None)
         if current is None or current == 0 or current + 2 >= len(new):
             raise RuntimeError("lunar calendar surrounding conjunctions exceed 65-day search radius")
-        if any(not 20 < b.jd_ut1 - a.jd_ut1 < 40 for a, b in zip(new, new[1:])):
+        if any(not 20 < b.jd_ut1 - a.jd_ut1 < _MAX_LUNATION_DAYS for a, b in zip(new, new[1:])):
             raise RuntimeError("lunar calendar lunation duration bound violated")
-        first, last = new[current - 1], new[current + 2]
+        context_radius = _REGIONAL_CONTEXT_LUNATIONS if regional else 1
+        if current < context_radius or current + context_radius + 1 >= len(new):
+            raise RuntimeError("lunar calendar search did not span the selected profile context")
+        first, last = new[current - context_radius], new[current + context_radius + 1]
         ingresses = _angular_boundaries(first.lower_jd_ut1 - 1, last.jd_ut1 + 1,
                                         solar, 30, selected.solver_tolerance_seconds, False)
         return _month_from_boundaries(jd_ut1, selected, LunarMonthProvenance(binding),
@@ -351,29 +463,53 @@ def _month_from_boundaries(jd_ut1, selected, provenance, phases, ingresses, sola
                     if new[i].jd_ut1 <= jd_ut1 < new[i+1].jd_ut1), None)
     if current is None or current == 0 or current + 2 >= len(new):
         raise RuntimeError("lunar calendar surrounding conjunctions exceed supplied boundary context")
-    if any(not 20 < b.jd_ut1-a.jd_ut1 < 40 for a,b in zip(new,new[1:])):
+    if any(not 20 < b.jd_ut1 - a.jd_ut1 < _MAX_LUNATION_DAYS for a, b in zip(new, new[1:])):
         raise RuntimeError("lunar calendar lunation duration bound violated")
     context = tuple(_lunation(new[i], new[i+1], ingresses, solar)
                     for i in range(current - 1, current + 2))
     previous, amanta, following = context
+    profile = selected.naming_profile
+    regional_lunations, unsupported = (), False
+    if profile in _REGIONAL_SOURCES:
+        radius = _REGIONAL_CONTEXT_LUNATIONS
+        if current < radius or current + radius + 1 >= len(new):
+            raise RuntimeError("regional month profiles require both Kshaya companion search spans")
+        extended = tuple(_lunation(new[i], new[i + 1], ingresses, solar)
+                         for i in range(current - radius, current + radius + 1))
+        regional_lunations, unsupported = _regional_context(extended, radius)
+        provenance = replace(provenance, source=f"{provenance.source}; {_REGIONAL_SOURCES[profile]}",
+                             ksaya_scope=profile, search_radius_days=_REGIONAL_SEARCH_DAYS)
+    elif profile == "sewell_dikshit_gauna":
+        provenance = replace(
+            provenance,
+            source=f"{provenance.source}; Sewell and Dikshit, The Indian Calendar, §§45-46, 51",
+            purnimanta_scope=profile,
+            ksaya_scope="opening_name_and_omission_without_amanta_relabeling",
+        )
     angle = phase(jd_ut1)
     paksha = "Shukla" if angle < 180 else "Krishna"
     tithi = int(angle // 12) % 15 + 1
     status, reasons = "available", ()
     start, end, label = amanta.start, amanta.end, amanta.label
+    paired = None
     uncertain_phases = tuple(e for e in phases if e.lower_jd_ut1 <= jd_ut1 < e.jd_ut1)
     needed = (amanta,) if selected.system is LunarMonthSystem.AMANTA else context
-    if uncertain_phases or any(lunation.uncertain_ingresses for lunation in needed):
+    if uncertain_phases or any(x.uncertain_ingresses for x in (*needed, *regional_lunations)):
         status, reasons = "boundary_ambiguous", ("phase_or_ingress_brackets_overlap",)
+    elif unsupported:
+        status, reasons = "unsupported_intercalation", ("regional_ksaya_companions_unresolved",)
     elif selected.system is LunarMonthSystem.PURNIMANTA:
-        if any(lunation.label.qualifier != "ordinary" for lunation in context):
+        label, start, end = _purnimanta_mapping(profile, paksha, *context)
+        if label is None:
             status, reasons = "unsupported_intercalation", ("purnimanta_intercalary_or_ksaya_neighbourhood_requires_regional_rules",)
         else:
             full = tuple(e for e in phases if e.kind == "full_moon")
-            start = max((e for e in full if e.jd_ut1 <= jd_ut1), key=lambda e: e.jd_ut1)
-            end = min((e for e in full if e.jd_ut1 > jd_ut1), key=lambda e: e.jd_ut1)
-            label = amanta.label if paksha == "Shukla" else following.label
+            start = start or max((e for e in full if e.jd_ut1 <= jd_ut1), key=lambda e: e.jd_ut1)
+            end = end or min((e for e in full if e.jd_ut1 > jd_ut1), key=lambda e: e.jd_ut1)
+    elif regional_lunations:
+        label, paired = _regional_label(profile, amanta, regional_lunations)
     if status != "available":
         start, end, label = None, None, None
     return LunarMonthResult(jd_ut1, selected, provenance, status,
-        reasons, paksha, tithi, uncertain_phases, previous, amanta, following, start, end, label)
+        reasons, paksha, tithi, uncertain_phases, previous, amanta, following,
+        start, end, label, regional_lunations, paired)

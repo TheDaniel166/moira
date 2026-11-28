@@ -1538,11 +1538,16 @@ strict types rather than implicit boolean/string coercion.
 ## Panchanga Routes
 
 `POST /v1/panchanga/lunar-month` accepts strict finite `jd_ut1` and named
-`system`/`ayanamsa_system`/`solver_tolerance_seconds` policy. It preserves three
-surrounding lunations, solved phase/ingress brackets, month labels and
-Adhika/Kshaya evidence. Exceptional Purnimanta mappings return typed domain
-unavailability. [Source and policy standard](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
-This is an astronomical month context; festival selection is not yet admitted.
+`system`/`ayanamsa_system`/`solver_tolerance_seconds` policy, plus optional
+`naming_profile`. It preserves three surrounding lunations, solved phase
+and ingress brackets and Adhika/Kshaya evidence. Select
+`sewell_dikshit_gauna` with `system: "purnimanta"` for the split Adhika
+and Nija mapping. Amanta profiles `leow_eastern`, `leow_northwestern`
+and `dharmasindhu_dual` also carry the structural Kshaya group under
+`regional_lunations`. The dual result identifies the second name in
+`paired_month_name`. The default `structural` leaves exceptional
+Purnimanta contexts explicitly unavailable.
+[Source and policy standard](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
 
 The daily product is a separate local-date contract with sunrise-owned Vara,
 solved angular limb endings and explicit solar unavailability. Its

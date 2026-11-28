@@ -2,7 +2,7 @@
 
 **Date:** 6 October 2026.
 **Owners:** [lunar-month engine](../../moira/lunar_month.py), [facade](../../moira/_facade_vedic.py), [request/response](../../moira_server/models/lunar_month.py), [service](../../moira_server/services/lunar_month.py), [serializer](../../moira_server/serializers/lunar_month.py), [router](../../moira_server/routers/panchanga.py).
-**Status:** Bounded lunar-month implementation and festival research/admission policy. A universal festival calendar is not admitted.
+**Status:** Astronomical lunar months, named intercalation profiles and festival research/admission policy.
 
 The user explicitly selected festivals and lunar-month rules after Daily
 Panchanga, and authorized source publication. These are separate products
@@ -10,7 +10,7 @@ from [VED-015](DAILY_PANCHANGA_STANDARD.md). An astronomical lunation is not
 a sunrise-owned civil day, a regional month date, an era year or a selected
 observance. Each result must identify which object it actually computes.
 
-## 1. Source audit and decisions
+## 1. Initial source audit and decisions
 
 | Source | Evidence inspected | Admission decision |
 | --- | --- | --- |
@@ -49,8 +49,9 @@ Those solar calendars must not be silently substituted for the month engine.
 
 Chatterjee describes intercalation through two conjunctions within a solar
 month and omission when a solar month contains none. He also discusses
-adjustment of surrounding months in omission years. Moira presently retains
-that astronomical evidence without claiming the full regional adjustment.
+adjustment of surrounding months in omission years. The structural profile
+retains the astronomical evidence and the named profiles below apply
+explicit alternative mappings.
 
 The official regional table is a concrete counterexample to treating every
 Purnimanta period as an uninterrupted full-moon interval: in 2026 it gives
@@ -90,7 +91,7 @@ label and any omitted month name. No mean synodic period generates dates.
 | Near-coincident ingress | If a solar bracket overlaps a conjunction bracket, preserve it as uncertain. Do not use floating-point root order to force an Adhika/Kshaya decision. |
 | Amanta naming | Solar rashi 0–11 maps to Vaisakha through Chaitra. Zero certain ingresses gives `adhika`; one gives `ordinary`; two gives `ksaya_context` with the intervening omitted name. The latter is structural evidence, not a regional combined-month label. |
 | Ordinary Purnimanta | Only when all three surrounding lunations are certain and ordinary: full-moon bounds, current amanta label during Shukla, following label during Krishna. |
-| Exceptional Purnimanta | `unsupported_intercalation`; null selected bounds/label and retained three-lunation evidence. This intentionally includes a conservative surrounding-month exclusion. |
+| Exceptional Purnimanta | The default `structural` policy retains its conservative surrounding-month exclusion and typed unavailability. Select `sewell_dikshit_gauna` for the sourced split and omission rules below. |
 | Provenance | Source identifiers, origin/frame, sidereal mode, timescale, naming/intercalation rules, search bounds, ownership and actual reader binding. |
 
 The public vessels reject contradictory labels, omitted names, ingress order,
@@ -141,7 +142,77 @@ solver exceptions retain the server's existing error mapping. Extra fields,
 including an invented festival or observer policy, are rejected. The transport
 contains every engine field plus the boundary's derived `jd_ut1` property.
 
-## 5. Festival policy that must govern later admission
+## 5. Exceptional Purnimanta and regional Kshaya naming
+
+These opt-in values of `LunarMonthPolicy.naming_profile` are available
+through Python and the lunar-month REST policy. Profile names identify the
+source rule. The geographic names in Leow's headings are his terminology.
+
+| Profile | System | Selected month and evidence |
+| --- | --- | --- |
+| `structural` | Either | Original bounded assessment. The three structural lunations keep their opening signs, counts and omission names. |
+| `sewell_dikshit_gauna` | Purnimanta | One Adhika lunation owns both fortnight labels and runs from new moon to new moon. The preceding Krishna fortnight takes the regular name, from full moon to new moon. The following regular Shukla fortnight bears `nija`, from new moon to full moon. For a two-ingress omission, the ordinary full-moon pairing uses the opening name and carries the omission as `ksaya_context`. |
+| `leow_eastern` | Amanta | Keep the earlier Adhika. Starting just after the two-ingress lunation, move each name back one through the later Adhika, which becomes ordinary. The two-ingress lunation keeps the opening name as ordinary. |
+| `leow_northwestern` | Amanta | Make the earlier Adhika ordinary. Starting just after it, move each name forward one through the two-ingress lunation. Keep the later Adhika. |
+| `dharmasindhu_dual` | Amanta | Keep both Adhikas and both names of the two-ingress lunation. Its opening name is `label.name` and the second is `paired_month_name`. Both names own the same astronomical lunation. Tithi-half ritual assignment requires its own rule and is outside this result. |
+
+The regional Amanta profiles use the two-ingress lunation and its nearest
+zero-ingress companions within five lunations on either side. This
+accommodates Leow's Figure 14, including a companion across the Chaitra
+sequence. The phase scan extends to ±480 days for an explicitly selected
+regional profile, so the engine can inspect both companions when the caller
+is at either end of the group. Readers must cover the selected scan. Exact
+month bounds remain the local solved conjunctions. `regional_lunations`
+retains the contiguous structural evidence used for the mapping. An
+overlapping ingress and conjunction needed for a choice yields
+`boundary_ambiguous`. An unresolved, definite two-ingress group yields
+`unsupported_intercalation`. Labels remain null in both cases.
+
+### Source and worked-example verification
+
+- Bhāskara II, *Siddhānta Śiromaṇi*, Grahagaṇita, Madhyamādhikāra,
+  Adhimāsa-nirṇaya 6 and the Vāsanā commentary, defines the zero- and
+  two-ingress cases and describes the flanking intercalations. This
+  establishes the structural criterion. [Sanskrit witness, printed p. 84](https://sa.wikisource.org/wiki/पृष्ठम्:सिद्धान्तशिरोमणिः.djvu/129)
+- Sewell and Dikshit, *The Indian Calendar* (1896), §§45–46 and 51,
+  printed pp. 26–27 and 30–31, gives the opening-sign convention and works
+  the Gauna split around Adhika Vaisakha. Its suppression diagram pairs the
+  two Margasirsha fortnights and omits Pausha. The 1948 SE PAC Gauna Mana
+  table independently shows Jyaishtha Krishna on 2 May 2026, Adhika
+  Shukla on 17 May, Adhika Krishna on 1 June and Nija Shukla on 15 June,
+  followed by Ashadha Krishna on 1 July. All five identities were reproduced
+  at noon IST using DE441, with adjoining solved phase bounds within 0.2 s
+  of each other. The table supplies civil-date labels. [Sewell and Dikshit, pp. 26–27](https://ignca.gov.in/Asi_data/34958.pdf#page=43)
+  [Sewell and Dikshit, §51](https://ignca.gov.in/Asi_data/34958.pdf#page=47)
+  [Rashtriya Panchang 1948 SE regional table](https://packolkata.imd.gov.in/panchang/gu/regional-calendars)
+- Leow Choon Lian, *Indian Calendars* (NUS, 2000–01), Figure 13 and
+  Table 14, printed pp. 42–44, gives the complete comparison for the
+  1540–41 worked ingress pattern. An independent transcription from the
+  figure reproduced all 27 entries in the three columns. The author's
+  raw astronomy for this figure differs from the DE441/Lahiri geometry
+  at the same dates, so the fixture uses the published ingress order.
+  The same author's Table 12 independently identifies the modern
+  1963–64 Margasirsha omission with Kartika/Chaitra and the 1982–83
+  Magha omission with Asvina/Phalguna. DE441 reproduces both event groups.
+  The printed comparison plus these event groups tests the profile
+  algorithms without attributing their output to a historical local
+  almanac. [Author's study, Table 14](https://telibrary.com/wp-content/uploads/2022/08/Indian-Calender-Article.pdf#page=43)
+- The Jiwaji *Astronomical Ephemeris* for 1983, printed pp. 3 and 5,
+  PDF pp. 14–15, gives the two tithi 30 endings around the two-ingress
+  lunation. The printed times are 14 January 10:38 IST and 13 February
+  06:02 IST. The DE441 conjunctions are 13.48 s and 10.75 s earlier,
+  respectively, within the 60 s comparison bound. The month names
+  in the page headings follow the Indian civil calendar, as stated in
+  the preface. [Jiwaji ephemeris, 1983](https://www.mpssbhopal.org/jiwajipanchang/ASTRONOMICAT%20EPHEMERIS%20OF%20GEOCENTRIC%20PLACES%20OF%20PLANETS%20FOR%201983.pdf#page=14)
+- Kāśīnātha Upādhyāya, *Dharmasindhu*, First Pariccheda, Malamāsa-vicāra,
+  Kṣaya-māsa example, works the Dhanus and Makara ingresses in a single
+  Margasirsha–Pausha lunation, with Asvina and Phalguna as the added
+  companions. It assigns the two month names to the two halves of each
+  tithi for specific purposes. The engine returns the paired names.
+  Ritual decisions, including the application's choice of a half-tithi
+  boundary convention, require a separate admission. [Sanskrit text and translation](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=1&t=path)
+
+## 6. Festival policy that must govern later admission
 
 The following is Moira's proposed admission/transport contract, not a claim
 that the sources above establish every rule. VED-024 currently evaluates as
@@ -186,7 +257,7 @@ fasting calendar. Janmāṣṭamī, Dīpāvalī, Śivarātri and regional solar 
 must each receive independent rule packets. None is automatically admitted
 by having a matching tithi or a date in PAC's list.
 
-## 6. Verification and remaining boundary
+## 7. Verification and remaining boundary
 
 Validation files:
 
@@ -210,13 +281,10 @@ Three published conjunction timings and the selected month labels remain
 separate comparisons. Printed minute precision and an internal 0.1-second
 root bracket do not establish subsecond external reduction agreement.
 
-Era years, regional solar civil dates, exceptional Purnimanta labeling,
-Kshaya-year regional relabeling and a named festival catalogue remain open.
-No website adoption, deployment, release, native calendar port or predictive
-validity claim follows from this implementation. The bounded implementation is ready for source publication; remaining
-source/exceptional-rule work remains open in VED-023/024.
+Era years, regional solar civil dates, additional historical conventions,
+dual-month ritual assignment and a named festival catalogue remain open.
 
-### Verification receipt
+### Original structural-profile verification receipt
 
 Project Python 3.14.3, engine 6.9.9, required native extension
 `moira/_moira_native.cp314-win_amd64.pyd`, local

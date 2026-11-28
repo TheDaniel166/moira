@@ -43,6 +43,8 @@ def real_client(moira_engine):
         {"ayanamsa_system": True}, {"solver_tolerance_seconds": True},
         {"solver_tolerance_seconds": "0.1"}, {"solver_tolerance_seconds": 0},
         {"solver_tolerance_seconds": 2}, {"festival": "Diwali"},
+        {"naming_profile": "regional"}, {"naming_profile": "sewell_dikshit_gauna"},
+        {"system": "purnimanta", "naming_profile": "leow_eastern"},
     )],
 ])
 def test_invalid_or_unsupported_policy_fails_before_compute(client, body):
@@ -66,6 +68,9 @@ def test_openapi_exposes_scope_and_named_policy(client):
     assert request["properties"]["jd_ut1"]["maximum"] == 10_000_000
     statuses = schema["components"]["schemas"]["LunarMonthResponse"]["properties"]["status"]["enum"]
     assert "unsupported_intercalation" in statuses and "boundary_ambiguous" in statuses
+    policy = schema["components"]["schemas"]["LunarMonthPolicyRequest"]["properties"]["naming_profile"]
+    assert policy["default"] == "structural"
+    assert "sewell_dikshit_gauna" in policy["enum"] and "dharmasindhu_dual" in policy["enum"]
 
 
 def test_service_is_exact_public_facade_delegation():
@@ -107,6 +112,26 @@ def test_http_preserves_all_canonical_available_and_unavailable_evidence(real_cl
         assert "uncertain_ingresses" in value[key]
     if direct.status != "available":
         assert value["label"] is None and value["unavailable_reasons"]
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("year_month_day,system,profile,name,paired", [
+    ((2026, 5, 2), "purnimanta", "sewell_dikshit_gauna", "Jyaishtha", None),
+    ((1983, 1, 20), "amanta", "dharmasindhu_dual", "Pausha", "Magha"),
+])
+def test_http_preserves_opt_in_profiles(real_client, moira_engine, year_month_day, system, profile, name, paired):
+    jd = utc_to_ut1(jd_from_datetime(datetime(*year_month_day, 8, tzinfo=timezone.utc)))
+    policy = {"system": system, "naming_profile": profile}
+    response = real_client.post(PATH, json={"jd_ut1": jd, "policy": policy})
+    assert response.status_code == 200, response.text
+    result = response.json()
+    direct = moira_engine.lunar_month_at(
+        jd, policy=LunarMonthPolicy(system=LunarMonthSystem(system), naming_profile=profile),
+    )
+    assert result == serialize_lunar_month(direct).model_dump(mode="json")
+    assert result["status"] == "available" and result["label"]["name"] == name
+    assert result["paired_month_name"] == paired
+    assert bool(result["regional_lunations"]) == (paired is not None)
 
 
 @pytest.mark.requires_ephemeris

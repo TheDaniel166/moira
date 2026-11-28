@@ -1,9 +1,9 @@
 """Strict transport of engine-owned lunar-month evidence."""
 from typing import Annotated, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, model_validator
 
-from moira.lunar_month import LunarMonthPolicy, LunarMonthSystem
+from moira.lunar_month import LunarMonthNamingProfile, LunarMonthPolicy, LunarMonthSystem
 from ._vedic_inputs import FiniteNumber
 from .common import _StrictModel
 
@@ -12,11 +12,12 @@ class LunarMonthPolicyRequest(_StrictModel):
     system: LunarMonthSystem = LunarMonthSystem.AMANTA
     ayanamsa_system: str = "Lahiri"
     solver_tolerance_seconds: Annotated[FiniteNumber, Field(ge=0.01, le=1)] = 0.1
+    naming_profile: LunarMonthNamingProfile = "structural"
 
-    @field_validator("ayanamsa_system")
-    @classmethod
-    def _named_system(cls, value: str) -> str:
-        return LunarMonthPolicy(ayanamsa_system=value).ayanamsa_system
+    @model_validator(mode="after")
+    def _validate_policy(self) -> "LunarMonthPolicyRequest":
+        self.ayanamsa_system = LunarMonthPolicy(**self.model_dump()).ayanamsa_system
+        return self
 
 
 class LunarMonthRequest(_StrictModel):
@@ -35,7 +36,7 @@ class CalendarBoundaryResponse(_StrictModel):
 class LunarMonthLabelResponse(_StrictModel):
     index: int
     name: str
-    qualifier: Literal["ordinary", "adhika", "ksaya_context"]
+    qualifier: Literal["ordinary", "adhika", "nija", "ksaya_context"]
 
 
 class LunarLunationResponse(_StrictModel):
@@ -72,6 +73,7 @@ class LunarMonthResponse(_StrictModel):
     unavailable_reasons: tuple[Literal[
         "phase_or_ingress_brackets_overlap",
         "purnimanta_intercalary_or_ksaya_neighbourhood_requires_regional_rules",
+        "regional_ksaya_companions_unresolved",
     ], ...]
     paksha: Literal["Shukla", "Krishna"]
     tithi_number: int
@@ -82,6 +84,8 @@ class LunarMonthResponse(_StrictModel):
     month_start: CalendarBoundaryResponse | None
     month_end: CalendarBoundaryResponse | None
     label: LunarMonthLabelResponse | None
+    regional_lunations: tuple[LunarLunationResponse, ...] = ()
+    paired_month_name: str | None = None
 
 
 __all__ = ["LunarMonthPolicyRequest", "LunarMonthRequest", "CalendarBoundaryResponse",

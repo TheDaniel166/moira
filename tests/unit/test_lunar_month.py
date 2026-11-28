@@ -204,3 +204,109 @@ def test_boundary_vessel_guards():
                  ("new_moon", 0, 0, 2/86400)):
         with pytest.raises(ValueError):
             calendar.CalendarBoundary(*args)
+
+
+# Figure 13 supplies ingress counts separately from Table 14's printed labels.
+_LEOW_INGRESSES = (1, 0, 1, 1, 2, 1, 1, 0, 1)
+
+
+def _worked_lunations(counts=_LEOW_INGRESSES, *, initial_rashi=4, overlapping_last=False):
+    counts = (1,) * 12 + counts + (1,) * 12
+    phases, ingresses, signs = [], [], {}
+    sign = initial_rashi  # Twelve ordinary lead-in lunations return to this sign.
+    for i, count in enumerate(counts):
+        start = 1000 + 30 * i
+        signs[start] = sign
+        phases.extend((
+            calendar.CalendarBoundary("new_moon", 0, start, start),
+            calendar.CalendarBoundary("full_moon", 180, start + 15, start + 15),
+        ))
+        for offset in range(1, count + 1):
+            sign = (sign + 1) % 12
+            jd = start + 10 * offset
+            ingresses.append(calendar.CalendarBoundary("solar_ingress", sign * 30, jd, jd))
+    if overlapping_last:
+        # Move the first ingress after Chaitra Adhika onto its closing conjunction.
+        edge = 1000 + 30 * (12 + 8)
+        i = next(i for i, event in enumerate(ingresses) if event.jd_ut1 > edge)
+        ingresses[i] = replace(ingresses[i], lower_jd_ut1=edge, upper_jd_ut1=edge)
+    return (
+        tuple(phases),
+        tuple(ingresses),
+        lambda jd: signs[jd] * 30 + 1,
+        lambda jd: ((jd - 1000) % 30) * 12,
+    )
+
+
+@pytest.mark.parametrize("profile,expected", [
+    ("leow_eastern", (
+        "Bhadrapada", "+Asvina", "Asvina", "Kartika", "Margasirsha", "Pausha", "Magha", "Phalguna", "Chaitra",
+    )),
+    ("leow_northwestern", (
+        "Bhadrapada", "Asvina", "Kartika", "Margasirsha", "Pausha", "Magha", "Phalguna", "+Chaitra", "Chaitra",
+    )),
+    ("dharmasindhu_dual", (
+        "Bhadrapada", "+Asvina", "Asvina", "Kartika", "Margasirsha/Pausha", "Magha", "Phalguna", "+Chaitra", "Chaitra",
+    )),
+])
+def test_leow_table_14_names_from_worked_ingress_pattern(profile, expected):
+    astronomy = _worked_lunations()
+    policy = calendar.LunarMonthPolicy(naming_profile=profile)
+    for i, name in enumerate(expected):
+        jd = 1000 + 30 * (12 + i) + 10
+        result = calendar._month_from_boundaries(jd, policy, calendar.LunarMonthProvenance("fixture"), *astronomy)
+        assert result.status == "available"
+        primary, _, secondary = name.lstrip("+").partition("/")
+        assert result.label.name == primary
+        assert result.paired_month_name == (secondary or None)
+        qualifier = "adhika" if name.startswith("+") else "ksaya_context" if secondary else "ordinary"
+        assert result.label.qualifier == qualifier
+        assert result.month_start == result.amanta_lunation.start
+        assert result.month_end == result.amanta_lunation.end
+        assert bool(result.regional_lunations) == (1 <= i <= 7)
+        if result.regional_lunations:
+            assert [len(x.ingresses) for x in result.regional_lunations] == [0, 1, 1, 2, 1, 1, 0]
+
+
+@pytest.mark.parametrize("case", ["missing", "ambiguous"])
+def test_regional_label_requires_two_unambiguous_companions(case):
+    if case == "missing":
+        astronomy = _worked_lunations((1, 0, 1, 1, 2, 1, 1, 1, 1))
+    else:
+        astronomy = _worked_lunations(overlapping_last=True)
+    policy = calendar.LunarMonthPolicy(naming_profile="leow_eastern")
+    jd = 1000 + 30 * (12 + 4) + 10
+    result = calendar._month_from_boundaries(jd, policy, calendar.LunarMonthProvenance("fixture"), *astronomy)
+    assert result.status == ("unsupported_intercalation" if case == "missing" else "boundary_ambiguous")
+    assert result.label is None and result.month_start is None and result.month_end is None
+    assert result.amanta_lunation.omitted_months == ("Pausha",)
+    assert any(x.uncertain_ingresses for x in result.regional_lunations) == (case == "ambiguous")
+
+
+def test_eastern_figure_14_wraps_vaisakha_companion_into_chaitra():
+    # Figure 14 places the second companion in Mesha, five lunations away.
+    astronomy = _worked_lunations((1, 0, 2, 1, 1, 1, 1, 0, 1), initial_rashi=5)
+    policy = calendar.LunarMonthPolicy(naming_profile="leow_eastern")
+    jd = 1000 + 30 * (12 + 7) + 10
+    result = calendar._month_from_boundaries(jd, policy, calendar.LunarMonthProvenance("fixture"), *astronomy)
+    assert result.status == "available"
+    assert result.label == calendar.LunarMonthLabel(0, "Chaitra", "ordinary")
+    assert result.amanta_lunation.label == calendar.LunarMonthLabel(1, "Vaisakha", "adhika")
+    assert len(result.regional_lunations) == 7
+
+
+def test_sewell_expunged_month_table_has_both_sides_of_the_same_purnimanta_period():
+    astronomy = _worked_lunations()
+    policy = calendar.LunarMonthPolicy(system=calendar.LunarMonthSystem.PURNIMANTA,
+                                       naming_profile="sewell_dikshit_gauna")
+    boundary = 1000 + 30 * (12 + 4)
+    provenance = calendar.LunarMonthProvenance("fixture")
+    krishna = calendar._month_from_boundaries(boundary - 10, policy, provenance, *astronomy)
+    shukla = calendar._month_from_boundaries(boundary + 10, policy, provenance, *astronomy)
+    assert krishna.status == shukla.status == "available"
+    assert krishna.label == shukla.label == calendar.LunarMonthLabel(8, "Margasirsha", "ksaya_context")
+    assert krishna.month_start == shukla.month_start
+    assert krishna.month_end == shukla.month_end
+    assert krishna.month_start.jd_ut1 == boundary - 15
+    assert krishna.month_end.jd_ut1 == boundary + 15
+    assert shukla.amanta_lunation.omitted_months == ("Pausha",)

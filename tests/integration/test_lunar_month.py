@@ -7,8 +7,7 @@ a8816abe4fae7fc0f0e4349a3d91eef00cfc0044a5f050b1b3bfe826847f9eaa
 Printed xii-xiii: month identities; printed 15,23,30 (PDF 35,43,50):
 conjunction endings; printed 158 (PDF 178): all 13 solar ingresses.
 Conjunction and solar-ingress timing comparisons retain the original
-60-second bound; labels are exact. This is not an admission
-of exceptional Purnimanta remapping or a complete historical calendar.
+60-second bound. Labels are exact within the named policies.
 """
 from datetime import datetime, timedelta, timezone
 import json
@@ -145,9 +144,68 @@ def test_real_two_ingress_lunation_retains_evidence(moira_engine):
     assert r.label.qualifier == "ksaya_context"
     assert len(r.amanta_lunation.ingresses) == 2
     assert len(r.amanta_lunation.omitted_months) == 1
+    # Jiwaji 1983 ephemeris pp. 3 and 5, tithi 30 endings at 10:38 and 06:02 IST.
+    assert abs(r.amanta_lunation.start.jd_ut1 - instant("1983-01-14T10:38:00")) * 86400 <= 60
+    assert abs(r.amanta_lunation.end.jd_ut1 - instant("1983-02-13T06:02:00")) * 86400 <= 60
     p = moira_engine.lunar_month_at(r.jd_ut1,
         policy=LunarMonthPolicy(system=LunarMonthSystem.PURNIMANTA))
     assert p.status == "unsupported_intercalation"
+
+
+def test_published_gauna_intercalary_sequence_and_contiguous_bounds(moira_engine):
+    # PAC 1948 SE, printed xii-xiii, Gauna Mana rows. May 2 and June 15
+    # identify the two regular fragments on either side of the Adhika lunation.
+    policy = LunarMonthPolicy(system=LunarMonthSystem.PURNIMANTA, naming_profile="sewell_dikshit_gauna")
+    before, waxing, waning, after, next_month = [
+        moira_engine.lunar_month_at(instant(day + "T12:00:00"), policy=policy)
+        for day in ("2026-05-02", "2026-05-17", "2026-06-01", "2026-06-15", "2026-07-01")
+    ]
+    for result, expected in zip(
+        (before, waxing, waning, after, next_month),
+        (
+            ("Jyaishtha", "ordinary", "Krishna", "full_moon", "new_moon"),
+            ("Jyaishtha", "adhika", "Shukla", "new_moon", "new_moon"),
+            ("Jyaishtha", "adhika", "Krishna", "new_moon", "new_moon"),
+            ("Jyaishtha", "nija", "Shukla", "new_moon", "full_moon"),
+            ("Ashadha", "ordinary", "Krishna", "full_moon", "full_moon"),
+        ),
+        strict=True,
+    ):
+        assert result.status == "available"
+        assert (
+            result.label.name, result.label.qualifier, result.paksha,
+            result.month_start.kind, result.month_end.kind,
+        ) == expected
+    for left, right in (
+        (before.month_end, waxing.month_start), (waxing.month_start, waning.month_start),
+        (waxing.month_end, waning.month_end), (waning.month_end, after.month_start),
+        (after.month_end, next_month.month_start),
+    ):
+        assert abs(left.jd_ut1 - right.jd_ut1) * 86400 <= 0.2
+
+
+@pytest.mark.parametrize("day,profile,name,qualifier,paired,omitted,companions", [
+    ("1983-01-20", "leow_eastern", "Pausha", "ordinary", None, "Magha", ("Asvina", "Phalguna")),
+    ("1983-01-20", "leow_northwestern", "Magha", "ordinary", None, "Magha", ("Asvina", "Phalguna")),
+    ("1983-01-20", "dharmasindhu_dual", "Pausha", "ksaya_context", "Magha", "Magha", ("Asvina", "Phalguna")),
+    ("1983-03-01", "leow_eastern", "Magha", "ordinary", None, "Magha", ("Asvina", "Phalguna")),
+    ("1964-04-01", "leow_eastern", "Phalguna", "ordinary", None, "Margasirsha", ("Kartika", "Chaitra")),
+])
+def test_modern_geometry_recovers_published_omissions_and_companions(
+    moira_engine, day, profile, name, qualifier, paired, omitted, companions,
+):
+    # Leow Table 12 records 1963-64 and 1982-83 astronomical groups.
+    # Selected regional labels follow the separate Table 14 rules.
+    result = moira_engine.lunar_month_at(
+        instant(day + "T12:00:00"), policy=LunarMonthPolicy(naming_profile=profile),
+    )
+    assert result.status == "available"
+    assert (result.label.name, result.label.qualifier, result.paired_month_name) == (name, qualifier, paired)
+    regional = result.regional_lunations
+    middle, = (lunation for lunation in regional if len(lunation.ingresses) == 2)
+    assert middle.omitted_months == (omitted,)
+    assert (regional[0].label.name, regional[-1].label.name) == companions
+    assert regional[0].ingresses == regional[-1].ingresses == ()
 
 
 def test_selected_ayanamsa_is_preserved_and_does_not_move_conjunctions(moira_engine):

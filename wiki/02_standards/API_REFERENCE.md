@@ -2915,8 +2915,8 @@ from moira import (
 | `validate_panchanga_output(result)` | `None` | Validate Panchanga result invariants |
 
 `Moira.lunar_month_at(jd_ut1, *, policy=None)` binds the engine reader.
-`LunarMonthPolicy` selects the month system, ayanamsa and solver tolerance.
-Exceptional Purnimanta mappings remain explicitly unsupported. See the
+`LunarMonthPolicy` selects the month system, ayanamsa, solver tolerance and
+optional named intercalation mapping. See the
 [lunar-month and festival policy surface](LUNAR_MONTH_AND_FESTIVAL_POLICY.md)
 for all eight exports, the REST contract, sources and remaining admission gates.
 
@@ -6355,7 +6355,7 @@ from moira.vedic import (
 |---|---|---|
 | `panchanga_at(sun_tropical_lon, moon_tropical_lon, jd, ayanamsa_system='Lahiri', policy=None)` | `→ PanchangaResult` | Five Panchanga elements at a given JD |
 | `daily_panchanga(local_date, latitude, longitude, *, timezone, policy=None, reader=None)` | `→ DailyPanchangaResult` | Local sunrise-to-next-sunrise day, exact computed limb endings, selected policy and unavailable states |
-| `lunar_month_at(jd_ut1, *, policy=None, reader=None)` | `→ LunarMonthResult` | Solved surrounding lunations, Amanta/ordinary Purnimanta labels, intercalation evidence and explicit unavailable mappings |
+| `lunar_month_at(jd_ut1, *, policy=None, reader=None)` | `→ LunarMonthResult` | Solved surrounding lunations, Amanta and Purnimanta labels, named intercalation mappings and explicit unavailable outcomes |
 | `sankranti_at(jd_start, jd_end, reader=None)` | `→ SankrantiResult` | Solar ingress into each rashi in a date range |
 | `tithi_condition_profile(result)` | `→ TithiConditionProfile` | Tithi quality assessment |
 | `panchanga_profile(result)` | `→ PanchangaProfile` | Aggregate Panchanga quality profile |
