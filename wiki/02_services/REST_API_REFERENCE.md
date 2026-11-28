@@ -1555,6 +1555,35 @@ solved angular limb endings and explicit solar unavailability. Its
 timestamps and a complete request. Existing instant/profile routes retain
 their current conventions.
 
+`GET /v1/panchanga/observances/catalogue` returns the finite list of
+named festival rules with separate date and fasting admission.
+`POST /v1/panchanga/observances/evaluate` takes `rule_id`, `local_date`
+as YYYY-MM-DD, `timezone`, `latitude` and `longitude`. The admitted
+`mahashivaratri_dharmasindhu_later_v1` profile uses the later ordinary
+Māgha reading. Its `date_result` retains the local sunrise-owned
+`selected_date` when known, month and Caturdaśī evidence, and both
+candidate Niśītha windows. A queried neighboring date can have
+`status: "not_applicable"` and carry the known selected date.
+
+The `vow` field reports the selected morning after daily rites. It
+includes the sunrise bracket and the physical tithi's relation to
+sunrise, including when Caturdaśī begins later. When the regional
+month evidence pairs Māgha with another month,
+`date_result.paired_magha` returns the elapsed-time midpoint and the
+342° elongation crossing. The retained boundaries allow comparison
+while exceptional Māgha eligibility remains unresolved.
+
+The optional `fasting_context` takes `darsha_shraddha_applies` as a
+boolean and `ready_for_parana_jd_ut1` as the finite readiness instant in
+UT1 on the local date of the following sunrise. When Caturdaśī spans that
+sunrise, an admitted `parana` may return mode `within_tithi` with
+an interval or `at_tithi_end` with the retained ending bracket.
+An applicable Darśa obligation needs only the boolean for the
+end-of-tithi directive. An omitted context yields `unavailable` for
+the ordinary eligible geometry. Exceptional month and unresolved ritual
+branches can return `unsupported_rule`.
+[Source policy and worked requests](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md#implemented-contract).
+
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/panchanga/instant` | `panchanga_instant_route` |
@@ -1563,6 +1592,8 @@ their current conventions.
 | POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
 | POST | `/v1/panchanga/day` | `panchanga_day_route` |
 | POST | `/v1/panchanga/lunar-month` | `panchanga_lunar_month_route` |
+| GET | `/v1/panchanga/observances/catalogue` | `panchanga_observance_catalogue_route` |
+| POST | `/v1/panchanga/observances/evaluate` | `panchanga_observance_evaluate_route` |
 | GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
 | GET | `/v1/sidereal/galactic-ayanamsa-presets` | `galactic_ayanamsa_presets_route` |
 | POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
@@ -4736,6 +4767,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/panchanga/instant` | panchanga | `panchanga_instant_route_v1_panchanga_instant_post` |
 | `POST` | `/v1/panchanga/instant/profile` | panchanga | `panchanga_instant_profile_route_v1_panchanga_instant_profile_post` |
 | `POST` | `/v1/panchanga/lunar-month` | panchanga | `panchanga_lunar_month_route_v1_panchanga_lunar_month_post` |
+| `GET` | `/v1/panchanga/observances/catalogue` | panchanga | `panchanga_observance_catalogue_route_v1_panchanga_observances_catalogue_get` |
+| `POST` | `/v1/panchanga/observances/evaluate` | panchanga | `panchanga_observance_evaluate_route_v1_panchanga_observances_evaluate_post` |
 | `POST` | `/v1/parans/field/analysis` | phenomena | `paran_field_analysis_route_v1_parans_field_analysis_post` |
 | `POST` | `/v1/parans/field/contours` | phenomena | `paran_field_contours_route_v1_parans_field_contours_post` |
 | `POST` | `/v1/parans/field/paths` | phenomena | `paran_field_paths_route_v1_parans_field_paths_post` |

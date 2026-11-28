@@ -26,6 +26,7 @@ _khara = importlib.import_module("moira.khara_divisions")
 _prashna = importlib.import_module("moira.prashna")
 _choghadiya = importlib.import_module("moira.choghadiya")
 _lunar_month = importlib.import_module("moira.lunar_month")
+_observances = importlib.import_module("moira.observances")
 _gochara_dated = importlib.import_module("moira.gochara_dated")
 _gochara_windows = importlib.import_module("moira.gochara_windows")
 _avasthas = importlib.import_module("moira.avasthas")
@@ -83,6 +84,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     "api": {
         "frozen": [
             "panchanga", "panchanga_profile", "daily_panchanga", "lunar_month_at",
+            "observance_catalogue", "evaluate_observance",
             "special_lagnas", "special_lagnas_for_datetime", "pushkara", "pushkara_for_chart",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
             "pancha_pakshi_uromarisi_constitution_status",
@@ -575,6 +577,21 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     def lunar_month_at(self, jd_ut1: float, *, policy=None):
         """Source-declared lunation context with this engine's reader."""
         return _lunar_month.lunar_month_at(jd_ut1, policy=policy, reader=self._reader)
+
+    def observance_catalogue(self):
+        """Return source admission for the finite observance catalogue."""
+        return _observances.observance_catalogue()
+
+    def evaluate_observance(self, rule_id: _observances.ObservanceRuleId,
+                            local_date: date, latitude: float, longitude: float, *,
+                            timezone: str,
+                            fasting_context: _observances.ObservanceFastingContext | None = None,
+                            ) -> _observances.ObservanceResult:
+        """Evaluate one named local observance using this engine's ephemeris reader."""
+        return _observances.evaluate_observance(
+            rule_id, local_date, latitude, longitude, timezone=timezone,
+            fasting_context=fasting_context, reader=self._reader,
+        )
 
     def find_muhurta_windows(self, start_jd_ut1: float, end_jd_ut1: float, *,
                              janma_moon_sidereal_lon=None, policy=None):

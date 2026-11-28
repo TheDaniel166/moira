@@ -101,7 +101,7 @@ VED-018 and VED-019 are evidence programmes. Source-attested, disputed, research
 | ID | Work still required | Current evidence and admission gate | Status / priority |
 | --- | --- | --- | --- |
 | VED-023 | Source and implement exceptional Purnimanta month/fortnight mapping and Kshaya-year regional relabeling. Regional solar dates and era years require their own profiles. | [Lunar-month engine](../../moira/lunar_month.py), `Moira.lunar_month_at` and `POST /v1/panchanga/lunar-month` offer the structural default and four opt-in mappings: Sewell–Dikshit Gauna, Leow Eastern and North Western, and Dharmasindhu paired names. [Source and verification record](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md#5-exceptional-purnimanta-and-regional-kshaya-naming) records the worked cases, coverage and uncertainty. | `BOUNDED_ADMISSION`, P2; named month mappings implemented locally. Regional solar dates, era years and tithi-half ritual assignment remain open. |
-| VED-024 | Admit finite festival/fasting rule catalogues by identified lineage: exact ritual windows, viddha, repeated/skipped tithi selection, intercalation eligibility, precedence and parana. Expose catalogue admission states and bounded typed evaluation through REST together. | [Research and policy surface](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md) records institutional calendars, local corpus limits, explicit policy axes and test requirements. PAC dates do not constitute a complete executable rule specification; no universal festival catalogue is admitted. | `SOURCE_RESEARCH`, P2; research packet decision `defer_for_source_completion` |
+| VED-024 | Admit finite festival/fasting rules by identified lineage, including the ritual window, tithi selection, intercalation eligibility, precedence and pāraṇa. Expose catalogue admission states and bounded typed evaluation through REST together. | The [Mahāśivarātri profile](../../moira/observances.py) implements the ordinary Amanta Māgha date, the selected-morning vow and conditional next-morning pāraṇa in Python and REST. The [source and verification record](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md#ved-024-first-source-packet--mahāśivarātri) documents date, fasting and paired Māgha cases. | `BOUNDED_ADMISSION`, P2. Exceptional-month eligibility and pāraṇa when the tithi ends before the following sunrise remain open. |
 
 ## 7. Optional expansion candidates
 
@@ -1661,3 +1661,136 @@ links for each lord and preserves the existing Vimshottari timing and
 year-basis contract. The [primary-source checkpoint](VEDIC_KP_PERIOD_INTERPRETATION_PRIMARY_SOURCE_CHECKPOINT.md)
 records the reproduced examples, mixed evidence decisions, and Python
 and REST contracts.
+
+## 72. VED-024 implementation plan
+
+27 November 2026
+
+### Scope and milestones
+
+Finish the first finite engine catalogue with one complete, versioned
+Mahāśivarātri observance and fasting profile. The first milestone evaluates
+the date for ordinary Māgha. The completion milestone evaluates eligibility,
+fasting and pāraṇa under the same named profile. Each additional observance
+has its own source packet and admission decision.
+
+Start with the *Dharmasindhu* rule as transcribed from the 1888 Nirṇaya
+Sāgara edition. Select the later equal-coverage reading reported in that
+text for the first profile. Use the earlier Hemādri/Kaustubha reading as an
+independent fixture expectation for a competing rule. The *Nirṇayasindhu*
+pradoṣa and arddharātra rules have their own admission. [Primary sources and worked cases](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md#ved-024-first-source-packet--mahāśivarātri)
+
+### 1. Freeze the date rule and its evidence
+
+- Record the chosen text spans and a decision table for each pair of
+  candidate nights. Use Amanta Māgha Krishna Caturdaśī. Record Purnimanta
+  Phālguna as the corresponding ordinary name. Before coding, verify the
+  candidate pair when the tithi straddles both windows, reaches only one,
+  or lies between them. The night belongs to the sunrise day containing
+  its sunset, including when Niśītha falls after civil midnight.
+- Independently work the decisions for one covered night, full versus
+  partial in both orders, both full, both partial, and neither. Define
+  zero-duration contact, exact endpoints and uncertain overlaps. Use the
+  two-night comparisons from 2018, the 2025 New York neither-night example,
+  the repeated and skipped sunrise witnesses, and the 2026/27 ordinary
+  comparisons already in the packet.
+- Write the fixture expectations before implementation. Use published
+  places and dates as date comparisons and independent arithmetic as
+  evidence for interval coverage and reasons.
+
+### 2. Build the ordinary date evaluator
+
+- Place the evaluator in `moira/observances.py` with a pure interval
+  decision function.
+  Compute Niśītha from solved sunset and the following sunrise in UT1 as
+  `[S + 7(R−S)/15, S + 8(R−S)/15)`. Resolve the entire Caturdaśī interval
+  at 336° and 348° elongation. Compose the needed adjacent sunrise days,
+  carrying both candidate nights even when one is outside the requested
+  local date. Derive the search span from the rule and document its bound.
+- Reuse the reader-bound day and month paths in
+  [daily Panchanga](../../moira/daily_panchanga.py),
+  [lunar month](../../moira/lunar_month.py) and the
+  [Vedic facade](../../moira/_facade_vedic.py). The daily result clips
+  coverage to the sunrise day and exposes an entered-side tithi ending.
+  Capture the actual start and end brackets from the shared solver and
+  retain solar crossing bounds wherever they affect the decision.
+  Overlapping uncertainty that can change the outcome yields
+  `ambiguous`. A missing sunrise or sunset needed by the rule yields
+  `unavailable`. Check the existing Panchanga contracts if sharing
+  requires a change to their computation paths.
+- Return the month identity and policy, any omitted or paired identities,
+  tithi bounds, both ritual windows, coverage, rejection reasons, the
+  applied rule and the selected sunrise-owned date. Retain UT1 for
+  comparisons and use the existing converters for UTC and local display.
+  Ordinary date selection can advance once step 1 passes. Catalogue
+  admission will track date selection and fasting readiness independently.
+
+### 3. Complete intercalation and pāraṇa
+
+Start this research alongside the ordinary date implementation. Integrate
+each branch after the source and its worked cases agree.
+
+- **Intercalation.** Establish which occurrence qualifies when Amanta
+  Māgha is ordinary, intercalated, omitted or paired.
+  In the 1983 case, work the same tithi through VED-023's structural,
+  relabeled and dual-month evidence and record the source decision.
+  The 11 February Prasanthi Nilayam recording establishes its observance
+  date. A primary rule must establish when to use the omission, a relabeling
+  or a paired identity for future cases. Until then evaluate a known
+  out-of-scope branch as `unsupported_rule`. Use
+  `excluded_by_profile` for a documented exclusion.
+  [1983 observance](https://saicast.org/1983/19830211Purna.html)
+- **Fasting and pāraṇa.** Establish the fast's start and its relationship
+  to the selected sunrise day from the vrata passage. Determine the
+  scope of the end-of-tithi and within-tithi rules in the selected
+  Pāraṇanirṇaya. Verify the anchor for the
+  three-yāma discussion and the treatment of equality where that branch
+  applies. Establish what signals that the daily rites can fit, and
+  what makes Darśa observance applicable. Where the rule depends on the
+  practitioner's circumstances, make them typed inputs and document the
+  missing-input result. Reproduce the boundary ending, valid in-tithi
+  window, insufficient time and Darśa cases, with next-day solar and tithi
+  evidence. [Dharmasindhu, Pāraṇanirṇaya](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=20&t=path)
+
+### 4. Expose and verify the catalogue
+
+- Add a reader-bound Python evaluator and strict response and request
+  models in `moira_server/models/observances.py`. Wire them through the
+  [Panchanga router](../../moira_server/routers/panchanga.py). Use
+  `GET /v1/panchanga/observances/catalogue` and
+  `POST /v1/panchanga/observances/evaluate` as the planned route pair.
+  The evaluator takes a rule ID, local date, timezone and location, plus
+  any typed inputs required by the admitted fasting rule. Use the
+  [Śuddhi catalogue](../../moira/panchanga_shuddhi.py) as the precedent for
+  finite, source-bearing entries and explicit admission state.
+- Expose separate date and pāraṇa results with evidence. Distinguish
+  `selected`, `not_applicable`, `ambiguous`, `unavailable`,
+  `excluded_by_profile` and `unsupported_rule`. Validate unknown rule
+  IDs and malformed inputs at the request boundary. Check Python/REST
+  parity, OpenAPI and catalogue state, including known profiles whose
+  requested branch is pending source admission.
+- Add pure decision tests in `tests/unit/test_observances.py`, DE441
+  fixture replay in `tests/integration/test_observances.py`, and HTTP
+  contract tests in `tests/server/test_server_observances.py`. Run them
+  in the project `.venv` with downloads disabled and strict known-issue
+  checking. Run the adjacent Daily Panchanga and lunar-month tests when
+  sharing solver evidence. Include local-date rollover, DST, an exact
+  window edge, ambiguous brackets, and absent solar events. Record
+  provenance, tolerances, and all remaining admission limits in the
+  [owning standard](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md).
+
+Mark the ordinary-date milestone complete after its evidence and contract
+tests pass. Mark VED-024 complete when the same named profile has verified
+answers for its supported intercalation cases and fasting and pāraṇa
+branches, including sourced exclusions, and the catalogue and evaluator
+are both validated. A missing rule that can change the date or pāraṇa
+keeps that milestone open.
+
+The ordinary-date milestone is implemented locally. The same profile
+implements the author's conditional pāraṇa decision when Caturdaśī
+spans the sunrise after the selected night. The selected-morning vow
+is implemented, including later tithi onset. The API takes the
+practitioner's readiness and Darśa applicability for pāraṇa and
+returns both candidate half-tithi bounds when Māgha is paired. The
+exceptional-month eligibility and pre-sunrise pāraṇa branches stay
+open under VED-024. [Implementation and worked results](../02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md#implemented-contract)

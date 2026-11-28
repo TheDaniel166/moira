@@ -117,6 +117,12 @@ from .daily_panchanga import (
     PanchangaSolarDate, PanchangaLimbInterval, PanchangaLimbDay,
     DailyPanchangaProvenance, DailyPanchangaResult, daily_panchanga,
 )
+from .observances import (
+    ObservanceProfile, ObservanceBoundary, ObservanceInterval, ObservanceNight,
+    ObservancePairedMaghaEvidence, ObservanceVowResult,
+    ObservanceDateResult, ObservanceFastingContext, ObservanceParanaResult, ObservanceProvenance,
+    ObservanceResult, observance_catalogue, evaluate_observance,
+)
 from .panchanga import (
     TithiPaksha,
     YogaClass,
@@ -904,6 +910,10 @@ _VEDIC_OWN: list[str] = [
     "PanchangaSunriseDefinition", "DailyPanchangaPolicy", "PanchangaMoment",
     "PanchangaSolarDate", "PanchangaLimbInterval", "PanchangaLimbDay",
     "DailyPanchangaProvenance", "DailyPanchangaResult", "daily_panchanga",
+    "ObservanceProfile", "ObservanceBoundary", "ObservanceInterval", "ObservanceNight",
+    "ObservancePairedMaghaEvidence", "ObservanceVowResult",
+    "ObservanceDateResult", "ObservanceFastingContext", "ObservanceParanaResult", "ObservanceProvenance",
+    "ObservanceResult", "observance_catalogue", "evaluate_observance",
     "SpecialLagnaBirthResult", "SpecialLagnaResult", "special_lagnas", "special_lagnas_for_datetime",
     "KharaCell", "KharaDivision", "KharaDivisionsResult", "khara_divisions",
     "PrashnaSphutas", "PrashnaGulikaEvidence", "PrashnaSphutasChart",

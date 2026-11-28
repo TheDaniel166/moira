@@ -212,12 +212,12 @@ overlapping ingress and conjunction needed for a choice yields
   Ritual decisions, including the application's choice of a half-tithi
   boundary convention, require a separate admission. [Sanskrit text and translation](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=1&t=path)
 
-## 6. Festival policy that must govern later admission
+## 6. Festival rule admission
 
-The following is Moira's proposed admission/transport contract, not a claim
-that the sources above establish every rule. VED-024 currently evaluates as
-`defer_for_source_completion`: an evidence packet and explicit admission
-decision are present; named festival calculation is not yet admitted.
+Moira admits festival rules by named profile and verified branch. VED-024
+currently has bounded admission for the first Mahāśivarātri profile.
+The source packet below defines its supported cases and the decisions
+that still require source completion.
 
 Every catalogue entry must carry a stable rule/version ID, a particular
 festival identity, edition/page/verse or operational authority, scope of
@@ -249,13 +249,208 @@ phases. The next finite rule packet should include one ordinary case, every
 source-required exception, counterexamples for competing traditions, exact
 boundary cases and an explicit decision on any missing rule branch.
 
-Suggested sequencing: complete exceptional month mapping first; establish
-source-owned ritual window primitives; then admit a small catalogue with a
-catalogue endpoint and bounded evaluation route together. Ekādaśī needs its
-complete selected exceptional-case and pāraṇa doctrine before a claimed
-fasting calendar. Janmāṣṭamī, Dīpāvalī, Śivarātri and regional solar festivals
-must each receive independent rule packets. None is automatically admitted
-by having a matching tithi or a date in PAC's list.
+The current catalogue and evaluation route expose the first source-owned
+ritual window. Ekādaśī needs its selected exceptional-case and pāraṇa
+doctrine before admission as a fasting calendar. Janmāṣṭamī, Dīpāvalī and
+regional solar festivals each require independent rule packets.
+
+### VED-024 first source packet — Mahāśivarātri
+
+**28 November 2026.** The engine exposes the ordinary date, selected-morning
+vow and conditional next-morning pāraṇa under
+`mahashivaratri_dharmasindhu_later_v1`. Exceptional month eligibility and
+pāraṇa outside the admitted geometry remain in source research.
+
+Kāśīnātha Upādhyāya's *Dharmasindhu*, second Pariccheda, Māgha-māsa,
+Śivarātri and Pāraṇanirṇaya, was checked in the Sanskrit transcription
+of the Nirṇaya Sāgara 1888 edition (Kṛṣṇaśāstrī Navare) and against the
+Marathi translation. The target is Krishna Caturdaśī in Amanta Māgha,
+which the *Nirṇayasindhu* identifies as Krishna Caturdaśī in Purnimanta
+Phālguna. That correspondence holds for the ordinary calendar.
+[Dharmasindhu, Śivarātri](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=19&t=path)
+· [Marathi translation](https://www.transliteral.org/pages/z80505114958/view)
+· [Nirṇayasindhu, Mahāśivarātri](https://whm.cdsharma.in/dharma-nirnay?g=ns&p=32&t=path)
+
+For the *Dharmasindhu* reading, Niśītha is the eighth muhūrta of the
+night. With sunset `S` and following sunrise `R`, the modeled window is
+`[S + 7(R−S)/15, S + 8(R−S)/15)` in UT1. The date label belongs to the
+sunrise day containing the sunset, including when the window itself is
+wholly after civil midnight.
+
+| Caturdaśī coverage of the two candidate Niśīthas | Decision |
+| --- | --- |
+| Exactly one has coverage | Select that night. |
+| One full and one partial | Select the full night in either order. |
+| Both full or both partial | Hemādri as reported by the *Kaustubha* selects earlier. The later-night authorities reported by *Dharmasindhu* select later. |
+| Neither has coverage | Select the later day. |
+
+The *Nirṇayasindhu* itself records another arddharātra definition in its
+Madhava citation and uses pradoṣa in some two-night decisions. Its detailed
+rule requires a separately identified profile.
+
+#### Worked date and geometry witnesses
+
+The daily Panchanga supplied solar crossings under the Rashtriya
+upper-limb policy. Caturdaśī was separately bracketed at elongations
+336° and 348° with DE441 and checked against the daily tithi coverage
+and structural Amanta month. Times are displayed to the second in each
+local clock. The published witnesses establish the dates selected by
+their institutions.
+
+| Locality | Solved Caturdaśī interval | Niśītha coverage | Published date |
+| --- | --- | --- | --- |
+| Sringeri `13.4167, 75.2500`, IST | 15 Feb 2026 17:05:21 to 16 Feb 17:34:34 | 15 Feb full, window 16 Feb 00:18:22–01:07:33. 16 Feb absent. | 15 Feb. [Sringeri event](https://www.sringeri.net/events/mahashivaratri-2026) |
+| Kolkata `22.5726, 88.3639`, IST | 6 Mar 2027 12:04:02 to 7 Mar 13:46:50 | 6 Mar full, window 23:23:13–00:11:59. 7 Mar absent. | 6 Mar. [Rashtriya Panchang, festival row 81](https://packolkata.imd.gov.in/panchang/index.php/en/festivals) |
+| Palani `10.4503, 77.5161`, IST | 13 Feb 2018 22:34:56 to 15 Feb 00:46:48 | 13 Feb full, window 14 Feb 00:09:35–00:58:28. 14 Feb partial, window 15 Feb 00:09:34–00:58:25. | 13 Feb, explicitly selected in response to the Palani pandits' question. [Sringeri Jagadguru's decision](https://vijayayatra.sringeri.net/archiveyatra/palani-april-22-23-2017/) |
+| Kolkata `22.5726, 88.3639`, IST | Same geocentric 2018 tithi | Both full. Windows 13 Feb 23:25:17–00:15:48 and 14 Feb 23:25:18–00:15:44. | 14 Feb holiday. [West Bengal holiday list](https://msme.wb.gov.in/cmsholiday) |
+| New York City `40.752, -73.816`, EST | 26 Feb 2025 00:38:56–22:25:08 | Both absent. The 25 Feb window ends on 26 Feb at 00:33:28. The 26 Feb window starts at 23:41:57. The source fallback selects 26 Feb. | 26 Feb. The probe uses metropolitan coordinates. [Bronx Puja Committee announcement](https://bronxpujacommittee.com/maha-shiva-ratri/) |
+
+Two more runs isolate sunrise ownership from ritual-window coverage.
+At Jerusalem (`31.778, 35.235`, UTC+02:00) the 26–27 February 2025
+sunrises were in tithis 28 and 30. The intervening Caturdaśī covered the
+entire 26 February Niśītha. At Kauai (`22.075, -159.500`, UTC−10:00)
+Caturdaśī owned the 13 and 14 February 2018 sunrises. It covered the
+13 February Niśītha and ended before the 14 February Niśītha. These are
+calculated geometry cases.
+
+#### Intercalation and fasting admission
+
+- At 23:45 IST on 11 February 1983, the solved tithi is Krishna
+  Caturdaśī. VED-023 gives Pausha with omitted Magha under the
+  structural policy, Pausha under the Eastern mapping, Magha under
+  the North Western mapping, and Pausha/Magha under the dual profile.
+  The Prasanthi Nilayam archive records Mahāśivarātri on 11 February.
+  That is an observed Kshaya-year date. The general rule for weighting
+  the two month identities remains to be established for a named
+  ritual lineage. [1983 event recording](https://saicast.org/1983/19830211Purna.html)
+  · [Dated discourse](https://saispeaks.sathyasai.org/discourse/ever-auspicious-lord)
+- The *Dharmasindhu* procedure places the vow in the morning after daily
+  rites. *Śivapurāṇa*, Koṭirudrasaṃhitā 38.25–31, begins with the morning
+  of the observance day, gives the daily rites and the vow in sequence,
+  then gives the night worship. *Puruṣārthacintāmaṇi*, Upavāsa-nirṇaya,
+  expressly keeps the morning saṅkalpa even when the tithi chosen for
+  the main rite starts after sunset. Moira applies that ordering to
+  the sunrise day selected by the Niśītha rule. The result places
+  the vow after the practitioner's daily rites on that morning.
+  [Dharmasindhu, Vrata procedure](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=20&t=path)
+  · [Śivapurāṇa 4.38.25–31](https://vedapath.app/en/shiva-purana/kotirudra/38)
+  · [Puruṣārthacintāmaṇi, Upavāsa-nirṇaya](https://vishvasa.github.io/kalpAntaram/dharmaH/nibandhaH/viShNubhaTTaH/puruShArthachintAmaNiH/#:~:text=%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%A4%E0%A4%B0%E0%A4%BE%E0%A4%B0%E0%A4%AD%E0%A5%8D%E0%A4%AF)
+- The *Pāraṇanirṇaya* author's reconciliation gives the tithi ending when
+  Caturdaśī leaves insufficient time for the daily rites and pāraṇa or
+  when Darśa śrāddha and related rites apply during the remainder of that
+  day. Otherwise pāraṇa is within Caturdaśī after the preparations. The
+  three-yāma discussion introduces the reported readings of Mādhava and
+  others. The admitted branch uses Kāśīnātha's subsequent conditions.
+  [Dharmasindhu, Pāraṇanirṇaya](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=20&t=path)
+  · [Marathi translation](https://www.transliteral.org/pages/z80505115136/view)
+
+#### Worked checks for the remaining branches
+
+At Sringeri on 15 February 2026, sunrise was 06:52:09 IST and
+Caturdaśī began at 17:05:21. The institution's dated report records
+morning worship on the 15th and the first of the four night services
+at 19:30. This independently witnesses that the observance begins
+on the selected day before the physical tithi starts. The placement
+of the personal vow comes from the ritual texts above.
+[Sringeri's report](https://www.srisharadapeetham.org/events/mahashivaratri-2026)
+
+At Palani the Jagadguru selected 13 February 2018. Caturdaśī began at
+22:34:56 IST, after the sunset of the selected day. The same morning
+directive applies, with the physical tithi at sunrise reported separately.
+[Palani date decision](https://vijayayatra.sringeri.net/archiveyatra/palani-april-22-23-2017/)
+
+At Prasanthi Nilayam, the 1983 tithi ran from 11 February 01:05:12 to
+12 February 03:41:14 IST. The elapsed-time midpoint was 14:23:13 and
+the 342° elongation crossing was 14:24:49 on the 11th. The entire chosen
+night's Niśītha, 00:08:12–00:57:41 on the 12th, falls in the later
+half under both calculations. The following Adhika Phālguna Caturdaśī
+covered the 12 March night, a separate astronomical candidate that the
+Eastern regional mapping calls Māgha. The *Dharmasindhu* assigns half
+tithis to paired months and permits rites with no other occasion in
+intercalary months. Its worked ritual applications distinguish annual
+death rites, anniversaries and recurring Māgha-snāna. The
+*Smṛtimuktāvalī* affirms that duties of an omitted month can be performed
+in the paired lunation. The source decision still needed for this
+festival is whether and when to apply that duty rule to its entire
+vrata, including first observance, and how the half-tithi affects
+night selection. [Dharmasindhu, Kṣaya-māsa and Malamāsa](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=1&t=path)
+· [Smṛtimuktāvalī, Śūnyamāsa-nirṇaya](https://sa.wikisource.org/wiki/स्मृतिमुक्तावलिः)
+· [1983 event recording](https://saicast.org/1983/19830211Purna.html)
+
+At Kolkata in 2018, the later night's Niśītha ended at 00:15:44 IST,
+Caturdaśī at 00:46:48 and the following sunrise was at 06:08:47,
+all on 15 February. This differs from New York, where the ending
+precedes the selected Niśītha. *Puruṣārthacintāmaṇi* recognizes a
+scriptural exception for certain nighttime tithi-end observances.
+The *Dharmasindhu* combines its conditional time rule with a procedure
+that places bath and renewed worship at dawn after the vigil. The
+sources reviewed do not establish a precedence between the pre-dawn
+tithi ending and completion of the vigil for the selected later
+night, or for the neither-night fallback. Both cases remain
+`unsupported_rule` for pāraṇa.
+[Puruṣārthacintāmaṇi, Śivarātri-pāraṇa](https://vishvasa.github.io/kalpAntaram/dharmaH/nibandhaH/viShNubhaTTaH/puruShArthachintAmaNiH/#:~:text=%E0%A4%87%E0%A4%A4%E0%A4%BF%20%E0%A4%B6%E0%A4%BF%E0%A4%B5%E0%A4%B0%E0%A4%BE%E0%A4%A4%E0%A5%8D%E0%A4%B0%E0%A4%BF%E0%A4%AA%E0%A4%BE%E0%A4%B0%E0%A4%A3%E0%A4%A8%E0%A4%BF%E0%A4%B0%E0%A5%8D%E0%A4%A3%E0%A4%AF%E0%A4%83)
+· [Dharmasindhu, Pāraṇanirṇaya and Vrata procedure](https://whm.cdsharma.in/dharma-nirnay?g=ds&p=20&t=path)
+
+#### Implemented contract
+
+The [engine evaluator](../../moira/observances.py) and the
+[Panchanga REST routes](../02_services/REST_API_REFERENCE.md#panchanga-routes)
+take one local Gregorian date and a location with an IANA timezone or
+fixed UTC offset. The catalogue names the source, later-night precedence,
+Lahiri and Rashtriya upper-limb convention. A request for the neighboring
+date can return `not_applicable` with the winning `selected_date` and
+the two candidate windows. A zero-duration touch has no coverage.
+The engine tests all possible coverage classes from the brackets and
+returns `ambiguous` if they could select different dates.
+
+The solar search examines civil dates from two days before local tithi
+onset through one day after its ending, with the next sunrise for each
+night. The angular scan looks for Caturdaśī within the requested date
+and its two immediate neighbors and pads that three-day span by two UT1
+days on each side to capture complete crossings. The shared lunar
+solver advances hourly, bracketing 336° and 348° to 0.1 s. The daily
+solar crossings are independently sign-checked on the existing
+topocentric altitude signal over a nominal 0.1 s interval centered on
+each crossing. Niśītha bounds follow from those solar bounds in UT1.
+Missing solar context yields `unavailable`. The seconds describe
+numerical brackets.
+
+The `vow` result identifies the selected morning and the sequence
+after daily rites. The `sunrise_tithi` field compares that sunrise with
+the physical tithi brackets and can report boundary uncertainty
+independently of the selected morning. For paired Māgha geometry,
+`date_result.paired_magha` carries both half-tithi boundaries for
+comparison. The date result still reflects the current intercalation
+admission.
+
+Conditional pāraṇa applies where the tithi spans the sunrise following
+the selected night. The practitioner supplies whether Darśa śrāddha
+applies and, when it does not, the time on that following local date
+when the required preparations allow them to break the fast. A readiness
+time strictly before the tithi ending yields the half-open window
+`[readiness, tithi end)`. When readiness is at or after the ending,
+or Darśa applies, the result carries the ending boundary and the
+`at_tithi_end` directive. If a comparison straddles the retained
+brackets it produces `ambiguous`. Missing personal context and
+unsupported astronomical branches are visible separately from the
+date decision.
+
+At Sringeri the verified ending is about 17:34:34 IST on 16 February
+2026. With practitioner readiness at 08:00 and no Darśa obligation,
+the supplied witness gives a window from 08:00 to that ending.
+Readiness at 18:00 gives the end-of-tithi directive, as does applicable
+Darśa. The readiness times are worked inputs. In the New York
+neither-night fallback the ending precedes the selected Niśītha and
+the next sunrise. The evaluator retains the selected date and reports
+`unsupported_rule` for pāraṇa. The omitted-Māgha 1983 replay retains
+both the structural omission and the Dharmasindhu paired name, with
+`unsupported_rule` for the date.
+
+Verification covers [pure precedence and exact contacts](../../tests/unit/test_observances.py),
+[DE441 source and geometry cases](../../tests/integration/test_observances.py)
+and [HTTP/OpenAPI parity](../../tests/server/test_server_observances.py).
+The focused run passed 301 tests, including the adjacent daily Panchanga,
+lunar-month and Vedic export suites, with DE441 and downloads disabled.
 
 ## 7. Verification and remaining boundary
 

@@ -21,12 +21,11 @@ class DailyPanchangaPolicyRequest(_StrictModel):
         return DailyPanchangaPolicy(ayanamsa_system=value).ayanamsa_system
 
 
-class DailyPanchangaRequest(_StrictModel):
+class LocalPanchangaDateRequest(_StrictModel):
     local_date: date
     timezone: Annotated[str, Field(min_length=1, max_length=128)]
     latitude: Annotated[FiniteNumber, Field(ge=-90.0, le=90.0)]
     longitude: Annotated[FiniteNumber, Field(ge=-180.0, le=180.0)]
-    policy: DailyPanchangaPolicyRequest = Field(default_factory=DailyPanchangaPolicyRequest)
 
     @field_validator("local_date", mode="before")
     @classmethod
@@ -38,6 +37,10 @@ class DailyPanchangaRequest(_StrictModel):
             if parsed.isoformat() == value:
                 return parsed
         raise ValueError("local_date must be a Gregorian YYYY-MM-DD date")
+
+
+class DailyPanchangaRequest(LocalPanchangaDateRequest):
+    policy: DailyPanchangaPolicyRequest = Field(default_factory=DailyPanchangaPolicyRequest)
 
 
 class PanchangaMomentResponse(_StrictModel):

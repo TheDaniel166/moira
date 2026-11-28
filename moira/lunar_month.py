@@ -11,6 +11,8 @@ conjunction, opposition or ingress ownership.
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
+
 import math
 from dataclasses import dataclass, replace
 from enum import Enum
@@ -281,18 +283,15 @@ class LunarMonthResult:
             raise ValueError("unknown lunar month availability")
 
 
-def _angular_boundaries(start: float, end: float, phase_at, span: float,
-                        tolerance_seconds: float, lunar: bool) -> tuple[CalendarBoundary, ...]:
-    """Follow a forward continuous angle and bracket each multiple of span.
-
-    One-day advances must be positive and less than half a span; an invalid
-    trajectory fails. No mean synodic period determines an event or label.
-    """
+def _angular_crossings(
+    start: float, end: float, phase_at: Callable[[float], float], span: float,
+    tolerance_seconds: float, *, scan_step_days: float,
+) -> Iterator[tuple[float, float, float]]:
+    """Yield angle and UT1 brackets for forward crossings of multiples of span."""
     left, wrapped = start, phase_at(start)
     continuous = wrapped
-    events: list[CalendarBoundary] = []
     while left < end:
-        right = min(left + 1.0, end)
+        right = min(left + scan_step_days, end)
         right_wrapped = phase_at(right)
         advance = (right_wrapped - wrapped) % 360.0
         if not 0 < advance < span / 2:
@@ -307,11 +306,20 @@ def _angular_boundaries(start: float, end: float, phase_at, span: float,
                     low = mid
                 else:
                     high = mid
-            angle = target % 360.0
-            kind = ("new_moon" if angle == 0 else "full_moon") if lunar else "solar_ingress"
-            events.append(CalendarBoundary(kind, angle, low, high))
+            yield target % 360.0, low, high
         continuous += advance
         left, wrapped = right, right_wrapped
+
+
+def _angular_boundaries(start: float, end: float, phase_at, span: float,
+                        tolerance_seconds: float, lunar: bool) -> tuple[CalendarBoundary, ...]:
+    """Solve the lunar or solar calendar boundaries with one-day scan steps."""
+    events = []
+    for angle, low, high in _angular_crossings(
+        start, end, phase_at, span, tolerance_seconds, scan_step_days=1.0,
+    ):
+        kind = ("new_moon" if angle == 0 else "full_moon") if lunar else "solar_ingress"
+        events.append(CalendarBoundary(kind, angle, low, high))
     return tuple(events)
 
 
