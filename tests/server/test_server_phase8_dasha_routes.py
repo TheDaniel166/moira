@@ -7,11 +7,13 @@ Adversarial witnesses: confirm invalid inputs are rejected cleanly.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import math
 
 import pytest
 from fastapi.testclient import TestClient
 
 from moira.dasha import (
+    DashaPeriod,
     current_dasha,
     dasha_active_line,
     dasha_balance,
@@ -19,9 +21,10 @@ from moira.dasha import (
     dasha_sequence_profile,
     vimshottari,
 )
-from moira.julian import jd_from_datetime
+from moira.julian import TAI_TT_OFFSET, datetime_from_jd, jd_from_datetime, tt_to_ut, utc_to_ut1
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.serializers.dasha import serialize_dasha_sequence
 
 
 pytestmark = pytest.mark.loopback
@@ -79,6 +82,64 @@ def test_dasha_sequence_route_matches_engine(
     # subs should be populated at levels=2
     assert len(first["sub"]) == len(direct[0].sub)
     assert first["sub"][0]["planet"] == direct[0].sub[0].planet
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    "birth",
+    [
+        datetime.fromisoformat("2024-01-01T18:04:56.123456+05:30"),
+        datetime.fromisoformat("1850-01-01T12:34:56.123456+00:00"),
+    ],
+    ids=["modern-with-offset", "historical-proxy"],
+)
+def test_dasha_period_start_utc_replays_in_chart(
+    client_with_engine: TestClient,
+    birth: datetime,
+) -> None:
+    natal = {"dt": birth.isoformat()}
+    sequence = client_with_engine.post("/v1/dasha/vimshottari/sequence", json={"natal": natal})
+    assert sequence.status_code == 200, sequence.text
+    first, second, *_ = sequence.json()["mahadashas"]
+
+    birth_jd = jd_from_datetime(birth)
+    assert first["start_jd"] == utc_to_ut1(birth_jd)
+    assert first["full_start_jd"] < first["start_jd"]
+    assert first["start_date"] == datetime_from_jd(first["start_jd"]).isoformat()
+    birth_replayed = datetime.fromisoformat(first["start_utc"])
+    assert birth_replayed.utcoffset() == timezone.utc.utcoffset(birth)
+    assert abs(jd_from_datetime(birth_replayed) - birth_jd) <= math.ulp(birth_jd)
+    assert (first["start_utc"] != first["start_date"]) == (birth.year == 2024)
+
+    active = client_with_engine.post(
+        "/v1/dasha/vimshottari/current",
+        json={"natal": natal, "current_dt": birth.replace(day=2).isoformat(), "levels": 2},
+    )
+    assert active.status_code == 200, active.text
+    assert active.json()["mahadasha"]["start_utc"] == first["start_utc"]
+    assert active.json()["antardasha"]["start_utc"] == first["sub"][0]["start_utc"]
+
+    for period in (first, second["sub"][1]):
+        chart = client_with_engine.post(
+            "/v1/chart",
+            json={"dt": period["start_utc"], "bodies": ["Sun"], "include_nodes": False},
+        )
+        assert chart.status_code == 200, chart.text
+        replayed_ut1 = chart.json()["computation_truth"]["jd_ut1"]
+        assert abs(replayed_ut1 - period["start_jd"]) <= math.ulp(period["start_jd"])
+
+
+def test_dasha_period_start_inside_leap_second_has_no_chart_datetime() -> None:
+    # At the 2016 insertion, the leap second starts at midnight JD plus
+    # the pre-insertion TAI-UTC of 36 seconds and the fixed TAI-to-TT offset.
+    start_tt = 2457754.5 + (36.0 + TAI_TT_OFFSET + 0.5) / 86400.0
+    start_ut1 = tt_to_ut(start_tt)
+    period = DashaPeriod(level=1, planet="Moon", start_jd=start_ut1, end_jd=start_ut1 + 1)
+    result = serialize_dasha_sequence([period], levels_generated=1).mahadashas[0]
+
+    assert result.start_jd == start_ut1
+    assert result.start_date == period.start_dt.isoformat()
+    assert result.start_utc is None
 
 
 # ---------------------------------------------------------------------------

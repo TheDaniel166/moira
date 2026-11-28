@@ -2417,6 +2417,9 @@ def _leap_second_gap(jd_ut1: float) -> tuple[float, float, float, float] | None:
     """
 
     index = bisect.bisect_right(LEAP_SECONDS, (jd_ut1 + 2.0, float("inf"))) - 1
+    if index < 1:
+        return None
+    jd_tt = ut_to_tt(jd_ut1)
     for candidate in (index, index - 1):
         if candidate < 1:
             continue
@@ -2426,7 +2429,6 @@ def _leap_second_gap(jd_ut1: float) -> tuple[float, float, float, float] | None:
             continue
         gap_start_tt = leap_jd + (pre_offset + TAI_TT_OFFSET) / 86400.0
         gap_end_tt = leap_jd + (post_offset + TAI_TT_OFFSET) / 86400.0
-        jd_tt = ut_to_tt(jd_ut1)
         if gap_start_tt <= jd_tt < gap_end_tt:
             return leap_jd, jd_tt, gap_start_tt, gap_end_tt
     return None
@@ -2477,14 +2479,26 @@ def _ut1_to_utc(jd_ut1: float) -> float:
     gap_label = _leap_second_gap_utc(jd_ut1)
     if gap_label is not None:
         return gap_label
+    return _ut1_to_utc_outside_leap_second(jd_ut1)
+
+
+def _ut1_to_utc_outside_leap_second(jd_ut1: float) -> float:
+    """Invert a validated UT1 JD already checked for inserted leap seconds."""
     admitted_utc = EOPRegistry._utc_from_ut1(jd_ut1)
     if admitted_utc is not None:
         return admitted_utc
 
     atomic_boundary = LEAP_SECONDS[0][0]
     handoff_start = atomic_boundary - _UTC_ATOMIC_HANDOFF_WINDOW_DAYS
-    atomic_boundary_ut1 = _atomic_utc_to_ut1(atomic_boundary)
-    if handoff_start <= jd_ut1 < atomic_boundary_ut1:
+    if jd_ut1 < handoff_start:
+        return jd_ut1
+
+    # The UT1 label of the fixed 1972 handoff is within one day of its UTC
+    # label. Only epochs in that window need to solve for the exact boundary.
+    if (
+        jd_ut1 < atomic_boundary + _UTC_ATOMIC_HANDOFF_WINDOW_DAYS
+        and jd_ut1 < _atomic_utc_to_ut1(atomic_boundary)
+    ):
         low = handoff_start
         high = atomic_boundary
         for _ in range(64):
@@ -2495,8 +2509,6 @@ def _ut1_to_utc(jd_ut1: float) -> float:
                 high = midpoint
         candidates = (low, high, (low + high) / 2.0)
         return min(candidates, key=lambda value: abs(utc_to_ut1(value) - jd_ut1))
-    if jd_ut1 < handoff_start:
-        return jd_ut1
 
     jd_tt = ut_to_tt(jd_ut1)
     jd_utc = jd_tt - (
@@ -2534,7 +2546,7 @@ def utc_calendar_from_ut1(jd_ut1: float) -> CalendarDateTime:
         year, month, day, _hour = calendar_from_jd(leap_jd - 0.5)
         microsecond = min(999_999, int((jd_tt - gap_start_tt) * 86_400.0 * 1_000_000.0))
         return CalendarDateTime(year, month, day, 23, 59, 60, microsecond)
-    return calendar_datetime_from_jd(_ut1_to_utc(jd_ut1))
+    return calendar_datetime_from_jd(_ut1_to_utc_outside_leap_second(jd_ut1))
 
 
 def utc_datetime_from_ut1(jd_ut1: float) -> datetime:

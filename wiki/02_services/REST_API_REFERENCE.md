@@ -2698,6 +2698,17 @@ node calculation.
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
+### Vimshottari period starts
+
+Vimshottari `sequence` and `current` include `start_utc` on each period and
+nested subperiod. Pass this ISO 8601 value as `dt` to `/v1/chart`. It is
+converted from the returned `start_jd` in UT1, including birth clipping
+where applicable. `full_start_jd` can precede birth. Pre-1972 conversions
+follow the engine's historical time convention, including the atomic-era
+handoff. For leap seconds or dates outside years 1–9999, `start_utc` is
+`null` because the chart request uses a civil `datetime`. The existing
+`start_date` and `end_date` are calendar renderings of the UT1 boundaries.
+
 ### Exact primary-direction time keys (6.11.0)
 
 `POST /v1/primary-directions/time-keys` converts already solved arcs without

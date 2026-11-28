@@ -9,6 +9,7 @@ from moira.dasha import (
     DashaPeriod,
     DashaSequenceProfile,
 )
+from moira.julian import utc_calendar_from_ut1
 
 from ..models.dasha import (
     DashaActiveLineResponse,
@@ -22,6 +23,7 @@ from ..models.dasha import (
 
 
 def _serialize_dasha_period(period: DashaPeriod) -> DashaPeriodResponse:
+    start = utc_calendar_from_ut1(period.start_jd)
     return DashaPeriodResponse(
         level=period.level,
         level_name=period.level_name,
@@ -34,6 +36,7 @@ def _serialize_dasha_period(period: DashaPeriod) -> DashaPeriodResponse:
         days=period.days,
         start_date=period.start_dt.isoformat(),
         end_date=period.end_dt.isoformat(),
+        start_utc=start.isoformat() if 1 <= start.year <= 9999 and not start.is_leap_second else None,
         year_basis=period.year_basis,
         lord_type=period.lord_type,
         is_node_dasha=period.is_node_dasha,

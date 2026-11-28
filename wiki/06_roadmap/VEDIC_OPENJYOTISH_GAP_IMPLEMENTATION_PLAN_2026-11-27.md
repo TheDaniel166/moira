@@ -239,14 +239,12 @@ See [dasha service](../../moira_server/services/dasha.py),
 [dasha serializer](../../moira_server/serializers/dasha.py) and
 [clock conversions](../../moira/julian.py).
 
-Verify the serving response and existing transport options. If the chart
-calculator still requires a UTC instant and the response supplies no
-scale-correct instant, expose an additive, explicitly named UTC start field
-derived from `start_jd` with the engine converter. Preserve the established period
-fields and mark unrepresentable civil instants explicitly. Validate round trips
-through the chart time parser at the precision supported by both transports
-and separately cover birth-clipped starts and historical time support. The
-site can use the same released contract independently of the Vedic research waves.
+The serving period payload carries `start_jd` and the legacy date strings.
+The engine implementation adds `start_utc` to the sequence and current
+responses, including nested periods. It uses the birth-clipped boundary
+where applicable and returns `null` for leap seconds or out-of-range civil
+dates. The [REST contract](../02_services/REST_API_REFERENCE.md#vimshottari-period-starts)
+describes replay through the chart request.
 
 ## Continuation checkpoint — 27 November 2026
 

@@ -55,6 +55,8 @@ class DashaCurrentRequest(_StrictModel):
 # ---------------------------------------------------------------------------
 
 class DashaPeriodResponse(_StrictModel):
+    """A Vimshottari period with its UT1 boundaries and chart-ready UTC start."""
+
     level: int
     level_name: str
     planet: str
@@ -64,6 +66,13 @@ class DashaPeriodResponse(_StrictModel):
     days: float
     start_date: str
     end_date: str
+    start_utc: str | None = Field(
+        default=None,
+        description=(
+            "UTC ISO 8601 timestamp converted from start_jd (UT1), including "
+            "birth clipping. Null when the chart datetime input cannot represent the instant."
+        ),
+    )
     year_basis: str | None
     lord_type: str | None
     is_node_dasha: bool
