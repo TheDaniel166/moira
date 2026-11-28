@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- REST coverage for planetary moon snapshots and bounded searches for
+  transits, occultations, and eclipses of those moons. Added chart
+  relocation, house and placement comparisons, sidereal charts with
+  Galactic ayanamsa presets, planet time series, coordinate rotations,
+  time conversion, and sidereal time.
+  [REST API reference](wiki/02_services/REST_API_REFERENCE.md)
+- REST operations for strict orbit variants, published asteroid identities
+  and orbit classes, eight-phase synodic cycles, nominal orbital-period
+  ratios, and bounded heliocentric events.
+  [Orbit variants and classifications](wiki/02_services/REST_API_REFERENCE.md#strict-orbit-variants)
+- Bounded geocentric and Jupiter–Saturn conjunction searches, eclipse
+  snapshots and natal eclipse contacts, multi-body void-of-course searches,
+  rise/set availability, and stellar and lunar visibility operations.
+  [Phenomena routes](wiki/02_services/REST_API_REFERENCE.md#phenomena-routes)
+- REST coverage for bounded return series, progression aggregates,
+  midpoint trees and activations, aspect strength and graphs, dispositorship
+  policy comparisons and networks, fixed-star conditions, and Ptolemaic
+  planetary ages. Muhurta search can return clock and sample evidence.
+  [REST API reference](wiki/02_services/REST_API_REFERENCE.md)
+- Bhava, Hora, and Ghati Lagna using the elapsed time since local sunrise,
+  plus Pushkara Navamsa and Pushkara Bhaga.
+  [Special Lagnas and Pushkara](wiki/02_standards/SPECIAL_LAGNAS_PUSHKARA_STANDARD.md)
+- Khara 64th Navamsa and 22nd Drekkana, Prashna Marga sphutas, and day and
+  night Choghadiya intervals with local solar boundaries.
+  [Divisions, Prashna, and Choghadiya](wiki/02_standards/VEDIC_DIVISIONS_PRASHNA_CHOGHADIYA_STANDARD.md)
+- Annual Tithi Pravesha, monthly Tajika charts, and Rath Narayana Dasha.
+  Annual and monthly return results retain the timing and policy evidence
+  used to derive each chart.
+  [Source and verification record](wiki/06_roadmap/VEDIC_WAVE_3_PRIMARY_SOURCE_CHECKPOINT.md)
+- Charak Ashtakoota and Iyer Porutham matching profiles, with separate
+  factor results for each tradition.
+  [Kuta and KP source record](wiki/06_roadmap/VEDIC_WAVE_4_PRIMARY_SOURCE_CHECKPOINT.md)
+- Krishnamurti sign, star, sub, and sub-sub chains for planets and Placidus
+  cusps, four direct house significator ranks, and five ruling-planet
+  roles. Natal Vimshottari period interpretation reports the direct
+  house evidence for education, marriage, and service through Sookshma.
+  [KP implementation record](wiki/06_roadmap/VEDIC_REMAINING_WORK_REGISTER.md#68-kuta-matching-and-kp-planetary-and-cusp-chains---27-november-2026)
+- Four named lunar-month profiles for exceptional Purnimanta and regional
+  Kshaya naming. The observance catalogue and evaluator include one
+  Mahashivaratri profile with ordinary Magha date selection, vow timing,
+  and conditional next-morning parana. Unresolved ritual cases return
+  an explicit availability status.
+  [Lunar months and festival policy](wiki/02_standards/LUNAR_MONTH_AND_FESTIVAL_POLICY.md)
+
+### Changed
+
+- Vimshottari REST period results now include a chart-ready ISO 8601
+  `start_utc` derived from the UT1 start, including any clipping at
+  birth. The field is null when the chart input cannot represent the instant.
+  [REST API reference](wiki/02_services/REST_API_REFERENCE.md)
+- Paran search can filter by body pair or axis family while preserving
+  the underlying crossing inventory.
+  [Phenomena routes](wiki/02_services/REST_API_REFERENCE.md#phenomena-routes)
+
 ## [6.15.0] - 2026-11-24
 
 ### Added
